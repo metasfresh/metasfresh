@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +48,7 @@ public class ProductLowLevelCalculatorTest
 
 	/**
 	 * Test Product LLC calculation for following hierarchy:
-	 * 
+	 *
 	 * <pre>
 	 * 		      A                    M
 	 *           / \                  / \
@@ -103,11 +103,11 @@ public class ProductLowLevelCalculatorTest
 
 	/**
 	 * Test BOM cycle detection for following hierarchy:
-	 * 
+	 *
 	 * <pre>
-	 * 		      A                   
-	 *           / \             
-	 *          B   C            
+	 * 		      A
+	 *           / \
+	 *          B   C
 	 *         / \
 	 *        D   E
 	 *           / \
@@ -145,6 +145,7 @@ public class ProductLowLevelCalculatorTest
 				.product(pE)
 				.bomVersions(bomVersionsE)
 				.newBOMLine().product(pF).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
+				.bomVersions(bomVersionsE)
 				//
 				// NOTE: this line shall throw BOMCycleException ... because model validator is called and it tries to update product's LLC
 				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
@@ -153,13 +154,13 @@ public class ProductLowLevelCalculatorTest
 
 	/**
 	 * Test rotated BOM with co-product.
-	 * 
+	 *
 	 * <pre>
-	 * 		        A                   B                   
+	 * 		        A                   B
 	 *           /     \              /    \
 	 *          B(CP)   C            A(CP)  C
 	 * </pre>
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/480
 	 */
 	@Test

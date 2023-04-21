@@ -46,6 +46,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.X_C_Project;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -134,8 +135,10 @@ public class WOProjectRepository
 		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
 		projectRecord.setDescription(createWOProjectRequest.getDescription());
 
+		projectRecord.setR_StatusCategory_ID(createWOProjectRequest.getProjectType().getRequestStatusCategoryId().getRepoId());
+
 		projectRecord.setProjectCategory(X_C_Project.PROJECTCATEGORY_WorkOrderJob);
-		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectTypeId().getRepoId());
+		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectType().getId().getRepoId());
 		projectRecord.setC_Currency_ID(createWOProjectRequest.getCurrencyId().getRepoId());
 		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(createWOProjectRequest.getProjectParentId()));
 		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(createWOProjectRequest.getPriceListVersionId()));

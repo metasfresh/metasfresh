@@ -341,7 +341,9 @@ class WidgetRenderer extends PureComponent {
           />
         );
       }
-      case 'Lookup':
+      case 'Lookup': {
+        const { typeaheadSupplier } = this.props;
+
         return (
           <Lookup
             {...listAndLookupsProps}
@@ -363,16 +365,21 @@ class WidgetRenderer extends PureComponent {
             closeTableField={closeTableField}
             onBlurWidget={onBlurWidget}
             onClickOutside={onClickOutside}
+            typeaheadSupplier={typeaheadSupplier}
           />
         );
+      }
       case 'List':
       case 'MultiListValue': {
+        const { dropdownValuesSupplier } = this.props;
+
         const commonProps = {
           ...listAndLookupsProps,
           widgetField,
           defaultValue: fields[0].emptyText,
           properties: fields[0],
           emptyText: fields[0].emptyText,
+          dropdownValuesSupplier,
         };
         const typeProps = {};
 
@@ -689,9 +696,9 @@ WidgetRenderer.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
-  lastFormField: PropTypes.bool,
 
-  //from RawWidget
+  //
+  // from RawWidget
   isMultiselect: PropTypes.bool,
   widgetField: PropTypes.string,
   widgetProperties: PropTypes.object.isRequired,
@@ -699,11 +706,17 @@ WidgetRenderer.propTypes = {
   isFocused: PropTypes.bool,
   charsTyped: PropTypes.number,
   readonly: PropTypes.bool,
+  // functions:
   onPatch: PropTypes.func.isRequired,
   onListFocus: PropTypes.func.isRequired,
   onBlurWithParams: PropTypes.func.isRequired,
   onSetWidgetType: PropTypes.func.isRequired,
   onHandleProcess: PropTypes.func.isRequired,
+  typeaheadSupplier: PropTypes.func,
+  dropdownValuesSupplier: PropTypes.func,
+
+  //
+  // from withForwardedRef HOC:
   forwardedRef: PropTypes.any,
 };
 

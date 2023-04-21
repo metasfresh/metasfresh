@@ -163,12 +163,12 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	
+
 	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
 	{
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	@NonNull
 	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
@@ -384,6 +384,12 @@ public class OrgDAO implements IOrgDAO
 
 		return orgInfo.isAutoInvoiceFlatrateTerms();
 
+	}
+
+	@Override
+	public String getOrgCode(@NonNull final OrgId orgId)
+	{
+		return getById(orgId).getValue();
 	}
 
 }

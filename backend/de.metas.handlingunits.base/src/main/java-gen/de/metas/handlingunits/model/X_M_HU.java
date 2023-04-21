@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 495636232L;
+	private static final long serialVersionUID = -1836855192L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -65,18 +65,30 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
+	public void setClearanceDate (final @Nullable java.sql.Timestamp ClearanceDate)
+	{
+		set_Value (COLUMNNAME_ClearanceDate, ClearanceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getClearanceDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ClearanceDate);
+	}
+
+	@Override
 	public void setClearanceNote (final @Nullable java.lang.String ClearanceNote)
 	{
 		set_Value (COLUMNNAME_ClearanceNote, ClearanceNote);
 	}
 
 	@Override
-	public java.lang.String getClearanceNote()
+	public java.lang.String getClearanceNote() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearanceNote);
 	}
 
-	/**
+	/** 
 	 * ClearanceStatus AD_Reference_ID=541540
 	 * Reference name: Clearance
 	 */
@@ -87,6 +99,8 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String CLEARANCESTATUS_Locked = "L";
 	/** Quarantined = Q */
 	public static final String CLEARANCESTATUS_Quarantined = "Q";
+	/** Test Pending = P */
+	public static final String CLEARANCESTATUS_TestPending = "P";
 	@Override
 	public void setClearanceStatus (final @Nullable java.lang.String ClearanceStatus)
 	{
@@ -94,7 +108,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public java.lang.String getClearanceStatus()
+	public java.lang.String getClearanceStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearanceStatus);
 	}

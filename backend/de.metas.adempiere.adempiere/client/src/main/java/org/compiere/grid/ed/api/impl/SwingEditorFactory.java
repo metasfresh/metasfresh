@@ -135,7 +135,7 @@ public final class SwingEditorFactory implements ISwingEditorFactory
 		final Properties ctx = Env.getCtx();
 
 		final I_AD_Column column = Services.get(IADTableDAO.class).retrieveColumn(tableName, columnName);
-		final Lookup lookup = MLookupFactory.get(ctx, windowNo, tabNo, column.getAD_Column_ID(), displayType);
+		final Lookup lookup = MLookupFactory.newInstance().get(ctx, windowNo, tabNo, column.getAD_Column_ID(), displayType);
 		lookup.setMandatory(mandatory);
 
 		final VLookup lookupField = new VLookup(columnName,

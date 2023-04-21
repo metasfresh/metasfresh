@@ -224,14 +224,14 @@ public class C_Invoice_Candidate
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29">task</a>
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		if (adTableDAO.retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
+		if (adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
 		{
 			final I_M_InOutLine iol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_M_InOutLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(iol.getM_InOut().getC_Order_ID());
@@ -240,7 +240,7 @@ public class C_Invoice_Candidate
 		{
 			final I_C_OrderLine ol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_C_OrderLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(ol.getC_Order_ID());
-
+			ic.setC_OrderSO_ID(ol.getC_OrderSO_ID());
 		}
 	}
 
@@ -257,7 +257,7 @@ public class C_Invoice_Candidate
 	public void updateCapturedLocationsAndRenderedAddresses(final I_C_Invoice_Candidate ic)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ic))
-		{
+		{ // at this point the fix/update of Bill_Location_Value_ID is coming too late for the IC's header aggregation key!
 			InvoiceCandidateLocationsUpdater.builder()
 					.documentLocationBL(documentLocationBL)
 					.record(ic)
@@ -355,7 +355,7 @@ public class C_Invoice_Candidate
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29">task</a>
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void scheduleRecreate(final I_C_Invoice_Candidate ic)

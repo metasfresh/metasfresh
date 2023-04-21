@@ -28,7 +28,7 @@ import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +60,7 @@ public class ExternalReferenceRestController
 	// we actually ask for info and don't change anything in metasfresh...that's why would have a GET...despite a GET shouldn't have a request body
 	@PutMapping("{orgCode}")
 	public JsonExternalReferenceLookupResponse lookup(
-			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are looking for") //
+			@Parameter(required = true, description = "`AD_Org.Value` of the external references we are looking for") //
 			@PathVariable("orgCode") //
 			@NonNull final String orgCode,
 
@@ -73,7 +73,7 @@ public class ExternalReferenceRestController
 	@PostMapping("{orgCode}")
 	public ResponseEntity<?> insert(
 
-			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are inserting") //
+			@Parameter(required = true, description = "`AD_Org.Value` of the external references we are inserting") //
 			@PathVariable("orgCode") //
 			@NonNull final String orgCode,
 
@@ -86,7 +86,7 @@ public class ExternalReferenceRestController
 
 	@PutMapping("/upsert/{orgCode}")
 	public ResponseEntity<?> upsert(
-			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are upserting") //
+			@Parameter(required = true, description = "`AD_Org.Value` of the external references we are upserting") //
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode,
 

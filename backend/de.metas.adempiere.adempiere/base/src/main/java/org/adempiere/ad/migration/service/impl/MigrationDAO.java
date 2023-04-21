@@ -112,7 +112,7 @@ public class MigrationDAO implements IMigrationDAO
 
 		final String updateSql = "UPDATE AD_MigrationStep SET AD_Migration_ID = ?, SeqNo = SeqNo + ? WHERE AD_Migration_ID = ? ";
 		final Object[] params = new Object[] { to.getAD_Migration_ID(), lastSeq, from.getAD_Migration_ID() };
-		DB.executeUpdateEx(updateSql, params, trxName);
+		DB.executeUpdateAndThrowExceptionOnFail(updateSql, params, trxName);
 	}
 
 	@Override

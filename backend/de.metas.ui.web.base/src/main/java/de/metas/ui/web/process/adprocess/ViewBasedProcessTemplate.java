@@ -1,6 +1,5 @@
 package de.metas.ui.web.process.adprocess;
 
-import de.metas.process.ClientOnlyProcess;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -52,7 +51,6 @@ import java.util.stream.Stream;
  * <p>
  * Important: to check for preconditions, please implement {@link IProcessPrecondition} <b>and</b> override {@link #checkPreconditionsApplicable()}.
  */
-@ClientOnlyProcess
 public abstract class ViewBasedProcessTemplate extends JavaProcess
 {
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
@@ -101,7 +99,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	/**
 	 * Please implement {@link #checkPreconditionsApplicable()} instead of this.
-	 *
+	 * <p>
 	 * WARNING: The preconditions will be checked only if the extending class implements the {@link de.metas.process.IProcessPrecondition} interface.
 	 */
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable(@SuppressWarnings("unused") @NonNull final IProcessPreconditionsContext context)
@@ -226,10 +224,15 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		}
 	}
 
+	protected final boolean isSingleSelectedRow()
+	{
+		return getSelectedRowIds().isSingleDocumentId();
+	}
+
 	protected final DocumentIdsSelection getSelectedRowIds()
 	{
-		Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
-		return _viewRowIdsSelection.getRowIds();
+		final ViewRowIdsSelection viewRowIdsSelection = Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
+		return viewRowIdsSelection.getRowIds();
 	}
 
 	@OverridingMethodsMustInvokeSuper

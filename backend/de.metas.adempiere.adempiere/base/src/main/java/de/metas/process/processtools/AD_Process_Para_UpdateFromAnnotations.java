@@ -61,7 +61,7 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.ofClassname(process.getClassname());
 		for (final ProcessClassParamInfo paramInfo : processClassInfo.getParameterInfos())
 		{
-			final String parameterName = paramInfo.getParameterName();
+			final String parameterName = paramInfo.getExternalParameterName();
 			final I_AD_Process_Para processParamModel = processParams.get(parameterName);
 			createUpdateProcessParam(process, processParamModel, paramInfo);
 		}
@@ -89,10 +89,10 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 			final int lastSeqNo = Services.get(IADProcessDAO.class).retrieveProcessParaLastSeqNo(process);
 			processParamModel.setSeqNo(lastSeqNo + 10);
 
-			final M_Element adElement = M_Element.get(getCtx(), paramInfo.getParameterName());
-			Check.assumeNotNull(adElement, "adElement not null for ColumnName={}", paramInfo.getParameterName());
+			final M_Element adElement = M_Element.get(getCtx(), paramInfo.getExternalParameterName());
+			Check.assumeNotNull(adElement, "adElement not null for ColumnName={}", paramInfo.getExternalParameterName());
 			processParamModel.setAD_Element(adElement);
-			processParamModel.setColumnName(paramInfo.getParameterName());
+			processParamModel.setColumnName(paramInfo.getExternalParameterName());
 			processParamModel.setName(adElement.getName());
 			processParamModel.setDescription(adElement.getDescription());
 			processParamModel.setHelp(adElement.getHelp());
@@ -114,7 +114,7 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 
 	private static int getDisplayType(final ProcessClassParamInfo paramInfo)
 	{
-		final String parameterName = paramInfo.getParameterName();
+		final String parameterName = paramInfo.getExternalParameterName();
 		final Class<?> type = paramInfo.getFieldType();
 		if (parameterName.endsWith("_ID"))
 		{

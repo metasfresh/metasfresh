@@ -1,19 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Field
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1146645715L;
+	private static final long serialVersionUID = 255643045L;
 
     /** Standard Constructor */
     public X_AD_Field (final Properties ctx, final int AD_Field_ID, @Nullable final String trxName)
@@ -57,7 +57,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_Column_ID() 
+	public int getAD_Column_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
 	}
@@ -72,7 +72,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_Field_ID() 
+	public int getAD_Field_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Field_ID);
 	}
@@ -99,7 +99,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_FieldGroup_ID() 
+	public int getAD_FieldGroup_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_FieldGroup_ID);
 	}
@@ -126,7 +126,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_Name_ID() 
+	public int getAD_Name_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Name_ID);
 	}
@@ -153,7 +153,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_Reference_ID() 
+	public int getAD_Reference_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Reference_ID);
 	}
@@ -180,7 +180,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_Reference_Value_ID() 
+	public int getAD_Reference_Value_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Reference_Value_ID);
 	}
@@ -200,14 +200,14 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	@Override
 	public void setAD_Sequence_ID (final int AD_Sequence_ID)
 	{
-		if (AD_Sequence_ID < 1) 
+		if (AD_Sequence_ID < 1)
 			set_Value (COLUMNNAME_AD_Sequence_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
 	}
 
 	@Override
-	public int getAD_Sequence_ID() 
+	public int getAD_Sequence_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
 	}
@@ -234,7 +234,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_Tab_ID() 
+	public int getAD_Tab_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Tab_ID);
 	}
@@ -261,7 +261,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getAD_Val_Rule_ID() 
+	public int getAD_Val_Rule_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
 	}
@@ -273,7 +273,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getColorLogic() 
+	public java.lang.String getColorLogic()
 	{
 		return get_ValueAsString(COLUMNNAME_ColorLogic);
 	}
@@ -285,7 +285,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getColumnDisplayLength() 
+	public int getColumnDisplayLength()
 	{
 		return get_ValueAsInt(COLUMNNAME_ColumnDisplayLength);
 	}
@@ -297,7 +297,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getDefaultValue() 
+	public java.lang.String getDefaultValue()
 	{
 		return get_ValueAsString(COLUMNNAME_DefaultValue);
 	}
@@ -309,7 +309,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -321,7 +321,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getDisplayLength() 
+	public int getDisplayLength()
 	{
 		return get_ValueAsInt(COLUMNNAME_DisplayLength);
 	}
@@ -333,7 +333,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getDisplayLogic() 
+	public java.lang.String getDisplayLogic()
 	{
 		return get_ValueAsString(COLUMNNAME_DisplayLogic);
 	}
@@ -350,9 +350,36 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getEntityType() 
+	public java.lang.String getEntityType()
 	{
 		return get_ValueAsString(COLUMNNAME_EntityType);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule()
+	{
+		return get_ValueAsPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
+	}
+
+	@Override
+	public void setFilter_Val_Rule(final org.compiere.model.I_AD_Val_Rule Filter_Val_Rule)
+	{
+		set_ValueFromPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, Filter_Val_Rule);
+	}
+
+	@Override
+	public void setFilter_Val_Rule_ID (final int Filter_Val_Rule_ID)
+	{
+		if (Filter_Val_Rule_ID < 1)
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, null);
+		else
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, Filter_Val_Rule_ID);
+	}
+
+	@Override
+	public int getFilter_Val_Rule_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Filter_Val_Rule_ID);
 	}
 
 	@Override
@@ -362,7 +389,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getHelp() 
+	public java.lang.String getHelp()
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
 	}
@@ -389,7 +416,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getIncluded_Tab_ID() 
+	public int getIncluded_Tab_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Included_Tab_ID);
 	}
@@ -401,7 +428,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getIncludedTabHeight() 
+	public int getIncludedTabHeight()
 	{
 		return get_ValueAsInt(COLUMNNAME_IncludedTabHeight);
 	}
@@ -413,7 +440,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getInfoFactoryClass() 
+	public java.lang.String getInfoFactoryClass()
 	{
 		return get_ValueAsString(COLUMNNAME_InfoFactoryClass);
 	}
@@ -425,7 +452,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isDisplayed() 
+	public boolean isDisplayed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed);
 	}
@@ -437,7 +464,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isDisplayedGrid() 
+	public boolean isDisplayedGrid()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayedGrid);
 	}
@@ -449,68 +476,54 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isEncrypted ()
+	public boolean isEncrypted()
 	{
-		Object oo = get_Value(COLUMNNAME_IsEncrypted);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsEncrypted);
 	}
 
-	/** Set Field Only.
-		@param IsFieldOnly
-		Label is not displayed
-	  */
+	/**
+	 * IsExcludeFromZoomTargets AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISEXCLUDEFROMZOOMTARGETS_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISEXCLUDEFROMZOOMTARGETS_Yes = "Y";
+	/** No = N */
+	public static final String ISEXCLUDEFROMZOOMTARGETS_No = "N";
 	@Override
-	public void setIsFieldOnly (boolean IsFieldOnly)
+	public void setIsExcludeFromZoomTargets (final @Nullable java.lang.String IsExcludeFromZoomTargets)
 	{
-		set_Value (COLUMNNAME_IsFieldOnly, Boolean.valueOf(IsFieldOnly));
+		set_Value (COLUMNNAME_IsExcludeFromZoomTargets, IsExcludeFromZoomTargets);
 	}
 
-	/** Get Field Only.
-		@return Label is not displayed
-	  */
 	@Override
-	public boolean isFieldOnly ()
+	public java.lang.String getIsExcludeFromZoomTargets()
 	{
-		Object oo = get_Value(COLUMNNAME_IsFieldOnly);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsString(COLUMNNAME_IsExcludeFromZoomTargets);
 	}
 
-	/** Set Heading only.
-		@param IsHeading
-		Field without Column - Only label is displayed
-	  */
 	@Override
-	public void setIsHeading (boolean IsHeading)
+	public void setIsFieldOnly (final boolean IsFieldOnly)
 	{
-		set_Value (COLUMNNAME_IsHeading, Boolean.valueOf(IsHeading));
+		set_Value (COLUMNNAME_IsFieldOnly, IsFieldOnly);
 	}
 
-	/** Get Heading only.
-		@return Field without Column - Only label is displayed
-	  */
 	@Override
-	public boolean isHeading ()
+	public boolean isFieldOnly()
 	{
-		Object oo = get_Value(COLUMNNAME_IsHeading);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsFieldOnly);
+	}
+
+	@Override
+	public void setIsHeading (final boolean IsHeading)
+	{
+		set_Value (COLUMNNAME_IsHeading, IsHeading);
+	}
+
+	@Override
+	public boolean isHeading()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHeading);
 	}
 
 	/** 
@@ -529,7 +542,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getIsMandatory() 
+	public java.lang.String getIsMandatory()
 	{
 		return get_ValueAsString(COLUMNNAME_IsMandatory);
 	}
@@ -541,7 +554,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isReadOnly() 
+	public boolean isReadOnly()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReadOnly);
 	}
@@ -553,7 +566,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isSameLine() 
+	public boolean isSameLine()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSameLine);
 	}
@@ -565,7 +578,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName()
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -590,7 +603,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public java.lang.String getObscureType() 
+	public java.lang.String getObscureType()
 	{
 		return get_ValueAsString(COLUMNNAME_ObscureType);
 	}
@@ -602,7 +615,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getSeqNo() 
+	public int getSeqNo()
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
@@ -614,7 +627,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getSeqNoGrid() 
+	public int getSeqNoGrid()
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNoGrid);
 	}
@@ -626,7 +639,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public BigDecimal getSortNo() 
+	public BigDecimal getSortNo()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SortNo);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -639,7 +652,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getSpanX() 
+	public int getSpanX()
 	{
 		return get_ValueAsInt(COLUMNNAME_SpanX);
 	}
@@ -651,7 +664,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getSpanY() 
+	public int getSpanY()
 	{
 		return get_ValueAsInt(COLUMNNAME_SpanY);
 	}

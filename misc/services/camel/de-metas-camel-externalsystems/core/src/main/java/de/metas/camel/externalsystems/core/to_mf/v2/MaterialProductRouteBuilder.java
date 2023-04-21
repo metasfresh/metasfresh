@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -51,7 +50,6 @@ public class MaterialProductRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.process(this::validateAndAttachHeaders)
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{metasfresh.material-products-v2.api-uri}}/${header.orgCode}/${header.productIdentifier}")
 

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1024722891L;
+	private static final long serialVersionUID = -64523088L;
 
     /** Standard Constructor */
     public X_S_Issue (final Properties ctx, final int S_Issue_ID, @Nullable final String trxName)
@@ -76,6 +76,21 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	}
 
 	@Override
+	public void setC_Activity_ID (final int C_Activity_ID)
+	{
+		if (C_Activity_ID < 1) 
+			set_Value (COLUMNNAME_C_Activity_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Activity_ID, C_Activity_ID);
+	}
+
+	@Override
+	public int getC_Activity_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -132,7 +147,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		throw new IllegalArgumentException ("EffortDeliveryPlatform is virtual column");	}
 
 	@Override
-	public java.lang.String getEffortDeliveryPlatform() 
+	public java.lang.String getEffortDeliveryPlatform()
 	{
 		return get_ValueAsString(COLUMNNAME_EffortDeliveryPlatform);
 	}
@@ -150,6 +165,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public int getEffort_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Effort_UOM_ID);
+	}
+
+	@Override
+	public void setEffortAggregationKey (final @Nullable java.lang.String EffortAggregationKey)
+	{
+		set_Value (COLUMNNAME_EffortAggregationKey, EffortAggregationKey);
+	}
+
+	@Override
+	public java.lang.String getEffortAggregationKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_EffortAggregationKey);
 	}
 
 	@Override
@@ -179,6 +206,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	}
 
 	@Override
+	public void setExternallyUpdatedAt (final @Nullable java.sql.Timestamp ExternallyUpdatedAt)
+	{
+		set_Value (COLUMNNAME_ExternallyUpdatedAt, ExternallyUpdatedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getExternallyUpdatedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ExternallyUpdatedAt);
+	}
+
+	@Override
 	public void sethasInternalEffortIssue (final boolean hasInternalEffortIssue)
 	{
 		throw new IllegalArgumentException ("hasInternalEffortIssue is virtual column");	}
@@ -195,7 +234,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		throw new IllegalArgumentException ("InternalApproved is virtual column");	}
 
 	@Override
-	public boolean isInternalApproved() 
+	public boolean isInternalApproved()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_InternalApproved);
 	}
@@ -229,7 +268,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		throw new IllegalArgumentException ("InternalDeliveredDate is virtual column");	}
 
 	@Override
-	public java.sql.Timestamp getInternalDeliveredDate() 
+	public java.sql.Timestamp getInternalDeliveredDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_InternalDeliveredDate);
 	}
@@ -404,6 +443,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	}
 
 	@Override
+	public void setInvoicingErrorMsg (final @Nullable java.lang.String InvoicingErrorMsg)
+	{
+		set_Value (COLUMNNAME_InvoicingErrorMsg, InvoicingErrorMsg);
+	}
+
+	@Override
+	public java.lang.String getInvoicingErrorMsg()
+	{
+		return get_ValueAsString(COLUMNNAME_InvoicingErrorMsg);
+	}
+
+	@Override
 	public void setIsApproved (final boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, IsApproved);
@@ -425,6 +476,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public boolean isEffortIssue() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEffortIssue);
+	}
+
+	@Override
+	public void setIsInvoicingError (final boolean IsInvoicingError)
+	{
+		set_Value (COLUMNNAME_IsInvoicingError, IsInvoicingError);
+	}
+
+	@Override
+	public boolean isInvoicingError() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoicingError);
 	}
 
 	@Override

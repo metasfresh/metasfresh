@@ -41,11 +41,11 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Location_StepDef
 {
@@ -115,7 +115,7 @@ public class C_BPartner_Location_StepDef
 
 		final I_C_BPartner_Location bPartnerLocationRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+						.addEqualsFilter(COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
 						.create()
 						.firstOnlyOrNull(I_C_BPartner_Location.class),
@@ -151,7 +151,7 @@ public class C_BPartner_Location_StepDef
 		{
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
-			InterfaceWrapperHelper.saveRecord(locationRecord);
+			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
@@ -180,7 +180,7 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
-		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
+		saveRecord(bPartnerLocationRecord);
 
 		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
 		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
@@ -188,6 +188,16 @@ public class C_BPartner_Location_StepDef
 
 	private void load_bpartner_location(@NonNull final Map<String, String> tableRow)
 	{
+		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_Location_ID);
+
+		if (id != null)
+		{
+			bPartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, InterfaceWrapperHelper.load(id, I_C_BPartner_Location.class));
+			return;
+		}
+
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer bpartnerId = bPartnerTable.getOptional(bpartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
@@ -199,7 +209,6 @@ public class C_BPartner_Location_StepDef
 		final I_C_BPartner_Location bPartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bPartnerLocationId);
 		assertThat(bPartnerLocation).isNotNull();
 
-		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bPartnerLocationTable.put(bpartnerLocationIdentifier, bPartnerLocation);
 	}
 

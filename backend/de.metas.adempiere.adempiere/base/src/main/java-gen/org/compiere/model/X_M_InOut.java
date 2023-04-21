@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 228606393L;
+	private static final long serialVersionUID = 1294464455L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1) 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
 
 	@Override
@@ -63,6 +78,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getB2B_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_B2B_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setB2B_InOut(final org.compiere.model.I_M_InOut B2B_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_B2B_InOut_ID, org.compiere.model.I_M_InOut.class, B2B_InOut);
+	}
+
+	@Override
+	public void setB2B_InOut_ID (final int B2B_InOut_ID)
+	{
+		if (B2B_InOut_ID < 1) 
+			set_Value (COLUMNNAME_B2B_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_B2B_InOut_ID, B2B_InOut_ID);
+	}
+
+	@Override
+	public int getB2B_InOut_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_B2B_InOut_ID);
 	}
 
 	@Override
@@ -222,13 +264,40 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_C_ForeignExchangeContract getC_ForeignExchangeContract()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ForeignExchangeContract_ID, org.compiere.model.I_C_ForeignExchangeContract.class);
+	}
+
+	@Override
+	public void setC_ForeignExchangeContract(final org.compiere.model.I_C_ForeignExchangeContract C_ForeignExchangeContract)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ForeignExchangeContract_ID, org.compiere.model.I_C_ForeignExchangeContract.class, C_ForeignExchangeContract);
+	}
+
+	@Override
+	public void setC_ForeignExchangeContract_ID (final int C_ForeignExchangeContract_ID)
+	{
+		if (C_ForeignExchangeContract_ID < 1) 
+			set_Value (COLUMNNAME_C_ForeignExchangeContract_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ForeignExchangeContract_ID, C_ForeignExchangeContract_ID);
+	}
+
+	@Override
+	public int getC_ForeignExchangeContract_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_ForeignExchangeContract_ID);
+	}
+
+	@Override
 	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
 	{
 		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
 	}
 
 	@Override
-	public BigDecimal getChargeAmt()
+	public BigDecimal getChargeAmt() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -249,14 +318,14 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	@Override
 	public void setC_Incoterms_ID (final int C_Incoterms_ID)
 	{
-		if (C_Incoterms_ID < 1)
+		if (C_Incoterms_ID < 1) 
 			set_Value (COLUMNNAME_C_Incoterms_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
 	}
 
 	@Override
-	public int getC_Incoterms_ID()
+	public int getC_Incoterms_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
 	}
@@ -686,7 +755,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.lang.String getEMail()
+	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
@@ -713,6 +782,64 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public java.lang.String getExternalResourceURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalResourceURL);
+	}
+
+	@Override
+	public void setFEC_CurrencyRate (final @Nullable BigDecimal FEC_CurrencyRate)
+	{
+		set_Value (COLUMNNAME_FEC_CurrencyRate, FEC_CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getFEC_CurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FEC_CurrencyRate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setFEC_From_Currency_ID (final int FEC_From_Currency_ID)
+	{
+		if (FEC_From_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_From_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_From_Currency_ID, FEC_From_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_From_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_From_Currency_ID);
+	}
+
+	@Override
+	public void setFEC_Order_Currency_ID (final int FEC_Order_Currency_ID)
+	{
+		if (FEC_Order_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_Order_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_Order_Currency_ID, FEC_Order_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_Order_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_Order_Currency_ID);
+	}
+
+	@Override
+	public void setFEC_To_Currency_ID (final int FEC_To_Currency_ID)
+	{
+		if (FEC_To_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_To_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_To_Currency_ID, FEC_To_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_To_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_To_Currency_ID);
 	}
 
 	@Override
@@ -828,6 +955,18 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setIsFEC (final boolean IsFEC)
+	{
+		set_Value (COLUMNNAME_IsFEC, IsFEC);
+	}
+
+	@Override
+	public boolean isFEC() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFEC);
+	}
+
+	@Override
 	public void setIsFillUpSpareParts (final boolean IsFillUpSpareParts)
 	{
 		set_Value (COLUMNNAME_IsFillUpSpareParts, IsFillUpSpareParts);
@@ -912,6 +1051,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class);
+	}
+
+	@Override
+	public void setM_Delivery_Planning(final org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class, M_Delivery_Planning);
+	}
+
+	@Override
+	public void setM_Delivery_Planning_ID (final int M_Delivery_Planning_ID)
+	{
+		if (M_Delivery_Planning_ID < 1) 
+			set_Value (COLUMNNAME_M_Delivery_Planning_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Delivery_Planning_ID, M_Delivery_Planning_ID);
+	}
+
+	@Override
+	public int getM_Delivery_Planning_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
+	}
+
+	@Override
 	public void setM_InOut_ID (final int M_InOut_ID)
 	{
 		if (M_InOut_ID < 1) 
@@ -933,12 +1099,12 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getMovementDate()
+	public java.sql.Timestamp getMovementDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
 	}
 
-	/**
+	/** 
 	 * MovementType AD_Reference_ID=189
 	 * Reference name: M_Transaction Movement Type
 	 */
@@ -974,7 +1140,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.lang.String getMovementType()
+	public java.lang.String getMovementType() 
 	{
 		return get_ValueAsString(COLUMNNAME_MovementType);
 	}
@@ -1004,6 +1170,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getM_RMA_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_RMA_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
 
 	@Override

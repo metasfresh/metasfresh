@@ -29,7 +29,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -245,7 +244,7 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 						getExpenseAmt(),
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(getC_Currency_Report_ID()),
-						TimeUtil.asLocalDate(getDateExpense()),
+						getDateExpense().toInstant(),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID())));
@@ -323,7 +322,7 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 			}
 		}
 		return success;
-	}    //	afterDelete
+	}
 
 	/**
 	 * Update Header.
@@ -336,7 +335,7 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 				+ "(SELECT SUM(Qty*ConvertedAmt) FROM S_TimeExpenseLine tel "
 				+ "WHERE te.S_TimeExpense_ID=tel.S_TimeExpense_ID) "
 				+ "WHERE S_TimeExpense_ID=" + getS_TimeExpense_ID();
-		int no = DB.executeUpdate(sql, get_TrxName());
-	}    //	updateHeader
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+	}
 
-}    //	MTimeExpenseLine
+}

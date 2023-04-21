@@ -22,16 +22,15 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.util.ISingletonService;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.List;
+import java.util.Properties;
 
 /**
  * This API identifies and invokes {@link IInvoiceCandidateHandler}s for specific invoice candidates
@@ -99,4 +98,8 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
 
 	void setPickedData(I_C_Invoice_Candidate ic);
+
+	void setIsInEffect(I_C_Invoice_Candidate ic);
+
+	void postUpdate(I_C_Invoice_Candidate ic);
 }

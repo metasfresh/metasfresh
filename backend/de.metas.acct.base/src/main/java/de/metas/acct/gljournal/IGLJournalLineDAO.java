@@ -41,4 +41,5 @@ public interface IGLJournalLineDAO extends ISingletonService
 
 	int retrieveLastLineNo(I_GL_Journal glJournal);
 
+	void save(I_GL_JournalLine glJournalLine);
 }

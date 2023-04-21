@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,14 +36,14 @@ import javax.annotation.Nullable;
 @Value
 public class JsonExternalReferenceLookupItem
 {
-	@ApiModelProperty(value = "JsonMetasfreshId of the referenced resource")
+	@Schema(description = "JsonMetasfreshId of the referenced resource")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(required = true, value = "Type of the externally referenced resource. E.g. user, issue, timebooking")
+	@Schema(required = true, description = "Type of the externally referenced resource. E.g. user, issue, timebooking")
 	String type;
 
-	@ApiModelProperty(value = "External identifier of the referenced resource")
+	@Schema(description = "External identifier of the referenced resource")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String id;
 

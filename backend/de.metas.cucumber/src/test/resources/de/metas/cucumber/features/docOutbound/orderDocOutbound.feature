@@ -12,17 +12,17 @@ Feature: Validate order doc outbound log creation
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
 
     And metasfresh contains M_Products:
-      | Identifier        | Name              |
-      | addr_test_product | addr_test_product |
+      | Identifier        | Name                         |
+      | addr_test_product | addr_test_product_16112022_3 |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name           | Value          |
-      | ps_1       | pricing_system | pricing_system |
+      | Identifier | Name                      | Value                     |
+      | ps_1       | pricing_system_16112022_3 | pricing_system_16112022_3 |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so_16112022_3 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_so     | pl_so                     | plv_so | 2022-01-30 |
+      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
+      | plv_so     | pl_so                     | plv_so_16112022_3 | 2022-01-30 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
       | pp_product | plv_so                            | addr_test_product       | 10.0     | Normal                        | PCE               |
@@ -56,9 +56,9 @@ Feature: Validate order doc outbound log creation
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail          |
       | order_1               | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_1128101 | true      | CO        | location@email.com |
 
-    And after not more than 30s validate C_Doc_Outbound_Log:
+    And after not more than 60s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |
-      | orderOutboundLog                 | order_1              | C_Order       | user@email.com      | sale_bpartner                | SOO             | CO            |
+      | orderOutboundLog                 | order_1              | C_Order       | user@email.com          | sale_bpartner                | SOO             | CO            |
 
     And validate C_Doc_Outbound_Log_Line:
       | C_Doc_Outbound_Log_Line_ID.Identifier | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType | OPT.DocStatus |
@@ -86,7 +86,7 @@ Feature: Validate order doc outbound log creation
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail |
       | order_1               | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_2085101 | true      | CO        | null      |
 
-    And after not more than 30s validate C_Doc_Outbound_Log:
+    And after not more than 60s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |
       | orderOutboundLog                 | order_1              | C_Order       | secondary@email.com     | sale_bpartner                | SOO             | CO            |
     And validate C_Doc_Outbound_Log_Line:

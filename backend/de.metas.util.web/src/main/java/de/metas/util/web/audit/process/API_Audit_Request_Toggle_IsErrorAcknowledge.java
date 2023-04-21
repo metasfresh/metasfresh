@@ -43,7 +43,7 @@ public class API_Audit_Request_Toggle_IsErrorAcknowledge extends JavaProcess
 		final ICompositeQueryUpdater<I_API_Request_Audit> queryUpdater = queryBL.createCompositeQueryUpdater(I_API_Request_Audit.class)
 				.addSetColumnValue(I_API_Request_Audit.COLUMNNAME_IsErrorAcknowledged, IsErrorAcknowledged);
 
-		retrieveSelectedRecordsQueryBuilder(I_API_Request_Audit.class)
+		retrieveActiveSelectedRecordsQueryBuilder(I_API_Request_Audit.class)
 				.create()
 				.update(queryUpdater);
 

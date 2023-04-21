@@ -21,6 +21,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Getter;
@@ -156,6 +157,9 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final String headerAggregationKey;
 
+	@Getter
+	private final SectionCodeId sectionCodeId;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -182,7 +186,8 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final String phone,
 			@Nullable final String email,
 			@Nullable final AdIssueId adIssueId,
-			@Nullable final String headerAggregationKey)
+			@Nullable final String headerAggregationKey,
+			@Nullable final SectionCodeId sectionCodeId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -233,6 +238,8 @@ public final class OLCand implements IProductPriceAware
 		this.adIssueId = adIssueId;
 
 		this.headerAggregationKey = headerAggregationKey;
+
+		this.sectionCodeId = sectionCodeId;
 	}
 
 	@Override

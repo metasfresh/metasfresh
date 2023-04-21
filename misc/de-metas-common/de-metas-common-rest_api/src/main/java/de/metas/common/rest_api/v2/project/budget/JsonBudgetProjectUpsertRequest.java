@@ -25,8 +25,7 @@ package de.metas.common.rest_api.v2.project.budget;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,109 +42,109 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Contains the project and its resources to be upserted.")
+@Schema(description = "Contains the project and its resources to be upserted.")
 public class JsonBudgetProjectUpsertRequest
 {
-	@ApiModelProperty(position = 10, value = PROJECT_IDENTIFIER_DOC, required = true)
+	@Schema(description = PROJECT_IDENTIFIER_DOC, required = true)
 	@Setter
 	private String projectIdentifier;
 
-	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project.C_ProjectType_ID`", required = true)
+	@Schema(description = "Corresponding to `C_Project.C_ProjectType_ID`", required = true)
 	@Setter
 	private JsonMetasfreshId projectTypeId;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to `C_Project.AD_Org_ID`")
+	@Schema(description = "Corresponding to `C_Project.AD_Org_ID`")
 	private String orgCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean orgCodeSet;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to `C_Project.Value`")
+	@Schema(description = "Corresponding to `C_Project.Value`")
 	private String value;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean valueSet;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to `C_Project.Name`")
+	@Schema(description = "Corresponding to `C_Project.Name`")
 	private String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to `C_Project.M_PriceList_Version_ID`")
+	@Schema(description = "Corresponding to `C_Project.M_PriceList_Version_ID`")
 	private JsonMetasfreshId priceListVersionId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean priceListVersionIdSet;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `C_Project.C_Currency_ID.Iso_Code`")
+	@Schema(description = "Corresponding to `C_Project.C_Currency_ID.Iso_Code`")
 	private String currencyCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean currencyCodeSet;
 
-	@ApiModelProperty(position = 80, value = "Corresponding to `C_Project.SalesRep_ID`")
+	@Schema(description = "Corresponding to `C_Project.SalesRep_ID`")
 	private JsonMetasfreshId salesRepId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean salesRepIdSet;
 
-	@ApiModelProperty(position = 90, value = "Corresponding to `C_Project.Description`")
+	@Schema(description = "Corresponding to `C_Project.Description`")
 	private String description;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean descriptionSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to `C_Project.DateContract`")
+	@Schema(description = "Corresponding to `C_Project.DateContract`")
 	private LocalDate dateContract;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateContractSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to `C_Project.DateFinish`")
+	@Schema(description = "Corresponding to `C_Project.DateFinish`")
 	private LocalDate dateFinish;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateFinishSet;
 
-	@ApiModelProperty(position = 120, value = "Corresponding to `C_Project.C_BPartner_ID`")
+	@Schema(description = "Corresponding to `C_Project.C_BPartner_ID`")
 	private JsonMetasfreshId bpartnerId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean bpartnerIdSet;
 
-	@ApiModelProperty(position = 130, value = "Corresponding to `C_Project.C_Project_Reference_Ext`")
+	@Schema(description = "Corresponding to `C_Project.C_Project_Reference_Ext`")
 	private String projectReferenceExt;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean projectReferenceExtSet;
 
 	JsonExternalId externalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean externalIdSet;
 	
-	@ApiModelProperty(position = 140, value = "Corresponding to `C_Project.C_Project_Parent_ID`")
+	@Schema(description = "Corresponding to `C_Project.C_Project_Parent_ID`")
 	private String projectParentIdentifier;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean projectParentIdentifierSet;
 
-	@ApiModelProperty(position = 150, value = "Corresponding to `C_Project.IsActive`")
+	@Schema(description = "Corresponding to `C_Project.IsActive`")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 160, required = true)
+	@Schema(required = true)
 	@Setter
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(position = 170)
+	@Schema
 	@Setter
 	private Map<String, Object> extendedProps = new HashMap<>();
 
-	@ApiModelProperty(position = 180, value = "Corresponding to `C_Project_Resource_Budget`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget`")
 	@Setter
 	private List<JsonRequestBudgetProjectResourceUpsertItem> resources = new ArrayList<>();
 

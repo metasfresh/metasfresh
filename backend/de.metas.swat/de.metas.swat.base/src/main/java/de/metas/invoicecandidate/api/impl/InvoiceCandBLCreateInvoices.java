@@ -7,23 +7,26 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvBL;
+import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -34,12 +37,12 @@ import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
@@ -48,7 +51,10 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.Tax;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
@@ -81,6 +87,7 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -90,6 +97,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -128,7 +136,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -143,10 +151,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
 	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
+	private final transient MatchInvoiceService matchInvoiceService;
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient DocTypeInvoicingPoolService docTypeInvoicingPoolService = SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
@@ -156,8 +165,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
-	private IInvoicingParams _invoicingParams;
+	private InvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
+
+	public InvoiceCandBLCreateInvoices(
+			@Nullable final MatchInvoiceService matchInvoiceService)
+	{
+
+		this.matchInvoiceService = matchInvoiceService != null ? matchInvoiceService : SpringContextHolder.instance.getBean(MatchInvoiceService.class);
+	}
 
 	/**
 	 * Implementations of this interface are responsible for converting a given {@link IInvoiceHeader} to an {@link I_C_Invoice} with lines and process it.
@@ -190,6 +206,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private IInvoiceHeader header;
 		private Properties ctx;
 
+		@Nullable
 		private I_C_Invoice createdInvoice = null;
 		private final List<I_AD_Note> notifications = new ArrayList<>();
 
@@ -255,9 +272,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
 			}
 
-			//
-			// Complete the invoice and assume it's status is COmpleted.
-			docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			if (getInvoicingParams().isCompleteInvoices())
+			{
+				// Complete the invoice and assume its status is COmpleted.
+				docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			}
+			else
+			{
+				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
+			}
 
 			//
 			// Set the created invoice which will be retrieved by the caller.
@@ -330,6 +353,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final String trxName)
 		{
 			final I_C_Invoice invoice;
+			final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 
 			//
 			// Case: our invoice is linked to an order
@@ -338,8 +362,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID()));
 
-				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
-						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
+				final DocTypeId invoiceDocTypeId = invoiceHeader.getDocTypeInvoiceId().isPresent()
+						? invoiceHeader.getDocTypeInvoiceId().get()
 						: null;
 				invoice = create(
 						invoiceBL.createInvoiceFromOrder(
@@ -364,7 +388,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice = create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(PaymentTermId.toRepoId(invoiceHeader.getPaymentTermId()));
 
-				final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced(), timeZone));
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
@@ -373,6 +396,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
+
+
+			invoice.setDueDate(TimeUtil.asTimestamp(invoiceHeader.getOverrideDueDate(), timeZone));
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
@@ -389,6 +415,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					.setFrom(billTo.toDocumentLocation());
 
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
+			InvoiceDAO.updateRecordFromForexContractRef(invoice, invoiceHeader.getForexContractRef());
 			final BPartnerId salesRepId = invoiceHeader.getSalesPartnerId();
 			if (!BPartnerId.equals(billTo.getBpartnerId(), salesRepId))
 			{
@@ -399,7 +426,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
-			if(Check.isBlank(invoice.getEMail()))
+			if (Check.isBlank(invoice.getEMail()))
 			{
 				invoice.setEMail(invoiceHeader.getEMail());
 			}
@@ -407,18 +434,34 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
+			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
 
 			if (invoiceHeader.getM_InOut_ID() > 0)
 			{
 				final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(invoiceHeader.getM_InOut_ID()));
 				invoice.setM_InOut_ID(inout.getM_InOut_ID()); // task 06630
-				if(!Check.isBlank(inout.getEMail()))
+				if (!Check.isBlank(inout.getEMail()))
 				{
 					invoice.setEMail(inout.getEMail());
 				}
 			}
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
+			invoice.setM_SectionCode_ID(SectionCodeId.toRepoId(invoiceHeader.getM_SectionCode_ID()));
+
+			if (invoiceHeader.getProjectId() != null)
+			{
+				invoice.setC_Project_ID(ProjectId.toRepoId(invoiceHeader.getProjectId()));
+			}
+
+			if (invoiceHeader.getActivityId() != null)
+			{
+				invoice.setC_Activity_ID(ActivityId.toRepoId(invoiceHeader.getActivityId()));
+			}
+
+			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
+			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
+			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
@@ -452,9 +495,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
 				// That way we can undo all invoice lines if the creation of one of them fails.
 				final DefaultInvoiceLineGeneratorRunnable genLines = new DefaultInvoiceLineGeneratorRunnable(invoice,
-																											 aggregate, processedLines,
-																											 errorCandidates, errorException,
-																											 trxName);
+						aggregate, processedLines,
+						errorCandidates, errorException,
+						trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
 				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
@@ -487,7 +530,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
-			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getC_DocTypeInvoice();
+
+			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getDocTypeInvoiceId().map(docTypeDAO::getById).orElse(null);
 			if (invoiceHeaderDocType != null)
 			{
 				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());
@@ -531,9 +575,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final String trxName;
 
 		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
-				final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
-				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
-				final String trxName)
+													final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+													final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+													final String trxName)
 		{
 			createdLines = new ArrayList<>();
 
@@ -670,6 +714,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setPriceEntered(ilVO.getPriceEntered().toMoney().toBigDecimal());
 				invoiceLine.setDiscount(ilVO.getDiscount().toBigDecimal());
 				invoiceLine.setPriceActual(ilVO.getPriceActual().toMoney().toBigDecimal());
+				invoiceLine.setC_VAT_Code_ID(ilVO.getC_VAT_Code_ID());
 
 				// set activity, tax and tax category from the invoice candidate (07442)
 				invoiceLine.setC_Activity_ID(ilVO.getC_Activity_ID());
@@ -694,8 +739,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
-				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
-				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
+				dimensionService.updateRecord(invoiceLine, dimensionService.getFromRecord(cand));
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it
@@ -748,11 +792,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 							final I_C_InvoiceCandidate_InOutLine icIol = iciolToUpdate.getC_InvoiceCandidate_InOutLine();
 							final I_M_InOutLine inOutLine = icIol.getM_InOutLine();
 
-							matchInvBL.createMatchInvBuilder()
-									.setContext(invoiceLine)
-									.setC_InvoiceLine(invoiceLine)
-									.setM_InOutLine(inOutLine)
-									.setDateTrx(invoice.getDateInvoiced())
+							matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
+									.invoiceLine(invoiceLine)
+									.inoutLine(inOutLine)
+									.dateTrx(invoice.getDateInvoiced())
 									.build();
 						}
 					}
@@ -819,7 +862,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
-		public boolean doCatch(final Throwable e) throws Throwable
+		public boolean doCatch(final Throwable e)
 		{
 			if (errorException[0] == null)
 			{
@@ -902,7 +945,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		//
 		// Make sure we have the same net amt as expected (08610)
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		final BigDecimal expectedNetAmtToInvoice = invoicingParams == null ? null : invoicingParams.getCheck_NetAmtToInvoice();
 		if (expectedNetAmtToInvoice != null && expectedNetAmtToInvoice.signum() != 0)
 		{
@@ -918,13 +961,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	private AggregationEngine newAggregationEngine()
 	{
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 
 		return AggregationEngine.builder()
+				.matchInvoiceService(matchInvoiceService)
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
+				.forexContractRef(invoicingParams != null ? invoicingParams.getForexContractRef() : null)
+				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
 				.build();
 	}
 
@@ -938,7 +985,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
 			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
-						  aggregationResult.size(), aggregationResult);
+					aggregationResult.size(), aggregationResult);
 		}
 
 		//
@@ -1038,8 +1085,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
 					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
-												  .map(AdMessageId::getRepoId)
-												  .orElse(-1));
+							.map(AdMessageId::getRepoId)
+							.orElse(-1));
 
 					note.setAD_User_ID(userId);
 
@@ -1164,7 +1211,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			return _ignoreInvoiceSchedule;
 		}
 
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		if (invoicingParams != null)
 		{
 			return invoicingParams.isIgnoreInvoiceSchedule();
@@ -1191,13 +1238,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final @NonNull InvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
 		return _invoicingParams;
 	}

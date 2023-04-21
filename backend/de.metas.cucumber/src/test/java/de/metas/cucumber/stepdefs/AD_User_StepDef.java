@@ -39,6 +39,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_IsMFProcurementUser;
@@ -49,8 +50,10 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_EMail;
+import static org.compiere.model.I_AD_User.COLUMNNAME_IsBillToContact_Default;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Login;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Name;
+import static org.compiere.model.I_AD_User.COLUMNNAME_NotificationType;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Password;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Phone;
 
@@ -58,7 +61,7 @@ public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+	
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
@@ -132,6 +135,13 @@ public class AD_User_StepDef
 		final String email = tableRow.get("OPT." + COLUMNNAME_EMail);
 
 		final I_AD_User userRecord = InterfaceWrapperHelper.loadOrNew(userDAO.retrieveUserIdByEMail(email, ClientId.METASFRESH), I_AD_User.class);
+
+		if (InterfaceWrapperHelper.isNew(userRecord))
+		{
+			Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_User_ID))
+					.ifPresent(userRecord::setAD_User_ID);
+		}
+
 		userRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		userRecord.setName(name);
 		userRecord.setEMail(email);
@@ -175,6 +185,18 @@ public class AD_User_StepDef
 		if (Check.isNotBlank(login))
 		{
 			userRecord.setLogin(login);
+		}
+
+		final Boolean isBillToContactDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsBillToContact_Default, null);
+		if (isBillToContactDefault != null)
+		{
+			userRecord.setIsBillToContact_Default(isBillToContactDefault);
+		}
+
+		final String notificationType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_NotificationType);
+		if (Check.isNotBlank(notificationType))
+		{
+			userRecord.setNotificationType(notificationType);
 		}
 
 		final Integer userId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_User_ID);

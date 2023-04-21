@@ -688,7 +688,7 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_InvoicedQty = new ModelColumn<>(I_C_Project.class, "InvoicedQty", null);
 	String COLUMNNAME_InvoicedQty = "InvoicedQty";
-	
+
 	/**
 	 * Set Active.
 	 * The record is active in the system
@@ -802,6 +802,28 @@ public interface I_C_Project
 	int getM_PriceList_Version_ID();
 
 	String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Warehouse.
@@ -1117,6 +1139,33 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, org.compiere.model.I_R_Status> COLUMN_R_Project_Status_ID = new ModelColumn<>(I_C_Project.class, "R_Project_Status_ID", org.compiere.model.I_R_Status.class);
 	String COLUMNNAME_R_Project_Status_ID = "R_Project_Status_ID";
+
+	/**
+	 * Set Status Category.
+	 * Request Status Category
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setR_StatusCategory_ID (int R_StatusCategory_ID);
+
+	/**
+	 * Get Status Category.
+	 * Request Status Category
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getR_StatusCategory_ID();
+
+	@Nullable org.compiere.model.I_R_StatusCategory getR_StatusCategory();
+
+	void setR_StatusCategory(@Nullable org.compiere.model.I_R_StatusCategory R_StatusCategory);
+
+	ModelColumn<I_C_Project, org.compiere.model.I_R_StatusCategory> COLUMN_R_StatusCategory_ID = new ModelColumn<>(I_C_Project.class, "R_StatusCategory_ID", org.compiere.model.I_R_StatusCategory.class);
+	String COLUMNNAME_R_StatusCategory_ID = "R_StatusCategory_ID";
 
 	/**
 	 * Set Account manager.

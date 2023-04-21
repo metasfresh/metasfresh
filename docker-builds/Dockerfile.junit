@@ -2,7 +2,7 @@ ARG REFNAME=local
 FROM metasfresh/metas-mvn-common:$REFNAME as common
 FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
-FROM maven:3.8.4-jdk-8 as junit
+FROM maven:3.8.4-eclipse-temurin-17 as junit
 
 ARG SKIP_MIGRATION_SCRIPTS_TEST=false
 

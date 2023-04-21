@@ -280,7 +280,7 @@ public class AddressDescriptorFactory
 				.setCaption(Services.get(IMsgBL.class).translatable(columnName))
 				//
 				// .setValueClass()
-				// .setWidgetType()
+				// .widgetType()
 				.setLookupDescriptorProvider_None()
 				//
 				.setReadonlyLogic(false)

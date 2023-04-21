@@ -24,10 +24,12 @@ package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -150,4 +152,9 @@ public interface IPaymentBL extends ISingletonService
 	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
 
 	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
+
+	Optional<SectionCodeId> determineSectionCodeId(I_C_Payment payment);
+	
+	@NonNull
+	Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull PaymentId paymentId);
 }

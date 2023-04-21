@@ -2,9 +2,9 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.ToInvoiceExclOverride.InvoicedQtys;
-import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData.ToInvoiceDataBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.InvoiceRule;
@@ -22,6 +22,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -29,7 +30,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
@@ -91,8 +91,12 @@ public class InvoiceCandidate
 	@Setter(AccessLevel.NONE)
 	private Percent qualityDiscountOverride;
 
+	@Setter(AccessLevel.NONE)
+	private boolean isInterimIC;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
+	@Jacksonized
 	private InvoiceCandidate(
 			@JsonProperty("id") @NonNull final InvoiceCandidateId id,
 			@JsonProperty("soTrx") @NonNull final SOTrx soTrx,
@@ -106,7 +110,8 @@ public class InvoiceCandidate
 			@JsonProperty("invoiceRule") @NonNull final InvoiceRule invoiceRule,
 			@JsonProperty("priceUomId") @Nullable final UomId priceUomId,
 			@JsonProperty("qualityDiscountOverride") @Nullable final Percent qualityDiscountOverride,
-			@JsonProperty("qtyToInvoiceOverrideInStockUom") @Nullable final BigDecimal qtyToInvoiceOverrideInStockUom)
+			@JsonProperty("qtyToInvoiceOverrideInStockUom") @Nullable final BigDecimal qtyToInvoiceOverrideInStockUom,
+			@JsonProperty("interimIC") @Nullable final Boolean isInterimIC)
 	{
 		this.id = id;
 		this.soTrx = soTrx;
@@ -123,6 +128,7 @@ public class InvoiceCandidate
 
 		this.qualityDiscountOverride = qualityDiscountOverride;
 		this.qtyToInvoiceOverrideInStockUom = qtyToInvoiceOverrideInStockUom;
+		this.isInterimIC = CoalesceUtil.coalesce(isInterimIC, false);
 
 		validate();
 	}
@@ -176,7 +182,7 @@ public class InvoiceCandidate
 
 		final StockQtyAndUOMQty toInvoiceExclOverrideCalc = toInvoiceExclOverride.getQtysCalc();
 
-		final ToInvoiceDataBuilder result = ToInvoiceData.builder()
+		final ToInvoiceData.ToInvoiceDataBuilder result = ToInvoiceData.builder()
 				.qtysRaw(toInvoiceExclOverride.getQtysRaw())
 				.qtysCalc(toInvoiceExclOverrideCalc);
 
@@ -345,10 +351,23 @@ public class InvoiceCandidate
 		if (invoicedData != null)
 		{
 			// subtract the qty that was already invoiced
-			return new ToInvoiceExclOverride(
-					ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED,
-					qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()),
-					qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+			final boolean expectingPositiveValues = orderedData.getQty().signum() >= 0;
+
+			final StockQtyAndUOMQty qtysRaw;
+			final StockQtyAndUOMQty qtyCalc;
+
+			if (expectingPositiveValues)
+			{
+				qtysRaw = StockQtyAndUOMQty.toZeroIfNegative(qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()));
+				qtyCalc = StockQtyAndUOMQty.toZeroIfNegative(qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+			}
+			else
+			{
+				qtysRaw = StockQtyAndUOMQty.toZeroIfPositive(qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()));
+				qtyCalc = StockQtyAndUOMQty.toZeroIfPositive(qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+			}
+
+			return new ToInvoiceExclOverride(ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED, qtysRaw, qtyCalc);
 		}
 		else
 		{

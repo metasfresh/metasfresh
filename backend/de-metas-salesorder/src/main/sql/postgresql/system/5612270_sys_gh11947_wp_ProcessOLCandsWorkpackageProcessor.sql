@@ -1,3 +1,4 @@
+
 -- 2021-11-05T12:52:20.300Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO C_Queue_PackageProcessor (AD_Client_ID,AD_Org_ID,C_Queue_PackageProcessor_ID,Classname,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy) VALUES (0,0,540089,'de.metas.salesorder.candidate.ProcessOLCandsWorkpackageProcessor',TO_TIMESTAMP('2021-11-05 14:52:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.salesorder','Y',TO_TIMESTAMP('2021-11-05 14:52:20','YYYY-MM-DD HH24:MI:SS'),100)

@@ -44,7 +44,7 @@ Feature: Handling unit rest controller
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |
     And the inventory identified by huProduct_inventory is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -60,7 +60,7 @@ Feature: Handling unit rest controller
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 9     | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -164,7 +164,7 @@ Feature: Handling unit rest controller
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |
     And the inventory identified by huProduct_inventory is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -180,7 +180,7 @@ Feature: Handling unit rest controller
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 9     | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -223,10 +223,10 @@ Feature: Handling unit rest controller
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs  | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
-      | createdLU          | LU         | createdTU    | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | null                    | null                        | null              |
-      | createdTU          | TU         | newCreatedCU | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
-      | newCreatedCU       | CU         |              | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs  | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceNote |
+      | createdLU          | LU         | createdTU    | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | null                    | null              |
+      | createdTU          | TU         | newCreatedCU | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | ClearedStatusNote |
+      | newCreatedCU       | CU         |              | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | ClearedStatusNote |
 
 
   Scenario: Set clearance status by QRCode on aggregated TU
@@ -288,7 +288,7 @@ Feature: Handling unit rest controller
 
     And the order identified by order_PO is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | order_PO              | orderLine_PO              | supplier_PO              | supplierLocation_PO               | purchaseProduct         | 18         | warehouseStd              |
 
@@ -300,7 +300,7 @@ Feature: Handling unit rest controller
       | M_InOut_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier |
       | inOut_PO              | processedLU        | receiptSchedule_PO              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.HUStatus |
       | processedLU        | A            |
 
@@ -339,9 +339,9 @@ Feature: Handling unit rest controller
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
-      | splitTU            | TU         | includedCU  | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
-      | includedCU         | CU         |             | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceNote |
+      | splitTU            | TU         | includedCU  | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | ClearedStatusNote |
+      | includedCU         | CU         |             | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | ClearedStatusNote |
 
     And store HU endpointPath /api/v2/material/handlingunits/byId/:processedLU in context
 

@@ -75,7 +75,7 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					//
 					+ "WHERE pa.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId()
 					+ " AND EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID=pa.M_Product_ID AND p.M_Product_Category_ID=" + toProductCategoryId.getRepoId() + ")");
-			countUpdated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			countUpdated = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 			addLog(0, null, BigDecimal.valueOf(countUpdated), "@Updated@");
 		}
 
@@ -107,7 +107,7 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					+ " WHERE 1=1"
 					+ " AND p.M_Product_Category_ID=" + toProductCategoryId.getRepoId()
 					+ " AND NOT EXISTS (SELECT 1 FROM M_Product_Acct pa WHERE pa.M_Product_ID=p.M_Product_ID AND pa.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId() + ")";
-			countCreated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			countCreated = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 			addLog(0, null, BigDecimal.valueOf(countCreated), "@Created@");
 		}
 

@@ -9,13 +9,12 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -135,6 +134,11 @@ public class PurchaseCandidate
 
 	private boolean simulated;
 
+	@Nullable
+	private String productDescription;
+	@Nullable
+	private ActivityId activityId;
+
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
@@ -182,7 +186,9 @@ public class PurchaseCandidate
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final CurrencyId currencyId,
-			final boolean simulated)
+			final boolean simulated,
+			@Nullable final String productDescription,
+			@Nullable final ActivityId activityId)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -245,6 +251,10 @@ public class PurchaseCandidate
 				.filter(purchaseItem -> purchaseItem instanceof PurchaseErrorItem)
 				.map(PurchaseErrorItem::cast)
 				.collect(toCollection(ArrayList::new));
+
+		this.productDescription = productDescription;
+
+		this.activityId = activityId;
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
@@ -416,9 +426,8 @@ public class PurchaseCandidate
 		return getImmutableFields().getPoReference();
 	}
 
-
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	
+	String getExternalPurchaseOrderUrl()
 	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
 	}
@@ -444,7 +453,7 @@ public class PurchaseCandidate
 	public static final class ErrorItemBuilder
 	{
 		private final PurchaseCandidate parent;
-		private final PurchaseErrorItemBuilder innerBuilder;
+		private final PurchaseErrorItem.PurchaseErrorItemBuilder innerBuilder;
 
 		private ErrorItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
@@ -494,7 +503,7 @@ public class PurchaseCandidate
 	public static final class OrderItemBuilder
 	{
 		private final PurchaseCandidate parent;
-		private final PurchaseOrderItemBuilder innerBuilder;
+		private final PurchaseOrderItem.PurchaseOrderItemBuilder innerBuilder;
 
 		private OrderItemBuilder(@NonNull final PurchaseCandidate parent)
 		{

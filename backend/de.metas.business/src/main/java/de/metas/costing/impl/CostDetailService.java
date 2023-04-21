@@ -1,11 +1,5 @@
 package de.metas.costing.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.springframework.stereotype.Service;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -26,9 +20,15 @@ import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -104,15 +104,21 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
+	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
 	{
-		return costDetailsRepo.hasCostDetailsForProductId(productId);
+		return costDetailsRepo.updateDateAcct(costDetail, newDateAcct);
 	}
 
 	@Override
-	public final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
+	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
 	{
-		return costDetailsRepo.getCostDetail(CostDetailQuery.builder()
+		return costDetailsRepo.hasCostDetailsByProductId(productId);
+	}
+
+	@Override
+	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
+	{
+		return costDetailsRepo.list(CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
@@ -125,7 +131,7 @@ public class CostDetailService implements ICostDetailService
 	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
 	{
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), costDetail.getAcctSchemaId());
-		return costDetailsRepo.streamOrderedById(CostDetailQuery.builder()
+		return costDetailsRepo.stream(CostDetailQuery.builder()
 				.acctSchemaId(costDetail.getAcctSchemaId())
 				.costElementId(costDetail.getCostElementId())
 				.productId(costDetail.getProductId())
@@ -133,19 +139,20 @@ public class CostDetailService implements ICostDetailService
 				.clientId(costingLevel.effectiveValue(costDetail.getClientId()))
 				.orgId(costingLevel.effectiveValueOrNull(costDetail.getOrgId()))
 				.afterCostDetailId(costDetail.getId())
+				.orderBy(CostDetailQuery.OrderBy.ID_ASC)
 				.build());
 	}
 
 	@Override
 	public List<CostDetail> getAllForDocument(final CostingDocumentRef documentRef)
 	{
-		return costDetailsRepo.getAllForDocument(documentRef);
+		return costDetailsRepo.listByDocumentRef(documentRef);
 	}
 
 	@Override
 	public List<CostDetail> getAllForDocumentAndAcctSchemaId(final CostingDocumentRef documentRef, final AcctSchemaId acctSchemaId)
 	{
-		return costDetailsRepo.getAllForDocumentAndAcctSchemaId(documentRef, acctSchemaId);
+		return costDetailsRepo.listByDocumentRefAndAcctSchemaId(documentRef, acctSchemaId);
 	}
 
 	@Override
@@ -154,7 +161,7 @@ public class CostDetailService implements ICostDetailService
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(costDetail))
 				.costElement(costElementRepo.getById(costDetail.getCostElementId()))
-				.amt(costDetail.getAmt())
+				.amt(CostAmountDetailed.ofAmtAndType(costDetail.getAmt(), costDetail.getAmtType()))
 				.qty(costDetail.getQty())
 				.build();
 	}
@@ -240,4 +247,11 @@ public class CostDetailService implements ICostDetailService
 	{
 		costDetailsRepo.delete(costDetail);
 	}
+
+	@Override
+	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.stream(query);
+	}
+
 }

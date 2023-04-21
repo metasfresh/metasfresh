@@ -40,7 +40,6 @@ import de.metas.ui.web.window.datatypes.PanelLayoutType;
  * #L%
  */
 
-@WebuiProcess(layoutType = PanelLayoutType.SingleOverlayField)
 public class GlobalActionReadProcess extends JavaProcess
 {
 	private final GlobalActionsDispatcher globalActionsDispatcher = Adempiere.getBean(GlobalActionsDispatcher.class);

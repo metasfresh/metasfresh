@@ -10,29 +10,27 @@ package de.metas.dunning.invoice.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.dunning.api.IDunnableDoc;
+import de.metas.dunning.api.impl.DunnableDoc;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
-import de.metas.dunning.api.IDunnableDoc;
-import de.metas.dunning.api.impl.DunnableDoc;
 
 public class DunnableDocBuilder
 {
@@ -51,6 +49,7 @@ public class DunnableDocBuilder
 	private Date graceDate;
 	private int daysDue;
 	private boolean isInDispute;
+	private int M_SectionCode_ID = -1;
 
 	public DunnableDocBuilder()
 	{
@@ -72,6 +71,7 @@ public class DunnableDocBuilder
 				dueDate,
 				graceDate,
 				daysDue,
+				M_SectionCode_ID,
 				isInDispute);
 
 		return dunnableDoc;
@@ -102,7 +102,7 @@ public class DunnableDocBuilder
 		this.record_id = InterfaceWrapperHelper.getId(model);
 		return this;
 	}
-	
+
 	/**
 	 * FRESH-504: DocuemntNo is also needed
 	 * @param documentNo
@@ -113,7 +113,7 @@ public class DunnableDocBuilder
 		this.documentNo = documentNo;
 		return this;
 	}
-	
+
 
 	public DunnableDocBuilder setAD_Client_ID(int adClientId)
 	{
@@ -184,6 +184,12 @@ public class DunnableDocBuilder
 	public DunnableDocBuilder setInDispute(boolean isInDispute)
 	{
 		this.isInDispute = isInDispute;
+		return this;
+	}
+
+	public DunnableDocBuilder setM_SectionCode_ID(int m_SectionCode_ID)
+	{
+		M_SectionCode_ID = m_SectionCode_ID;
 		return this;
 	}
 }

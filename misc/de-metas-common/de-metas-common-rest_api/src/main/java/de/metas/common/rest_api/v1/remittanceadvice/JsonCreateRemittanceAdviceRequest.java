@@ -25,7 +25,7 @@ package de.metas.common.rest_api.v1.remittanceadvice;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,7 +36,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonCreateRemittanceAdviceRequest
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	List<JsonRemittanceAdvice> remittanceAdviceList;
 
 	@Builder

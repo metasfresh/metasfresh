@@ -22,41 +22,29 @@
 
 package de.metas.contracts.pricing.trade_margin;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+@ExtendWith(SnapshotExtension.class)
 public class CustomerTradeMarginRepositoryTest
 {
 	private CustomerTradeMarginRepository customerTradeMarginRepository;
+	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		customerTradeMarginRepository = new CustomerTradeMarginRepository();
-	}
-
-	@BeforeAll
-	static void init()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -76,6 +64,6 @@ public class CustomerTradeMarginRepositoryTest
 
 		final CustomerTradeMargin customerTradeMargin = customerTradeMarginRepository.getById(settingsId);
 
-		expect(customerTradeMargin).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(customerTradeMargin);
 	}
 }

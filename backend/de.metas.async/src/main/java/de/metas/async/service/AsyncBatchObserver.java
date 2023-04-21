@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -116,7 +116,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 					}
 				});
 
-		//dev-note:acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
+		//dev-note: acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
 
 		asyncBatch2Completion.put(id, new BatchProgress(lock, id));
@@ -213,12 +213,11 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		if (!isAsyncBatchObserved(asyncBatchId))
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
+			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
 			return;
 		}
 
 		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
-
 		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
 	}
 
@@ -330,8 +329,8 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			else if (wpProgress.isProcessedWithError())
 			{
 				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
-																	 .appendParametersToMessage()
-																	 .setParameter("AsyncBatchId", batchId.getRepoId()));
+																.appendParametersToMessage()
+																.setParameter("AsyncBatchId", batchId.getRepoId()));
 				return true;
 			}
 

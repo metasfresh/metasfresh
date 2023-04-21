@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1718911885L;
+	private static final long serialVersionUID = -1668847645L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -180,15 +180,15 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions()
+	public I_C_Flatrate_Conditions getC_Flatrate_Conditions()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Conditions(final de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions)
+	public void setC_Flatrate_Conditions(final I_C_Flatrate_Conditions C_Flatrate_Conditions)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class, C_Flatrate_Conditions);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class, C_Flatrate_Conditions);
 	}
 
 	@Override
@@ -207,15 +207,15 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Data getC_Flatrate_Data()
+	public I_C_Flatrate_Data getC_Flatrate_Data()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Data_ID, de.metas.contracts.model.I_C_Flatrate_Data.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Data_ID, I_C_Flatrate_Data.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Data(final de.metas.contracts.model.I_C_Flatrate_Data C_Flatrate_Data)
+	public void setC_Flatrate_Data(final I_C_Flatrate_Data C_Flatrate_Data)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Data_ID, de.metas.contracts.model.I_C_Flatrate_Data.class, C_Flatrate_Data);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Data_ID, I_C_Flatrate_Data.class, C_Flatrate_Data);
 	}
 
 	@Override
@@ -249,15 +249,15 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master()
+	public I_C_Flatrate_Term getC_Flatrate_Term_Master()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_Master_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_Master_ID, I_C_Flatrate_Term.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Term_Master(final de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term_Master)
+	public void setC_Flatrate_Term_Master(final I_C_Flatrate_Term C_Flatrate_Term_Master)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_Master_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term_Master);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_Master_ID, I_C_Flatrate_Term.class, C_Flatrate_Term_Master);
 	}
 
 	@Override
@@ -276,15 +276,15 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition()
+	public I_C_Flatrate_Transition getC_Flatrate_Transition()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, I_C_Flatrate_Transition.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Transition(final de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition)
+	public void setC_Flatrate_Transition(final I_C_Flatrate_Transition C_Flatrate_Transition)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, I_C_Flatrate_Transition.class, C_Flatrate_Transition);
 	}
 
 	@Override
@@ -299,15 +299,15 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Term getC_FlatrateTerm_Next()
+	public I_C_Flatrate_Term getC_FlatrateTerm_Next()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_FlatrateTerm_Next_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
+		return get_ValueAsPO(COLUMNNAME_C_FlatrateTerm_Next_ID, I_C_Flatrate_Term.class);
 	}
 
 	@Override
-	public void setC_FlatrateTerm_Next(final de.metas.contracts.model.I_C_Flatrate_Term C_FlatrateTerm_Next)
+	public void setC_FlatrateTerm_Next(final I_C_Flatrate_Term C_FlatrateTerm_Next)
 	{
-		set_ValueFromPO(COLUMNNAME_C_FlatrateTerm_Next_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_FlatrateTerm_Next);
+		set_ValueFromPO(COLUMNNAME_C_FlatrateTerm_Next_ID, I_C_Flatrate_Term.class, C_FlatrateTerm_Next);
 	}
 
 	@Override
@@ -475,13 +475,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setChangeOrCancelTerm (final @Nullable java.lang.String ChangeOrCancelTerm)
+	public void setChangeOrCancelTerm (final @Nullable String ChangeOrCancelTerm)
 	{
 		set_Value (COLUMNNAME_ChangeOrCancelTerm, ChangeOrCancelTerm);
 	}
 
 	@Override
-	public java.lang.String getChangeOrCancelTerm() 
+	public String getChangeOrCancelTerm() 
 	{
 		return get_ValueAsString(COLUMNNAME_ChangeOrCancelTerm);
 	}
@@ -506,13 +506,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Voided = Vo */
 	public static final String CONTRACTSTATUS_Voided = "Vo";
 	@Override
-	public void setContractStatus (final @Nullable java.lang.String ContractStatus)
+	public void setContractStatus (final @Nullable String ContractStatus)
 	{
 		set_Value (COLUMNNAME_ContractStatus, ContractStatus);
 	}
 
 	@Override
-	public java.lang.String getContractStatus() 
+	public String getContractStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContractStatus);
 	}
@@ -549,13 +549,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	@Override
-	public void setDeliveryRule (final @Nullable java.lang.String DeliveryRule)
+	public void setDeliveryRule (final @Nullable String DeliveryRule)
 	{
 		set_Value (COLUMNNAME_DeliveryRule, DeliveryRule);
 	}
 
 	@Override
-	public java.lang.String getDeliveryRule() 
+	public String getDeliveryRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_DeliveryRule);
 	}
@@ -576,13 +576,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Luftpost = LU */
 	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
-	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
+	public void setDeliveryViaRule (final @Nullable String DeliveryViaRule)
 	{
 		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
 
 	@Override
-	public java.lang.String getDeliveryViaRule() 
+	public String getDeliveryViaRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_DeliveryViaRule);
 	}
@@ -623,13 +623,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
 	@Override
-	public void setDocAction (final java.lang.String DocAction)
+	public void setDocAction (final String DocAction)
 	{
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
 	@Override
-	public java.lang.String getDocAction() 
+	public String getDocAction() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
@@ -664,25 +664,25 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDocStatus (final java.lang.String DocStatus)
+	public void setDocStatus (final String DocStatus)
 	{
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
 	@Override
-	public java.lang.String getDocStatus() 
+	public String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (final String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
 	@Override
-	public java.lang.String getDocumentNo() 
+	public String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
@@ -772,13 +772,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setExtendTerm (final @Nullable java.lang.String ExtendTerm)
+	public void setExtendTerm (final @Nullable String ExtendTerm)
 	{
 		set_Value (COLUMNNAME_ExtendTerm, ExtendTerm);
 	}
 
 	@Override
-	public java.lang.String getExtendTerm() 
+	public String getExtendTerm() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExtendTerm);
 	}
@@ -911,13 +911,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setMasterDocumentNo (final @Nullable java.lang.String MasterDocumentNo)
+	public void setMasterDocumentNo (final @Nullable String MasterDocumentNo)
 	{
 		set_Value (COLUMNNAME_MasterDocumentNo, MasterDocumentNo);
 	}
 
 	@Override
-	public java.lang.String getMasterDocumentNo() 
+	public String getMasterDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_MasterDocumentNo);
 	}
@@ -947,13 +947,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setNote (final @Nullable java.lang.String Note)
+	public void setNote (final @Nullable String Note)
 	{
 		set_Value (COLUMNNAME_Note, Note);
 	}
 
 	@Override
-	public java.lang.String getNote() 
+	public String getNote() 
 	{
 		return get_ValueAsString(COLUMNNAME_Note);
 	}
@@ -999,13 +999,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setPrepareClosing (final @Nullable java.lang.String PrepareClosing)
+	public void setPrepareClosing (final @Nullable String PrepareClosing)
 	{
 		set_Value (COLUMNNAME_PrepareClosing, PrepareClosing);
 	}
 
 	@Override
-	public java.lang.String getPrepareClosing() 
+	public String getPrepareClosing() 
 	{
 		return get_ValueAsString(COLUMNNAME_PrepareClosing);
 	}
@@ -1085,13 +1085,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setTerminationMemo (final @Nullable java.lang.String TerminationMemo)
+	public void setTerminationMemo (final @Nullable String TerminationMemo)
 	{
 		set_Value (COLUMNNAME_TerminationMemo, TerminationMemo);
 	}
 
 	@Override
-	public java.lang.String getTerminationMemo() 
+	public String getTerminationMemo() 
 	{
 		return get_ValueAsString(COLUMNNAME_TerminationMemo);
 	}
@@ -1145,32 +1145,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TERMINATIONREASON_IncorrectlyRecorded = "Err";
 	/** OrgChange = Os */
 	public static final String TERMINATIONREASON_OrgChange = "Os";
-	/** DoubleEntry = De */
-	public static final String TERMINATIONREASON_DoubleEntry = "De";
-	/** PoliticalReasons = Po */
-	public static final String TERMINATIONREASON_PoliticalReasons = "Po";
-	/** RealEstateSold = Iv */
-	public static final String TERMINATIONREASON_RealEstateSold = "Iv";
-	/** AddressUnknown = Ua */
-	public static final String TERMINATIONREASON_AddressUnknown = "Ua";
-	/** Deceased = Ve */
-	public static final String TERMINATIONREASON_Deceased = "Ve";
-	/** NotPaid = Ng */
-	public static final String TERMINATIONREASON_NotPaid = "Ng";
-	/** Complaint = Re */
-	public static final String TERMINATIONREASON_Complaint = "Re";
-	/** DueToAge = Al */
-	public static final String TERMINATIONREASON_DueToAge = "Al";
-	/** Termination = Ku */
-	public static final String TERMINATIONREASON_Termination = "Ku";
 	@Override
-	public void setTerminationReason (final @Nullable java.lang.String TerminationReason)
+	public void setTerminationReason (final @Nullable String TerminationReason)
 	{
 		set_Value (COLUMNNAME_TerminationReason, TerminationReason);
 	}
 
 	@Override
-	public java.lang.String getTerminationReason() 
+	public String getTerminationReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_TerminationReason);
 	}
@@ -1200,16 +1182,20 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TYPE_CONDITIONS_MarginCommission = "MarginCommission";
 	/** Mediated commission = MediatedCommission */
 	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
+	/** LicenseFee = LicenseFee */
+	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
 	/** CallOrder = CallOrder */
 	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
+	/** InterimInvoice = InterimInvoice */
+	public static final String TYPE_CONDITIONS_InterimInvoice = "InterimInvoice";
 	@Override
-	public void setType_Conditions (final java.lang.String Type_Conditions)
+	public void setType_Conditions (final String Type_Conditions)
 	{
 		set_ValueNoCheck (COLUMNNAME_Type_Conditions, Type_Conditions);
 	}
 
 	@Override
-	public java.lang.String getType_Conditions() 
+	public String getType_Conditions() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type_Conditions);
 	}
@@ -1224,12 +1210,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Corridor_Percent = LIPE */
 	public static final String TYPE_FLATRATE_Corridor_Percent = "LIPE";
 	@Override
-	public void setType_Flatrate (final @Nullable java.lang.String Type_Flatrate)
+	public void setType_Flatrate (final @Nullable String Type_Flatrate)
 	{
 		throw new IllegalArgumentException ("Type_Flatrate is virtual column");	}
 
 	@Override
-	public java.lang.String getType_Flatrate() 
+	public String getType_Flatrate() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type_Flatrate);
 	}
@@ -1244,12 +1230,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Abrechnungsgenauigkeit = TD */
 	public static final String UOMTYPE_Abrechnungsgenauigkeit = "TD";
 	@Override
-	public void setUOMType (final @Nullable java.lang.String UOMType)
+	public void setUOMType (final @Nullable String UOMType)
 	{
 		throw new IllegalArgumentException ("UOMType is virtual column");	}
 
 	@Override
-	public java.lang.String getUOMType() 
+	public String getUOMType() 
 	{
 		return get_ValueAsString(COLUMNNAME_UOMType);
 	}

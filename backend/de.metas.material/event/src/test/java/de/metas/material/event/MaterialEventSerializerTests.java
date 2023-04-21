@@ -49,6 +49,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.material.event.stock.StockChangedEvent;
@@ -78,7 +79,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptorWit
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -625,7 +626,11 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
-				.reservedQuantity(new BigDecimal("3"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(BigDecimal.TEN)
+												.reservedQuantityDelta(new BigDecimal("3"))
+												.reservedQuantity(new BigDecimal("3"))
+												.build())
 				.shipmentScheduleId(4);
 	}
 
@@ -636,9 +641,11 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
-				.orderedQuantityDelta(new BigDecimal("2"))
-				.reservedQuantity(new BigDecimal("3"))
-				.reservedQuantityDelta(new BigDecimal("4"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(new BigDecimal("2"))
+												.reservedQuantity(new BigDecimal("3"))
+												.reservedQuantityDelta(new BigDecimal("4"))
+												.build())
 				.shipmentScheduleId(5)
 				.build();
 
@@ -651,7 +658,11 @@ public class MaterialEventSerializerTests
 		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.reservedQuantity(new BigDecimal("3"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(new BigDecimal("2"))
+												.reservedQuantity(new BigDecimal("3"))
+												.reservedQuantityDelta(new BigDecimal("4"))
+												.build())
 				.shipmentScheduleId(5)
 				.build();
 
@@ -702,8 +713,6 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.shipmentScheduleIds2Qty(20, TEN)
-				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
 													 .huId(30)
@@ -722,8 +731,6 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
-				.shipmentScheduleIds2Qty(20, TEN)
-				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);

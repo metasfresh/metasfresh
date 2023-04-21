@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { forEach, get } from 'lodash';
 
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getTabRequest, getRowsData } from '../api';
+import { getRowsData, getTabRequest } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
@@ -13,17 +13,21 @@ import {
   attachFileAction,
   clearMasterData,
   fireUpdateData,
+  openModal,
+  patchWindow,
   sortTab,
   updateTabLayout,
 } from '../actions/WindowActions';
 import {
   deleteTable,
-  updateTabTableData,
   updateTabRowsData,
+  updateTabTableData,
 } from '../actions/TableActions';
 
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+
+import history from '../services/History';
 
 /**
  * @file Class based component.
@@ -47,6 +51,8 @@ class MasterWindowContainer extends PureComponent {
         this.onWebsocketEvent(msg);
       });
     }
+
+    this.handleURLParams();
   }
 
   componentDidMount() {
@@ -102,6 +108,60 @@ class MasterWindowContainer extends PureComponent {
       }
     }
   }
+
+  /** Handle URL search params and get rid of them */
+  handleURLParams = () => {
+    const {
+      master: { layout },
+    } = this.props;
+
+    // Do nothing until layout & data are loaded
+    if (!isLayoutLoaded(layout)) {
+      return;
+    }
+
+    const {
+      location: { pathname, search },
+      params: { windowId, docId },
+      openModal,
+      patchWindow,
+    } = this.props;
+    const urlParams = new URLSearchParams(search);
+
+    let doRemoveURLParams = false;
+    for (const fieldName of urlParams.keys()) {
+      const field = getFieldFromLayout(layout, fieldName);
+      if (!field) {
+        console.warn(`Field ${fieldName} not found`);
+        continue;
+      }
+
+      doRemoveURLParams = true;
+
+      const value = urlParams.get(fieldName);
+      if (value === 'NEW' && field.newRecordWindowId) {
+        openModal({
+          title: field.newRecordCaption,
+          windowId: field.newRecordWindowId,
+          modalType: 'window',
+          dataId: 'NEW',
+          triggerField: field.field,
+        });
+      } else {
+        patchWindow({
+          windowId,
+          documentId: docId,
+          fieldName,
+          value,
+        });
+      }
+    }
+
+    if (doRemoveURLParams) {
+      //console.log('Replacing URL with: ', pathname);
+      history.replace(pathname);
+    }
+  };
 
   getTabRows(tabId, rows) {
     const {
@@ -300,11 +360,13 @@ MasterWindowContainer.propTypes = {
   includedView: PropTypes.any,
   processStatus: PropTypes.any,
   enableTutorial: PropTypes.any,
-  location: PropTypes.any,
+  location: PropTypes.object,
   clearMasterData: PropTypes.func.isRequired,
   addNotification: PropTypes.func.isRequired,
   attachFileAction: PropTypes.func.isRequired,
   fireUpdateData: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  patchWindow: PropTypes.func.isRequired,
   sortTab: PropTypes.func.isRequired,
   updateTabRowsData: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
@@ -333,6 +395,8 @@ export default connect(mapStateToProps, {
   attachFileAction,
   clearMasterData,
   fireUpdateData,
+  openModal,
+  patchWindow,
   sortTab,
   updateTabRowsData,
   updateTabTableData,
@@ -340,3 +404,45 @@ export default connect(mapStateToProps, {
   updateTabLayout,
   updateLastBackPage,
 })(MasterWindowContainer);
+
+//
+//
+//
+
+const isLayoutLoaded = (layout) => {
+  return !!layout?.windowId;
+};
+
+const getFieldFromLayout = (layout, fieldName) => {
+  console.log('getFieldFromLayout', { layout, fieldName });
+
+  for (const section of layout.sections ?? []) {
+    // console.log('section', section);
+
+    for (const column of section.columns ?? []) {
+      // console.log('column', column);
+
+      for (const elementGroup of column.elementGroups ?? []) {
+        // console.log('elementGroup', elementGroup);
+
+        for (const elementLine of elementGroup.elementsLine ?? []) {
+          // console.log('elementLine', elementLine);
+
+          for (const element of elementLine.elements ?? []) {
+            // console.log('element', element);
+
+            for (const field of element?.fields ?? []) {
+              // console.log('field', field);
+
+              if (field.field === fieldName) {
+                return field;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null; // not found
+};

@@ -1,19 +1,20 @@
 package de.metas.i18n;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.currency.Amount;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
 import lombok.Singular;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -482,8 +483,8 @@ public final class Msg
 		final int adReferenceId = ReferenceListAwareEnums.getAD_Reference_ID(referenceListAwareEnum);
 		if (adReferenceId > 0)
 		{
-			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-			final IADReferenceDAO.ADRefListItem adRefListItem = adReferenceDAO.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final ADRefListItem adRefListItem = adReferenceService.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
 			if (adRefListItem != null)
 			{
 				return adRefListItem.getName().translate(adLanguage);
@@ -944,7 +945,42 @@ public final class Msg
 		return outStr.toString();
 	}   // parseTranslation
 
+	@VisibleForTesting
+	static String normalizeToJavaMessageFormat(@NonNull final String text)
+	{
+		if (text.isEmpty())
+		{
+			return text;
+		}
+
+		int firstIdx = text.indexOf("{}");
+		if (firstIdx < 0)
+		{
+			return text;
+		}
+
+		String inStr = text;
+		int idx = firstIdx;
+		final StringBuilder outStr = new StringBuilder();
+		int nextPlaceholderIndex = 0;
+		while (idx != -1)
+		{
+			outStr.append(inStr, 0, idx);            // up to {}
+			inStr = inStr.substring(idx + 2);    // continue after current {}
+
+			final int placeholderIndex = nextPlaceholderIndex;
+			nextPlaceholderIndex++;
+			outStr.append("{").append(placeholderIndex).append("}");
+
+			idx = inStr.indexOf("{}");
+		}
+
+		outStr.append(inStr);                            // add remainder
+		return outStr.toString();
+	}
+
 	/**
+	 *
 	 * Internal translated message representation (immutable)
 	 */
 	private static final class Message
@@ -982,14 +1018,13 @@ public final class Msg
 
 		private Message(@NonNull final String adMessage, final String msgText, final String msgTip, final boolean missing)
 		{
-			super();
 			this.adMessage = adMessage;
-			this.msgText = msgText == null ? "" : msgText;
-			this.msgTip = msgTip == null ? "" : msgTip;
+			this.msgText = normalizeToJavaMessageFormat(msgText == null ? "" : msgText);
+			this.msgTip = normalizeToJavaMessageFormat(msgTip == null ? "" : msgTip);
 
 			final StringBuilder msgTextAndTip = new StringBuilder();
 			msgTextAndTip.append(this.msgText);
-			if (!Check.isEmpty(this.msgTip, true))            // messageTip on next line, if exists
+			if (!Check.isBlank(this.msgTip))            // messageTip on next line, if exists
 			{
 				msgTextAndTip.append(" ").append(SEPARATOR).append(this.msgTip);
 			}
@@ -1036,7 +1071,7 @@ public final class Msg
 	}
 
 	@lombok.Value
-	private static final class Element
+	private static class Element
 	{
 		public static String DEFAULT_LANG = "";
 

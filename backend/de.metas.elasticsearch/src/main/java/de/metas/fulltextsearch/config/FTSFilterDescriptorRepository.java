@@ -34,6 +34,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.POInfo;
@@ -132,7 +133,7 @@ public class FTSFilterDescriptorRepository
 			@NonNull final POInfo targetTable,
 			@NonNull final AvailableSelectionKeyColumnNames availableSelectionColumnNames)
 	{
-		final int targetColumnIndex = targetTable.getColumnIndex(record.getAD_Column_ID());
+		final int targetColumnIndex = targetTable.getColumnIndex(AdColumnId.ofRepoId(record.getAD_Column_ID()));
 		if (targetColumnIndex < 0)
 		{
 			throw new AdempiereException("No column found for AD_Column_ID=" + record.getAD_Column_ID() + " in " + targetTable);

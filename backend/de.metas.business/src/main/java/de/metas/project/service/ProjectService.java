@@ -38,6 +38,7 @@ import de.metas.project.ProjectLine;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.project.service.listeners.CompositeProjectStatusListener;
 import de.metas.project.service.listeners.ProjectStatusListener;
 import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
@@ -120,6 +121,8 @@ public class ProjectService
 				request.getOrgId());
 
 		projectDataBuilder.projectTypeId(projectTypeId);
+		final RequestStatusCategoryId requestStatusCategoryId = projectTypeRepository.getById(projectTypeId).getRequestStatusCategoryId();
+		projectDataBuilder.requestStatusCategoryId(requestStatusCategoryId);
 		setFromProjectType(projectDataBuilder, projectTypeId);
 
 		final ProjectId projectId = projectRepository.create(projectDataBuilder.build()).getId();
@@ -247,5 +250,10 @@ public class ProjectService
 				.setClientId(projectType.getClientAndOrgId().getClientId())
 				.setFailOnError(false)
 				.build();
+	}
+
+	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId projectTypeId)
+	{
+		return projectTypeRepository.getById(projectTypeId);
 	}
 }

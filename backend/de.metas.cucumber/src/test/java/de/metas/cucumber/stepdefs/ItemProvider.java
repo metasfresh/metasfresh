@@ -24,9 +24,11 @@ package de.metas.cucumber.stepdefs;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.text.MessageFormat;
 
 public interface ItemProvider<T>
 {
@@ -44,9 +46,16 @@ public interface ItemProvider<T>
 			return new ProviderResult<>(false, null, log);
 		}
 
+		public static <T> ProviderResult<T> resultWasNotFound(final @NonNull String log, final @NonNull Object ...args)
+		{
+			final String logMessage = MessageFormat.format(log, args);
+
+			return new ProviderResult<>(false, null, logMessage);
+		}
+
 		boolean resultFound;
 		T result;
-		String log;		
+		String log;
 	}
 
 	ProviderResult<T> execute();

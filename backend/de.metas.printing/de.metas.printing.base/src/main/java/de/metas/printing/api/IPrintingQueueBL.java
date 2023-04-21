@@ -38,6 +38,8 @@ import java.util.Set;
 
 public interface IPrintingQueueBL extends ISingletonService
 {
+	void updateArchiveFlagsFromConfig(I_AD_Archive archive);
+
 	/**
 	 * Adds the given print-out to the queue
 	 *

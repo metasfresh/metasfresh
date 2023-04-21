@@ -1,6 +1,7 @@
 package de.metas.workflow.rest_api.controller.v2.ws;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
@@ -28,19 +29,22 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer, WebSocket
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
 
-	@Nullable private final MobileApplicationId applicationId;
+	@NonNull private final MobileApplicationId applicationId;
 	@NonNull private final UserId userId;
+	@Nullable private final GlobalQRCode filterByQRCode;
 
 	private final SynchronizedMutable<WorkflowLaunchersList> lastResultHolder = SynchronizedMutable.of(null);
 
 	WorkflowLaunchersWebSocketProducer(
 			final @NonNull WorkflowRestAPIService workflowRestAPIService,
-			final @Nullable MobileApplicationId applicationId,
-			final @NonNull UserId userId)
+			final @NonNull MobileApplicationId applicationId,
+			final @NonNull UserId userId,
+			final @Nullable GlobalQRCode filterByQRCode)
 	{
 		this.workflowRestAPIService = workflowRestAPIService;
 		this.applicationId = applicationId;
 		this.userId = userId;
+		this.filterByQRCode = filterByQRCode;
 	}
 
 	@Override
@@ -79,9 +83,7 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer, WebSocket
 
 	private WorkflowLaunchersList computeNewResult()
 	{
-		return applicationId != null
-				? workflowRestAPIService.getLaunchers(applicationId, userId, getMaxStaleAccepted())
-				: workflowRestAPIService.getLaunchersFromAllApplications(userId, getMaxStaleAccepted());
+		return workflowRestAPIService.getLaunchers(applicationId, userId, filterByQRCode, getMaxStaleAccepted());
 	}
 
 	private Duration getMaxStaleAccepted()

@@ -1,21 +1,19 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.model;
 
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.product.ProductCategoryId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L

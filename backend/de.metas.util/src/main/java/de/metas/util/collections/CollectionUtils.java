@@ -12,12 +12,14 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -168,6 +170,32 @@ public final class CollectionUtils
 	}
 
 	/**
+	 * @param filter filter used to match the element
+	 * @return matching element wrapped as Optional or empty Optional if there were more elements matching or no element was matching
+	 */
+	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
+	{
+		final List<T> result = new ArrayList<>();
+
+		for (final T e : collection)
+		{
+			if (filter.test(e))
+			{
+				result.add(e);
+			}
+		}
+
+		if (result.size() == 1)
+		{
+			return Optional.of(result.get(0));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+	
+	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>
 	 * If the collection has more elements or no element then an exception will be thrown.
@@ -203,7 +231,7 @@ public final class CollectionUtils
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	@Nullable
-	public static <T> T singleElementOrDefault(final Collection<T> collection, @Nullable final T defaultValue)
+	public static <T> T singleElementOrDefault(@Nullable final Collection<T> collection, @Nullable final T defaultValue)
 	{
 		if (collection == null)
 		{
@@ -242,6 +270,11 @@ public final class CollectionUtils
 			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
+		if(collection.isEmpty())
+		{
+			return defaultValue;
+		}
+
 		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElementOrDefault(extractedElements, defaultValue);
 	}
@@ -263,6 +296,11 @@ public final class CollectionUtils
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFunction)
 	{
+		if(collection.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return collection
 				.stream()
 				.map(extractFunction)
@@ -392,6 +430,13 @@ public final class CollectionUtils
 
 		//noinspection unchecked
 		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
+	}
+
+	public static <K, V, W> ImmutableMap<K, W> mapValues(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final Function<V, W> mappingFunction)
+	{
+		return mapValues(map, (k, v) -> mappingFunction.apply(v));
 	}
 
 	/**
@@ -587,5 +632,32 @@ public final class CollectionUtils
 			result.putAll(map2);
 			return ImmutableMap.copyOf(result);
 		}
+	}
+
+	@NonNull
+	public <K, V> Map<K, List<V>> groupMultiValueByKey(
+			@NonNull final Collection<V> values,
+			@NonNull final Function<V, K> mappingFunction)
+	{
+
+		final HashMap<K, ArrayList<V>> key2Values = new HashMap<>();
+
+		values.forEach(value -> {
+			final K currentKey = mappingFunction.apply(value);
+
+			final ArrayList<V> currentValues = new ArrayList<>();
+			currentValues.add(value);
+
+			key2Values.merge(currentKey, currentValues, CollectionUtils::mergeLists);
+		});
+
+		return ImmutableMap.copyOf(key2Values);
+	}
+
+	public static boolean hasDuplicatesForValue(@NonNull final Collection<String> collection, @NonNull final String value)
+	{
+		return collection.stream()
+				.filter(elem -> value.equals(elem))
+				.count() > 1;
 	}
 }

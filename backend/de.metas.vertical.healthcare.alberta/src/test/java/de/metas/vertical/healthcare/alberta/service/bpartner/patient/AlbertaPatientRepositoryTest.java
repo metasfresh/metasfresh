@@ -22,6 +22,9 @@
 
 package de.metas.vertical.healthcare.alberta.service.bpartner.patient;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.user.UserId;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatient;
@@ -29,40 +32,25 @@ import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatientRepos
 import de.metas.vertical.healthcare.alberta.bpartner.patient.DeactivationReasonType;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.PayerType;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-
+@ExtendWith(SnapshotExtension.class)
 public class AlbertaPatientRepositoryTest
 {
 	private AlbertaPatientRepository albertaPatientRepository;
+	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		albertaPatientRepository =  new AlbertaPatientRepository();
-	}
-
-	@BeforeAll
-	public static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	public static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -96,7 +84,7 @@ public class AlbertaPatientRepositoryTest
 		final AlbertaPatient result = albertaPatientRepository.save(patient);
 
 		//then
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -111,6 +99,6 @@ public class AlbertaPatientRepositoryTest
 		final AlbertaPatient result = albertaPatientRepository.save(patient);
 
 		//then
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

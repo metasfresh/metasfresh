@@ -25,7 +25,7 @@ Feature: Allow order discount via API (compensation group)
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_60      | plv_60                            | p_60                    | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier     | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_60 | Endcustomer_60 | N            | Y              | ps_60                         |
     And metasfresh contains C_BPartner_Locations:

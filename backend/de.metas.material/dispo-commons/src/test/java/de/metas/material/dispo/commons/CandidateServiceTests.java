@@ -14,8 +14,10 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.order.OrderLineRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +65,8 @@ public class CandidateServiceTests
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo),
-				postMaterialEventService);
+				postMaterialEventService,
+				new OrderLineRepository());
 	}
 
 	@Test
@@ -163,6 +166,7 @@ public class CandidateServiceTests
 
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
+				.withGroupId(MaterialDispoGroupId.ofInt(10))
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 												.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 												.withQuantity(BigDecimal.valueOf(10)))

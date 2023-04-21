@@ -1,13 +1,5 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.time.LocalDate;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.money.CurrencyId;
@@ -16,12 +8,17 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Immutable allocation candidate.
  *
  * @author tsa
- *
  */
 @Value
 public class AllocationLineCandidate
@@ -54,6 +51,12 @@ public class AllocationLineCandidate
 	Money paymentOverUnderAmt;
 	InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
+	/**
+	 *  This is about the paymentTerm invoice discount when used as payment. (i.e. CreditMemo or PurchaseInvoice allocated against a SalesInvoice)
+	 */
+	@Nullable
+	Money payAmtDiscountInInvoiceCurrency;
+
 	@Builder(toBuilder = true)
 	private AllocationLineCandidate(
 			@NonNull final AllocationLineCandidateType type,
@@ -71,7 +74,8 @@ public class AllocationLineCandidate
 			@NonNull final AllocationAmounts amounts,
 			@Nullable final Money payableOverUnderAmt,
 			@Nullable final Money paymentOverUnderAmt,
-			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			@Nullable final Money payAmtDiscountInInvoiceCurrency)
 	{
 		if (!orgId.isRegular())
 		{
@@ -116,5 +120,6 @@ public class AllocationLineCandidate
 		this.payableOverUnderAmt = payableOverUnderAmt != null ? payableOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.paymentOverUnderAmt = paymentOverUnderAmt != null ? paymentOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
+		this.payAmtDiscountInInvoiceCurrency = payAmtDiscountInInvoiceCurrency != null ? payAmtDiscountInInvoiceCurrency : Money.zero(amounts.getCurrencyId()); 
 	}
 }

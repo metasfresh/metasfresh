@@ -1,5 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.banking.api.BankRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.LocationRepository;
@@ -12,14 +14,14 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.SnapshotHelper;
 import org.compiere.SpringContextHolder;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
@@ -29,9 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.xmlunit.assertj.XmlAssert.assertThat;
 
 /*
@@ -56,26 +55,22 @@ import static org.xmlunit.assertj.XmlAssert.assertThat;
  * #L%
  */
 
+//@Disabled("waiting for the fix of: Server returned HTTP response code: 429 for URL: https://www.w3.org/2001/XMLSchema.dtd")
+@ExtendWith(SnapshotExtension.class)
 public class Invoice440To450RequestConversionServiceTest
 {
 
 	private Invoice440RequestConversionService invoice440RequestConversionService;
 	private Invoice450RequestConversionService invoice450RequestConversionService;
+	private Expect expect;
 
-	@BeforeClass
+	@BeforeAll
 	public static void initStatic()
 	{
-		start(SnapshotHelper.SNAPSHOT_CONFIG, SnapshotHelper::toArrayAwareString);
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@AfterClass
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
@@ -85,14 +80,22 @@ public class Invoice440To450RequestConversionServiceTest
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
-	/**
-	 * Ignored; un-ignore if you have a local (private) file you want to run a quick test with.
-	 */
 	@Test
-	@Ignore
-	public void localFile()
+	/**
+	 * Test if the conversion from Invoice440 to Invoice450 works as expected, when invoice:document is present.
+	 */
+	public void exampleFile_44_KANTON_49_01_2019_115414041()
 	{
-		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
+		testWithPublicExampleXmlFile("/44_KANTON_49-01-2019_115414041.xml");
+	}
+
+	@Test
+	/**
+	 * When invoice:document is present but an unsuported mime type is present, the conversion should fail.
+	 */
+	public void exampleFile_44_KANTON_49_01_2019_115414041_csv_attached()
+	{
+		Assertions.assertThrows(RuntimeException.class ,() -> testWithPublicExampleXmlFile("/44_KANTON_49-01-2019_115414041_csv_attached.xml"));
 	}
 
 	@Test
@@ -158,7 +161,7 @@ public class Invoice440To450RequestConversionServiceTest
 		assertXmlIsValid450(new ByteArrayInputStream(outputStream.toByteArray()));
 		final String exportXmlString = outputStream.toString();
 
-		expect(exportXmlString).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(exportXmlString);
 	}
 
 	@Test
@@ -189,7 +192,7 @@ public class Invoice440To450RequestConversionServiceTest
 		final String exportXmlString = outputStream.toString();
 		// System.out.println(exportXmlString);
 
-		expect(exportXmlString).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(exportXmlString);
 	}
 
 	@Test
@@ -223,7 +226,7 @@ public class Invoice440To450RequestConversionServiceTest
 		// System.out.println(exportXmlString);
 		assertXmlIsValid450(new ByteArrayInputStream(outputStream.toByteArray()));
 
-		expect(exportXmlString).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(exportXmlString);
 	}
 
 	private InputStream createInputStream(@NonNull final String resourceName)

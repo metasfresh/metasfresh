@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalreference.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for S_ExternalReference
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1996831869L;
+	private static final long serialVersionUID = 1810181895L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -35,25 +35,25 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public void setExternalReference (final java.lang.String ExternalReference)
+	public void setExternalReference (final String ExternalReference)
 	{
 		set_Value (COLUMNNAME_ExternalReference, ExternalReference);
 	}
 
 	@Override
-	public java.lang.String getExternalReference() 
+	public String getExternalReference()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalReference);
 	}
 
 	@Override
-	public void setExternalReferenceURL (final @Nullable java.lang.String ExternalReferenceURL)
+	public void setExternalReferenceURL (final @Nullable String ExternalReferenceURL)
 	{
 		set_Value (COLUMNNAME_ExternalReferenceURL, ExternalReferenceURL);
 	}
 
 	@Override
-	public java.lang.String getExternalReferenceURL() 
+	public String getExternalReferenceURL()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalReferenceURL);
 	}
@@ -81,16 +81,45 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_GRSSignum = "GRSSignum";
 	/** LeichUndMehl = LeichUndMehl */
 	public static final String EXTERNALSYSTEM_LeichUndMehl = "LeichUndMehl";
+	/** SAP = SAP */
+	public static final String EXTERNALSYSTEM_SAP = "SAP";
 	@Override
-	public void setExternalSystem (final java.lang.String ExternalSystem)
+	public void setExternalSystem (final String ExternalSystem)
 	{
 		set_Value (COLUMNNAME_ExternalSystem, ExternalSystem);
 	}
 
 	@Override
-	public java.lang.String getExternalSystem() 
+	public String getExternalSystem()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystem);
+	}
+
+	@Override
+	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
+	{
+		if (ExternalSystem_Config_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public int getExternalSystem_Config_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public void setIsReadOnlyInMetasfresh (final boolean IsReadOnlyInMetasfresh)
+	{
+		set_Value (COLUMNNAME_IsReadOnlyInMetasfresh, IsReadOnlyInMetasfresh);
+	}
+
+	@Override
+	public boolean isReadOnlyInMetasfresh()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadOnlyInMetasfresh);
 	}
 
 	@Override
@@ -186,26 +215,30 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Shipper = "Shipper";
 	/** Warehouse = Warehouse */
 	public static final String TYPE_Warehouse = "Warehouse";
+	/** UOM = UOM */
+	public static final String TYPE_UOM = "UOM";
+	/** Allergen = Allergen */
+	public static final String TYPE_Allergen = "Allergen";
 	@Override
-	public void setType (final java.lang.String Type)
+	public void setType (final String Type)
 	{
 		set_ValueNoCheck (COLUMNNAME_Type, Type);
 	}
 
 	@Override
-	public java.lang.String getType() 
+	public String getType()
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
 
 	@Override
-	public void setVersion (final @Nullable java.lang.String Version)
+	public void setVersion (final @Nullable String Version)
 	{
 		set_Value (COLUMNNAME_Version, Version);
 	}
 
 	@Override
-	public java.lang.String getVersion() 
+	public String getVersion()
 	{
 		return get_ValueAsString(COLUMNNAME_Version);
 	}

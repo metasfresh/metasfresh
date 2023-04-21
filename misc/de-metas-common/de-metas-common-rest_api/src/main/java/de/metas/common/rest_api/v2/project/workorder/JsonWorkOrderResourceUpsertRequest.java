@@ -24,8 +24,7 @@ package de.metas.common.rest_api.v2.project.workorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,16 +36,16 @@ import java.util.List;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
-@ApiModel
+@Schema
 public class JsonWorkOrderResourceUpsertRequest
 {
-	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_WO_Resource.C_Project_ID`", required = true)
+	@Schema(description = "Corresponding to `C_Project_WO_Resource.C_Project_ID`", required = true)
 	JsonMetasfreshId projectId;
 
-	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project_WO_Resource.C_WO_Project_Step_ID`", required = true)
+	@Schema(description = "Corresponding to `C_Project_WO_Resource.C_WO_Project_Step_ID`", required = true)
 	JsonMetasfreshId stepId;
 
-	@ApiModelProperty(position = 30, required = true)
+	@Schema(required = true)
 	List<JsonWorkOrderResourceUpsertItemRequest> requestItems;
 
 	@Builder

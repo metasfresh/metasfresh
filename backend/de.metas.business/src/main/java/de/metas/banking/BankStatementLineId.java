@@ -1,18 +1,14 @@
 package de.metas.banking;
 
-import java.util.Collection;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -24,12 +20,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,13 +62,8 @@ public class BankStatementLineId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static ImmutableSet<BankStatementLineId> fromIntSet(@NonNull final Collection<Integer> repoIds)
+	public static boolean equals(@Nullable BankStatementLineId id1, @Nullable BankStatementLineId id2)
 	{
-		if (repoIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return repoIds.stream().map(BankStatementLineId::ofRepoIdOrNull).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
+		return Objects.equals(id1, id2);
 	}
 }

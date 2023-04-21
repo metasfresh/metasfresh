@@ -27,10 +27,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsertItem;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.R_Status_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.projectType.C_ProjectType_StepDefData;
 import de.metas.currency.Currency;
@@ -38,6 +42,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.project.status.RStatusId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -46,33 +51,42 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_R_Status;
 
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_Project_StepDef
 {
+	private static final RStatusId OPPORTUNITY_STATUS_CATEGORY_ID = RStatusId.ofRepoId(540004);
+
 	private final ProjectRepository projectRepository = SpringContextHolder.instance.getBean(ProjectRepository.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final TestContext testContext;
 	private final C_Project_StepDefData projectTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_ProjectType_StepDefData projectTypeTable;
 	private final R_Status_StepDefData rStatusTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final AD_User_StepDefData userTable;
+	private final M_Product_StepDefData productTable;
 
 	public C_Project_StepDef(
 			@NonNull final TestContext testContext,
@@ -80,14 +94,18 @@ public class C_Project_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_ProjectType_StepDefData projectTypeTable,
 			@NonNull final R_Status_StepDefData rStatusTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.testContext = testContext;
 		this.projectTable = projectTable;
 		this.bpartnerTable = bpartnerTable;
 		this.projectTypeTable = projectTypeTable;
 		this.rStatusTable = rStatusTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.userTable = userTable;
+		this.productTable = productTable;
 	}
 
 	@Given("metasfresh contains C_Project")
@@ -97,6 +115,74 @@ public class C_Project_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			metasfreshContainsProject(tableRow);
+		}
+	}
+
+	@Given("create or update C_Project:")
+	public void create_update_C_Project(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_Name);
+			final String value = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_Value);
+			final String currencyIsoCode = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Currency_ID + ".ISO_Code");
+
+			final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyIsoCode));
+
+			final I_C_Project project = CoalesceUtil.coalesceSuppliersNotNull(
+					() -> queryBL.createQueryBuilder(I_C_Project.class)
+							.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value)
+							.create()
+							.firstOnly(I_C_Project.class),
+					() -> newInstance(I_C_Project.class));
+
+			project.setName(name);
+			project.setValue(value);
+			project.setR_StatusCategory_ID(OPPORTUNITY_STATUS_CATEGORY_ID.getRepoId());
+			project.setAD_Org_ID(OrgId.MAIN.getRepoId());
+			project.setC_Currency_ID(currency.getId().getRepoId());
+
+			final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bPartnerIdentifier))
+			{
+				final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);
+				project.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+			}
+
+			final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bPartnerLocationIdentifier))
+			{
+				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bPartnerLocationIdentifier);
+				project.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			}
+
+			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(userIdentifier))
+			{
+				final I_AD_User user = userTable.get(userIdentifier);
+				project.setAD_User_ID(user.getAD_User_ID());
+			}
+
+			final String productIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(productIdentifier))
+			{
+				final String nullableIdentifier = DataTableUtil.nullToken2Null(productIdentifier);
+				if (nullableIdentifier == null)
+				{
+					project.setM_Product_ID(-1);
+				}
+				else
+				{
+					final I_M_Product product = productTable.get(productIdentifier);
+					project.setM_Product_ID(product.getM_Product_ID());
+				}
+			}
+
+			InterfaceWrapperHelper.saveRecord(project);
+
+			final String projectIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			projectTable.putOrReplace(projectIdentifier, project);
 		}
 	}
 
@@ -136,7 +222,7 @@ public class C_Project_StepDef
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyIsoCode));
 
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
-
+		projectRecord.setR_StatusCategory_ID(OPPORTUNITY_STATUS_CATEGORY_ID.getRepoId());
 		projectRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
 		projectRecord.setName(name);
 		projectRecord.setC_Currency_ID(currency.getId().getRepoId());

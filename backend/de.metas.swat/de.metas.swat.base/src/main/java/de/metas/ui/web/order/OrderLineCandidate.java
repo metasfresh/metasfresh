@@ -30,6 +30,7 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.VatCodeId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -71,4 +72,7 @@ public class OrderLineCandidate
 
 	@Nullable
 	ProductBOMLineId explodedFromBOMLineId;
+
+	@Nullable
+	VatCodeId vatCodeId;
 }

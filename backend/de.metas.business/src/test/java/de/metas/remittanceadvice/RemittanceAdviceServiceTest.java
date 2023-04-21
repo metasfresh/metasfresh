@@ -66,7 +66,7 @@ import java.util.Map;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class RemittanceAdviceServiceTest
 {

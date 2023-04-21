@@ -22,6 +22,7 @@ package de.metas.invoice.service;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -33,12 +34,14 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -91,7 +94,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	I_C_InvoiceLine createInvoiceLine(String trxName);
 
-	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds,DocBaseAndSubType targetDocType);
+	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
 
 	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
 
@@ -109,7 +112,7 @@ public interface IInvoiceDAO extends ISingletonService
 	Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(I_AD_Org adOrg);
 
 	/**
-	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
+	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmtInInvoiceCurrency(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
 	 * is:
 	 * <ul>
 	 * <li>relative regarding if is a sales or purchase transaction ({@link I_C_Invoice#isSOTrx()})
@@ -121,7 +124,7 @@ public interface IInvoiceDAO extends ISingletonService
 	Amount retrieveOpenAmt(InvoiceId invoiceId);
 
 	/**
-	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
+	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmtInInvoiceCurrency(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
 	 * is:
 	 * <ul>
 	 * <li>relative regarding if is a sales or purchase transaction ({@link I_C_Invoice#isSOTrx()})
@@ -171,15 +174,19 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
-	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
-	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
+	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
+
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 
 	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
+
+	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 }

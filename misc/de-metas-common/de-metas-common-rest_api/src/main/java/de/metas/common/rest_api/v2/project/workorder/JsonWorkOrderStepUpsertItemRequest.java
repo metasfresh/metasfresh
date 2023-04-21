@@ -25,7 +25,7 @@ package de.metas.common.rest_api.v2.project.workorder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -43,89 +43,88 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.STEP_IDENTIFIER_DO
 @EqualsAndHashCode
 public class JsonWorkOrderStepUpsertItemRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = STEP_IDENTIFIER_DOC) //
+	@Schema(required = true,
+			description = STEP_IDENTIFIER_DOC) //
 	@Setter
 	String identifier;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	@Setter
 	String name;
 
 	String description;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean descriptionSet;
 
 	Integer seqNo;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean seqNoSet;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	LocalDate dateStart;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean dateStartSet;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	LocalDate dateEnd;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean dateEndSet;
 
 	LocalDate woPartialReportDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woPartialReportDateSet;
 
 	private Integer woPlannedResourceDurationHours;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woPlannedResourceDurationHoursSet;
 
 	LocalDate deliveryDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean deliveryDateSet;
 
 	LocalDate woTargetStartDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woTargetStartDateSet;
 
 	LocalDate woTargetEndDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woTargetEndDateSet;
 
 	Integer woPlannedPersonDurationHours;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woPlannedPersonDurationHoursSet;
 
 	JsonWOStepStatus woStepStatus;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woStepStatusSet;
 
 	LocalDate woFindingsReleasedDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woFindingsReleasedDateSet;
 
 	LocalDate woFindingsCreatedDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woFindingsCreatedDateSet;
 
 	String externalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean externalIdSet;
 
-	@ApiModelProperty("Optional resource allocations that reference to this step")
+	@Schema(description = "Optional resource allocations that reference to this step")
 	List<JsonWorkOrderResourceUpsertItemRequest> resources = ImmutableList.of();
 
 	public void setDescription(final String description)

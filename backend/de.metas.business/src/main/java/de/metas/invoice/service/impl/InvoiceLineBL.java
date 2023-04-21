@@ -47,6 +47,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -152,7 +153,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoId(il.getM_InOutLine_ID());
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
 
 		final I_M_InOut io = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
@@ -205,13 +206,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			}
 
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-												 .fromCountryId(countryFromId)
-												 .orgId(orgId)
-												 .bPartnerLocationId(partnerLocationId)
-												 .dateOfInterest(taxDate)
-												 .taxCategoryId(taxCategoryId)
-												 .soTrx(SOTrx.ofBoolean(isSOTrx))
-												 .build());
+					.fromCountryId(countryFromId)
+					.orgId(orgId)
+					.bPartnerLocationId(partnerLocationId)
+					.dateOfInterest(taxDate)
+					.taxCategoryId(taxCategoryId)
+					.soTrx(SOTrx.ofBoolean(isSOTrx))
+					.vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
+					.build());
 
 			if (tax == null)
 			{
@@ -575,7 +577,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	@NonNull
 	@Override
-	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
 

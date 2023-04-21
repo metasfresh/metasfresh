@@ -60,7 +60,7 @@ public class DunningService
 				.addEqualsFilter(I_C_DunningDoc_Line.COLUMN_C_DunningDoc_ID, dunningDocId)
 				.andCollectChildren(I_C_DunningDoc_Line_Source.COLUMN_C_DunningDoc_Line_ID)
 				.andCollect(I_C_DunningDoc_Line_Source.COLUMN_C_Dunning_Candidate_ID)
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Invoice.class))
+				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Invoice.class))
 				.andCollect(I_C_Dunning_Candidate.COLUMN_Record_ID, I_C_Invoice.class)
 				.create()
 				.list();

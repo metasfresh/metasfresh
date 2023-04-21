@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.currency.CurrencyCode;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,10 +39,8 @@ import java.math.BigDecimal;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonResponsePrice
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product.M_Product_ID`.")
+	@Schema(type = "java.lang.Integer",
+			description = "This translates to `M_Product.M_Product_ID`.")
 	@NonNull
 	ProductId productId;
 
@@ -52,17 +50,14 @@ public class JsonResponsePrice
 	@NonNull
 	BigDecimal price;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.String", //
-			value = "Currency code (3 letters)")
+	@Schema(minLength = 1,
+			type = "java.lang.String", //
+			description = "Currency code (3 letters)")
 	@NonNull
 	CurrencyCode currencyCode;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_TaxCategory_ID`.")
+	@Schema(type = "java.lang.Integer", //
+			description = "This translates to `C_TaxCategory_ID`.")
 	@NonNull
 	TaxCategoryId taxCategoryId;
 }

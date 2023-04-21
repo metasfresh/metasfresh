@@ -10,6 +10,7 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
@@ -47,9 +48,10 @@ public class DDOrderMovementHelper
 				.priorityRule(ddOrder.getPriorityRule())
 				//
 				.dimensionFields(Dimension.builder()
-						.activityId(ActivityId.ofRepoIdOrNull(ddOrder.getC_Activity_ID()))
-						.campaignId(ddOrder.getC_Campaign_ID())
-						.projectId(ProjectId.ofRepoIdOrNull(ddOrder.getC_Project_ID()))
-						.build());
+										 .activityId(ActivityId.ofRepoIdOrNull(ddOrder.getC_Activity_ID()))
+										 .salesOrderId(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
+										 .campaignId(ddOrder.getC_Campaign_ID())
+										 .projectId(ProjectId.ofRepoIdOrNull(ddOrder.getC_Project_ID()))
+										 .build());
 	}
 }

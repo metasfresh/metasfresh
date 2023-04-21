@@ -23,8 +23,8 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.receiptschedule.M_ReceiptSchedule_StepDefData;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -46,6 +46,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -66,12 +67,15 @@ public class M_HU_LUTU_Configuration_StepDef
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_HU_PI_StepDefData huPiTable;
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final M_HU_LUTU_Configuration_StepDefData huLutuConfigurationTable;
 	private final M_HU_StepDefData huTable;
+	private final M_HU_List_StepDefData huListTable;
 	private final PP_Order_StepDefData ppOrderTable;
 
 	public M_HU_LUTU_Configuration_StepDef(
@@ -80,7 +84,8 @@ public class M_HU_LUTU_Configuration_StepDef
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
 			@NonNull final M_HU_LUTU_Configuration_StepDefData huLutuConfigurationTable,
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final PP_Order_StepDefData ppOrderTable)
+			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.huPiTable = huPiTable;
@@ -88,6 +93,7 @@ public class M_HU_LUTU_Configuration_StepDef
 		this.huLutuConfigurationTable = huLutuConfigurationTable;
 		this.huTable = huTable;
 		this.ppOrderTable = ppOrderTable;
+		this.huListTable = huListTable;
 	}
 
 	@And("receive HUs for PP_Order with M_HU_LUTU_Configuration:")
@@ -116,6 +122,86 @@ public class M_HU_LUTU_Configuration_StepDef
 		}
 	}
 
+	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule:")
+	public void createLUTUConfigurationForReceiptSchedule(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+			assertThat(receiptSchedule).isNotNull();
+
+			InterfaceWrapperHelper.refresh(receiptSchedule);
+
+			final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule = InterfaceWrapperHelper.create(receiptSchedule, de.metas.handlingunits.model.I_M_ReceiptSchedule.class);
+
+			final I_M_HU_LUTU_Configuration lutuConfigDefault = huReceiptScheduleBL
+					.createLUTUConfigurationManager(huReceiptSchedule)
+					.getCreateLUTUConfiguration();
+
+			huReceiptScheduleBL.adjustLUTUConfiguration(lutuConfigDefault, huReceiptSchedule);
+
+			final String tuHUPIProductIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + ".TU." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU_PI_Item_Product tuHuPiProduct = huPiItemProductTable.get(tuHUPIProductIdentifier);
+
+			final String luHUPIIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI.COLUMNNAME_M_HU_PI_ID + ".LU." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU_PI luHuPi = huPiTable.get(luHUPIIdentifier);
+
+			final ILUTUConfigurationFactory.CreateLUTUConfigRequest lutuConfigRequest = ILUTUConfigurationFactory.CreateLUTUConfigRequest.builder()
+					.baseLUTUConfiguration(lutuConfigDefault)
+					.qtyLU(lutuConfigDefault.getQtyLU())
+					.qtyTU(lutuConfigDefault.getQtyTU())
+					.qtyCU(lutuConfigDefault.getQtyCU())
+					.tuHUPIItemProductID(tuHuPiProduct.getM_HU_PI_Item_Product_ID())
+					.luHUPIID(luHuPi.getM_HU_PI_ID())
+					.build();
+
+			final I_M_HU_LUTU_Configuration lutuConfigurationWithParams = lutuConfigurationFactory.createNewLUTUConfigWithParams(lutuConfigRequest);
+
+			InterfaceWrapperHelper.saveRecord(lutuConfigurationWithParams);
+
+			final String lutuConfigIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID + "." + TABLECOLUMN_IDENTIFIER);
+			huLutuConfigurationTable.putOrReplace(lutuConfigIdentifier, lutuConfigurationWithParams);
+		}
+	}
+
+	@Then("validate M_HU_LUTU_Configuration:")
+	public void validateLutuConfig(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String lutuConfigIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU_LUTU_Configuration lutuConfig = huLutuConfigurationTable.get(lutuConfigIdentifier);
+
+			final BigDecimal qtyLU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyLU);
+			final BigDecimal qtyTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU);
+			final BigDecimal qtyCU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCU);
+
+			assertThat(lutuConfig.getQtyLU()).isEqualTo(qtyLU);
+			assertThat(lutuConfig.getQtyTU()).isEqualTo(qtyTU);
+			assertThat(lutuConfig.getQtyCU()).isEqualTo(qtyCU);
+		}
+	}
+
+	@And("receive HUs with M_HU_LUTU_Configuration:")
+	public void receiveHUsWithGivenLUTU(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+			assertThat(receiptSchedule).isNotNull();
+			InterfaceWrapperHelper.refresh(receiptSchedule);
+
+			final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule = InterfaceWrapperHelper.create(receiptSchedule, de.metas.handlingunits.model.I_M_ReceiptSchedule.class);
+
+			final String lutuConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU_LUTU_Configuration lutuConfig = huLutuConfigurationTable.get(lutuConfigIdentifier);
+
+			generateHUsWithLUTUConfiguration(tableRow, huReceiptSchedule, lutuConfig);
+		}
+	}
+
 	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs")
 	public void create_I_M_HU_LUTU_Configuration_for_M_ReceiptSchedule(@NonNull final DataTable dataTable)
 	{
@@ -128,33 +214,53 @@ public class M_HU_LUTU_Configuration_StepDef
 
 			final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule = InterfaceWrapperHelper.load(receiptSchedule.getM_ReceiptSchedule_ID(), de.metas.handlingunits.model.I_M_ReceiptSchedule.class);
 
-			final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContext();
-
-			final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial)
-					.addM_ReceiptSchedule(huReceiptSchedule)
-					.setUpdateReceiptScheduleDefaultConfiguration(false);
-
-			final I_M_HU_LUTU_Configuration lutuConfigDefault = Services.get(IHUReceiptScheduleBL.class)
+			final I_M_HU_LUTU_Configuration lutuConfigDefault = huReceiptScheduleBL
 					.createLUTUConfigurationManager(huReceiptSchedule)
 					.getCreateLUTUConfiguration();
 
 			final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfigDefault, tableRow);
-			huGenerator.setM_HU_LUTU_Configuration(lutuConfig);
 
-			final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
-			final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
-			if (qtyCUsTotal.isInfinite())
-			{
-				throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfig);
-			}
-			huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+			generateHUsWithLUTUConfiguration(tableRow, huReceiptSchedule, lutuConfig);
+		}
+	}
 
-			// Generate the HUs
-			final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
-			assertThat(hus).isNotNull();
-			assertThat(hus.size()).isEqualTo(1);
+	private void generateHUsWithLUTUConfiguration(
+			@NonNull final Map<String, String> tableRow,
+			@NonNull final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule,
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
+	{
+		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContext();
 
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial)
+				.addM_ReceiptSchedule(huReceiptSchedule)
+				.setUpdateReceiptScheduleDefaultConfiguration(false);
+
+		huGenerator.setM_HU_LUTU_Configuration(lutuConfig);
+
+		final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
+		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
+		if (qtyCUsTotal.isInfinite())
+		{
+			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfig);
+		}
+		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+
+		// Generate the HUs
+		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
+		assertThat(hus).isNotNull();
+
+		final Integer noOfHusGenerated = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT.numberHUsGenerated");
+
+		if (noOfHusGenerated != null)
+		{
+			final String huListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "OPT.HUList." + TABLECOLUMN_IDENTIFIER);
+			assertThat(hus.size()).isEqualTo(noOfHusGenerated);
+			huListTable.putOrReplace(huListIdentifier, hus);
+		}
+		else
+		{
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			assertThat(hus.size()).isEqualTo(1);
 			huTable.putOrReplace(huIdentifier, hus.get(0));
 		}
 	}
@@ -165,7 +271,7 @@ public class M_HU_LUTU_Configuration_StepDef
 		final String piProductItemIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer huPiItemProductId = huPiItemProductTable.getOptional(piProductItemIdentifier)
 				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
-				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));;
+				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));
 		assertThat(huPiItemProductId).isNotNull();
 
 		final boolean isInfiniteQtyCU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);

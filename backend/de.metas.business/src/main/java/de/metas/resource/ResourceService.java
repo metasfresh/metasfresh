@@ -24,11 +24,13 @@ package de.metas.resource;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -197,6 +199,12 @@ public class ResourceService
 		createOrUpdateProductFromResource(ResourceRepository.toResource(resourceRecord));
 	}
 
+	@NonNull
+	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		return resourceRepository.getResourceIdByValue(value, orgId);
+	}
+
 	private void createOrUpdateProductFromResource(final @NonNull Resource resource)
 	{
 		productDAO.updateProductsByResourceIds(
@@ -287,6 +295,11 @@ public class ResourceService
 	public void onResourceGroupBeforeDelete(final ResourceGroupId resourceGroupId)
 	{
 		productDAO.deleteProductByResourceGroupId(resourceGroupId);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return resourceRepository.getResourceIdsByUserId(userId);
 	}
 
 	//

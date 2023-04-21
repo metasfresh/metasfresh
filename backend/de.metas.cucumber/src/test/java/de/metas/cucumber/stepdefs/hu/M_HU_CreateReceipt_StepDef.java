@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs.hu;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.receiptschedule.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -37,12 +37,14 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -53,28 +55,65 @@ public class M_HU_CreateReceipt_StepDef
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	private final M_HU_StepDefData huTable;
+	private final M_HU_List_StepDefData huListTable;
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final M_InOut_StepDefData inOutTable;
 
 	public M_HU_CreateReceipt_StepDef(
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
-			@NonNull final M_InOut_StepDefData inOutTable)
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huTable = huTable;
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.inOutTable = inOutTable;
+		this.huListTable = huListTable;
 	}
 
+	@And("create material receipt and the following exception is thrown")
+	public void create_materialReceipt_expect_exception(@NonNull final DataTable dataTable)
+	{
+		try
+		{
+			create_materialReceipt(dataTable);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			final Map<String, String> tableRow = dataTable.asMaps().get(0);
+			final String exceptionMessage = DataTableUtil.extractStringForColumnName(tableRow, Exception.class.getSimpleName());
+
+			assertThat(exception.getMessage()).contains(exceptionMessage);
+		}
+	}
+	
 	@And("create material receipt")
 	public void create_materialReceipt(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
 		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(huIdentifier);
-			final HuId selectedHuId = HuId.ofRepoId(hu.getM_HU_ID());
+			final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String huListIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.HUList." + TABLECOLUMN_IDENTIFIER);
+
+			assertThat(huIdentifier != null /*XOR*/ ^ huListIdentifier != null).isEqualTo(true);
+
+			final Set<HuId> huIdSet;
+			if (huIdentifier != null)
+			{
+				huIdSet = ImmutableSet.of(HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID()));
+			}
+			else
+			{
+				assertThat(huListIdentifier).isNotBlank();
+
+				huIdSet = huListTable.get(huListIdentifier)
+						.stream()
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet());
+			}
 
 			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
@@ -84,7 +123,7 @@ public class M_HU_CreateReceipt_StepDef
 					.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 					.ctx(Env.getCtx())
 					.receiptSchedules(ImmutableList.of(receiptSchedule))
-					.selectedHuIds(ImmutableSet.of(selectedHuId))
+					.selectedHuIds(huIdSet)
 					.build();
 
 			final InOutGenerateResult inOutGenerateResult = huReceiptScheduleBL.processReceiptSchedules(parameters);
