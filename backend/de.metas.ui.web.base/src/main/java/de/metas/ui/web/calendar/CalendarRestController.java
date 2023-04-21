@@ -49,6 +49,7 @@ import de.metas.ui.web.calendar.json.JsonCalendarEntryAddRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateResult;
 import de.metas.ui.web.calendar.json.JsonCalendarRef;
+import de.metas.ui.web.calendar.json.JsonComputePlanResponse;
 import de.metas.ui.web.calendar.json.JsonDateTime;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
 import de.metas.ui.web.calendar.json.JsonGetAvailableSimulationsResponse;
@@ -178,8 +179,8 @@ public class CalendarRestController
 
 			final Set<CalendarResourceId> onlyResourceIds = query.getOnlyResourceIds();
 			result.resourceIds(onlyResourceIds != null && !onlyResourceIds.isEmpty()
-									   ? InSetPredicate.only(onlyResourceIds)
-									   : InSetPredicate.any());
+					? InSetPredicate.only(onlyResourceIds)
+					: InSetPredicate.any());
 
 			result.onlyProjectId(query.getOnlyProjectId());
 
@@ -240,16 +241,16 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final CalendarEntry calendarEntry = calendarService.addEntry(CalendarEntryAddRequest.builder()
-																			 .userId(userSession.getLoggedUserId())
-																			 .simulationId(request.getSimulationId())
-																			 .calendarId(request.getCalendarId())
-																			 .resourceId(request.getResourceId())
-																			 .title(request.getTitle())
-																			 .description(request.getDescription())
-																			 .dateRange(extractCalendarDateRange(request.getStartDate(),
-																												 request.getEndDate(),
-																												 request.isAllDay()))
-																			 .build());
+				.userId(userSession.getLoggedUserId())
+				.simulationId(request.getSimulationId())
+				.calendarId(request.getCalendarId())
+				.resourceId(request.getResourceId())
+				.title(request.getTitle())
+				.description(request.getDescription())
+				.dateRange(extractCalendarDateRange(request.getStartDate(),
+						request.getEndDate(),
+						request.isAllDay()))
+				.build());
 
 		return JsonCalendarEntryUpdateResult.ofChangedEntry(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
 	}
@@ -262,16 +263,16 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final CalendarEntryUpdateResult result = calendarService.updateEntry(CalendarEntryUpdateRequest.builder()
-																					 .entryId(CalendarEntryId.ofString(entryIdStr))
-																					 .simulationId(request.getSimulationId())
-																					 .updatedByUserId(userSession.getLoggedUserId())
-																					 .resourceId(request.getResourceId())
-																					 .title(request.getTitle())
-																					 .description(request.getDescription())
-																					 .dateRange(extractCalendarDateRange(request.getStartDate(),
-																														 request.getEndDate(),
-																														 request.getIsAllDay()))
-																					 .build());
+				.entryId(CalendarEntryId.ofString(entryIdStr))
+				.simulationId(request.getSimulationId())
+				.updatedByUserId(userSession.getLoggedUserId())
+				.resourceId(request.getResourceId())
+				.title(request.getTitle())
+				.description(request.getDescription())
+				.dateRange(extractCalendarDateRange(request.getStartDate(),
+						request.getEndDate(),
+						request.getIsAllDay()))
+				.build());
 
 		return JsonCalendarEntryUpdateResult.of(result, userSession.getTimeZone(), userSession.getAD_Language());
 	}
@@ -333,8 +334,8 @@ public class CalendarRestController
 		final CalendarConflictsQuery query = CalendarConflictsQuery.builder()
 				.simulationId(SimulationPlanId.ofNullableObject(simulationIdStr))
 				.resourceIds(CalendarResourceId.ofCommaSeparatedString(onlyResourceIdsStr)
-									 .map(InSetPredicate::only)
-									 .orElse(InSetPredicate.any()))
+						.map(InSetPredicate::only)
+						.orElse(InSetPredicate.any()))
 				.build();
 
 		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(query)
@@ -354,7 +355,7 @@ public class CalendarRestController
 			final boolean isAllDay)
 	{
 		final Instant endDateToBeUsed;
-		
+
 		if (endDate != null)
 		{
 			endDateToBeUsed = endDate.toInstant();
@@ -369,11 +370,56 @@ public class CalendarRestController
 		{
 			throw new AdempiereException("Missing mandatory endDate!");
 		}
-		
+
 		return CalendarDateRange.builder()
 				.startDate(startDate.toInstant())
 				.endDate(endDateToBeUsed)
 				.allDay(isAllDay)
+				.build();
+	}
+
+	@GetMapping("/simulations/computePlan")
+	public JsonComputePlanResponse getComputePlanStatus(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+
+		// TODO
+		return JsonComputePlanResponse.builder()
+				.simulationId(simulationId)
+				.status("STOPPED")
+				.build();
+	}
+
+	@PostMapping("/simulations/computePlan/start")
+	public JsonComputePlanResponse startComputePlan(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+
+		// TODO
+		return JsonComputePlanResponse.builder()
+				.simulationId(simulationId)
+				.status("STARTED")
+				.build();
+	}
+
+	@PostMapping("/simulations/computePlan/stop")
+	public JsonComputePlanResponse stopComputePlan(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+
+		// TODO
+		return JsonComputePlanResponse.builder()
+				.simulationId(simulationId)
+				.status("STOPPED")
 				.build();
 	}
 
