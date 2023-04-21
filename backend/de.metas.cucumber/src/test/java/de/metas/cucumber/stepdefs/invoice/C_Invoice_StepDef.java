@@ -328,7 +328,7 @@ public class C_Invoice_StepDef
 		final ImmutableSet<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds.build());
 
 		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
-		
+
 		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(singleRow, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifierCandidate);
 		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
@@ -631,9 +631,9 @@ public class C_Invoice_StepDef
 			{
 				final InvoiceToAllocate invoiceToAllocate = paymentAllocationRepository
 						.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-								.evaluationDate(ZonedDateTime.now())
-								.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-								.build()).get(0);
+															.evaluationDate(ZonedDateTime.now())
+															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+															.build()).get(0);
 				softly.assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).as("OpenAmountConverted").isEqualByComparingTo(invoiceOpenAmt);
 			}
 		}
@@ -668,7 +668,7 @@ public class C_Invoice_StepDef
 
 			assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_RepoId);
 		}
-		
+
 		softly.assertAll();
 	}
 
@@ -862,7 +862,7 @@ public class C_Invoice_StepDef
 		{
 			invoice.setExternalId(externalId);
 		}
-		
+
 		invoiceDAO.save(invoice);
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
