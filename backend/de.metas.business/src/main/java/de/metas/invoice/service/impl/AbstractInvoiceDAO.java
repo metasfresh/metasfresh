@@ -1,6 +1,5 @@
 package de.metas.invoice.service.impl;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -22,7 +21,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -42,7 +40,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -60,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
@@ -108,21 +104,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.list();
 	}
-
-	@Override
-	public List<InvoiceId> retrieveAllInvoicesForOrderLineIds(@NonNull final Collection<OrderLineId> orderLineIds)
-	{
-		return queryBL
-				.createQueryBuilder(I_C_InvoiceLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
-				.create()
-				.stream()
-				.map(il -> InvoiceId.ofRepoId(il.getC_Invoice_ID()))
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
-	}
-
 
 	@Override
 	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(@NonNull final List<OrderId> orderIds)
