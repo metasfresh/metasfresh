@@ -82,7 +82,7 @@ class WOProjectCalendarServiceTest
 				woProjectService,
 				budgetProjectService,
 				new BudgetProjectSimulationService(budgetProjectService, new BudgetProjectSimulationRepository()),
-				new WOProjectSimulationService(woProjectService, woProjectSimulationRepository, woProjectConflictService, simulationPlanService),
+				new WOProjectSimulationService(woProjectService, woProjectSimulationRepository, woProjectConflictService),
 				woProjectConflictService
 		);
 	}
