@@ -25,10 +25,11 @@ package de.metas.cucumber.stepdefs.aggregation;
 import de.metas.aggregation.model.I_C_AggregationItem;
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.List;
@@ -38,9 +39,11 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class C_AggregationItem_StepDef
 {
-	private final StepDefData<I_C_AggregationItem> aggregationItemTable;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public C_AggregationItem_StepDef(@NonNull final StepDefData<I_C_AggregationItem> aggregationItemTable)
+	private final C_AggregationItem_StepDefData aggregationItemTable;
+
+	public C_AggregationItem_StepDef(@NonNull final C_AggregationItem_StepDefData aggregationItemTable)
 	{
 		this.aggregationItemTable = aggregationItemTable;
 	}
@@ -62,6 +65,31 @@ public class C_AggregationItem_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			updateAggregationItem(tableRow);
+		}
+	}
+
+	@And("update C_AggregationItem:")
+	public void update_C_AggregationItem_directly(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final int aggregationId = DataTableUtil.extractIntForColumnName(row, I_C_AggregationItem.COLUMNNAME_C_Aggregation_ID);
+			final int columnId = DataTableUtil.extractIntForColumnName(row, I_C_AggregationItem.COLUMNNAME_AD_Column_ID);
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_AggregationItem.COLUMNNAME_IsActive, null);
+
+			final I_C_AggregationItem aggItem = queryBL.createQueryBuilder(I_C_AggregationItem.class)
+					.addEqualsFilter(I_C_AggregationItem.COLUMNNAME_C_Aggregation_ID, aggregationId)
+					.addEqualsFilter(I_C_AggregationItem.COLUMNNAME_AD_Column_ID, columnId)
+					.orderBy(I_C_AggregationItem.COLUMN_C_AggregationItem_ID)
+					.create()
+					.firstNotNull(I_C_AggregationItem.class);
+
+			if (isActive != null)
+			{
+				aggItem.setIsActive(isActive);
+			}
+
+			InterfaceWrapperHelper.save(aggItem);
 		}
 	}
 
