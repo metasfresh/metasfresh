@@ -113,3 +113,26 @@ export const fetchConflicts = ({
     .then(extractAxiosResponseData)
     .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
 };
+
+export const getComputePlanStatus = ({ simulationId }) => {
+  return axios
+    .get(buildURL(`${API_URL}/simulations/computePlan`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPIComputePlanStatus);
+};
+
+export const startComputePlan = ({ simulationId }) => {
+  return axios
+    .post(
+      buildURL(`${API_URL}/simulations/computePlan/start`, { simulationId })
+    )
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPIComputePlanStatus);
+};
+
+export const stopComputePlan = ({ simulationId }) => {
+  return axios
+    .post(buildURL(`${API_URL}/simulations/computePlan/stop`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPIComputePlanStatus);
+};

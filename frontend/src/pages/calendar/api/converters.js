@@ -39,6 +39,11 @@ const converters = {
     status: apiConflict.status,
   }),
 
+  fromAPIComputePlanStatus: (apiResponse) => ({
+    simulationId: apiResponse.simulationId,
+    status: apiResponse.status,
+  }),
+
   //
   //
   // https://fullcalendar.io converters

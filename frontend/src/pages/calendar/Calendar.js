@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import FullCalendar from '@fullcalendar/react';
@@ -28,6 +28,7 @@ import {
   getEventClassNames,
   renderEventContent,
 } from './components/CalendarEvent';
+import SimulationComputeButton from './components/SimulationComputeButton';
 
 const Calendar = ({
   view,
@@ -111,6 +112,24 @@ const Calendar = ({
       });
   };
 
+  //
+  //
+  //
+  const [computePlanStatus, setComputePlanStatus] = useState({
+    status: 'UNKNOWN ',
+  });
+  useEffect(() => {
+    if (simulationId == null) {
+      setComputePlanStatus({ status: 'NOT_APPLICABLE' });
+    } else {
+      api.getComputePlanStatus({ simulationId }).then(setComputePlanStatus);
+    }
+  }, [simulationId]);
+
+  //
+  //
+  //
+
   // Calendar Key:
   // * view - it's important to be part of the key, else the Calendar component when we do browser back/forward between different view types
   // noinspection UnnecessaryLocalVariableJS
@@ -128,6 +147,17 @@ const Calendar = ({
           <CalendarFilters resolvedQuery={calendarData.getResolvedQuery()} />
         </div>
         <div className="calendar-top-right">
+          <SimulationComputeButton
+            simulationId={computePlanStatus.simulationId}
+            status={computePlanStatus.status}
+            onStart={({ simulationId }) =>
+              api.startComputePlan({ simulationId }).then(setComputePlanStatus)
+            }
+            onStop={({ simulationId }) =>
+              api.stopComputePlan({ simulationId }).then(setComputePlanStatus)
+            }
+            hidden={calendarData.isLoading}
+          />
           <SimulationsDropDown
             simulations={calendarData.getSimulationsArray()}
             selectedSimulationId={simulationId}
