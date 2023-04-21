@@ -33,7 +33,11 @@ import java.text.MessageFormat;
 public interface ItemProvider<T>
 {
 	@Value
+<<<<<<< HEAD
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+=======
+	@AllArgsConstructor(access= AccessLevel.PRIVATE)
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 	public class ProviderResult<T>
 	{
 		public static <T> ProviderResult<T> resultWasFound(final @Nullable T result)

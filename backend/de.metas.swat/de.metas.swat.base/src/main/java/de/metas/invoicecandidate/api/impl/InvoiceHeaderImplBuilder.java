@@ -34,11 +34,17 @@ import java.util.Set;
  */
 public class InvoiceHeaderImplBuilder
 {
+<<<<<<< HEAD
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
 	private boolean isTakeDocTypeFromPool = false;
 
 	private DocTypeId docTypeInvoiceId = null;
+=======
+	private static int SalesRep_User_ID_UNSET_VALUE = Integer.MIN_VALUE;
+	
+	private I_C_DocType docTypeInvoice = null;
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -64,7 +70,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int Sales_BPartner_ID;
 
-	private int SalesRep_User_ID;
+	private int SalesRep_User_ID = SalesRep_User_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -359,21 +365,26 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
-	public int get_SaleRep_ID ()
+	public int get_SaleRep_ID()
 	{
 		return SalesRep_User_ID;
 	}
-
 
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
 	}
 
-
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
+		if (SalesRep_User_ID == SalesRep_User_ID_UNSET_VALUE)
+		{
+			SalesRep_User_ID = salesRep_ID;
+		}
+		else if (salesRep_ID != SalesRep_User_ID)
+		{
+			SalesRep_User_ID = -1;
+		}
 	}
 
 	public int getC_Currency_ID()
