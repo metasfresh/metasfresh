@@ -6,7 +6,11 @@
 	<property name="ireport.zoom" value="2.1435888100000047"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+<<<<<<< HEAD
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+=======
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+>>>>>>> 2f77d6c50c4 (#14602 Fix open payments due date report (#15148))
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -42,8 +46,13 @@ SELECT  COALESCE(org.name, '')
 
 	pt.NetDays,
 	pt.DiscountDays,
+<<<<<<< HEAD
 	PaymentTermDueDate( i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ) AS DueDate,
 	PaymentTermDueDays( i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone, ps.PayDate) AS DaysDue,
+=======
+     i.DueDate::timestamp with time zone AS DueDate,
+     EXTRACT(day from (TRUNC(ps.PayDate) - i.DueDate)) as DaysDue,
+>>>>>>> 2f77d6c50c4 (#14602 Fix open payments due date report (#15148))
 	AddDays( i.DateInvoiced::timestamp with time zone, pt.DiscountDays ) AS DiscountDate,
 	Round( i.GrandTotal * pt.Discount / 100::numeric, 2 ) AS DiscountAmt,
 	InvoicePaid ( i.C_Invoice_ID, i.C_Currency_ID, 1::numeric ) AS PaidAmt,
@@ -73,6 +82,7 @@ ORDER BY
 	c.ISO_Code, bp.name, Dateinvoiced
 ;]]>
 	</queryString>
+<<<<<<< HEAD
 	<field name="org_name" class="java.lang.String"/>
 	<field name="paydate" class="java.sql.Timestamp"/>
 	<field name="c_payselectionline_id" class="java.math.BigDecimal"/>
@@ -98,6 +108,83 @@ ORDER BY
 	<field name="afterpay" class="java.math.BigDecimal"/>
 	<field name="payamt" class="java.math.BigDecimal"/>
 	<field name="isdraft" class="java.lang.Boolean"/>
+=======
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+	</field>
+	<field name="paydate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="paydate"/>
+	</field>
+	<field name="c_payselectionline_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_payselectionline_id"/>
+	</field>
+	<field name="c_bpartner_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_id"/>
+	</field>
+	<field name="bpartner" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bpartner"/>
+	</field>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="dateinvoiced" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="dateinvoiced"/>
+	</field>
+	<field name="i_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="i_docno"/>
+	</field>
+	<field name="u_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="u_docno"/>
+	</field>
+	<field name="netdays" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netdays"/>
+	</field>
+	<field name="discountdays" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="discountdays"/>
+	</field>
+	<field name="duedate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="duedate"/>
+	</field>
+	<field name="daysdue" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="daysdue"/>
+	</field>
+	<field name="discountdate" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="discountdate"/>
+	</field>
+	<field name="discountamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="discountamt"/>
+	</field>
+	<field name="paidamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="paidamt"/>
+	</field>
+	<field name="openamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="openamt"/>
+	</field>
+	<field name="grandtotal" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="grandtotal"/>
+	</field>
+	<field name="iso_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="iso_code"/>
+	</field>
+	<field name="actualdiscountamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="actualdiscountamt"/>
+	</field>
+	<field name="beforepay" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beforepay"/>
+	</field>
+	<field name="afterpay" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="afterpay"/>
+	</field>
+	<field name="payamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="payamt"/>
+	</field>
+	<field name="isdraft" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.label" value="isdraft"/>
+	</field>
+>>>>>>> 2f77d6c50c4 (#14602 Fix open payments due date report (#15148))
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
