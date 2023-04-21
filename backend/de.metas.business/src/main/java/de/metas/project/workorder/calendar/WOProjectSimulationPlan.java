@@ -8,6 +8,7 @@ import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceSimulation;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepSimulation;
+import de.metas.project.workorder.step.WOStepResources;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,6 +19,7 @@ import lombok.ToString;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Function;
 
 @ToString
 public final class WOProjectSimulationPlan
@@ -45,7 +47,10 @@ public final class WOProjectSimulationPlan
 		this.projectResourcesById = projectResourcesById != null ? ImmutableMap.copyOf(projectResourcesById) : ImmutableMap.of();
 	}
 
-	public ImmutableSet<WOProjectResourceId> getProjectResourceIds() {return projectResourcesById.keySet();}
+	public ImmutableSet<WOProjectResourceId> getProjectResourceIds()
+	{
+		return projectResourcesById.keySet();
+	}
 
 	public Collection<WOProjectStepSimulation> getSteps()
 	{
@@ -63,6 +68,12 @@ public final class WOProjectSimulationPlan
 		return projectResourcesById.get(woProjectResourceId);
 	}
 
+	@Nullable
+	public WOProjectStepSimulation getProjectStepByIdOrNull(@NonNull final WOProjectStepId woProjectStepId)
+	{
+		return stepsById.get(woProjectStepId);
+	}
+
 	public WOProjectResource applyOn(@NonNull final WOProjectResource woProjectResource)
 	{
 		final WOProjectResourceSimulation simulation = getProjectResourceByIdOrNull(woProjectResource.getWoProjectResourceId());
@@ -76,6 +87,25 @@ public final class WOProjectSimulationPlan
 		return toBuilder()
 				.stepsById(CollectionUtils.mergeMaps(this.stepsById, from.stepsById))
 				.projectResourcesById(CollectionUtils.mergeMaps(this.projectResourcesById, from.projectResourcesById))
+				.build();
+	}
+
+	@NonNull
+	public WOProjectSimulationPlan removeSimulationForStepAndResources(@NonNull final WOStepResources woStepResources)
+	{
+		final ImmutableMap<WOProjectStepId, WOProjectStepSimulation> filteredStepsById = stepsById.keySet()
+				.stream()
+				.filter(woProjectStepId -> !woStepResources.getWoProjectStepId().equals(woProjectStepId))
+				.collect(ImmutableMap.toImmutableMap(Function.identity(), stepsById::get));
+
+		final ImmutableMap<WOProjectResourceId, WOProjectResourceSimulation> filteredResourcesById = projectResourcesById.keySet()
+				.stream()
+				.filter(resourceId -> !woStepResources.hasResource(resourceId))
+				.collect(ImmutableMap.toImmutableMap(Function.identity(), projectResourcesById::get));
+
+		return toBuilder()
+				.stepsById(filteredStepsById)
+				.projectResourcesById(filteredResourcesById)
 				.build();
 	}
 }

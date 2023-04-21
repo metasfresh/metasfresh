@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
@@ -23,17 +25,27 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.OldAndNewValues;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
+
 public class WOProjectSimulationPlanEditor
 {
-	@NonNull private final WOProject _originalProject;
-	@NonNull private final WOProjectSteps _originalSteps;
-	@NonNull private final WOProjectResources _originalProjectResources;
+	private static final AdMessageKey ERROR_MSG_STEP_CANNOT_BE_SHIFTED = AdMessageKey.of("de.metas.project.workorder.calendar.WoStepCannotBeShifted");
+	private static final AdMessageKey ERROR_MSG_STEP_NO_AVAILABLE_DURATION = AdMessageKey.of("de.metas.project.workorder.calendar.NoAvailableDuration");
+
+	@NonNull
+	private final WOProject _originalProject;
+	@NonNull
+	private final WOProjectSteps _originalSteps;
+	@NonNull
+	private final WOProjectResources _originalProjectResources;
 
 	@Getter
 	private final SimulationPlanId simulationPlanId;
@@ -239,6 +251,8 @@ public class WOProjectSimulationPlanEditor
 
 			if (currentDateRange.getEndDate().isAfter(prevDateRange.getStartDate()))
 			{
+				validateStepCanBeShifted(step);
+
 				final Duration offset = Duration.between(prevDateRange.getStartDate(), currentDateRange.getEndDate()).negated();
 				currentDateRange = currentDateRange.plus(offset);
 				changeStep(step.getWoProjectStepId(), currentDateRange);
@@ -265,6 +279,8 @@ public class WOProjectSimulationPlanEditor
 
 			if (currentDateRange.getStartDate().isBefore(prevDateRange.getEndDate()))
 			{
+				validateStepCanBeShifted(step);
+
 				final Duration offset = Duration.between(currentDateRange.getStartDate(), prevDateRange.getEndDate());
 				currentDateRange = currentDateRange.plus(offset);
 				changeStep(step.getWoProjectStepId(), currentDateRange);
@@ -302,5 +318,93 @@ public class WOProjectSimulationPlanEditor
 				.map(_originalProjectResources::getById)
 				.map(WOProjectResource::getResourceId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public CalendarDateRange suggestDateRange(@NonNull final WOProjectStepId stepId)
+	{
+		final WOProjectStep step = getStepById(stepId);
+
+		if (step.getDateRange() != null)
+		{
+			return step.getDateRange();
+		}
+
+		final Instant lastBeforeStepDate = getStepsBeforeFromLastToFirst(stepId)
+				.stream()
+				.filter(woProjectStep -> woProjectStep.getDateRange() != null)
+				.findFirst()
+				.map(WOProjectStep::getDateRange)
+				.map(CalendarDateRange::getEndDate)
+				.orElse(null);
+
+		final Instant firstAfterStepDate = getStepsAfterInOrder(stepId)
+				.stream()
+				.filter(woProjectStep -> woProjectStep.getDateRange() != null)
+				.findFirst()
+				.map(WOProjectStep::getDateRange)
+				.map(CalendarDateRange::getStartDate)
+				.orElse(null);
+
+		final Duration stepDuration = computeStepDuration(stepId);
+
+		if (lastBeforeStepDate == null && firstAfterStepDate == null)
+		{
+			return getDefaultCalendarDateRange(stepDuration);
+		}
+
+		final CalendarDateRange proposedDateRange = Optional.ofNullable(lastBeforeStepDate)
+				.map(startDate -> CalendarDateRange.ofStartDate(startDate, stepDuration))
+				.orElseGet(() -> CalendarDateRange.ofEndDate(firstAfterStepDate, stepDuration));
+
+		if (firstAfterStepDate != null && proposedDateRange.getEndDate().isAfter(firstAfterStepDate))
+		{
+			Check.assumeNotNull(lastBeforeStepDate, "There will never be a collision if there is no before date constraint!");
+
+			final Duration availableDuration = Duration.between(lastBeforeStepDate, firstAfterStepDate);
+			throw new AdempiereException(ERROR_MSG_STEP_NO_AVAILABLE_DURATION, step.getSeqNo(), stepDuration, availableDuration)
+					.markAsUserValidationError();
+		}
+
+		return proposedDateRange;
+	}
+
+	@NonNull
+	private CalendarDateRange getDefaultCalendarDateRange(@NonNull final Duration stepDuration)
+	{
+		final Instant defaultStartDate = Optional.ofNullable(getProject().getDateContract())
+				.orElse(SystemTime.asInstant());
+
+		return CalendarDateRange.builder()
+				.startDate(defaultStartDate)
+				.endDate(defaultStartDate.plus(stepDuration))
+				.build();
+	}
+
+	@NonNull
+	private Duration computeStepDuration(@NonNull final WOProjectStepId stepId)
+	{
+		final Duration resourcesDuration = getProjectResourcesByStepId(stepId)
+				.stream()
+				.map(WOProjectResource::getDuration)
+				.reduce(Duration.ZERO, Duration::plus);
+
+		if (resourcesDuration.isZero())
+		{
+			return DEFAULT_DURATION;
+		}
+
+		return resourcesDuration;
+	}
+
+	private static void validateStepCanBeShifted(@NonNull final WOProjectStep step)
+	{
+		if (!step.isManuallyLocked())
+		{
+			return;
+		}
+
+		throw new AdempiereException(ERROR_MSG_STEP_CANNOT_BE_SHIFTED, step.getName())
+				.markAsUserValidationError();
 	}
 }
