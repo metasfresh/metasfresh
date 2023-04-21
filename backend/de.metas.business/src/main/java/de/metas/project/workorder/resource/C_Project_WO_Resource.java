@@ -22,30 +22,47 @@
 
 package de.metas.project.workorder.resource;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.organization.OrgId;
 import de.metas.project.workorder.calendar.WOProjectSimulationService;
+import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Interceptor(I_C_Project_WO_Resource.class)
 public class C_Project_WO_Resource
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	private final WOProjectSimulationService woProjectSimulationService;
+	private final WOProjectService woProjectService;
 	private final SimulationPlanService simulationService;
 
 	public C_Project_WO_Resource(
 			@NonNull final WOProjectSimulationService woProjectSimulationService,
+			@NonNull final WOProjectService woProjectService,
 			@NonNull final SimulationPlanService simulationService)
 	{
 		this.woProjectSimulationService = woProjectSimulationService;
+		this.woProjectService = woProjectService;
 		this.simulationService = simulationService;
 	}
 
@@ -58,16 +75,56 @@ public class C_Project_WO_Resource
 			return;
 		}
 
-		final SimulationPlanRef editableMasterSimulationPlan = getEditableMasterSimulationPlan(record, woProjectResource.getOrgId());
-		woProjectSimulationService.initializeSimulationForResource(woProjectResource, editableMasterSimulationPlan);
+		trxManager.accumulateAndProcessAfterCommit(
+				"C_Project_WO_Resource.createSimulationEntries",
+				ImmutableList.of(record),
+				this::createSimulationForResources);
+	}
+
+	private void createSimulationForResources(@NonNull final List<I_C_Project_WO_Resource> resources)
+	{
+		if (resources.isEmpty())
+		{
+			return;
+		}
+
+		//one trx => same updatedBy for all resources
+		final UserId fallbackResponsibleUserId = UserId.ofRepoId(resources.get(0).getUpdatedBy());
+
+		final ImmutableList<WOProjectResource> projectResources = resources
+				.stream()
+				.map(WOProjectResourceRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		initializeSimulationForResources(fallbackResponsibleUserId, projectResources);
+	}
+
+	private void initializeSimulationForResources(
+			@NonNull final UserId simulationResponsibleUserId,
+			@NonNull final ImmutableList<WOProjectResource> projectResourceList)
+	{
+		final ImmutableSet<WOProjectStepId> stepIds = projectResourceList
+				.stream()
+				.map(WOProjectResource::getWoProjectStepId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<WOProjectStepId, WOProjectStep> stepById = Maps.uniqueIndex(woProjectService.getStepsByIds(stepIds), WOProjectStep::getWoProjectStepId);
+
+		projectResourceList
+				.stream()
+				.filter(resource -> resource.getDateRange() == null)
+				.sorted(Comparator.comparingInt(resource -> stepById.get(resource.getWoProjectStepId()).getSeqNo()))
+				.forEachOrdered(resource -> {
+					final SimulationPlanRef editableMasterSimulationPlan = getEditableMasterSimulationPlan(simulationResponsibleUserId, resource.getOrgId());
+					woProjectSimulationService.initializeSimulationForResource(editableMasterSimulationPlan, resource);
+				});
 	}
 
 	@NonNull
 	private SimulationPlanRef getEditableMasterSimulationPlan(
-			@NonNull final I_C_Project_WO_Resource resourceRecord,
+			@NonNull final UserId responsibleUserId,
 			@NonNull final OrgId orgId)
 	{
-		final UserId responsibleUserId = UserId.ofRepoId(resourceRecord.getUpdatedBy());
 		final SimulationPlanRef masterSimulationPlan = simulationService.getOrCreateMainSimulationPlan(responsibleUserId, orgId);
 
 		masterSimulationPlan.assertEditable();
