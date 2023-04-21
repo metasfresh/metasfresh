@@ -36,6 +36,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -50,6 +51,9 @@ public class WOProject
 
 	@NonNull
 	OrgId orgId;
+
+	@NonNull
+	ClientId clientId;
 
 	@NonNull
 	CurrencyId currencyId;

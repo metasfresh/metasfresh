@@ -41,6 +41,7 @@ import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.project.workorder.step.WOProjectSteps;
+import de.metas.project.workorder.step.WOStepResources;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
@@ -267,5 +268,19 @@ public class WOProjectService
 																		.build()));
 				}
 		);
+	}
+
+	@NonNull
+	public WOStepResources getWOStepResources(@NonNull final WOProjectStepId woProjectStepId)
+	{
+		final ImmutableSet<WOProjectResourceId> resourceIds = woProjectResourceRepository.listByStepIds(ImmutableSet.of(woProjectStepId))
+				.stream()
+				.map(WOProjectResource::getWoProjectResourceId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return WOStepResources.builder()
+				.resourceIds(resourceIds)
+				.woProjectStepId(woProjectStepId)
+				.build();
 	}
 }
