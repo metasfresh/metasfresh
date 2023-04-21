@@ -22,31 +22,31 @@
 
 package de.metas.project.workorder.resource;
 
-import de.metas.calendar.simulation.SimulationPlanRef;
-import de.metas.calendar.simulation.SimulationPlanService;
-import de.metas.organization.OrgId;
+import com.google.common.collect.ImmutableList;
 import de.metas.project.workorder.calendar.WOProjectSimulationService;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Interceptor(I_C_Project_WO_Resource.class)
 public class C_Project_WO_Resource
 {
-	private final WOProjectSimulationService woProjectSimulationService;
-	private final SimulationPlanService simulationService;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	public C_Project_WO_Resource(
-			@NonNull final WOProjectSimulationService woProjectSimulationService,
-			@NonNull final SimulationPlanService simulationService)
+	private final WOProjectSimulationService woProjectSimulationService;
+
+	public C_Project_WO_Resource(@NonNull final WOProjectSimulationService woProjectSimulationService)
 	{
 		this.woProjectSimulationService = woProjectSimulationService;
-		this.simulationService = simulationService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -58,20 +58,27 @@ public class C_Project_WO_Resource
 			return;
 		}
 
-		final SimulationPlanRef editableMasterSimulationPlan = getEditableMasterSimulationPlan(record, woProjectResource.getOrgId());
-		woProjectSimulationService.initializeSimulationForResource(woProjectResource, editableMasterSimulationPlan);
+		trxManager.accumulateAndProcessAfterCommit(
+				"C_Project_WO_Resource.createSimulationEntries",
+				ImmutableList.of(record),
+				this::createSimulationForResources);
 	}
 
-	@NonNull
-	private SimulationPlanRef getEditableMasterSimulationPlan(
-			@NonNull final I_C_Project_WO_Resource resourceRecord,
-			@NonNull final OrgId orgId)
+	private void createSimulationForResources(@NonNull final List<I_C_Project_WO_Resource> resources)
 	{
-		final UserId responsibleUserId = UserId.ofRepoId(resourceRecord.getUpdatedBy());
-		final SimulationPlanRef masterSimulationPlan = simulationService.getOrCreateMainSimulationPlan(responsibleUserId, orgId);
+		if (resources.isEmpty())
+		{
+			return;
+		}
 
-		masterSimulationPlan.assertEditable();
+		//one trx => same updatedBy for all resources
+		final UserId fallbackResponsibleUserId = UserId.ofRepoId(resources.get(0).getUpdatedBy());
 
-		return masterSimulationPlan;
+		final ImmutableList<WOProjectResource> projectResources = resources
+				.stream()
+				.map(WOProjectResourceRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		woProjectSimulationService.initializeSimulationForResources(fallbackResponsibleUserId, projectResources);
 	}
 }
