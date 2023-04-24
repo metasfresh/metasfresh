@@ -54,17 +54,28 @@ public class SupplyRequiredHandlerUtils
 		final I_M_Product product = load(productId, I_M_Product.class);
 
 		final BigDecimal qtyToSupply = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		final BigDecimal materialEventQty = supplyRequiredDescriptor.getMaterialEventQty();
 
 		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
 
-		return MaterialRequest.builder()
-				.qtyToSupply(Quantity.of(qtyToSupply, uom))
-				.mrpContext(mrpContext)
-				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
-				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
-				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
-				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
-				.isSimulated(supplyRequiredDescriptor.isSimulated())
-				.build();
+		final MaterialRequest.MaterialRequestBuilder materialRequestBuilder =
+				MaterialRequest.builder()
+						.mrpContext(mrpContext)
+						.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
+						.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
+						.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
+						.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
+						.isSimulated(supplyRequiredDescriptor.isSimulated());
+
+		if(mrpContext.getProductPlanning().isLotForLot())
+		{
+			materialRequestBuilder.qtyToSupply(Quantity.of(materialEventQty, uom));
+		}
+		else
+		{
+			materialRequestBuilder.qtyToSupply(Quantity.of(qtyToSupply, uom));
+		}
+
+		return materialRequestBuilder.build();
 	}
 }

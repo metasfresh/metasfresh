@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.material.event;
 
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
@@ -60,6 +61,12 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
+		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		if(!productPlanning.isLotForLot() && supplyRequiredDescriptor.getFullDemandQty().signum() <= 0)
+		{
+			return Optional.empty();
+		}
+
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
 		final OrgId orgId = supplyRequiredDescriptor.getEventDescriptor().getOrgId();
 
@@ -70,18 +77,24 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
-
-		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
+		final PurchaseCandidateAdvisedEvent.PurchaseCandidateAdvisedEventBuilder event = PurchaseCandidateAdvisedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
-				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
-				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
-				.build();
+				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId());
+
+		if(productPlanning.isLotForLot())
+		{
+			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(supplyRequiredDescriptor.getMaterialEventQty());
+			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().materialDescriptor(updatedMaterialDescriptor).build());
+		}
+		else
+		{
+			event.supplyRequiredDescriptor(supplyRequiredDescriptor);
+		}
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
-		return Optional.of(event);
+		return Optional.of(event.build());
 	}
 }

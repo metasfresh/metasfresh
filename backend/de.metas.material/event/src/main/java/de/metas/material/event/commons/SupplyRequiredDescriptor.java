@@ -64,6 +64,8 @@ public class SupplyRequiredDescriptor
 
 	BigDecimal fullDemandQty;
 
+	BigDecimal materialEventQty ;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private SupplyRequiredDescriptor(
@@ -78,7 +80,8 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
 			@JsonProperty("simulated") final boolean simulated,
-			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty)
+			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty,
+			@JsonProperty("materialEventQty") final BigDecimal materialEventQty)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -96,5 +99,6 @@ public class SupplyRequiredDescriptor
 		this.subscriptionProgressId = subscriptionProgressId > 0 ? subscriptionProgressId : -1;
 		this.simulated = simulated;
 		this.fullDemandQty = fullDemandQty;
+		this.materialEventQty = materialEventQty;
 	}
 }

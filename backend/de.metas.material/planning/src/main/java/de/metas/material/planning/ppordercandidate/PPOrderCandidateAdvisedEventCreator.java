@@ -72,6 +72,10 @@ public class PPOrderCandidateAdvisedEventCreator
 		}
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		if(!productPlanning.isLotForLot() && supplyRequiredDescriptor.getFullDemandQty().signum() <= 0)
+		{
+			return ImmutableList.of();
+		}
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
 

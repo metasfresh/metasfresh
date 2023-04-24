@@ -194,7 +194,8 @@ public class DemandCandiateHandler implements CandidateHandler
 		Loggables.addLog("Quantity after demand applied: {}", availableQuantityAfterDemandWasApplied);
 
 		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getMinMaxDescriptor());
-		if (requiredQty.signum() > 0)
+		final BigDecimal materialEventQty = demandCandidateWithId.getMaterialDescriptor().getQuantity();
+		if (requiredQty.signum() > 0 || materialEventQty.signum() > 0)
 		{
 			postSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 		}

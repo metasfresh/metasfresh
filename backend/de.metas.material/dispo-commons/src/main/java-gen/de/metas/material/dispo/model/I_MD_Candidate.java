@@ -1,9 +1,8 @@
 package de.metas.material.dispo.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Candidate
  *  @author metasfresh (generated) 
@@ -242,6 +241,29 @@ public interface I_MD_Candidate
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsLotForLot (boolean IsLotForLot);
+
+	/**
+	 * Get Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLotForLot();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_MD_Candidate.class, "IsLotForLot", null);
+	String COLUMNNAME_IsLotForLot = "IsLotForLot";
+
+	/**
 	 * Set ATP reserved for customer.
 	 *
 	 * <br>Type: YesNo
@@ -288,6 +310,136 @@ public interface I_MD_Candidate
 
 	ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_MD_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Business case.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_BusinessCase (@Nullable java.lang.String MD_Candidate_BusinessCase);
+
+	/**
+	 * Get Business case.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMD_Candidate_BusinessCase();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
+	String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
+
+	/**
+	 * Set Gruppen-ID.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_GroupId (int MD_Candidate_GroupId);
+
+	/**
+	 * Get Gruppen-ID.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Candidate_GroupId();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_GroupId = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_GroupId", null);
+	String COLUMNNAME_MD_Candidate_GroupId = "MD_Candidate_GroupId";
+
+	/**
+	 * Set Dispo Candidate.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_ID (int MD_Candidate_ID);
+
+	/**
+	 * Get Dispo Candidate.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Candidate_ID();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_ID", null);
+	String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
+
+	/**
+	 * Set Elterndatensatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_Parent_ID (int MD_Candidate_Parent_ID);
+
+	/**
+	 * Get Elterndatensatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Candidate_Parent_ID();
+
+	@Nullable de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent();
+
+	void setMD_Candidate_Parent(@Nullable de.metas.material.dispo.model.I_MD_Candidate MD_Candidate_Parent);
+
+	ModelColumn<I_MD_Candidate, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
+	String COLUMNNAME_MD_Candidate_Parent_ID = "MD_Candidate_Parent_ID";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_Status (@Nullable java.lang.String MD_Candidate_Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMD_Candidate_Status();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Status", null);
+	String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
+
+	/**
+	 * Set Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_Type (java.lang.String MD_Candidate_Type);
+
+	/**
+	 * Get Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getMD_Candidate_Type();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Type", null);
+	String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
 
 	/**
 	 * Set Forecast.
@@ -382,136 +534,6 @@ public interface I_MD_Candidate
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Business case.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_BusinessCase (@Nullable String MD_Candidate_BusinessCase);
-
-	/**
-	 * Get Business case.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getMD_Candidate_BusinessCase();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
-	String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
-
-	/**
-	 * Set Gruppen-ID.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_GroupId (int MD_Candidate_GroupId);
-
-	/**
-	 * Get Gruppen-ID.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Candidate_GroupId();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_GroupId = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_GroupId", null);
-	String COLUMNNAME_MD_Candidate_GroupId = "MD_Candidate_GroupId";
-
-	/**
-	 * Set Dispo Candidate.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_ID (int MD_Candidate_ID);
-
-	/**
-	 * Get Dispo Candidate.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Candidate_ID();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_ID", null);
-	String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
-
-	/**
-	 * Set Elterndatensatz.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_Parent_ID (int MD_Candidate_Parent_ID);
-
-	/**
-	 * Get Elterndatensatz.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Candidate_Parent_ID();
-
-	@Nullable I_MD_Candidate getMD_Candidate_Parent();
-
-	void setMD_Candidate_Parent(@Nullable I_MD_Candidate MD_Candidate_Parent);
-
-	ModelColumn<I_MD_Candidate, I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", I_MD_Candidate.class);
-	String COLUMNNAME_MD_Candidate_Parent_ID = "MD_Candidate_Parent_ID";
-
-	/**
-	 * Set Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_Status (@Nullable String MD_Candidate_Status);
-
-	/**
-	 * Get Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getMD_Candidate_Status();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Status", null);
-	String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
-
-	/**
-	 * Set Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_Type (String MD_Candidate_Type);
-
-	/**
-	 * Get Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getMD_Candidate_Type();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Type", null);
-	String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
-
-	/**
 	 * Set Quantity.
 	 * Quantity
 	 *
@@ -583,31 +605,6 @@ public interface I_MD_Candidate
 	String COLUMNNAME_Qty_Display = "Qty_Display";
 
 	/**
-	 * Set Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setQty_Planned_Display (@Nullable BigDecimal Qty_Planned_Display);
-
-	/**
-	 * Get Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	BigDecimal getQty_Planned_Display();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Planned_Display", null);
-	String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
-
-	/**
 	 * Set Fulfilled quantity.
 	 * Summe der bereits eingetretenden Materialbewegungen
 	 *
@@ -654,6 +651,31 @@ public interface I_MD_Candidate
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_QtyFulfilled_Display = new ModelColumn<>(I_MD_Candidate.class, "QtyFulfilled_Display", null);
 	String COLUMNNAME_QtyFulfilled_Display = "QtyFulfilled_Display";
+
+	/**
+	 * Set Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQty_Planned_Display (@Nullable BigDecimal Qty_Planned_Display);
+
+	/**
+	 * Get Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getQty_Planned_Display();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Planned_Display", null);
+	String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
 
 	/**
 	 * Set Höchstmenge.
@@ -731,7 +753,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setStorageAttributesKey (String StorageAttributesKey);
+	void setStorageAttributesKey (java.lang.String StorageAttributesKey);
 
 	/**
 	 * Get StorageAttributesKey (technical).
@@ -740,7 +762,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getStorageAttributesKey();
+	java.lang.String getStorageAttributesKey();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_StorageAttributesKey = new ModelColumn<>(I_MD_Candidate.class, "StorageAttributesKey", null);
 	String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
@@ -777,7 +799,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString1 (@Nullable String UserElementString1);
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
 	 * Get UserElementString1.
@@ -786,7 +808,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString1();
+	@Nullable java.lang.String getUserElementString1();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString1", null);
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
@@ -798,7 +820,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString2 (@Nullable String UserElementString2);
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
 	 * Get UserElementString2.
@@ -807,7 +829,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString2();
+	@Nullable java.lang.String getUserElementString2();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString2", null);
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
@@ -819,7 +841,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString3 (@Nullable String UserElementString3);
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
 	 * Get UserElementString3.
@@ -828,7 +850,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString3();
+	@Nullable java.lang.String getUserElementString3();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString3", null);
 	String COLUMNNAME_UserElementString3 = "UserElementString3";
@@ -840,7 +862,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString4 (@Nullable String UserElementString4);
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
 
 	/**
 	 * Get UserElementString4.
@@ -849,7 +871,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString4();
+	@Nullable java.lang.String getUserElementString4();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString4", null);
 	String COLUMNNAME_UserElementString4 = "UserElementString4";
@@ -861,7 +883,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString5 (@Nullable String UserElementString5);
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
 
 	/**
 	 * Get UserElementString5.
@@ -870,7 +892,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString5();
+	@Nullable java.lang.String getUserElementString5();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString5", null);
 	String COLUMNNAME_UserElementString5 = "UserElementString5";
@@ -882,7 +904,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString6 (@Nullable String UserElementString6);
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
 
 	/**
 	 * Get UserElementString6.
@@ -891,7 +913,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString6();
+	@Nullable java.lang.String getUserElementString6();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString6", null);
 	String COLUMNNAME_UserElementString6 = "UserElementString6";
@@ -903,7 +925,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString7 (@Nullable String UserElementString7);
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
 
 	/**
 	 * Get UserElementString7.
@@ -912,7 +934,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString7();
+	@Nullable java.lang.String getUserElementString7();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";

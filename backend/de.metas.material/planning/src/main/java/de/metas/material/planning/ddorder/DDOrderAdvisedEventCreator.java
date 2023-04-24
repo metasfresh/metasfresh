@@ -65,13 +65,19 @@ public class DDOrderAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
+		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+		if(!productPlanningData.isLotForLot() && supplyRequiredDescriptor.getFullDemandQty().signum() <= 0)
+		{
+			return ImmutableList.of();
+		}
+
 		final List<DDOrderAdvisedEvent> events = new ArrayList<>();
 
 		final List<DDOrder> ddOrders = ddOrderPojoSupplier
 				.supplyPojos(
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext));
 
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+
 		for (final DDOrder ddOrder : ddOrders)
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
