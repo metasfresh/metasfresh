@@ -27,7 +27,7 @@ public class SAPGLJournalLineCreateRequest
 	@NonNull
 	public static SAPGLJournalLineCreateRequest of(
 			@NonNull final SAPGLJournalLine line,
-			@NonNull final Boolean reversePostingSign)
+			final boolean reversePostingSign)
 	{
 		return SAPGLJournalLineCreateRequest.builder()
 				.postingSign(line.getPostingSign())

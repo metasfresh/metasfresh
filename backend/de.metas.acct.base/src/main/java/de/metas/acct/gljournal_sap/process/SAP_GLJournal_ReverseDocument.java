@@ -24,7 +24,7 @@ package de.metas.acct.gljournal_sap.process;
 
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
-import de.metas.acct.gljournal_sap.service.SAPGLJournalCopyRequest;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalReverseRequest;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.document.engine.DocStatus;
@@ -72,7 +72,7 @@ public class SAP_GLJournal_ReverseDocument extends JavaProcess implements IProce
 	@Override
 	protected String doIt()
 	{
-		final SAPGLJournal createdJournal = glJournalService.reverse(SAPGLJournalCopyRequest.builder()
+		final SAPGLJournal createdJournal = glJournalService.reverse(SAPGLJournalReverseRequest.builder()
 																			  .sourceJournalId(SAPGLJournalId.ofRepoId(getRecord_ID()))
 																			  .dateDoc(dateDoc)
 																			  .build());
