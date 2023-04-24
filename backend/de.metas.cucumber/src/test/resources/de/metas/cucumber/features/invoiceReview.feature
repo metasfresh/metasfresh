@@ -10,6 +10,7 @@ Feature: external references for metasfresh resources
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2023-04-05T12:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
@@ -45,11 +46,15 @@ Feature: external references for metasfresh resources
 
   @from:cucumber
   @Id:S14758_100
+  # Note: completing the invoice to exercise also the MI that might create an empty invoic review record
   Scenario: Insert review by C_Invoice_ID and update it via ExternalId
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code
 """
 {
   "invoice": {
+   "action": {
+      "completeIt": true
+    },
     "header": {
       "orgCode": "001",
       "acctSchemaCode": "metas fresh UN/34 CHF",
@@ -93,7 +98,7 @@ Feature: external references for metasfresh resources
       | invoice_1               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 30 Tage netto | false     | DR        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_1 |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 30 Tage netto | true      | CO        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_1 |
 
     And the user creates a JsonInvoiceReviewUpsertItem and stores it in the context
       | OPT.C_Invoice_ID.Identifier | orgCode | customColumn |

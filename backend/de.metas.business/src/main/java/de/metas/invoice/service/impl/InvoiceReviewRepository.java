@@ -73,4 +73,11 @@ public class InvoiceReviewRepository
 		return newReview;
 	}
 
+	public void delete(@NonNull final InvoiceId invoiceId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Review.class)
+				.addEqualsFilter(I_C_Invoice_Review.COLUMN_C_Invoice_ID, invoiceId)
+				.create()
+				.delete();
+	}
 }
