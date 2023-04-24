@@ -25,16 +25,3 @@ UPDATE AD_SysConfig SET ConfigurationLevel='O', Description='If Y and a sales in
 UPDATE AD_SysConfig SET AD_Org_ID=0, ConfigurationLevel='O',Updated=TO_TIMESTAMP('2023-04-24 15:04:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541608
 ;
 
-
--- SysConfig Name: de.metas.invoice.review.AutoCreateForSalesInvoice
--- SysConfig Value: Y
--- 2023-04-24T13:05:24.777Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,541609,'O',TO_TIMESTAMP('2023-04-24 15:05:24','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ab182','Y','de.metas.invoice.review.AutoCreateForSalesInvoice',TO_TIMESTAMP('2023-04-24 15:05:24','YYYY-MM-DD HH24:MI:SS'),100,'Y')
-;
-
--- SysConfig Name: de.metas.invoice.review.AutoCreateForSalesInvoice
--- SysConfig Value: Y
--- 2023-04-24T13:05:41.286Z
-UPDATE AD_SysConfig SET ConfigurationLevel='O', Description='This overrides the N value from https://abeamuat.metasfresh.com/window/50006/541608 for ab182',Updated=TO_TIMESTAMP('2023-04-24 15:05:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541609
-;
-
