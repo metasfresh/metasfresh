@@ -85,23 +85,23 @@ public class C_Invoice_Review_StepDef
 		final String orgCode = tableRow.get("orgCode");
 		final String customColumn = tableRow.get("customColumn");
 
-		final String invoiceIdentifier;
+		final JsonInvoiceReviewUpsertItem.JsonInvoiceReviewUpsertItemBuilder payloadBuilder = JsonInvoiceReviewUpsertItem.builder();
+
 		if (tableRow.containsKey("OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER))
 		{
 			final I_C_Invoice invoice = invoiceTable.get(tableRow.get("OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER));
-			invoiceIdentifier = Integer.toString(invoice.getC_Invoice_ID());
+			payloadBuilder.invoiceId(invoice.getC_Invoice_ID());
 		}
 		else if (tableRow.containsKey("OPT." + COLUMNNAME_ExternalId))
 		{
-			invoiceIdentifier = "ext-" + tableRow.get("OPT." + COLUMNNAME_ExternalId);
+			payloadBuilder.externalId(tableRow.get("OPT." + COLUMNNAME_ExternalId));
 		}
 		else
 		{
 			throw new AdempiereException("Don't know how to identify invoice to review");
 		}
 
-		final JsonInvoiceReviewUpsertItem payload = JsonInvoiceReviewUpsertItem.builder()
-				.invoiceIdentifier(invoiceIdentifier)
+		final JsonInvoiceReviewUpsertItem payload = payloadBuilder
 				.orgCode(orgCode)
 				.extendedProps(Collections.singletonMap("customColumn", customColumn))
 				.build();
@@ -180,7 +180,7 @@ public class C_Invoice_Review_StepDef
 			softly.assertThat(jsonCreateInvoiceResponse.getResult()).isNull();
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).isNotNull();
-			softly.assertThat(jsonCreateInvoiceResponse.getErrors().size()).isEqualTo(1);
+			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).hasSize(1);
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
 
