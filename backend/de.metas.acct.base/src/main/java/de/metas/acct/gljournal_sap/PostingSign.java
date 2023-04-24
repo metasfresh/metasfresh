@@ -28,7 +28,7 @@ public enum PostingSign implements ReferenceListAwareEnum
 
 	public boolean isCredit() {return CREDIT.equals(this);}
 
-	public PostingSign reverse()
+	public @NonNull PostingSign reverse()
 	{
 		return isDebit() ? CREDIT : DEBIT;
 	}

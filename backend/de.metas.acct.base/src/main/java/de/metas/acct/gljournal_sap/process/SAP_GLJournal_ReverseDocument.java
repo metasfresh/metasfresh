@@ -77,10 +77,6 @@ public class SAP_GLJournal_ReverseDocument extends JavaProcess implements IProce
 																			  .dateDoc(dateDoc)
 																			  .build());
 
-		final I_SAP_GLJournal sourceRecord = InterfaceWrapperHelper.load(SAPGLJournalId.ofRepoId(getRecord_ID()), I_SAP_GLJournal.class);
-		sourceRecord.setDocStatus(DocStatus.Reversed.getCode());
-		InterfaceWrapperHelper.save(sourceRecord);
-
 		getResult().setRecordToOpen(TableRecordReference.of(I_SAP_GLJournal.Table_Name, createdJournal.getId()),
 									getProcessInfo().getAD_Window_ID(),
 									ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument);

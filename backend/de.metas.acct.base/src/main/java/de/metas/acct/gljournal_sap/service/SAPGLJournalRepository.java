@@ -6,6 +6,7 @@ import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.function.Consumer;
@@ -67,5 +68,12 @@ public class SAPGLJournalRepository
 	{
 		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
 		return loaderAndSaver.create(createRequest, currencyConverter);
+	}
+
+	public void setDocStatus(final @NonNull SAPGLJournalId glJournalId, final String code)
+	{
+		final I_SAP_GLJournal sourceRecord = InterfaceWrapperHelper.load(glJournalId, I_SAP_GLJournal.class);
+		sourceRecord.setDocStatus(DocStatus.Reversed.getCode());
+		InterfaceWrapperHelper.save(sourceRecord);
 	}
 }
