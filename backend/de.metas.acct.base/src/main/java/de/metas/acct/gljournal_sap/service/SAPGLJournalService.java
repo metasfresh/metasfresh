@@ -89,7 +89,8 @@ public class SAPGLJournalService
 																					 copyRequest.getDateDoc(),
 																					 true);
 
-		glJournalRepository.setDocStatus(copyRequest.getSourceJournalId(),DocStatus.Reversed.getCode());
+		glJournalRepository.updateById(copyRequest.getSourceJournalId(),
+									   (Consumer<SAPGLJournal>)glJournal -> glJournal.setDocStatus(DocStatus.Reversed));
 
 		return glJournalRepository.create(createRequest, currencyConverter);
 	}

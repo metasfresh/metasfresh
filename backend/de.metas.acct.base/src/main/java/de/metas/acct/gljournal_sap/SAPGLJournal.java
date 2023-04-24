@@ -46,7 +46,7 @@ public class SAPGLJournal
 
 	@NonNull @Getter private Money totalAcctDR;
 	@NonNull @Getter private Money totalAcctCR;
-	@NonNull @Getter private final DocStatus docStatus;
+	@NonNull @Getter private DocStatus docStatus;
 
 	@NonNull @Getter private final OrgId orgId;
 	@NonNull @Getter private final Dimension dimension;
@@ -217,5 +217,10 @@ public class SAPGLJournal
 	{
 		lines.removeIf(predicate);
 		updateTotals();
+	}
+
+	public void setDocStatus(final DocStatus docStatus)
+	{
+		this.docStatus = docStatus;
 	}
 }

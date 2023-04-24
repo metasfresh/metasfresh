@@ -307,6 +307,7 @@ public class SAPGLJournalLoaderAndSaver
 	{
 		headerRecord.setTotalDr(glJournal.getTotalAcctDR().toBigDecimal());
 		headerRecord.setTotalCr(glJournal.getTotalAcctCR().toBigDecimal());
+		headerRecord.setDocStatus(glJournal.getDocStatus().getCode());
 	}
 
 	private static void updateLineRecord(final I_SAP_GLJournalLine lineRecord, final SAPGLJournalLine line)
