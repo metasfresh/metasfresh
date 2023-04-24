@@ -28,6 +28,7 @@ import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.sap.export.SAPExportAcctConfig;
+import de.metas.externalsystem.sap.importsettings.SAPBPartnerImportSettings;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.util.Check;
@@ -79,6 +80,9 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@NonNull
 	ImmutableList<SAPExportAcctConfig> exportAcctConfigList;
 
+	@NonNull
+	ImmutableList<SAPBPartnerImportSettings> bPartnerImportSettings;
+
 	@Builder
 	public ExternalSystemSAPConfig(
 			@NonNull final ExternalSystemSAPConfigId id,
@@ -88,6 +92,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@Nullable final SAPContentSourceLocalFile contentSourceLocalFile,
 			final boolean checkDescriptionForMaterialType,
 			@Nullable final ImmutableList<SAPExportAcctConfig> exportAcctConfigList,
+			@Nullable final ImmutableList<SAPBPartnerImportSettings> bPartnerImportSettings,
 			@Nullable final String baseURL,
 			@Nullable final String postAcctDocumentsPath,
 			@Nullable final String signedVersion,
@@ -102,6 +107,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.contentSourceLocalFile = contentSourceLocalFile;
 		this.checkDescriptionForMaterialType = checkDescriptionForMaterialType;
 		this.exportAcctConfigList = CoalesceUtil.coalesceNotNull(exportAcctConfigList, ImmutableList.of());
+		this.bPartnerImportSettings = CoalesceUtil.coalesceNotNull(bPartnerImportSettings, ImmutableList.of());
 		this.postAcctDocumentsPath = postAcctDocumentsPath;
 		this.signedVersion = signedVersion;
 		this.signedPermissions = signedPermissions;

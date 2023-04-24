@@ -30,6 +30,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_Acct_Export;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
+import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -158,6 +159,8 @@ public class ExternalSystemTestUtil
 
 		saveRecord(exportConfig);
 
+		createSAPBPartnerImportSettings(childRecord.getExternalSystem_Config_SAP_ID());
+
 		return childRecord;
 	}
 
@@ -214,5 +217,20 @@ public class ExternalSystemTestUtil
 		saveRecord(contentSourceSAPLocalFile);
 
 		return contentSourceSAPLocalFile;
+	}
+
+	@NonNull
+	public I_SAP_BPartnerImportSettings createSAPBPartnerImportSettings(final int externalSystemConfigSAPId)
+	{
+		final I_SAP_BPartnerImportSettings importSettings = newInstance(I_SAP_BPartnerImportSettings.class);
+
+		importSettings.setExternalSystem_Config_SAP_ID(externalSystemConfigSAPId);
+		importSettings.setIsSingleBPartner(true);
+		importSettings.setPartnerCodePattern("PartnerCode-Pattern");
+		importSettings.setSeqNo(10);
+
+		saveRecord(importSettings);
+
+		return importSettings;
 	}
 }

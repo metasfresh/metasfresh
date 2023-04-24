@@ -22,10 +22,13 @@
 
 package de.metas.externalsystem.sap.export;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalRepository;
 import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.DocTypeId;
@@ -38,12 +41,15 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.MovementId;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -51,6 +57,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Movement;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 @Service
 public class AcctDocumentInfoProvider
@@ -61,6 +70,7 @@ public class AcctDocumentInfoProvider
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
 	@NonNull
 	private final SAPGLJournalRepository sapglJournalRepository;
@@ -117,11 +127,43 @@ public class AcctDocumentInfoProvider
 						.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
 						.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
 						.build();
+
+			case I_C_AllocationHdr.Table_Name:
+				final I_C_AllocationHdr allocationHdr = allocationDAO.getById(recordReference.getIdAssumingTableName(I_C_AllocationHdr.Table_Name, PaymentAllocationId::ofRepoId));
+				return AcctDocumentInfo.builder()
+						.docTypeId(getPaymentDocType(allocationHdr))
+						.orgId(OrgId.ofRepoId(allocationHdr.getAD_Org_ID()))
+						.build();
 			default:
 				throw new AdempiereException("Unsupported TableRecordReference!")
 						.appendParametersToMessage()
 						.setParameter("TableName", recordReference.getTableName())
 						.setParameter("Record_Id", recordReference.getRecord_ID());
 		}
+	}
+
+	@Nullable
+	private DocTypeId getPaymentDocType(@NonNull final I_C_AllocationHdr allocationHdr)
+	{
+		final Set<Integer> paymentIds = allocationDAO.retrieveLines(allocationHdr)
+				.stream()
+				.map(I_C_AllocationLine::getC_Payment_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (paymentIds.size() != 1)
+		{
+			Loggables.get().addLog("Nr of payments found: {} != 1 for PaymentAllocationId={} => will not be exported!", paymentIds.size(), allocationHdr.getC_AllocationHdr_ID());
+			return null;
+		}
+
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(paymentIds.iterator().next());
+
+		if (paymentId == null)
+		{
+			Loggables.get().addLog("No payment found for PaymentAllocationId={} => will not be exported!", allocationHdr.getC_AllocationHdr_ID());
+			return null;
+		}
+
+		return DocTypeId.ofRepoId(paymentDAO.getById(paymentId).getC_DocType_ID());
 	}
 }

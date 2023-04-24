@@ -157,5 +157,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_SAP_Signature = "SAP_Signature";
 	public static final String PARAM_SAP_Post_Acct_Documents_Path = "SAP_Post_Acct_Documents_Path";
 	public static final String PARAM_SAP_ApiVersion = "SAP_ApiVersion";
+
+	public static final String PARAM_SAP_BPARTNER_IMPORT_SETTINGS = "SAP_BPartner_Import_Settings";
 }
 
