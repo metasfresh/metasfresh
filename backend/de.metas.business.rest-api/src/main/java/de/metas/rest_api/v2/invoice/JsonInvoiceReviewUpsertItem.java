@@ -22,8 +22,12 @@
 
 package de.metas.rest_api.v2.invoice;
 
+<<<<<<< HEAD
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import io.swagger.v3.oas.annotations.media.Schema;
+=======
+import io.swagger.annotations.ApiModelProperty;
+>>>>>>> a753f047856 (Adorable badger uat change review request body (#15156))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,6 +41,7 @@ import java.util.Map;
 @Jacksonized
 public class JsonInvoiceReviewUpsertItem
 {
+<<<<<<< HEAD
 	@NonNull
 	@Schema(description = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
@@ -44,7 +49,24 @@ public class JsonInvoiceReviewUpsertItem
 	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 			+ "or the invoking user needs to belong to an organisation, which is then used.")
+=======
 	@Nullable
+	@ApiModelProperty(position = 10,
+			dataType = "java.lang.String",
+			value = "Optional; if omitted, then both `externalId` and `orgCode` have to be provided. Translates to `C_Invoice.C_Invoice_ID`")
+	Integer invoiceId;
+
+>>>>>>> a753f047856 (Adorable badger uat change review request body (#15156))
+	@Nullable
+	@ApiModelProperty(position = 20,
+			dataType = "java.lang.String",
+			value = "Optional; if omitted, then both `invoiceId` has to be provided. If given, then also `orgCode` has to be provided. Translates to `C_Invoice.ExternalId`")
+	String externalId;
+
+	@ApiModelProperty(position = 30, value = "Specifies the `AD_Org_ID`.\n"
+			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
+			+ "or the invoking user needs to belong to an organisation, which is then used. Required if `invoiceId` is not provided.")
+	@NonNull
 	String orgCode;
 
 	@Nullable
