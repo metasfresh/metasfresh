@@ -30,8 +30,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
@@ -50,7 +50,7 @@ public class C_Invoice_InvoiceReview
 		this.invoiceReviewRepository = invoiceReviewRepository;
 	}
 
-	@ModelChange(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createReviewRecord(final I_C_Invoice invoice)
 	{
 		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
@@ -71,7 +71,7 @@ public class C_Invoice_InvoiceReview
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE})
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE})
 	public void deleteReviewRecord(final I_C_Invoice invoice)
 	{
 		invoiceReviewRepository.delete(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
