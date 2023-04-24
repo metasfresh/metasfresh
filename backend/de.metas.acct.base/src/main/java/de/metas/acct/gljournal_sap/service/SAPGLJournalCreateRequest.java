@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.document.DocTypeId;
@@ -36,6 +35,7 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
 import javax.annotation.Nullable;
 import java.time.Instant;
 
@@ -61,31 +61,4 @@ public class SAPGLJournalCreateRequest
 	@NonNull ImmutableList<SAPGLJournalLineCreateRequest> lines;
 
 	@Nullable SAPGLJournalId reversalId;
-
-	@NonNull
-	public static SAPGLJournalCreateRequest of(
-			@NonNull final SAPGLJournal journal,
-			@NonNull final Instant dateDoc,
-			final boolean reversePostingSign)
-	{
-		return SAPGLJournalCreateRequest.builder()
-				.docTypeId(journal.getDocTypeId())
-				.conversionCtx(journal.getConversionCtx())
-				.dateDoc(dateDoc)
-				.acctSchemaId(journal.getAcctSchemaId())
-				.postingType(journal.getPostingType())
-				.reversalId(journal.getId())
-				.totalAcctDR(reversePostingSign ? journal.getTotalAcctCR() : journal.getTotalAcctDR())
-				.totalAcctCR(reversePostingSign ? journal.getTotalAcctDR() : journal.getTotalAcctCR())
-				.orgId(journal.getOrgId())
-				.dimension(journal.getDimension())
-				.description(journal.getDescription())
-				.glCategoryId(journal.getGlCategoryId())
-				//
-				.lines(journal.getLines()
-							   .stream()
-							   .map(line -> SAPGLJournalLineCreateRequest.of(line, reversePostingSign))
-							   .collect(ImmutableList.toImmutableList()))
-				.build();
-	}
 }

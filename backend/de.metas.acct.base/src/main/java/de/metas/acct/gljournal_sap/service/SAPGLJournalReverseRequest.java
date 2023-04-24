@@ -34,6 +34,5 @@ import java.time.Instant;
 public class SAPGLJournalReverseRequest
 {
 	@NonNull SAPGLJournalId sourceJournalId;
-
 	@NonNull Instant dateDoc;
 }

@@ -2,7 +2,6 @@ package de.metas.acct.gljournal_sap.service;
 
 import de.metas.acct.Account;
 import de.metas.acct.gljournal_sap.PostingSign;
-import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.document.dimension.Dimension;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
@@ -23,21 +22,4 @@ public class SAPGLJournalLineCreateRequest
 	@Nullable TaxId taxId;
 	@Nullable String description;
 	boolean determineTaxBaseSAP;
-
-	@NonNull
-	public static SAPGLJournalLineCreateRequest of(
-			@NonNull final SAPGLJournalLine line,
-			final boolean reversePostingSign)
-	{
-		return SAPGLJournalLineCreateRequest.builder()
-				.postingSign(line.getPostingSign())
-				.account(line.getAccount())
-				.postingSign(reversePostingSign ? line.getPostingSign().reverse() : line.getPostingSign())
-				.amount(line.getAmount().toBigDecimal())
-				.dimension(line.getDimension())
-				.description(line.getDescription())
-				.taxId(line.getTaxId())
-				.determineTaxBaseSAP(line.isDetermineTaxBaseSAP())
-				.build();
-	}
 }

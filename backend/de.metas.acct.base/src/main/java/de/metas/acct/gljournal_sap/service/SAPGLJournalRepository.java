@@ -6,7 +6,6 @@ import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.function.Consumer;
@@ -68,5 +67,11 @@ public class SAPGLJournalRepository
 	{
 		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
 		return loaderAndSaver.create(createRequest, currencyConverter);
+	}
+
+	public void save(@NonNull final SAPGLJournal sapglJournal)
+	{
+		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
+		loaderAndSaver.save(sapglJournal);
 	}
 }
