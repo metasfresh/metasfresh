@@ -392,7 +392,6 @@ class PPOrderLinesViewDataLoader
 				.huStatus(huEditorRow.getHUStatusDisplay())
 				.quantity(quantity)
 				.includedRows(includedRows)
-				.clearanceStatus(huEditorRow.getClearanceStatus())
 				.build();
 	}
 

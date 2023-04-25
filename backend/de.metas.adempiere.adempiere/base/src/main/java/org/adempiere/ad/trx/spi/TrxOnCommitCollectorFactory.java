@@ -1,12 +1,14 @@
 package org.adempiere.ad.trx.spi;
 
-import com.google.common.base.Supplier;
-import de.metas.util.Services;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.common.base.Supplier;
+
+import de.metas.util.Services;
 
 /*
  * #%L

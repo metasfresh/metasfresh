@@ -1,7 +1,17 @@
 package de.metas.acct.model.validator;
 
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.organization.OrgId;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Activity_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Campaign_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_ElementValue_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Location_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Project_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_SalesRegion_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_IsMandatory;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_Org_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_SeqNo;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -14,17 +24,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Activity_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_BPartner_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Campaign_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_ElementValue_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Location_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Project_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_SalesRegion_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_IsMandatory;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_Org_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_SeqNo;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.organization.OrgId;
 
 /*
  * #%L

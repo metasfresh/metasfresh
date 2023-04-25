@@ -278,8 +278,6 @@ const normalizePickingLines = (lines) => {
 };
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
-  draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
-
   //
   // Copy lines
   draftActivityDataStored.lines = normalizePickingLines(fromActivity.componentProps.lines);

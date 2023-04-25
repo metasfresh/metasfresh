@@ -28,6 +28,3 @@ yarn-error.log
 /cypress.json
 /metasfresh-webui-frontend.iml
 *.diff
-
-# we are using yarn, so we can ignore npm package lock
-package-lock.json

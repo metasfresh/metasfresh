@@ -12,13 +12,9 @@
         "lastName": "lastName",
         "customerNumber": "customerNumber",
         "email": "orderCustomerEmail@example.com",
-        "vatIds": [
-          "vatId12"
-        ],
         "customFields": {
           "externalReference": "customerId",
-          "customUserId": "userId1",
-          "customSalesRepId": "mockSalesRepIdentifier"
+          "customUserId": "userId1"
           }
         },
       "currencyId": "currencyId",
@@ -42,9 +38,9 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId",
-          "customSalesRepId": "mockSalesRepIdentifier"
+          "externalReference": "customerId"
         }
+
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
@@ -67,8 +63,7 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId",
-          "customSalesRepId": "mockSalesRepIdentifier"
+          "externalReference": "customerId"
         }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
@@ -92,8 +87,7 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId",
-          "customSalesRepId": "mockSalesRepIdentifier"
+          "externalReference": "customerId"
         }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",

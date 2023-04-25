@@ -36,7 +36,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
@@ -47,7 +46,7 @@ public final class WFProcess
 	@NonNull private final WFProcessId id;
 
 	@Getter
-	@Nullable private final UserId responsibleId;
+	@NonNull private final UserId invokerId;
 
 	@Getter
 	@NonNull private final ITranslatableString caption;
@@ -63,7 +62,7 @@ public final class WFProcess
 	@Builder(toBuilder = true)
 	private WFProcess(
 			@NonNull final WFProcessId id,
-			@Nullable final UserId responsibleId,
+			@NonNull final UserId invokerId,
 			@NonNull final ITranslatableString caption,
 			@NonNull final Object document,
 			@NonNull final ImmutableList<WFActivity> activities)
@@ -71,7 +70,7 @@ public final class WFProcess
 		Check.assumeNotEmpty(activities, "activities is not empty");
 
 		this.id = id;
-		this.responsibleId = responsibleId;
+		this.invokerId = invokerId;
 		this.caption = caption;
 		this.document = document;
 		this.activities = activities;
@@ -100,7 +99,7 @@ public final class WFProcess
 
 	public boolean hasAccess(@NonNull final UserId userId)
 	{
-		return UserId.equals(getResponsibleId(), userId);
+		return UserId.equals(getInvokerId(), userId);
 	}
 
 	public <T> T getDocumentAs(@NonNull final Class<T> type)

@@ -6,7 +6,6 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
-import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.JavaProcess;
@@ -47,8 +46,8 @@ public class ProcessOLCands extends JavaProcess
 
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 
-		olCandToOrderEnqueuer.enqueue(olCandProcessorId, null);
-		addLog("Created workpackage");
+		final QueueWorkPackageId workPackageId = olCandToOrderEnqueuer.enqueue(olCandProcessorId, null);
+		addLog("Created workpackage with C_Queue_WorkPackage_ID={}",workPackageId.getRepoId());
 
 		return MSG_OK;
 	}

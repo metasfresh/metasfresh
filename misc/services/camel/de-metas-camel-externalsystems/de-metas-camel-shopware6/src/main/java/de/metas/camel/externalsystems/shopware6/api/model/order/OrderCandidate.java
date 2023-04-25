@@ -31,9 +31,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
-
 @Value
+@Builder
 @JsonDeserialize(builder = OrderCandidate.OrderCandidateBuilder.class)
 public class OrderCandidate
 {
@@ -49,28 +48,11 @@ public class OrderCandidate
 	@JsonProperty("salesRepId")
 	String salesRepId;
 
-	@NonNull
-	@JsonProperty("customer")
-	Customer customer;
-
-	@Builder
-	public OrderCandidate(
-			@JsonProperty("jsonOrder") @NonNull final JsonOrder jsonOrder,
-			@JsonProperty("orderNode") @NonNull final JsonNode orderNode,
-			@JsonProperty("salesRepId") @Nullable final String salesRepId)
-	{
-		this.jsonOrder = jsonOrder;
-		this.orderNode = orderNode;
-		this.salesRepId = salesRepId;
-
-		this.customer = Customer.of(orderNode.get(JSON_NODE_ORDER_CUSTOMER), jsonOrder.getOrderCustomer());
-	}
-
 	@Nullable
-	public JsonNode getCustomNode(@NonNull final String customPath)
+	public String getCustomField(@NonNull final String customPath)
 	{
-		final JsonNode customNode = orderNode.get(customPath);
+		final JsonNode customIdNode = orderNode.at(customPath);
 
-		return (customNode == null || customNode.isMissingNode() || customNode.isNull()) ? null : customNode;
+		return (customIdNode == null || customIdNode.isMissingNode() || customIdNode.isNull()) ? null : customIdNode.asText();
 	}
 }

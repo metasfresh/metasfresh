@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-import { loginRequest, logoutRequest } from '../api/login';
+import { loginRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
 import { setToken, clearToken } from '../actions/TokenActions';
 import { setLanguage } from '../utils/translations';
@@ -51,6 +51,8 @@ function createAuthObject() {
   const dispatch = useDispatch();
 
   const loginByToken = async ({ token, language }) => {
+    //console.log('auth.loginByToken: token=', { token, language });
+
     if (language) {
       setLanguage(language);
       Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });
@@ -63,7 +65,9 @@ function createAuthObject() {
 
   const login = (username, password) => {
     return loginRequest(username, password)
-      .then(({ error, token, language }) => {
+      .then(({ data }) => {
+        const { error, token, language } = data;
+
         if (error) {
           return Promise.reject(error);
         } else {
@@ -78,10 +82,6 @@ function createAuthObject() {
   };
 
   const logout = () => {
-    logoutRequest().catch((error) => {
-      console.error('logout error: ', error);
-    });
-
     dispatch(clearToken());
 
     Cookies.remove('Token', { expires: COOKIE_EXPIRATION });

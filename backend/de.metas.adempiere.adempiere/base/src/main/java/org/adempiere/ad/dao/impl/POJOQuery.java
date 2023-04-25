@@ -22,34 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import de.metas.common.util.time.SystemTime;
-import de.metas.dao.selection.pagination.PageDescriptor;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.money.Money;
-import de.metas.process.PInstanceId;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.UIDStringUtil;
-import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -66,6 +38,36 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+
+import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+
+import de.metas.dao.selection.pagination.PageDescriptor;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.money.Money;
+import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.UIDStringUtil;
+import lombok.NonNull;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {

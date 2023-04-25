@@ -12,7 +12,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.api.impl.DocOutboundDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
@@ -29,6 +28,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
@@ -177,8 +177,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	@VisibleForTesting
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
-		final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
-		I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archive));
+		final ArchiveId archiveId = ArchiveId.ofRepoId(archive.getAD_Archive_ID());
+		I_C_Doc_Outbound_Log docOutboundLogRecord = Services.get(IDocOutboundDAO.class).retrieveLog(archiveId);
 
 		if (docOutboundLogRecord == null)
 		{
@@ -213,7 +213,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		// Services
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-		final TableRecordReference reference = DocOutboundDAO.extractRecordRef(archiveRecord);
+		final TableRecordReference reference = TableRecordReference.ofReferenced(archiveRecord);
+
 		final int adTableId = reference.getAD_Table_ID();
 		final int recordId = reference.getRecord_ID();
 

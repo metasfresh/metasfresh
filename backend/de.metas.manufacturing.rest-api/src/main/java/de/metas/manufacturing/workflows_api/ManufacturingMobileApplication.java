@@ -1,15 +1,11 @@
 package de.metas.manufacturing.workflows_api;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.manufacturing.config.MobileUIManufacturingUserProfile;
-import de.metas.manufacturing.config.MobileUIManufacturingUserProfileRepository;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
@@ -45,49 +41,38 @@ import java.util.function.UnaryOperator;
 @Component
 public class ManufacturingMobileApplication implements WorkflowBasedMobileApplication
 {
-	@VisibleForTesting
-	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
+	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("mfg");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
+	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
+			.id(HANDLER_ID)
+			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.build();
 
-	private final MobileUIManufacturingUserProfileRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final HUQRCodesService huQRCodesService;
 
 	public ManufacturingMobileApplication(
-			@NonNull final MobileUIManufacturingUserProfileRepository userProfileRepository,
 			@NonNull final ManufacturingRestService manufacturingRestService,
 			@NonNull final HUQRCodesService huQRCodesService)
 	{
-		this.userProfileRepository = userProfileRepository;
 		this.manufacturingRestService = manufacturingRestService;
 		this.wfLaunchersProvider = new ManufacturingWorkflowLaunchersProvider(manufacturingRestService);
 		this.huQRCodesService = huQRCodesService;
 	}
 
 	@Override
-	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
-
-	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
-	{
-		final MobileUIManufacturingUserProfile userProfile = userProfileRepository.getByUserId(loggedUserId);
-		return MobileApplicationInfo.builder()
-				.id(APPLICATION_ID)
-				.caption(TranslatableStrings.adMessage(MSG_Caption))
-				.requiresLaunchersQRCodeFilter(userProfile.isScanResourceRequired())
-				.build();
-	}
+	@NonNull
+	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
 			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
 			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, filterByQRCode, suggestedLimit);
+		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
 	}
 
 	@Override
@@ -101,13 +86,6 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@Override
-	public WFProcess continueWorkflow(final WFProcessId wfProcessId, final UserId callerId)
-	{
-		final ManufacturingJob job = manufacturingRestService.assignJob(toPPOrderId(wfProcessId), callerId);
-		return ManufacturingRestService.toWFProcess(job);
-	}
-
-	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
 		final ManufacturingJob job = getManufacturingJob(wfProcessId);
@@ -117,7 +95,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		manufacturingRestService.abortAllJobs(callerId);
+		throw new UnsupportedOperationException(); // TODO
 	}
 
 	@Override
@@ -129,14 +107,8 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 	private ManufacturingJob getManufacturingJob(final WFProcessId wfProcessId)
 	{
-		final PPOrderId ppOrderId = toPPOrderId(wfProcessId);
+		final PPOrderId ppOrderId = wfProcessId.getRepoId(PPOrderId::ofRepoId);
 		return manufacturingRestService.getJobById(ppOrderId);
-	}
-
-	@NonNull
-	private static PPOrderId toPPOrderId(final WFProcessId wfProcessId)
-	{
-		return wfProcessId.getRepoId(PPOrderId::ofRepoId);
 	}
 
 	@NonNull
@@ -269,11 +241,5 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 						return resultBuilder.valueListId(attributes.getAttributeValueIdOrNull(attributeCode)).build();
 					}
 				});
-	}
-
-	@Override
-	public void logout(final @NonNull UserId userId)
-	{
-		abortAll(userId);
 	}
 }

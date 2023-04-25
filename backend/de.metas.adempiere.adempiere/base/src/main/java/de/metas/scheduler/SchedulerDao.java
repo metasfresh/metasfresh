@@ -24,6 +24,7 @@ package de.metas.scheduler;
 
 import de.metas.common.util.Check;
 import de.metas.process.AdProcessId;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;

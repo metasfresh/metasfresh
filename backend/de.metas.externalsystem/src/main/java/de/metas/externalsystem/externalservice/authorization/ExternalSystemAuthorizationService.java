@@ -22,7 +22,6 @@
 
 package de.metas.externalsystem.externalservice.authorization;
 
-import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
@@ -32,6 +31,7 @@ import de.metas.common.externalsystem.JsonExternalSystemMessageType;
 import de.metas.externalsystem.rabbitmq.custom.CustomMFToExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
@@ -41,9 +41,9 @@ import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_User;
 import org.slf4j.Logger;
@@ -93,18 +93,16 @@ public class ExternalSystemAuthorizationService
 			final JsonExternalSystemMessage message = buildJsonExternalSystemMessage(authToken);
 
 			customMessageSender.send(message);
-
-			Loggables.withLogger(log, Level.INFO).addLog("Sending AuthToken to Camel-ExternalSystem!");
 		}
 		catch (final ESMissingConfigurationException missingConfigException)
 		{
-			Loggables.withLogger(log, Level.ERROR).addLog(missingConfigException.getMessage() + "; exception: {}!", missingConfigException);
+			log.error(missingConfigException.getMessage(), missingConfigException);
 
 			externalsystemNotificationHelper.sendNotification(missingConfigException.getAdMessageKey(), missingConfigException.getParams());
 		}
 		catch (final Exception e)
 		{
-			Loggables.withLogger(log, Level.ERROR).addLog(e.getMessage() + "; exception: {}!", e);
+			log.error(e.getMessage(), e);
 
 			externalsystemNotificationHelper.sendNotification(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_VERIFICATION, ImmutableList.of(e.getMessage()));
 		}
@@ -115,41 +113,39 @@ public class ExternalSystemAuthorizationService
 	{
 		final I_AD_User configuredESUser = getConfiguredESUser();
 		final UserId configuredUserId = UserId.ofRepoId(configuredESUser.getAD_User_ID());
-		final Role role = getAndValidateRole(configuredUserId);
+		final RoleId roleId = getAndValidateRoleId(configuredUserId);
 
-		final UserAuthToken userAuthToken = authTokenRepository.retrieveOptionalByUserAndRoleId(configuredUserId, role.getId())
-				.orElseGet(() -> createNewUserAuthToken(configuredESUser, role));
+		final UserAuthToken userAuthToken = authTokenRepository.retrieveOptionalByUserAndRoleId(configuredUserId, roleId)
+				.orElseGet(() -> createNewUserAuthToken(configuredESUser, roleId));
 
 		return userAuthToken.getAuthToken();
 	}
 
 	@NonNull
-	private UserAuthToken createNewUserAuthToken(@NonNull final I_AD_User user, @NonNull final Role configuredRole)
+	private UserAuthToken createNewUserAuthToken(@NonNull final I_AD_User user, @NonNull final RoleId givenRoleId)
 	{
-		Loggables.withLogger(log, Level.DEBUG).addLog("Creating AuthToken for userId: {} && role: {}", user.getAD_User_ID(), configuredRole.getId().getRepoId());
-
 		final CreateUserAuthTokenRequest request = CreateUserAuthTokenRequest.builder()
 				.userId(UserId.ofRepoId(user.getAD_User_ID()))
-				.roleId(configuredRole.getId())
-				.orgId(configuredRole.getOrgId())
-				.clientId(configuredRole.getClientId())
+				.roleId(givenRoleId)
+				.orgId(OrgId.ofRepoId(user.getAD_Org_ID()))
+				.clientId(ClientId.ofRepoId(user.getAD_Client_ID()))
 				.build();
 
 		return authTokenRepository.createNew(request);
 	}
 
 	@NonNull
-	private Role getAndValidateRole(@NonNull final UserId userId)
+	private RoleId getAndValidateRoleId(@NonNull final UserId userId)
 	{
-		final RoleId configuredRoleId = RoleId.ofRepoId(resolveAuthRelatedSysConfig(SYS_CONFIG_EXTERNAL_SYSTEM_AD_ROLE_ID));
+		final RoleId givenRoleId = RoleId.ofRepoId(getSysConfigValue(SYS_CONFIG_EXTERNAL_SYSTEM_AD_ROLE_ID));
 
-		final Role role = roleDAO.getById(configuredRoleId);
+		final Role role = roleDAO.getById(givenRoleId);
 
 		final List<Role> userRoles = roleDAO.getUserRoles(userId);
 
 		final boolean hasNecessaryRole = userRoles.stream()
 				.map(Role::getId)
-				.anyMatch(roleId -> roleId.getRepoId() == configuredRoleId.getRepoId());
+				.anyMatch(roleId -> roleId.getRepoId() == givenRoleId.getRepoId());
 
 		if (!hasNecessaryRole)
 		{
@@ -159,19 +155,19 @@ public class ExternalSystemAuthorizationService
 					.build();
 		}
 
-		return role;
+		return givenRoleId;
 	}
 
 	@NonNull
 	private I_AD_User getConfiguredESUser()
 	{
-		final UserId configuredUserId = UserId.ofRepoId(resolveAuthRelatedSysConfig(SYS_CONFIG_EXTERNAL_SYSTEM_AD_USER_ID));
+		final UserId configuredUserId = UserId.ofRepoId(getSysConfigValue(SYS_CONFIG_EXTERNAL_SYSTEM_AD_USER_ID));
 
 		return userDAO.getById(configuredUserId);
 	}
 
 	@NonNull
-	private Integer resolveAuthRelatedSysConfig(@NonNull final String sysConfig)
+	private Integer getSysConfigValue(@NonNull final String sysConfig)
 	{
 		final String sysConfigValueAsString = sysConfigBL.getValue(sysConfig);
 		if (Check.isNotBlank(sysConfigValueAsString))

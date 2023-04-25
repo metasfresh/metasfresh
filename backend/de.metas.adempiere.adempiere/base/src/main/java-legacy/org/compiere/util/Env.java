@@ -24,7 +24,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -1247,16 +1246,6 @@ public final class Env
 		setContext(ctx, CTXNAME_AD_Org_ID, orgId.getRepoId());
 	}
 
-	public static ClientAndOrgId getClientAndOrgId()
-	{
-		return getClientAndOrgId(Env.getCtx());
-	}
-
-	public static ClientAndOrgId getClientAndOrgId(@NonNull final Properties ctx)
-	{
-		return ClientAndOrgId.ofClientAndOrg(Env.getClientId(ctx), Env.getOrgId(ctx));
-	}
-
 	/**
 	 * Get Login AD_User_ID
 	 *
@@ -1731,10 +1720,6 @@ public final class Env
 				sb.append(name).append("  ");
 			}
 		}
-		else
-		{
-			sb.append("metasfresh Swing Client");
-		}
 
 		final String connectionInfo;
 		if (Adempiere.isUnitTestMode())
@@ -1743,10 +1728,13 @@ public final class Env
 		}
 		else
 		{
-			connectionInfo = CConnection.get().getConnectionURL();
+			connectionInfo = CConnection.get().toString();
 		}
 
-		sb.append(" [").append(connectionInfo).append("]");
+		sb.append(getContext(ctx, "#AD_User_Name")).append("@")
+				.append(getContext(ctx, "#AD_Client_Name")).append(".")
+				.append(getContext(ctx, "#AD_Org_Name"))
+				.append(" [").append(connectionInfo).append("]");
 		return sb.toString();
 	}    // getHeader
 

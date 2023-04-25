@@ -22,13 +22,14 @@ package de.metas.lock.api;
  * #L%
  */
 
-import de.metas.process.PInstanceId;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.Future;
+
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.process.PInstanceId;
 
 /**
  * Lock acquire/Lock change command.

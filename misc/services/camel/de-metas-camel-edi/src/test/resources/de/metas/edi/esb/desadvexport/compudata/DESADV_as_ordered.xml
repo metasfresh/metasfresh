@@ -17,132 +17,141 @@
     <EDI_ExportStatus>D</EDI_ExportStatus>
     <MovementDate>2021-01-19+01:00</MovementDate>
     <POReference>POReference</POReference>
-    <EDI_Exp_Desadv_Pack>
-        <IPA_SSCC18>Line30_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line30_LUGTIN</GTIN_LU_PackingMaterial>
-        <EDI_Exp_Desadv_Pack_Item>
+    <EDI_Exp_DesadvLine>
+        <C_UOM_ID>
+            <!--Maßeinheit-->
+            <Name>Stück</Name>
+            <UOMSymbol>Stk</UOMSymbol>
+            <X12DE355>PCE</X12DE355>
+        </C_UOM_ID>
+        <EDI_Exp_DesadvLine_Pack>
+            <IPA_SSCC18>Line30_Pack_SSCC18</IPA_SSCC18>
             <QtyCU>10</QtyCU>
             <QtyCUsPerLU>10</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
+            <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
+            <C_UOM_ID>
+                <!--Maßeinheit-->
+                <Name>Stück</Name>
+                <UOMSymbol>Stk</UOMSymbol>
+                <X12DE355>PCE</X12DE355>
+            </C_UOM_ID>
+            <GTIN_LU_PackingMaterial>Line30_LUGTIN</GTIN_LU_PackingMaterial>
             <GTIN_TU_PackingMaterial>Line30_TUGTIN</GTIN_TU_PackingMaterial>
-            <EDI_DesadvLine_ID>
-                <EDI_DesadvLine_ID>10</EDI_DesadvLine_ID>
-                <C_UOM_ID>
-                    <!--Maßeinheit-->
-                    <Name>Stück</Name>
-                    <UOMSymbol>Stk</UOMSymbol>
-                    <X12DE355>PCE</X12DE355>
-                </C_UOM_ID>
-                <Line>30</Line>
-                <M_Product_ID>
-                    <!--Produkt, Leistung, Artikel-->
-                    <Name>Line30_M_Product_Name</Name>
-                    <Value>Line30_M_Product_Value</Value>
-                    <Volume>0</Volume>
-                    <Weight>0.200000000000</Weight>
-                </M_Product_ID>
-                <ProductDescription>Line30_M_Product_Description</ProductDescription>
-                <ProductNo>Line30_ProductNo</ProductNo>
-                <QtyEntered>10</QtyEntered>
-                <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-                <EAN_CU>Line30_CU_EAN</EAN_CU>
-                <EAN_TU>Line30_TU_EAN</EAN_TU>
-                <PriceActual>2.8000</PriceActual>
-                <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
-                <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
-                <OrderPOReference>POReference</OrderPOReference>
-                <QtyDeliveredInInvoiceUOM>10</QtyDeliveredInInvoiceUOM>
-                <QtyDeliveredInUOM>10</QtyDeliveredInUOM>
-                <OrderLine>30</OrderLine>
-            </EDI_DesadvLine_ID>
-        </EDI_Exp_Desadv_Pack_Item>
-    </EDI_Exp_Desadv_Pack>
-    <EDI_Exp_Desadv_Pack>
-        <IPA_SSCC18>Line20_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line20_LUGTIN</GTIN_LU_PackingMaterial>
-        <EDI_Exp_Desadv_Pack_Item>
+        </EDI_Exp_DesadvLine_Pack>
+        <Line>30</Line>
+        <M_Product_ID>
+            <!--Produkt, Leistung, Artikel-->
+            <Name>Line30_M_Product_Name</Name>
+            <Value>Line30_M_Product_Value</Value>
+            <Volume>0</Volume>
+            <Weight>0.200000000000</Weight>
+        </M_Product_ID>
+        <ProductDescription>Line30_M_Product_Description</ProductDescription>
+        <ProductNo>Line30_ProductNo</ProductNo>
+        <QtyEntered>10</QtyEntered>
+        <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
+        <EAN_CU>Line30_CU_EAN</EAN_CU>
+        <EAN_TU>Line30_TU_EAN</EAN_TU>
+        <PriceActual>2.8000</PriceActual>
+        <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
+        <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+        <OrderPOReference>POReference</OrderPOReference>
+        <QtyDeliveredInInvoiceUOM>10</QtyDeliveredInInvoiceUOM>
+        <QtyDeliveredInUOM>10</QtyDeliveredInUOM>
+        <OrderLine>30</OrderLine>
+    </EDI_Exp_DesadvLine>
+    <EDI_Exp_DesadvLine>
+        <C_UOM_ID>
+            <!--Maßeinheit-->
+            <Name>Stück</Name>
+            <UOMSymbol>Stk</UOMSymbol>
+            <X12DE355>PCE</X12DE355>
+        </C_UOM_ID>
+        <EDI_Exp_DesadvLine_Pack>
+            <IPA_SSCC18>Line20_Pack_SSCC18</IPA_SSCC18>
             <QtyCU>60</QtyCU>
             <QtyCUsPerLU>60</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
+            <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
+            <C_UOM_ID>
+                <!--Maßeinheit-->
+                <Name>Stück</Name>
+                <UOMSymbol>Stk</UOMSymbol>
+                <X12DE355>PCE</X12DE355>
+            </C_UOM_ID>
+            <GTIN_LU_PackingMaterial>Line20_LUGTIN</GTIN_LU_PackingMaterial>
             <GTIN_TU_PackingMaterial>Line20_TUGTIN</GTIN_TU_PackingMaterial>
-            <EDI_DesadvLine_ID>
-                <EDI_DesadvLine_ID>20</EDI_DesadvLine_ID>
-                <C_UOM_ID>
-                    <!--Maßeinheit-->
-                    <Name>Stück</Name>
-                    <UOMSymbol>Stk</UOMSymbol>
-                    <X12DE355>PCE</X12DE355>
-                </C_UOM_ID>
-                <Line>20</Line>
-                <M_Product_ID>
-                    <!--Produkt, Leistung, Artikel-->
-                    <Name>Line20_M_Product_Name</Name>
-                    <Value>Line20_M_Product_Value</Value>
-                    <Volume>0</Volume>
-                    <Weight>0.200000000000</Weight>
-                </M_Product_ID>
-                <ProductDescription>Line20_M_Product_Description</ProductDescription>
-                <ProductNo>Line20_ProductNo</ProductNo>
-                <QtyEntered>60</QtyEntered>
-                <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-                <EAN_CU>Line20_CU_EAN</EAN_CU>
-                <EAN_TU>Line20_TU_EAN</EAN_TU>
-                <PriceActual>0.9800</PriceActual>
-                <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
-                <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
-                <OrderPOReference>POReference</OrderPOReference>
-                <QtyDeliveredInInvoiceUOM>60</QtyDeliveredInInvoiceUOM>
-                <QtyDeliveredInUOM>60</QtyDeliveredInUOM>
-                <OrderLine>20</OrderLine>
-            </EDI_DesadvLine_ID>
-        </EDI_Exp_Desadv_Pack_Item>
-    </EDI_Exp_Desadv_Pack>
-    <EDI_Exp_Desadv_Pack>
-        <IPA_SSCC18>Line10_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line10_LUGTIN</GTIN_LU_PackingMaterial>
-        <EDI_Exp_Desadv_Pack_Item>
+        </EDI_Exp_DesadvLine_Pack>
+        <Line>20</Line>
+        <M_Product_ID>
+            <!--Produkt, Leistung, Artikel-->
+            <Name>Line20_M_Product_Name</Name>
+            <Value>Line20_M_Product_Value</Value>
+            <Volume>0</Volume>
+            <Weight>0.200000000000</Weight>
+        </M_Product_ID>
+        <ProductDescription>Line20_M_Product_Description</ProductDescription>
+        <ProductNo>Line20_ProductNo</ProductNo>
+        <QtyEntered>60</QtyEntered>
+        <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
+        <EAN_CU>Line20_CU_EAN</EAN_CU>
+        <EAN_TU>Line20_TU_EAN</EAN_TU>
+        <PriceActual>0.9800</PriceActual>
+        <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
+        <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+        <OrderPOReference>POReference</OrderPOReference>
+        <QtyDeliveredInInvoiceUOM>60</QtyDeliveredInInvoiceUOM>
+        <QtyDeliveredInUOM>60</QtyDeliveredInUOM>
+        <OrderLine>20</OrderLine>
+    </EDI_Exp_DesadvLine>
+    <EDI_Exp_DesadvLine>
+        <C_UOM_ID>
+            <!--Maßeinheit-->
+            <Name>Stück</Name>
+            <UOMSymbol>Stk</UOMSymbol>
+            <X12DE355>PCE</X12DE355>
+        </C_UOM_ID>
+        <EDI_Exp_DesadvLine_Pack>
+            <IPA_SSCC18>Line10_Pack_SSCC18</IPA_SSCC18>
             <QtyCU>24</QtyCU>
             <QtyCUsPerLU>24</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
+            <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
+            <C_UOM_ID>
+                <!--Maßeinheit-->
+                <Name>Stück</Name>
+                <UOMSymbol>Stk</UOMSymbol>
+                <X12DE355>PCE</X12DE355>
+            </C_UOM_ID>
+            <GTIN_LU_PackingMaterial>Line10_LUGTIN</GTIN_LU_PackingMaterial>
             <GTIN_TU_PackingMaterial>Line10_TUGTIN</GTIN_TU_PackingMaterial>
-            <EDI_DesadvLine_ID>
-                <EDI_DesadvLine_ID>30</EDI_DesadvLine_ID>
-                <C_UOM_ID>
-                    <!--Maßeinheit-->
-                    <Name>Stück</Name>
-                    <UOMSymbol>Stk</UOMSymbol>
-                    <X12DE355>PCE</X12DE355>
-                </C_UOM_ID>
-                <Line>10</Line>
-                <M_Product_ID>
-                    <!--Produkt, Leistung, Artikel-->
-                    <Name>Line10_M_Product_Name</Name>
-                    <Value>Line10_M_Product_Value</Value>
-                    <Volume>0</Volume>
-                    <Weight>0.200000000000</Weight>
-                </M_Product_ID>
-                <ProductDescription>Line10_M_Product_Description</ProductDescription>
-                <ProductNo>Line10_ProductNo</ProductNo>
-                <QtyEntered>24</QtyEntered>
-                <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-                <EAN_CU>Line10_CU_EAN</EAN_CU>
-                <EAN_TU>Line10_TU_EAN</EAN_TU>
-                <PriceActual>1.2900</PriceActual>
-                <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
-                <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
-                <OrderPOReference>POReference</OrderPOReference>
-                <QtyDeliveredInInvoiceUOM>24</QtyDeliveredInInvoiceUOM>
-                <QtyDeliveredInUOM>24</QtyDeliveredInUOM>
-                <OrderLine>10</OrderLine>
-            </EDI_DesadvLine_ID>
-        </EDI_Exp_Desadv_Pack_Item>
-    </EDI_Exp_Desadv_Pack>
+        </EDI_Exp_DesadvLine_Pack>
+        <Line>10</Line>
+        <M_Product_ID>
+            <!--Produkt, Leistung, Artikel-->
+            <Name>Line10_M_Product_Name</Name>
+            <Value>Line10_M_Product_Value</Value>
+            <Volume>0</Volume>
+            <Weight>0.200000000000</Weight>
+        </M_Product_ID>
+        <ProductDescription>Line10_M_Product_Description</ProductDescription>
+        <ProductNo>Line10_ProductNo</ProductNo>
+        <QtyEntered>24</QtyEntered>
+        <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
+        <EAN_CU>Line10_CU_EAN</EAN_CU>
+        <EAN_TU>Line10_TU_EAN</EAN_TU>
+        <PriceActual>1.2900</PriceActual>
+        <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
+        <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+        <OrderPOReference>POReference</OrderPOReference>
+        <QtyDeliveredInInvoiceUOM>24</QtyDeliveredInInvoiceUOM>
+        <QtyDeliveredInUOM>24</QtyDeliveredInUOM>
+        <OrderLine>10</OrderLine>
+    </EDI_Exp_DesadvLine>
     <Bill_Location_ID>
         <!--Standort des Geschäftspartners für die Rechnungsstellung-->
         <GLN>1234567890124</GLN>

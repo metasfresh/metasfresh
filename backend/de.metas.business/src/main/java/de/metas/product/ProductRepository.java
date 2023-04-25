@@ -142,8 +142,6 @@ public class ProductRepository
 		product.setGTIN(request.getGtin());
 		product.setDescription(request.getDescription());
 		product.setAD_Org_ID(request.getOrgId().getRepoId());
-		product.setGuaranteeMonths(request.getGuaranteeMonths());
-		product.setWarehouse_temperature(request.getWarehouseTemperature());
 
 		final boolean isDiscontinued = Boolean.TRUE.equals(request.getDiscontinued());
 
@@ -259,43 +257,6 @@ public class ProductRepository
 	}
 
 	@NonNull
-	public static BPartnerProduct ofBPartnerProductRecord(@NonNull final I_C_BPartner_Product record)
-	{
-
-		return BPartnerProduct.builder()
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
-				.active(record.isActive())
-				.seqNo(record.getSeqNo())
-				.productNo(record.getProductNo())
-				.description(record.getDescription())
-				.cuEAN(record.getEAN_CU())
-				.customerLabelName(record.getCustomerLabelName())
-				.gtin(record.getGTIN())
-				.ingredients(record.getIngredients())
-				.currentVendor(record.isCurrentVendor())
-				.isExcludedFromSales(record.isExcludedFromSale())
-				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
-				.isExcludedFromPurchase(record.isExcludedFromPurchase())
-				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
-				.dropShip(record.isDropShip())
-				.usedForVendor(record.isUsedForVendor())
-				.build();
-	}
-
-	public void resetCurrentVendorFor(@NonNull final ProductId productId)
-	{
-		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, false)
-				.execute();
-	}
-
-	@NonNull
 	private I_M_Product getRecordById(@NonNull final ProductId id)
 	{
 		return queryBL.createQueryBuilder(I_M_Product.class)
@@ -343,8 +304,6 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
-				.guaranteeMonths(productRecord.getGuaranteeMonths())
-				.warehouseTemperature(productRecord.getWarehouse_temperature())
 				.build();
 	}
 
@@ -384,8 +343,6 @@ public class ProductRepository
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
-		record.setGuaranteeMonths(product.getGuaranteeMonths());
-		record.setWarehouse_temperature(product.getWarehouseTemperature());
 
 		return record;
 	}
@@ -420,5 +377,30 @@ public class ProductRepository
 		record.setExclusionFromPurchaseReason(bPartnerProduct.getExclusionFromPurchaseReason());
 
 		return record;
+	}
+
+	@NonNull
+	private static BPartnerProduct ofBPartnerProductRecord(@NonNull final I_C_BPartner_Product record)
+	{
+
+		return BPartnerProduct.builder()
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.active(record.isActive())
+				.seqNo(record.getSeqNo())
+				.productNo(record.getProductNo())
+				.description(record.getDescription())
+				.cuEAN(record.getEAN_CU())
+				.customerLabelName(record.getCustomerLabelName())
+				.gtin(record.getGTIN())
+				.ingredients(record.getIngredients())
+				.currentVendor(record.isCurrentVendor())
+				.isExcludedFromSales(record.isExcludedFromSale())
+				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
+				.isExcludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				.dropShip(record.isDropShip())
+				.usedForVendor(record.isUsedForVendor())
+				.build();
 	}
 }

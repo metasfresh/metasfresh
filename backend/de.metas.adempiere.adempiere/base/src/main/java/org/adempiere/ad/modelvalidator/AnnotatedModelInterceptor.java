@@ -39,6 +39,9 @@ import java.util.Set;
 	private final transient Object annotatedObject;
 	private ClientId clientId;
 
+	/**
+	 * @param annotatedObject
+	 */
 	AnnotatedModelInterceptor(@NonNull final Object annotatedObject)
 	{
 		this.annotatedObject = annotatedObject;
@@ -92,7 +95,7 @@ import java.util.Set;
 				// Execute
 				method.invoke(annotatedObject, params);
 			}
-			catch (final Exception e)
+			catch (Exception e)
 			{
 				throw new AdempiereException("Cannot initialize " + annotatedObject + ". Initializer " + init + " failed."
 						+ "\n Method: " + method
@@ -271,7 +274,8 @@ import java.util.Set;
 		}
 		catch (final Exception e)
 		{
-			throw  appendAndLogHowtoDisableMessage(e, pointcut);
+			final AdempiereException adempiereException = appendAndLogHowtoDisableMessage(e, pointcut);
+			throw adempiereException;
 		}
 	}
 
@@ -286,7 +290,7 @@ import java.util.Set;
 		{
 			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.createHowtoDisableMessage(pointcut);
 
-			logger.error(howtoDisableMsg, e);
+			logger.error(howtoDisableMsg);
 			ae.setParameter(parameterName, howtoDisableMsg);
 		}
 		return ae;
@@ -320,9 +324,11 @@ import java.util.Set;
 	}
 
 	/**
+	 *
+	 * @param timing
 	 * @return true if timing is change (before, after)
 	 */
-	private static boolean isTimingChange(final int timing)
+	private static final boolean isTimingChange(final int timing)
 	{
 		return ModelValidator.TYPE_BEFORE_CHANGE == timing
 				|| ModelValidator.TYPE_AFTER_CHANGE == timing

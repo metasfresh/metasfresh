@@ -185,7 +185,7 @@ public class HULoader
 
 		try (final IAutoCloseable ignore = handlingUnitsBL.huLoaderInProgress())
 		{
-			final IHUContext huContextInitial = request.getHuContext();
+			final IHUContext huContextInitial = request.getHUContext();
 			return processInHUContext(huContextInitial, huContext -> {
 				//
 				// Create the new allocation request, identical with given one, but the concept is with given transaction
@@ -263,7 +263,7 @@ public class HULoader
 	{
 		//
 		// HU Context to use
-		final IHUContext huContext = unloadRequest.getHuContext();
+		final IHUContext huContext = unloadRequest.getHUContext();
 		assertValidProcessingContext(huContext);
 
 		//

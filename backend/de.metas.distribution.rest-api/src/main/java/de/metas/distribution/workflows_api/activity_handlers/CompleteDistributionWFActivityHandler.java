@@ -40,8 +40,9 @@ public class CompleteDistributionWFActivityHandler implements WFActivityHandler,
 			final @NonNull JsonOpts jsonOpts)
 	{
 		return UserConfirmationSupportUtil.createUIComponent(
-				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
+				UserConfirmationSupportUtil.UIComponentProps.builder()
 						.question("Are you sure?")
+						.confirmed(wfActivity.getStatus().isCompleted())
 						.build());
 	}
 

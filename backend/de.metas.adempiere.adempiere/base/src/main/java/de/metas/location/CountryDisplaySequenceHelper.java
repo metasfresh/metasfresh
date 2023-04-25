@@ -23,6 +23,7 @@
 package de.metas.location;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.location.Addressvars;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;

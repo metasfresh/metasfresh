@@ -31,11 +31,9 @@ import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
-import de.metas.camel.externalsystems.shopware6.product.processor.GetProductVariantParentProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.ProductUpsertProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.GetProductsProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.ProductPriceProcessor;
-import de.metas.camel.externalsystems.shopware6.product.processor.ProductVariantUpsertProcessor;
 import de.metas.camel.externalsystems.shopware6.unit.GetUnitsRequest;
 import de.metas.camel.externalsystems.shopware6.unit.UOMInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -67,18 +65,12 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class GetProductsRouteBuilder extends RouteBuilder
 {
 	public static final String GET_PRODUCTS_ROUTE_ID = "Shopware6-getProducts";
-	public static final String GET_PRODUCT_VARIANT_PARENT_ROUTE_ID = "Shopware6-getProducts-getProductVariantParent";
 	public static final String PROCESS_PRODUCT_ROUTE_ID = "Shopware6-processProduct";
-	public static final String FILTER_PRODUCT_ROUTE_ID = "Shopware6-filterProduct";
-	public static final String PROCESS_PRODUCT_VARIANT_ROUTE_ID = "Shopware6-processProductVariant";
-
 	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Shopware6-getProducts-upsertRuntimeParams";
 	public static final String UPSERT_PRODUCT_PRICE_ROUTE_ID = "Shopware6-getProducts-upsertProductPrice";
 
 	public static final String GET_PRODUCTS_PROCESSOR_ID = "Shopware6-Products-getProductsProcessorId";
-	public static final String GET_PRODUCT_VARIANT_PARENT_PROCESSOR_ID = "Shopware6-Products-getProductVariantParentProcessorId";
 	public static final String UPSERT_PRODUCT_PROCESSOR_ID = "Shopware6-Products-upsertProductProcessorId";
-	public static final String UPSERT_PRODUCT_VARIANT_PROCESSOR_ID = "Shopware6-Products-upsertProductVariantProcessorId";
 	public static final String UPSERT_PRODUCT_PRICE_PROCESSOR_ID = "Shopware6-Products-upsertProductPriceProcessorId";
 	public static final String UPSERT_RUNTIME_PARAMS_PROCESSOR_ID = "Shopware6-Products-upsertRuntimeParamsProcessorId";
 	public static final String ATTACH_CONTEXT_PROCESSOR_ID = "Shopware6-Products-contextProcessorId";
@@ -115,53 +107,12 @@ public class GetProductsRouteBuilder extends RouteBuilder
 						.log(LoggingLevel.INFO, "Nothing to do! No new or updated Products!")
 					.otherwise()
 						.split(body())
-							.to(direct(FILTER_PRODUCT_ROUTE_ID))
+							.to(direct(PROCESS_PRODUCT_ROUTE_ID))
 						.end()
 				.endChoice()
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.process((exchange) -> processLogger.logMessage("Shopware6:GetProducts process ended!" + Instant.now(),
 															exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
-
-
-		from(direct(FILTER_PRODUCT_ROUTE_ID))
-				.routeId(FILTER_PRODUCT_ROUTE_ID)
-				.log("Route invoked")
-				.choice()
-					.when(simple("${body.parentId} != null"))
-						.log(LoggingLevel.DEBUG, "Processing variant product: ${body}")
-						.to(direct(GET_PRODUCT_VARIANT_PARENT_ROUTE_ID))
-					.otherwise()
-						.log(LoggingLevel.DEBUG, "Processing standalone product: ${body}")
-						.to(direct(PROCESS_PRODUCT_ROUTE_ID))
-				.endChoice()
-		.end();
-
-		from(direct(GET_PRODUCT_VARIANT_PARENT_ROUTE_ID))
-				.routeId(GET_PRODUCT_VARIANT_PARENT_ROUTE_ID)
-				.log("Route invoked")
-				.process(new GetProductVariantParentProcessor(processLogger)).id(GET_PRODUCT_VARIANT_PARENT_PROCESSOR_ID)
-				.choice()
-					.when(body().isNull())
-						.log(LoggingLevel.INFO, "Nothing to do ! Product was skipped !")
-					.otherwise()
-						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Product: ${body}")
-						.to(direct(PROCESS_PRODUCT_VARIANT_ROUTE_ID))
-				.endChoice()
-		.end();
-
-		from(direct(PROCESS_PRODUCT_VARIANT_ROUTE_ID))
-				.routeId(PROCESS_PRODUCT_VARIANT_ROUTE_ID)
-				.log("Route invoked")
-				.process(new ProductVariantUpsertProcessor(processLogger)).id(UPSERT_PRODUCT_VARIANT_PROCESSOR_ID)
-				.choice()
-					.when(body().isNull())
-						.log(LoggingLevel.INFO, "Nothing to do ! Product variant was skipped !")
-					.otherwise()
-						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Product Variant: ${body}")
-						.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
-						.to(direct(UPSERT_PRODUCT_PRICE_ROUTE_ID))
-				.endChoice()
-		.end();
 
 		from(direct(PROCESS_PRODUCT_ROUTE_ID))
 				.routeId(PROCESS_PRODUCT_ROUTE_ID)

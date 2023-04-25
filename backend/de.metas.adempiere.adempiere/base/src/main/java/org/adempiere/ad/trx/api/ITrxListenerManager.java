@@ -1,11 +1,12 @@
 package org.adempiere.ad.trx.api;
 
+import java.util.function.Supplier;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
+
 import lombok.Getter;
 import lombok.NonNull;
-
-import java.util.function.Supplier;
 
 /**
  * Transactions Listeners Mananger.<br>

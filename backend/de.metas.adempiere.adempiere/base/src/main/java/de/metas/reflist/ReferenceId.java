@@ -57,6 +57,4 @@ public class ReferenceId implements RepoIdAware
 	{
 		return getRepoId();
 	}
-
-	public static int toRepoId(@Nullable final ReferenceId referenceId) { return referenceId != null ? referenceId.getRepoId() : -1; }
 }

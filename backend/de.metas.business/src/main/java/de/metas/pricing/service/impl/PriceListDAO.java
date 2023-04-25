@@ -31,6 +31,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.common.util.Check;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -121,33 +122,22 @@ public class PriceListDAO implements IPriceListDAO
 		return loadOutOfTrx(pricingSystemId, I_M_PricingSystem.class);
 	}
 
-	@NonNull
 	@Override
 	public PricingSystemId getPricingSystemIdByValue(@NonNull final String value)
-	{
-		final PricingSystemId pricingSystemId = getPricingSystemIdByValueOrNull(value);
-
-		if (pricingSystemId == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@ (@Value@=" + value + ")");
-		}
-
-		return pricingSystemId;
-	}
-
-	@Nullable
-	@Override
-	public PricingSystemId getPricingSystemIdByValueOrNull(@NonNull final String value)
 	{
 		final int pricingSystemId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_PricingSystem.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_PricingSystem.COLUMNNAME_Value, value)
-				.orderByDescending(I_M_PricingSystem.COLUMNNAME_AD_Client_ID)
 				.create()
-				.firstId();
+				.firstIdOnly();
 
-		return PricingSystemId.ofRepoIdOrNull(pricingSystemId);
+		if (pricingSystemId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@ (@Value@=" + value + ")");
+		}
+
+		return PricingSystemId.ofRepoId(pricingSystemId);
 	}
 
 	@Override
@@ -197,21 +187,6 @@ public class PriceListDAO implements IPriceListDAO
 		return queryBuilder
 				.create()
 				.iterateAndStream();
-	}
-
-	@Override
-	public ImmutableList<I_M_ProductPrice> retrieveProductPrices(
-			@NonNull final PriceListVersionId priceListVersionId,
-			final ProductId productId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_M_ProductPrice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

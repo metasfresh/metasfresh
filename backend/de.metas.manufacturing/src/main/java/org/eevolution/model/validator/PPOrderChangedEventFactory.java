@@ -1,7 +1,5 @@
 package org.eevolution.model.validator;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
@@ -11,7 +9,6 @@ import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDes
 import de.metas.material.event.pporder.PPOrderChangedEvent.PPOrderChangedEventBuilder;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
@@ -21,7 +18,6 @@ import org.eevolution.model.I_PP_Order;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
@@ -59,7 +55,6 @@ public class PPOrderChangedEventFactory
 
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final I_PP_Order ppOrderRecord;
-	private final Map<Integer, PPOrderLine> oldProductBOMLineId2Line;
 
 	private final PPOrderChangedEventBuilder eventBuilder;
 	private final Map<Integer, ChangedPPOrderLineDescriptorBuilder> productBomLineId2ChangeBuilder = new HashMap<>();
@@ -83,8 +78,6 @@ public class PPOrderChangedEventFactory
 			eventBuilder.deletedPPOrderLine(DeletedPPOrderLineDescriptor.ofPPOrderLine(line));
 		});
 
-		final ImmutableMap.Builder<Integer, PPOrderLine> oldLinesCollector = ImmutableMap.builder();
-
 		final List<PPOrderLine> linesWithProductBomLine = linesWithAndWithoutProductBomLineId.get(true);
 		linesWithProductBomLine.forEach(line -> {
 			final ChangedPPOrderLineDescriptorBuilder builder = ChangedPPOrderLineDescriptor.builder()
@@ -94,11 +87,8 @@ public class PPOrderChangedEventFactory
 					.oldQtyRequired(line.getPpOrderLineData().getQtyRequired())
 					.oldQtyDelivered(line.getPpOrderLineData().getQtyDelivered());
 
-			oldLinesCollector.put(line.getPpOrderLineData().getProductBomLineId(), line);
 			productBomLineId2ChangeBuilder.put(line.getPpOrderLineData().getProductBomLineId(), builder);
 		});
-
-		oldProductBOMLineId2Line = oldLinesCollector.build();
 	}
 
 	private static PPOrderChangedEventBuilder createAndInitEventBuilderWithOldValues(
@@ -150,27 +140,6 @@ public class PPOrderChangedEventFactory
 						.newQtyDelivered(updatedPPOrderLine.getPpOrderLineData().getQtyDelivered());
 			}
 		}
-
-		final ImmutableSet<Integer> currentProductBOMLineIds = updatedPPOrder.getLines()
-				.stream()
-				.map(PPOrderLine::getPpOrderLineData)
-				.map(PPOrderLineData::getProductBomLineId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final Set<Integer> deletedLineIds = productBomLineId2ChangeBuilder.keySet()
-				.stream()
-				.filter(lineId -> !currentProductBOMLineIds.contains(lineId))
-				.peek(lineId -> {
-					final PPOrderLine oldLine = oldProductBOMLineId2Line.get(lineId);
-
-					if (oldLine != null)
-					{
-						eventBuilder.deletedPPOrderLine(DeletedPPOrderLineDescriptor.ofPPOrderLine(oldLine));
-					}
-				})
-				.collect(ImmutableSet.toImmutableSet());
-
-		deletedLineIds.forEach(productBomLineId2ChangeBuilder::remove);
 
 		final Map<Boolean, List<ChangedPPOrderLineDescriptor>> collection = collectMapEntriesWithAndWithoutNewPPorderLineId();
 

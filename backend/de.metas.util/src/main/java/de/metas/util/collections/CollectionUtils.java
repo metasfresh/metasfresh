@@ -18,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -167,32 +166,6 @@ public final class CollectionUtils
 		return result.get(0);
 	}
 
-	/**
-	 * @param filter filter used to match the element
-	 * @return matching element wrapped as Optional or empty Optional if there were more elements matching or no element was matching
-	 */
-	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
-	{
-		final List<T> result = new ArrayList<>();
-
-		for (final T e : collection)
-		{
-			if (filter.test(e))
-			{
-				result.add(e);
-			}
-		}
-
-		if (result.size() == 1)
-		{
-			return Optional.of(result.get(0));
-		}
-		else
-		{
-			return Optional.empty();
-		}
-	}
-	
 	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>
@@ -368,13 +341,6 @@ public final class CollectionUtils
 
 		//noinspection unchecked
 		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
-	}
-
-	public static <K, V, W> ImmutableMap<K, W> mapValues(
-			@NonNull final ImmutableMap<K, V> map,
-			@NonNull final Function<V, W> mappingFunction)
-	{
-		return mapValues(map, (k, v) -> mappingFunction.apply(v));
 	}
 
 	/**

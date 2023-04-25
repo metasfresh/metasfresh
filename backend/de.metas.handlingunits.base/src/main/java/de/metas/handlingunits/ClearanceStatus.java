@@ -35,8 +35,7 @@ public enum ClearanceStatus implements ReferenceListAwareEnum
 {
 	Cleared(X_M_HU.CLEARANCESTATUS_Cleared),
 	Locked(X_M_HU.CLEARANCESTATUS_Locked),
-	Quarantined(X_M_HU.CLEARANCESTATUS_Quarantined),
-	TestPending(X_M_HU.CLEARANCESTATUS_TestPending);
+	Quarantined(X_M_HU.CLEARANCESTATUS_Quarantined);
 
 	@Getter
 	private final String code;

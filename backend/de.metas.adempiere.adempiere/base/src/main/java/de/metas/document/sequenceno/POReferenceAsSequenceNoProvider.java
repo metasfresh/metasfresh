@@ -1,11 +1,11 @@
 package de.metas.document.sequenceno;
 
-import de.metas.document.DocumentSequenceInfo;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 	/** @return {@code true} if the given {@code context} has a non-null {@code POReference} value. */
 	@Override
-	public boolean isApplicable(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo)
+	public boolean isApplicable(@NonNull final Evaluatee context)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		final boolean result = Check.isNotBlank(poReference);
@@ -48,21 +48,13 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 	/** @return the given {@code context}'s {@code POReference} value. */
 	@Override
-	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo, final String autoIncrementedSeqNumber)
+	public String provideSequenceNo(@NonNull final Evaluatee context)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);
 
-		final String poReferenceResult;
-		if (Check.isNotBlank(autoIncrementedSeqNumber))
-		{
-			poReferenceResult = poReference + "-" + autoIncrementedSeqNumber;
-		}
-		else {
-			poReferenceResult = poReference;
-		}
-		logger.debug("provideSequenceNo - returning {};", poReferenceResult);
-		return poReferenceResult;
+		logger.debug("provideSequenceNo - returning {};", poReference);
+		return poReference;
 	}
 
 	private static String getPOReferenceOrNull(@NonNull final Evaluatee context)
@@ -77,4 +69,10 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 		return !poReference.isEmpty() ? poReference : null;
 	}
 
+	/** @return true */
+	@Override
+	public boolean isUseIncrementSeqNoAsPrefix()
+	{
+		return true;
+	}
 }

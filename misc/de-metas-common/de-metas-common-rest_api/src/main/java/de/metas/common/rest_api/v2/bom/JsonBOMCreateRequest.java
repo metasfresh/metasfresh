@@ -62,10 +62,7 @@ public class JsonBOMCreateRequest
 	@ApiModelProperty(position = 60, value = "Corresponding to `M_AttributeSetInstance`")
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `PP_Product_BOM.S_PreferredResource_ID`")
-	String resourceCode;
-
-	@ApiModelProperty(position = 80, required = true)
+	@ApiModelProperty(position = 70, required = true)
 	List<JsonCreateBOMLine> bomLines;
 
 	@Builder
@@ -77,7 +74,6 @@ public class JsonBOMCreateRequest
 			@JsonProperty("isActive") @NonNull final Boolean isActive,
 			@JsonProperty("validFrom") @NonNull final Instant validFrom,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
-			@JsonProperty("resourceCode") final String resourceCode,
 			@JsonProperty("bomLines") @Singular final List<JsonCreateBOMLine> bomLines)
 	{
 
@@ -87,7 +83,6 @@ public class JsonBOMCreateRequest
 		this.isActive = isActive;
 		this.validFrom = validFrom;
 		this.attributeSetInstance = attributeSetInstance;
-		this.resourceCode = resourceCode;
 		this.bomLines = coalesce(bomLines, ImmutableList.of());
 	}
 }

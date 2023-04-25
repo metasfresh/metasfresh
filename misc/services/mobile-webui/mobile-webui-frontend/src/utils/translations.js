@@ -50,7 +50,3 @@ export const setLanguage = (language) => {
   console.log('Setting language to ', language);
   counterpart.setLocale(language);
 };
-
-export const getLanguage = () => {
-  return counterpart.getLocale();
-};

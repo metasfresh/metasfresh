@@ -21,9 +21,9 @@ Feature: Handling unit export from manufacturing order
       | locatorHauptlager       | warehouseStd              | Hauptlager |
 
     And metasfresh contains M_Products:
-      | Identifier              | Name                 | HUClearanceStatus |
-      | manufacturingProduct_HU | manufacturingProduct | L                 |
-      | componentProduct_HU     | componentProduct     |                   |
+      | Identifier              | Name                 |
+      | manufacturingProduct_HU | manufacturingProduct |
+      | componentProduct_HU     | componentProduct     |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -94,9 +94,9 @@ Feature: Handling unit export from manufacturing order
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceNote |
-      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
-      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote           |
+      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                       | Gesperrt                    | Erwartet Freigabe durch GRS |
+      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                       | Gesperrt                    | Erwartet Freigabe durch GRS |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

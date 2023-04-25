@@ -1,8 +1,5 @@
 package de.metas.util;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -29,7 +26,6 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public enum OptionalBoolean
 {
 	TRUE, FALSE, UNKNOWN;
@@ -39,7 +35,6 @@ public enum OptionalBoolean
 		return value ? TRUE : FALSE;
 	}
 
-	@JsonCreator
 	public static OptionalBoolean ofNullableBoolean(@Nullable final Boolean value)
 	{
 		return value != null ? ofBoolean(value) : UNKNOWN;
@@ -90,7 +85,6 @@ public enum OptionalBoolean
 		}
 	}
 
-	@JsonValue
 	@Nullable
 	public Boolean toBooleanOrNull()
 	{

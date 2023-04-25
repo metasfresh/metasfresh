@@ -1,6 +1,8 @@
 package org.adempiere.ad.wrapper;
 
-import de.metas.logging.LogManager;
+import java.util.Properties;
+import java.util.Set;
+
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -8,9 +10,9 @@ import org.compiere.model.PO;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+
 import javax.annotation.Nullable;
-import java.util.Properties;
-import java.util.Set;
 
 /*
  * #%L

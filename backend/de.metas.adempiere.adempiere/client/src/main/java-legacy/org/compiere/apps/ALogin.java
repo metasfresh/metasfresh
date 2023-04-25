@@ -16,21 +16,38 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import com.google.common.base.Throwables;
+import java.awt.BorderLayout;
+import java.awt.ComponentOrientation;
+import java.awt.Cursor;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
+
+import javax.swing.ImageIcon;
+import javax.swing.JPasswordField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.i18n.ADLanguageList;
-import de.metas.i18n.ILanguageBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.hash.HashableString;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
@@ -51,6 +68,7 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.ListComboBoxModel;
+import org.compiere.swing.ToStringListCellRenderer;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -60,22 +78,17 @@ import org.compiere.util.Login;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
+import com.google.common.base.Throwables;
+
+import de.metas.i18n.ADLanguageList;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
+import de.metas.common.util.CoalesceUtil;
 
 /**
  * Application Login Window
@@ -83,7 +96,6 @@ import java.util.Set;
  * @author Jorg Janke
  * @version $Id: ALogin.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
-@Deprecated
 public final class ALogin extends CDialog
 		implements ActionListener, ChangeListener
 {
@@ -918,7 +930,6 @@ public final class ALogin extends CDialog
 	{
 		return roles
 				.stream()
-				.filter(role -> role.getId().isSystem()) // to limit annoying mistakes
 				.map(role -> KeyNamePair.of(role.getId(), role.getName()))
 				.distinct()
 				.sorted(Comparator.comparing(KeyNamePair::getName))

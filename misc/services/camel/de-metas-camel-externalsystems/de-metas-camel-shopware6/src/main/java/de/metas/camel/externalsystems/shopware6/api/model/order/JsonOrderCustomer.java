@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,44 +23,41 @@
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.List;
-
 @Value
-@EqualsAndHashCode(callSuper = true)
+@Builder
 @JsonDeserialize(builder = JsonOrderCustomer.JsonOrderCustomerBuilder.class)
-public class JsonOrderCustomer extends JsonCustomerBasicInfo
+public class JsonOrderCustomer
 {
-	@Nullable
+	@NonNull
+	@JsonProperty("orderId")
+	String orderId;
+
 	@JsonProperty("customerId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String customerId;
 
-	@Builder
-	JsonOrderCustomer(
-			@JsonProperty("customerId") final String customerId,
-			@JsonProperty("firstName") final String firstName,
-			@JsonProperty("lastName") final String lastName,
-			@JsonProperty("company") final String company,
-			@JsonProperty("customerNumber") final String customerNumber,
-			@JsonProperty("email") final String email,
-			@JsonProperty("createdAt") final ZonedDateTime createdAt,
-			@JsonProperty("updatedAt") final ZonedDateTime updatedAt,
-			@JsonProperty("vatIds") final List<String> vatIds)
-	{
-		super(firstName, lastName, company, customerNumber, email, createdAt, updatedAt, vatIds);
+	@NonNull
+	@JsonProperty("firstName")
+	String firstName;
 
-		this.customerId = customerId;
-	}
+	@NonNull
+	@JsonProperty("lastName")
+	String lastName;
+
+	@JsonProperty("company")
+	String company;
+
+	@JsonProperty("customerNumber")
+	String customerNumber;
+
+	@JsonProperty("email")
+	String email;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
@@ -68,3 +65,4 @@ public class JsonOrderCustomer extends JsonCustomerBasicInfo
 	{
 	}
 }
+

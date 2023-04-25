@@ -29,7 +29,6 @@
           "stockedSet": false,
           "productCategoryIdentifier": null,
           "productCategoryIdentifierSet": false,
-          "productAllergens": null,
           "syncAdvise": null,
           "bpartnerProductItems": [
             {
@@ -53,13 +52,13 @@
               "ingredientsSet": false,
               "currentVendor": true,
               "currentVendorSet": true,
-              "excludedFromSales": true,
-              "excludedFromSalesSet": true,
-              "exclusionFromSalesReason": "Imported setting",
-              "exclusionFromSalesReasonSet": true,
-              "excludedFromPurchase": true,
+              "excludedFromSales": null,
+              "excludedFromSalesSet": false,
+              "exclusionFromSalesReason": null,
+              "exclusionFromSalesReasonSet": false,
+              "excludedFromPurchase": false,
               "excludedFromPurchaseSet": true,
-              "exclusionFromPurchaseReason": "Imported setting",
+              "exclusionFromPurchaseReason": null,
               "exclusionFromPurchaseReasonSet": true,
               "dropShip": null,
               "dropShipSet": false,
@@ -87,10 +86,10 @@
               "ingredientsSet": false,
               "currentVendor": true,
               "currentVendorSet": true,
-              "excludedFromSales": false,
-              "excludedFromSalesSet": true,
+              "excludedFromSales": null,
+              "excludedFromSalesSet": false,
               "exclusionFromSalesReason": null,
-              "exclusionFromSalesReasonSet": true,
+              "exclusionFromSalesReasonSet": false,
               "excludedFromPurchase": true,
               "excludedFromPurchaseSet": true,
               "exclusionFromPurchaseReason": "Imported setting",
@@ -100,16 +99,7 @@
               "usedForVendor": true,
               "usedForVendorSet": true
             }
-          ],
-          "qualityAttributes": {
-            "qualityAttributeLabels": [
-              "HALAL"
-            ],
-            "syncAdvise": {
-              "ifNotExists": "CREATE",
-              "ifExists": "REPLACE"
-            }
-          }
+          ]
         }
       }
     ],

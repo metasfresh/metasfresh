@@ -24,37 +24,31 @@ const MaterialReceiptActivity = (props) => {
     history.push(location);
   };
 
-  const linesArray = lines ? Object.values(lines) : [];
-  const showHazardsAndAllergens = linesArray.some(
-    (lineItem) => lineItem?.hazardSymbols?.length > 0 || lineItem?.allergens?.length > 0
-  );
-
   return (
     <div className="mt-5">
-      {linesArray.map((lineItem) => {
-        const lineId = lineItem.id;
+      {lines
+        ? Object.values(lines).map((lineItem) => {
+            const lineId = lineItem.id;
 
-        return (
-          <ButtonWithIndicator
-            key={lineId}
-            caption={lineItem.productName}
-            typeFASIconName={lineItem.coproduct ? 'fa-retweet' : 'fa-arrow-right-from-bracket'}
-            hazardSymbols={showHazardsAndAllergens ? lineItem.hazardSymbols : null}
-            allergens={showHazardsAndAllergens ? lineItem.allergens : null}
-            completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-            disabled={!isUserEditable}
-            onClick={() => onButtonClick({ lineId })}
-          >
-            <ButtonQuantityProp
-              qtyCurrent={lineItem.qtyReceived}
-              qtyTarget={lineItem.qtyToReceive}
-              uom={lineItem.uom}
-              applicationId={applicationId}
-              subtypeId="receipts"
-            />
-          </ButtonWithIndicator>
-        );
-      })}
+            return (
+              <ButtonWithIndicator
+                key={lineId}
+                caption={lineItem.productName}
+                completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
+                disabled={!isUserEditable}
+                onClick={() => onButtonClick({ lineId })}
+              >
+                <ButtonQuantityProp
+                  qtyCurrent={lineItem.qtyReceived}
+                  qtyTarget={lineItem.qtyToReceive}
+                  uom={lineItem.uom}
+                  applicationId={applicationId}
+                  subtypeId="receipts"
+                />
+              </ButtonWithIndicator>
+            );
+          })
+        : null}
     </div>
   );
 };

@@ -30,11 +30,18 @@ class EntryTable extends PureComponent {
     };
   }
 
-  widgetTooltipToggle = (field, tooltipOpen = null) => {
+  /**
+   * @method widgetTooltipToggle
+   * @summary ToDo: Describe the method
+   * @param {*} field
+   * @param {*} value
+   * @todo Write the documentation
+   */
+  widgetTooltipToggle = (field, value) => {
     const curVal = this.state.tooltipToggled;
     let newVal = field;
 
-    if (tooltipOpen === false || field === curVal) {
+    if (value === false || field === curVal) {
       newVal = null;
     }
 
@@ -149,12 +156,11 @@ class EntryTable extends PureComponent {
               />
               {tooltipWidget && (
                 <WidgetTooltip
-                  iconName={tooltipWidget.tooltipIconName}
-                  text={tooltipData?.value}
+                  widget={tooltipWidget}
+                  data={tooltipData}
+                  fieldName={fieldName}
                   isToggled={tooltipToggled === fieldName}
-                  onToggle={(tooltipOpen) =>
-                    this.widgetTooltipToggle(fieldName, tooltipOpen)
-                  }
+                  onToggle={this.widgetTooltipToggle}
                 />
               )}
             </td>

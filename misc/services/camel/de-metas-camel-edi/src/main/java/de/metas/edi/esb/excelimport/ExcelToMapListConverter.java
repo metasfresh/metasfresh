@@ -23,7 +23,6 @@
 package de.metas.edi.esb.excelimport;
 
 import com.google.common.io.Closeables;
-import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -31,7 +30,6 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -100,7 +98,7 @@ public class ExcelToMapListConverter
 	 *
 	 * NOTE: this method it's also closing the stream.
 	 */
-	public List<Map<String, Object>> convert(@NonNull final InputStream in) throws IOException
+	public List<Map<String, Object>> convert(final InputStream in) throws IOException
 	{
 		HSSFWorkbook workbook = null;
 		try
@@ -109,8 +107,8 @@ public class ExcelToMapListConverter
 			final HSSFSheet sheet = workbook.getSheetAt(0);
 
 			Map<Integer, String> columnIndex2headerName = null;
-			final List<Map<String, Object>> rowsList = new ArrayList<>();
-			final Map<String, Object> name2valuePairs = new HashMap<>();
+			final List<Map<String, Object>> rowsList = new ArrayList<Map<String, Object>>();
+			final Map<String, Object> name2valuePairs = new HashMap<String, Object>();
 			for (final Iterator<Row> rowIt = sheet.rowIterator(); rowIt.hasNext();)
 			{
 				final Row row = rowIt.next();
@@ -230,10 +228,9 @@ public class ExcelToMapListConverter
 	 *
 	 * @return header name to value map
 	 */
-	@Nullable
 	private Map<String, Object> readRow_TableRow(final Row row, final Map<Integer, String> columnIndex2headerName)
 	{
-		final Map<String, Object> rowAsMap = new LinkedHashMap<>(columnIndex2headerName.size());
+		final Map<String, Object> rowAsMap = new LinkedHashMap<String, Object>(columnIndex2headerName.size());
 		for (final Map.Entry<Integer, String> headerColumn : columnIndex2headerName.entrySet())
 		{
 			final int columnIndex = headerColumn.getKey();
@@ -272,7 +269,7 @@ public class ExcelToMapListConverter
 	 *
 	 * @return key name to value map
 	 */
-	private Map<String, Object> readRow_NameValuePair(@NonNull final Iterator<Cell> cellIt)
+	private Map<String, Object> readRow_NameValuePair(final Iterator<Cell> cellIt)
 	{
 		String name = null;
 		Object value = null;
@@ -291,8 +288,8 @@ public class ExcelToMapListConverter
 			// Case: we are searching for Name
 			if (name == null)
 			{
-				String nameCandidate = cellValue.toString().trim();
-				if (Check.isBlank(nameCandidate))
+				String nameCandidate = cellValue == null ? "" : cellValue.toString().trim();
+				if (nameCandidate.isEmpty())
 				{
 					continue;
 				}
@@ -323,7 +320,7 @@ public class ExcelToMapListConverter
 		return Collections.singletonMap(name, value);
 	}
 
-	private boolean isRepeatingHeaderRow(@NonNull final Map<String, Object> rowAsMap)
+	private boolean isRepeatingHeaderRow(final Map<String, Object> rowAsMap)
 	{
 		for (final Map.Entry<String, Object> entry : rowAsMap.entrySet())
 		{
@@ -339,7 +336,7 @@ public class ExcelToMapListConverter
 		return true;
 	}
 
-	private boolean isRepeatingHeaderValue(@NonNull final String headerName, final Object value)
+	private boolean isRepeatingHeaderValue(final String headerName, final Object value)
 	{
 		if (isNoNameHeaderName(headerName) && isEmptyValue(value))
 		{
@@ -367,17 +364,17 @@ public class ExcelToMapListConverter
 		return headerName;
 	}
 
-	@Nullable
-	private String buildNoNameHeaderName(final int columnIndex)
+	private final String buildNoNameHeaderName(final int columnIndex)
 	{
 		if (noNameHeaderPrefix == null)
 		{
 			return null;
 		}
-		return noNameHeaderPrefix + columnIndex;
+		final String headerName = noNameHeaderPrefix + columnIndex;
+		return headerName;
 	}
 
-	private boolean isNoNameHeaderName(@NonNull final String headerName)
+	private final boolean isNoNameHeaderName(final String headerName)
 	{
 		if (noNameHeaderPrefix == null)
 		{
@@ -387,13 +384,12 @@ public class ExcelToMapListConverter
 		return headerName.startsWith(noNameHeaderPrefix);
 	}
 
-	private static boolean isEmptyValue(final Object value)
+	private static final boolean isEmptyValue(final Object value)
 	{
 		return value == null || value.toString().trim().isEmpty();
 	}
 
-	@Nullable
-	private Object getCellValue(@Nullable final Cell cell)
+	private Object getCellValue(final Cell cell)
 	{
 		if (cell == null)
 		{
@@ -454,7 +450,6 @@ public class ExcelToMapListConverter
 		return value;
 	}
 
-	@Nullable
 	private String getCellValueAsString(final Cell cell)
 	{
 		final Object value = getCellValue(cell);
@@ -469,7 +464,7 @@ public class ExcelToMapListConverter
 
 		private final String code;
 
-		RowType(final String code)
+		private RowType(final String code)
 		{
 			this.code = code;
 		}
@@ -479,8 +474,7 @@ public class ExcelToMapListConverter
 			return code;
 		}
 
-		@Nullable
-		public static RowType forCodeOrNull(@Nullable final String code)
+		public static RowType forCodeOrNull(final String code)
 		{
 			if (code == null)
 			{
@@ -500,7 +494,6 @@ public class ExcelToMapListConverter
 
 	public static class Builder
 	{
-		@Nullable
 		private String noNameHeaderPrefix = DEFAULT_UnknownHeaderPrefix;
 		private boolean considerNullStringAsNull = false;
 		private boolean considerEmptyStringAsNull = false;
@@ -523,9 +516,10 @@ public class ExcelToMapListConverter
 		 *
 		 * Set it to <code>null</code> to turn it off and get rid of columns without header.
 		 *
+		 * @param noNameHeaderPrefix
 		 * @see #setDiscardNoNameHeaders()
 		 */
-		public Builder setNoNameHeaderPrefix(@Nullable final String noNameHeaderPrefix)
+		public Builder setNoNameHeaderPrefix(final String noNameHeaderPrefix)
 		{
 			this.noNameHeaderPrefix = noNameHeaderPrefix;
 			return this;
@@ -539,6 +533,8 @@ public class ExcelToMapListConverter
 
 		/**
 		 * Sets if a cell value which is a null string (i.e. {@link ExcelToMapListConverter#NULLStringMarker}) shall be considered as <code>null</code>.
+		 *
+		 * @param considerNullStringAsNull
 		 */
 		public Builder setConsiderNullStringAsNull(final boolean considerNullStringAsNull)
 		{
@@ -560,6 +556,8 @@ public class ExcelToMapListConverter
 
 		/**
 		 * Sets if we shall detect repeating headers and discard them.
+		 *
+		 * @param discardRepeatingHeaders
 		 */
 		public Builder setDiscardRepeatingHeaders(final boolean discardRepeatingHeaders)
 		{
@@ -571,7 +569,8 @@ public class ExcelToMapListConverter
 		 * If enabled, the XLS converter will look for first not null column and it will expect to have one of the codes from {@link RowType}.
 		 * If no row type would be found, the row would be ignored entirely.
 		 *
-		 * task 09045
+		 * @param useTypeColumn
+		 * @task 09045
 		 */
 		public Builder setUseRowTypeColumn(final boolean useTypeColumn)
 		{

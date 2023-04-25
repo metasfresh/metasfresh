@@ -47,18 +47,44 @@ public class NumberUtils
 	}
 
 	@Nullable
-	public static BigDecimal asBigDecimal(@Nullable final Object value)
+	private static BigDecimal asBigDecimal(@Nullable final Object value)
 	{
-		final boolean failIfNotParseable = true;
-		final BigDecimal defaultValue = null;
-		return asBigDecimal(value, defaultValue, failIfNotParseable);
-	}
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof BigDecimal)
+		{
+			return (BigDecimal)value;
+		}
+		else if (value instanceof Integer)
+		{
+			return BigDecimal.valueOf((int)value);
+		}
+		else if (value instanceof Long)
+		{
+			return BigDecimal.valueOf((long)value);
+		}
+		else
+		{
+			final String valueStr = value.toString();
+			if (EmptyUtil.isBlank(valueStr))
+			{
+				return null;
+			}
+			try
+			{
+				return new BigDecimal(valueStr.trim());
+			}
+			catch (final NumberFormatException numberFormatException)
+			{
+				final String errorMsg = "Cannot convert `" + value + "` (" + value.getClass() + ") to BigDecimal";
 
-	@Nullable
-	public static BigDecimal asBigDecimal(@Nullable final Object value, @Nullable final BigDecimal defaultValue)
-	{
-		final boolean failIfNotParseable = false;
-		return asBigDecimal(value, defaultValue, failIfNotParseable);
+				final RuntimeException ex = Check.mkEx(errorMsg);
+				ex.initCause(numberFormatException);
+				throw ex;
+			}
+		}
 	}
 
 	public static int asInt(@NonNull final Object value)
@@ -94,56 +120,4 @@ public class NumberUtils
 		}
 	}
 
-	@Nullable
-	private static BigDecimal asBigDecimal(
-			@Nullable final Object value,
-			@Nullable final BigDecimal defaultValue,
-			final boolean failIfUnparsable)
-	{
-		if (value == null) //note that a zero-BigDecimal is also "empty" according to Check.IsEmpty()!
-		{
-			return defaultValue;
-		}
-		if (value instanceof BigDecimal)
-		{
-			return (BigDecimal)value;
-		}
-		else if (value instanceof Integer)
-		{
-			return BigDecimal.valueOf((int)value);
-		}
-		else if (value instanceof Long)
-		{
-			return BigDecimal.valueOf((long)value);
-		}
-		else
-		{
-			final String valueStr = value.toString();
-			if (Check.isBlank(valueStr))
-			{
-				return defaultValue;
-			}
-			try
-			{
-				return new BigDecimal(valueStr.trim());
-			}
-			catch (final NumberFormatException numberFormatException)
-			{
-				final String errorMsg = "Cannot convert `" + value + "` (" + value.getClass() + ") to BigDecimal";
-
-				if (failIfUnparsable)
-				{
-					final RuntimeException ex = Check.mkEx(errorMsg);
-					ex.initCause(numberFormatException);
-					throw ex;
-				}
-				else
-				{
-					System.err.println(errorMsg + ". Returning defaultValue=" + defaultValue);
-					numberFormatException.printStackTrace();
-					return defaultValue;
-				}
-			}
-		}
-	}
 }

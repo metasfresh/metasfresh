@@ -25,6 +25,15 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
@@ -41,14 +50,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Properties;
 
 public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 {

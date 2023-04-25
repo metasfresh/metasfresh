@@ -12,13 +12,11 @@ const IssueAdjustmentScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
-  const { caption, userInstructions, lines } = useSelector((state) =>
-    getPropsFromState({ state, wfProcessId, activityId })
-  );
+  const { caption, lines } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }));
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry({ location: url, caption, userInstructions }));
+    dispatch(pushHeaderEntry({ location: url, caption: caption }));
   }, []);
 
   const history = useHistory();
@@ -50,7 +48,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId }) => {
   //const line = getLineByIdFromActivity(activity, lineId);
   return {
     caption: activity.caption,
-    userInstructions: activity.userInstructions,
     lines: rawMaterialsIssueActivity.dataStored.lines,
   };
 };

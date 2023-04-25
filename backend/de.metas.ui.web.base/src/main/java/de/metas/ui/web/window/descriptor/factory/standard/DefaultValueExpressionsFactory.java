@@ -1,15 +1,10 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
-import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -23,9 +18,16 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Optional;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
+import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L

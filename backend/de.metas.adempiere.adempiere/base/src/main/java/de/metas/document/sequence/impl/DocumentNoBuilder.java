@@ -75,26 +75,13 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
-	/**
-	 * To be used as filter criteria for AD_Sequence_NO when the sequence is only using StartNewYear
-	 */
-	public static final String DEFAULT_CALENDAR_MONTH_TO_USE = "1";
 	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 	final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final AdMessageKey MSG_PROVIDER_NOT_APPLICABLE = AdMessageKey.of("de.metas.document.CustomSequenceNotProviderNoApplicable");
 
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
-
-	/**
-	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARYEAR}.
-	 */
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
-	
-	/**
-	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARMONTH}.
-	 */
-	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarMonth = new SimpleDateFormatThreadLocal("M");
 
 	private ClientId _adClientId;
 	private Boolean _isAdempiereSys;
@@ -255,22 +242,6 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return DATEFORMAT_CalendarYear.format(SystemTime.asDate());
 	}
 
-	private String getCalendarMonth(final String dateColumn)
-	{
-		final Evaluatee evalContext = getEvaluationContext();
-		if (!Check.isEmpty(dateColumn, true))
-		{
-			final java.util.Date docDate = evalContext.get_ValueAsDate(dateColumn, null);
-			if (docDate != null)
-			{
-				return DATEFORMAT_CalendarMonth.format(docDate);
-			}
-		}
-
-		// Fallback: use current month
-		return DATEFORMAT_CalendarMonth.format(SystemTime.asDate());
-	}
-
 	/**
 	 * @return sequenceNo to be used or <code>-1</code> in case the DocumentNo generation shall be skipped.
 	 */
@@ -293,13 +264,16 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			logger.debug("getSequenceNoToUse - going to invoke customSequenceNoProvider={}", customSequenceNoProvider);
 
 			final Evaluatee evalContext = getEvaluationContext();
-			if (!customSequenceNoProvider.isApplicable(evalContext, docSeqInfo))
+			if (!customSequenceNoProvider.isApplicable(evalContext))
 			{
 				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
 				throw new DocumentNoBuilderException(msg)
 						.appendParametersToMessage()
 						.setParameter("context", evalContext);
 			}
+
+			final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext);
+			logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
 
 			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
 			{
@@ -312,12 +286,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
 							.setParameter("docSeqInfo", docSeqInfo);
 				}
-				result = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo,retrieveAndIncrementSeqNo(docSeqInfo) );
+				result = customSequenceNumber + "-" + retrieveAndIncrementSeqNo(docSeqInfo);
 			}
 			else
 			{
-				final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo, null);
-				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
 				result = customSequenceNumber;
 			}
 		}
@@ -375,17 +347,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		{
 			final String calendarYear = getCalendarYear(docSeqInfo.getDateColumn());
 
-			String calendarMonth = DEFAULT_CALENDAR_MONTH_TO_USE;
-			if (docSeqInfo.isStartNewMonth())
-			{
-				calendarMonth = getCalendarMonth(docSeqInfo.getDateColumn());
-			}
-
-			sql = "UPDATE AD_Sequence_No SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? AND CalendarYear = ? AND CalendarMonth = ? RETURNING CurrentNext - ?";
+			sql = "UPDATE AD_Sequence_No SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? AND CalendarYear = ? RETURNING CurrentNext - ?";
 			sqlParams.add(docSeqInfo.getIncrementNo());
 			sqlParams.add(docSeqInfo.getAdSequenceId());
 			sqlParams.add(calendarYear);
-			sqlParams.add(calendarMonth);
 			sqlParams.add(docSeqInfo.getIncrementNo());
 
 		}
@@ -399,10 +364,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
 		DB.executeUpdateEx(sql,
-				sqlParams.toArray(),
-				trxName,
-				QUERY_TIME_OUT,
-				rs -> currentSeq.setValue(rs.getInt(1)));
+						   sqlParams.toArray(),
+						   trxName,
+						   QUERY_TIME_OUT,
+						   rs -> currentSeq.setValue(rs.getInt(1)));
 
 		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
 				trxName,
@@ -424,13 +389,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		else if (docSeqInfo.isStartNewYear())
 		{
 			final String calendarYear = getCalendarYear(docSeqInfo.getDateColumn());
-			String calendarMonth = DEFAULT_CALENDAR_MONTH_TO_USE;
-			if (docSeqInfo.isStartNewMonth())
-			{
-				calendarMonth = getCalendarMonth(docSeqInfo.getDateColumn());
-			}
-			final String sql = "SELECT CurrentNext AD_Sequence_No WHERE AD_Sequence_ID = ? AND CalendarYear = ? AND CalendarMonth = ?";
-			return DB.getSQLValueEx(trxName, sql, adSequenceId, calendarYear, calendarMonth);
+
+			final String sql = "SELECT CurrentNext AD_Sequence_No WHERE AD_Sequence_ID = ? AND CalendarYear = ?";
+			return DB.getSQLValueEx(trxName, sql, adSequenceId, calendarYear);
 		}
 		else
 		{

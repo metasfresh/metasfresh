@@ -9,7 +9,6 @@ import YesNoDialog from '../dialogs/YesNoDialog';
 const ConfirmButton = ({
   caption,
   promptQuestion,
-  userInstructions,
   isUserEditable,
   isDangerousAction,
   completeStatus,
@@ -30,14 +29,7 @@ const ConfirmButton = ({
 
   return (
     <>
-      {isDialogDisplayed && (
-        <YesNoDialog
-          promptQuestion={promptQuestion}
-          userInstructions={userInstructions}
-          onYes={onDialogYes}
-          onNo={onDialogNo}
-        />
-      )}
+      {isDialogDisplayed && <YesNoDialog promptQuestion={promptQuestion} onYes={onDialogYes} onNo={onDialogNo} />}
       <ButtonWithIndicator
         caption={captionEffective}
         completeStatus={completeStatus}
@@ -60,7 +52,6 @@ const ConfirmButton = ({
 ConfirmButton.propTypes = {
   caption: PropTypes.string,
   promptQuestion: PropTypes.string,
-  userInstructions: PropTypes.string,
   isUserEditable: PropTypes.bool,
   isDangerousAction: PropTypes.bool,
   completeStatus: PropTypes.string,

@@ -44,7 +44,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 /*
@@ -140,10 +139,7 @@ public class PPOrderLineRow implements IViewRow
 	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80))
 	private final JSONLookupValue huStatus;
 
-	@ViewColumn(captionKey = "HUClearanceStatus", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90))
-	private final JSONLookupValue clearanceStatus;
-
-	@ViewColumn(captionKey = "Status", widgetType = DocumentFieldWidgetType.Color, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100))
+	@ViewColumn(captionKey = "Status", widgetType = DocumentFieldWidgetType.Color, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90))
 	private ColorValue lineStatusColor;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PPOrderLineRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PPOrderLineRow.class);
@@ -166,8 +162,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final Quantity quantity,
 			@NonNull final List<PPOrderLineRow> includedRows,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final JSONLookupValue huStatus,
-			@Nullable final JSONLookupValue clearanceStatus)
+			@NonNull final JSONLookupValue huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -185,7 +180,6 @@ public class PPOrderLineRow implements IViewRow
 		this.uom = JSONLookupValueTool.createUOMLookupValue(quantity.getUOM());
 		this.packingInfo = packingInfo;
 		this.code = code;
-		this.clearanceStatus = clearanceStatus;
 
 		this.sourceHU = false;
 		this.topLevelHU = topLevelHU;
@@ -241,8 +235,8 @@ public class PPOrderLineRow implements IViewRow
 				.getQtyRequiredToProduce();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
-				rowId.toDocumentId(),
-				ppOrder.getM_AttributeSetInstance_ID());
+															  rowId.toDocumentId(),
+															  ppOrder.getM_AttributeSetInstance_ID());
 
 		this.includedRows = ImmutableList.copyOf(includedRows);
 
@@ -256,11 +250,6 @@ public class PPOrderLineRow implements IViewRow
 
 		this.issueMethod = null;
 
-		this.clearanceStatus = includedRows.stream()
-				.map(PPOrderLineRow::getClearanceStatus)
-				.filter(Objects::nonNull)
-				.findFirst()
-				.orElse(null);
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrderBomLine", builderClassName = "BuilderForPPOrderBomLine")
@@ -320,7 +309,6 @@ public class PPOrderLineRow implements IViewRow
 		this.issueMethod = BOMComponentIssueMethod.ofNullableCode(ppOrderBomLine.getIssueMethod());
 
 		this.lineStatusColor = computeLineStatusColor(this.qtyPlan, this.qty);
-		this.clearanceStatus = null;
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
@@ -335,8 +323,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final JSONLookupValue uom,
 			@NonNull final Quantity qty,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final JSONLookupValue huStatus,
-			@Nullable final JSONLookupValue clearanceStatus)
+			@NonNull final JSONLookupValue huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -370,14 +357,13 @@ public class PPOrderLineRow implements IViewRow
 		this.documentPath = computeDocumentPath();
 
 		this.issueMethod = null;
-		this.clearanceStatus = clearanceStatus;
 	}
 
 	@VisibleForTesting
 	static ColorValue computeLineStatusColor(@NonNull final Quantity qtyPlan, @NonNull final Quantity qtyIssued)
 	{
 		final boolean issued;
-		if (qtyPlan.signum() >= 0)
+		if(qtyPlan.signum() >= 0)
 		{
 			issued = qtyPlan.compareTo(qtyIssued) <= 0;
 		}
@@ -458,11 +444,6 @@ public class PPOrderLineRow implements IViewRow
 	private UomId getUomId()
 	{
 		return uom == null ? null : UomId.ofRepoIdOrNull(uom.getKeyAsInt());
-	}
-
-	private JSONLookupValue getClearanceStatus()
-	{
-		return clearanceStatus;
 	}
 
 	@Nullable

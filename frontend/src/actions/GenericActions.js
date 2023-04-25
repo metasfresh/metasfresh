@@ -103,15 +103,10 @@ export function actionsRequest({
   childViewId,
   childViewSelectedIds,
 }) {
-  //
-  // Dashboard actions
   if (!entity) {
-    // no actions
+    // FIXME: identify which is this case. we shall avoid it
     return Promise.resolve({ data: { actions: [] } });
-  }
-  //
-  // View Actions:
-  else if (entity === 'documentView') {
+  } else if (entity === 'documentView') {
     const windowId = type;
     const viewId = id;
     return post(
@@ -122,10 +117,7 @@ export function actionsRequest({
         childViewSelectedIds,
       }
     );
-  }
-  //
-  // Other actions fetching cases:
-  else {
+  } else {
     const query = getQueryString({
       disabled: true,
       selectedIds,

@@ -1,8 +1,5 @@
 package de.metas.pricing.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.tax.api.TaxCategoryId;

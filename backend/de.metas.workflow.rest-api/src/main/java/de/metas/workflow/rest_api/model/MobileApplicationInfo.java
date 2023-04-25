@@ -11,5 +11,4 @@ public class MobileApplicationInfo
 {
 	@NonNull MobileApplicationId id;
 	@NonNull ITranslatableString caption;
-	boolean requiresLaunchersQRCodeFilter;
 }

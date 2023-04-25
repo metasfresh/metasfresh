@@ -22,7 +22,9 @@ public class WorkReportActivityHandler implements WFActivityHandler
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		return UIComponent.builderFrom(UIComponentType.CONFIRM_BUTTON, wfActivity).build();
+		return UIComponent.builder()
+				.type(UIComponentType.CONFIRM_BUTTON)
+				.build();
 	}
 
 	@Override

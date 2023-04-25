@@ -31,5 +31,4 @@ public class PickingConfigV2
 {
 	boolean pickingReviewRequired;
 	boolean considerAttributes;
-	boolean reserveHUsOnJobStart;
 }

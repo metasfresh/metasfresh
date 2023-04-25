@@ -12,7 +12,7 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
   const validateQtyEntered = (qtyEntered) => {
     // Qty shall be positive
     if (qtyEntered <= 0) {
-      return trl('activities.picking.notPositiveQtyNotAllowed');
+      return trl('activities.picking.invalidQtyPicked');
     }
 
     // OK
@@ -31,6 +31,7 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
         <GetQuantityDialog
           qtyCaption={trl('activities.mfg.receipts.qtyToReceive')}
           qtyTarget={qtyTarget}
+          qtyInitial={qtyTarget}
           uom={uom}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyPickedChanged}

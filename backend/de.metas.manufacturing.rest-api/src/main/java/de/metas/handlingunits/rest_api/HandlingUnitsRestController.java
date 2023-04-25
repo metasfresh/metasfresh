@@ -28,7 +28,6 @@ import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
-import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
@@ -48,9 +47,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -70,7 +67,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -129,33 +125,21 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/byQRCode")
-	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
+	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(
+			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
 		return getByIdSupplier(() -> {
 			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
 			if (globalQRCode != null)
 			{
 				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
-				final HuId huId = huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
-				if (huId == null)
-				{
-					return null; // NOT FOUND
-				}
-
-				return GetByIdRequest.builder()
-						.huId(huId)
-						.expectedQRCode(huQRCode)
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.build();
+				return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
 			}
 			else
 			{
-				return GetByIdRequest.builder()
-						.huId(HuId.ofHUValue(request.getQrCode()))
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.build();
+				return HuId.ofHUValue(request.getQrCode());
 			}
-		});
+		}, request.isIncludeAllowedClearanceStatuses());
 	}
 
 	@GetMapping("/byId/{M_HU_ID}")
@@ -163,9 +147,14 @@ public class HandlingUnitsRestController
 			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
-		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(HuId.ofRepoId(huRepoId))
-				.build());
+		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
+	}
+
+	@NonNull
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
+	{
+		final boolean getAllowedClearanceStatuses = false;
+		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses);
 	}
 
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
@@ -181,8 +170,8 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-					.result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
-					.build());
+											 .result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
+											 .build());
 		}
 		catch (final Exception ex)
 		{
@@ -299,54 +288,33 @@ public class HandlingUnitsRestController
 		// IMPORTANT: don't retrieve by ID because the ID might be different
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
-		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(huQRCodesService.getHuIdByQRCode(huQRCode))
-				.expectedQRCode(huQRCode)
-				.build());
+		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
 	}
 
 	@NonNull
-	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		try
 		{
-			final GetByIdRequest request = requestSupplier.get();
-			if (request == null)
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
 			{
 				return ResponseEntity.notFound().build();
 			}
 
-			final HuId huId = request.getHuId();
-			final HUQRCode expectedQRCode = request.getExpectedQRCode();
-			final boolean includeAllowedClearanceStatuses = request.isIncludeAllowedClearanceStatuses();
-
-			final JsonHU jsonHU = handlingUnitsService
-					.getFullHU(huId, expectedQRCode, adLanguage, includeAllowedClearanceStatuses)
-					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId));
-
-			return ResponseEntity.ok(JsonGetSingleHUResponse.builder().result(jsonHU).build());
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+											 .result(handlingUnitsService
+															 .getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
+															 .withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId)))
+											 .build());
 		}
 		catch (final Exception e)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-					.error(JsonErrors.ofThrowable(e, adLanguage))
-					.build());
+															.error(JsonErrors.ofThrowable(e, adLanguage))
+															.build());
 		}
-	}
-
-	//
-	//
-	//
-
-	@Value
-	@Builder
-	private static class GetByIdRequest
-	{
-		@NonNull HuId huId;
-		@Nullable HUQRCode expectedQRCode;
-
-		boolean includeAllowedClearanceStatuses;
 	}
 }

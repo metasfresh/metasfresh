@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-11-01T18:03:44 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/account_info/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,8 +9,6 @@
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="122"/>
-	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="873"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -47,75 +46,27 @@
 	$P{ad_org_id}
 );]]>
 	</queryString>
-	<field name="dateacct" class="java.sql.Date">
-		<property name="com.jaspersoft.studio.field.label" value="dateacct"/>
-	</field>
-	<field name="fact_acct_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="fact_acct_id"/>
-	</field>
-	<field name="bp_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
-	</field>
-	<field name="description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="description"/>
-	</field>
-	<field name="account2_id" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="account2_id"/>
-	</field>
-	<field name="a_value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="a_value"/>
-	</field>
-	<field name="amtacctdr" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="amtacctdr"/>
-	</field>
-	<field name="amtacctcr" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="amtacctcr"/>
-	</field>
-	<field name="saldo" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="saldo"/>
-	</field>
-	<field name="param_acct_value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="param_acct_value"/>
-	</field>
-	<field name="param_acct_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="param_acct_name"/>
-	</field>
-	<field name="param_end_date" class="java.sql.Date">
-		<property name="com.jaspersoft.studio.field.label" value="param_end_date"/>
-	</field>
-	<field name="param_start_date" class="java.sql.Date">
-		<property name="com.jaspersoft.studio.field.label" value="param_start_date"/>
-	</field>
-	<field name="param_activity_value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="param_activity_value"/>
-	</field>
-	<field name="param_activity_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="param_activity_name"/>
-	</field>
-	<field name="overallcount" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="overallcount"/>
-	</field>
-	<field name="unionorder" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="unionorder"/>
-	</field>
-	<field name="docstatus" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
-	</field>
-	<field name="eurosaldo" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="eurosaldo"/>
-	</field>
-	<field name="containseur" class="java.lang.Boolean">
-		<property name="com.jaspersoft.studio.field.label" value="containseur"/>
-	</field>
-	<field name="ad_org_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
-	</field>
-	<field name="vat_code" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="vat_code"/>
-	</field>
-	<field name="tax_rate_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="tax_rate_name"/>
-	</field>
+	<field name="dateacct" class="java.sql.Date"/>
+	<field name="fact_acct_id" class="java.math.BigDecimal"/>
+	<field name="bp_name" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="account2_id" class="java.lang.String"/>
+	<field name="a_value" class="java.lang.String"/>
+	<field name="amtacctdr" class="java.math.BigDecimal"/>
+	<field name="amtacctcr" class="java.math.BigDecimal"/>
+	<field name="saldo" class="java.math.BigDecimal"/>
+	<field name="param_acct_value" class="java.lang.String"/>
+	<field name="param_acct_name" class="java.lang.String"/>
+	<field name="param_end_date" class="java.sql.Date"/>
+	<field name="param_start_date" class="java.sql.Date"/>
+	<field name="param_activity_value" class="java.lang.String"/>
+	<field name="param_activity_name" class="java.lang.String"/>
+	<field name="overallcount" class="java.lang.Long"/>
+	<field name="unionorder" class="java.lang.Integer"/>
+	<field name="docstatus" class="java.lang.String"/>
+	<field name="eurosaldo" class="java.math.BigDecimal"/>
+	<field name="containseur" class="java.lang.Boolean"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<group name="Count Group">
 		<groupExpression><![CDATA[""]]></groupExpression>
 		<groupHeader>
@@ -138,7 +89,7 @@
 			<band height="115">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1 && $F{overallcount} < 150000)]]></printWhenExpression>
 				<textField isBlankWhenNull="true">
-					<reportElement x="7" y="106" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="7" y="106" width="65" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<box rightPadding="3"/>
 					<textElement textAlignment="Right">
 						<font size="7" isBold="false"/>
@@ -153,7 +104,7 @@
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="130" y="106" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="214" y="106" width="66" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -167,7 +118,7 @@
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+" " + $R{of}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="73" y="106" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="119" y="106" width="95" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -183,7 +134,7 @@
 				<textField>
 					<reportElement x="57" y="20" width="157" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 				</textField>
@@ -195,7 +146,7 @@
 					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="40" y="106" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="72" y="106" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -218,42 +169,42 @@
 				<textField>
 					<reportElement x="57" y="49" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{accountno}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="57" y="60" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{account}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="57" y="71" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="127" y="49" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="127" y="71" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_start_date} + " - " + $F{param_end_date}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="127" y="60" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
 				</textField>
@@ -274,14 +225,14 @@
 				<textField>
 					<reportElement x="57" y="82" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="127" y="82" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="7" isBold="true"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{C_Activity_ID} != null ?
     $F{param_activity_value} + " - " + $F{param_activity_name}:
@@ -301,25 +252,11 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement x="190" y="106" width="40" height="9" uuid="6c4a6a90-b02a-4fba-b553-32fe6b6fde32"/>
-					<textElement>
-						<font size="7"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="230" y="106" width="50" height="9" uuid="eab5c09d-6d1e-43dd-983b-d87e84847360"/>
-					<textElement>
-						<font size="7"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{tax_rate_name}]]></textFieldExpression>
-				</textField>
 			</band>
-			<band height="74">
+			<band height="73">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1 && $F{overallcount} < 150000)]]></printWhenExpression>
 				<textField isBlankWhenNull="true">
-					<reportElement x="7" y="60" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="7" y="60" width="65" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<box rightPadding="3"/>
 					<textElement textAlignment="Right">
 						<font size="7" isBold="false"/>
@@ -334,14 +271,14 @@
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="130" y="60" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="214" y="60" width="66" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="73" y="60" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="119" y="60" width="95" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -355,7 +292,7 @@
 					<textFieldExpression><![CDATA[$R{amtdr}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="40" y="60" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="72" y="60" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -419,20 +356,6 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement x="190" y="60" width="40" height="9" uuid="de55145a-f3db-483d-9bd2-87ca9f28a815"/>
-					<textElement>
-						<font size="7"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="230" y="60" width="50" height="9" uuid="dc3549fc-eb36-48ed-bfa8-2326daf22334"/>
-					<textElement>
-						<font size="7"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{tax_rate_name}]]></textFieldExpression>
-				</textField>
 			</band>
 		</groupHeader>
 	</group>
@@ -452,10 +375,10 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="9" splitType="Stretch">
+		<band height="10" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="7" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="7" y="0" width="65" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
@@ -470,7 +393,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="130" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="214" y="0" width="66" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
@@ -482,7 +405,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="73" y="0" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="119" y="0" width="95" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
@@ -496,7 +419,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="40" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="72" y="0" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
@@ -530,42 +453,28 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{docstatus}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="190" y="0" width="40" height="9" uuid="04382bf8-5b1c-46f1-ac10-cbc12a84993b"/>
-				<textElement>
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{vat_code}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="230" y="0" width="50" height="9" uuid="81425b72-e3f0-470e-a86b-155041149740"/>
-				<textElement>
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{tax_rate_name}]]></textFieldExpression>
-			</textField>
 		</band>
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="7" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="7" y="0" width="65" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="426" y="0" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="130" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="214" y="0" width="66" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
 (
@@ -575,30 +484,30 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="73" y="0" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="119" y="0" width="95" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="368" y="0" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="40" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="72" y="0" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="324" y="0" width="44" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
 			</textField>
@@ -606,9 +515,9 @@
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 4 && $F{eurosaldo} != null && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="130" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="214" y="0" width="66" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
 (
@@ -620,7 +529,7 @@
 			<textField pattern="#,##0.00">
 				<reportElement x="484" y="0" width="58" height="9" uuid="9056b7bd-7d02-4863-8dd4-762397063c1a"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{eurosaldo}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>

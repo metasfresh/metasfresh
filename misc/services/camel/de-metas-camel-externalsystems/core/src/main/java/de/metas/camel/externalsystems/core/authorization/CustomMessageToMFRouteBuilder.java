@@ -51,7 +51,6 @@ public class CustomMessageToMFRouteBuilder extends RouteBuilder
 				.routeId(CUSTOM_TO_MF_ROUTE_ID)
 				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.streamCaching()
-				.log("Invoked")
 				.process(this::postAuthorizationMessage)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))
 				.to(CUSTOM_TO_MF_ROUTE);

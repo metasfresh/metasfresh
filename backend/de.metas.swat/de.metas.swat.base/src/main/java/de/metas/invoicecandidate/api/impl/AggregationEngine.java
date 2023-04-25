@@ -391,9 +391,7 @@ public final class AggregationEngine
 			{
 				final I_C_Order order = orderDAO.getById(orderId);
 				invoiceHeader.setExternalId(order.getExternalId());
-
-				// task 12953 : prevent SalesRep_ID from being a header aggregation criteria
-				// invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
+				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
 			}
 			invoiceHeader.setPaymentRule(icRecord.getPaymentRule());
@@ -644,34 +642,24 @@ public final class AggregationEngine
 	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
-		final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
-		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
-
 		final InvoiceDocBaseType docBaseType;
 
 		//
 		// Case: Invoice DocType was preset
 		if (invoiceHeader.getC_DocTypeInvoice() != null)
 		{
+			final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
-			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
-
-			// handle negative amounts: switch the base type to credit memo, based on the IsSOTrx
-			if (totalAmt.signum() < 0)
-			{
-				docBaseType = flipDocBaseType(invoiceDocBaseType, invoiceIsSOTrx);
-			}
-			else
-			{
-				docBaseType = invoiceDocBaseType;
-			}
+			docBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 		}
 		//
 		// Case: no invoice DocType was set
 		// We need to find out the DocBaseType based on Total Amount and IsSOTrx
 		else
 		{
+			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
+
 			if (invoiceIsSOTrx)
 			{
 				if (totalAmt.signum() < 0)
@@ -700,35 +688,13 @@ public final class AggregationEngine
 
 		//
 		// NOTE: in credit memos, amount are positive but the invoice effect is reversed
-		if (totalAmt.signum() < 0)
+		if (docBaseType.isCreditMemo())
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
-	}
-
-	private InvoiceDocBaseType flipDocBaseType(final InvoiceDocBaseType docBaseType, final boolean invoiceIsSOTrx)
-	{
-		if (docBaseType.isCreditMemo())
-		{
-			if (invoiceIsSOTrx)
-			{
-				return InvoiceDocBaseType.CustomerInvoice;
-			}
-			else
-			{
-				return InvoiceDocBaseType.VendorInvoice;
-			}
-		}
-
-		if (invoiceIsSOTrx)
-		{
-			return InvoiceDocBaseType.CustomerCreditMemo;
-		}
-
-		return InvoiceDocBaseType.VendorCreditMemo;
 	}
 
 	private Optional<PaymentTermId> getPaymentTermId(final InvoiceHeaderImpl invoiceHeader)

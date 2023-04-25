@@ -22,26 +22,18 @@
 
 package de.metas.camel.externalsystems.grssignum.from_grs.product.processor;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
-import de.metas.camel.externalsystems.grssignum.from_grs.helper.JsonRequestHelper;
 import de.metas.camel.externalsystems.grssignum.from_grs.product.PushRawMaterialsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonAllergen;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerProduct;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
-import de.metas.common.product.v2.request.JsonRequestAllergenItem;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
-import de.metas.common.product.v2.request.JsonRequestUpsertProductAllergen;
-import de.metas.common.product.v2.request.JsonRequestUpsertQualityAttribute;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import lombok.NonNull;
@@ -50,24 +42,14 @@ import org.apache.camel.Processor;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_PURCHASE_REASON;
-import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_SALES_REASON;
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT;
 
 public class PushRawMaterialsProcessor implements Processor
 {
-	@NonNull
-	private final ProcessLogger processLogger;
-
-	public PushRawMaterialsProcessor(final @NonNull ProcessLogger processLogger)
-	{
-		this.processLogger = processLogger;
-	}
-
 	@Override
 	public void process(final Exchange exchange)
 	{
@@ -106,9 +88,6 @@ public class PushRawMaterialsProcessor implements Processor
 		requestProduct.setName(getName(grsJsonProduct));
 		requestProduct.setUomCode(GRSSignumConstants.DEFAULT_UOM_CODE);
 
-		getAllergens(grsJsonProduct).ifPresent(requestProduct::setProductAllergens);
-		requestProduct.setQualityAttributes(getQualityAttributes(grsJsonProduct));
-
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsJsonProduct.getProductId()))
 				.requestProduct(requestProduct)
@@ -126,50 +105,18 @@ public class PushRawMaterialsProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<JsonRequestUpsertProductAllergen> getAllergens(@NonNull final JsonProduct jsonProduct)
-	{
-		if (jsonProduct.getBPartnerProducts() == null || jsonProduct.getBPartnerProducts().size() != 1)
-		{
-			processLogger.logMessage("Skipping Allergen import due to multiple 'KRED' entries received! ARTNRID (GRS-ProductId) = " + jsonProduct.getProductId(), getPInstanceIdFromLoggedInIdentity().getValue());
-
-			return Optional.empty();
-		}
-
-		final List<JsonAllergen> allergenList = jsonProduct.getBPartnerProducts().get(0).getAllergens();
-
-		if (allergenList == null)
-		{
-			return Optional.of(JsonRequestHelper.getAllergenUpsertRequest(ImmutableList.of()));
-		}
-
-		final List<JsonRequestAllergenItem> allergenItemList = allergenList
-				.stream()
-				.map(allergen -> JsonRequestAllergenItem.builder()
-						.identifier(ExternalIdentifierFormat.asExternalIdentifier(String.valueOf(allergen.getId())))
-						.name(allergen.getName())
-						.build())
-				.collect(ImmutableList.toImmutableList());
-
-		return Optional.of(JsonRequestHelper.getAllergenUpsertRequest(allergenItemList));
-	}
-
-	@NonNull
 	private static JsonRequestBPartnerProductUpsert getJsonRequestBPartnerProductUpsert(@NonNull final JsonBPartnerProduct grsBPartnerProductItem)
 	{
-		final JsonRequestBPartnerProductUpsert upsertRequest = new JsonRequestBPartnerProductUpsert();
+		final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
 
-		upsertRequest.setBpartnerIdentifier(computeBPartnerIdentifier(grsBPartnerProductItem));
-		upsertRequest.setUsedForVendor(true);
-		upsertRequest.setCurrentVendor(grsBPartnerProductItem.isCurrentVendor());
-		upsertRequest.setActive(grsBPartnerProductItem.isActive());
+		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(computeBPartnerIdentifier(grsBPartnerProductItem));
+		jsonRequestBPartnerProductUpsert.setUsedForVendor(true);
+		jsonRequestBPartnerProductUpsert.setCurrentVendor(grsBPartnerProductItem.isCurrentVendor());
+		jsonRequestBPartnerProductUpsert.setExcludedFromPurchase(grsBPartnerProductItem.isExcludedFromPurchase());
+		jsonRequestBPartnerProductUpsert.setExclusionFromPurchaseReason(grsBPartnerProductItem.isExcludedFromPurchase() ? EXCLUSION_FROM_PURCHASE_REASON : null);
+		jsonRequestBPartnerProductUpsert.setActive(grsBPartnerProductItem.isActive());
 
-		upsertRequest.setExcludedFromPurchase(grsBPartnerProductItem.isExcludedFromPurchase() || !grsBPartnerProductItem.isActive());
-		upsertRequest.setExclusionFromPurchaseReason(upsertRequest.getExcludedFromPurchase() ? EXCLUSION_FROM_PURCHASE_REASON : null);
-
-		upsertRequest.setExcludedFromSales(!grsBPartnerProductItem.isActive());
-		upsertRequest.setExclusionFromSalesReason(upsertRequest.getExcludedFromSales() ? EXCLUSION_FROM_SALES_REASON : null);
-
-		return upsertRequest;
+		return jsonRequestBPartnerProductUpsert;
 	}
 
 	@NonNull
@@ -196,25 +143,5 @@ public class PushRawMaterialsProcessor implements Processor
 		}
 
 		throw new RuntimeException("Missing mandatory METASFRESHID! see JsonBPartnerProduct: " + jsonBPartnerProduct);
-	}
-
-	@NonNull
-	private static JsonMetasfreshId getPInstanceIdFromLoggedInIdentity()
-	{
-		try
-		{
-			return ((TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials()).getPInstance();
-		}
-		catch (final Throwable e)
-		{
-			throw new RuntimeException("Cannot get the token credentials from the authenticated user! See message" + e.getMessage(), e);
-		}
-	}
-
-	@NonNull
-	private static JsonRequestUpsertQualityAttribute getQualityAttributes(@NonNull final JsonProduct jsonProduct)
-	{
-		return JsonRequestHelper.getQualityAttributeRequest(
-				JsonRequestHelper.initQualityAttributeLabelList(jsonProduct).build());
 	}
 }

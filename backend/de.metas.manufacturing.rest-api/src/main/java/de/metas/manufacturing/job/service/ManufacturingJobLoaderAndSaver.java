@@ -3,7 +3,6 @@ package de.metas.manufacturing.job.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.device.accessor.DeviceId;
@@ -26,10 +25,11 @@ import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -61,12 +61,6 @@ public class ManufacturingJobLoaderAndSaver
 	public ManufacturingJobLoaderAndSaver(@NonNull final ManufacturingJobLoaderAndSaverSupportingServices supportingServices)
 	{
 		this.supportingServices = supportingServices;
-	}
-
-	public ManufacturingJob load(@NonNull final I_PP_Order ppOrder)
-	{
-		addToCache(ppOrder);
-		return load(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
 	}
 
 	public ManufacturingJob load(final PPOrderId ppOrderId)
@@ -144,9 +138,15 @@ public class ManufacturingJobLoaderAndSaver
 				return prepareJobActivity(from)
 						.finishedGoodsReceive(toFinishedGoodsReceive(from))
 						.build();
-			default:
+			case WorkReport:
+			case ActivityConfirmation:
+			case GenerateHUQRCodes:
+			case ScanScaleDevice:
+			case RawMaterialsIssueAdjustment:
 				return prepareJobActivity(from)
 						.build();
+			default:
+				throw new AdempiereException("Unknown type: " + from);
 		}
 	}
 
@@ -159,22 +159,14 @@ public class ManufacturingJobLoaderAndSaver
 				.name(from.getName())
 				.type(from.getType())
 				.orderRoutingActivityId(from.getId())
-				.routingActivityStatus(from.getStatus())
-				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
-				.userInstructions(from.getUserInstructions())
-				.scannedQRCode(from.getScannedQRCode());
+				.routingActivityStatus(from.getStatus());
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
 	{
-		final PPOrderId ppOrderId = from.getOrderId();
-		final PPOrderRouting routing = getRouting(ppOrderId);
-		final ImmutableSet<ProductId> onlyProductIds = from.getId() != null ? routing.getProductIdsByActivityId(from.getId()) : ImmutableSet.of();
-
 		return RawMaterialsIssue.builder()
-				.lines(getBOMLines(ppOrderId)
+				.lines(getBOMLines(from.getOrderId())
 						.stream()
-						.filter(bomLine -> onlyProductIds.isEmpty() || onlyProductIds.contains(ProductId.ofRepoId(bomLine.getM_Product_ID())))
 						.map(this::toRawMaterialsIssueLine)
 						.filter(Objects::nonNull)
 						.collect(ImmutableList.toImmutableList()))
@@ -193,17 +185,14 @@ public class ManufacturingJobLoaderAndSaver
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
 		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final OrderBOMLineQuantities quantities = supportingServices.getQuantities(orderBOMLine);
-		final Quantity qtyToIssue = quantities.getQtyRequired();
-		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
+		final OrderBOMLineQuantities bomLineQuantities = supportingServices.getQuantities(orderBOMLine);
 
 		return RawMaterialsIssueLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
-				.isWeightable(isWeightable)
-				.qtyToIssue(qtyToIssue)
-				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
-				.userInstructions(orderBOMLine.getHelp())
+				.qtyToIssue(bomLineQuantities.getQtyRequired())
+				.qtyToIssueTolerance(extractQtyToIssueTolerance(orderBOMLine))
+				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
 						.stream()
@@ -213,11 +202,18 @@ public class ManufacturingJobLoaderAndSaver
 				.build();
 	}
 
+	@Nullable
+	private static Percent extractQtyToIssueTolerance(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		return orderBOMLine.isEnforceTolerance()
+				? Percent.of(orderBOMLine.getTolerance_Perc())
+				: null;
+	}
+
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
 	{
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
-				.scaleTolerance(supportingServices.getScaleTolerance(schedule.getPpOrderBOMLineId()).orElse(null))
 				.isAlternativeIssue(schedule.isAlternativeIssue())
 				.productId(schedule.getProductId())
 				.productName(supportingServices.getProductName(schedule.getProductId()))
@@ -229,15 +225,9 @@ public class ManufacturingJobLoaderAndSaver
 				.issueFromHU(HUInfo.builder()
 						.id(schedule.getIssueFromHUId())
 						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
-						.huCapacity(getHUCapacity(schedule))
 						.build())
 				.issued(schedule.getIssued())
 				.build();
-	}
-
-	private Quantity getHUCapacity(@NonNull final PPOrderIssueSchedule schedule)
-	{
-		return supportingServices.getHUCapacity(schedule.getIssueFromHUId(), schedule.getProductId(), schedule.getQtyToIssue().getUOM());
 	}
 
 	private FinishedGoodsReceive toFinishedGoodsReceive(final @NonNull PPOrderRoutingActivity from)

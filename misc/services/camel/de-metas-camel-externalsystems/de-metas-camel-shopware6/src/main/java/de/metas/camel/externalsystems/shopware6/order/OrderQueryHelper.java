@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.order.query;
+package de.metas.camel.externalsystems.shopware6.order;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.OperatorType;
-import de.metas.camel.externalsystems.shopware6.api.model.QueryType;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -36,85 +35,105 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Stream;
 
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_NUMBER;
-import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildEqualsJsonQuery;
-import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildUpdatedAfterJsonQueries;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
 
 @UtilityClass
 public class OrderQueryHelper
 {
 	@NonNull
 	@VisibleForTesting
-	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter, @NonNull final PageAndLimit pageAndLimitValues)
+	public static JsonQuery buildEqualsJsonQuery(@NonNull final String key, @NonNull final String value)
 	{
-		return MultiQueryRequest.builder()
-				.filter(buildUpdatedAfterJsonQueries(updatedAfter))
-				.limit(pageAndLimitValues.getLimit())
-				.page(pageAndLimitValues.getPageIndex())
+		return JsonQuery.builder()
+				.field(key)
+				.queryType(JsonQuery.QueryType.EQUALS)
+				.value(value)
 				.build();
 	}
 
 	@NonNull
-	public MultiQueryRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request, @NonNull final PageAndLimit pageAndLimitValues)
+	@VisibleForTesting
+	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter)
 	{
-		final List<JsonQuery> queries = buildLookUpSpecificOrderQuery(request);
+		final HashMap<String, String> parameters = new HashMap<>();
+		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);
+
+		return MultiQueryRequest.builder()
+				.isQueryByDate(Boolean.TRUE)
+				.filter(MultiJsonFilter.builder()
+								.operatorType(MultiJsonFilter.OperatorType.OR)
+								.jsonQuery(JsonQuery.builder()
+												   .field(FIELD_UPDATED_AT)
+												   .queryType(JsonQuery.QueryType.RANGE)
+												   .parameters(parameters)
+												   .build())
+								.jsonQuery(JsonQuery.builder()
+												   .field(FIELD_CREATED_AT)
+												   .queryType(JsonQuery.QueryType.RANGE)
+												   .parameters(parameters)
+												   .build())
+								.build())
+				.build();
+	}
+
+	@NonNull
+	@VisibleForTesting
+	public ImportOrdersRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request)
+	{
+		final ImmutableList.Builder<JsonQuery> jsonQueries = ImmutableList.builder();
+
+		final String orderId = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_ID);
+		if (Check.isNotBlank(orderId))
+		{
+			jsonQueries.add(buildEqualsJsonQuery(FIELD_ORDER_ID, orderId));
+		}
+
+		final String orderNo = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_NO);
+		if (Check.isNotBlank(orderNo))
+		{
+			jsonQueries.add(buildEqualsJsonQuery(FIELD_ORDER_NUMBER, orderNo));
+		}
+
+		final List<JsonQuery> queries = jsonQueries.build();
 
 		if (!Check.isEmpty(queries))
 		{
-			return MultiQueryRequest.builder()
-					.filter(JsonQuery.builder()
-									.queryType(QueryType.MULTI)
-									.operatorType(OperatorType.AND)
+			final MultiQueryRequest multiQueryRequest = MultiQueryRequest.builder()
+					.filter(MultiJsonFilter.builder()
+									.operatorType(MultiJsonFilter.OperatorType.AND)
 									.jsonQueries(queries)
 									.build())
-					.limit(pageAndLimitValues.getLimit())
-					.page(pageAndLimitValues.getPageIndex())
+					.build();
+
+			return ImportOrdersRequest.builder()
+					.shopware6QueryRequest(multiQueryRequest)
+					.ignoreNextImportTimestamp(true)
 					.build();
 		}
 		else
 		{
 			final String updatedAfterOverride = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE);
 
+			final boolean ignoreNextImportTimestamp = updatedAfterOverride != null;
+
 			final String updatedAfter = CoalesceUtil.coalesceNotNull(
 					updatedAfterOverride,
 					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
 					Instant.ofEpochSecond(0).toString());
 
-			return buildUpdatedAfterQueryRequest(updatedAfter, pageAndLimitValues);
+			final MultiQueryRequest multiQueryRequest = buildUpdatedAfterQueryRequest(updatedAfter);
+
+			return ImportOrdersRequest.builder()
+					.shopware6QueryRequest(multiQueryRequest)
+					.ignoreNextImportTimestamp(ignoreNextImportTimestamp)
+					.build();
 		}
-	}
-
-	public boolean shouldIgnoreNextImportTimestamp(@NonNull final JsonExternalSystemRequest externalSystemRequest)
-	{
-		final String orderId = externalSystemRequest.getParameters().get(ExternalSystemConstants.PARAM_ORDER_ID);
-		final String orderNo = externalSystemRequest.getParameters().get(ExternalSystemConstants.PARAM_ORDER_NO);
-		final String updatedAfterOverride = externalSystemRequest.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE);
-
-		return Stream.of(orderId, orderNo, updatedAfterOverride)
-				.anyMatch(Check::isNotBlank);
-	}
-
-	@NonNull
-	private ImmutableList<JsonQuery> buildLookUpSpecificOrderQuery(@NonNull final JsonExternalSystemRequest request)
-	{
-		final ImmutableList.Builder<JsonQuery> getSpecificOrderQuery = ImmutableList.builder();
-
-		final String orderId = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_ID);
-		if (Check.isNotBlank(orderId))
-		{
-			getSpecificOrderQuery.add(buildEqualsJsonQuery(FIELD_ORDER_ID, orderId));
-		}
-
-		final String orderNo = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_NO);
-		if (Check.isNotBlank(orderNo))
-		{
-			getSpecificOrderQuery.add(buildEqualsJsonQuery(FIELD_ORDER_NUMBER, orderNo));
-		}
-
-		return getSpecificOrderQuery.build();
 	}
 }

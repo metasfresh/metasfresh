@@ -25,6 +25,7 @@ package de.metas.device.scales.request;
 import de.metas.device.api.ISingleValueResponse;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class GetWeightResponse implements ISingleValueResponse
 {
@@ -50,7 +51,9 @@ public class GetWeightResponse implements ISingleValueResponse
 	@Override
 	public BigDecimal getSingleValue()
 	{
-		return getWeight();
+		// TODO either do the rounding in adempiere, or pass the precision as a parameter of the device request.
+		// generally the precision should come from ADempiere's weigh UOM
+		return getWeight().setScale(2, RoundingMode.HALF_UP);
 	}
 
 	@Override

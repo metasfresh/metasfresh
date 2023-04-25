@@ -1,12 +1,26 @@
 package de.metas.handlingunits.trace.process;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MovementLine;
+
 import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
@@ -15,22 +29,6 @@ import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MovementLine;
-
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -42,12 +40,12 @@ import java.util.stream.Collectors;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,23 +55,14 @@ import java.util.stream.Collectors;
 public class M_HU_Trace_CreateForHU extends JavaProcess
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
-
+	
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_M_HU> selectedHUsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		final HuId huId = HuId.ofRepoId(getRecord_ID());
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
-		final Iterator<I_M_HU> hus = queryBL.createQueryBuilder(I_M_HU.class)
-				.filter(selectedHUsFilter)
-				.create()
-				.iterate(I_M_HU.class);
-
-		for (final I_M_HU hu : IteratorUtils.asIterable(hus))
-		{
-			writeTraceForHu(hu);
-		}
+		writeTraceForHu(hu);
 
 		return MSG_OK;
 	}
@@ -106,13 +95,6 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 			{
 				addLog("Checking for PP_Cost_Collector={}", costCollector);
 				huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
-			}
-
-			final List<I_M_InventoryLine> inventoryLines = retrieveAnyModelForHU(hu, I_M_InventoryLine.class);
-			for (final I_M_InventoryLine inventoryLine : inventoryLines)
-			{
-				addLog("Checking for M_Inventory_Line={}", inventoryLine);
-				huTraceEventsCreateAndAdd.createAndAddFor(inventoryLine.getM_Inventory(), ImmutableList.of(inventoryLine));
 			}
 		}
 

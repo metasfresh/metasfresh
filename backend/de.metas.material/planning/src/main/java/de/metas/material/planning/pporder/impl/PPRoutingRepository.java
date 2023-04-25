@@ -10,7 +10,6 @@ import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
-import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
@@ -21,7 +20,6 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingProduct;
 import de.metas.material.planning.pporder.PPRoutingProductId;
 import de.metas.material.planning.pporder.PPRoutingType;
-import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -31,7 +29,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.SeqNo;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -92,7 +89,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-	private static final AdMessageKey MSG_AD_Workflow_Missing_Node = AdMessageKey.of("AD_Workflow_StartNode_NotSet");
+	private static final AdMessageKey  MSG_AD_Workflow_Missing_Node = AdMessageKey.of("AD_Workflow_StartNode_NotSet");
 
 	private final CCache<PPRoutingId, PPRouting> routingsById = CCache.<PPRoutingId, PPRouting>builder()
 			.tableName(I_AD_Workflow.Table_Name)
@@ -122,7 +119,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		final BigDecimal qtyPerBatch = extractQtyPerBatch(routingRecord);
 
 		final List<I_AD_WF_Node> activityRecords = retrieveNodes(routingRecord);
-		final Set<PPRoutingActivityId> activityIds = activityRecords.stream().map(r -> PPRoutingActivityId.ofRepoId(routingId, r.getAD_WF_Node_ID())).collect(ImmutableSet.toImmutableSet());
+		final Set<PPRoutingActivityId> activityIds = activityRecords.stream().map(r -> PPRoutingActivityId.ofAD_WF_Node_ID(routingId, r.getAD_WF_Node_ID())).collect(ImmutableSet.toImmutableSet());
 		final List<I_PP_WF_Node_Product> productRecords = retrieveProducts(activityIds);
 		final ImmutableSetMultimap<PPRoutingActivityId, PPRoutingActivityId> nextActivityIdByActivityId = retrieveNextActivityIdsIndexedByActivityId(activityIds);
 
@@ -133,7 +130,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 		final Map<Integer, PPRoutingActivityId> nodeIdToActivityIds = activityRecords
 				.stream()
-				.collect(Collectors.toMap(I_AD_WF_Node::getAD_WF_Node_ID, r -> PPRoutingActivityId.ofRepoId(routingId, r.getAD_WF_Node_ID())));
+				.collect(Collectors.toMap(I_AD_WF_Node::getAD_WF_Node_ID, r -> PPRoutingActivityId.ofAD_WF_Node_ID(routingId, r.getAD_WF_Node_ID())));
 		final ImmutableList<PPRoutingProduct> products = productRecords
 				.stream()
 				.map(productRecord -> toRoutingProduct(productRecord, nodeIdToActivityIds))
@@ -141,11 +138,11 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 		final int wfNodeId = routingRecord.getAD_WF_Node_ID();
 
-		if (wfNodeId <= 0)
+		if(wfNodeId <= 0)
 		{
 			throw new AdempiereException(MSG_AD_Workflow_Missing_Node, routingRecord.getName());
 		}
-		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofRepoId(routingId, wfNodeId);
+		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, wfNodeId);
 
 		return PPRouting.builder()
 				.id(routingId)
@@ -202,7 +199,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 			final ImmutableSetMultimap<PPRoutingActivityId, PPRoutingActivityId> nextActivityIdsByActivityId)
 	{
 		final PPRoutingId routingId = PPRoutingId.ofRepoId(activityRecord.getAD_Workflow_ID());
-		final PPRoutingActivityId activityId = PPRoutingActivityId.ofRepoId(routingId, activityRecord.getAD_WF_Node_ID());
+		final PPRoutingActivityId activityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, activityRecord.getAD_WF_Node_ID());
 
 		final ImmutableSet<PPRoutingActivityId> nextActivityIds = nextActivityIdsByActivityId.get(activityId);
 
@@ -233,8 +230,6 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.subcontractingVendorId(BPartnerId.ofRepoIdOrNull(activityRecord.getC_BPartner_ID()))
 				//
 				.milestone(activityRecord.isMilestone())
-				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(activityRecord.getPP_AlwaysAvailableToUser()))
-				.userInstructions(UserInstructions.ofNullableString(activityRecord.getPP_UserInstructions()))
 				//
 				.nextActivityIds(nextActivityIds)
 				//
@@ -329,7 +324,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 			for (final I_AD_WF_Node routingActivityRecord : routingActivityRecords)
 			{
-				final PPRoutingActivityId activityId = PPRoutingActivityId.ofRepoId(routingId, routingActivityRecord.getAD_WF_Node_ID());
+				final PPRoutingActivityId activityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, routingActivityRecord.getAD_WF_Node_ID());
 				final BigDecimal cost = changeRequest.getActivityCostOrNull(activityId);
 				routingActivityRecord.setCost(cost != null ? cost : BigDecimal.ZERO);
 			}
@@ -361,7 +356,6 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.createQueryBuilder(I_AD_WF_Node.class, routingRecord)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, routingId)
-				.addNotNull(I_AD_WF_Node.COLUMN_S_Resource_ID) // in the context of production and product-planning, we can't work with a resource-less AD_WF_Node
 				.orderBy(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID)
 				.create()
 				.list();
@@ -376,7 +370,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		return queryBL
 				.createQueryBuilder(I_PP_WF_Node_Product.class)
 				.addOnlyActiveRecordsFilter()
-				//.addOnlyContextClient() // not needed
+				.addOnlyContextClient()
 				.addInArrayFilter(I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID, activityIds)
 				.create()
 				.list();
@@ -404,16 +398,4 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		save(workflow);
 	}
 
-	@Override
-	public SeqNo getActivityProductNextSeqNo(@NonNull final PPRoutingActivityId activityId)
-	{
-		final int lastSeqNoInt = queryBL
-				.createQueryBuilder(I_PP_WF_Node_Product.class)
-				//.addOnlyActiveRecordsFilter() // let's include non active ones too
-				.addEqualsFilter(I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID, activityId)
-				.create()
-				.maxInt(I_PP_WF_Node_Product.COLUMNNAME_SeqNo);
-
-		return SeqNo.ofInt(Math.max(lastSeqNoInt, 0)).next();
-	}
 }

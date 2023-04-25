@@ -121,20 +121,20 @@ export const parseQRCodeString = (string) => {
   var displayable;
   {
     const payload = JSON.parse(remainingString);
-    const id = payload.id ? String(payload.id) : null;
+    const id = payload.id;
 
     // Displayable code
     displayable = id;
     {
-      const idx = id?.lastIndexOf('-');
+      const idx = id.lastIndexOf('-');
       if (idx > 0) {
         displayable = id.substring(idx + 1);
-      } else if (payload.caption) {
-        displayable = payload.caption;
       }
     }
   }
 
-  //console.log('!!!!!!!! RETURNING', { code: string, displayable, remainingString });
-  return { code: string, displayable };
+  return {
+    code: string,
+    displayable,
+  };
 };

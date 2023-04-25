@@ -81,29 +81,13 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 
 	@RabbitListener(queues = {
 			RabbitMQEventBusConfiguration.DefaultQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.QUEUE_NAME_SPEL,
 			RabbitMQEventBusConfiguration.AccountingQueueConfiguration.QUEUE_NAME_SPEL,
 	})
-	public void onGenericRemoteEvent(
+	public void onRemoteEvent(
 			@Payload final Event event,
 			@Header(HEADER_SenderId) final String senderId,
 			@Header(HEADER_TopicName) final String topicName)
-	{
-		onRemoteEvent(event, senderId, topicName);
-	}
-
-	@RabbitListener(queues = {RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.QUEUE_NAME_SPEL})
-	public void onCacheInvalidationEvent(
-			@Payload final Event event,
-			@Header(HEADER_SenderId) final String senderId,
-			@Header(HEADER_TopicName) final String topicName)
-	{
-		onRemoteEvent(event, senderId, topicName);
-	}
-
-	private void onRemoteEvent(
-			final Event event,
-			final String senderId,
-			final String topicName)
 	{
 		final Topic topic = Topic.of(topicName, Type.REMOTE);
 		final IEventBus localEventBus = eventBusFactory.getEventBusIfExists(topic);

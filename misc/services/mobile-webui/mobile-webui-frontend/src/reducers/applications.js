@@ -13,6 +13,14 @@ export const getApplicationInfoById = ({ state, applicationId }) => {
   return state.applications?.availableApplications?.[applicationId];
 };
 
+export const getApplicationCaptionById = ({ state, applicationId, fallbackCaption }) => {
+  if (!applicationId) {
+    return fallbackCaption;
+  }
+
+  return getApplicationInfoById({ state, applicationId })?.caption ?? fallbackCaption;
+};
+
 export default function applications(state = initialState, action) {
   const { payload } = action;
   switch (action.type) {
@@ -22,12 +30,14 @@ export default function applications(state = initialState, action) {
           id: application.id,
           caption: application.caption,
           iconClassNames: getIconClassNames(application.id),
-          requiresLaunchersQRCodeFilter: application.requiresLaunchersQRCodeFilter,
         };
         return acc;
       }, {});
 
-      return { ...state, availableApplications };
+      return {
+        ...state,
+        availableApplications,
+      };
     }
     default:
       return state;

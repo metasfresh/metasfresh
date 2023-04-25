@@ -15,7 +15,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
-import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -552,11 +551,4 @@ public final class ProductBL implements IProductBL
 		return productRecord.getDiscontinuedFrom() == null
 				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
 	}
-
-	@Override
-	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
-	{
-		return productsRepo.getIssuingToleranceSpec(productId);
-	}
-
 }

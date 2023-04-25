@@ -3,7 +3,6 @@ package de.metas.handlingunits.qrcodes.model.json;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.GlobalQRCodeType;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.v1.JsonConverterV1;
 import lombok.NonNull;
@@ -49,9 +48,9 @@ public class HUQRCodeJsonConverter
 		}
 	}
 
-	public static JsonDisplayableQRCode toRenderedJson(@NonNull final HUQRCode huQRCode)
+	public static JsonRenderedHUQRCode toRenderedJson(@NonNull final HUQRCode huQRCode)
 	{
-		return JsonDisplayableQRCode.builder()
+		return JsonRenderedHUQRCode.builder()
 				.code(toGlobalQRCodeJsonString(huQRCode))
 				.displayable(huQRCode.toDisplayableQRCode())
 				.build();

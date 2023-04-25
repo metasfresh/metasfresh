@@ -1,17 +1,17 @@
 package de.metas.handlingunits.trace.repository;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.model.X_M_HU_Trace;
-import de.metas.handlingunits.trace.HUTraceEvent;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.model.X_M_HU_Trace;
+import de.metas.handlingunits.trace.HUTraceEvent;
 
 /*
  * #%L
@@ -81,11 +81,6 @@ public class HuTraceEventToDbRecordUtilTest
 		dbRecord.setVHU_ID(1);
 		dbRecord.setM_HU_ID(2);
 		dbRecord.setM_Product_ID(3);
-
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		uom.setUOMSymbol("kg");
-		save(uom);
-		dbRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		// save(dbRecord); we might nor might not save in the individual tests
 
 		return dbRecord;

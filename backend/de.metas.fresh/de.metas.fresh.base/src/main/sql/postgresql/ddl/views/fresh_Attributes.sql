@@ -1,3 +1,4 @@
+
 -- View: Report.fresh_Attributes
 
 -- DROP VIEW IF EXISTS Report.fresh_Attributes;
@@ -6,18 +7,20 @@ CREATE OR REPLACE VIEW Report.fresh_Attributes AS
 SELECT *
 FROM (
          SELECT CASE
-                    WHEN a.Value = '1000015' AND av.value = '01'                                          THEN NULL -- ADR & Keine/Leer
-                    WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '')                THEN av.value -- Herkunft
-                    WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '')                THEN ai.Value -- MHD
-                    WHEN a.Value = 'HU_BestBeforeDate' AND (ai.valuedate IS NOT NULL)                     THEN 'MHD: ' || TO_CHAR(ai.valuedate, 'DD.MM.YYYY') --Best Before Date
-			WHEN a.attributevaluetype = 'D' AND (ai.valuedate IS NOT NULL) THEN to_char(ai.valuedate, 'DD.MM.YYYY')
-                    WHEN a.attributevaluetype = 'S' AND COALESCE(TRIM(ai.value), '') != ''                THEN ai.value
-                    WHEN a.attributevaluetype = 'N' AND ai.valuenumber IS NOT NULL AND ai.valuenumber > 0 THEN ai.valuenumber::bpchar
+                    WHEN (a.Value ILIKE 'RouterMAC%' OR a.Value = 'RouterPassword' OR a.Value = 'SW_Version') AND (av.value = '-' OR ai.value = '-') THEN NULL
+                    WHEN a.Value = '1000015' AND av.value = '01'                                                                                     THEN NULL -- ADR & Keine/Leer
+                    WHEN a.Value = '1000015' AND (av.value IS NOT NULL AND av.value != '')                                                           THEN 'AdR' -- ADR
+                    WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '')                                                           THEN av.value -- Herkunft
+                    WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '')                                                           THEN ai.Value -- MHD
+                    WHEN a.Value = 'HU_BestBeforeDate' AND (ai.valuedate IS NOT NULL)                                                                THEN 'MHD: ' || TO_CHAR(ai.valuedate, 'DD.MM.YYYY') --Best Before Date
+                    WHEN a.attributevaluetype = 'D' AND (ai.valuedate IS NOT NULL)                                                                   THEN TO_CHAR(ai.valuedate, 'DD.MM.YYYY')
+                    WHEN a.attributevaluetype = 'S' AND COALESCE(TRIM(ai.value), '') != ''                                                           THEN ai.value
+                    WHEN a.attributevaluetype = 'N' AND ai.valuenumber IS NOT NULL AND ai.valuenumber > 0                                            THEN ai.valuenumber::bpchar
                     WHEN a.Value = 'M_Material_Tracking_ID'
-                                                                                                          THEN (SELECT mt.lot
-                                                                                                                FROM m_material_tracking mt
-                                                                                                                WHERE mt.m_material_tracking_id = ai.value::numeric)
-                                                                                                          ELSE av.Name -- default
+                                                                                                                                                     THEN (SELECT mt.lot
+                                                                                                                                                           FROM m_material_tracking mt
+                                                                                                                                                           WHERE mt.m_material_tracking_id = ai.value::numeric)
+                                                                                                                                                     ELSE av.Name -- default
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,

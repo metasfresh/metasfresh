@@ -1,6 +1,5 @@
 package org.compiere.acct;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -262,15 +261,16 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
+		final List<Fact> facts = new ArrayList<>();
+
 		// Other Acct Schema
 		if (!AcctSchemaId.equals(as.getId(), acctSchemaId))
 		{
-			return ImmutableList.of();
+			return facts;
 		}
 
 		// create Fact Header
 		final Fact fact = new Fact(this, as, postingType);
-		fact.setFactTrxLinesStrategy(Doc_GLJournal_FactTrxStrategy.instance);
 
 		// GLJ
 		if (getDocumentType().equals(DOCTYPE_GLJournal))
@@ -308,7 +308,8 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 					.setDetailMessage("DocumentType unknown: " + getDocumentType());
 		}
 		//
-		return ImmutableList.of(fact);
+		facts.add(fact);
+		return facts;
 	}   // createFact
 
 	private CurrencyConversionContext createCurrencyConversionContext(

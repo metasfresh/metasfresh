@@ -22,7 +22,6 @@
 
 package de.metas.ordercandidate.api.async;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -42,7 +41,7 @@ public class C_OLCandToOrderEnqueuer
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 	@NonNull
-	public OlCandEnqueueResult enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
+	public QueueWorkPackageId enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Queue_WorkPackage result = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
 				.newWorkPackage()
@@ -50,6 +49,6 @@ public class C_OLCandToOrderEnqueuer
 				.setC_Async_Batch_ID(asyncBatchId)
 				.buildAndEnqueue();
 
-		return new OlCandEnqueueResult(ImmutableList.of(QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID())));
+		return QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID());
 	}
 }

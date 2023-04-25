@@ -5,7 +5,6 @@ import headers from './headers';
 import launchers from './launchers';
 import applications from './applications';
 import update from './update';
-import { reducer as settingsReducer } from './settings';
 import wfProcesses from './wfProcesses/index';
 
 import { getApplicationReduxReducers } from '../apps/index';
@@ -21,7 +20,6 @@ const createRootReducer = (history) => {
     headers,
     applications,
     launchers,
-    settings: settingsReducer,
     wfProcesses,
   };
 

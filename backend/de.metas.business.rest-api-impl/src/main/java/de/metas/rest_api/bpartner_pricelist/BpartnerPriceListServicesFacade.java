@@ -25,7 +25,6 @@ import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
@@ -94,38 +93,20 @@ public class BpartnerPriceListServicesFacade
 		return priceListsRepo.retrievePriceListVersionId(priceListId, date);
 	}
 
-	public I_M_PriceList_Version getPriceListVersionOrNull(final PriceListId priceListId, final ZonedDateTime date, final Boolean processedPLVFiltering)
-	{
-		return priceListsRepo.retrievePriceListVersionOrNull(priceListId, date, processedPLVFiltering);
-	}
-
 	public ImmutableList<I_M_ProductPrice> getProductPrices(PriceListVersionId priceListVersionId)
 	{
 		return priceListsRepo.retrieveProductPrices(priceListVersionId)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@NonNull
-	public ImmutableList<I_M_ProductPrice> getProductPricesByPLVAndProduct(@NonNull final PriceListVersionId priceListVersionId, @NonNull final ProductId productId)
-	{
-		return priceListsRepo.retrieveProductPrices(priceListVersionId, productId);
-	}
-
-	@NonNull
-	public ImmutableMap<ProductId, String> getProductValues(final ImmutableSet<ProductId> productIds)
+	public ImmutableMap<ProductId, String> getProductValues(ImmutableSet<ProductId> productIds)
 	{
 		return productsService.getProductValues(productIds);
 	}
 
-	@NonNull
-	public String getProductValue(@NonNull final ProductId productId)
-	{
-		return productsService.getProductValue(productId);
-	}
-
 	// TODO move this method to de.metas.bpartner.service.IBPartnerDAO since it has nothing to do with price list
 	// 		TODO: IdentifierString must also be moved to the module containing IBPartnerDAO
-	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, final OrgId orgId)
+	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, OrgId orgId)
 	{
 		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier,orgId);
 		return bpartnersRepo.retrieveBPartnerIdBy(query);

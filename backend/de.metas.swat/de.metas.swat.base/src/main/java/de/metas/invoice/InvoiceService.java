@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IEnqueueResult;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -165,15 +164,17 @@ public class InvoiceService
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
-		final Supplier<IEnqueueResult> enqueueInvoiceCandidates = () -> {
+		final Supplier<Void> enqueueInvoiceCandidates = () -> {
 			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, Trx.TRXNAME_None);
 
-			return invoiceCandBL.enqueueForInvoicing()
+			invoiceCandBL.enqueueForInvoicing()
 					.setContext(getCtx())
 					.setC_Async_Batch(asyncBatch)
 					.setInvoicingParams(createDefaultIInvoicingParams())
 					.setFailIfNothingEnqueued(true)
 					.enqueueSelection(invoiceCandidatesSelectionId);
+
+			return null;
 		};
 
 		asyncBatchService.executeBatch(enqueueInvoiceCandidates, asyncBatchId);

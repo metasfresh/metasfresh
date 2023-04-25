@@ -20,7 +20,6 @@ const QtyInputField = ({
       integerValuesOnly,
       prevQtyInfo: null,
       validateQtyEntered,
-      uom,
     })
   );
   useEffect(() => {
@@ -33,10 +32,9 @@ const QtyInputField = ({
           notValidMessage: qtyInfo?.notValidMessage ?? null,
         },
         validateQtyEntered,
-        uom,
       })
     );
-  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid]);
+  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage]);
   //
   // Inform parent about initial value
   useEffect(() => forwardQtyInfoToParent(qtyInfo), [qtyInfo]);
@@ -60,7 +58,6 @@ const QtyInputField = ({
       integerValuesOnly,
       prevQtyInfo: qtyInfo,
       validateQtyEntered,
-      uom,
     });
 
     setQtyInfo(newQtyInfo);
@@ -101,7 +98,7 @@ QtyInputField.propTypes = {
   onQtyChange: PropTypes.func.isRequired,
 };
 
-const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyInfo, validateQtyEntered, uom }) => {
+const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyInfo, validateQtyEntered }) => {
   let qty = parseFloat(qtyInputString);
 
   if (isNaN(qty)) {
@@ -114,7 +111,7 @@ const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyIn
       qty = Math.floor(qty);
     }
 
-    const notValidMessage = validateQtyEntered ? validateQtyEntered(qty, uom) : null;
+    const notValidMessage = validateQtyEntered ? validateQtyEntered(qty) : null;
 
     return qtyInfos.of({ qty, notValidMessage });
   }

@@ -122,8 +122,6 @@ public interface IHUInOutBL extends ISingletonService
 
 	ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutLineIds(@NonNull Set<InOutLineId> inoutLineIds);
 
-	Set<HuId> getHUIdsByInOutIds(@NonNull Set<InOutId> inoutIds);
-
 	boolean isValidHuForReturn(InOutId inOutId, HuId huId);
 
 	void validateMandatoryOnShipmentAttributes(I_M_InOut shipment);

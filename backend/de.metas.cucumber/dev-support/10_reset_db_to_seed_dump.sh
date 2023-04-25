@@ -33,12 +33,8 @@ ENV_FILE=../../../misc/dev-support/docker/infrastructure/env-files/${BRANCH_NAME
 
 # reset the database
 docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure down
-
-set +e # if the volumes don't exist yet, then it's also fine..so, don't fail the script in that case
 docker volume rm ${BRANCH_NAME}_metasfresh_postgres
 docker volume rm ${BRANCH_NAME}_metasfresh_elasticsearch
-set -e
-
 docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} build --pull
 docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure up -d
 

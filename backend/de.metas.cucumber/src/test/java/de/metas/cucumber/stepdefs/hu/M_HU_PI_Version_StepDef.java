@@ -24,10 +24,8 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -54,16 +52,13 @@ public class M_HU_PI_Version_StepDef
 
 	private final M_HU_PI_StepDefData huPiTable;
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
-	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
 
 	public M_HU_PI_Version_StepDef(
 			@NonNull final M_HU_PI_StepDefData huPiTable,
-			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
-			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable)
+			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable)
 	{
 		this.huPiTable = huPiTable;
 		this.huPiVersionTable = huPiVersionTable;
-		this.huPackagingCodeTable = huPackagingCodeTable;
 	}
 
 	@And("metasfresh contains M_HU_PI_Version:")
@@ -99,16 +94,6 @@ public class M_HU_PI_Version_StepDef
 			piVersion.setHU_UnitType(huUnitType);
 			piVersion.setIsCurrent(isCurrent);
 			piVersion.setIsActive(active);
-
-			final String huPackagingCodeIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Version.COLUMNNAME_M_HU_PackagingCode_ID);
-			if (Check.isNotBlank(huPackagingCodeIdentifier))
-			{
-				final int huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeIdentifier) == null
-						? -1
-						: huPackagingCodeTable.get(huPackagingCodeIdentifier).getM_HU_PackagingCode_ID();
-
-				piVersion.setM_HU_PackagingCode_ID(huPackagingCodeId);
-			}
 
 			saveRecord(piVersion);
 

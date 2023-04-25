@@ -1,12 +1,15 @@
 package org.compiere.apps.search;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
-import de.metas.security.IUserRolePermissions;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.awt.Event;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.Properties;
+
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.KeyStroke;
+
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
@@ -17,12 +20,14 @@ import org.compiere.model.MMenu;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.util.Properties;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used to create, add and handle the Info windows menu items.

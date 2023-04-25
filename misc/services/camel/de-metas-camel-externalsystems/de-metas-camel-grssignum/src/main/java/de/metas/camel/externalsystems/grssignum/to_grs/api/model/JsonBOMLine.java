@@ -60,10 +60,6 @@ public class JsonBOMLine
 	@JsonProperty("UOM")
 	String uom;
 
-	@Nullable
-	@JsonProperty("INFO")
-	String additionalInfo;
-
 	@Builder
 	public JsonBOMLine(
 			@JsonProperty("ARTNR") final @NonNull String productValue,
@@ -71,8 +67,7 @@ public class JsonBOMLine
 			@JsonProperty("HERKUNFTSLAND") final @Nullable String countryCode,
 			@JsonProperty("POS") final @NonNull Integer line,
 			@JsonProperty("ANTEIL") final @NonNull BigDecimal qtyBOM,
-			@JsonProperty("UOM") final @NonNull String uom,
-			@JsonProperty("INFO") @Nullable final String additionalInfo)
+			@JsonProperty("UOM") final @NonNull String uom)
 	{
 		this.productValue = productValue;
 		this.productId = productId;
@@ -80,7 +75,6 @@ public class JsonBOMLine
 		this.line = line;
 		this.qtyBOM = qtyBOM;
 		this.uom = uom;
-		this.additionalInfo = additionalInfo;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

@@ -1,22 +1,37 @@
 package de.metas.contracts.flatrate.process;
 
+import java.sql.Timestamp;
+import java.util.Arrays;
+
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.Iterator;
+
+import javax.annotation.Nullable;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.document.engine.IDocument;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
-import de.metas.process.Param;
-import de.metas.process.RunOutOfTrx;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.Data;
-import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -26,10 +41,20 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Iterator;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.engine.IDocument;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class C_Flatrate_Term_Extend_And_Notify_User
 		extends JavaProcess

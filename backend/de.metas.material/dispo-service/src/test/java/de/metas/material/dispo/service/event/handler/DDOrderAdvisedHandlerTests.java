@@ -27,7 +27,6 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.order.OrderLineRepository;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -156,7 +155,7 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, postMaterialEventService, new OrderLineRepository()),
+				new RequestMaterialOrderService(candidateRepository, postMaterialEventService),
 				new DDOrderDetailRequestHandler(),
 				new MainDataRequestHandler());
 	}

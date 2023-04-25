@@ -1,56 +1,55 @@
 import React from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrop, useDrag } from 'react-dnd';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
+import ItemTypes from '../../constants/ItemTypes';
+
+const cardTarget = {
+  hover(props, monitor) {
+    const dragIndex = monitor.getItem().index;
+    const hoverIndex = props.index;
+
+    if (dragIndex === hoverIndex || monitor.getItem().id === props.id) {
+      return;
+    }
+
+    props.moveCard &&
+      props.moveCard(props.entity, dragIndex, hoverIndex, monitor.getItem());
+    monitor.getItem().index = hoverIndex;
+  },
+  drop(props, monitor) {
+    if (monitor.getItem().isNew && props.addCard) {
+      props.addCard(props.entity, monitor.getItem().id);
+    } else {
+      props.onDrop && props.onDrop(props.entity, monitor.getItem().id);
+    }
+  },
+};
+
 const DndWidget = (props) => {
   const {
-    id,
-    index,
-    entity,
-    isNew,
-    transparent,
-    placeholder,
-    className,
-    //
     children,
-    //
-    onDrop,
-    onRemove,
+    className,
+    transparent,
+    removeCard,
+    entity,
+    id,
+    placeholder,
+    index,
+    isNew,
   } = props;
 
+  const [{ isDragging }, connectDragSource] = useDrag({
+    type: ItemTypes.WIDGET,
+    item: { id, index, isNew },
+  });
+  const [, connectDropTarget] = useDrop({
+    ...cardTarget,
+    accept: ItemTypes.WIDGET,
+  });
+
   if (transparent) return <div {...{ className }}>{children}</div>;
-
-  //
-  // dragging
-  let isDragging, connectDragSource;
-  if (!placeholder) {
-    [{ isDragging }, connectDragSource] = useDrag({
-      type: entity,
-      item: { id, index, entity, isNew: !!isNew },
-    });
-  } else {
-    isDragging = false;
-    connectDragSource = (element) => element;
-  }
-
-  //
-  // dropping
-  let connectDropTarget;
-  if (!isNew && onDrop) {
-    [, connectDropTarget] = useDrop({
-      accept: entity,
-      drop: (item) =>
-        onDrop({
-          entity: item.entity,
-          id: item.id,
-          isNew: item.isNew,
-          droppedOverId: id,
-        }),
-    });
-  } else {
-    connectDropTarget = (element) => element;
-  }
 
   return connectDragSource(
     connectDropTarget(
@@ -60,10 +59,10 @@ const DndWidget = (props) => {
           'dnd-placeholder': placeholder,
         })}
       >
-        {!placeholder && onRemove && (
+        {!placeholder && removeCard && (
           <i
             className="meta-icon-trash draggable-icon-remove pointer"
-            onClick={() => onRemove(entity, index, id)}
+            onClick={() => removeCard(entity, index, id)}
           />
         )}
         {children}
@@ -73,18 +72,16 @@ const DndWidget = (props) => {
 };
 
 DndWidget.propTypes = {
-  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-  index: PropTypes.number.isRequired,
-  entity: PropTypes.string.isRequired,
-  isNew: PropTypes.bool,
-  placeholder: PropTypes.bool,
-  transparent: PropTypes.bool,
-  className: PropTypes.string,
-  //
   children: PropTypes.any,
-  //
-  onDrop: PropTypes.func,
-  onRemove: PropTypes.func,
+  className: PropTypes.string,
+  transparent: PropTypes.bool,
+  removeCard: PropTypes.func,
+  entity: PropTypes.any,
+  id: PropTypes.number,
+  placeholder: PropTypes.string,
+  index: PropTypes.number,
+  isDragging: PropTypes.any,
+  isNew: PropTypes.bool,
 };
 
 export default DndWidget;

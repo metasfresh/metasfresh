@@ -3,6 +3,11 @@
  */
 package de.metas.async.api.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
@@ -11,11 +16,6 @@ import de.metas.letters.spi.INotifyAsyncBatch;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author cg

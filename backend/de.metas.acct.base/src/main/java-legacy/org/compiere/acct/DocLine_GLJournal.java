@@ -2,7 +2,6 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_ValidCombination;
@@ -38,9 +37,6 @@ import lombok.Setter;
 class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 {
 	@Getter
-	private final int groupNo;
-
-	@Getter
 	@Setter
 	private AcctSchemaId acctSchemaId;
 	
@@ -50,10 +46,11 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 
 	private MAccount m_account = null;
 
+
 	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
 	{
 		super(InterfaceWrapperHelper.getPO(glJournalLine), doc);
-		groupNo = glJournalLine.getGL_JournalLine_Group();
+		
 		fixedCurrencyRate = glJournalLine.getCurrencyRate();
 	}
 	

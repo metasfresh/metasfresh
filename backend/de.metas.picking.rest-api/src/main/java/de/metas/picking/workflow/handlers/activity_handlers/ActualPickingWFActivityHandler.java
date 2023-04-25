@@ -73,7 +73,8 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 		final JsonPickingJob jsonPickingJob = JsonPickingJob.of(pickingJob, jsonOpts);
 
-		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
+		return UIComponent.builder()
+				.type(COMPONENTTYPE_PICK_PRODUCTS)
 				.properties(Params.builder()
 						.valueObj("lines", jsonPickingJob.getLines())
 						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())

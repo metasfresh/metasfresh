@@ -19,15 +19,12 @@ package org.compiere.model;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.location.adapter.DocumentLocationAdaptersRegistry;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.location.CountryId;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -41,19 +38,15 @@ import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -79,9 +72,6 @@ public class CalloutInvoice extends CalloutEngine
 
 	protected static final String SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact = "C_Invoice.SOTrx_OnlyAllowBillToDefault_Contact";
 
-	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
-	
 	/**
 	 * Invoice Header- BPartner.
 	 * - M_PriceList_ID (+ Context)
@@ -108,22 +98,22 @@ public class CalloutInvoice extends CalloutEngine
 		final boolean isSOTrx = invoice.isSOTrx();
 
 		final StringBuilder sql = new StringBuilder().append("SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-																	 + " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
-																	 + " p.SO_Description,p.IsDiscountPrinted, "
-																	 + " stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
-																	 + " l.C_BPartner_Location_ID,c.AD_User_ID,"
-																	 + " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
-																	 + "FROM C_BPartner p"
-																	 + " INNER JOIN "
-																	 + I_C_BPartner_Stats.Table_Name
-																	 + " stats ON (p."
-																	 + I_C_BPartner.COLUMNNAME_C_BPartner_ID
-																	 + " = stats."
-																	 + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-																	 + ")"
-																	 + " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
-																	 + " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
-																	 + " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) ");
+				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
+				+ " p.SO_Description,p.IsDiscountPrinted, "
+				+ " stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
+				+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
+				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
+				+ "FROM C_BPartner p"
+				+ " INNER JOIN "
+				+ I_C_BPartner_Stats.Table_Name
+				+ " stats ON (p."
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " = stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
+				+ ")"
+				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
+				+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
+				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) ");
 
 		if (isAllowOnlyBillToDefault_Contact && isSOTrx)
 		{
@@ -132,7 +122,7 @@ public class CalloutInvoice extends CalloutEngine
 		sql.append(
 				" WHERE p.C_BPartner_ID=? AND p.IsActive='Y' "
 						+ " ORDER BY c." + I_AD_User.COLUMNNAME_IsBillToContact_Default + " DESC NULLS FIRST"
-						+ ";	");        // #1
+						+ ";	");		// #1
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -151,7 +141,7 @@ public class CalloutInvoice extends CalloutEngine
 					invoice.setM_PriceList_ID(priceListId);
 				}
 				else
-				{    // get default PriceList
+				{	// get default PriceList
 					priceListId = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
 					if (priceListId > 0)
 					{
@@ -231,8 +221,8 @@ public class CalloutInvoice extends CalloutEngine
 						if (!rs.wasNull() && CreditAvailable.signum() < 0)
 						{
 							calloutField.fireDataStatusEEvent("CreditLimitOver",
-															  DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
-															  false);
+									DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
+									false);
 						}
 					}
 				}
@@ -268,7 +258,7 @@ public class CalloutInvoice extends CalloutEngine
 			pstmt = null;
 		}
 		return "";
-	}    // bPartner
+	}	// bPartner
 
 	/**
 	 * Set Payment Term.
@@ -294,7 +284,7 @@ public class CalloutInvoice extends CalloutEngine
 		invoice.setIsPayScheduleValid(valid);
 
 		return NO_ERROR;
-	}    // paymentTerm
+	}	// paymentTerm
 
 	/**************************************************************************
 	 * Invoice Line - Product.
@@ -303,7 +293,7 @@ public class CalloutInvoice extends CalloutEngine
 	 * - UOM
 	 * Calls Tax
 	 */
-	public String product(@NonNull final ICalloutField calloutField)
+	public String product(final ICalloutField calloutField)
 	{
 		final I_C_InvoiceLine invoiceLine = calloutField.getModel(I_C_InvoiceLine.class);
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
@@ -336,17 +326,11 @@ public class CalloutInvoice extends CalloutEngine
 		final boolean isSOTrx = invoice.isSOTrx();
 
 		final int bpartnerID = invoice.getC_BPartner_ID();
-			
+
 		final BigDecimal qty = invoiceLine.getQtyInvoiced();
-		final CountryId countryId = extractCountryIdOrNull(invoice);
 
 		// TODO: Refactoring here in step 2: Use IPricingBL instead
-		final MProductPricing pp = new MProductPricing(OrgId.ofRepoId(invoice.getAD_Org_ID()),
-													   productID,
-													   bpartnerID,
-													   countryId,
-													   qty,
-													   isSOTrx);
+		final MProductPricing pp = new MProductPricing(productID, bpartnerID, qty, isSOTrx);
 		pp.setConvertPriceToContextUOM(false);
 
 		//
@@ -391,7 +375,7 @@ public class CalloutInvoice extends CalloutEngine
 
 		//
 		return tax(calloutField);
-	}    // product
+	}	// product
 
 	/**
 	 * Invoice Line - Charge.
@@ -456,7 +440,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 		//
 		return tax(calloutField);
-	}    // charge
+	}	// charge
 
 	/**
 	 * Invoice Line - Tax.
@@ -492,7 +476,7 @@ public class CalloutInvoice extends CalloutEngine
 		final BPartnerLocationAndCaptureId shipBPartnerLocationID = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
 		if (shipBPartnerLocationID == null)
 		{
-			return amt(calloutField);    //
+			return amt(calloutField);	//
 		}
 
 		log.debug("Ship BP_Location={}", shipBPartnerLocationID);
@@ -544,7 +528,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 		//
 		return amt(calloutField);
-	}    // tax
+	}	// tax
 
 	/**
 	 * Invoice - Amount.
@@ -625,15 +609,7 @@ public class CalloutInvoice extends CalloutEngine
 				}
 
 				// TODO: PricingBL
-				final CountryId countryId = extractCountryIdOrNull(invoice);
-
-				final MProductPricing pp = new MProductPricing(
-						OrgId.ofRepoId(invoice.getAD_Org_ID()),
-						productID,
-						bPartnerID,
-						countryId,
-						qtyInvoiced,
-						isSOTrx);
+				final MProductPricing pp = new MProductPricing(productID, bPartnerID, qtyInvoiced, isSOTrx);
 				pp.setPriceListId(priceListId);
 				pp.setReferencedObject(invoiceLine); // task 08908: we need to give the pricing context our referenced object, so it can extract the ASI
 				final Timestamp date = invoiceLine.getC_Invoice().getDateInvoiced(); // task 08908: we do not have a PLV-ID in C_Invoice or C_InvoiceLine, so we need to get the invoice's date to
@@ -646,16 +622,14 @@ public class CalloutInvoice extends CalloutEngine
 				// if (PriceEntered == null)
 				// PriceEntered = pp.getPriceStd();
 				// metas us1064
-				final BigDecimal priceStd = pp.getPriceStd();
-				final Percent discount = pp.getDiscount();
-				final BigDecimal priceStdMinusDiscount = pp.mkPriceStdMinusDiscount();
-				log.debug("amt - QtyChanged -> PriceActual=" + priceStdMinusDiscount
-								  + ", PriceEntered=" + priceEntered + ", Discount=" + discount);
+				log.debug("amt - QtyChanged -> PriceActual=" + pp.mkPriceStdMinusDiscount()
+						+ ", PriceEntered=" + priceEntered + ", Discount=" + pp.getDiscount());
 
-				priceActual = priceStdMinusDiscount;
+				priceActual = pp.mkPriceStdMinusDiscount();
 				invoiceLine.setPriceActual(priceActual); // 08763 align the behavior to that of order line
-				invoiceLine.setDiscount(Percent.toBigDecimalOrNull(discount));	
-				invoiceLine.setPriceEntered(priceStd); // 08763 align the behavior to that of order line
+				// metas us1064 end
+				// mTab.setValue("Discount", pp.getDiscount());
+				invoiceLine.setPriceEntered(priceActual); // 08763 align the behavior to that of order line
 
 				calloutField.putContext(CTX_DiscountSchema, pp.isDiscountSchema());
 			}
@@ -664,18 +638,18 @@ public class CalloutInvoice extends CalloutEngine
 		{
 			priceActual = (BigDecimal)value;
 			priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, priceActual);
-
+ 
 			if (priceEntered == null)
 			{
 				priceEntered = priceActual;
 			}
 			//
 			log.debug("amt - PriceActual=" + priceActual
-							  + " -> PriceEntered=" + priceEntered);
+					+ " -> PriceEntered=" + priceEntered);
 
 			invoiceLine.setPriceEntered(priceEntered);
 		}
-
+		
 
 		/*
 		 * Discount entered - Calculate Actual/Entered
@@ -779,35 +753,18 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		return "";
-	}    // amt
-
-	@Nullable
-	private CountryId extractCountryIdOrNull(@NonNull final I_C_Invoice invoice)
-	{
-		final CountryId countryId;
-		if (invoice.getC_BPartner_Location_ID() > 0)
-		{
-			final BPartnerLocationAndCaptureId bpLocationId =
-					documentLocationAdaptersRegistry.getDocumentLocationAdapterIfHandled(invoice).get() // we know that invoice is handeled
-							.getBPartnerLocationAndCaptureId();
-			countryId = bPartnerBL.getCountryId(bpLocationId);
-		}
-		else
-		{
-			countryId = null;
-		}
-		return countryId;
-	}
+	}	// amt
 
 	/**
 	 * Is Tax Included
 	 *
+	 * @param invoiceLine
 	 * @return tax included (default: false)
 	 */
 	private boolean isTaxIncluded(final I_C_InvoiceLine invoiceLine)
 	{
 		return Services.get(IInvoiceBL.class).isTaxIncluded(invoiceLine);
-	}    // isTaxIncluded
+	}	// isTaxIncluded
 
 	/**
 	 * Invoice Line - Quantity.
@@ -853,7 +810,7 @@ public class CalloutInvoice extends CalloutEngine
 			if (qtyEntered.compareTo(qtyEnteredScaled) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM=" + uomToID
-								  + "; QtyEntered=" + qtyEntered + "->" + qtyEnteredScaled);
+						+ "; QtyEntered=" + qtyEntered + "->" + qtyEnteredScaled);
 				qtyEntered = qtyEnteredScaled;
 				invoiceLine.setQtyEntered(qtyEntered);
 			}
@@ -879,9 +836,9 @@ public class CalloutInvoice extends CalloutEngine
 				}
 
 				log.debug("qty - UOM=" + uomToID
-								  + ", QtyEntered/PriceActual=" + qtyEntered + "/" + priceActual
-								  + " -> " + conversion
-								  + " QtyInvoiced/PriceEntered=" + qtyInvoiced + "/" + priceEntered);
+						+ ", QtyEntered/PriceActual=" + qtyEntered + "/" + priceActual
+						+ " -> " + conversion
+						+ " QtyInvoiced/PriceEntered=" + qtyInvoiced + "/" + priceEntered);
 
 				setUOMConversion(calloutField, conversion);
 				invoiceLine.setPriceEntered(priceEntered);
@@ -901,7 +858,7 @@ public class CalloutInvoice extends CalloutEngine
 			if (qtyEntered.compareTo(qtyEnteredScaled) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM=" + uomToID
-								  + "; QtyEntered=" + qtyEntered + "->" + qtyEnteredScaled);
+						+ "; QtyEntered=" + qtyEntered + "->" + qtyEnteredScaled);
 				qtyEntered = qtyEnteredScaled;
 				invoiceLine.setQtyEntered(qtyEntered);
 
@@ -915,9 +872,9 @@ public class CalloutInvoice extends CalloutEngine
 
 			final boolean conversion = qtyEntered.compareTo(qtyInvoiced) != 0;
 			log.debug("qty - UOM=" + uomToID
-							  + ", QtyEntered=" + qtyEntered
-							  + " -> " + conversion
-							  + " QtyInvoiced=" + qtyInvoiced);
+					+ ", QtyEntered=" + qtyEntered
+					+ " -> " + conversion
+					+ " QtyInvoiced=" + qtyInvoiced);
 
 			setUOMConversion(calloutField, conversion);
 			invoiceLine.setQtyInvoiced(qtyInvoiced);
@@ -935,7 +892,7 @@ public class CalloutInvoice extends CalloutEngine
 			if (qtyInvoiced.compareTo(qtyInvoicedScaled) != 0)
 			{
 				log.debug("Corrected QtyInvoiced Scale "
-								  + qtyInvoiced + "->" + qtyInvoicedScaled);
+						+ qtyInvoiced + "->" + qtyInvoicedScaled);
 
 				qtyInvoiced = qtyInvoicedScaled;
 				invoiceLine.setQtyInvoiced(qtyInvoiced);
@@ -950,18 +907,18 @@ public class CalloutInvoice extends CalloutEngine
 			final boolean conversion = qtyInvoiced.compareTo(qtyEntered) != 0;
 
 			log.debug("qty - UOM=" + uomToID
-							  + ", QtyInvoiced=" + qtyInvoiced
-							  + " -> " + conversion
-							  + " QtyEntered=" + qtyEntered);
+					+ ", QtyInvoiced=" + qtyInvoiced
+					+ " -> " + conversion
+					+ " QtyEntered=" + qtyEntered);
 			setUOMConversion(calloutField, conversion);
 
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 		//
 		return "";
-	}    // qty
+	}	// qty
 
-	private static void setUOMConversion(final ICalloutField calloutField, final boolean conversion)
+	private static final void setUOMConversion(final ICalloutField calloutField, final boolean conversion)
 	{
 		calloutField.putContext(CTX_UOMConversion, conversion);
 	}
@@ -985,4 +942,4 @@ public class CalloutInvoice extends CalloutEngine
 		return NO_ERROR;
 	} // priceList
 
-}    // CalloutInvoice
+}	// CalloutInvoice

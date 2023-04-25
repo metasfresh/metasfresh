@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order_BOMLine
  *  @author metasfresh (generated) 
@@ -120,6 +121,28 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_BackflushGroup = "BackflushGroup";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Component Type.
 	 * Component Type for a Bill of Material or Formula
 	 *
@@ -187,28 +210,6 @@ public interface I_PP_Order_BOMLine
 
 	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_CULabelQuanitity = new ModelColumn<>(I_PP_Order_BOMLine.class, "CULabelQuanitity", null);
 	String COLUMNNAME_CULabelQuanitity = "CULabelQuanitity";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Current Receiving LU.
@@ -412,46 +413,25 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_IsCritical = "IsCritical";
 
 	/**
-	 * Set Enforce Issuing Tolerance.
+	 * Set Enforce Tolerance.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsEnforceIssuingTolerance (boolean IsEnforceIssuingTolerance);
+	void setIsEnforceTolerance (boolean IsEnforceTolerance);
 
 	/**
-	 * Get Enforce Issuing Tolerance.
+	 * Get Enforce Tolerance.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isEnforceIssuingTolerance();
+	boolean isEnforceTolerance();
 
-	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsEnforceIssuingTolerance = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsEnforceIssuingTolerance", null);
-	String COLUMNNAME_IsEnforceIssuingTolerance = "IsEnforceIssuingTolerance";
-
-	/**
-	 * Set Manual quantity input only.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsManualQtyInput (boolean IsManualQtyInput);
-
-	/**
-	 * Get Manual quantity input only.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isManualQtyInput();
-
-	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsManualQtyInput = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsManualQtyInput", null);
-	String COLUMNNAME_IsManualQtyInput = "IsManualQtyInput";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsEnforceTolerance = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsEnforceTolerance", null);
+	String COLUMNNAME_IsEnforceTolerance = "IsEnforceTolerance";
 
 	/**
 	 * Set Is Qty Percentage.
@@ -498,89 +478,6 @@ public interface I_PP_Order_BOMLine
 
 	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssueMethod = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssueMethod", null);
 	String COLUMNNAME_IssueMethod = "IssueMethod";
-
-	/**
-	 * Set Tolerance %.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIssuingTolerance_Perc (@Nullable BigDecimal IssuingTolerance_Perc);
-
-	/**
-	 * Get Tolerance %.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getIssuingTolerance_Perc();
-
-	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssuingTolerance_Perc = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssuingTolerance_Perc", null);
-	String COLUMNNAME_IssuingTolerance_Perc = "IssuingTolerance_Perc";
-
-	/**
-	 * Set Tolerance.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIssuingTolerance_Qty (@Nullable BigDecimal IssuingTolerance_Qty);
-
-	/**
-	 * Get Tolerance.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getIssuingTolerance_Qty();
-
-	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssuingTolerance_Qty = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssuingTolerance_Qty", null);
-	String COLUMNNAME_IssuingTolerance_Qty = "IssuingTolerance_Qty";
-
-	/**
-	 * Set Tolerance UOM.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIssuingTolerance_UOM_ID (int IssuingTolerance_UOM_ID);
-
-	/**
-	 * Get Tolerance UOM.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getIssuingTolerance_UOM_ID();
-
-	String COLUMNNAME_IssuingTolerance_UOM_ID = "IssuingTolerance_UOM_ID";
-
-	/**
-	 * Set Tolerance Value Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIssuingTolerance_ValueType (@Nullable java.lang.String IssuingTolerance_ValueType);
-
-	/**
-	 * Get Tolerance Value Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIssuingTolerance_ValueType();
-
-	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssuingTolerance_ValueType = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssuingTolerance_ValueType", null);
-	String COLUMNNAME_IssuingTolerance_ValueType = "IssuingTolerance_ValueType";
 
 	/**
 	 * Set Lead Time Offset.
@@ -1172,6 +1069,27 @@ public interface I_PP_Order_BOMLine
 
 	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ShowSubBOMIngredients = new ModelColumn<>(I_PP_Order_BOMLine.class, "ShowSubBOMIngredients", null);
 	String COLUMNNAME_ShowSubBOMIngredients = "ShowSubBOMIngredients";
+
+	/**
+	 * Set Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTolerance_Perc (@Nullable BigDecimal Tolerance_Perc);
+
+	/**
+	 * Get Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTolerance_Perc();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Tolerance_Perc = new ModelColumn<>(I_PP_Order_BOMLine.class, "Tolerance_Perc", null);
+	String COLUMNNAME_Tolerance_Perc = "Tolerance_Perc";
 
 	/**
 	 * Get Updated.

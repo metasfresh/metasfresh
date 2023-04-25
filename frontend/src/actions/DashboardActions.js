@@ -60,14 +60,3 @@ export function getTargetIndicatorsDetails(indicatorId) {
     `${config.API_URL}/dashboard/targetIndicators/${indicatorId}/details`
   );
 }
-
-export function addDashboardWidget(entity, id, pos) {
-  return axios.post(config.API_URL + '/dashboard/' + entity + '/new', {
-    kpiId: id,
-    position: pos,
-  });
-}
-
-export function removeDashboardWidget(entity, id) {
-  return axios.delete(config.API_URL + '/dashboard/' + entity + '/' + id);
-}

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Product_Planning
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 842114764L;
+	private static final long serialVersionUID = 568258642L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (final Properties ctx, final int PP_Product_Planning_ID, @Nullable final String trxName)
@@ -313,31 +313,31 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public void setMaxManufacturedQtyPerOrderDispo (final @Nullable BigDecimal MaxManufacturedQtyPerOrderDispo)
+	public void setMaxManufacturedQtyPerOrder (final @Nullable BigDecimal MaxManufacturedQtyPerOrder)
 	{
-		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo, MaxManufacturedQtyPerOrderDispo);
+		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder, MaxManufacturedQtyPerOrder);
 	}
 
 	@Override
-	public BigDecimal getMaxManufacturedQtyPerOrderDispo() 
+	public BigDecimal getMaxManufacturedQtyPerOrder() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrderDispo);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrder);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setMaxManufacturedQtyPerOrderDispo_UOM_ID (final int MaxManufacturedQtyPerOrderDispo_UOM_ID)
+	public void setMaxManufacturedQtyPerOrder_UOM_ID (final int MaxManufacturedQtyPerOrder_UOM_ID)
 	{
-		if (MaxManufacturedQtyPerOrderDispo_UOM_ID < 1) 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, null);
+		if (MaxManufacturedQtyPerOrder_UOM_ID < 1) 
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, MaxManufacturedQtyPerOrderDispo_UOM_ID);
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, MaxManufacturedQtyPerOrder_UOM_ID);
 	}
 
 	@Override
-	public int getMaxManufacturedQtyPerOrderDispo_UOM_ID() 
+	public int getMaxManufacturedQtyPerOrder_UOM_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID);
+		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID);
 	}
 
 	/** 

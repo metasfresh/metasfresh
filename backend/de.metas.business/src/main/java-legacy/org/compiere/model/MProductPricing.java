@@ -16,10 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 import de.metas.currency.CurrencyPrecision;
-import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -31,12 +36,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 /**
  * Product Price Calculations
@@ -61,22 +60,9 @@ public class MProductPricing
 	 * @param Qty quantity
 	 * @param isSOTrx SO or PO
 	 */
-	public MProductPricing(
-			OrgId orgId,
-			int M_Product_ID, 
-			int C_BPartner_ID,
-			@Nullable CountryId countryId,
-			BigDecimal Qty, 
-			boolean isSOTrx)
+	public MProductPricing(int M_Product_ID, int C_BPartner_ID, BigDecimal Qty, boolean isSOTrx)
 	{
-		pricingCtx = Services.get(IPricingBL.class).createInitialContext(OrgId.toRepoId(orgId), 
-																		 M_Product_ID, 
-																		 C_BPartner_ID, 
-																		 0, 
-																		 Qty, 
-																		 isSOTrx);
-		pricingCtx.setCountryId(countryId); // needed because we might unset the priceList
-
+		pricingCtx = Services.get(IPricingBL.class).createInitialContext(Env.getAD_Org_ID(Env.getCtx()), M_Product_ID, C_BPartner_ID, 0, Qty, isSOTrx);
 		result = Services.get(IPricingBL.class).createInitialResult(pricingCtx);
 	}	// MProductPricing
 
@@ -269,7 +255,10 @@ public class MProductPricing
 
 	/**
 	 * Convenience method to get priceStd with the discount already subtracted. Note that the result matches the former behavior of {@link #getPriceStd()}.
+	 *
+	 * @return
 	 */
+	// metas
 	public BigDecimal mkPriceStdMinusDiscount()
 	{
 		calculatePrice(false);

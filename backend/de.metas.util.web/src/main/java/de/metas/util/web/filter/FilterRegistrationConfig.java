@@ -50,15 +50,6 @@ public class FilterRegistrationConfig
 	// }
 
 	@Bean
-	public FilterRegistrationBean<CacheControlFilter> cacheControlFilterFilter()
-	{
-		final FilterRegistrationBean<CacheControlFilter> registrationBean = new FilterRegistrationBean<>();
-		registrationBean.setFilter(new CacheControlFilter());
-		registrationBean.setOrder(1);
-		return registrationBean;
-	}
-
-	@Bean
 	public FilterRegistrationBean<UserAuthTokenFilter> authFilter(
 			@NonNull final UserAuthTokenService userAuthTokenService,
 			@NonNull final UserAuthTokenFilterConfiguration configuration)

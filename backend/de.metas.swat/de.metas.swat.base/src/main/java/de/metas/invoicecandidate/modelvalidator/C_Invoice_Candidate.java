@@ -257,7 +257,7 @@ public class C_Invoice_Candidate
 	public void updateCapturedLocationsAndRenderedAddresses(final I_C_Invoice_Candidate ic)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ic))
-		{ // at this point the fix/update of Bill_Location_Value_ID is coming too late for the IC's header aggregation key!
+		{
 			InvoiceCandidateLocationsUpdater.builder()
 					.documentLocationBL(documentLocationBL)
 					.record(ic)

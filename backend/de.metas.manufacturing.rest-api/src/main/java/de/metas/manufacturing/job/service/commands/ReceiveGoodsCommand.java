@@ -3,10 +3,12 @@ package de.metas.manufacturing.job.service.commands;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.handlingunits.pporder.api.ReceiveTUsToLUResult;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
@@ -20,6 +22,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -32,10 +35,11 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Objects;
 
 public class ReceiveGoodsCommand
 {
-
 	//
 	// Services
 	private final IHandlingUnitsBL handlingUnitsBL;
@@ -84,7 +88,7 @@ public class ReceiveGoodsCommand
 	@Nullable
 	public ReceivingTarget execute()
 	{
-		@Nullable final ReceivingTarget receivingTarget;
+		@Nullable ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getNewLU() != null)
 		{
 			receivingTarget = receiveToNewLU(this.receivingTarget.getNewLU());
@@ -114,7 +118,7 @@ public class ReceiveGoodsCommand
 			final @NonNull HUQRCodeUnitType huUnitType = packingInfo.getHuUnitType();
 			if (HUQRCodeUnitType.TU.equals(huUnitType))
 			{
-				final I_M_HU tu = newHUProducer().receiveSingleTU(getQtyToReceive(), packingInfo.getPackingInstructionsId());
+				final I_M_HU tu = createHUProducer().receiveSingleTU(getQtyToReceive(), packingInfo.getPackingInstructionsId());
 				final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
 
 				loadingAndSavingSupportServices.assignQRCode(qrCode, tuId);
@@ -145,12 +149,15 @@ public class ReceiveGoodsCommand
 
 	private ReceivingTarget receiveToNewLU(@NonNull final JsonNewLUTarget newLUTarget)
 	{
-		final HUPIItemProductId tuPackingInstructionsId = newLUTarget.getTuPIItemProductId();
-		final HuId luId = newHUProducer().receiveTUsToNewLU(getQtyToReceive(), tuPackingInstructionsId, newLUTarget.getLuPIItemId());
+		final I_M_HU_PI_Item newLUPIItem = handlingUnitsBL.getPackingInstructionItemById(newLUTarget.getLuPIItemId());
+
+		final HUPIItemProductId tuPIItemProductId = newLUTarget.getTuPIItemProductId();
+		final List<I_M_HU> tusOrVhus = createHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
+		final HuId luId = addTUsToLU(tusOrVhus, null, newLUPIItem);
 
 		return ReceivingTarget.builder()
 				.luId(luId)
-				.tuPIItemProductId(tuPackingInstructionsId)
+				.tuPIItemProductId(tuPIItemProductId)
 				.build();
 	}
 
@@ -158,28 +165,23 @@ public class ReceiveGoodsCommand
 			@NonNull final I_M_HU existingLU,
 			@Nullable final HUPIItemProductId suggestedTUPIItemProductId)
 	{
-		final HUPIItemProductId tuPackingInstructionsId = getEffectiveTUPackingInstructionsId(suggestedTUPIItemProductId);
-		final ReceiveTUsToLUResult receiveResult = newHUProducer().receiveTUsToExistingLU(getQtyToReceive(), tuPackingInstructionsId, existingLU);
-
-		return ReceivingTarget.builder()
-				.luId(receiveResult.getLuId())
-				.tuPIItemProductId(tuPackingInstructionsId)
-				.build();
-	}
-
-	private HUPIItemProductId getEffectiveTUPackingInstructionsId(final @Nullable HUPIItemProductId suggestedTUPackingInstructionsId)
-	{
-		HUPIItemProductId tuPackingInstructionsId = suggestedTUPackingInstructionsId;
-		if (tuPackingInstructionsId == null)
+		HUPIItemProductId tuPIItemProductId = suggestedTUPIItemProductId;
+		if (tuPIItemProductId == null)
 		{
 			final ReceivingTarget previousReceivingTarget = getPreviousReceivingTarget();
-			tuPackingInstructionsId = previousReceivingTarget != null ? previousReceivingTarget.getTuPIItemProductId() : null;
+			tuPIItemProductId = previousReceivingTarget != null ? previousReceivingTarget.getTuPIItemProductId() : null;
 		}
-		if (tuPackingInstructionsId == null)
+		if (tuPIItemProductId == null)
 		{
 			throw new AdempiereException("No CU-TU association defined");
 		}
-		return tuPackingInstructionsId;
+
+		final List<I_M_HU> tusOrVhus = createHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
+		final HuId luId = addTUsToLU(tusOrVhus, existingLU, null);
+		return ReceivingTarget.builder()
+				.luId(luId)
+				.tuPIItemProductId(tuPIItemProductId)
+				.build();
 	}
 
 	private I_PP_Order getPPOrder()
@@ -210,7 +212,7 @@ public class ReceiveGoodsCommand
 		}
 	}
 
-	private IPPOrderReceiptHUProducer newHUProducer()
+	private IPPOrderReceiptHUProducer createHUProducer()
 	{
 		final IPPOrderReceiptHUProducer huProducer;
 		final LocatorId locatorId;
@@ -273,4 +275,39 @@ public class ReceiveGoodsCommand
 			ppOrderBL.save(ppOrder);
 		}
 	}
+
+	private HuId addTUsToLU(
+			@NonNull final List<I_M_HU> tusOrVhus,
+			@Nullable final I_M_HU existingLU,
+			@Nullable final I_M_HU_PI_Item newLUPIItem)
+	{
+		I_M_HU lu = existingLU;
+
+		for (final I_M_HU tu : tusOrVhus)
+		{
+			if (lu == null)
+			{
+				final List<I_M_HU> createdLUs = HUTransformService.newInstance()
+						.tuToNewLUs(
+								tu,
+								QtyTU.ONE.toBigDecimal(),
+								Objects.requireNonNull(newLUPIItem),
+								false);
+				lu = CollectionUtils.singleElement(createdLUs);
+			}
+			else
+			{
+				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE.toBigDecimal(), lu);
+			}
+		}
+
+		if (lu == null)
+		{
+			// shall not happen
+			throw new AdempiereException("No LU was created");
+		}
+
+		return HuId.ofRepoId(lu.getM_HU_ID());
+	}
+
 }

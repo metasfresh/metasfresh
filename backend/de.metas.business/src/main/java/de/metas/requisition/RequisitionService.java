@@ -1,7 +1,7 @@
 package de.metas.requisition;
 
-import de.metas.lang.SOTrx;
-import de.metas.organization.OrgId;
+import java.math.BigDecimal;
+
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MCharge;
@@ -9,7 +9,7 @@ import org.compiere.model.MProductPricing;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import de.metas.lang.SOTrx;
 
 /*
  * #%L
@@ -55,10 +55,8 @@ public class RequisitionService
 			else
 			{
 				final MProductPricing pp = new MProductPricing(
-						OrgId.ofRepoId(requisition.getAD_Org_ID()),
 						line.getM_Product_ID(),
 						line.getC_BPartner_ID(),
-						null,
 						line.getQty(),
 						SOTrx.PURCHASE.toBoolean());
 				pp.setM_PriceList_ID(priceListId);

@@ -19,7 +19,6 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -70,10 +69,9 @@ import java.util.Objects;
  */
 public class CreateDraftIssuesCommand
 {
-	private static final AdMessageKey MSG_IssuingAggregatedTUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed");
-	private static final AdMessageKey MSG_IssuingVHUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed");
-	private static final AdMessageKey MSG_IssuingHUWithMultipleProductsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed");
-	private static final AdMessageKey MSG_IssuingNotClearedHUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.IssuingNotClearedHUsNotAllowed");
+	private static final String MSG_IssuingAggregatedTUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed";
+	private static final String MSG_IssuingVHUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed";
+	private static final String MSG_IssuingHUWithMultipleProductsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed";
 
 	//
 	// Services
@@ -221,13 +219,11 @@ public class CreateDraftIssuesCommand
 
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			throw new HUException(MSG_IssuingAggregatedTUsNotAllowed)
-					.markAsUserValidationError();
+			throw HUException.ofAD_Message(MSG_IssuingAggregatedTUsNotAllowed);
 		}
 		if (handlingUnitsBL.isVirtual(hu))
 		{
-			throw new HUException(MSG_IssuingVHUsNotAllowed)
-					.markAsUserValidationError();
+			throw HUException.ofAD_Message(MSG_IssuingVHUsNotAllowed);
 		}
 		else
 		{
@@ -253,8 +249,7 @@ public class CreateDraftIssuesCommand
 
 		if (productStorages.size() != 1)
 		{
-			throw new HUException(MSG_IssuingHUWithMultipleProductsNotAllowed)
-					.markAsUserValidationError()
+			throw HUException.ofAD_Message(MSG_IssuingHUWithMultipleProductsNotAllowed)
 					.setParameter("HU", hu)
 					.setParameter("ProductStorages", productStorages);
 		}
@@ -280,20 +275,20 @@ public class CreateDraftIssuesCommand
 			}
 
 			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-					//
-					.date(movementDate)
-					//
-					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.productId(productId)
-					//
-					.qtyToIssue(qtyToIssue)
-					//
+																		  .orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+																		  .orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+																		  //
+																		  .date(movementDate)
+																		  //
+																		  .locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+																		  .issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+																		  .productId(productId)
+																		  //
+																		  .qtyToIssue(qtyToIssue)
+																		  //
 					.generatedBy(generatedBy)
-					//
-					.build());
+																		  //
+																		  .build());
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 
@@ -363,8 +358,8 @@ public class CreateDraftIssuesCommand
 		{
 			if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
-				throw new HUException(MSG_IssuingNotClearedHUsNotAllowed)
-						.markAsUserValidationError()
+				throw new AdempiereException("Non 'Cleared' HUs cannot be issued!")
+						.appendParametersToMessage()
 						.setParameter("M_HU_ID", hu.getM_HU_ID());
 			}
 		}

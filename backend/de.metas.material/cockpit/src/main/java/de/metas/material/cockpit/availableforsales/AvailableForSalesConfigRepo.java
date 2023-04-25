@@ -1,5 +1,11 @@
 package de.metas.material.cockpit.availableforsales;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ClientId;
+import org.springframework.stereotype.Repository;
+
 import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_AvailableForSales_Config;
 import de.metas.organization.OrgId;
@@ -8,11 +14,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L

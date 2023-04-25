@@ -75,8 +75,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -112,7 +110,7 @@ import java.util.Set;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
-	private static final Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
+	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -159,18 +157,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
 		return Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
-	}
-
-	@Override
-	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return handlingUnitsRepo.getBySelectionId(selectionId);
-	}
-
-	@Override
-	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return handlingUnitsRepo.getHuIdsBySelectionId(selectionId);
 	}
 
 	@Override
@@ -1132,9 +1118,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		hu.setClearanceStatus(clearanceStatusInfo.getClearanceStatus().getCode());
 		hu.setClearanceNote(clearanceStatusInfo.getClearanceNote());
-
-		final InstantAndOrgId clearanceDate = clearanceStatusInfo.getClearanceDate();
-		hu.setClearanceDate(clearanceDate != null ? clearanceDate.toTimestamp() : null);
 
 		handlingUnitsRepo.saveHU(hu);
 

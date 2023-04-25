@@ -1,10 +1,11 @@
 package de.metas.document;
 
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.util.ISingletonService;
+import java.util.Date;
+
 import org.compiere.model.I_C_DocType;
 
-import java.util.Date;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.util.ISingletonService;
 
 /**
  * DAO methods for retrieving DocumentNo sequence informations.
@@ -26,8 +27,6 @@ public interface IDocumentSequenceDAO extends ISingletonService
 	}
 
 	String retrieveDocumentNoByYear(int AD_Sequence_ID, Date date);
-
-	String retrieveDocumentNoByYearAndMonth(int AD_Sequence_ID, Date date);
 
 	/** @return document type sequence map */
 	DocTypeSequenceMap retrieveDocTypeSequenceMap(I_C_DocType docType);

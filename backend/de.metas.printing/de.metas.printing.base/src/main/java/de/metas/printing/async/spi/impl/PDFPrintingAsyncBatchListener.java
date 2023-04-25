@@ -1,5 +1,6 @@
 package de.metas.printing.async.spi.impl;
 
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
@@ -127,7 +128,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 		for (final int printPackageId : seenPrintPackages.getPrintPackageIds())
 		{
 			final TableRecordReference printPackageRef = TableRecordReference.of(I_C_Print_Package.Table_Name, printPackageId);
-			final I_AD_Archive lastArchive = archiveBL.getLastArchiveRecord(printPackageRef).orElse(null);
+			final I_AD_Archive lastArchive = archiveBL.getLastArchive(printPackageRef).orElse(null);
 			if(lastArchive == null)
 			{
 				continue;

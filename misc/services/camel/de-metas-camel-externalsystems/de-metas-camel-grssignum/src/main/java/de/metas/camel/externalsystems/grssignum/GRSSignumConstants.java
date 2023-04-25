@@ -42,7 +42,6 @@ public interface GRSSignumConstants
 	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
 
 	String EXCLUSION_FROM_PURCHASE_REASON = "Imported setting";
-	String EXCLUSION_FROM_SALES_REASON = "Imported setting";
 
 	String EXTERNAL_REF_TYPE_PRODUCT = "Product";
 
@@ -55,10 +54,4 @@ public interface GRSSignumConstants
 	String HERKUNFT_ATTRIBUTE_CODE = "1000001";
 
 	int CUSTOMER_FLAG = 500;
-
-	String EU_AGRICULTURE = "EU-Landwirtschaft";
-
-	String NON_EU_AGRICULTURE = "Nicht-EU-Landwirtschaft";
-
-	String EU_NON_EU_AGRICULTURE = "EU-/Nicht-EU-Landwirtschaft";
 }

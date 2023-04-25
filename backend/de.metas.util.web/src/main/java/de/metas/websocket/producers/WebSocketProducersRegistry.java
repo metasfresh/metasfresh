@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.websocket.WebsocketHeaders;
 import de.metas.websocket.WebsocketSessionId;
 import de.metas.websocket.WebsocketSubscriptionId;
 import de.metas.websocket.WebsocketTopicName;
@@ -153,8 +152,7 @@ public final class WebSocketProducersRegistry
 
 	public void onTopicSubscribed(
 			@NonNull final WebsocketSubscriptionId subscriptionId,
-			@NonNull final WebsocketTopicName topicName,
-			@NonNull final WebsocketHeaders headers)
+			@NonNull final WebsocketTopicName topicName)
 	{
 		final WebSocketProducerInstance producer = getOrCreateWebSocketProducerOrNull(topicName);
 		if (producer == null)
@@ -162,7 +160,7 @@ public final class WebSocketProducersRegistry
 			return;
 		}
 
-		producer.subscribe(subscriptionId, headers);
+		producer.subscribe(subscriptionId);
 	}
 
 	public void onTopicUnsubscribed(
@@ -245,14 +243,12 @@ public final class WebSocketProducersRegistry
 					.toString();
 		}
 
-		public synchronized void subscribe(
-				@NonNull final WebsocketSubscriptionId subscriptionId,
-				@NonNull final WebsocketHeaders headers)
+		public synchronized void subscribe(@NonNull final WebsocketSubscriptionId subscriptionId)
 		{
 			activeSubscriptionIds.add(subscriptionId);
 			logger.trace("{}: session {} subscribed", this, subscriptionId);
 
-			producer.onNewSubscription(subscriptionId, headers);
+			producer.onNewSubscription(subscriptionId);
 
 			startIfSubscriptions();
 		}

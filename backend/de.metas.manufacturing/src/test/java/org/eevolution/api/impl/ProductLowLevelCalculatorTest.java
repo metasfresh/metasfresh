@@ -143,7 +143,6 @@ public class ProductLowLevelCalculatorTest
 		final I_PP_Product_BOMVersions bomVersionsE = helper.createBOMVersions(ProductId.ofRepoId(pE.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pE)
-				.bomVersions(bomVersionsE)
 				.newBOMLine().product(pF).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.bomVersions(bomVersionsE)
 				//

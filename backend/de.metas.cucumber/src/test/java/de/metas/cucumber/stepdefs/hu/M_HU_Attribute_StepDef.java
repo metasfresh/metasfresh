@@ -39,25 +39,18 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Attribute;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
-import static org.compiere.model.X_M_Attribute.ATTRIBUTEVALUETYPE_Date;
-import static org.compiere.model.X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 
 public class M_HU_Attribute_StepDef
 {
@@ -95,8 +88,8 @@ public class M_HU_Attribute_StepDef
 		}
 	}
 
-	@And("update M_HU_Attribute recursive:")
-	public void update_M_HU_Attribute_recursive(@NonNull final DataTable dataTable)
+	@And("update M_HU_Attribute:")
+	public void update_M_HU_Attribute(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
@@ -111,45 +104,6 @@ public class M_HU_Attribute_StepDef
 
 			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeCode.ofString(attribute.getValue()), valueNumber, null);
 		}
-	}
-
-	@And("update M_HU_Attribute:")
-	public void update_M_HU_Attribute(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			updateHuAttribute(row);
-		}
-	}
-
-	private void updateHuAttribute(@NonNull final Map<String, String> row)
-	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_HU huRecord = huTable.get(huIdentifier);
-
-		final AttributeId attributeId = AttributeId.ofRepoId(DataTableUtil.extractIntForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID));
-
-		final I_M_HU_Attribute huAttributeRecord = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
-		Assertions.assertThat(huAttributeRecord).isNotNull();
-
-		final String attributeValueType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AttributeValueType);
-
-		switch (attributeValueType)
-		{
-			case ATTRIBUTEVALUETYPE_Date:
-				final Timestamp attributeValueTimestamp = DataTableUtil.extractDateTimestampForColumnName(row, I_M_HU_Attribute.COLUMNNAME_Value);
-				huAttributeRecord.setValueDate(attributeValueTimestamp);
-				break;
-			case ATTRIBUTEVALUETYPE_StringMax40:
-				final String attributeValueString = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_Value);
-				huAttributeRecord.setValue(attributeValueString);
-				break;
-			default:
-				throw new AdempiereException(COLUMNNAME_AttributeValueType + " is not supported: " + attributeValueType);
-		}
-
-		saveRecord(huAttributeRecord);
 	}
 
 	private void validateHUAttribute(@NonNull final Map<String, String> tableRow)

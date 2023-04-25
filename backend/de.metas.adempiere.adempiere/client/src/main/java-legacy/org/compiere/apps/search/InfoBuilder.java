@@ -1,8 +1,14 @@
 package org.compiere.apps.search;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.awt.Frame;
+import java.awt.Image;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+
+import javax.swing.JFrame;
+
 import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -20,12 +26,10 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.Env;
 
-import javax.swing.*;
-import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Info window (see {@link Info}) builder.

@@ -1,6 +1,6 @@
 package de.metas.distribution.workflows_api.json;
 
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -9,5 +9,5 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonHUInfo
 {
-	@NonNull JsonDisplayableQRCode qrCode;
+	@NonNull JsonRenderedHUQRCode qrCode;
 }

@@ -157,8 +157,6 @@ public class CCache<K, V> implements CacheInterface
 
 	private final CacheAdditionListener<K, V> additionListener;
 
-	private final boolean allowDisablingCacheByThreadLocal;
-
 	/**
 	 * Metasfresh Cache - expires after 2 hours
 	 *
@@ -213,7 +211,7 @@ public class CCache<K, V> implements CacheInterface
 			if (tableName == null)
 			{
 				this.cacheName = "$NoCacheName$" + cacheId;
-				tableNameEffective = CacheLabel.NO_TABLENAME_PREFIX + cacheId;
+				tableNameEffective = "$NoTableName$" + cacheId;
 			}
 			else
 			{
@@ -264,8 +262,6 @@ public class CCache<K, V> implements CacheInterface
 			this.debugId = null; // N/A
 		}
 
-		this.allowDisablingCacheByThreadLocal = ThreadLocalCacheController.computeAllowDisablingCache(this.cacheName, this.labels);
-
 		//
 		// Register it to CacheMgt
 		CacheMgt.get().register(this);
@@ -301,7 +297,6 @@ public class CCache<K, V> implements CacheInterface
 		return tableName;
 	}
 
-	@NonNull
 	private static ImmutableSet<CacheLabel> buildCacheLabels(@NonNull final String tableName, final Set<String> additionalTableNamesToResetFor)
 	{
 		final ImmutableSet.Builder<CacheLabel> builder = ImmutableSet.<CacheLabel> builder();
@@ -599,11 +594,6 @@ public class CCache<K, V> implements CacheInterface
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			if (isNoCache())
-			{
-				remove(key);
-			}
-
 			if (valueInitializer == null)
 			{
 				return cache.getIfPresent(key);
@@ -678,11 +668,6 @@ public class CCache<K, V> implements CacheInterface
 			{
 				logger.debug("getAllOrLoad - Given keys is empty; -> return empty list");
 				return ImmutableList.of();
-			}
-
-			if (isNoCache())
-			{
-				removeAll(keys);
 			}
 
 			//
@@ -849,11 +834,6 @@ public class CCache<K, V> implements CacheInterface
 	public CCacheStats stats()
 	{
 		return new CCacheStats(cacheId, cacheName, cache.size(), cache.stats());
-	}
-
-	private boolean isNoCache()
-	{
-		return allowDisablingCacheByThreadLocal && ThreadLocalCacheController.instance.isNoCache();
 	}
 
 	@SuppressWarnings("serial")

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,4 +24,5 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 
 public interface Shopware6QueryRequest
 {
+	Boolean getIsQueryByDate();
 }

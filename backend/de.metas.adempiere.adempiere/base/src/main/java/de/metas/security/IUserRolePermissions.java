@@ -17,6 +17,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 import javax.annotation.Nullable;
 import java.util.List;

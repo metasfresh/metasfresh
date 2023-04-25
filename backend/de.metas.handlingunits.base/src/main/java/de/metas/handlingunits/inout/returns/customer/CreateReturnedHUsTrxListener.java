@@ -41,8 +41,6 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -140,7 +138,7 @@ final class CreateReturnedHUsTrxListener implements IHUTrxListener
 				.eventTime(Instant.now())
 				.orgId(OrgId.ofRepoId(returnLine.getAD_Org_ID()))
 				.productId(productId)
-				.qty(Quantitys.create(trxLine.getQty(), UomId.ofRepoId(trxLine.getC_UOM_ID())))
+				.qty(trxLine.getQty())
 				.build();
 
 		return Optional.of(addTraceRequest);

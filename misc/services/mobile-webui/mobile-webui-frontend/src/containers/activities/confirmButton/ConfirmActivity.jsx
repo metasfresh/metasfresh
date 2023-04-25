@@ -12,7 +12,6 @@ const ConfirmActivity = ({
   activityId,
   caption,
   promptQuestion,
-  userInstructions,
   isUserEditable,
   completeStatus,
   isLastActivity,
@@ -35,7 +34,6 @@ const ConfirmActivity = ({
       <ConfirmButton
         caption={caption}
         promptQuestion={promptQuestion}
-        userInstructions={userInstructions}
         isUserEditable={isUserEditable}
         completeStatus={completeStatus}
         onUserConfirmed={onUserConfirmed}
@@ -48,7 +46,6 @@ ConfirmActivity.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
-  userInstructions: PropTypes.string,
   promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,

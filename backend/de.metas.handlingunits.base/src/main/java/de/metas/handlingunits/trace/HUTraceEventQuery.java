@@ -1,25 +1,23 @@
 package de.metas.handlingunits.trace;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.OptionalInt;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 /*
  * #%L
@@ -95,9 +93,7 @@ public class HUTraceEventQuery
 
 	OrgId orgId;
 
-	@NonNull
-	@Singular
-	ImmutableSet<HUTraceType> types;
+	HUTraceType type;
 
 	@NonNull
 	@Singular
@@ -105,7 +101,7 @@ public class HUTraceEventQuery
 
 	ProductId productId;
 
-	Quantity qty;
+	BigDecimal qty;
 
 	String vhuStatus;
 
@@ -121,8 +117,6 @@ public class HUTraceEventQuery
 
 	int movementId;
 
-	InventoryId inventoryId;
-
 	int ppCostCollectorId;
 
 	int ppOrderId;
@@ -134,6 +128,4 @@ public class HUTraceEventQuery
 	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
-
-	@Nullable String lotNumber;
 }

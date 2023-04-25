@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class HUsLoadingCache
 {
@@ -51,11 +50,6 @@ public class HUsLoadingCache
 	public I_M_HU getHUById(final HuId huId)
 	{
 		return husById.computeIfAbsent(huId, handlingUnitsBL::getById);
-	}
-
-	public Collection<I_M_HU> getHUsByIds(final Set<HuId> huIds)
-	{
-		return CollectionUtils.getAllOrLoad(husById, huIds, handlingUnitsBL::getByIdsReturningMap);
 	}
 
 	private void addToCache(final List<I_M_HU> hus)

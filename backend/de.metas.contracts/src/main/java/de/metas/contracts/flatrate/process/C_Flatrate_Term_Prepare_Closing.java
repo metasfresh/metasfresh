@@ -22,24 +22,6 @@ package de.metas.contracts.flatrate.process;
  * #L%
  */
 
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_DataEntry;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Msg;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.Query;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -48,6 +30,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.uom.IUOMDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.Query;
+import org.compiere.util.TimeUtil;
+
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.i18n.Msg;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 {

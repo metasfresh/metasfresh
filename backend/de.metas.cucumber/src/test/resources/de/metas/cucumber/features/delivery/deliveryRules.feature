@@ -25,6 +25,7 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate M_ShipmentSchedule.QtyToDeliver = 0
   _And validate that M_InOut could not be generated
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_A_stocked_1 | Product_A_stocked_1 | true      |
@@ -65,6 +66,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_A_notStocked_1 | Product_A_notStocked_1 | false     |
@@ -111,6 +113,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was picked
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_A_stocked_2 | Product_A_stocked_2 | true      |
@@ -168,6 +171,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_A_notStocked_2 | Product_A_notStocked_2 | true      |
@@ -227,6 +231,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_F_notStocked_1 | Product_F_notStocked_1 | false     |
@@ -270,6 +275,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_F_stocked_1 | Product_F_stocked_1 | true      |
@@ -314,6 +320,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_F_notStocked_2 | Product_F_notStocked_2 | true      |
@@ -374,6 +381,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was picked
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_F_stocked_2 | Product_F_stocked_2 | true      |
@@ -421,6 +429,8 @@ Feature: Delivery rules with and without quantity in stock
 
   @from:cucumber
   @Id:S0159_B_10
+  @Id:S0223_200
+  @runThisOne
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
   _And C_BPartner.DeliveryRule = Availability
@@ -431,6 +441,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate all HUs in stock were picked in FIFO order
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier     | Name           | IsStocked |
       | product_FIFO_1 | Product_FIFO_1 | true      |
@@ -448,8 +459,17 @@ Feature: Delivery rules with and without quantity in stock
       | inventoryLine_FIFO1_2         | inventory_FIFO1_2         | product_FIFO_1          | PCE          | 5        | 0       |
       | inventoryLine_FIFO1_3         | inventory_FIFO1_3         | product_FIFO_1          | PCE          | 5        | 0       |
     And the inventory identified by inventory_FIFO1_1 is completed
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | product_FIFO_1          | 2022-08-17  |                              | 2                            | 2                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 2                              | 2                          | 0                                  |
     And the inventory identified by inventory_FIFO1_2 is completed
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | product_FIFO_1          | 2022-08-17  |                              | 7                            | 7                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 7                              | 7                          | 0                                  |
     And the inventory identified by inventory_FIFO1_3 is completed
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | product_FIFO_1          | 2022-08-17  |                              | 12                           | 12                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 12                             | 12                         | 0                                  |
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_FIFO_1          | 12        |
@@ -503,6 +523,7 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate HUs in stock were picked in FIFO order (first HU picked, second HU was the sourceHU for the actual picked HU)
 
+    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier     | Name           | IsStocked |
       | product_FIFO_2 | Product_FIFO_2 | true      |
@@ -559,6 +580,6 @@ Feature: Delivery rules with and without quantity in stock
       | M_HU_ID.Identifier | VHU_Source_ID.Identifier | Qty | HUTraceType    |
       | hu_fifo_picked     | hu_fifo_second_2         | 1   | TRANSFORM_LOAD |
     And validate M_ShipmentSchedule_QtyPicked by id
-      | M_ShipmentSchedule_QtyPicked_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
-      | shipmentScheduleQtyPicked_1                | 5         | true      | true                        | hu_fifo_first_2       |
-      | shipmentScheduleQtyPicked_2                | 1         | true      | true                        | hu_fifo_picked        |
+      | M_ShipmentSchedule_QtyPicked_ID.Identifier | QtyPicked                                                                                 | Processed                    | IsAnonymousHuPickedOnTheFly  | OPT.VHU_ID.Identifier        |
+      | shipmentScheduleQtyPicked_1                | 5                                                                                         | true                         | true                         | hu_fifo_first_2              |
+      | shipmentScheduleQtyPicked_2                | 1                                                                                         | true                         | true                         | hu_fifo_picked               |

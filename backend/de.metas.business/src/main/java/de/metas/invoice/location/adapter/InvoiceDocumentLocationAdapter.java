@@ -22,7 +22,6 @@
 
 package de.metas.invoice.location.adapter;
 
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RecordBasedLocationAdapter;
@@ -116,36 +115,12 @@ public class InvoiceDocumentLocationAdapter
 
 	public void setFromBillLocation(final I_C_Order from)
 	{
-		final DocumentLocation fromDocumentLocationAdapter = OrderDocumentLocationAdapterFactory.billLocationAdapter(from).toDocumentLocation();
-
-		final BPartnerContactId fromContactId = fromDocumentLocationAdapter.getContactId();
-		final BPartnerContactId invoiceContactId = getBPartnerContactId().orElse(null);
-
-		if(invoiceContactId != null && !BPartnerContactId.equals(invoiceContactId, fromContactId))
-		{
-			setFrom(fromDocumentLocationAdapter.withContactId(null));
-		}
-		else
-		{
-			setFrom(fromDocumentLocationAdapter);
-		}
+		setFrom(OrderDocumentLocationAdapterFactory.billLocationAdapter(from).toDocumentLocation());
 	}
 
 	public void setFrom(final I_C_Invoice from)
 	{
-		final DocumentLocation fromDocumentLocationAdapter = new InvoiceDocumentLocationAdapter(from).toDocumentLocation();
-
-		final BPartnerContactId fromContactId = fromDocumentLocationAdapter.getContactId();
-		final BPartnerContactId invoiceContactId = getBPartnerContactId().orElse(null);
-
-		if(invoiceContactId != null && !BPartnerContactId.equals(invoiceContactId, fromContactId))
-		{
-			setFrom(fromDocumentLocationAdapter.withContactId(null));
-		}
-		else
-		{
-			setFrom(fromDocumentLocationAdapter);
-		}
+		setFrom(new InvoiceDocumentLocationAdapter(from).toDocumentLocation());
 	}
 
 	@Override

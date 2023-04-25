@@ -244,12 +244,6 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
-	{
-		throw new AttributeNotFoundException(attributeCode, this);
-	}
-
-	@Override
 	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);

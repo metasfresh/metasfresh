@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IEnqueueResult;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
@@ -363,7 +362,7 @@ public class OrderCandidateRestControllerService
 
 		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
 
-		final Supplier<IEnqueueResult> action = () -> {
+		final Supplier<Void> action = () -> {
 			final PInstanceId validOLCandIdsSelectionId = DB.createT_Selection(validOlCandIds, ITrx.TRXNAME_None);
 
 			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
@@ -375,7 +374,7 @@ public class OrderCandidateRestControllerService
 
 			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
 
-			return () -> 1; // we always enqueue one workpackage
+			return null;
 		};
 
 		asyncBatchService.executeBatch(action, processOLCandsAsyncBatchId);

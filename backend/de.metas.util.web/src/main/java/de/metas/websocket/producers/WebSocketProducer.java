@@ -1,6 +1,5 @@
 package de.metas.websocket.producers;
 
-import de.metas.websocket.WebsocketHeaders;
 import de.metas.websocket.WebsocketSubscriptionId;
 import lombok.NonNull;
 
@@ -46,10 +45,5 @@ public interface WebSocketProducer
 
 	default void onNewSubscription(@NonNull final WebsocketSubscriptionId subscriptionId)
 	{
-	}
-
-	default void onNewSubscription(@NonNull final WebsocketSubscriptionId subscriptionId, @NonNull final WebsocketHeaders headers)
-	{
-		onNewSubscription(subscriptionId);
 	}
 }

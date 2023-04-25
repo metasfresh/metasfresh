@@ -1,18 +1,8 @@
 package de.metas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.swing.SwingClientUI;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.security.Role;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserBL;
-import de.metas.util.Services;
-import de.metas.util.hash.HashableString;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
+import java.awt.KeyboardFocusManager;
+import java.util.Properties;
+
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
@@ -22,12 +12,8 @@ import org.compiere.apps.AKeyboardFocusManager;
 import org.compiere.apps.ALogin;
 import org.compiere.apps.AMenu;
 import org.compiere.db.CConnection;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.compiere.util.Login;
 import org.compiere.util.Splash;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +25,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 
-import java.awt.*;
-import java.util.Properties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.form.swing.SwingClientUI;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -75,8 +65,7 @@ public abstract class SwingUIApplicationTemplate
 	{
 		basicStartup();
 
-		//showLoginDialog();
-		loginDirectlyAsSysAdmin();
+		showLoginDialog();
 
 		try
 		{
@@ -98,51 +87,6 @@ public abstract class SwingUIApplicationTemplate
 		}
 	}
 
-	private static void loginDirectlyAsSysAdmin()
-	{
-		System.out.println("*************************************************************************************");
-		System.out.println("*************************************************************************************");
-		System.out.println(" Automatically logging in as System Administrator.");
-		System.out.println(" If this is failing somehow pls edit SwingUIApplicationTemplate.main.");
-		System.out.println("*************************************************************************************");
-		System.out.println("*************************************************************************************");
-
-		Splash.getSplash("Logging in as System Administrator...");
-
-		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
-		{
-
-			final CConnection cc = CConnection.get();
-			DB.setDBTarget(cc); // set the connection to DB to have early access to it (for messages, languages etc)
-			Ini.setProperty(Ini.P_CONNECTION, CConnection.get().toStringLong());
-
-			final Properties ctx = Env.getCtx();
-			Env.setClientId(ctx, ClientId.SYSTEM);
-			Env.setAD_Language(ctx, Language.AD_Language_en_US);
-
-			final Login login = new Login(ctx);
-
-			final IUserBL userBL = Services.get(IUserBL.class);
-			final I_AD_User user = userBL.getById(UserId.METASFRESH);
-			final String username = userBL.extractUserLogin(user);
-			final HashableString password = userBL.extractUserPassword(user);
-			final Role systemRole = login.authenticate(username, password).getAvailableRoles()
-					.stream()
-					.filter(role -> role.getId().isSystem())
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("User `" + username + "` has no System role assigned"));
-			login.setRoleAndGetClients(systemRole.getId());
-
-			String error = login.validateLogin(OrgId.ANY);
-			if (error != null && !error.isEmpty())
-			{
-				throw new AdempiereException(error);
-			}
-
-			login.loadPreferences(OrgId.ANY, null);
-		}
-	}
-
 	private static void showLoginDialog()
 	{
 		final Splash splash = Splash.getSplash();
@@ -156,7 +100,7 @@ public abstract class SwingUIApplicationTemplate
 		// Center the window
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
-			AEnv.showCenterScreen(login);    // HTML load errors
+			AEnv.showCenterScreen(login);	// HTML load errors
 		}
 		catch (final Exception ex)
 		{
@@ -188,7 +132,8 @@ public abstract class SwingUIApplicationTemplate
 	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
-		return Env.getSingleAdempiereInstance(applicationContext);
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
+		return adempiere;
 	}
 
 	@EventListener(ApplicationReadyEvent.class)

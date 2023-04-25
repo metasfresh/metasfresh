@@ -11,6 +11,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,40 +26,27 @@ import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 class HUQRCodeGenerateCommand
 {
-	private final IHandlingUnitsBL handlingUnitsBL;
-	private final IProductBL productBL;
-	private final IAttributeDAO attributeDAO;
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final Supplier<UUID> randomUUIDGenerator;
 
 	private final HUQRCodeGenerateRequest request;
 
-	private final Cache cache;
-
 	@Builder
 	private HUQRCodeGenerateCommand(
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
-			@NonNull final IProductBL productBL,
-			@NonNull final IAttributeDAO attributeDAO,
-			@Nullable final Supplier<UUID> randomUUIDGenerator,
 			@NonNull final HUQRCodeGenerateRequest request,
-			@Nullable final Cache sharedCache)
+			@Nullable final Supplier<UUID> randomUUIDGenerator)
 	{
-		this.handlingUnitsBL = handlingUnitsBL;
-		this.productBL = productBL;
-		this.attributeDAO = attributeDAO;
-		this.randomUUIDGenerator = randomUUIDGenerator != null ? randomUUIDGenerator : UUID::randomUUID;
 		this.request = request;
-		this.cache = sharedCache != null ? sharedCache : newSharedCache();
+		this.randomUUIDGenerator = randomUUIDGenerator != null ? randomUUIDGenerator : UUID::randomUUID;
 	}
-
-	public static Cache newSharedCache() {return new Cache();}
 
 	public List<HUQRCode> execute()
 	{
@@ -70,8 +58,8 @@ class HUQRCodeGenerateCommand
 
 		final HUQRCode.HUQRCodeBuilder template = HUQRCode.builder()
 				//.id(...) // will be set later
-				.packingInfo(getPackingInfo(request.getHuPackingInstructionsId()))
-				.product(getProductInfo(request.getProductId()))
+				.packingInfo(getHUQRCodePackingInfo(request.getHuPackingInstructionsId()))
+				.product(getHUQRCodeProductInfo(request.getProductId()))
 				.attributes(request.getAttributes()
 						.stream()
 						.map(this::toHUQRCodeAttribute)
@@ -87,29 +75,18 @@ class HUQRCodeGenerateCommand
 		return result;
 	}
 
-	private HUQRCodePackingInfo getPackingInfo(final HuPackingInstructionsId huPackingInstructionsId)
-	{
-		return cache.packingInfos.computeIfAbsent(huPackingInstructionsId, this::computePackingInfo);
-	}
-
-	private HUQRCodePackingInfo computePackingInfo(final HuPackingInstructionsId huPackingInstructionsId)
+	private HUQRCodePackingInfo getHUQRCodePackingInfo(final HuPackingInstructionsId huPackingInstructionsId)
 	{
 		return HUQRCodePackingInfo.builder()
-				.packingInstructionsId(huPackingInstructionsId)
 				.huUnitType(HUQRCodeUnitType.ofCode(handlingUnitsBL.getHU_UnitType(huPackingInstructionsId)))
+				.packingInstructionsId(huPackingInstructionsId)
 				.caption(handlingUnitsBL.getPIName(huPackingInstructionsId))
 				.build();
 	}
 
-	private HUQRCodeProductInfo getProductInfo(final ProductId productId)
-	{
-		return cache.productInfos.computeIfAbsent(productId, this::computeProductInfo);
-	}
-
-	private HUQRCodeProductInfo computeProductInfo(final ProductId productId)
+	private HUQRCodeProductInfo getHUQRCodeProductInfo(final ProductId productId)
 	{
 		final I_M_Product product = productBL.getById(productId);
-
 		return HUQRCodeProductInfo.builder()
 				.id(productId)
 				.code(product.getValue())
@@ -167,15 +144,5 @@ class HUQRCodeGenerateCommand
 				.value(value)
 				.valueRendered(valueRendered)
 				.build();
-	}
-
-	//
-	//
-	//
-
-	public static class Cache
-	{
-		private final HashMap<ProductId, HUQRCodeProductInfo> productInfos = new HashMap<>();
-		private final HashMap<HuPackingInstructionsId, HUQRCodePackingInfo> packingInfos = new HashMap<>();
 	}
 }

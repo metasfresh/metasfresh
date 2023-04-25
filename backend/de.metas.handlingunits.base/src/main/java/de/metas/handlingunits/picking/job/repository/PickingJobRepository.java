@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
@@ -41,7 +40,7 @@ public class PickingJobRepository
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
 	}
 
-	public List<PickingJob> getDraftJobsByPickerId(@NonNull final ValueRestriction<UserId> pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
 		final Set<PickingJobId> pickingJobIds = queryDraftJobsByPickerId(pickerId)
 				.listIds(PickingJobId::ofRepoId);
@@ -55,15 +54,13 @@ public class PickingJobRepository
 				.loadByIds(pickingJobIds);
 	}
 
-	private IQuery<I_M_Picking_Job> queryDraftJobsByPickerId(final @NonNull ValueRestriction<UserId> pickerId)
+	private IQuery<I_M_Picking_Job> queryDraftJobsByPickerId(final @NonNull UserId pickerId)
 	{
-		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBL
+		return queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
-				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode());
-
-		pickerId.appendFilter(queryBuilder, I_M_Picking_Job.COLUMNNAME_Picking_User_ID);
-
-		return queryBuilder.create();
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_Picking_User_ID, pickerId)
+				.create();
 	}
 
 	public PickingJob getById(
@@ -78,7 +75,7 @@ public class PickingJobRepository
 			@NonNull final UserId pickerId,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
-		return getDraftJobsByPickerId(ValueRestriction.equalsToOrNull(pickerId), loadingSupportServices)
+		return getDraftJobsByPickerId(pickerId, loadingSupportServices)
 				.stream()
 				.map(PickingJobRepository::toPickingJobReference);
 	}

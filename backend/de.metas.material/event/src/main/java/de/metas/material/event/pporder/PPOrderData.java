@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
@@ -93,8 +92,6 @@ public class PPOrderData
 	 */
 	BigDecimal qtyDelivered;
 
-	HUPIItemProductId packingMaterialId;
-
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderData(
@@ -110,8 +107,7 @@ public class PPOrderData
 			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
-			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
@@ -126,7 +122,6 @@ public class PPOrderData
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
-		this.packingMaterialId = packingMaterialId;
 	}
 
 	@JsonIgnore

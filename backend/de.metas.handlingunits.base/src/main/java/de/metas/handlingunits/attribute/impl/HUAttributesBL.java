@@ -10,13 +10,11 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -56,8 +54,6 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
-	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-
 	private final AdMessageKey MSG_MandatoryOnPicking = AdMessageKey.of("M_AttributeUse_MandatoryOnPicking");
 
 	private final AdMessageKey MSG_MandatoryOnManufacturing = AdMessageKey.of("M_AttributeUse_MandatoryOnManufacturing");
@@ -89,28 +85,6 @@ public class HUAttributesBL implements IHUAttributesBL
 		}
 
 		return hu;
-	}
-
-	@Override
-	public void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode)
-	{
-		final ILoggable loggable = Loggables.get();
-		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
-
-		final IAttributeStorage sourceHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(sourceHU);
-		if (sourceHUAttrStorage.hasAttribute(attributeCode))
-		{
-			final Object attributeValue = sourceHUAttrStorage.getValue(attributeCode);
-			final IAttributeStorage destHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(destHU);
-			if (destHUAttrStorage.hasAttribute(attributeCode))
-			{
-				final Object existingAttributeValue = sourceHUAttrStorage.getValue(attributeCode);
-				loggable.addLog("for HUID={} overwriting attribute={} from {} to {}", destHU.getM_HU_ID(), attributeCode, attributeValue, existingAttributeValue);
-			}
-			destHUAttrStorage.setValue(attributeCode, attributeValue);
-			destHUAttrStorage.saveChangesIfNeeded();
-		}
 	}
 
 	@Override
@@ -284,20 +258,6 @@ public class HUAttributesBL implements IHUAttributesBL
 		}
 
 		return true;
-	}
-
-	@Override
-	@Nullable
-	public String getHUAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
-	{
-		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
-		if (attributeId == null)
-		{
-			return null;
-		}
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(hu, attributeId);
-
-		return huAttribute == null ? null : huAttribute.getValue();
 	}
 
 }

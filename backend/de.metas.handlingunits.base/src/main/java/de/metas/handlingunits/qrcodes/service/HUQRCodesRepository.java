@@ -11,13 +11,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -106,19 +104,6 @@ public class HUQRCodesRepository
 				.firstOptional(I_M_HU_QRCode.class)
 				.map(HUQRCodesRepository::toHUQRCode);
 	}
-
-	public Optional<HUQRCode> getSingleQRCodeByHuIdOrEmpty(@NonNull final HuId huId)
-	{
-		final List<I_M_HU_QRCode> records = queryByHuId(huId)
-				.setLimit(QueryLimit.TWO)
-				.create()
-				.list();
-
-		return records.size() == 1
-				? Optional.of(toHUQRCode(records.get(0)))
-				: Optional.empty();
-	}
-
 
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
 	{

@@ -23,11 +23,11 @@
 package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.X_AD_PrinterRouting;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.api.impl.DocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -48,12 +48,12 @@ import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
@@ -91,11 +91,9 @@ public class PrintingDataFactory
 
 	public ImmutableList<PrintingData> createPrintingDataForQueueItem(@NonNull final I_C_Printing_Queue queueItem)
 	{
-		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
-
 		final ArchiveId archiveId = ArchiveId.ofRepoId(queueItem.getAD_Archive_ID());
-		final I_AD_Archive archiveRecord = archiveDAO.getArchiveRecordById(archiveId);
-		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archiveRecord));
+		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(archiveId);
+		final I_AD_Archive archiveRecord = queueItem.getAD_Archive();
 
 		final String pdfFileName;
 		if (outboundLogRecord != null)

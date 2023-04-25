@@ -1,11 +1,8 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.marketing.gateway.cleverreach.restapi.models.ErrorResponse;
-import de.metas.marketing.gateway.cleverreach.restapi.models.Login;
-import de.metas.util.JSONObjectMapper;
-import lombok.NonNull;
+import java.util.Arrays;
+import java.util.Objects;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -19,8 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
-import java.util.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.marketing.gateway.cleverreach.restapi.models.ErrorResponse;
+import de.metas.marketing.gateway.cleverreach.restapi.models.Login;
+import de.metas.util.JSONObjectMapper;
+import lombok.NonNull;
 
 /*
  * #%L

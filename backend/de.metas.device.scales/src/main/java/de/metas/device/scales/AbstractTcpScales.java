@@ -22,6 +22,9 @@ package de.metas.device.scales;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.metas.device.api.AbstractBaseDevice;
 import de.metas.device.api.IDeviceRequestHandler;
 import de.metas.device.api.IDeviceResponse;
@@ -32,11 +35,8 @@ import de.metas.device.scales.endpoint.ITcpConnectionEndPoint;
 import de.metas.device.scales.endpoint.MockedEndpoint;
 import de.metas.device.scales.endpoint.TcpConnectionEndPoint;
 import de.metas.device.scales.impl.ConfigureDeviceHandler;
-import de.metas.device.scales.impl.ScalesGetWeightHandler;
+import de.metas.device.scales.impl.ScalesGetGrossWeightHandler;
 import de.metas.device.scales.util.DeviceConfigParam;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class AbstractTcpScales extends AbstractBaseDevice
 {
@@ -92,10 +92,10 @@ public abstract class AbstractTcpScales extends AbstractBaseDevice
 	}
 
 	/**
-	 * This value is used to configure the {@link ScalesGetWeightHandler}.
+	 * This value is used to configure the {@link ScalesGetGrossWeightHandler}.
 	 *
 	 * @param roundToPrecision may be <code>null</code> in that case, not rounding will be done.
-	 * @see ScalesGetWeightHandler#setroundWeightToPrecision(int)
+	 * @see ScalesGetGrossWeightHandler#setroundWeightToPrecision(int)
 	 */
 	public void setRoundToPrecision(final Integer roundToPrecision)
 	{

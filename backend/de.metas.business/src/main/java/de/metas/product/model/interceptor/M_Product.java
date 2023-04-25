@@ -7,7 +7,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
-import de.metas.product.impl.ProductDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -48,7 +47,7 @@ import javax.annotation.Nullable;
  */
 @Interceptor(I_M_Product.class)
 @Callout(I_M_Product.class)
-@Component
+@Component()
 public class M_Product
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
@@ -61,12 +60,6 @@ public class M_Product
 	public void registerCallouts()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final @NonNull I_M_Product product)
-	{
-		ProductDAO.extractIssuingToleranceSpec(product); // validate
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)

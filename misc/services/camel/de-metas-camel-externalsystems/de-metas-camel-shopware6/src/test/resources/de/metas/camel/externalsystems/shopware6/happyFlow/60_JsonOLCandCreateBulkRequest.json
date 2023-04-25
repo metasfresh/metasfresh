@@ -2,58 +2,6 @@
   "requests": [
     {
       "orgCode": "orgCode",
-      "externalLineId": "externalLineId2",
-      "externalHeaderId": "externalHeaderId",
-      "dataSource": "int-Shopware",
-      "dataDest": null,
-      "bpartner": {
-        "bpartnerIdentifier": "1",
-        "bpartnerLocationIdentifier": "3",
-        "contactIdentifier": "4"
-      },
-      "billBPartner": {
-        "bpartnerIdentifier": "1",
-        "bpartnerLocationIdentifier": "2",
-        "contactIdentifier": "4"
-      },
-      "dateOrdered": "2021-01-12",
-      "dateRequired": "2021-03-03",
-      "flatrateConditionsId": 0,
-      "productIdentifier": "ext-Shopware6-productId2",
-      "qty": 10,
-      "price": 0,
-      "currencyCode": "EUR",
-      "discount": 0,
-      "poReference": "poReference",
-      "warehouseCode": null,
-      "warehouseDestCode": null,
-      "orderDocType": "SalesOrder",
-      "paymentRule": "Paypal",
-      "salesPartner": {
-        "salesPartnerCode": "mockSalesRepIdentifier"
-      },
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "paymentTerm": "val-paymentTermValue",
-      "orderLineGroup": {
-        "groupKey": "externalLineId2",
-        "groupMainItem": true,
-        "ordering": "GroupFirst"
-      },
-      "dateCandidate": "2021-01-11",
-      "line": 10,
-      "description": "lineDescription2",
-      "isManualPrice": true,
-      "isImportedWithIssues": true,
-      "deliveryViaRule": "S",
-      "deliveryRule": "A",
-      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
-      "email": "orderCustomerEmail@example.com",
-      "phone": "phoneNumber"
-    },
-    {
-      "orgCode": "orgCode",
       "externalLineId": "externalLineId",
       "externalHeaderId": "externalHeaderId",
       "dataSource": "int-Shopware",
@@ -68,9 +16,14 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
-      "dateOrdered": "2021-01-12",
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-paymentTermValue",
       "productIdentifier": "ext-Shopware6-productId",
       "qty": 1,
       "price": 14.8,
@@ -79,28 +32,71 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
-      "orderDocType": "SalesOrder",
-      "paymentRule": "Paypal",
-      "salesPartner": {
-        "salesPartnerCode": "mockSalesRepIdentifier"
-      },
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "paymentTerm": "val-paymentTermValue",
-      "orderLineGroup": {
-        "groupKey": "externalLineId2",
-        "groupMainItem": false,
-        "ordering": "GroupFirst"
-      },
       "dateCandidate": "2021-01-11",
-      "line": 20,
-      "description": "lineDescription",
+      "line": 10,
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+      "orderLineGroup": {
+        "groupKey": "parentId",
+        "groupMainItem": false
+      },
+      "description": "lineDescription",
+      "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "externalLineId2",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": "4"
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": "4"
+      },
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-paymentTermValue",
+      "productIdentifier": "ext-Shopware6-productId2",
+      "qty": 10,
+      "price": 0,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "dateCandidate": "2021-01-11",
+      "line": 20,
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "orderLineGroup": {
+        "groupKey": "externalLineId2",
+        "groupMainItem": true
+      },
+      "description": "lineDescription2",
+      "dateOrdered": "2021-01-12",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -120,10 +116,15 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
-      "dateOrdered": "2021-01-12",
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
-      "productIdentifier": "1001",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-paymentTermValue",
+      "productIdentifier": 1001,
       "qty": 1,
       "price": 10,
       "currencyCode": "EUR",
@@ -131,22 +132,18 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
-      "orderDocType": "SalesOrder",
-      "paymentRule": "Paypal",
-      "salesPartner": {
-        "salesPartnerCode": "mockSalesRepIdentifier"
-      },
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "paymentTerm": "val-paymentTermValue",
       "dateCandidate": "2021-01-11",
       "line": 30,
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+      "orderLineGroup": null,
+      "description": null,
+      "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -166,10 +163,15 @@
         "bpartnerLocationIdentifier": "2",
         "contactIdentifier": "4"
       },
-      "dateOrdered": "2021-01-12",
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
-      "productIdentifier": "1002",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-paymentTermValue",
+      "productIdentifier": 1002,
       "qty": 1,
       "price": 7,
       "currencyCode": "EUR",
@@ -177,22 +179,18 @@
       "poReference": "poReference",
       "warehouseCode": null,
       "warehouseDestCode": null,
-      "orderDocType": "SalesOrder",
-      "paymentRule": "Paypal",
-      "salesPartner": {
-        "salesPartnerCode": "mockSalesRepIdentifier"
-      },
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "paymentTerm": "val-paymentTermValue",
       "dateCandidate": "2021-01-11",
       "line": 40,
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
+      "orderLineGroup": null,
+      "description": null,
+      "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     }

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Loader from '../app/Loader';
 import { getTargetIndicatorsDetails } from '../../actions/DashboardActions';
 import moment from 'moment';
-import counterpart from 'counterpart';
 
 const ELAPSED_TIME_REFRESH_INTERVAL_MILLIS = 60000;
 
@@ -11,9 +10,6 @@ const ELAPSED_TIME_REFRESH_INTERVAL_MILLIS = 60000;
  * @returns renders a string like "a minute ago" for a given timestamp
  */
 function computeRenderedLastComputedString(computedTimestamp) {
-  if (!computedTimestamp) {
-    return null;
-  }
   return moment(computedTimestamp).fromNow();
 }
 
@@ -49,9 +45,9 @@ class Indicator extends Component {
 
   updateRenderedLastComputedString = () => {
     const { data } = this.props;
-    const renderedLastComputedString = computeRenderedLastComputedString(
-      data?.computedTimestamp
-    );
+    const { computedTimestamp } = data;
+    const renderedLastComputedString =
+      computeRenderedLastComputedString(computedTimestamp);
     return this.setState({ renderedLastComputedString });
   };
 
@@ -121,7 +117,7 @@ class Indicator extends Component {
               className="indicator-details-link"
               onClick={() => this.showDetails(id)}
             >
-              {counterpart.translate('dashboard.item.details')}
+              DETAILS
             </div>
           )}
         </div>

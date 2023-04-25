@@ -99,28 +99,6 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List
@@ -142,7 +120,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Date/Time.
+	 * Set Event Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -151,7 +129,7 @@ public interface I_M_HU_Trace
 	void setEventTime (java.sql.Timestamp EventTime);
 
 	/**
-	 * Get Date/Time.
+	 * Get Event Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -163,7 +141,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_EventTime = "EventTime";
 
 	/**
-	 * Set Trace Type.
+	 * Set HU Trace Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -172,7 +150,7 @@ public interface I_M_HU_Trace
 	void setHUTraceType (java.lang.String HUTraceType);
 
 	/**
-	 * Get Trace Type.
+	 * Get HU Trace Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -207,27 +185,6 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lot number.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLotNumber (@Nullable java.lang.String LotNumber);
-
-	/**
-	 * Get Lot number.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getLotNumber();
-
-	ModelColumn<I_M_HU_Trace, Object> COLUMN_LotNumber = new ModelColumn<>(I_M_HU_Trace.class, "LotNumber", null);
-	String COLUMNNAME_LotNumber = "LotNumber";
-
-	/**
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
@@ -253,7 +210,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set HU Trace Id.
+	 * Set Rückverfolgbarkeit.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -262,7 +219,7 @@ public interface I_M_HU_Trace
 	void setM_HU_Trace_ID (int M_HU_Trace_ID);
 
 	/**
-	 * Get HU Trace Id.
+	 * Get Rückverfolgbarkeit.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -274,7 +231,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_M_HU_Trace_ID = "M_HU_Trace_ID";
 
 	/**
-	 * Set Transaction Line HU.
+	 * Set HU Transaction Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -283,7 +240,7 @@ public interface I_M_HU_Trace
 	void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID);
 
 	/**
-	 * Get Transaction Line HU.
+	 * Get HU Transaction Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -326,34 +283,8 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Phys. Inventory.
-	 * Parameters for a Physical Inventory
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Inventory_ID (int M_Inventory_ID);
-
-	/**
-	 * Get Phys. Inventory.
-	 * Parameters for a Physical Inventory
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Inventory_ID();
-
-	@Nullable org.compiere.model.I_M_Inventory getM_Inventory();
-
-	void setM_Inventory(@Nullable org.compiere.model.I_M_Inventory M_Inventory);
-
-	ModelColumn<I_M_HU_Trace, org.compiere.model.I_M_Inventory> COLUMN_M_Inventory_ID = new ModelColumn<>(I_M_HU_Trace.class, "M_Inventory_ID", org.compiere.model.I_M_Inventory.class);
-	String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
-
-	/**
-	 * Set Movement.
+	 * Set Movement Document.
+	 * Bewegung von Warenbestand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -362,7 +293,8 @@ public interface I_M_HU_Trace
 	void setM_Movement_ID (int M_Movement_ID);
 
 	/**
-	 * Get Movement.
+	 * Get Movement Document.
+	 * Bewegung von Warenbestand
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -548,7 +480,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_VHU_ID = "VHU_ID";
 
 	/**
-	 * Set Virtual Handling Unit Source.
+	 * Set Quell-HU.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -557,7 +489,7 @@ public interface I_M_HU_Trace
 	void setVHU_Source_ID (int VHU_Source_ID);
 
 	/**
-	 * Get Virtual Handling Unit Source.
+	 * Get Quell-HU.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -573,7 +505,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_VHU_Source_ID = "VHU_Source_ID";
 
 	/**
-	 * Set Status Customer Unit.
+	 * Set CU (VHU) Gebindestatus.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -582,7 +514,7 @@ public interface I_M_HU_Trace
 	void setVHUStatus (java.lang.String VHUStatus);
 
 	/**
-	 * Get Status Customer Unit.
+	 * Get CU (VHU) Gebindestatus.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

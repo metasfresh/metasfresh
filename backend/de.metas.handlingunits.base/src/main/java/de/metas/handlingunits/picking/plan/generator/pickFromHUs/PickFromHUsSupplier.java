@@ -187,7 +187,7 @@ public class PickFromHUsSupplier
 		return AlternativePickFromKey.of(pickFromHU.getLocatorId(), pickFromHU.getTopLevelHUId(), productId);
 	}
 
-	public static Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	private Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
 	{
 		return Comparator.
 				<PickFromHU>comparingInt(pickFromHU -> pickFromHU.isHuReservedForThisLine() ? 0 : 1) // consider reserved HU first

@@ -10,7 +10,6 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
-import { toQRCodeString } from '../../utils/huQRCodes';
 
 export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {
@@ -79,23 +78,12 @@ export const getSteps = (state, wfProcessId, activityId, lineId) => {
 
 export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
-  return getStepByIdFromLine(line, stepId);
+  return line?.steps?.[stepId];
 };
 
 export const getStepByIdFromActivity = (activity, lineId, stepId) => {
   const line = getLineByIdFromActivity(activity, lineId);
-  return getStepByIdFromLine(line, stepId);
-};
-
-export const getStepByIdFromLine = (line, stepId) => {
   return line?.steps?.[stepId];
-};
-
-export const getStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
-  const qrCodeNorm = toQRCodeString(qrCode);
-  const line = getLineByIdFromActivity(activity, lineId);
-  const steps = getStepsArrayFromLine(line);
-  return steps.find((step) => toQRCodeString(step.huQRCode) === qrCodeNorm);
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {

@@ -25,14 +25,13 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
-import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonAddress;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
-import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
@@ -116,8 +115,6 @@ public class ImportOrdersRouteContext
 	@Getter(AccessLevel.NONE)
 	private final boolean skipNextImportStartingTimestamp;
 
-	private final int pageLimit;
-
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
@@ -151,15 +148,7 @@ public class ImportOrdersRouteContext
 	private JsonProductLookup jsonProductLookup;
 
 	@Nullable
-	JsonAddress orderShippingAddress;
-
-	@Setter(AccessLevel.NONE)
-	private int ordersResponsePageIndex;
-
-	private boolean moreOrdersAvailable;
-
-	@Nullable
-	private PriceListBasicInfo priceListBasicInfo;
+	JsonOrderAddress orderShippingAddress;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -288,19 +277,52 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
-	public ExternalIdentifier getBPExternalIdentifier()
+	public ExternalIdentifier getMetasfreshId()
 	{
-		final Customer customer = getOrderNotNull().getCustomer();
-
-		return customer.getExternalIdentifier(metasfreshIdJsonPath, shopwareIdJsonPath);
+		final String id = getId(metasfreshIdJsonPath);
+		if (!Check.isBlank(id))
+		{
+			return ExternalIdentifier.builder()
+					.identifier(id)
+					.rawValue(id)
+					.build();
+		}
+		return getUserId();
 	}
 
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
-		final Customer customer = getOrderNotNull().getCustomer();
+		final String id = getId(shopwareIdJsonPath);
+		if (!Check.isBlank(id))
+		{
+			return ExternalIdentifier.builder()
+					.identifier(ExternalIdentifierFormat.formatExternalId(id))
+					.rawValue(id)
+					.build();
+		}
+		final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
 
-		return customer.getShopwareId(shopwareIdJsonPath);
+		return ExternalIdentifier.builder()
+				.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
+				.rawValue(customerId)
+				.build();
+	}
+
+	@Nullable
+	private String getId(@Nullable final String bpLocationCustomJsonPath)
+	{
+		if (Check.isBlank(bpLocationCustomJsonPath))
+		{
+			return null;
+		}
+		final OrderCandidate order = getOrderNotNull();
+		final String id = order.getCustomField(bpLocationCustomJsonPath);
+		if (!Check.isBlank(id))
+		{
+			return id;
+		}
+		return null;
 	}
 
 	@Nullable
@@ -317,8 +339,8 @@ public class ImportOrdersRouteContext
 				.orElse("");
 
 		final String locationBPartnerName =
-				prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
-						+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
+				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
 						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
@@ -328,7 +350,7 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
-	public JsonAddress getOrderShippingAddressNotNull()
+	public JsonOrderAddress getOrderShippingAddressNotNull()
 	{
 		return Check.assumeNotNull(orderShippingAddress, "orderShippingAddress cannot be null at this stage!");
 	}
@@ -342,10 +364,5 @@ public class ImportOrdersRouteContext
 		}
 
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
-	}
-
-	public void incrementPageIndex()
-	{
-		this.ordersResponsePageIndex++;
 	}
 }

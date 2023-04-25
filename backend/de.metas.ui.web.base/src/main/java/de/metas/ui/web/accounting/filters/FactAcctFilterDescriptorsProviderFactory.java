@@ -35,6 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
 import org.compiere.model.I_Fact_Acct;
 import org.springframework.stereotype.Component;
 

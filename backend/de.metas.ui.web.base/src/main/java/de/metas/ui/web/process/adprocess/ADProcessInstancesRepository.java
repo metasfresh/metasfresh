@@ -467,10 +467,4 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			}
 		}
 	}
-
-
-	public void addProcessParameters(final ProcessId processId, final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
-	{
-		processDescriptorFactory.addProcessParameters(processId, parametersDescriptorBuilder);
-	}
 }

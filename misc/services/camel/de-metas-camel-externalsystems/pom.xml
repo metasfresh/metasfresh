@@ -46,7 +46,6 @@
         <module>de-metas-camel-rabbitmq</module>
         <module>de-metas-camel-woocommerce</module>
         <module>de-metas-camel-grssignum</module>
-        <module>de-metas-camel-leichundmehl</module>
     </modules>
 
     <dependencies>

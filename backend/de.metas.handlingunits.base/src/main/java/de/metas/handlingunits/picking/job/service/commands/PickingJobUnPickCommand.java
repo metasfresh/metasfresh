@@ -13,6 +13,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingJobStepUnpickInfo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class PickingJobUnPickCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
+	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 
 	//
@@ -42,6 +44,7 @@ public class PickingJobUnPickCommand
 	@Builder
 	private PickingJobUnPickCommand(
 			final @NonNull PickingJobRepository pickingJobRepository,
+			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
 			final @NonNull PickingCandidateService pickingCandidateService,
 			//
 			final @NonNull PickingJob pickingJob,
@@ -49,6 +52,7 @@ public class PickingJobUnPickCommand
 			final @Nullable PickingJobStepPickFromKey onlyPickFromKey)
 	{
 		this.pickingJobRepository = pickingJobRepository;
+		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.pickingCandidateService = pickingCandidateService;
 
 		this.initialPickingJob = pickingJob;

@@ -99,13 +99,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		final ZonedDateTime systemTime = de.metas.common.util.time.SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
-			int offset = 0;
-			if (isUseFallback)
-				offset = sysConfigBL.getIntValue(
-						SYSCONFIG_Fallback_PreparationDate_Offset_Hours,
-						0);
-
-			order.setPreparationDate(TimeUtil.addHours(TimeUtil.asTimestamp(preparationDate), offset));
+			order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
 
 			logger.debug("Setting Tour {} for C_Order {}. Old Tour was {} (fallbackToDatePromised={}, systemTime={})",
 					tourAndDate.getLeft().getRepoId(),

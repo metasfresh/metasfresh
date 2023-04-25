@@ -16,14 +16,12 @@ public class JsonMobileApplication
 {
 	@NonNull String id;
 	@NonNull String caption;
-	boolean requiresLaunchersQRCodeFilter;
 
 	public static JsonMobileApplication of(final MobileApplicationInfo appInfo, final JsonOpts jsonOpts)
 	{
 		return builder()
 				.id(appInfo.getId().getAsString())
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
-				.requiresLaunchersQRCodeFilter(appInfo.isRequiresLaunchersQRCodeFilter())
 				.build();
 	}
 }

@@ -594,25 +594,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					UomId.ofRepoIdOrNull(ila.getC_UOM_ID()));
 			qtyInvoicedSum = StockQtyAndUOMQtys.add(qtyInvoicedSum, ilaQtysInvoiced);
 
-
-			//
-			// 12904: in case of an Adjustment Invoice(price diff), get price from invoice line
-			final boolean isIlaInvoiceAnAdjInvoice=Services.get(IInvoiceBL.class)
-					         .isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
-
-			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice ?
-					         ila.getC_InvoiceLine().getPriceActual():
-					         ic.getPriceActual();
-
 			//
 			// 07202: We update the net amount invoice according to price UOM.
 			// final BigDecimal priceActual = ic.getPriceActual();
 			final ProductPrice priceActual = ProductPrice.builder()
-							.money(Money.of(usedPriceActual, icCurrencyId))
-							.productId(productId)
-							.uomId(icUomId)
-							.build();
-
+					.money(Money.of(ic.getPriceActual(), icCurrencyId))
+					.productId(productId)
+					.uomId(icUomId)
+					.build();
 
 			final Quantity qtyInvoicedInUOM = extractQtyInvoiced(ila);
 
@@ -1435,14 +1424,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final boolean isAdjustmentChargeInvoice =invoiceBL.isAdjustmentCharge(invoice);
-
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 
 		final I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
@@ -1545,16 +1530,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// reversalQtyInvoiced = 5 (because we reverse a credit memo), qtyInvoicedForIc = 1 => overlap=2 => create ila with qty -5-(+2)=3
 					final StockQtyAndUOMQty overlap = reversalQtyInvoiced.add(qtyInvoicedForIc);
-
-					//
-					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
-					if(isAdjustmentChargeInvoice){
-						qtyInvoicedForIla = reversalQtyInvoiced;
-					}
-					else
-					{
-						qtyInvoicedForIla = reversalQtyInvoiced.subtract(overlap);
-					}
+					qtyInvoicedForIla = reversalQtyInvoiced.subtract(overlap);
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + reversalQtyInvoiced
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc

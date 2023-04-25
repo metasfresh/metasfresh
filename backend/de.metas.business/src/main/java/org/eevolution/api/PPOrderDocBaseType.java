@@ -30,7 +30,6 @@ import lombok.NonNull;
 import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 @AllArgsConstructor
 public enum PPOrderDocBaseType implements ReferenceListAwareEnum
@@ -46,16 +45,13 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 	private static final ReferenceListAwareEnums.ValuesIndex<PPOrderDocBaseType> index = ReferenceListAwareEnums.index(values());
 
 	@Nullable
-	public static PPOrderDocBaseType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+	public static PPOrderDocBaseType ofNullableCode(@Nullable final String code) { return index.ofNullableCode(code); }
 
-	public static PPOrderDocBaseType ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public static PPOrderDocBaseType ofCode(@NonNull final String code) { return index.ofCode(code); }
 
-	@NonNull
-	public static Optional<PPOrderDocBaseType> optionalOfNullable(@Nullable final String code) {return Optional.ofNullable(ofNullableCode(code));}
+	public boolean isManufacturingOrder() { return MANUFACTURING_ORDER.equals(this); }
 
-	public boolean isManufacturingOrder() {return MANUFACTURING_ORDER.equals(this);}
+	public boolean isQualityOrder() { return QUALITY_ORDER.equals(this); }
 
-	public boolean isQualityOrder() {return QUALITY_ORDER.equals(this);}
-
-	public boolean isRepairOrder() {return REPAIR_ORDER.equals(this);}
+	public boolean isRepairOrder() { return REPAIR_ORDER.equals(this); }
 }

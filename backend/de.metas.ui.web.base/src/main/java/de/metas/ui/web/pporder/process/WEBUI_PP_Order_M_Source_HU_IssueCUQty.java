@@ -106,6 +106,11 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		return MSG_OK;
 	}
 
+	private boolean isSingleSelectedRow()
+	{
+		return getSelectedRowIds().isSingleDocumentId();
+	}
+
 	private void issue(final PPOrderLineRow row)
 	{
 		final List<I_M_Source_HU> sourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);

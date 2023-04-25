@@ -89,7 +89,6 @@ public class ApiAuditConfigRepository
 				.active(record.isActive())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.seqNo(record.getSeqNo())
-				.isBypassAudit(record.isBypassAudit())
 				.forceProcessedAsync(record.isForceProcessedAsync())
 				.keepRequestDays(record.getKeepRequestDays())
 				.keepRequestBodyDays(record.getKeepRequestBodyDays())

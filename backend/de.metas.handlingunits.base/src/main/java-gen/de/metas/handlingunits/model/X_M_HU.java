@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1836855192L;
+	private static final long serialVersionUID = 2110603265L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -65,18 +65,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public void setClearanceDate (final @Nullable java.sql.Timestamp ClearanceDate)
-	{
-		set_Value (COLUMNNAME_ClearanceDate, ClearanceDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getClearanceDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ClearanceDate);
-	}
-
-	@Override
 	public void setClearanceNote (final @Nullable java.lang.String ClearanceNote)
 	{
 		set_Value (COLUMNNAME_ClearanceNote, ClearanceNote);
@@ -99,8 +87,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String CLEARANCESTATUS_Locked = "L";
 	/** Quarantined = Q */
 	public static final String CLEARANCESTATUS_Quarantined = "Q";
-	/** Test Pending = P */
-	public static final String CLEARANCESTATUS_TestPending = "P";
 	@Override
 	public void setClearanceStatus (final @Nullable java.lang.String ClearanceStatus)
 	{

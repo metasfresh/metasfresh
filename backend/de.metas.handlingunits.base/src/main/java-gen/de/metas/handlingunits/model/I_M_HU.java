@@ -1,7 +1,8 @@
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_HU
  *  @author metasfresh (generated) 
@@ -89,27 +90,6 @@ public interface I_M_HU
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
-	 * Set Clearance Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setClearanceDate (@Nullable java.sql.Timestamp ClearanceDate);
-
-	/**
-	 * Get Clearance Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getClearanceDate();
-
-	ModelColumn<I_M_HU, Object> COLUMN_ClearanceDate = new ModelColumn<>(I_M_HU.class, "ClearanceDate", null);
-	String COLUMNNAME_ClearanceDate = "ClearanceDate";
 
 	/**
 	 * Set Clearance Note.
@@ -202,7 +182,7 @@ public interface I_M_HU
 	String COLUMNNAME_HUPlanningReceiptOwnerPM = "HUPlanningReceiptOwnerPM";
 
 	/**
-	 * Set Packing Status.
+	 * Set Gebinde Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -211,7 +191,7 @@ public interface I_M_HU
 	void setHUStatus (java.lang.String HUStatus);
 
 	/**
-	 * Get Packing Status.
+	 * Get Gebinde Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -246,7 +226,8 @@ public interface I_M_HU
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Included in other HU.
+	 * Set in HU enthalten.
+	 * Sagt aus, ob die gegenbene HU in einer anderen HU enthalten ist (z.B. IFCO auf einer Palette)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -257,7 +238,8 @@ public interface I_M_HU
 	void setIsChildHU (boolean IsChildHU);
 
 	/**
-	 * Get Included in other HU.
+	 * Get in HU enthalten.
+	 * Sagt aus, ob die gegenbene HU in einer anderen HU enthalten ist (z.B. IFCO auf einer Palette)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -290,8 +272,7 @@ public interface I_M_HU
 	String COLUMNNAME_IsReserved = "IsReserved";
 
 	/**
-	 * Set Locked.
-	 * Whether the terminal is locked
+	 * Set Gesperrt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -302,8 +283,7 @@ public interface I_M_HU
 	void setLocked (boolean Locked);
 
 	/**
-	 * Get Locked.
-	 * Whether the terminal is locked
+	 * Get Gesperrt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -315,7 +295,8 @@ public interface I_M_HU
 	String COLUMNNAME_Locked = "Locked";
 
 	/**
-	 * Set Lot No..
+	 * Set Los-Nr..
+	 * Los-Nummer (alphanumerisch)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -326,7 +307,8 @@ public interface I_M_HU
 	void setLot (@Nullable java.lang.String Lot);
 
 	/**
-	 * Get Lot No..
+	 * Get Los-Nr..
+	 * Los-Nummer (alphanumerisch)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -361,7 +343,7 @@ public interface I_M_HU
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Handling Unit Parent.
+	 * Set Handling Units Item Parent ID.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -370,7 +352,7 @@ public interface I_M_HU
 	void setM_HU_Item_Parent_ID (int M_HU_Item_Parent_ID);
 
 	/**
-	 * Get Handling Unit Parent.
+	 * Get Handling Units Item Parent ID.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -431,7 +413,7 @@ public interface I_M_HU
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Packing Instruction.
+	 * Set Packvorschrift Version.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -440,7 +422,7 @@ public interface I_M_HU
 	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
 
 	/**
-	 * Get Packing Instruction.
+	 * Get Packvorschrift Version.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

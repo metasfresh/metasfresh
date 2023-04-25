@@ -23,21 +23,24 @@
 package de.metas.handlingunits.rest_api;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
+import lombok.With;
 
 @Value
-@Builder(toBuilder = true)
-class LoadJsonHURequest
+@Builder
+public class LoadJsonHURequest
 {
-	@NonNull I_M_HU hu;
-	@Nullable HUQRCode expectedQRCode;
-	@NonNull String adLanguage;
-	boolean includeAllowedClearanceStatuses;
+	@With
+	@NonNull
+	I_M_HU hu;
+
+	@NonNull
+	String adLanguage;
+
+	@With
+	boolean getAllowedClearanceStatuses;
 
 	@NonNull
 	public static LoadJsonHURequest ofHUAndLanguage(@NonNull final I_M_HU hu, @NonNull final String adLanguage)
@@ -46,10 +49,5 @@ class LoadJsonHURequest
 				.adLanguage(adLanguage)
 				.hu(hu)
 				.build();
-	}
-
-	public LoadJsonHURequest withIncludedHU(final I_M_HU includedHU)
-	{
-		return toBuilder().hu(includedHU).expectedQRCode(null).build();
 	}
 }

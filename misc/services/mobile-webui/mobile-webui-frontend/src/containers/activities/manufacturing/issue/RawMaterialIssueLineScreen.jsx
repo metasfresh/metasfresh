@@ -6,15 +6,10 @@ import { trl } from '../../../../utils/translations';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
 
-import {
-  manufacturingLineScanScreenLocation,
-  manufacturingLineScreenLocation,
-  manufacturingStepScreenLocation,
-} from '../../../../routes/manufacturing_issue';
+import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
-import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 const RawMaterialIssueLineScreen = () => {
   const {
@@ -22,48 +17,35 @@ const RawMaterialIssueLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const {
-    caption,
-    userInstructions,
-    productName,
-    uom,
-    qtyToIssue,
-    qtyToIssueTolerance,
-    qtyToIssueRemaining,
-    qtyIssued,
-    steps,
-  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
+  const { caption, productName, uom, qtyToIssue, qtyToIssueTolerancePerc, qtyToIssueRemaining, qtyIssued, steps } =
+    useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry(
-        computeHeaderEntriesFromParams({
-          url,
-          caption,
-          userInstructions,
-          productName,
-          uom,
-          qtyToIssue,
-          qtyToIssueTolerance,
-          qtyToIssueRemaining,
-          qtyIssued,
-        })
-      )
+      pushHeaderEntry({
+        location: url,
+        caption: caption,
+        values: [
+          { caption: trl('general.Product'), value: productName },
+          {
+            caption: trl('activities.mfg.issues.qtyToIssueTarget'),
+            value: buildQtyWithToleranceString({ qty: qtyToIssue, uom, tolerance: qtyToIssueTolerancePerc }),
+          },
+          { caption: trl('activities.mfg.issues.qtyToIssueRemaining'), value: qtyToIssueRemaining + ' ' + uom },
+          { caption: trl('activities.mfg.issues.qtyIssued'), value: qtyIssued + ' ' + uom },
+        ],
+      })
     );
   }, []);
 
   const history = useHistory();
-  const onScanHUClicked = () => {
-    history.push(manufacturingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
-  };
-  const onStepButtonClick = ({ stepId }) => {
+  const onButtonClick = ({ stepId }) => {
     history.push(manufacturingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };
 
   return (
     <div className="section pt-2">
-      <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanHUClicked} />
       {steps.length > 0 &&
         steps.map((stepItem) => {
           return (
@@ -71,7 +53,7 @@ const RawMaterialIssueLineScreen = () => {
               key={stepItem.id}
               caption={stepItem.locatorName + ' - ' + toQRCodeDisplayable(stepItem.huQRCode)}
               completeStatus={stepItem.completeStatus}
-              onClick={() => onStepButtonClick({ stepId: stepItem.id })}
+              onClick={() => onButtonClick({ stepId: stepItem.id })}
             >
               <ButtonQuantityProp
                 qtyCurrent={stepItem.qtyIssued ?? 0}
@@ -90,14 +72,12 @@ const RawMaterialIssueLineScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const line = getLineByIdFromActivity(activity, lineId);
-
   return {
     caption: activity?.caption ?? 'Issue',
-    userInstructions: line?.userInstructions || activity?.userInstructions,
     productName: line?.productName,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
-    qtyToIssueTolerance: line?.qtyToIssueTolerance,
+    qtyToIssueTolerancePerc: line?.qtyToIssueTolerancePerc,
     // qtyToIssueMin: line?.qtyToIssueMin,
     // qtyToIssueMax: line?.qtyToIssueMax,
     qtyToIssueRemaining: line?.qtyToIssueRemaining,
@@ -106,60 +86,12 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   };
 };
 
-const computeHeaderEntriesFromParams = ({
-  url,
-  caption,
-  userInstructions,
-  productName,
-  uom,
-  qtyToIssue,
-  qtyToIssueTolerance,
-  qtyToIssueRemaining,
-  qtyIssued,
-}) => {
-  return {
-    location: url,
-    caption: caption,
-    userInstructions,
-    values: [
-      { caption: trl('general.Product'), value: productName },
-      {
-        caption: trl('activities.mfg.issues.qtyToIssueTarget'),
-        value: formatQtyToHumanReadableStr({
-          qty: qtyToIssue,
-          uom,
-          tolerance: qtyToIssueTolerance,
-          precision: 999,
-        }),
-      },
-      {
-        caption: trl('activities.mfg.issues.qtyToIssueRemaining'),
-        value: formatQtyToHumanReadableStr({
-          qty: qtyToIssueRemaining,
-          uom,
-          precision: 999,
-        }),
-      },
-      {
-        caption: trl('activities.mfg.issues.qtyIssued'),
-        value: formatQtyToHumanReadableStr({ qty: qtyIssued, uom, precision: 999 }),
-      },
-    ],
-  };
-};
-
-export const useLineHeaderEntriesRefresh = ({ applicationId, wfProcessId, activityId, lineId }) => {
-  const props = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
-
-  const headerEntries = computeHeaderEntriesFromParams({
-    url: manufacturingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }),
-    ...props,
-  });
-
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(pushHeaderEntry(headerEntries));
-  }, []);
+export const buildQtyWithToleranceString = ({ qty, uom, tolerance }) => {
+  let result = qty + ' ' + uom;
+  if (tolerance != null) {
+    result += ' ±' + tolerance + '%';
+  }
+  return result;
 };
 
 export default RawMaterialIssueLineScreen;

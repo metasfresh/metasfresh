@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_BOM
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_PP_Order_BOM extends org.compiere.model.PO implements I_PP_Order_BOM, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -175011272L;
+	private static final long serialVersionUID = -1223071028L;
 
     /** Standard Constructor */
     public X_PP_Order_BOM (final Properties ctx, final int PP_Order_BOM_ID, @Nullable final String trxName)
@@ -99,18 +99,6 @@ public class X_PP_Order_BOM extends org.compiere.model.PO implements I_PP_Order_
 	}
 
 	@Override
-	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
-	}
-
-	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -123,6 +111,18 @@ public class X_PP_Order_BOM extends org.compiere.model.PO implements I_PP_Order_
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -159,33 +159,6 @@ public class X_PP_Order_BOM extends org.compiere.model.PO implements I_PP_Order_
 	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Sequence getLotNo_Sequence()
-	{
-		return get_ValueAsPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
-	}
-
-	@Override
-	public void setLotNo_Sequence(final org.compiere.model.I_AD_Sequence LotNo_Sequence)
-	{
-		set_ValueFromPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, LotNo_Sequence);
-	}
-
-	@Override
-	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
-	{
-		if (LotNo_Sequence_ID < 1) 
-			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
-		else 
-			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
-	}
-
-	@Override
-	public int getLotNo_Sequence_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
 
 	@Override

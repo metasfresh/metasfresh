@@ -270,8 +270,7 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	@NonNull
-	CountryId getCountryId(@NonNull BPartnerLocationId bpLocationId);
+	CountryId getCountryId(BPartnerLocationId bpLocationId);
 	/**
 	 * Retrieve default/first bill to location.
 	 *

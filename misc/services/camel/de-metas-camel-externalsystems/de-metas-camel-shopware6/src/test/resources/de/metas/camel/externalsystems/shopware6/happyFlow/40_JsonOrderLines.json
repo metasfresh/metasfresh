@@ -4,7 +4,7 @@
       "id": "externalLineId",
       "productId": "productId",
       "quantity": 1,
-      "parentId": "externalLineId2",
+      "parentId": "parentId",
       "unitPrice": 14.8,
       "description": "lineDescription",
       "position": 1,

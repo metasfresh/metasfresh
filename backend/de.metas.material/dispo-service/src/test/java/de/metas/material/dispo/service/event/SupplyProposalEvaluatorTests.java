@@ -27,7 +27,6 @@ import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandl
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.order.OrderLineRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -134,7 +133,7 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, new OrderLineRepository()),
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService),
 				new DDOrderDetailRequestHandler(),
 				new MainDataRequestHandler());
 	}

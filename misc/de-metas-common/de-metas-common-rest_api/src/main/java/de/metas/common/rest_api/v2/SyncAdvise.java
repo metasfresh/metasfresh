@@ -80,22 +80,14 @@ public class SyncAdvise
 		@ApiEnum("Insert/update data that is specified in this request entity (incl. setting properties to `null`), but leave *other* pre-existing data untouched")
 		UPDATE_MERGE(true/* updateMerge */),
 
-		DONT_UPDATE(false/* updateMerge */),
-
-		@ApiEnum("Replace data for the target resource with the information present in the request.")
-		REPLACE(true);
+		DONT_UPDATE(false/* updateMerge */);
 
 		@Getter
 		private final boolean update;
 
-		IfExists(final boolean update)
+		IfExists(boolean update)
 		{
 			this.update = update;
-		}
-
-		public boolean isReplace()
-		{
-			return this == REPLACE;
 		}
 	}
 

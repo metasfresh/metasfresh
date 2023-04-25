@@ -21,7 +21,6 @@ const MaterialReceiptLineScreen = () => {
 
   const {
     activityCaption,
-    userInstructions,
     lineProps: { aggregateToLU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
 
@@ -31,7 +30,6 @@ const MaterialReceiptLineScreen = () => {
       pushHeaderEntry({
         location: url,
         caption: activityCaption,
-        userInstructions,
         values: [
           {
             caption: trl('activities.mfg.ProductName'),
@@ -116,7 +114,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     activityCaption: activity.caption,
-    userInstructions: activity.userInstructions,
     lineProps,
   };
 };

@@ -314,30 +314,6 @@ public final class StringUtils
 		return messageFormated;
 	}
 
-	@Nullable
-	public static String maskString(@Nullable final String sensitiveString)
-	{
-		if (Check.isBlank(sensitiveString))
-		{
-			return sensitiveString;
-		}
-
-		final int length = sensitiveString.length();
-
-		if (length >= 8)
-		{
-			return sensitiveString.substring(0, 4) + sensitiveString.substring(4, length).replaceAll(".", "*");
-		}
-		else if (length >= 4)
-		{
-			return sensitiveString.charAt(0) + sensitiveString.substring(1, length).replaceAll(".", "*");
-		}
-		else
-		{
-			return sensitiveString.replaceAll(".", "*");
-		}
-	}
-
 	@SafeVarargs
 	@Nullable
 	private static Object[] invokeSuppliers(final Object... params)

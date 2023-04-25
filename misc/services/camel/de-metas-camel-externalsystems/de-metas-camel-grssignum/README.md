@@ -7,7 +7,6 @@
 
 * There is a HTTP rest endpoint (`/camel/grs`) that can be secured using `ExternalSystem_Config_GRSSignum.CamelHttpResourceAuthKey`.
   * one can find those settings within `External system config` window (i.e. `windowId` = `541024`)
-  * HTTP-Requests to camel then need to set the http-header `X-Auth-Token` to contain the preconfigured authentication key
 
 * Currently, the `GRSSignum` rest route can handle 3 different entity types: (routing by `request.FLAG`)
   * `FLAG` = `100` translates to `PushBPartners` route;

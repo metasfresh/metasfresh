@@ -21,8 +21,6 @@ CREATE TABLE report.saldobilanz_Report
 	parentvalue2 character varying(60),
 	parentname3 character varying(60),
 	parentvalue3 character varying(60),
-	parentname4 character varying(60),
-	parentvalue4 character varying(60),
 	name character varying(60),
 	namevalue character varying(60),
 	AccountType char(1),
@@ -30,8 +28,6 @@ CREATE TABLE report.saldobilanz_Report
 	sameyearsum numeric,
 	lastyearsum numeric,
 	euroSaldo numeric,
-	L4_sameyearsum numeric,
-	L4_lastyearsum numeric,
 	L3_sameyearsum numeric,
 	L3_lastyearsum numeric,
 	L2_sameyearsum numeric,
@@ -59,14 +55,12 @@ SELECT
 	parentvalue2,
 	parentname3,
 	parentvalue3,
-	parentname4,
-	parentvalue4,
 	name,
 	value,
 	AccountType,
 
-	SameYearSum,
-	LastYearSum,
+	SameYearSum AS L4_SameYearSum,
+	LastYearSum AS L4_LastYearSum,
 	(case when IsConvertToEUR
 		then currencyConvert(a.SameYearSum
 			, a.C_Currency_ID -- p_curfrom_id
@@ -79,8 +73,6 @@ SELECT
 		else null
 	end) as L4_euroSaldo,
 	--
-	SUM(CASE WHEN ParentValue4 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_SameYearSum,
-	SUM(CASE WHEN ParentValue4 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_LastYearSum,
 	SUM(CASE WHEN ParentValue3 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue3) AS L3_SameYearSum,
 	SUM(CASE WHEN ParentValue3 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue3) AS L3_LastYearSum,
 	SUM(CASE WHEN ParentValue2 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue2) AS L2_SameYearSum,
@@ -103,8 +95,6 @@ FROM
 			, lvl.Lvl2_value as ParentValue2
 			, lvl.Lvl3_name as ParentName3
 			, lvl.Lvl3_value as ParentValue3
-			, lvl.Lvl4_name as ParentName4
-		    , lvl.Lvl4_value as ParentValue4
 			, lvl.Name as Name
 			, lvl.Value as Value
 			, ev.AccountType
@@ -170,7 +160,7 @@ FROM
 
 	) a
 ORDER BY
-	parentValue1, parentValue2, parentValue3, parentValue4, value
+	parentValue1, parentValue2, parentValue3, value
 $BODY$
 LANGUAGE sql STABLE;
 

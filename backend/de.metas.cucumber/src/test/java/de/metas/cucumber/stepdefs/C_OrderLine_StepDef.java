@@ -30,7 +30,6 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
-import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -59,7 +58,6 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -90,8 +88,6 @@ public class C_OrderLine_StepDef
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_Attribute_StepDefData attributeTable;
 	private final C_Tax_StepDefData taxTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final IdentifierIds_StepDefData identifierIdsTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -103,9 +99,7 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final M_Attribute_StepDefData attributeTable,
-			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final IdentifierIds_StepDefData identifierIdsTable)
+			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
@@ -117,8 +111,6 @@ public class C_OrderLine_StepDef
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.attributeTable = attributeTable;
 		this.taxTable = taxTable;
-		this.warehouseTable = warehouseTable;
-		this.identifierIdsTable = identifierIdsTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -166,7 +158,7 @@ public class C_OrderLine_StepDef
 			}
 
 			final String itemProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(itemProductIdentifier))
+			if (de.metas.util.Check.isNotBlank(itemProductIdentifier))
 			{
 				final String itemProductIdentifierValue = DataTableUtil.nullToken2Null(itemProductIdentifier);
 				if (itemProductIdentifierValue == null)
@@ -187,15 +179,6 @@ public class C_OrderLine_StepDef
 			if (qtyEnteredTU != null)
 			{
 				orderLine.setQtyEnteredTU(qtyEnteredTU);
-			}
-
-			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(warehouseIdentifier))
-			{
-				final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-				assertThat(warehouse).isNotNull();
-
-				orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 			}
 
 			saveRecord(orderLine);
@@ -364,14 +347,27 @@ public class C_OrderLine_StepDef
 		}
 	}
 
-	@And("^delete C_OrderLine identified by (.*), but keep its id into identifierIds table$")
-	public void delete_orderLine(@NonNull final String orderLineIdentifier)
+	@And("load C_Order from C_OrderLine")
+	public void loadC_Order(@NonNull final DataTable dataTable)
 	{
-		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+		final List<Map<String, String>> table = dataTable.asMaps();
+		for (final Map<String, String> row : table)
+		{
+			loadC_Order(row);
+		}
+	}
+
+	private void loadC_Order(@NonNull final Map<String, String> row)
+	{
+		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_OrderLine orderLine = orderLineTable.get(olIdentifier);
 		assertThat(orderLine).isNotNull();
 
-		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
-		InterfaceWrapperHelper.delete(orderLine);
+		final I_C_Order orderRecord = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
+		assertThat(orderRecord).isNotNull();
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		orderTable.putOrReplace(orderIdentifier, orderRecord);
 	}
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
@@ -430,7 +426,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		if (de.metas.util.Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
 			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
 			assertThat(expectedASI).isNotNull();
@@ -447,7 +443,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(huPiItemProductIdentifier))
+		if (de.metas.util.Check.isNotBlank(huPiItemProductIdentifier))
 		{
 			final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
 			final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
@@ -455,7 +451,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String asiValues = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID + ":" + I_M_AttributeInstance.Table_Name + "." + I_M_AttributeInstance.COLUMNNAME_Value);
-		if (Check.isNotBlank(asiValues))
+		if (de.metas.util.Check.isNotBlank(asiValues))
 		{
 			StepDefUtil.splitIdentifiers(asiValues)
 					.forEach(value -> validateAttributeValue(orderLine, value));

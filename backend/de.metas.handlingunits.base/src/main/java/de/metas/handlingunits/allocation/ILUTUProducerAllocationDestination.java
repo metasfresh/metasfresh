@@ -22,7 +22,10 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
-import de.metas.handlingunits.QtyTU;
+import java.math.BigDecimal;
+
+import org.compiere.model.I_C_UOM;
+
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -31,10 +34,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
-
-import java.math.BigDecimal;
 
 /**
  * It's an {@link IHUProducerAllocationDestination} which can be configured to produce TUs on LUs.
@@ -138,8 +137,6 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * @param maxLUs
 	 */
 	void setMaxLUs(final int maxLUs);
-
-	void setMaxTUsPerLU(@NonNull QtyTU maxTUsPerLU);
 
 	/**
 	 *

@@ -514,7 +514,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 			final boolean invoice_IsCreditMemo = invoiceDocBaseType.isCreditMemo();
-			if (invoiceHeader_IsCreditMemo != invoice_IsCreditMemo)
+			if (invoiceHeader_IsCreditMemo && !invoice_IsCreditMemo)
 			{
 				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}

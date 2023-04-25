@@ -4,17 +4,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
+
 import de.metas.i18n.Language;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.Map;
 
 /*
  * #%L
@@ -41,19 +37,20 @@ import java.util.Map;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONUserSession
 {
+	public static final JSONUserSession of(final UserSession userSession)
+	{
+		return new JSONUserSession(userSession);
+	}
+
 	@JsonProperty("loggedIn")
 	private final boolean loggedIn;
 
-	/**
-	 * login user
-	 */
+	/** login user */
 	@JsonProperty("username")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String username;
 
-	/**
-	 * user's full name/display name
-	 */
+	/** user's full name/display name */
 	@JsonProperty("fullname")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String fullname;
@@ -88,12 +85,7 @@ public class JSONUserSession
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer userProfileId;
 
-	@JsonProperty("settings")
-	private final Map<String, String> settings;
-
-	public JSONUserSession(
-			@NonNull final UserSession userSession,
-			@Nullable final Map<String, String> settings)
+	private JSONUserSession(final UserSession userSession)
 	{
 		loggedIn = userSession.isLoggedIn();
 		if (loggedIn)
@@ -127,7 +119,5 @@ public class JSONUserSession
 		this.locale = JSONUserSessionLocale.of(userSession.getUserSessionLocale());
 
 		timeZone = DateTimeConverters.toJson(userSession.getTimeZone());
-
-		this.settings = settings != null ? settings : ImmutableMap.of();
 	}
 }

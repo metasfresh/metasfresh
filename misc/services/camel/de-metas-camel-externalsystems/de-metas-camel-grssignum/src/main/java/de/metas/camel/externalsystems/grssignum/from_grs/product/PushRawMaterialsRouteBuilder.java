@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.grssignum.from_grs.product;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.grssignum.from_grs.product.processor.PushRawMaterialsProcessor;
 import de.metas.camel.externalsystems.grssignum.from_grs.product.processor.RawMaterialAttachFileProcessor;
@@ -56,14 +55,6 @@ public class PushRawMaterialsRouteBuilder extends RouteBuilder
 	public static final String PUSH_RAW_MATERIALS_PROCESSOR_ID = "GRSSignum-pushRawMaterialsProcessorID";
 	public static final String ATTACH_FILE_TO_RAW_MATERIALS_PROCESSOR_ID = "GRSSignum-rawMaterialsAttachFileProcessorID";
 
-	@NonNull
-	private final ProcessLogger processLogger;
-
-	public PushRawMaterialsRouteBuilder(final @NonNull ProcessLogger processLogger)
-	{
-		this.processLogger = processLogger;
-	}
-
 	@Override
 	public void configure() throws Exception
 	{
@@ -78,7 +69,7 @@ public class PushRawMaterialsRouteBuilder extends RouteBuilder
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonProduct.class))
 				.process(this::buildAndAttachContext)
 
-				.process(new PushRawMaterialsProcessor(processLogger)).id(PUSH_RAW_MATERIALS_PROCESSOR_ID)
+				.process(new PushRawMaterialsProcessor()).id(PUSH_RAW_MATERIALS_PROCESSOR_ID)
 				.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
 
 				 .to(direct(ATTACH_FILE_TO_RAW_MATERIALS_ROUTE_ID));

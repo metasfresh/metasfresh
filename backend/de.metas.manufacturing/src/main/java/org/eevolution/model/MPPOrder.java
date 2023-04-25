@@ -73,7 +73,6 @@ import java.util.Properties;
  * @author Victor Perez www.e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
-@SuppressWarnings("unused")
 public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
@@ -206,7 +205,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.optionalOfNullable(getDocBaseType()).orElse(PPOrderDocBaseType.MANUFACTURING_ORDER);
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
 		if (docBaseType.isQualityOrder())
 		{
 			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
@@ -363,25 +362,24 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		//
-		// Validate BOM Lines before closing them
-		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
-		getLines().forEach(ppOrderBOMLineBL::validateBeforeClose);
-
-		//
 		// Create usage variances
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.optionalOfNullable(getDocBaseType()).orElse(PPOrderDocBaseType.MANUFACTURING_ORDER);
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
 		if (!docBaseType.isRepairOrder())
 		{
 			createVariances();
 		}
 
 		//
-		// Close BOM Lines
-		getLines().forEach(ppOrderBOMLineBL::close);
+		// Update BOM Lines and set QtyRequired=QtyDelivered
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
+		for (final I_PP_Order_BOMLine line : getLines())
+		{
+			ppOrderBOMLineBL.close(line);
+		}
 
 		//
 		// Close all the activity do not reported
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		ppOrderBL.closeAllActivities(orderId);
 

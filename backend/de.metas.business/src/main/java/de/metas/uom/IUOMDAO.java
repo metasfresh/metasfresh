@@ -80,10 +80,4 @@ public interface IUOMDAO extends ISingletonService
 
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
-
-	/**
-	 * Returns a I_C_UOM only if there is just 1 active record matching the input uomSymbol.
-	 */
-	@NonNull
-	Optional<I_C_UOM> getBySymbol(@NonNull String uomSymbol);
 }

@@ -22,7 +22,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Set;
 
-import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
+import static de.metas.picking.workflow.handlers.PickingMobileApplication.HANDLER_ID;
 
 class PickingWorkflowLaunchersProvider
 {
@@ -106,7 +106,7 @@ class PickingWorkflowLaunchersProvider
 	private static WorkflowLauncher toNewWorkflowLauncher(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
 		return WorkflowLauncher.builder()
-				.applicationId(APPLICATION_ID)
+				.applicationId(HANDLER_ID)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 						.customerName(pickingJobCandidate.getCustomerName())
@@ -120,12 +120,12 @@ class PickingWorkflowLaunchersProvider
 	private static WorkflowLauncher toExistingWorkflowLauncher(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return WorkflowLauncher.builder()
-				.applicationId(APPLICATION_ID)
+				.applicationId(HANDLER_ID)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 						.customerName(pickingJobReference.getCustomerName())
 						.build())
-				.startedWFProcessId(WFProcessId.ofIdPart(APPLICATION_ID, pickingJobReference.getPickingJobId()))
+				.startedWFProcessId(WFProcessId.ofIdPart(HANDLER_ID, pickingJobReference.getPickingJobId()))
 				.build();
 	}
 

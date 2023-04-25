@@ -37,6 +37,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.Null;
+
 public class AllocationBL implements IAllocationBL
 {
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);

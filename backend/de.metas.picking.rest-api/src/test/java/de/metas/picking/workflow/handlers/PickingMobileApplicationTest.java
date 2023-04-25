@@ -149,7 +149,7 @@ class PickingMobileApplicationTest
 				.toParams()
 				.toJson());
 
-		wfParameters.put(JsonWFProcessStartRequest.PARAM_ApplicationId, PickingMobileApplication.APPLICATION_ID.getAsString());
+		wfParameters.put(JsonWFProcessStartRequest.PARAM_ApplicationId, PickingMobileApplication.HANDLER_ID.getAsString());
 
 		final JsonWFProcess wfProcess = workflowRestController.start(JsonWFProcessStartRequest.builder()
 				.wfParameters(wfParameters)

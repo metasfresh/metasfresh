@@ -96,10 +96,4 @@ public class Product
 
 	@Nullable
 	CommodityNumberId commodityNumberId;
-
-	@Nullable
-	String guaranteeMonths;
-
-	@Nullable
-	String warehouseTemperature;
 }

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Product_BOM, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2118481425L;
+	private static final long serialVersionUID = -1591740181L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (final Properties ctx, final int PP_Product_BOM_ID, @Nullable final String trxName)
@@ -114,18 +114,6 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
-	}
-
-	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -138,6 +126,18 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -274,33 +274,6 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Sequence getLotNo_Sequence()
-	{
-		return get_ValueAsPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
-	}
-
-	@Override
-	public void setLotNo_Sequence(final org.compiere.model.I_AD_Sequence LotNo_Sequence)
-	{
-		set_ValueFromPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, LotNo_Sequence);
-	}
-
-	@Override
-	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
-	{
-		if (LotNo_Sequence_ID < 1) 
-			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
-		else 
-			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
-	}
-
-	@Override
-	public int getLotNo_Sequence_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
 
 	@Override
@@ -523,20 +496,5 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
-	}
-
-	@Override
-	public void setS_PreferredResource_ID(final int S_PreferredResource_ID)
-	{
-		if (S_PreferredResource_ID < 1)
-			set_ValueNoCheck(COLUMNNAME_S_PreferredResource_ID, null);
-		else
-			set_ValueNoCheck(COLUMNNAME_S_PreferredResource_ID, S_PreferredResource_ID);
-	}
-
-	@Override
-	public int getS_PreferredResource_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_S_PreferredResource_ID);
 	}
 }

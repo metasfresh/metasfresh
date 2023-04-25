@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Column
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1882423707L;
+	private static final long serialVersionUID = 437427151L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -559,18 +559,6 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isParent() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsParent);
-	}
-
-	@Override
-	public void setIsRestAPICustomColumn (final boolean IsRestAPICustomColumn)
-	{
-		set_Value (COLUMNNAME_IsRestAPICustomColumn, IsRestAPICustomColumn);
-	}
-
-	@Override
-	public boolean isRestAPICustomColumn() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsRestAPICustomColumn);
 	}
 
 	@Override

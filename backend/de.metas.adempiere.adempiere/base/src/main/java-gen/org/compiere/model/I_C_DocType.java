@@ -19,6 +19,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Boiler Plate.
+	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -28,6 +29,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Boiler Plate.
+	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -305,7 +307,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
-	 * Set Document Sequence.
+	 * Set Nummernfolgen für Belege.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -315,7 +317,7 @@ public interface I_C_DocType
 	void setDocNoSequence_ID (int DocNoSequence_ID);
 
 	/**
-	 * Get Document Sequence.
+	 * Get Nummernfolgen für Belege.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -355,7 +357,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
-	 * Set Document Copies.
+	 * Set Kopien.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -365,7 +367,7 @@ public interface I_C_DocType
 	void setDocumentCopies (int DocumentCopies);
 
 	/**
-	 * Get Document Copies.
+	 * Get Kopien.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -378,7 +380,8 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentCopies = "DocumentCopies";
 
 	/**
-	 * Set Note.
+	 * Set Notiz / Zeilentext.
+	 * Additional information for a Document
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -387,7 +390,8 @@ public interface I_C_DocType
 	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
 	/**
-	 * Get Note.
+	 * Get Notiz / Zeilentext.
+	 * Additional information for a Document
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -399,8 +403,9 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentNote = "DocumentNote";
 
 	/**
-	 * Set Entity Type.
-	 * Entity Type
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -409,8 +414,9 @@ public interface I_C_DocType
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entity Type.
-	 * Entity Type
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -767,7 +773,7 @@ public interface I_C_DocType
 	String COLUMNNAME_IsPickQAConfirm = "IsPickQAConfirm";
 
 	/**
-	 * Set Ship/Receipt Confirmation.
+	 * Set Bestätigung Versand/Wareneingang.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -777,7 +783,7 @@ public interface I_C_DocType
 	void setIsShipConfirm (boolean IsShipConfirm);
 
 	/**
-	 * Get Ship/Receipt Confirmation.
+	 * Get Bestätigung Versand/Wareneingang.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -836,31 +842,6 @@ public interface I_C_DocType
 	String COLUMNNAME_IsSplitWhenDifference = "IsSplitWhenDifference";
 
 	/**
-	 * Set Serial No. Sequence.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
-
-	/**
-	 * Get Serial No. Sequence.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getLotNo_Sequence_ID();
-
-	@Nullable org.compiere.model.I_AD_Sequence getLotNo_Sequence();
-
-	void setLotNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence LotNo_Sequence);
-
-	ModelColumn<I_C_DocType, org.compiere.model.I_AD_Sequence> COLUMN_LotNo_Sequence_ID = new ModelColumn<>(I_C_DocType.class, "LotNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
-	String COLUMNNAME_LotNo_Sequence_ID = "LotNo_Sequence_ID";
-
-	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -882,7 +863,8 @@ public interface I_C_DocType
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Print Name.
+	 * Set Drucktext.
+	 * The label text to be printed on a document or correspondence.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -891,7 +873,8 @@ public interface I_C_DocType
 	void setPrintName (java.lang.String PrintName);
 
 	/**
-	 * Get Print Name.
+	 * Get Drucktext.
+	 * The label text to be printed on a document or correspondence.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

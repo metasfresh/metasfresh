@@ -3,9 +3,9 @@ package de.metas.handlingunits.qrcodes.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.GlobalQRCode;
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,7 +45,7 @@ public class HUQRCode
 	}
 
 	@JsonIgnore
-	public JsonDisplayableQRCode toRenderedJson()
+	public JsonRenderedHUQRCode toRenderedJson()
 	{
 		return HUQRCodeJsonConverter.toRenderedJson(this);
 	}

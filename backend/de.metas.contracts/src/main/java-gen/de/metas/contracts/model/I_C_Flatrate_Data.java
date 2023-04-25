@@ -1,8 +1,7 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Flatrate_Data
  *  @author metasfresh (generated) 

@@ -26,7 +26,6 @@ import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IEnqueueResult;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
@@ -97,16 +96,12 @@ public class CreateInvoiceForModelService
 		{
 			final Collection<Object> modelsWithBatchId = batchIdWithUpdatedModel.get(asyncBatchId);
 
-			final Supplier<IEnqueueResult> action = () -> {
-				
-				int counter = 0;
+			final Supplier<Void> action = () -> {
 				for (final Object modelWithBatchId : modelsWithBatchId)
 				{
 					CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(modelWithBatchId);
-					counter++;
 				}
-				final int finalCounter = counter; // a lambda's return value should be final
-				return () -> finalCounter; // return the numer of workpackages that we enqeued
+				return null;
 			};
 
 			asyncBatchService.executeBatch(action, asyncBatchId);

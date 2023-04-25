@@ -22,6 +22,12 @@ package de.metas.inoutcandidate.async;
  * #L%
  */
 
+import java.util.Collections;
+import java.util.List;
+
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
@@ -30,11 +36,6 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Process given models and creates {@link I_M_ReceiptSchedule} records.

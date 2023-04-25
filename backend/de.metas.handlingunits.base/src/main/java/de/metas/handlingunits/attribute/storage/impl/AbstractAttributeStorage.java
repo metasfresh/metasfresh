@@ -312,7 +312,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final IAttributeValue getAttributeValue(@NonNull final AttributeCode attributeCode)
+	public final IAttributeValue getAttributeValue(final AttributeCode attributeCode)
 	{
 		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
 		if (NullAttributeValue.isNull(attributeValue))
@@ -455,20 +455,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		final IAttributeValue value = getAttributeValue(attributeCode);
 		return value.getValueAsString();
-	}
-
-	@Override
-	@Nullable
-	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
-	{
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
-
-		if (NullAttributeValue.isNull(attributeValue))
-		{
-			return null;
-		}
-
-		return attributeValue.getValueAsString();
 	}
 
 	@Override

@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order
  *  @author metasfresh (generated) 
@@ -95,7 +96,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -105,7 +106,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -230,7 +231,7 @@ public interface I_PP_Order
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Zielbelegart.
+	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -240,7 +241,7 @@ public interface I_PP_Order
 	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
+	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -1097,27 +1098,6 @@ public interface I_PP_Order
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Packing Instruction.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
-
-	/**
-	 * Get Packing Instruction.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_HU_PI_Item_Product_ID();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "M_HU_PI_Item_Product_ID", null);
-	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-
-	/**
 	 * Set Locator.
 	 * Warehouse Locator
 	 *
@@ -1847,31 +1827,6 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_ScheduleType = new ModelColumn<>(I_PP_Order.class, "ScheduleType", null);
 	String COLUMNNAME_ScheduleType = "ScheduleType";
-
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo (int SeqNo);
-
-	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Order.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Serien-Nr..

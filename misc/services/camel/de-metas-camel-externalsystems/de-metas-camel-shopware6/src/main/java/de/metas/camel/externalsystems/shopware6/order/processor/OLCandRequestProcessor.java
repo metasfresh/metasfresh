@@ -40,7 +40,6 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertI
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonProductLookup;
-import de.metas.common.ordercandidates.v2.request.JsonGroupCompensationOrderBy;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -59,9 +58,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -199,7 +196,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getBPExternalIdentifier().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -231,7 +228,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getBPExternalIdentifier().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -317,7 +314,6 @@ public class OLCandRequestProcessor implements Processor
 		return JsonOrderLineGroup.builder()
 				.groupKey(isBundle ? orderLine.getId() : orderLine.getParentId())
 				.isGroupMainItem(isBundle)
-				.ordering(JsonGroupCompensationOrderBy.GroupFirst)
 				.build();
 	}
 
@@ -455,60 +451,13 @@ public class OLCandRequestProcessor implements Processor
 
 		final MutableInt sequence = new MutableInt(ORDER_LINE_SEQUENCE_INITIAL_VALUE);
 
-		final HashMap<String, List<JsonOLCandCreateRequest>> groupKey2CompensationLines = new HashMap<>();
-
-		olCandCreateRequests.stream()
-				.filter(req -> req.getOrderLineGroup() != null && !req.getOrderLineGroup().isGroupMainItem())
-				.forEach(req -> {
-					final ArrayList<JsonOLCandCreateRequest> requests = new ArrayList<>();
-					requests.add(req);
-
-					groupKey2CompensationLines.merge(req.getOrderLineGroup().getGroupKey(), requests, (l1, l2) -> {
-						l1.addAll(l2);
-						return l1;
-					});
-				});
-
 		olCandCreateRequests
 				.stream()
-				.filter(request -> request.getOrderLineGroup() == null || request.getOrderLineGroup().isGroupMainItem())
-				.sorted(getLineComparatorNullsLast())
-				.forEach(request -> {
-					final List<JsonOLCandCreateRequest> compensationLines = groupKey2CompensationLines.get(request.getExternalLineId());
-
-					bulkRequestBuilder.request(request.toBuilder()
-													   .line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
-													   .build());
-
-					if (compensationLines != null)
-					{
-						compensationLines
-								.stream()
-								.sorted(getLineComparatorNullsLast())
-								.map(line -> line.toBuilder()
-										.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
-										.build())
-								.forEach(bulkRequestBuilder::request);
-					}
-				});
+				.map(request -> request.toBuilder()
+						.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+						.build())
+				.forEach(bulkRequestBuilder::request);
 
 		return bulkRequestBuilder.build();
-	}
-
-	private static Comparator<JsonOLCandCreateRequest> getLineComparatorNullsLast()
-	{
-		return (l1, l2) -> {
-			if (l1.getLine() == null)
-			{
-				return 1;
-			}
-
-			if (l2.getLine() == null)
-			{
-				return -1;
-			}
-
-			return l1.getLine().compareTo(l2.getLine());
-		};
 	}
 }

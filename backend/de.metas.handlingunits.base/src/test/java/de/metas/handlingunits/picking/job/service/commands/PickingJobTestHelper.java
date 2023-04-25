@@ -57,7 +57,6 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_Picking_Config_V2;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -154,9 +153,7 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						new HUQRCodesService(
-								huQRCodesRepository,
-								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+						new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
 				)
 		);
 
@@ -229,7 +226,6 @@ public class PickingJobTestHelper
 	{
 		final I_M_Picking_Config_V2 pickingConfigV2 = newInstance(I_M_Picking_Config_V2.class);
 		pickingConfigV2.setIsConsiderAttributes(considerAttributes);
-		pickingConfigV2.setIsReserveHUsOnPickingJobStart(true);
 		save(pickingConfigV2);
 	}
 
@@ -337,13 +333,13 @@ public class PickingJobTestHelper
 						.setHUStatus(X_M_HU.HUSTATUS_Active)
 						.setLocatorId(shipFromLocatorId))
 				.load(AllocationUtils.builder()
-						.setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
-						.setProduct(productId)
-						.setQuantity(qty)
-						.setDate(SystemTime.asZonedDateTime())
-						.setFromReferencedModel(huTestHelper.createDummyReferenceModel())
-						.setForceQtyAllocation(true)
-						.create());
+							  .setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
+							  .setProduct(productId)
+							  .setQuantity(qty)
+							  .setDate(SystemTime.asZonedDateTime())
+							  .setFromReferencedModel(huTestHelper.createDummyReferenceModel())
+							  .setForceQtyAllocation(true)
+							  .create());
 
 		final I_M_HU hu = destination.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("Failed creating HU"));
 		return HuId.ofRepoId(hu.getM_HU_ID());
@@ -394,15 +390,15 @@ public class PickingJobTestHelper
 		final HUQRCode huQRCode = HUQRCode.builder()
 				.id(qrCodeId)
 				.packingInfo(HUQRCodePackingInfo.builder()
-						.huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
-						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
-						.caption(pi.getName())
-						.build())
+									 .huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
+									 .packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
+									 .caption(pi.getName())
+									 .build())
 				.product(HUQRCodeProductInfo.builder()
-						.id(productId)
-						.code(product.getValue())
-						.name(product.getName())
-						.build())
+								 .id(productId)
+								 .code(product.getValue())
+								 .name(product.getName())
+								 .build())
 				.attributes(ImmutableList.of())
 				.build();
 

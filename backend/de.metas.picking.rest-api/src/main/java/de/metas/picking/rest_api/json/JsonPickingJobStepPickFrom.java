@@ -1,9 +1,9 @@
 package de.metas.picking.rest_api.json;
 
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -19,7 +19,7 @@ public class JsonPickingJobStepPickFrom
 {
 	@NonNull String alternativeId;
 	@NonNull String locatorName;
-	@NonNull JsonDisplayableQRCode huQRCode;
+	@NonNull JsonRenderedHUQRCode huQRCode;
 	@NonNull BigDecimal qtyPicked;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;

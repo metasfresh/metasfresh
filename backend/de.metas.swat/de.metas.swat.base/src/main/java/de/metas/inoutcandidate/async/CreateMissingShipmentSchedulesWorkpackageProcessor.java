@@ -2,7 +2,6 @@ package de.metas.inoutcandidate.async;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -46,16 +45,13 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		_scheduleIfNotPostponed(ctxAware, asyncBatchId);
 	}
 
-	public static IEnqueueResult scheduleIfNotPostponed(@NonNull final Object model)
+	public static void scheduleIfNotPostponed(@NonNull final Object model)
 	{
 		final AsyncBatchId asyncBatchId = asyncBatchBL
 				.getAsyncBatchId(model)
 				.orElse(null);
 
-		final boolean scheduled = _scheduleIfNotPostponed(InterfaceWrapperHelper.getContextAware(model), asyncBatchId);
-		final int workpackageCount = scheduled ? 1 : 0;
-
-		return () -> workpackageCount;
+		_scheduleIfNotPostponed(InterfaceWrapperHelper.getContextAware(model), asyncBatchId);
 	}
 
 	/**
@@ -64,19 +60,19 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 *
 	 * @param ctxAware if it has a not-null trxName, then the workpackage will be marked as ready for processing when given transaction is committed.
 	 */
-	private static boolean _scheduleIfNotPostponed(final IContextAware ctxAware, @Nullable final AsyncBatchId asyncBatchId)
+	private static void _scheduleIfNotPostponed(final IContextAware ctxAware, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		if (shipmentScheduleBL.allMissingSchedsWillBeCreatedLater())
 		{
 			logger.debug("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
-			return false;
+			return;
 		}
 
 		// don't try to enqueue it if is not active
 		if (!queueDAO.isWorkpackageProcessorEnabled(CreateMissingShipmentSchedulesWorkpackageProcessor.class))
 		{
 			logger.debug("Not scheduling WP because this workpackage processor is disabled: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
-			return false;
+			return;
 		}
 
 		final Properties ctx = ctxAware.getCtx();
@@ -86,7 +82,6 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 				.setC_Async_Batch_ID(asyncBatchId)
 				.bindToTrxName(ctxAware.getTrxName())
 				.buildAndEnqueue();
-		return true;
 	}
 
 	// services

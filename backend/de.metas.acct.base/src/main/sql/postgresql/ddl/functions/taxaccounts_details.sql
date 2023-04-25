@@ -1,15 +1,14 @@
-DROP FUNCTION IF EXISTS de_metas_acct.taxaccounts_details(p_AD_Org_ID     numeric(10, 0),
-                                                          p_Account_ID    numeric,
-                                                          p_C_Vat_Code_ID numeric,
-                                                          p_DateFrom      date,
-                                                          p_DateTo        date)
-;
+DROP FUNCTION IF EXISTS de_metas_acct.taxaccounts_details(p_AD_Org_ID numeric(10, 0),
+    p_Account_ID numeric,
+    p_C_Vat_Code_ID numeric,
+    p_DateFrom date,
+    p_DateTo date);
 
-CREATE OR REPLACE FUNCTION de_metas_acct.taxaccounts_details(p_AD_Org_ID     numeric(10, 0),
-                                                             p_Account_ID    numeric,
+CREATE OR REPLACE FUNCTION de_metas_acct.taxaccounts_details(p_AD_Org_ID numeric(10, 0),
+                                                             p_Account_ID numeric,
                                                              p_C_Vat_Code_ID numeric,
-                                                             p_DateFrom      date,
-                                                             p_DateTo        date)
+                                                             p_DateFrom date,
+                                                             p_DateTo date)
     RETURNS TABLE
             (
                 Balance           numeric,
@@ -28,102 +27,83 @@ CREATE OR REPLACE FUNCTION de_metas_acct.taxaccounts_details(p_AD_Org_ID     num
             )
 AS
 $BODY$
-WITH accounts AS
+with accounts as
          (
-             SELECT C_ElementValue_ID
-             FROM c_elementvalue
-             WHERE p_Account_ID IS NULL
-                OR C_ElementValue_ID = p_Account_ID
+             select C_ElementValue_ID
+             from c_elementvalue
+             where IsActive = 'Y'
+               AND CASE WHEN p_Account_ID IS NULL THEN 1 = 1 ELSE C_ElementValue_ID = p_Account_ID END
          ),
      balanceRecords AS
          (
-             SELECT b.*, a.C_ElementValue_ID
-             FROM accounts a
-                      JOIN de_metas_acct.balanceToDate(p_AD_Org_ID,
+             Select b.*, a.C_ElementValue_ID
+             from accounts a
+                      join de_metas_acct.balanceToDate(p_AD_Org_ID,
                                                        C_ElementValue_ID,
                                                        p_DateTo,
-                                                       p_C_Vat_Code_ID) AS b ON 1 = 1
+                                                       p_C_Vat_Code_ID) as b on 1 = 1
          ),
      balanceRecords_dateFrom AS
          (
-             SELECT b.*, a.C_ElementValue_ID
-             FROM accounts a
-                      JOIN de_metas_acct.balanceToDate(p_AD_Org_ID,
+             Select b.*, a.C_ElementValue_ID
+             from accounts a
+                      join de_metas_acct.balanceToDate(p_AD_Org_ID,
                                                        C_ElementValue_ID,
                                                        p_DateFrom,
-                                                       p_C_Vat_Code_ID) AS b ON 1 = 1
-         ),
-     balanceRecords_yearBegining AS
-         (
-             SELECT b.*, a.C_ElementValue_ID
-             FROM accounts a
-                      JOIN de_metas_acct.balanceToDate(p_AD_Org_ID,
-                                                       C_ElementValue_ID,
-                                                       DATE_TRUNC('year', p_DateTo::date)::date,
-                                                       p_C_Vat_Code_ID) AS b ON 1 = 1
+                                                       p_C_Vat_Code_ID) as b on 1 = 1
          ),
      balance AS
          (
-             SELECT (COALESCE((b2.Balance).Balance, 0) - COALESCE((b1.Balance).Balance, 0)) AS Balance,
-                    (COALESCE((b2.Balance).Balance, 0) - COALESCE((by.Balance).Balance, 0)) AS YearBalance,
+             Select (coalesce((b2.Balance).Balance, 0) - coalesce((b1.Balance).Balance, 0)) as Balance,
+                    coalesce((b2.Balance).Balance, 0)                                       as YearBalance,
                     b2.accountno,
                     b2.accountname,
                     b2.C_Tax_ID,
                     b2.vatcode,
                     b2.C_ElementValue_ID
-             FROM balanceRecords b2
-                      LEFT JOIN balanceRecords_dateFrom b1 ON b1.c_elementvalue_id = b2.c_elementvalue_id
-                 AND b1.accountno = b2.accountno
-                 AND b1.accountname = b2.accountname
-                 AND COALESCE(b1.vatcode, '') = COALESCE(b2.vatcode, '')
-                 AND COALESCE(b1.c_tax_id, 0) = COALESCE(b2.c_tax_id, 0)
-
-                      LEFT JOIN balanceRecords_yearBegining by ON by.c_elementvalue_id = b2.c_elementvalue_id
-                 AND by.accountno = b2.accountno
-                 AND by.accountname = b2.accountname
-                 AND COALESCE(by.vatcode, '') = COALESCE(b2.vatcode, '')
-                 AND COALESCE(by.c_tax_id, 0) = COALESCE(b2.c_tax_id, 0)
-             WHERE (b2.Balance).Debit <> 0
-                OR (b2.Balance).Credit <> 0
+             from balanceRecords b2
+                      left join balanceRecords_dateFrom b1 on b1.c_elementvalue_id = b2.c_elementvalue_id
+                 and b1.accountno = b2.accountno
+                 and b1.accountname = b2.accountname
+                 and coalesce(b1.vatcode, '') = coalesce(b2.vatcode, '')
+                 and coalesce(b1.c_tax_id, 0) = coalesce(b2.c_tax_id, 0)
+             where (b2.Balance).Debit <> 0
+                or (b2.Balance).Credit <> 0
          )
-SELECT Balance,
+select Balance,
        YearBalance,
        b.accountno,
        b.accountname,
-       t.Name     AS taxName,
+       t.Name                                as taxName,
        b.C_Tax_ID,
        b.vatcode,
        b.C_ElementValue_ID,
-       p_DateFrom AS param_startdate,
-       p_DateTo   AS param_enddate,
+       p_DateFrom                            AS param_startdate,
+       p_DateTo                              AS param_enddate,
        (CASE
             WHEN p_Account_ID IS NULL
                 THEN NULL
-                ELSE (SELECT value || ' - ' || name
-                      FROM C_ElementValue
-                      WHERE C_ElementValue_ID = p_Account_ID
-                )
-        END)      AS param_konto,
+            ELSE (SELECT value || ' - ' || name
+                  from C_ElementValue
+                  WHERE C_ElementValue_ID = p_Account_ID
+                    and isActive = 'Y') END) AS param_konto,
        (CASE
             WHEN p_C_Vat_Code_ID IS NULL
                 THEN NULL
-                ELSE (SELECT vatcode
-                      FROM C_Vat_Code
-                      WHERE C_Vat_Code_ID = p_C_Vat_Code_ID
-                )
-        END)      AS param_vatcode,
+            ELSE (SELECT vatcode
+                  FROM C_Vat_Code
+                  WHERE C_Vat_Code_ID = p_C_Vat_Code_ID
+                    and isActive = 'Y') END) AS param_vatcode,
        (CASE
             WHEN p_AD_Org_ID IS NULL
                 THEN NULL
-                ELSE (SELECT name
-                      FROM ad_org
-                      WHERE ad_org_id = p_AD_Org_ID
-                )
-        END)      AS param_org
+            ELSE (SELECT name
+                  from ad_org
+                  where ad_org_id = p_AD_Org_ID
+                    and isActive = 'Y') END) AS param_org
 
-FROM balance AS b
-         LEFT OUTER JOIN C_Tax t ON t.C_tax_ID = b.C_tax_ID
-ORDER BY vatcode, accountno
+from balance as b
+         left outer join C_Tax t on t.C_tax_ID = b.C_tax_ID
+order by vatcode, accountno
 $BODY$
-    LANGUAGE sql STABLE
-;
+    LANGUAGE sql STABLE;

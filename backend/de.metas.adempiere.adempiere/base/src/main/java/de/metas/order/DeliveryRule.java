@@ -1,15 +1,18 @@
 package de.metas.order;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.Arrays;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Order;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.Getter;
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
-import java.util.Arrays;
 
 /*
  * #%L

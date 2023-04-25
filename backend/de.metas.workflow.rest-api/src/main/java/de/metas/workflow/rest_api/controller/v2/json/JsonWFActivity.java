@@ -32,7 +32,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -44,10 +43,7 @@ public class JsonWFActivity
 	@NonNull String caption;
 	@NonNull String componentType;
 
-	@NonNull WFActivityStatus status;
-
-	@Nullable Boolean isAlwaysAvailableToUser;
-	@Nullable String userInstructions;
+	WFActivityStatus status;
 
 	@Builder.Default
 	@NonNull Map<String, Object> componentProps = ImmutableMap.of();
@@ -64,8 +60,6 @@ public class JsonWFActivity
 				.caption(activity.getCaption().translate(adLanguage))
 				.componentType(uiComponent.getType().getAsString())
 				.status(activity.getStatus())
-				.isAlwaysAvailableToUser(uiComponent.getAlwaysAvailableToUser().toBooleanObject())
-				.userInstructions(activity.getUserInstructions())
 				.componentProps(uiComponent.getProperties().toJson(jsonOpts::convertValueToJson))
 				.build();
 	}

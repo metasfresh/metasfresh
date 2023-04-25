@@ -116,8 +116,6 @@ public interface IProductDAO extends ISingletonService
 
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
 
-	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
-
 	@Value
 	class ProductQuery
 	{
@@ -194,6 +192,8 @@ public interface IProductDAO extends ISingletonService
 	void updateProduct(UpdateProductRequest request);
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
+
+	int getGuaranteeMonthsInDays(ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

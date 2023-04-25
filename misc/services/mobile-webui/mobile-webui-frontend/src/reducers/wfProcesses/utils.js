@@ -156,7 +156,6 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
   draftActivity.activityId = fromActivity.activityId; // for new activities
   draftActivity.caption = fromActivity.caption;
   draftActivity.componentType = fromActivity.componentType;
-  draftActivity.userInstructions = fromActivity.userInstructions;
 
   const componentPropsNormalized = normalizeComponentProps({
     componentType: fromActivity.componentType,

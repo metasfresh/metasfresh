@@ -45,7 +45,8 @@ public class MoveWFActivityHandler implements WFActivityHandler
 
 		final List<JsonDistributionJobLine> lines = JsonDistributionJob.of(job, jsonOpts).getLines();
 
-		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
+		return UIComponent.builder()
+				.type(COMPONENT_TYPE)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.valueObj("qtyRejectedReasons", qtyRejectedReasons)

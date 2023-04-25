@@ -4,11 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.pricing.attributebased.impl.AttributePricing;
-import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
 
 import java.util.List;
 
@@ -55,11 +52,10 @@ public class HUPricingTestHelper extends PricingTestHelper
 	@Override
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		HUPricing.install();
-		AdempiereTestHelper.get().onCleanup("Reset PriceListVersionConfiguration", PriceListVersionConfiguration::reset);
-
 		return ImmutableList.of(
-				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
+				HUPricing.class.getName(),
+				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+				de.metas.pricing.rules.PriceListVersion.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName(),
 				ContractDiscount.class.getName());
 	}

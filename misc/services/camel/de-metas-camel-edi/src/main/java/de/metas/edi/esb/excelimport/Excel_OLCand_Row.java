@@ -27,9 +27,11 @@ import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,17 +67,17 @@ public class Excel_OLCand_Row
 
 	}
 
-	// public static List<Excel_OLCand_Row> ofMaps(final List<Map<String, Object>> mapsList)
-	// {
-	// 	final List<Excel_OLCand_Row> rows = new ArrayList<>(mapsList.size());
-	// 	for (final Map<String, Object> rowData : mapsList)
-	// 	{
-	// 		final Excel_OLCand_Row row = ofMap(rowData);
-	// 		rows.add(row);
-	// 	}
-	//
-	// 	return rows;
-	// }
+	public static List<Excel_OLCand_Row> ofMaps(final List<Map<String, Object>> mapsList)
+	{
+		final List<Excel_OLCand_Row> rows = new ArrayList<>(mapsList.size());
+		for (final Map<String, Object> rowData : mapsList)
+		{
+			final Excel_OLCand_Row row = ofMap(rowData);
+			rows.add(row);
+		}
+
+		return rows;
+	}
 
 	private final Integer lineNo;
 

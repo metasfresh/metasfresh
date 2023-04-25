@@ -85,23 +85,6 @@ public class ExternalSystemConstants
 	public static final String PARAM_RABBIT_MQ_AUTH_TOKEN = "RabbitMQAuthToken";
 	public static final String PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "JsonExternalReferenceLookupRequest";
 
-	public static final String PARAM_PP_ORDER_ID = "PP_Order_ID";
-	public static final String PARAM_PRODUCT_BASE_FOLDER_NAME = "Product_BaseFolderName";
-	public static final String PARAM_TCP_PORT_NUMBER = "TCP_PortNumber";
-	public static final String PARAM_TCP_HOST = "TCP_Host";
-	public static final String PARAM_PLU_FILE_CONFIG = "PluFileConfig";
-	public static final String PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED = "PluFileExportAuditEnabled";
-
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
-	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
-
-	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
-
-	public static final String API_REQUEST_AUDIT_TABLE_NAME = "API_Request_Audit";
-
-	public static final String PARAM_JSON_AVAILABLE_STOCK = "JsonAvailableStock";
-
-	public static final String PARAM_FEEDBACK_RESOURCE_URL = "FeedbackResourceURL";
-	public static final String PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN = "FeedbackResourceAuthToken";
 }

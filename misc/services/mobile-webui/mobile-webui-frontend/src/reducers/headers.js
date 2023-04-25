@@ -6,7 +6,6 @@ export const initialState = {
       location: '/',
       hidden: true,
       values: [],
-      userInstructions: null,
     },
   ],
 };
@@ -30,17 +29,12 @@ export const getCaptionFromHeaders = (state) => {
   return state.headers.entries.reduce((acc, entry) => (entry.caption ? entry.caption : acc), null);
 };
 
-export const getUserInstructionsFromHeaders = (state) => {
-  // return last known caption
-  return state.headers.entries.reduce((acc, entry) => (entry.userInstructions ? entry.userInstructions : acc), null);
-};
-
 export default function reducer(state = initialState, action) {
   const { payload } = action;
 
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
-      const { location, caption, values, userInstructions } = payload;
+      const { location, caption, values } = payload;
 
       // if there are no header values, there's no reason to block space
       const hidden = !values.length;
@@ -51,7 +45,7 @@ export default function reducer(state = initialState, action) {
       let newEntries = state.entries.map((entry) => {
         if (entry.location === location) {
           existingEntryUpdated = true;
-          return { ...entry, caption, values, userInstructions, hidden };
+          return { ...entry, caption, values, hidden };
         } else {
           return entry;
         }
@@ -64,7 +58,7 @@ export default function reducer(state = initialState, action) {
           inclusive: false,
         });
       } else {
-        const newEntry = { location, caption, values, userInstructions, hidden };
+        const newEntry = { location, caption, values, hidden };
         newEntries.push(newEntry);
         // console.log('added newEntry: ', newEntry);
       }

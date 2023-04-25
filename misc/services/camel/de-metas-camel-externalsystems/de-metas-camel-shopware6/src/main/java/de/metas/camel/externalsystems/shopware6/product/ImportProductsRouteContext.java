@@ -77,11 +77,6 @@ public class ImportProductsRouteContext
 	@Getter(AccessLevel.NONE)
 	private JsonProduct jsonProduct;
 
-	@Nullable
-	@Getter(AccessLevel.NONE)
-	private JsonProduct parentJsonProduct;
-
-
 	public void setNextImportStartingTimestamp(@NonNull final Instant candidate)
 	{
 		if (candidate.isAfter(nextImportStartingTimestamp))
@@ -105,11 +100,5 @@ public class ImportProductsRouteContext
 		}
 
 		return jsonProduct;
-	}
-
-	@Nullable
-	public JsonProduct getParentJsonProduct()
-	{
-		return parentJsonProduct;
 	}
 }

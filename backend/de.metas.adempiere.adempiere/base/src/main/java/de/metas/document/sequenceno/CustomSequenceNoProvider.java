@@ -1,10 +1,6 @@
 package de.metas.document.sequenceno;
 
-import de.metas.document.DocumentSequenceInfo;
-import lombok.NonNull;
 import org.compiere.util.Evaluatee;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -30,18 +26,13 @@ import javax.annotation.Nullable;
 
 public interface CustomSequenceNoProvider
 {
+	boolean isApplicable(Evaluatee context);
 
-	boolean isApplicable(@NonNull Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo);
-
-	String provideSequenceNo(@NonNull Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo, @Nullable final String autoIncrementedSeqNumber);
+	String provideSequenceNo(Evaluatee context);
 
 	/**
 	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
 	 * Note that if the incremental number is appended, that is <i>without</i> applying the {@code AD_Sequence}'s decimal pattern.
 	 */
-	default boolean isUseIncrementSeqNoAsPrefix()
-	{
-		return true;
-	}
-
+	boolean isUseIncrementSeqNoAsPrefix();
 }

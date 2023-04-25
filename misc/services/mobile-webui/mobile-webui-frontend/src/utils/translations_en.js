@@ -11,7 +11,6 @@ const translations = {
     Locator: 'Locator',
     QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
-    QtyToPick_Total: 'Qty to pick (total)',
     QtyPicked: 'Qty picked',
     QtyMoved: 'Qty moved',
     QtyToMove: 'Qty to move',
@@ -25,7 +24,6 @@ const translations = {
   login: {
     submitButton: 'Login',
   },
-  logout: 'Logout',
   mobileui: {
     manufacturing: {
       appName: 'Production',
@@ -35,11 +33,6 @@ const translations = {
     },
     distribution: {
       appName: 'Distribution',
-    },
-  },
-  components: {
-    BarcodeScannerComponent: {
-      scanTextPlaceholder: 'scan...',
     },
   },
   activities: {
@@ -52,8 +45,7 @@ const translations = {
       PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',
-      qtyAboveMax: '%(qtyDiff)s above max',
-      notPositiveQtyNotAllowed: 'Zero or negative qty not allowed',
+      invalidQtyPicked: 'Invalid qty picked',
       confirmDone: 'Done',
       rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
       unPickBtn: 'Unpick',

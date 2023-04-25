@@ -8,55 +8,38 @@ import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
-import { formatQtyToHumanReadableStr } from '../../utils/qtys';
-import { useBooleanSetting } from '../../reducers/settings';
 
 const GetQuantityDialog = ({
-  userInfo,
+  qtyInitial,
   qtyTarget,
-  scaleTolerance,
   qtyCaption,
   uom,
   qtyRejectedReasons,
   scaleDevice,
-  totalQty,
-  qtyAlreadyOnScale,
   //
   validateQtyEntered,
   onQtyChange,
   onCloseDialog,
 }) => {
-  const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
-  const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
-
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
+  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyInitial));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
 
-  const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
+  const requiredQtyRejectedReason = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
-    isQtyRejectedRequired && qtyInfos.isValid(qtyInfo)
+    requiredQtyRejectedReason && qtyInfos.isValid(qtyInfo)
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
       : 0;
 
-  const allValid =
-    doNotValidateQty || (qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null));
+  const allValid = qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null);
 
   const onDialogYes = () => {
     if (allValid) {
-      const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
-
-      let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
-      if (!!qtyAlreadyOnScale && typeof inputQtyEnteredAndValidated === 'number') {
-        qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - qtyAlreadyOnScale, 0);
-      }
-
       onQtyChange({
-        qtyEnteredAndValidated: qtyEnteredAndValidated,
-        qtyRejected,
+        qtyEnteredAndValidated: qtyInfos.toNumberOrString(qtyInfo),
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
       });
     }
@@ -72,23 +55,8 @@ const GetQuantityDialog = ({
           onWebsocketMessage: (message) => {
             if (useScaleDevice) {
               const { value } = JSON.parse(message.body);
-
-              const newQtyCandidate = qtyInfos.invalidOfNumber(value);
-
-              setQtyInfo((prev) => {
-                if (!prev || newQtyCandidate.qty !== prev.qty) {
-                  return newQtyCandidate;
-                }
-
-                return prev;
-              });
+              setQtyInfo(qtyInfos.invalidOfNumber(value));
             }
-          },
-          headers: {
-            qtyTarget: totalQty || '0',
-            positiveTolerance: scaleTolerance?.positiveTolerance || '0',
-            negativeTolerance: scaleTolerance?.negativeTolerance || '0',
-            uom: uom,
           },
         });
       }
@@ -109,19 +77,12 @@ const GetQuantityDialog = ({
           <div className="message-body">
             <table className="table">
               <tbody>
-                {qtyCaption && (
-                  <tr>
-                    <th>{qtyCaption}</th>
-                    <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
-                  </tr>
-                )}
-                {userInfo &&
-                  userInfo.map((item) => (
-                    <tr key={computeKeyFromUserInfoItem(item)}>
-                      <th>{computeCaptionFromUserInfoItem(item)}</th>
-                      <td>{item.value}</td>
-                    </tr>
-                  ))}
+                <tr>
+                  <th>{qtyCaption}</th>
+                  <td>
+                    {qtyTarget > 0 ? qtyTarget : 0} {uom}
+                  </td>
+                </tr>
                 <tr>
                   <th>Qty</th>
                   <td>
@@ -135,7 +96,7 @@ const GetQuantityDialog = ({
                     />
                   </td>
                 </tr>
-                {scaleDevice && allowManualInput && (
+                {scaleDevice && (
                   <tr>
                     <td colSpan="2">
                       <div className="buttons has-addons">
@@ -155,23 +116,25 @@ const GetQuantityDialog = ({
                     </td>
                   </tr>
                 )}
-                {qtyRejected > 0 && (
-                  <>
-                    <tr>
-                      <th>{trl('general.QtyRejected')}</th>
-                      <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <QtyReasonsRadioGroup
-                          reasons={qtyRejectedReasons}
-                          selectedReason={rejectedReason}
-                          disabled={qtyRejected === 0}
-                          onReasonSelected={onReasonSelected}
-                        />
-                      </td>
-                    </tr>
-                  </>
+                {requiredQtyRejectedReason && (
+                  <tr>
+                    <th>{trl('general.QtyRejected')}</th>
+                    <td>
+                      {qtyRejected} {uom}
+                    </td>
+                  </tr>
+                )}
+                {requiredQtyRejectedReason && (
+                  <tr>
+                    <td colSpan={2}>
+                      <QtyReasonsRadioGroup
+                        reasons={qtyRejectedReasons}
+                        selectedReason={rejectedReason}
+                        disabled={qtyRejected === 0}
+                        onReasonSelected={onReasonSelected}
+                      />
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -191,32 +154,14 @@ const GetQuantityDialog = ({
   );
 };
 
-const computeKeyFromUserInfoItem = ({ caption = null, captionKey = null, value }) => {
-  return `userInfo_${caption || captionKey || value || '?'}`;
-};
-
-const computeCaptionFromUserInfoItem = ({ caption = null, captionKey = null }) => {
-  if (caption) {
-    return caption;
-  } else if (captionKey) {
-    return trl(captionKey);
-  } else {
-    // shall not happen
-    return '';
-  }
-};
-
 GetQuantityDialog.propTypes = {
   // Properties
-  userInfo: PropTypes.array,
+  qtyInitial: PropTypes.number,
   qtyTarget: PropTypes.number.isRequired,
-  totalQty: PropTypes.number,
-  qtyAlreadyOnScale: PropTypes.number,
-  qtyCaption: PropTypes.string,
+  qtyCaption: PropTypes.string.isRequired,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
   scaleDevice: PropTypes.object,
-  scaleTolerance: PropTypes.object,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

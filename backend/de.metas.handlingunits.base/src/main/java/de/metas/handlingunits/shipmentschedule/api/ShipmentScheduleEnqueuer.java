@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -333,7 +332,7 @@ public class ShipmentScheduleEnqueuer
 	 * @author metas-dev <dev@metasfresh.com>
 	 * task https://metasfresh.atlassian.net/browse/FRESH-342
 	 */
-	public static class Result implements IEnqueueResult
+	public static class Result
 	{
 		@Getter
 		private int skippedPackagesCount;
@@ -358,12 +357,6 @@ public class ShipmentScheduleEnqueuer
 		private void incSkipped()
 		{
 			skippedPackagesCount++;
-		}
-
-		@Override
-		public int getWorkpackageEnqueuedCount()
-		{
-			return enqueuedWorkpackageIds.size();
 		}
 	}
 

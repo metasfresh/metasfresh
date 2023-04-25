@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.alberta.patient;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;

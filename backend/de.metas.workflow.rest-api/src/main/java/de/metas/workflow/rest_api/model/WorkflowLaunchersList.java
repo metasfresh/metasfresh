@@ -2,14 +2,12 @@ package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.global_qrcodes.PrintableQRCode;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
@@ -21,7 +19,9 @@ import java.util.stream.Stream;
 public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 {
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
-	@Getter @Nullable private final PrintableQRCode filterByQRCode;
+
+	@Getter
+	private final boolean scanBarcodeToStartJobSupport;
 
 	@Getter
 	@NonNull private final Instant timestamp;
@@ -29,12 +29,17 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 	@Builder
 	private WorkflowLaunchersList(
 			@NonNull final ImmutableList<WorkflowLauncher> launchers,
-			@Nullable final PrintableQRCode filterByQRCode,
+			final boolean scanBarcodeToStartJobSupport,
 			@NonNull final Instant timestamp)
 	{
 		this.launchers = launchers;
-		this.filterByQRCode = filterByQRCode;
+		this.scanBarcodeToStartJobSupport = scanBarcodeToStartJobSupport;
 		this.timestamp = timestamp;
+	}
+
+	public static WorkflowLaunchersList emptyNow()
+	{
+		return builder().launchers(ImmutableList.of()).timestamp(SystemTime.asInstant()).build();
 	}
 
 	@Override
@@ -44,6 +49,28 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 
 	public boolean isEmpty() {return launchers.isEmpty();}
 
+	public WorkflowLaunchersList mergeWith(@NonNull WorkflowLaunchersList other)
+	{
+		if (other.isEmpty())
+		{
+			return this;
+		}
+		else if (isEmpty())
+		{
+			return other;
+		}
+		else
+		{
+			return builder()
+					.launchers(ImmutableList.<WorkflowLauncher>builder()
+							.addAll(this.launchers)
+							.addAll(other.launchers)
+							.build())
+					.timestamp(this.timestamp.isAfter(other.timestamp) ? this.timestamp : other.timestamp)
+					.build();
+		}
+	}
+
 	public boolean isStaled(@NonNull final Duration maxStaleAccepted)
 	{
 		return maxStaleAccepted.compareTo(Duration.ZERO) <= 0 // explicitly asked for a fresh value
@@ -52,7 +79,6 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 
 	public boolean equalsIgnoringTimestamp(@NonNull final WorkflowLaunchersList other)
 	{
-		return Objects.equals(this.launchers, other.launchers)
-				&& Objects.equals(this.filterByQRCode, other.filterByQRCode);
+		return Objects.equals(this.launchers, other.launchers);
 	}
 }

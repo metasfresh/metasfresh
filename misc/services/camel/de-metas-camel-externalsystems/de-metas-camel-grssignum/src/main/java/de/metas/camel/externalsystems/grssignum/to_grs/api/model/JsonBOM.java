@@ -61,12 +61,6 @@ public class JsonBOM
 	@JsonProperty("INAKTIV")
 	boolean isActive;
 
-	@JsonProperty("BIO")
-	boolean isBio;
-
-	@JsonProperty("HALAL")
-	boolean isHalal;
-
 	@Nullable
 	@JsonProperty("VERLUST")
 	BigDecimal scrap;
@@ -87,14 +81,6 @@ public class JsonBOM
 	@JsonProperty("DETAIL")
 	List<JsonBOMLine> bomLines;
 
-	@Nullable
-	@JsonProperty("Sonstige_Infos")
-	List<JsonBOMAdditionalInfo> additionalInfos;
-
-	@Nullable
-	@JsonProperty("ALLERGENE")
-	List<JsonAllergen> allergens;
-
 	@Builder
 	public JsonBOM(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
@@ -103,15 +89,11 @@ public class JsonBOM
 			@JsonProperty("TEXT") final @Nullable String name1,
 			@JsonProperty("TEXT2") final @Nullable String name2,
 			@JsonProperty("INAKTIV") final int inactive,
-			@JsonProperty("BIO") final int bio,
-			@JsonProperty("HALAL") final int halal,
 			@JsonProperty("VERLUST") final @Nullable BigDecimal scrap,
 			@JsonProperty("GTIN") final @Nullable String gtin,
 			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId,
 			@JsonProperty("ANHANGDATEI") final @Nullable String attachmentFilePath,
-			@JsonProperty("DETAIL") final @NonNull List<JsonBOMLine> bomLines,
-			@JsonProperty("Sonstige_Infos") final @Nullable List<JsonBOMAdditionalInfo> additionalInfos,
-			@JsonProperty("ALLERGENE") final @Nullable List<JsonAllergen> allergens)
+			@JsonProperty("DETAIL") final @NonNull List<JsonBOMLine> bomLines)
 	{
 		this.flag = flag;
 		this.productValue = productValue;
@@ -119,15 +101,11 @@ public class JsonBOM
 		this.name1 = name1;
 		this.name2 = name2;
 		this.isActive = inactive != 1;
-		this.isBio = bio == 1;
-		this.isHalal = halal == 1;
 		this.scrap = scrap;
 		this.gtin = gtin;
 		this.bPartnerMetasfreshId = bPartnerMetasfreshId;
 		this.attachmentFilePath = attachmentFilePath;
 		this.bomLines = bomLines;
-		this.additionalInfos = additionalInfos;
-		this.allergens = allergens;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

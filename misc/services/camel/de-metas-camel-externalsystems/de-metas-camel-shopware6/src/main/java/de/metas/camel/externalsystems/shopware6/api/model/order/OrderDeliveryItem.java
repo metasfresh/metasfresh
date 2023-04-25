@@ -31,7 +31,7 @@ import lombok.Value;
 public class OrderDeliveryItem
 {
 	@NonNull
-	AddressDetail orderAddressDetails;
+	OrderAddressDetails orderAddressDetails;
 
 	@NonNull
 	JsonOrderDelivery jsonOrderDelivery;

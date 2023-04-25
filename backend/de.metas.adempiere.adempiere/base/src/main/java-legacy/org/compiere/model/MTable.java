@@ -17,10 +17,16 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.ISequenceDAO;
@@ -31,12 +37,10 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Persistent Table Model
@@ -54,13 +58,14 @@ import java.util.concurrent.locks.ReentrantLock;
  *         https://sourceforge.net/tracker/?func=detail&aid=3133032&group_id=176962&atid=879332
  * @version $Id: MTable.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
  */
+@SuppressWarnings("serial")
 public class MTable extends X_AD_Table
 {
 	/**
 	 * @deprecated Please use {@link IADTableDAO#retrieveTable(AdTableId)}
 	 */
 	@Deprecated
-	public static MTable get(final Properties ignoredCtx, final int AD_Table_ID)
+	public static MTable get(final Properties ctx, final int AD_Table_ID)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final I_AD_Table table = adTableDAO.retrieveTable(AD_Table_ID);
@@ -71,7 +76,7 @@ public class MTable extends X_AD_Table
 	 * @deprecated Please use {@link IADTableDAO#retrieveTable(String)}
 	 */
 	@Deprecated
-	public static MTable get(final Properties ignoredCtx, final String tableName)
+	public static MTable get(final Properties ctx, final String tableName)
 	{
 		if (tableName == null)
 		{
@@ -88,7 +93,7 @@ public class MTable extends X_AD_Table
 	 */
 	@Deprecated
 	@NonNull
-	public static String getTableName(final Properties ignoredCtx, @NonNull final AdTableId adTableId)
+	public static String getTableName(final Properties ctx_NOTUSED, @NonNull final AdTableId adTableId)
 	{
 		return TableIdsCache.instance.getTableName(adTableId);
 	}
@@ -238,12 +243,15 @@ public class MTable extends X_AD_Table
 				list.add(column.getColumnName());
 			}
 		}
-		return list.toArray(new String[list.size()]);
+		final String[] retValue = list.toArray(new String[list.size()]);
+		return retValue;
 	}	// getKeyColumns
 
 	/**************************************************************************
 	 * Get PO Class Instance
 	 *
+	 * @param Record_ID record
+	 * @param trxName
 	 * @return PO for Record or null
 	 * @deprecated Please consider using {@link TableModelLoader#getPO(Properties, String, int, String)} or {@link TableRecordCacheLocal#getReferencedValue(Object, Class)}.
 	 */
@@ -257,11 +265,12 @@ public class MTable extends X_AD_Table
 
 	/**
 	 *
+	 * @param tableName
 	 * @return tableName's model class
 	 * @deprecated Please use {@link TableModelClassLoader#getClass(String)}.
 	 */
 	@Deprecated
-	public static Class<?> getClass(String tableName)
+	public static final Class<?> getClass(String tableName)
 	{
 		return TableModelClassLoader.instance.getClass(tableName);
 	}
@@ -318,14 +327,93 @@ public class MTable extends X_AD_Table
 		return success;
 	}	// afterSave
 
+	/**
+	 * Get SQL Create
+	 *
+	 * @return create table DDL
+	 */
+	public String getSQLCreate()
+	{
+		final MColumn[] columns = getColumns(true);
+
+		final StringBuilder sqlColumns = new StringBuilder();
+		final StringBuilder sqlConstraints = new StringBuilder();
+		boolean hasPK = false;
+		boolean hasParents = false;
+		for (final MColumn column : columns)
+		{
+			final String colSQL = column.getSQLDDL();
+			if (Check.isEmpty(colSQL, true))
+			{
+				continue; // virtual column
+			}
+
+			if (sqlColumns.length() > 0)
+			{
+				sqlColumns.append(", ");
+			}
+			sqlColumns.append(column.getSQLDDL());
+
+			if (column.isKey())
+			{
+				hasPK = true;
+			}
+			if (column.isParent())
+			{
+				hasParents = true;
+			}
+
+			final String constraint = column.getSQLConstraint(getTableName());
+			if (!Check.isEmpty(constraint, true))
+			{
+				sqlConstraints.append(", ").append(constraint);
+			}
+		}
+
+		final StringBuilder sql = new StringBuilder(MigrationScriptFileLoggerHolder.DDL_PREFIX + "CREATE TABLE ")
+				.append("public.") // schema
+				.append(getTableName())
+				.append(" (")
+				.append(sqlColumns);
+
+		// Multi Column PK
+		if (!hasPK && hasParents)
+		{
+			final String cols = Stream.of(columns)
+					.filter(I_AD_Column::isParent)
+					.map(I_AD_Column::getColumnName)
+					.collect(Collectors.joining(", "));
+
+			sql.append(", CONSTRAINT ").append(getTableName()).append("_Key PRIMARY KEY (").append(cols).append(")");
+		}
+
+		sql.append(sqlConstraints).append(")");
+
+		return sql.toString();
+	}	// getSQLCreate
+
+	/**
+	 * Create query to retrieve one or more PO.
+	 *
+	 * @param whereClause
+	 * @param trxName
+	 * @return Query
+	 */
 	public Query createQuery(String whereClause, String trxName)
 	{
 		return new Query(this.getCtx(), this, whereClause, trxName);
 	}
 
+	/**
+	 * String Representation
+	 *
+	 * @return info
+	 */
 	@Override
 	public String toString()
 	{
-		return "MTable[" + get_ID() + "-" + getTableName() + "]";
-	}
-}
+		StringBuilder sb = new StringBuilder("MTable[");
+		sb.append(get_ID()).append("-").append(getTableName()).append("]");
+		return sb.toString();
+	}	// toString
+}	// MTable

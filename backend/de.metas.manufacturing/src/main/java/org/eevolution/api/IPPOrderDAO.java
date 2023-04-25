@@ -42,7 +42,6 @@ public interface IPPOrderDAO extends ISingletonService
 
 	Stream<I_PP_Order> streamManufacturingOrders(@NonNull ManufacturingOrderQuery query);
 
-	int getLastSeqNoPerOrderDate(@NonNull final I_PP_Order ppOrder);
 	/**
 	 * @return PP_Order_ID or -1 if not found.
 	 */
@@ -65,6 +64,4 @@ public interface IPPOrderDAO extends ISingletonService
 	ImmutableList<I_PP_OrderCandidate_PP_Order> getPPOrderAllocations(PPOrderId ppOrderId);
 
 	ImmutableList<I_PP_Order> getByProductBOMId(ProductBOMId productBOMId);
-
-	Stream<I_PP_Order> streamDraftedPPOrdersFor(@NonNull ProductBOMVersionsId bomVersionsId);
 }

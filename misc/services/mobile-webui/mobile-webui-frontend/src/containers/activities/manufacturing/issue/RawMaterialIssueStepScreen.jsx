@@ -3,16 +3,13 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
-import { manufacturingStepScanScreenLocation } from '../../../../routes/manufacturing_issue';
+import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { getStepById } from '../../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
-import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
-
-import { useLineHeaderEntriesRefresh } from './RawMaterialIssueLineScreen';
 
 const RawMaterialIssueStepScreen = () => {
   const {
@@ -24,28 +21,42 @@ const RawMaterialIssueStepScreen = () => {
     getStepById(state, wfProcessId, activityId, lineId, stepId)
   );
 
-  useLineHeaderEntriesRefresh({ applicationId, wfProcessId, activityId, lineId });
-
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry(
-        computeHeaderEntriesFromParams({
-          url,
-          locatorName,
-          huQRCode,
-          uom,
-          qtyToIssue,
-          qtyIssued,
-          qtyRejected,
-        })
-      )
+      pushHeaderEntry({
+        location: url,
+        caption: trl('activities.mfg.issues.step.name'),
+        values: [
+          {
+            caption: trl('general.Locator'),
+            value: locatorName,
+          },
+          {
+            caption: 'HU ' + trl('activities.mfg.issues.qtyToIssueTarget'),
+            value: qtyToIssue + ' ' + uom,
+          },
+          {
+            caption: 'HU ' + trl('activities.mfg.issues.qtyIssued'),
+            value: (qtyIssued || 0) + ' ' + uom,
+          },
+          {
+            caption: 'HU ' + trl('activities.mfg.issues.qtyRejected'),
+            value: qtyRejected + ' ' + uom,
+            hidden: !qtyRejected,
+          },
+          {
+            caption: 'HU ' + trl('general.QRCode'),
+            value: toQRCodeDisplayable(huQRCode),
+          },
+        ],
+      })
     );
   }, []);
 
   const history = useHistory();
   const onScanButtonClick = () => {
-    history.push(manufacturingStepScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
+    history.push(manufacturingScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };
 
   const isIssued = qtyIssued > 0 || qtyRejected > 0;
@@ -64,36 +75,6 @@ const RawMaterialIssueStepScreen = () => {
       {/* Unpick button */}
     </div>
   );
-};
-
-const computeHeaderEntriesFromParams = ({ url, locatorName, huQRCode, uom, qtyToIssue, qtyIssued, qtyRejected }) => {
-  return {
-    location: url,
-    caption: trl('activities.mfg.issues.step.name'),
-    values: [
-      {
-        caption: trl('general.Locator'),
-        value: locatorName,
-      },
-      {
-        caption: 'HU ' + trl('activities.mfg.issues.qtyToIssueTarget'),
-        value: formatQtyToHumanReadableStr({ qty: qtyToIssue, uom }),
-      },
-      {
-        caption: 'HU ' + trl('activities.mfg.issues.qtyIssued'),
-        value: formatQtyToHumanReadableStr({ qty: qtyIssued || 0, uom }),
-      },
-      {
-        caption: 'HU ' + trl('activities.mfg.issues.qtyRejected'),
-        value: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
-        hidden: !qtyRejected,
-      },
-      {
-        caption: 'HU ' + trl('general.QRCode'),
-        value: toQRCodeDisplayable(huQRCode),
-      },
-    ],
-  };
 };
 
 export default RawMaterialIssueStepScreen;

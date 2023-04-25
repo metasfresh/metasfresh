@@ -25,12 +25,9 @@ package de.metas.allocation.api;
  * #L%
  */
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.util.Services;
+
+import java.util.List;
+
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,7 +35,12 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
-import java.util.List;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Services;
 
 /**
  * Interceptor for processing allocation.

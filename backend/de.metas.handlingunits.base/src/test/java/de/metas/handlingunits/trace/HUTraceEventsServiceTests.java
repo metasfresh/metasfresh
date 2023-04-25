@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ImmutablePair;
@@ -71,8 +70,6 @@ public class HUTraceEventsServiceTests
 
 	private HUAccessService huAccessService;
 
-	private InventoryRepository inventoryRepository;
-
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -81,8 +78,7 @@ public class HUTraceEventsServiceTests
 		AdempiereTestHelper.get().init();
 
 		huAccessService = Mockito.spy(new HUAccessService());
-		inventoryRepository = Mockito.spy(new InventoryRepository());
-		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepository);
+		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
 

@@ -24,7 +24,6 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -607,17 +606,5 @@ public class ADProcessDAO implements IADProcessDAO
 	public void save(final I_AD_Process process)
 	{
 		InterfaceWrapperHelper.save(process);
-	}
-
-	@Override
-	public void updateColumnNameByAdElementId(
-			@NonNull final AdElementId adElementId,
-			@Nullable final String newColumnName)
-	{
-		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Process_Para which is using given AD_Element_ID
-		DB.executeUpdateEx(
-				// Inline parameters because this sql will be logged into the migration script.
-				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
-				ITrx.TRXNAME_ThreadInherited);
 	}
 }

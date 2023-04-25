@@ -212,7 +212,10 @@ import java.util.stream.Stream;
 					.disableDefaultTableCallouts();
 
 			// Get AD_Process_Para(s) and populate the entity descriptor
-			addProcessParameters(processId, webuiProcesClassInfo, parametersDescriptorBuilder);
+			adProcessService.retrieveProcessParameters(processId.toAdProcessId())
+					.stream()
+					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
+					.forEach(parametersDescriptorBuilder::addField);
 
 			parametersDescriptor = parametersDescriptorBuilder.build();
 		}
@@ -242,26 +245,6 @@ import java.util.stream.Stream;
 				.setStartProcessDirectly(startProcessDirectly)
 				.setLayout(layout.build())
 				.build();
-	}
-
-	public void addProcessParameters(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
-	{
-		final I_AD_Process adProcess = adProcessService.getById(processId.toAdProcessId());
-		if (adProcess == null)
-		{
-			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + processId + ")");
-		}
-
-		final WebuiProcessClassInfo webuiProcesClassInfo = WebuiProcessClassInfo.of(adProcess.getClassname());
-		addProcessParameters(processId, webuiProcesClassInfo, parametersDescriptorBuilder);
-	}
-
-	private void addProcessParameters(@NonNull final ProcessId processId, @NonNull final WebuiProcessClassInfo webuiProcesClassInfo, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
-	{
-		adProcessService.retrieveProcessParameters(processId.toAdProcessId())
-				.stream()
-				.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
-				.forEach(parametersDescriptorBuilder::addField);
 	}
 
 	private static boolean computeIsStartProcessDirectly(
