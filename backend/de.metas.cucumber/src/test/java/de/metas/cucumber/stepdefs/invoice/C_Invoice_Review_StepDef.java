@@ -28,6 +28,9 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.impl.InvoiceReview;
+import de.metas.invoice.service.impl.InvoiceReviewRepository;
 import de.metas.po.CustomColumnService;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponse;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponseResult;
@@ -109,7 +112,30 @@ public class C_Invoice_Review_StepDef
 		testContext.setRequestPayload(JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(payload));
 	}
 
-	@And("validate invoice review")
+	@Then("validate invoice reviews and store their with their identifiers")
+	public void validateInvoiceReviewAndStoreItsIdentifier(@NonNull final DataTable dataTable)
+	{
+		final InvoiceReviewRepository invoiceReviewRepository = new InvoiceReviewRepository(customColumnService);
+
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final int invoiceId = invoiceTable.get(invoiceIdentifier).getC_Invoice_ID();
+
+			final InvoiceReview review = invoiceReviewRepository.getByInvoiceId(InvoiceId.ofRepoId(invoiceId));
+
+			softly.assertThat(review).as("Missing InvoiceReview for invoiceId %s (identifier=%s)", invoiceId, invoiceIdentifier).isNotNull();
+
+			final I_C_Invoice_Review reviewRecord = InterfaceWrapperHelper.load(review.getId(), I_C_Invoice_Review.class);
+
+			validateInvoiceReview(reviewRecord, row);
+			invoiceReviewTable.put(invoiceIdentifier, reviewRecord);
+		}
+	}
+
+	@And("validate invoice reviews")
 	public void validate_invoice_reviews(@NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
@@ -133,7 +159,7 @@ public class C_Invoice_Review_StepDef
 
 		for (final String key : customColumnsMap.keySet())
 		{
-			final String expectedValue = DataTableUtil.extractStringForColumnName(row,"OPT." + key);
+			final String expectedValue = DataTableUtil.extractStringForColumnName(row, "OPT." + key);
 			if (Check.isEmpty(expectedValue))
 			{
 				assertThat(customColumnsMap.get(key)).isNull();
@@ -153,13 +179,15 @@ public class C_Invoice_Review_StepDef
 	{
 		final JsonCreateInvoiceReviewResponse jsonCreateInvoiceResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonCreateInvoiceReviewResponse.class);
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		final JsonCreateInvoiceReviewResponseResult result = jsonCreateInvoiceResponse.getResult();
-		assertThat(result).isNotNull();
-		assertThat(result.getReviewId()).isNotNull();
-		assertThat(jsonCreateInvoiceResponse.getErrors()).isNull();
+		softly.assertThat(result).isNotNull();
+		softly.assertThat(result.getReviewId()).isNotNull();
+		softly.assertThat(jsonCreateInvoiceResponse.getErrors()).isNull();
 
 		final I_C_Invoice_Review review = InterfaceWrapperHelper.load(result.getReviewId().getValue(), I_C_Invoice_Review.class);
-		assertThat(review).isNotNull();
+		softly.assertThat(review).isNotNull();
 
 		final Map<String, String> row = table.asMaps().get(0);
 

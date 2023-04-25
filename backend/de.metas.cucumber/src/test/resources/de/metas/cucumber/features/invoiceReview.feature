@@ -100,7 +100,7 @@ Feature: external references for metasfresh resources
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
       | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 30 Tage netto | true      | CO        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_1 |
 
-    And validate invoice review
+    And validate invoice reviews and store their with their identifiers
       | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
       | invoice_Review_1               | invoice_1               |                  |
 
@@ -113,7 +113,7 @@ Feature: external references for metasfresh resources
       | C_Invoice_Review_ID.Identifier |
       | invoice_Review_1               |
 
-    And validate invoice review
+    And validate invoice reviews
       | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
       | invoice_Review_1               | invoice_1               | 100              |
 
@@ -126,7 +126,7 @@ Feature: external references for metasfresh resources
       | C_Invoice_Review_ID.Identifier |
       | invoice_Review_3               |
 
-    And validate invoice review
+    And validate invoice reviews
       | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
       | invoice_Review_3               | invoice_1               | 300              |
 
@@ -191,7 +191,7 @@ Feature: external references for metasfresh resources
       | C_Invoice_Review_ID.Identifier |
       | invoice_Review_2               |
 
-    And validate invoice review
+    And validate invoice reviews
       | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
       | invoice_Review_2               | invoice_2               | 200              |
 
@@ -204,7 +204,7 @@ Feature: external references for metasfresh resources
       | C_Invoice_Review_ID.Identifier |
       | invoice_Review_4               |
 
-    And validate invoice review
+    And validate invoice reviews
       | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
       | invoice_Review_4               | invoice_2               | 400              |
 
