@@ -247,6 +247,11 @@ export const useCalendarData = ({
       loadSimulationsFromAPI();
     }
 
+    console.log('********** ', {
+      simulationId,
+      changedSimulationIds,
+      bool: simulationId && changedSimulationIds.includes(simulationId),
+    });
     if (simulationId && changedSimulationIds.includes(simulationId)) {
       refreshEntriesFromAPI();
       loadConflictsFromAPI();

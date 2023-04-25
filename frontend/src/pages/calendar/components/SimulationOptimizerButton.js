@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const SimulationComputeButton = ({
+const SimulationOptimizerButton = ({
   simulationId,
   status,
   onStart,
@@ -17,15 +17,23 @@ const SimulationComputeButton = ({
 
   switch (status) {
     case 'STARTED':
-      return <button onClick={() => onStop({ simulationId })}>Stop</button>;
+      return (
+        <button onClick={() => onStop({ simulationId })}>
+          Stop optimization
+        </button>
+      );
     case 'STOPPED':
-      return <button onClick={() => onStart({ simulationId })}>Start</button>;
+      return (
+        <button onClick={() => onStart({ simulationId })}>
+          Start optimization
+        </button>
+      );
     default:
       return null;
   }
 };
 
-SimulationComputeButton.propTypes = {
+SimulationOptimizerButton.propTypes = {
   simulationId: PropTypes.string,
   status: PropTypes.string,
   onStart: PropTypes.func.isRequired,
@@ -33,4 +41,4 @@ SimulationComputeButton.propTypes = {
   hidden: PropTypes.bool,
 };
 
-export default SimulationComputeButton;
+export default SimulationOptimizerButton;

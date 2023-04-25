@@ -12,6 +12,8 @@ export const WSEventType_entryAddOrChange = 'addOrChange';
 export const WSEventType_entryRemove = 'remove';
 const WSEventType_conflictsChanged = 'conflictsChanged';
 const WSEventType_simulationPlanChanged = 'simulationPlanChanged';
+const WSEventType_simulationOptimizerStatusChanged =
+  'simulationOptimizerStatusChanged';
 
 export const useCalendarWebsocketEvents = ({
   simulationId,
@@ -107,6 +109,7 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
   const entryEvents = [];
   const conflictEvents = [];
   const changedSimulationIds = [];
+  let simulationOptimizerStatus = null;
 
   apiWSEventsArray.forEach((apiWSEvent) => {
     if (apiWSEvent.type === WSEventType_entryAddOrChange) {
@@ -131,6 +134,20 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
       if (!changedSimulationIds.includes(apiWSEvent.simulationId)) {
         changedSimulationIds.push(apiWSEvent.simulationId);
       }
+    } else if (
+      apiWSEvent.type === WSEventType_simulationOptimizerStatusChanged
+    ) {
+      simulationOptimizerStatus = {
+        simulationId: apiWSEvent.simulationId,
+        status: apiWSEvent.status,
+      };
+
+      if (
+        apiWSEvent.simulationPlanChanged &&
+        !changedSimulationIds.includes(apiWSEvent.simulationId)
+      ) {
+        changedSimulationIds.push(String(apiWSEvent.simulationId));
+      }
     } else {
       console.log('Ignored unknown WS event: ', apiWSEvent);
     }
@@ -139,10 +156,16 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
   if (
     entryEvents.length <= 0 &&
     conflictEvents.length <= 0 &&
-    changedSimulationIds.length <= 0
+    changedSimulationIds.length <= 0 &&
+    !simulationOptimizerStatus
   ) {
     return null;
   }
 
-  return { entryEvents, conflictEvents, changedSimulationIds };
+  return {
+    entryEvents,
+    conflictEvents,
+    changedSimulationIds,
+    simulationOptimizerStatus,
+  };
 };

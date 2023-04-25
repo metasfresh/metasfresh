@@ -32,6 +32,7 @@ import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.calendar.plan_optimizer.SimulationOptimizerTaskExecutor;
 import de.metas.calendar.simulation.SimulationPlanCreateRequest;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
@@ -49,11 +50,12 @@ import de.metas.ui.web.calendar.json.JsonCalendarEntryAddRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateResult;
 import de.metas.ui.web.calendar.json.JsonCalendarRef;
-import de.metas.ui.web.calendar.json.JsonComputePlanResponse;
 import de.metas.ui.web.calendar.json.JsonDateTime;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
 import de.metas.ui.web.calendar.json.JsonGetAvailableSimulationsResponse;
 import de.metas.ui.web.calendar.json.JsonSimulationCreateRequest;
+import de.metas.ui.web.calendar.json.JsonSimulationOptimizerStatus;
+import de.metas.ui.web.calendar.json.JsonSimulationOptimizerStatusType;
 import de.metas.ui.web.calendar.json.JsonSimulationRef;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
@@ -98,6 +100,7 @@ public class CalendarRestController
 	private final UserSession userSession;
 	private final MultiCalendarService calendarService;
 	private final SimulationPlanService simulationService;
+	private final SimulationOptimizerTaskExecutor simulationOptimizerTaskExecutor;
 
 	private final LookupDataSource bpartnerLookup;
 	private final LookupDataSource resourceLookup;
@@ -109,11 +112,13 @@ public class CalendarRestController
 			@NonNull final UserSession userSession,
 			@NonNull final MultiCalendarService calendarService,
 			@NonNull final SimulationPlanService simulationService,
+			@NonNull final SimulationOptimizerTaskExecutor simulationOptimizerTaskExecutor,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.userSession = userSession;
 		this.calendarService = calendarService;
 		this.simulationService = simulationService;
+		this.simulationOptimizerTaskExecutor = simulationOptimizerTaskExecutor;
 
 		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		this.resourceLookup = lookupDataSourceFactory.searchInTableLookup(I_S_Resource.Table_Name);
@@ -378,49 +383,44 @@ public class CalendarRestController
 				.build();
 	}
 
-	@GetMapping("/simulations/computePlan")
-	public JsonComputePlanResponse getComputePlanStatus(
+	@GetMapping("/simulations/optimizer")
+	public JsonSimulationOptimizerStatus getSimulationOptimizerStatus(
 			@RequestParam(name = "simulationId") final String simulationIdStr)
 	{
 		userSession.assertLoggedIn();
 
 		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+		return getSimulationOptimizerStatus(simulationId);
+	}
 
-		// TODO
-		return JsonComputePlanResponse.builder()
+	private JsonSimulationOptimizerStatus getSimulationOptimizerStatus(final SimulationPlanId simulationId)
+	{
+		return JsonSimulationOptimizerStatus.builder()
 				.simulationId(simulationId)
-				.status("STOPPED")
+				.status(JsonSimulationOptimizerStatusType.ofIsRunningFlag(simulationOptimizerTaskExecutor.isRunning(simulationId)))
 				.build();
 	}
 
-	@PostMapping("/simulations/computePlan/start")
-	public JsonComputePlanResponse startComputePlan(
+	@PostMapping("/simulations/optimizer/start")
+	public JsonSimulationOptimizerStatus startSimulationOptimizer(
 			@RequestParam(name = "simulationId") final String simulationIdStr)
 	{
 		userSession.assertLoggedIn();
 
 		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
-
-		// TODO
-		return JsonComputePlanResponse.builder()
-				.simulationId(simulationId)
-				.status("STARTED")
-				.build();
+		simulationOptimizerTaskExecutor.start(simulationId);
+		return getSimulationOptimizerStatus(simulationId);
 	}
 
-	@PostMapping("/simulations/computePlan/stop")
-	public JsonComputePlanResponse stopComputePlan(
+	@PostMapping("/simulations/optimizer/stop")
+	public JsonSimulationOptimizerStatus stopSimulationOptimizer(
 			@RequestParam(name = "simulationId") final String simulationIdStr)
 	{
 		userSession.assertLoggedIn();
 
 		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
-
-		// TODO
-		return JsonComputePlanResponse.builder()
-				.simulationId(simulationId)
-				.status("STOPPED")
-				.build();
+		simulationOptimizerTaskExecutor.stop(simulationId);
+		return getSimulationOptimizerStatus(simulationId);
 	}
 
 }

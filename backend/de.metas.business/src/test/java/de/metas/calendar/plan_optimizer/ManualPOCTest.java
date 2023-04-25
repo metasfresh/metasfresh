@@ -4,11 +4,16 @@ import ch.qos.logback.classic.Level;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Resource;
 import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepId;
+import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
+import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
+import org.junit.jupiter.api.Disabled;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
@@ -20,7 +25,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class App
+@Disabled
+public class ManualPOCTest
 {
 	private static final ProjectId PROJECT_ID1 = ProjectId.ofRepoId(1);
 	private static final ProjectId PROJECT_ID2 = ProjectId.ofRepoId(2);
@@ -40,7 +46,7 @@ public class App
 				.withTerminationSpentLimit(Duration.ofSeconds(60)));
 
 		final Solver<Plan> solver = solverFactory.buildSolver();
-		solver.addEventListener(App::printBestSolutionChanged);
+		solver.addEventListener(ManualPOCTest::printBestSolutionChanged);
 
 		// Solve the problem
 		final Plan problem = generateDemoData();
@@ -58,7 +64,10 @@ public class App
 		for (int i = 10; i >= 1; i--)
 		{
 			stepsList.add(Step.builder()
-					.id(WOProjectStepId.ofRepoId(PROJECT_ID1, nextStepRepoId.getAndIncrement()))
+					.id(StepId.builder()
+							.woProjectStepId(WOProjectStepId.ofRepoId(PROJECT_ID1, nextStepRepoId.getAndIncrement()))
+							.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID1, nextStepRepoId.get()))
+							.build())
 					.projectSeqNo(i * 10)
 					.resource(resource(i))
 					.duration(Duration.ofHours(1))
@@ -70,7 +79,10 @@ public class App
 		for (int i = 1; i <= 10; i++)
 		{
 			stepsList.add(Step.builder()
-					.id(WOProjectStepId.ofRepoId(PROJECT_ID2, nextStepRepoId.getAndIncrement()))
+					.id(StepId.builder()
+							.woProjectStepId(WOProjectStepId.ofRepoId(PROJECT_ID2, nextStepRepoId.getAndIncrement()))
+							.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID2, nextStepRepoId.get()))
+							.build())
 					.projectSeqNo(i * 10)
 					.resource(resource(i))
 					.duration(Duration.ofHours(1))
@@ -79,6 +91,10 @@ public class App
 		}
 
 		final Plan plan = new Plan();
+		plan.setSimulationId(SimulationPlanId.ofRepoId(123)); // dummy
+		plan.setTimeZone(SystemTime.zoneId());
+		plan.setPlanningStartDate(LocalDate.parse("2023-04-01").atStartOfDay());
+		plan.setPlanningEndDate(LocalDate.parse("2023-05-02").atStartOfDay());
 		plan.setStepsList(stepsList);
 
 		return plan;

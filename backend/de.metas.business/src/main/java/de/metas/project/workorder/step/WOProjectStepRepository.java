@@ -125,6 +125,7 @@ public class WOProjectStepRepository
 	@NonNull
 	public ImmutableList<WOProjectStep> getByProjectId(@NonNull final ProjectId projectId)
 	{
+		// TODO: replace it with getStepsByProjectId and rename that one to getByProjectId
 		return queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
@@ -137,14 +138,14 @@ public class WOProjectStepRepository
 
 	public WOProjectSteps getStepsByProjectId(@NonNull final ProjectId projectId)
 	{
-		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
+		return getByProjectIds(ImmutableSet.of(projectId)).getByProjectId(projectId);
 	}
 
-	public Map<ProjectId, WOProjectSteps> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public WOProjectStepsCollection getByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		if (projectIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return WOProjectStepsCollection.EMPTY;
 		}
 
 		final ImmutableListMultimap<ProjectId, WOProjectStep> stepsByProjectId = queryBL
@@ -156,12 +157,14 @@ public class WOProjectStepRepository
 				.map(WOProjectStepRepository::ofRecord)
 				.collect(ImmutableListMultimap.toImmutableListMultimap(WOProjectStep::getProjectId, step -> step));
 
-		return projectIds.stream()
+		final ImmutableMap<ProjectId, WOProjectSteps> map = projectIds.stream()
 				.map(projectId -> WOProjectSteps.builder()
 						.projectId(projectId)
 						.steps(stepsByProjectId.get(projectId))
 						.build())
 				.collect(ImmutableMap.toImmutableMap(WOProjectSteps::getProjectId, steps -> steps));
+
+		return WOProjectStepsCollection.ofMap(map);
 	}
 
 	@NonNull
@@ -195,11 +198,11 @@ public class WOProjectStepRepository
 			record.setExternalId(ExternalId.toValue(step.getExternalId()));
 
 			record.setDateEnd(step.getEndDate()
-									  .map(TimeUtil::asTimestamp)
-									  .orElse(null));
+					.map(TimeUtil::asTimestamp)
+					.orElse(null));
 			record.setDateStart(step.getStartDate()
-										.map(TimeUtil::asTimestamp)
-										.orElse(null));
+					.map(TimeUtil::asTimestamp)
+					.orElse(null));
 
 			record.setWOPartialReportDate(TimeUtil.asTimestamp(step.getWoPartialReportDate()));
 			record.setWOPlannedResourceDurationHours(NumberUtils.asInt(step.getWoPlannedResourceDurationHours(), -1));
@@ -339,7 +342,7 @@ public class WOProjectStepRepository
 			dateRange = CalendarDateRange.builder()
 					.startDate(startDate)
 					.endDate(endDate)
-					.build();	
+					.build();
 		}
 
 		return WOProjectStep.builder()
@@ -363,7 +366,7 @@ public class WOProjectStepRepository
 				.manuallyLocked(stepRecord.isManuallyLocked())
 				.build();
 	}
-	
+
 	private static void updateRecordFromDateRange(@NonNull final I_C_Project_WO_Step record, @NonNull final CalendarDateRange from)
 	{
 		record.setDateStart(TimeUtil.asTimestamp(from.getStartDate()));
