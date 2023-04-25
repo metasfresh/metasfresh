@@ -244,21 +244,21 @@ public interface I_MD_Candidate
 	 * Set Lot for Lot.
 	 * Forces quantity to be equal to ordered quantity.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsLotForLot (boolean IsLotForLot);
+	void setIsLotForLot (@Nullable java.lang.String IsLotForLot);
 
 	/**
 	 * Get Lot for Lot.
 	 * Forces quantity to be equal to ordered quantity.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isLotForLot();
+	@Nullable java.lang.String getIsLotForLot();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_MD_Candidate.class, "IsLotForLot", null);
 	String COLUMNNAME_IsLotForLot = "IsLotForLot";

@@ -64,7 +64,10 @@ public class SupplyRequiredDescriptor
 
 	BigDecimal fullDemandQty;
 
-	BigDecimal materialEventQty ;
+	// might be used if this event has to be addressed in a lotForLot fashion
+	BigDecimal materialEventQty;
+
+	String isLotForLot;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -81,7 +84,8 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
 			@JsonProperty("simulated") final boolean simulated,
 			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty,
-			@JsonProperty("materialEventQty") final BigDecimal materialEventQty)
+			@JsonProperty("materialEventQty") final BigDecimal materialEventQty,
+			@JsonProperty("isLotForLot") final String isLotForLot)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -100,5 +104,6 @@ public class SupplyRequiredDescriptor
 		this.simulated = simulated;
 		this.fullDemandQty = fullDemandQty;
 		this.materialEventQty = materialEventQty;
+		this.isLotForLot = isLotForLot;
 	}
 }

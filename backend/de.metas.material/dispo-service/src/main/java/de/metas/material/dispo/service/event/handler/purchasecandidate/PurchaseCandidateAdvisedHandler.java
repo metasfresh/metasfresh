@@ -106,7 +106,7 @@ public final class PurchaseCandidateAdvisedHandler
 			final CandidatesQuery supplyCandidateQuery = CandidatesQuery.fromId(
 					CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
 			final Candidate existingCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(supplyCandidateQuery);
-			if (existingCandidate == null)
+			if (existingCandidate != null)
 			{
 				candidateBuilder = existingCandidate.toBuilder();
 			}
@@ -126,6 +126,7 @@ public final class PurchaseCandidateAdvisedHandler
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
 				.simulated(supplyRequiredDescriptor.isSimulated())
+				.lotForLot(supplyRequiredDescriptor.getIsLotForLot())
 				.build();
 
 		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);

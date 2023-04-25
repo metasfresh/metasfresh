@@ -5,6 +5,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -67,13 +68,15 @@ public class SupplyRequiredHandlerUtils
 						.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
 						.isSimulated(supplyRequiredDescriptor.isSimulated());
 
-		if(mrpContext.getProductPlanning().isLotForLot())
+		if(mrpContext.getProductPlanning().isLotForLot()) // won't NPE; if there was no productPlanningData, we wouldn't be here.
 		{
 			materialRequestBuilder.qtyToSupply(Quantity.of(materialEventQty, uom));
+			Loggables.addLog("Using materialEventQty={}, because of LotForLot=true", materialEventQty);
 		}
 		else
 		{
 			materialRequestBuilder.qtyToSupply(Quantity.of(qtyToSupply, uom));
+			Loggables.addLog("Using qtyToSupply={}, because of LotForLot=false", qtyToSupply);
 		}
 
 		return materialRequestBuilder.build();

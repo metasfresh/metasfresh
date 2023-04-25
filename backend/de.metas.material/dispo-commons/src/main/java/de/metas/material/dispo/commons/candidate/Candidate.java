@@ -106,6 +106,8 @@ public class Candidate
 
 	boolean simulated;
 
+	String lotForLot;
+
 	@Builder(toBuilder = true)
 	private Candidate(
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -121,7 +123,8 @@ public class Candidate
 			final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails,
 			final Dimension dimension,
-			final boolean simulated)
+			final boolean simulated,
+			final String lotForLot)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
@@ -151,6 +154,7 @@ public class Candidate
 
 		this.dimension = dimension;
 		this.simulated = simulated;
+		this.lotForLot = lotForLot;
 	}
 
 	public static class CandidateBuilder

@@ -44,6 +44,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Service
 public class PPOrderCandidateAdvisedEventCreator
@@ -72,9 +73,20 @@ public class PPOrderCandidateAdvisedEventCreator
 		}
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
-		if(!productPlanning.isLotForLot() && supplyRequiredDescriptor.getFullDemandQty().signum() <= 0)
+		final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+		if(!productPlanning.isLotForLot() && fullDemandQty.signum() <= 0)
 		{
+			Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent because LotForLot=false and fullDemandQty={}", fullDemandQty);
 			return ImmutableList.of();
+		}
+
+		if(productPlanning.isLotForLot())
+		{
+			supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
+		}
+		else
+		{
+			supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);

@@ -89,7 +89,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Column: MD_Candidate.IsLotForLot
 -- 2023-04-20T13:17:25.995Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,586490,582256,0,20,540808,'IsLotForLot',TO_TIMESTAMP('2023-04-20 15:17:25.872','YYYY-MM-DD HH24:MI:SS.US'),100,'N','N','Erzwingt, dass die Menge gleich der bestellten Menge ist.','de.metas.material.dispo',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N',0,'Lot for Lot',0,0,TO_TIMESTAMP('2023-04-20 15:17:25.872','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,586490,582256,0,17,540528,540808,'IsLotForLot',TO_TIMESTAMP('2023-04-20 15:17:25.872','YYYY-MM-DD HH24:MI:SS.US'),100,'N','','Erzwingt, dass die Menge gleich der bestellten Menge ist.','de.metas.material.dispo',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Lot for Lot',0,0,TO_TIMESTAMP('2023-04-20 15:17:25.872','YYYY-MM-DD HH24:MI:SS.US'),100,0)
 ;
 
 -- 2023-04-20T13:17:25.996Z
@@ -101,7 +101,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2023-04-20T13:17:38.314Z
-/* DDL */ SELECT public.db_alter_table('MD_Candidate','ALTER TABLE public.MD_Candidate ADD COLUMN IsLotForLot CHAR(1) DEFAULT ''N'' CHECK (IsLotForLot IN (''Y'',''N'')) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('MD_Candidate','ALTER TABLE public.MD_Candidate ADD COLUMN IsLotForLot CHAR(1)')
 ;
 
 -- Field: Material Disposition -> Materialdispo -> Lot for Lot

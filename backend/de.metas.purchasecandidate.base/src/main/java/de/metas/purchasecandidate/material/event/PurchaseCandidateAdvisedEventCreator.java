@@ -14,6 +14,7 @@ import lombok.NonNull;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /*
@@ -62,8 +63,10 @@ public class PurchaseCandidateAdvisedEventCreator
 		}
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
-		if(!productPlanning.isLotForLot() && supplyRequiredDescriptor.getFullDemandQty().signum() <= 0)
+		final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+		if(!productPlanning.isLotForLot() && fullDemandQty.signum() <= 0)
 		{
+			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because LotForLot=false and fullDemandQty={}", fullDemandQty);
 			return Optional.empty();
 		}
 
@@ -77,8 +80,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final PurchaseCandidateAdvisedEvent.PurchaseCandidateAdvisedEventBuilder event = PurchaseCandidateAdvisedEvent
-				.builder()
+		final PurchaseCandidateAdvisedEvent.PurchaseCandidateAdvisedEventBuilder event = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
@@ -87,11 +89,14 @@ public class PurchaseCandidateAdvisedEventCreator
 		if(productPlanning.isLotForLot())
 		{
 			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(supplyRequiredDescriptor.getMaterialEventQty());
-			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().materialDescriptor(updatedMaterialDescriptor).build());
+			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder()
+												   .materialDescriptor(updatedMaterialDescriptor)
+												   .isLotForLot("Y")
+												   .build());
 		}
 		else
 		{
-			event.supplyRequiredDescriptor(supplyRequiredDescriptor);
+			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
 		}
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1871394538L;
+	private static final long serialVersionUID = -1159176578L;
 
     /** Standard Constructor */
     public X_MD_Candidate (final Properties ctx, final int MD_Candidate_ID, @Nullable final String trxName)
@@ -146,16 +146,25 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		return get_ValueAsTimestamp(COLUMNNAME_DateProjected);
 	}
 
+	/** 
+	 * IsLotForLot AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISLOTFORLOT_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISLOTFORLOT_Yes = "Y";
+	/** No = N */
+	public static final String ISLOTFORLOT_No = "N";
 	@Override
-	public void setIsLotForLot (final boolean IsLotForLot)
+	public void setIsLotForLot (final @Nullable java.lang.String IsLotForLot)
 	{
 		set_Value (COLUMNNAME_IsLotForLot, IsLotForLot);
 	}
 
 	@Override
-	public boolean isLotForLot() 
+	public java.lang.String getIsLotForLot() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsLotForLot);
+		return get_ValueAsString(COLUMNNAME_IsLotForLot);
 	}
 
 	@Override

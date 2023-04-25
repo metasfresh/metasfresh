@@ -91,6 +91,7 @@ public abstract class PPOrderCandidateEventHandler
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(headerCandidateProductionDetail)
 				.materialDescriptor(headerCandidateMaterialDescriptor)
+				.lotForLot(supplyRequiredDescriptor.getIsLotForLot())
 				// .groupId(null) // will be set after save
 				.build();
 
@@ -129,7 +130,8 @@ public abstract class PPOrderCandidateEventHandler
 					.businessCaseDetail(lineCandidateProductionDetail)
 					.additionalDemandDetail(headerDemandDetail.withTraceId(event.getEventDescriptor().getTraceId()))
 					.materialDescriptor(materialDescriptor)
-					.simulated(simulated);
+					.simulated(simulated)
+					.lotForLot(headerCandidate.getLotForLot());
 
 			if (groupId != null)
 			{

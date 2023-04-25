@@ -398,6 +398,7 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
+		candidateRecord.setIsLotForLot(candidate.getLotForLot());
 
 		final DemandDetail demandDetail = candidate.getDemandDetail();
 

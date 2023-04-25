@@ -9,6 +9,7 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -16,6 +17,7 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,10 +67,21 @@ public class DDOrderAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-		if(!productPlanningData.isLotForLot() && supplyRequiredDescriptor.getFullDemandQty().signum() <= 0)
+		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning(); // won't be null; if there was no productPlanningData, we wouldn't be here.
+		final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+		if(!productPlanningData.isLotForLot() && fullDemandQty.signum() <= 0)
 		{
+			Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=false and fullDemandQty={}", fullDemandQty);
 			return ImmutableList.of();
+		}
+
+		if(productPlanningData.isLotForLot())
+		{
+			supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
+		}
+		else
+		{
+			supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
 		final List<DDOrderAdvisedEvent> events = new ArrayList<>();
