@@ -47,7 +47,7 @@ Feature: external references for metasfresh resources
   @from:cucumber
   @Id:S14758_100
   # Note: completing the invoice to exercise also the MI that might create an empty invoic review record
-  Scenario: Insert review by C_Invoice_ID and update it via ExternalId
+  Scenario: Insert review by C_Invoice_ID and update it via ExternalId, expect a review record to be created automatically on invoice completion
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code
 """
 {
@@ -99,6 +99,10 @@ Feature: external references for metasfresh resources
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
       | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 30 Tage netto | true      | CO        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_1 |
+
+    And validate invoice review
+      | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
+      | invoice_Review_1               | invoice_1               |                  |
 
     And the user creates a JsonInvoiceReviewUpsertItem and stores it in the context
       | OPT.C_Invoice_ID.Identifier | orgCode | customColumn |
@@ -212,3 +216,5 @@ Feature: external references for metasfresh resources
       | externalHeaderId_2023-04-05_3 | 001     | 500          |
     And the metasfresh REST-API endpoint path 'api/v2/invoices/docReview' receives a 'POST' request with the payload from context and responds with '400' status code
 
+  Scenario: change the AutoCreateForSalesInvoice sysconfig back to the refault (=N)
+    And set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
