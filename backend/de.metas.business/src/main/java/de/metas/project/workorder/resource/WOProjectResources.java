@@ -87,11 +87,6 @@ public class WOProjectResources
 		return projectResource;
 	}
 
-	public Stream<WOProjectResourceId> streamIds()
-	{
-		return resourcesById.keySet().stream();
-	}
-
 	public Stream<WOProjectResource> stream()
 	{
 		return resourcesById.values().stream();
