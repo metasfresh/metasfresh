@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import FullCalendar from '@fullcalendar/react';
@@ -28,7 +28,8 @@ import {
   getEventClassNames,
   renderEventContent,
 } from './components/CalendarEvent';
-import SimulationComputeButton from './components/SimulationComputeButton';
+import SimulationOptimizerButton from './components/SimulationOptimizerButton';
+import { useSimulationOptimizerStatus } from './hooks/useSimulationOptimizerStatus';
 
 const Calendar = ({
   view,
@@ -65,11 +66,18 @@ const Calendar = ({
     fetchConflictsFromAPI: api.fetchConflicts,
   });
 
+  const simulationOptimizerStatus = useSimulationOptimizerStatus({
+    simulationId,
+  });
+
   useCalendarWebsocketEvents({
     simulationId,
     onlyResourceIds,
     onlyProjectId,
-    onWSEvents: calendarData.applyWSEvents,
+    onWSEvents: (wsEvents) => {
+      calendarData.applyWSEvents(wsEvents);
+      simulationOptimizerStatus.setStatusFromWSEvents(wsEvents);
+    },
   });
 
   const fetchCalendarEntries = (fetchInfo, successCallback) => {
@@ -115,20 +123,6 @@ const Calendar = ({
   //
   //
   //
-  const [computePlanStatus, setComputePlanStatus] = useState({
-    status: 'UNKNOWN ',
-  });
-  useEffect(() => {
-    if (simulationId == null) {
-      setComputePlanStatus({ status: 'NOT_APPLICABLE' });
-    } else {
-      api.getComputePlanStatus({ simulationId }).then(setComputePlanStatus);
-    }
-  }, [simulationId]);
-
-  //
-  //
-  //
 
   // Calendar Key:
   // * view - it's important to be part of the key, else the Calendar component when we do browser back/forward between different view types
@@ -147,14 +141,18 @@ const Calendar = ({
           <CalendarFilters resolvedQuery={calendarData.getResolvedQuery()} />
         </div>
         <div className="calendar-top-right">
-          <SimulationComputeButton
-            simulationId={computePlanStatus.simulationId}
-            status={computePlanStatus.status}
+          <SimulationOptimizerButton
+            simulationId={simulationOptimizerStatus.simulationId}
+            status={simulationOptimizerStatus.status}
             onStart={({ simulationId }) =>
-              api.startComputePlan({ simulationId }).then(setComputePlanStatus)
+              api
+                .startSimulationOptimizer({ simulationId })
+                .then(simulationOptimizerStatus.setStatusFromAPIResponse)
             }
             onStop={({ simulationId }) =>
-              api.stopComputePlan({ simulationId }).then(setComputePlanStatus)
+              api
+                .stopSimulationOptimizer({ simulationId })
+                .then(simulationOptimizerStatus.setStatusFromAPIResponse)
             }
             hidden={calendarData.isLoading}
           />

@@ -39,7 +39,7 @@ const converters = {
     status: apiConflict.status,
   }),
 
-  fromAPIComputePlanStatus: (apiResponse) => ({
+  fromAPISimulationOptimizerStatus: (apiResponse) => ({
     simulationId: apiResponse.simulationId,
     status: apiResponse.status,
   }),

@@ -114,25 +114,23 @@ export const fetchConflicts = ({
     .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
 };
 
-export const getComputePlanStatus = ({ simulationId }) => {
+export const getSimulationOptimizerStatus = ({ simulationId }) => {
   return axios
-    .get(buildURL(`${API_URL}/simulations/computePlan`, { simulationId }))
+    .get(buildURL(`${API_URL}/simulations/optimizer`, { simulationId }))
     .then(extractAxiosResponseData)
-    .then(converters.fromAPIComputePlanStatus);
+    .then(converters.fromAPISimulationOptimizerStatus);
 };
 
-export const startComputePlan = ({ simulationId }) => {
+export const startSimulationOptimizer = ({ simulationId }) => {
   return axios
-    .post(
-      buildURL(`${API_URL}/simulations/computePlan/start`, { simulationId })
-    )
+    .post(buildURL(`${API_URL}/simulations/optimizer/start`, { simulationId }))
     .then(extractAxiosResponseData)
-    .then(converters.fromAPIComputePlanStatus);
+    .then(converters.fromAPISimulationOptimizerStatus);
 };
 
-export const stopComputePlan = ({ simulationId }) => {
+export const stopSimulationOptimizer = ({ simulationId }) => {
   return axios
-    .post(buildURL(`${API_URL}/simulations/computePlan/stop`, { simulationId }))
+    .post(buildURL(`${API_URL}/simulations/optimizer/stop`, { simulationId }))
     .then(extractAxiosResponseData)
-    .then(converters.fromAPIComputePlanStatus);
+    .then(converters.fromAPISimulationOptimizerStatus);
 };

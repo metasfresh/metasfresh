@@ -1,8 +1,8 @@
 package de.metas.calendar.plan_optimizer.domain;
 
 import de.metas.calendar.plan_optimizer.solver.EndDateUpdatingVariableListener;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.step.WOProjectStepId;
 import lombok.Builder;
 import lombok.Data;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
@@ -18,8 +18,9 @@ import java.time.LocalDateTime;
 @Data
 public class Step
 {
-	@PlanningId private WOProjectStepId id;
+	@PlanningId private StepId id;
 
+	InternalPriority projectPriority;
 	int projectSeqNo;
 
 	private Resource resource;
@@ -40,17 +41,23 @@ public class Step
 
 	@Builder
 	private Step(
-			final WOProjectStepId id,
+			final StepId id,
+			final InternalPriority projectPriority,
 			final int projectSeqNo,
 			final Resource resource,
 			final Duration duration,
-			final LocalDateTime dueDate)
+			final LocalDateTime dueDate,
+			final LocalDateTime startDate,
+			final LocalDateTime endDate)
 	{
 		this.id = id;
+		this.projectPriority = projectPriority;
 		this.projectSeqNo = projectSeqNo;
 		this.resource = resource;
 		this.duration = duration;
 		this.dueDate = dueDate;
+		this.startDate = startDate;
+		this.endDate = endDate;
 	}
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
@@ -62,6 +69,6 @@ public class Step
 
 	public boolean isDueDateNotRespected()
 	{
-		return endDate == null || endDate.isAfter(dueDate);
+		return dueDate != null && (endDate == null || endDate.isAfter(dueDate));
 	}
 }

@@ -1,7 +1,9 @@
 package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
@@ -11,18 +13,26 @@ import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceSimulation;
 import de.metas.project.workorder.resource.WOProjectResources;
+import de.metas.project.workorder.resource.WOProjectResourcesCollection;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepSimulation;
 import de.metas.project.workorder.step.WOProjectSteps;
+import de.metas.project.workorder.step.WOProjectStepsCollection;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.OldAndNewValues;
 
 import java.time.Duration;
+<<<<<<< HEAD
+=======
+import java.time.Instant;
+import java.util.Collection;
+>>>>>>> fd0ecdea5cc (prototyping)
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,9 +41,21 @@ import java.util.stream.Stream;
 
 public class WOProjectSimulationPlanEditor
 {
+<<<<<<< HEAD
 	@NonNull private final WOProject _originalProject;
 	@NonNull private final WOProjectSteps _originalSteps;
 	@NonNull private final WOProjectResources _originalProjectResources;
+=======
+	private static final AdMessageKey ERROR_MSG_STEP_CANNOT_BE_SHIFTED = AdMessageKey.of("de.metas.project.workorder.calendar.WoStepCannotBeShifted");
+	private static final AdMessageKey ERROR_MSG_STEP_NO_AVAILABLE_DURATION = AdMessageKey.of("de.metas.project.workorder.calendar.NoAvailableDuration");
+
+	@NonNull
+	private final ImmutableMap<ProjectId, WOProject> _originalProjects;
+	@NonNull
+	private final WOProjectStepsCollection _originalStepsCollection;
+	@NonNull
+	private final WOProjectResourcesCollection _originalProjectResourcesCollection;
+>>>>>>> fd0ecdea5cc (prototyping)
 
 	@Getter
 	private final SimulationPlanId simulationPlanId;
@@ -44,14 +66,14 @@ public class WOProjectSimulationPlanEditor
 
 	@Builder
 	private WOProjectSimulationPlanEditor(
-			@NonNull final WOProject project,
-			@NonNull final WOProjectSteps steps,
-			@NonNull final WOProjectResources projectResources,
+			@NonNull @Singular final Collection<WOProject> projects,
+			@NonNull @Singular("steps") final Collection<WOProjectSteps> stepsCollection,
+			@NonNull @Singular("projectResources") final Collection<WOProjectResources> projectResourcesCollection,
 			@NonNull final WOProjectSimulationPlan currentSimulationPlan)
 	{
-		this._originalProject = project;
-		this._originalSteps = steps;
-		this._originalProjectResources = projectResources;
+		this._originalProjects = Maps.uniqueIndex(projects, WOProject::getProjectId);
+		this._originalStepsCollection = WOProjectStepsCollection.ofCollection(stepsCollection);
+		this._originalProjectResourcesCollection = WOProjectResourcesCollection.ofCollection(projectResourcesCollection);
 
 		this.simulationPlanId = currentSimulationPlan.getSimulationPlanId();
 		this.initialSimulationPlan = currentSimulationPlan;
@@ -73,11 +95,19 @@ public class WOProjectSimulationPlanEditor
 			@NonNull final CalendarDateRange newDateRange,
 			@NonNull final WOProjectStepId stepId)
 	{
-		changeResource(projectResourceId, newDateRange);
-		updateStepDateRangeFromResources(stepId);
+		changeResourceDateRange(projectResourceId, newDateRange, stepId);
 
 		shiftLeftAllStepsBefore(stepId);
 		shiftRightAllStepsAfter(stepId);
+	}
+
+	public void changeResourceDateRange(
+			@NonNull final WOProjectResourceId projectResourceId,
+			@NonNull final CalendarDateRange newDateRange,
+			@NonNull final WOProjectStepId stepId)
+	{
+		changeResource(projectResourceId, newDateRange);
+		updateStepDateRangeFromResources(stepId);
 	}
 
 	private void updateStepDateRangeFromResources(@NonNull final WOProjectStepId stepId)
@@ -87,37 +117,25 @@ public class WOProjectSimulationPlanEditor
 		changeStep(stepId, newDateRange);
 	}
 
-	public WOProject getProject()
-	{
-		return this._originalProject;
-	}
-
-	private ProjectId getProjectId()
-	{
-		return getProject().getProjectId();
-	}
-
 	public WOProject getProjectById(final ProjectId projectId)
 	{
-		WOProject project = getProject();
-		if (ProjectId.equals(project.getProjectId(), projectId))
-		{
-			return project;
-		}
-		else
+		final WOProject project = _originalProjects.get(projectId);
+		if (project == null)
 		{
 			throw new AdempiereException("Project " + projectId + " is not in scope");
 		}
+		return project;
 	}
 
 	public WOProjectStep getStepById(final @NonNull WOProjectStepId stepId)
 	{
-		return adjustBySimulation(this._originalSteps.getById(stepId));
+		return adjustBySimulation(this._originalStepsCollection.getById(stepId));
 	}
 
 	private List<WOProjectStep> getStepsBeforeFromLastToFirst(final @NonNull WOProjectStepId stepId)
 	{
-		return this._originalSteps.getStepsBeforeFromLastToFirst(stepId)
+		return this._originalStepsCollection.getByProjectId(stepId.getProjectId())
+				.getStepsBeforeFromLastToFirst(stepId)
 				.stream()
 				.map(this::adjustBySimulation)
 				.collect(ImmutableList.toImmutableList());
@@ -125,7 +143,8 @@ public class WOProjectSimulationPlanEditor
 
 	private List<WOProjectStep> getStepsAfterInOrder(final @NonNull WOProjectStepId stepId)
 	{
-		return this._originalSteps.getStepsAfterInOrder(stepId)
+		return this._originalStepsCollection.getByProjectId(stepId.getProjectId())
+				.getStepsAfterInOrder(stepId)
 				.stream()
 				.map(this::adjustBySimulation)
 				.collect(ImmutableList.toImmutableList());
@@ -133,7 +152,7 @@ public class WOProjectSimulationPlanEditor
 
 	private ImmutableList<WOProjectResource> getProjectResourcesByStepId(final @NonNull WOProjectStepId stepId)
 	{
-		return this._originalProjectResources.streamByStepId(stepId)
+		return this._originalProjectResourcesCollection.streamByStepId(stepId)
 				.map(this::adjustBySimulation)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -141,7 +160,7 @@ public class WOProjectSimulationPlanEditor
 	@NonNull
 	public OldAndNewValues<WOProjectResource> getProjectResourceInitialAndNow(final @NonNull WOProjectResourceId projectResourceId)
 	{
-		final WOProjectResource original = this._originalProjectResources.getById(projectResourceId);
+		final WOProjectResource original = this._originalProjectResourcesCollection.getById(projectResourceId);
 		final WOProjectResource initial = this.initialSimulationPlan.applyOn(original);
 		final WOProjectResource now = adjustBySimulation(original);
 
@@ -188,7 +207,7 @@ public class WOProjectSimulationPlanEditor
 					if (existingSimulation == null)
 					{
 						builder = WOProjectStepSimulation.builder()
-								.projectId(getProjectId())
+								.projectId(stepId.getProjectId())
 								.stepId(stepId);
 					}
 					else
@@ -299,8 +318,99 @@ public class WOProjectSimulationPlanEditor
 	public ImmutableSet<ResourceId> getAffectedResourceIds()
 	{
 		return changedProjectResourceIds.stream()
-				.map(_originalProjectResources::getById)
+				.map(_originalProjectResourcesCollection::getById)
 				.map(WOProjectResource::getResourceId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	public CalendarDateRange suggestDateRange(@NonNull final WOProjectStepId stepId)
+	{
+		final WOProjectStep step = getStepById(stepId);
+
+		if (step.getDateRange() != null)
+		{
+			return step.getDateRange();
+		}
+
+		final Instant lastBeforeStepDate = getStepsBeforeFromLastToFirst(stepId)
+				.stream()
+				.filter(woProjectStep -> woProjectStep.getDateRange() != null)
+				.findFirst()
+				.map(WOProjectStep::getDateRange)
+				.map(CalendarDateRange::getEndDate)
+				.orElse(null);
+
+		final Instant firstAfterStepDate = getStepsAfterInOrder(stepId)
+				.stream()
+				.filter(woProjectStep -> woProjectStep.getDateRange() != null)
+				.findFirst()
+				.map(WOProjectStep::getDateRange)
+				.map(CalendarDateRange::getStartDate)
+				.orElse(null);
+
+		final Duration stepDuration = computeStepDuration(stepId);
+
+		if (lastBeforeStepDate == null && firstAfterStepDate == null)
+		{
+			return getDefaultCalendarDateRange(stepId.getProjectId(), stepDuration);
+		}
+
+		final CalendarDateRange proposedDateRange = Optional.ofNullable(lastBeforeStepDate)
+				.map(startDate -> CalendarDateRange.ofStartDate(startDate, stepDuration))
+				.orElseGet(() -> CalendarDateRange.ofEndDate(firstAfterStepDate, stepDuration));
+
+		if (firstAfterStepDate != null && proposedDateRange.getEndDate().isAfter(firstAfterStepDate))
+		{
+			Check.assumeNotNull(lastBeforeStepDate, "There will never be a collision if there is no before date constraint!");
+
+			final Duration availableDuration = Duration.between(lastBeforeStepDate, firstAfterStepDate);
+			throw new AdempiereException(ERROR_MSG_STEP_NO_AVAILABLE_DURATION, step.getSeqNo(), stepDuration, availableDuration)
+					.markAsUserValidationError();
+		}
+
+		return proposedDateRange;
+	}
+
+	@NonNull
+	private CalendarDateRange getDefaultCalendarDateRange(@NonNull ProjectId projectId, @NonNull final Duration stepDuration)
+	{
+		final Instant defaultStartDate = Optional.ofNullable(getProjectById(projectId).getDateContract())
+				.orElse(SystemTime.asInstant());
+
+		return CalendarDateRange.builder()
+				.startDate(defaultStartDate)
+				.endDate(defaultStartDate.plus(stepDuration))
+				.build();
+	}
+
+	@NonNull
+	private Duration computeStepDuration(@NonNull final WOProjectStepId stepId)
+	{
+		final Duration resourcesDuration = getProjectResourcesByStepId(stepId)
+				.stream()
+				.map(WOProjectResource::getDuration)
+				.reduce(Duration.ZERO, Duration::plus);
+
+		if (resourcesDuration.isZero())
+		{
+			return DEFAULT_DURATION;
+		}
+
+		return resourcesDuration;
+	}
+
+	private static void validateStepCanBeShifted(@NonNull final WOProjectStep step)
+	{
+		if (!step.isManuallyLocked())
+		{
+			return;
+		}
+
+		throw new AdempiereException(ERROR_MSG_STEP_CANNOT_BE_SHIFTED, step.getName())
+				.markAsUserValidationError();
+	}
+>>>>>>> fd0ecdea5cc (prototyping)
 }

@@ -9,6 +9,7 @@ import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
@@ -92,10 +93,14 @@ public final class WOProjectsCalendarQueryExecutor
 	@NonNull
 	public ImmutableList<CalendarEntry> execute()
 	{
+		final SimulationHeaderAndPlan simulationHeaderAndPlan = getSimulationHeaderAndPlan();
+
 		return getProjectResources()
 				.stream()
+				.map(simulationHeaderAndPlan::applyOn)
 				.filter(this::isActiveProject)
 				.filter(this::isNotFullyAllocated)
+				.filter(this::isStartAndEndDatesMatching)
 				.map(this::toCalendarEntry)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
@@ -106,12 +111,16 @@ public final class WOProjectsCalendarQueryExecutor
 	{
 		if (this._projectResources == null)
 		{
+
 			this._projectResources = woProjectService.getResources(
 					WOProjectResourceCalendarQuery.builder()
 							.projectIds(projectIds)
 							.resourceIds(getResourceIdsPredicate(calendarResourceIds, resourceService))
-							.startDate(startDate)
-							.endDate(endDate)
+							//
+							// NOTE: in case we deal with a simulation then filter by start/end date later, when we apply the simulation changes too
+							.startDate(simulationId != null ? null : startDate)
+							.endDate(simulationId != null ? null : endDate)
+							//
 							.build());
 		}
 		return this._projectResources;
@@ -146,6 +155,7 @@ public final class WOProjectsCalendarQueryExecutor
 		return getSteps().get(projectResource.getWoProjectStepId());
 	}
 
+	@NonNull
 	private SimulationHeaderAndPlan getSimulationHeaderAndPlan()
 	{
 		if (this._simulationHeaderAndPlan == null)
@@ -187,6 +197,17 @@ public final class WOProjectsCalendarQueryExecutor
 		}
 
 		return projectResource.isNotFullyResolved();
+	}
+
+	private boolean isStartAndEndDatesMatching(final WOProjectResource projectResource)
+	{
+		if (startDate == null && endDate == null)
+		{
+			return true;
+		}
+
+		final CalendarDateRange dateRange = projectResource.getDateRange();
+		return dateRange != null && dateRange.isOverlappingWith(startDate, endDate);
 	}
 
 	public static InSetPredicate<ResourceId> getResourceIdsPredicate(

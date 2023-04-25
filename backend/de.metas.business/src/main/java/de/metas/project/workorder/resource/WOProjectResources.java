@@ -72,6 +72,11 @@ public class WOProjectResources
 		}
 	}
 
+	public int size()
+	{
+		return resourcesById.size();
+	}
+
 	public WOProjectResource getById(@NonNull final WOProjectResourceId projectResourceId)
 	{
 		final WOProjectResource projectResource = resourcesById.get(projectResourceId);

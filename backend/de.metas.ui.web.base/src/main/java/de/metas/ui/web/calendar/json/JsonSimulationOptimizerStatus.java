@@ -9,8 +9,8 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 @Builder
 @Jacksonized
-public class JsonComputePlanResponse
+public class JsonSimulationOptimizerStatus
 {
 	@NonNull SimulationPlanId simulationId;
-	@NonNull String status; // TODO convert it to enum
+	@NonNull JsonSimulationOptimizerStatusType status;
 }
