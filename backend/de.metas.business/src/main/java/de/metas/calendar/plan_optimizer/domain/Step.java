@@ -47,8 +47,8 @@ public class Step
 			final Resource resource,
 			final Duration duration,
 			final LocalDateTime dueDate,
-			final LocalDateTime startDate,
-			final LocalDateTime endDate)
+			@Nullable final LocalDateTime startDate,
+			@Nullable final LocalDateTime endDate)
 	{
 		this.id = id;
 		this.projectPriority = projectPriority;

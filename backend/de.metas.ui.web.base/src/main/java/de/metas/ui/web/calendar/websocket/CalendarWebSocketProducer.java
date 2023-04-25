@@ -136,6 +136,7 @@ class CalendarWebSocketProducer
 		if (simulationId != null)
 		{
 			simulationPlanService.unsubscribe(simulationId, this);
+			simulationOptimizerStatusDispatcher.unsubscribe(simulationId, this);
 		}
 	}
 
@@ -199,16 +200,15 @@ class CalendarWebSocketProducer
 
 	private JsonWebsocketEvent toJsonWebsocketEvent(final Event event)
 	{
-		if (event instanceof EntryChangedEvent)
+		if (event instanceof final EntryChangedEvent entryChangedEvent)
 		{
-			final CalendarEntry entry = ((EntryChangedEvent)event).getEntry();
+			final CalendarEntry entry = entryChangedEvent.getEntry();
 			return JsonAddOrChangeWebsocketEvent.builder()
 					.entry(JsonCalendarEntry.of(entry, SystemTime.zoneId(), adLanguage))
 					.build();
 		}
-		else if (event instanceof EntryDeletedEvent)
+		else if (event instanceof final EntryDeletedEvent entryDeletedEvent)
 		{
-			final EntryDeletedEvent entryDeletedEvent = (EntryDeletedEvent)event;
 			return JsonRemoveWebsocketEvent.builder()
 					.simulationId(entryDeletedEvent.getSimulationId())
 					.entryId(entryDeletedEvent.getEntryId())

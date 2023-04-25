@@ -156,6 +156,7 @@ public class CoalesceUtil
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
 
+	@SuppressWarnings("unused")
 	@SafeVarargs
 	@NonNull
 	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
