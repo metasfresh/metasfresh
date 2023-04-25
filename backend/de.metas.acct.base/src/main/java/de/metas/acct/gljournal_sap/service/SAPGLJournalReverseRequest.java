@@ -31,11 +31,8 @@ import java.time.Instant;
 
 @Value
 @Builder
-public class SAPGLJournalCopyRequest
+public class SAPGLJournalReverseRequest
 {
 	@NonNull SAPGLJournalId sourceJournalId;
-
 	@NonNull Instant dateDoc;
-
-	@NonNull Boolean negateAmounts;
 }
