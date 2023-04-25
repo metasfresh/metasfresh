@@ -17,7 +17,6 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
-    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is a component in a BOM
@@ -382,6 +381,19 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
 
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name                 |
+      | huPackingTU           | huPackingTU_17062022 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                      | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU_17062022 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | huPiItemTU                 | packingVersionTU              | 10  | MI       |                                  |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | huProductTU                        | huPiItemTU                 | p_1                     | 10  | 2021-01-01 |
+
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
       | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
@@ -401,12 +413,12 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | 2021-04-16T21:00:00Z |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | p_1                     | 10         |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_1       | o_1                   | p_1                     | 10         | huProductTU                            |
     When the order identified by o_1 is completed
     And after not more than 60s, PP_Order_Candidates are found
-      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | huProductTU                            |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           |
@@ -431,8 +443,8 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
     And after not more than 30s, PP_Orders are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
-      | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_1            | 2021-04-16T21:00:00Z |
+      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_1            | 2021-04-16T21:00:00Z | huProductTU                            |
     And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine_1               | ppo_1                  | p_2                     | 100          | false           | PCE               | CO            |

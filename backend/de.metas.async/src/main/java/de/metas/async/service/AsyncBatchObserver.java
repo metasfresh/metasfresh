@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -325,10 +325,10 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 																.appendParametersToMessage()
 																.setParameter("AsyncBatchId", batchId.getRepoId()));
 				return true;
-		}
-
-				return false;
 			}
+
+			return false;
+		}
 
 		@NonNull
 		private static WorkPackagesProgress getWPsProgress(@NonNull final AsyncBatchNotifyRequest request)

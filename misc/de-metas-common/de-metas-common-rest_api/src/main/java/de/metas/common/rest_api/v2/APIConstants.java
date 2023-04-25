@@ -25,4 +25,6 @@ package de.metas.common.rest_api.v2;
 public interface APIConstants
 {
 	String ENDPOINT_MATERIAL = "/material";
+
+	String CACHE_CONTROL_NO_CACHE = "no-cache";
 }

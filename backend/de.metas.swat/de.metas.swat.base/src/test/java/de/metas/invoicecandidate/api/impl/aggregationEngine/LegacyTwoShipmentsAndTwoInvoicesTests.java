@@ -22,37 +22,11 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.invoice.InvoiceDocBaseType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.X_C_DocType;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
@@ -62,6 +36,21 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_MatchInv;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * <b>IMPORTANT:</b> these tests are still valid! It's just the way they are implemented that is "legacy".

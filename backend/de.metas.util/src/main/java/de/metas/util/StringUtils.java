@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -100,6 +101,15 @@ public final class StringUtils
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
 	{
 		return Optional.ofNullable(trimBlankToNull(str));
+	}
+
+	@Nullable
+	public static <T> T trimBlankToNullAndMap(@Nullable final String str, @NonNull Function<String, T> mapper)
+	{
+		final String strNorm = trimBlankToNull(str);
+		return strNorm != null
+				? mapper.apply(strNorm)
+				: null;
 	}
 
 	/**

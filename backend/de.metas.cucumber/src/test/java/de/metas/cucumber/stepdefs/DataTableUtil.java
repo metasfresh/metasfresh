@@ -162,6 +162,18 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
+	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		return dataTableRow.get(columnName);
+	}
+
+	@Nullable
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
+	}
+
 	@NonNull
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
@@ -391,6 +403,19 @@ public class DataTableUtil
 		return StringUtils.toBoolean(string, defaultValue);
 	}
 
+	public static Boolean extractBooleanForColumnNameOrNull(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		if (Check.isBlank(string))
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(string);
+	}
+
 	public String extractStringForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = dataTableRow.get(index);
@@ -412,14 +437,20 @@ public class DataTableUtil
 	}
 
 	@Nullable
-	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	public Double extractDoubleOrNullForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
 	{
-		return dataTableRow.get(columnName);
-	}
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 
-	@Nullable
-	public String nullToken2Null(@NonNull final String value)
-	{
-		return NULL_STRING.equals(value) ? null : value;
+		try
+		{
+			return Check.isBlank(string) ? null : Double.parseDouble(string);
+		}
+		catch (final NumberFormatException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
 	}
 }

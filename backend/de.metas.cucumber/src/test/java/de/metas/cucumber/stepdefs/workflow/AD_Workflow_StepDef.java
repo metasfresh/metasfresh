@@ -28,43 +28,42 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.compiere.model.I_AD_Workflow.COLUMNNAME_AD_Workflow_ID;
+import static org.compiere.model.I_AD_Workflow.COLUMNNAME_Name;
+
 public class AD_Workflow_StepDef
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@And("update duration for AD_Workflow nodes")
-	public void update_AD_Workflow_nodes(@NonNull final DataTable dataTable)
+	private final AD_Workflow_StepDefData workflowTable;
+
+	public AD_Workflow_StepDef(@NonNull final AD_Workflow_StepDefData workflowTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
+		this.workflowTable = workflowTable;
+	}
+
+	@And("load AD_Workflow:")
+	public void load_AD_Workflow(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
 		{
-			updateADWorkflowNodes(tableRow);
+			final String workflowName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Name);
+
+			final I_AD_Workflow workflow = queryBL.createQueryBuilder(I_AD_Workflow.class)
+					.addEqualsFilter(COLUMNNAME_Name, workflowName)
+					.create()
+					.firstOnlyNotNull(I_AD_Workflow.class);
+
+			final String workflowIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
+			workflowTable.put(workflowIdentifier, workflow);
 		}
 	}
 
-	private void updateADWorkflowNodes(@NonNull final Map<String, String> tableRow)
-	{
-		final int id = DataTableUtil.extractIntForColumnName(tableRow, I_AD_Workflow.COLUMNNAME_AD_Workflow_ID);
-
-		final int duration = DataTableUtil.extractIntForColumnName(tableRow, I_AD_WF_Node.COLUMNNAME_Duration);
-
-		final I_AD_Workflow workflow = InterfaceWrapperHelper.load(id, I_AD_Workflow.class);
-
-		final IQueryUpdater<I_AD_WF_Node> updater = queryBL.createCompositeQueryUpdater(I_AD_WF_Node.class)
-				.addSetColumnValue(I_AD_WF_Node.COLUMNNAME_Duration, duration);
-
-		queryBL.createQueryBuilder(I_AD_WF_Node.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, workflow.getAD_Workflow_ID())
-				.create()
-				.update(updater);
-	}
 }

@@ -63,13 +63,9 @@ public class TransactionCreatedHandlerTests
 {
 	private static final BigDecimal SIXTY_THREE = new BigDecimal("63");
 
-	private static final BigDecimal SIXTY_FOUR = new BigDecimal("65");
-
 	private static final int TRANSACTION_ID = 60;
 
 	private static final int SHIPMENT_LINE_ID = 10;
-
-	private static final int SHIPMENT_SCHEDULE_ID = 40;
 
 	private TransactionEventHandler transactionEventHandler;
 

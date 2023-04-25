@@ -63,6 +63,8 @@ public class PickingJobCreateCommand
 
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
 
+	private PickingConfigV2 pickingConfig = null; // lazy
+
 	@Builder
 	private PickingJobCreateCommand(
 			@NonNull final PickingJobRepository pickingJobRepository,
@@ -117,7 +119,11 @@ public class PickingJobCreateCommand
 							.build(),
 					loadingSupportServices);
 
-			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+			final PickingConfigV2 pickingConfig = getPickingConfig();
+			if (pickingConfig.isReserveHUsOnJobStart())
+			{
+				pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+			}
 
 			return pickingJob;
 		}
@@ -215,12 +221,12 @@ public class PickingJobCreateCommand
 	{
 		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
 
-		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
+		final PickingConfigV2 pickingConfig = getPickingConfig();
 
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-																			.packageables(itemsForProduct)
-																			.considerAttributes(pickingConfig.isConsiderAttributes())
-																			.build());
+				.packageables(itemsForProduct)
+				.considerAttributes(pickingConfig.isConsiderAttributes())
+				.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())
@@ -235,13 +241,23 @@ public class PickingJobCreateCommand
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
 				.steps(lines.stream()
-							   .map(this::createStepRequest)
-							   .collect(ImmutableList.toImmutableList()))
+						.map(this::createStepRequest)
+						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
-											  .stream()
-											  .map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
-											  .collect(ImmutableSet.toImmutableSet()))
+						.stream()
+						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
+						.collect(ImmutableSet.toImmutableSet()))
 				.build();
+	}
+
+	private PickingConfigV2 getPickingConfig()
+	{
+		PickingConfigV2 pickingConfig = this.pickingConfig;
+		if (pickingConfig == null)
+		{
+			pickingConfig = this.pickingConfig = pickingConfigRepo.getPickingConfig();
+		}
+		return pickingConfig;
 	}
 
 	private PickingJobCreateRepoRequest.Step createStepRequest(@NonNull final PickingPlanLine planLine)
@@ -334,12 +350,12 @@ public class PickingJobCreateCommand
 
 		final I_M_HU extractedCU = HUTransformService.newInstance()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-										 .sourceHU(pickFromHU)
-										 .productId(productId)
-										 .qtyCU(qtyToPick)
-										 //.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-										 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-										 .build());
+						.sourceHU(pickFromHU)
+						.productId(productId)
+						.qtyCU(qtyToPick)
+						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
+						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
 	}

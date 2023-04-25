@@ -1,13 +1,6 @@
 package de.metas.process;
 
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -17,6 +10,10 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L

@@ -56,7 +56,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -73,7 +73,6 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -127,6 +126,25 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
 		return load(huId, I_M_HU.class);
+	}
+
+	@Override
+	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.setOnlySelection(selectionId)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.setOnlySelection(selectionId)
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
+				.create()
+				.listIds(HuId::ofRepoId);
 	}
 
 	@Override
@@ -438,7 +456,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
-			@NonNull final I_M_HU_PI handlingUnit, 
+			@NonNull final I_M_HU_PI handlingUnit,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
@@ -610,7 +628,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return piVersion;
 	}
 
-
 	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
 	{
@@ -696,7 +713,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
 	}
 
-	@Cached
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
@@ -955,36 +971,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.firstOnly(I_DD_NetworkDistribution.class);
 	}
 
-	private Set<WarehouseId> retrieveWarehouseIdsForHUs(final List<I_M_HU> hus)
+	@Override
+	public Set<LocatorId> getLocatorIds(final List<I_M_HU> hus)
 	{
 		final Set<Integer> locatorRepoIds = hus.stream()
 				.map(I_M_HU::getM_Locator_ID)
 				.filter(locatorRepoId -> locatorRepoId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return Services.get(IWarehouseDAO.class).getWarehouseIdsForLocatorRepoIds(locatorRepoIds);
-	}
-
-	@Override
-	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
-	{
-		if (hus.isEmpty())
-		{
-			// should never happen
-			return Collections.emptyList();
-		}
-
-		// used for deciding the org and context
-		final I_M_HU firstHU = hus.get(0);
-
-		final OrgId orgId = OrgId.ofRepoId(firstHU.getAD_Org_ID());
-
-		final Set<WarehouseId> huWarehouseIds = retrieveWarehouseIdsForHUs(hus);
-
-		return Services.get(IWarehouseDAO.class).getByOrgId(orgId)
-				.stream()
-				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
-				.collect(ImmutableList.toImmutableList());
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
 	}
 
 	@Override

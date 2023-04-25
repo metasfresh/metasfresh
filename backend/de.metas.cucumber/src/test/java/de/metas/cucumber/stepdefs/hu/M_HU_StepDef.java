@@ -117,6 +117,7 @@ public class M_HU_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
@@ -129,7 +130,6 @@ public class M_HU_StepDef
 	private final M_HU_QRCode_StepDefData qrCodesTable;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final TestContext testContext;
 
@@ -197,7 +197,7 @@ public class M_HU_StepDef
 			final I_M_HU_PI_Version piVersion = huPiVersionTable.get(huPiVersionIdentifier);
 			assertThat(piVersion).isNotNull();
 
-			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(locatorIdentifier))
 			{
 				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
@@ -592,6 +592,13 @@ public class M_HU_StepDef
 		assertThat(huRecord).isNotNull();
 		assertThat(huRecord.getHUStatus()).isEqualTo(huStatus);
 		assertThat(huRecord.isActive()).isEqualTo(isActive);
+
+		final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(locatorIdentifier))
+		{
+			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+			assertThat(huRecord.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+		}
 	}
 
 	private void validateHUStorage(@NonNull final Map<String, String> row)

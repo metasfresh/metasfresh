@@ -22,10 +22,10 @@ package de.metas.inoutcandidate.spi;
  * #L%
  */
 
-import java.util.List;
-
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+
+import java.util.List;
 
 /**
  * Implementations of this class are responsible for creating/updating/deleting receipt schedules from given <code>model</code>

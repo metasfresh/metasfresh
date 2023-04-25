@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -56,7 +55,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -83,7 +81,6 @@ import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

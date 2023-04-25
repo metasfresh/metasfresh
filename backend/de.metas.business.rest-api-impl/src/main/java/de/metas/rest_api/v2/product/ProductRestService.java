@@ -56,6 +56,7 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -92,11 +93,19 @@ public class ProductRestService
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final ProductAllergenRestService productAllergenRestService;
+	private final QualityAttributeService qualityAttributeService;
 
-	public ProductRestService(final ProductRepository productRepository, final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+	public ProductRestService(
+			final ProductRepository productRepository,
+			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			final ProductAllergenRestService productAllergenRestService,
+			final QualityAttributeService qualityAttributeService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.productAllergenRestService = productAllergenRestService;
+		this.qualityAttributeService = qualityAttributeService;
 	}
 
 	@NonNull
@@ -197,10 +206,24 @@ public class ProductRestService
 			final CreateProductRequest createProductRequest = getCreateProductRequest(jsonRequestProduct, org);
 			productId = productRepository.createProduct(createProductRequest).getId();
 
-
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens() != null)
+		{
+			productAllergenRestService.upsertProductAllergens(org,
+															  productId,
+															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes() != null)
+		{
+			qualityAttributeService.upsertProductQualityAttributes(
+					org,
+					productId,
+					jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes());
 		}
 
 		handleProductExternalReference(org,
@@ -361,6 +384,13 @@ public class ProductRestService
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
 				final BPartnerProduct bPartnerProduct = syncBPartnerProductWithJson(jsonRequestBPartnerProductUpsert, existingBPartnerProduct, bPartnerId);
+
+				if (!Boolean.TRUE.equals(existingBPartnerProduct.getCurrentVendor())
+						&& Boolean.TRUE.equals(bPartnerProduct.getCurrentVendor()))
+				{
+					productRepository.resetCurrentVendorFor(productId);
+				}
+
 				productRepository.updateBPartnerProduct(bPartnerProduct);
 			}
 		}
@@ -375,6 +405,12 @@ public class ProductRestService
 		else
 		{
 			final CreateBPartnerProductRequest createBPartnerProductRequest = getCreateBPartnerProductRequest(jsonRequestBPartnerProductUpsert, productId, bPartnerId);
+
+			if (Boolean.TRUE.equals(createBPartnerProductRequest.getCurrentVendor()))
+			{
+				productRepository.resetCurrentVendorFor(productId);
+			}
+
 			productRepository.createBPartnerProduct(createBPartnerProductRequest);
 		}
 	}
@@ -778,6 +814,24 @@ public class ProductRestService
 			builder.stocked(existingProduct.isStocked());
 		}
 
+		if (jsonRequestProductUpsertItem.isGuaranteeMonthsSet())
+		{
+			builder.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths());
+		}
+		else
+		{
+			builder.guaranteeMonths(existingProduct.getGuaranteeMonths());
+		}
+
+		if (jsonRequestProductUpsertItem.isWarehouseTemperatureSet())
+		{
+			builder.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature());
+		}
+		else
+		{
+			builder.warehouseTemperature(existingProduct.getWarehouseTemperature());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
@@ -814,6 +868,8 @@ public class ProductRestService
 				.gtin(jsonRequestProductUpsertItem.getGtin())
 				.ean(jsonRequestProductUpsertItem.getEan())
 				.productValue(jsonRequestProductUpsertItem.getCode())
+				.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths())
+				.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature())
 				.build();
 	}
 
@@ -861,5 +917,4 @@ public class ProductRestService
 		}
 		return productType;
 	}
-
 }

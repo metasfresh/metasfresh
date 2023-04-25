@@ -23,16 +23,23 @@ const RawMaterialIssueActivity = (props) => {
     history.push(manufacturingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
+  const showHazardsAndAllergens =
+    lines && lines.some((lineItem) => lineItem?.hazardSymbols?.length > 0 || lineItem?.allergens?.length > 0);
+
   return (
     <div className="mt-5">
       {lines && lines.length > 0
         ? lines.map((lineItem, lineIndex) => {
             const lineId = '' + lineIndex;
+            //console.log('line', { lineItem });
 
             return (
               <ButtonWithIndicator
                 key={lineId}
+                typeFASIconName="fa-arrow-right-to-bracket"
                 caption={lineItem.productName}
+                hazardSymbols={showHazardsAndAllergens ? lineItem.hazardSymbols : null}
+                allergens={showHazardsAndAllergens ? lineItem.allergens : null}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 disabled={!isUserEditable}
                 onClick={() => onButtonClick(lineId)}

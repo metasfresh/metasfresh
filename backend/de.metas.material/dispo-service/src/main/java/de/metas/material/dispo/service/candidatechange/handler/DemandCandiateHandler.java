@@ -9,6 +9,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static java.math.BigDecimal.ZERO;
 
@@ -157,9 +157,14 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
+		candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
 
-		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = deleteCandidateFunc.apply(candidate.getId());
+		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(candidate.getId());
+		if (!childStockCandidate.isPresent())
+		{
+			return; // nothing to do
+		}
+		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidateById(childStockCandidate.get().getId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 

@@ -1,5 +1,4 @@
 @from:cucumber
-@shipments
 Feature: Packing material invoice candidates: shipments
 
   Background:

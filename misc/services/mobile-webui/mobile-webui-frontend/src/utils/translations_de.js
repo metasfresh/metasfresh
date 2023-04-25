@@ -11,6 +11,7 @@ const translations = {
     Locator: 'Lagerort',
     QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
+    QtyToPick_Total: 'Pick Menge (total)',
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
@@ -24,6 +25,7 @@ const translations = {
   login: {
     submitButton: 'Login',
   },
+  logout: 'Abmelden',
   mobileui: {
     manufacturing: {
       appName: 'Produktion',
@@ -33,6 +35,11 @@ const translations = {
     },
     distribution: {
       appName: 'Bereitstellung',
+    },
+  },
+  components: {
+    BarcodeScannerComponent: {
+      scanTextPlaceholder: 'scan...',
     },
   },
   activities: {
@@ -45,7 +52,8 @@ const translations = {
       PickHU: 'HU kommissionieren',
       scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
-      invalidQtyPicked: 'Falsche Menge gepickt',
+      qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
+      notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
       rejectedPrompt: 'Es gibt %(qtyRejected)s %(uom)s ungepickte Mengen. Warum?',
       unPickBtn: 'Rückgängig',

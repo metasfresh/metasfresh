@@ -7,7 +7,6 @@ Feature: Reversal of material receipt is correctly considered in Material Dispo
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
-    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   Scenario:

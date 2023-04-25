@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
+import de.metas.util.converter.JSONDateConfig;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
@@ -166,58 +167,33 @@ public final class DateTimeConverters
 	public static LocalDate fromObjectToLocalDate(final Object valueObj)
 	{
 		return fromObjectTo(valueObj,
-				LocalDate.class,
-				DateTimeConverters::fromJsonToLocalDate,
-				TimeUtil::asLocalDate);
-	}
-
-	private static LocalDate fromJsonToLocalDate(final String valueStr)
-	{
-		final JSONDateConfig config = getConfig();
-		return LocalDate.parse(valueStr, config.getLocalDateFormatter());
+							LocalDate.class,
+							de.metas.util.converter.DateTimeConverters::fromJsonToLocalDate,
+							TimeUtil::asLocalDate);
 	}
 
 	private static LocalTime fromObjectToLocalTime(final Object valueObj)
 	{
 		return fromObjectTo(valueObj,
-				LocalTime.class,
-				DateTimeConverters::fromJsonToLocalTime,
-				TimeUtil::asLocalTime);
-	}
-
-	private static LocalTime fromJsonToLocalTime(final String valueStr)
-	{
-		final JSONDateConfig config = getConfig();
-		return LocalTime.parse(valueStr, config.getLocalTimeFormatter());
+							LocalTime.class,
+							de.metas.util.converter.DateTimeConverters::fromJsonToLocalTime,
+							TimeUtil::asLocalTime);
 	}
 
 	public static ZonedDateTime fromObjectToZonedDateTime(final Object valueObj)
 	{
 		return fromObjectTo(valueObj,
-				ZonedDateTime.class,
-				DateTimeConverters::fromJsonToZonedDateTime,
-				TimeUtil::asZonedDateTime);
-	}
-
-	private static ZonedDateTime fromJsonToZonedDateTime(final String valueStr)
-	{
-		final JSONDateConfig config = getConfig();
-		return ZonedDateTime.parse(valueStr, config.getZonedDateTimeFormatter());
+							ZonedDateTime.class,
+							de.metas.util.converter.DateTimeConverters::fromJsonToZonedDateTime,
+							TimeUtil::asZonedDateTime);
 	}
 
 	public static Instant fromObjectToInstant(final Object valueObj)
 	{
 		return fromObjectTo(valueObj,
-				Instant.class,
-				DateTimeConverters::fromJsonToInstant,
-				TimeUtil::asInstant);
-	}
-
-	private static Instant fromJsonToInstant(final String valueStr)
-	{
-		final JSONDateConfig config = getConfig();
-		return ZonedDateTime.parse(valueStr, config.getTimestampFormatter())
-				.toInstant();
+							Instant.class,
+							de.metas.util.converter.DateTimeConverters::fromJsonToInstant,
+							TimeUtil::asInstant);
 	}
 
 	@Nullable

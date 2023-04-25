@@ -18,7 +18,6 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 

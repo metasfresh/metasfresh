@@ -22,42 +22,17 @@
 
 package de.metas.material.dispo.commons.repository.query;
 
-import de.metas.material.dispo.commons.candidate.CandidateId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 @Builder
 @Value
 public class DeleteCandidatesQuery
 {
-	@Nullable
-	Boolean isActive;
-
-	@Nullable
+	@NonNull
 	String status;
-	
-	@Nullable 
-	CandidateId candidateId;
 
-	public DeleteCandidatesQuery(
-			@Nullable final Boolean isActive,
-			@Nullable final String status,
-			@Nullable final CandidateId candidateId)
-	{
-		final boolean allNull = Stream.of(isActive, status, candidateId).noneMatch(Objects::nonNull);
-		
-		if (allNull)
-		{
-			throw new AdempiereException("At least one criteria must be set!");
-		}
-		
-		this.isActive = isActive;
-		this.status = status;
-		this.candidateId = candidateId;
-	}
+	@NonNull
+	Boolean isActive;
 }

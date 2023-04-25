@@ -2,12 +2,13 @@
 package org.eevolution.api.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
@@ -158,6 +159,7 @@ final class CreateOrderCommand
 		ppOrderRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
 
 		ppOrderRecord.setIsPickingOrder(productPlanning != null && productPlanning.isPickingOrder());
+		ppOrderRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 
 		//
 		// Save the manufacturing order

@@ -16,22 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps.form;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableModel;
-
+import de.metas.i18n.Msg;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -40,7 +25,12 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import de.metas.i18n.Msg;
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  *  Create Charge from Accounts

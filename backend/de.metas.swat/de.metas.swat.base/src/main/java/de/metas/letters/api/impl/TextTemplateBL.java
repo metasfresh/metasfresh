@@ -1,53 +1,10 @@
 package de.metas.letters.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import de.metas.letter.BoilerPlateId;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.letter.BoilerPlateId;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
@@ -68,6 +25,26 @@ import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public final class TextTemplateBL implements ITextTemplateBL
 {

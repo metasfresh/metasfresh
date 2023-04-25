@@ -10,7 +10,6 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.IProductCostingBL;
-import org.eevolution.api.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -33,6 +32,7 @@ import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCostId;
 import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_Cost;
 
 import javax.annotation.Nullable;

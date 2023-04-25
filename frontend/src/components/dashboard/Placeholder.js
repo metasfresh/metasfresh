@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import EntityType from './EntityType';
 
 class Placeholder extends Component {
   constructor(props) {
@@ -8,7 +9,7 @@ class Placeholder extends Component {
 
   render() {
     const { description, entity } = this.props;
-    const height = entity === 'cards' ? '300px' : '100px';
+    const height = entity === EntityType.KPI ? '300px' : '100px';
 
     return (
       <div style={{ height }} className="dnd-placeholder-filling">

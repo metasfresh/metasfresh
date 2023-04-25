@@ -148,6 +148,22 @@ public class InOutDAO implements IInOutDAO
 		return retrieveLines(inOut, retrieveAll, inoutLineClass);
 	}
 
+	@Override
+	public ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(final Set<InOutId> inoutIds)
+	{
+		if(inoutIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutIds)
+				.create()
+				.listIds(InOutLineId::ofRepoId);
+
+	}
+
 	private <T extends I_M_InOutLine> List<T> retrieveLines(
 			@NonNull final I_M_InOut inOut,
 			final boolean retrieveAll,

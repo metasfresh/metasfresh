@@ -9,6 +9,7 @@ Feature:product get/create/update using metasfresh api
       | ALBERTA        | 345               | Product  |
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
+    And no M_Quality_Attribute data is found
     And no product with value 'code345' exists
 
   @from:cucumber
@@ -72,8 +73,8 @@ Feature:product get/create/update using metasfresh api
             "customerLabelNameSet": true,
             "ingredients": "test",
             "ingredientsSet": true,
-            "currentVendor": null,
-            "currentVendorSet": false,
+            "currentVendor": true,
+            "currentVendorSet": true,
             "excludedFromSales": true,
             "excludedFromSalesSet": true,
             "exclusionFromSalesReason": "Test",
@@ -121,7 +122,17 @@ Feature:product get/create/update using metasfresh api
             "usedForVendor": null,
             "usedForVendorSet": false
           }
-        ]
+        ],
+        "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "BIO",
+              "EU_NON_EU_AGRICULTURE"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+         }
       }
     }
   ],
@@ -146,12 +157,71 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | p_1                     | bpartner_1               |
       | bp_2                             | p_1                     | bpartner_2               |
     And verify bpartner product info
-      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
-      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        |
-      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        |
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
+      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | true                |
+      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | false               |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
+    And validate created M_Quality_Attributes for product: p_1
+      | OPT.QualityAttribute  |
+      | BearbeitetBio         |
+      | EU/Non-EU-Agriculture |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API '/api/v2/products/001' and fulfills with '200' status code
+"""
+{
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-345",
+      "requestProduct": {
+        "code": "code345",
+        "codeSet": true,
+        "bpartnerProductItems": [
+          {
+            "bpartnerIdentifier": "ext-ALBERTA-345",
+            "bpartnerSet": true,
+            "currentVendor": true,
+            "currentVendorSet": true
+          },
+          {
+            "bpartnerIdentifier": "ext-ALBERTA-456",
+            "bpartnerSet": true,
+            "currentVendor": true,
+            "currentVendorSet": true
+          }
+        ],
+        "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "HALAL"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+         }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+"""
+
+    Then locate bpartner product by product and bpartner
+      | C_BPartner_Product_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier |
+      | bp_1                             | p_1                     | bpartner_1               |
+      | bp_2                             | p_1                     | bpartner_2               |
+
+    And verify bpartner product info
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
+      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | false               |
+      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | true                |
+    And validate created M_Quality_Attributes for product: p_1
+      | OPT.QualityAttribute |
+      | Halal                |
 
   @from:cucumber
   Scenario: get Product, as a REST-API invoker
@@ -264,3 +334,33 @@ Feature:product get/create/update using metasfresh api
     Then validate get products response
       | M_Product_ID.Identifier | Value     | Name           | UOMSymbol | UPC      | Description      | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason |
       | p_1                     | code345_2 | Product_Test_2 | Stk       | ean_test | test_description | bpartner_1               | test                | true                         | testForSale                       | true                             | testForPurchase                       |
+
+
+  @from:cucumber
+  Scenario: Retrieve product by external identifier
+
+    Given load M_Product_Category:
+      | M_Product_Category_ID.Identifier | Name     | Value    |
+      | standard_category                | Standard | Standard |
+
+    And metasfresh contains M_Products:
+      | Identifier | Value        | Name        | OPT.M_Product_Category_ID.Identifier |
+      | product_1  | productValue | productName | standard_category                    |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | Name         | OPT.IsVendor | OPT.IsCustomer |
+      | bpartner_1 | BPartnerName | N            | Y              |
+
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | OPT.UPC |
+      | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
+
+    And metasfresh contains S_ExternalReferences:
+      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | RecordId.Identifier |
+      | LeichUndMehl        | productExternalRef | Product                    | product_1           |
+
+    When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
+
+    Then validate retrieve product response
+      | M_Product_ID.Identifier | Name        | UomSymbol | M_Product_Category_ID.Identifier | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |
+      | product_1               | productName | Stk       | standard_category                | bpartner_1               | bpProductNo         | true                         | testForSale                       | true                             | testForPurchase                       | ean           |

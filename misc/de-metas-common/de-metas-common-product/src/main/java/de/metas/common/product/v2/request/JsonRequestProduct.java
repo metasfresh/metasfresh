@@ -30,6 +30,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -119,11 +120,29 @@ public class JsonRequestProduct
 	@ApiModelProperty(hidden = true)
 	private boolean productCategoryIdentifierSet;
 
+	@ApiModelProperty(position = 135)
+	private String guaranteeMonths;
+
+	@ApiModelProperty(hidden = true)
+	private boolean guaranteeMonthsSet;
+
+	@ApiModelProperty(position = 136)
+	private String warehouseTemperature;
+
+	@ApiModelProperty(hidden = true)
+	private boolean warehouseTemperatureSet;
+
 	@ApiModelProperty(position = 140, value = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
 	@ApiModelProperty(position = 150)
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
+
+	@ApiModelProperty(position = 160)
+	private JsonRequestUpsertProductAllergen productAllergens;
+
+	@ApiModelProperty(position = 170)
+	private JsonRequestUpsertQualityAttribute qualityAttributes;
 
 	public void setCode(final @NonNull String code)
 	{
@@ -205,6 +224,28 @@ public class JsonRequestProduct
 	public void setBpartnerProductItems(final List<JsonRequestBPartnerProductUpsert> bpartnerProductItems)
 	{
 		this.bpartnerProductItems = bpartnerProductItems;
+	}
+
+	public void setProductAllergens(@Nullable final JsonRequestUpsertProductAllergen productAllergens)
+	{
+		this.productAllergens = productAllergens;
+	}
+
+	public void setGuaranteeMonths(@Nullable final String guaranteeMonths)
+	{
+		this.guaranteeMonths = guaranteeMonths;
+		this.guaranteeMonthsSet = true;
+	}
+
+	public void setWarehouseTemperature(@Nullable final String warehouseTemperature)
+	{
+		this.warehouseTemperature = warehouseTemperature;
+		this.warehouseTemperatureSet = true;
+	}
+
+	public void setQualityAttributes(@Nullable final JsonRequestUpsertQualityAttribute qualityAttribute)
+	{
+		this.qualityAttributes = qualityAttribute;
 	}
 
 }

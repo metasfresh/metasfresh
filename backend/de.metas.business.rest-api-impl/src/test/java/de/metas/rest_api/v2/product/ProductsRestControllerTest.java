@@ -41,6 +41,7 @@ import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.uom.UomId;
@@ -117,7 +118,7 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, Mockito.mock(ProductAllergenRestService.class), Mockito.mock(QualityAttributeService.class));
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}

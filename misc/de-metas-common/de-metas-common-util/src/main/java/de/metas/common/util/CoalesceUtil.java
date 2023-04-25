@@ -62,6 +62,25 @@ public class CoalesceUtil
 		return value1 != null ? value1 : (value2 != null ? value2.get() : null);
 	}
 
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final Supplier<T> value2Supplier)
+	{
+		if(value1 != null)
+		{
+			return value1;
+		}
+		else
+		{
+			final T value2 = value2Supplier.get();
+			if (value2 == null)
+			{
+				throw new NullPointerException("At least one of value1 or value2 has to be not-null");
+			}
+
+			return value2;
+		}
+	}
+
 	/**
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
@@ -234,6 +253,7 @@ public class CoalesceUtil
 		return null;
 	}
 
+	@Nullable
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{

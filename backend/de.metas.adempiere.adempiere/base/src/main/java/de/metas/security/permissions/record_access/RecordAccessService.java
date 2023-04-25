@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.security.Principal;
 import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.RecordAccess.RecordAccessBuilder;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
@@ -88,7 +87,7 @@ public class RecordAccessService
 
 	private static List<RecordAccess> toUserGroupRecordAccessesList(@NonNull final RecordAccessGrantRequest request)
 	{
-		final RecordAccessBuilder recordAccessBuilder = RecordAccess.builder()
+		final RecordAccess.RecordAccessBuilder recordAccessBuilder = RecordAccess.builder()
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
 				.issuer(request.getIssuer())

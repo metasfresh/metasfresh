@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.function.Function;
 
 /*
  * #%L
@@ -47,6 +45,7 @@ import java.util.function.Function;
  * This handler might create a {@link SupplyRequiredEvent}, but does not decrease the protected stock quantity.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
@@ -120,14 +119,13 @@ public class StockUpCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
-		deleteCandidateFunc.apply(candidate.getId());
+		candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate candidate)
 	{
 		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
-									"Given parameter 'candidate' has type=%s; demandCandidate=%s",
-									candidate.getType(), candidate);
+				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
+				candidate.getType(), candidate);
 	}
 }

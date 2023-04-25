@@ -39,11 +39,12 @@ import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class PrintingDataTest
@@ -53,8 +54,7 @@ class PrintingDataTest
 	@BeforeEach
 	final void beforeEach(TestInfo testInfo)
 	{
-		helper = new Helper(testInfo);
-		helper.setup(); // this also sets Adempiere.isUnitTestMode() to true, which we need when setting up the BLs below
+		AdempiereTestHelper.get().init();
 
 		final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
@@ -62,6 +62,8 @@ class PrintingDataTest
 		 				new ArchiveFileNameService()));
 		Services.registerService(IPrintPackageBL.class, printPackageBL);
 
+		helper = new Helper(testInfo);
+		helper.setup();
 	}
 
 	@Test

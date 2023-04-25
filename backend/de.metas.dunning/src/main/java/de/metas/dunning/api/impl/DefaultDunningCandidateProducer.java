@@ -22,16 +22,6 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningCandidateProducer;
@@ -48,6 +38,15 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Default implementation.
@@ -189,8 +188,6 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 				candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
 		candidate.setDunningInterestAmt(interestAmt);
 		candidate.setFeeAmt(dunningLevel.getFeeAmt());
-
-		// candidate.setIsStaled(false); Removed. IsStaled is a virtual column.
 
 		Services.get(IDunningEventDispatcher.class).fireDunningCandidateEvent(IDunningBL.EVENT_NewDunningCandidate, candidate);
 

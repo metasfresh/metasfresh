@@ -22,6 +22,7 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.WorkflowId;
@@ -524,7 +525,7 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
-	public boolean isInvokedByScheduler() { return invokedBySchedulerId != null; }
+	public boolean isInvokedByScheduler() {return invokedBySchedulerId != null;}
 
 	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
@@ -765,7 +766,7 @@ public final class ProcessInfo implements Serializable
 		private int tabNo = Env.TAB_None;
 
 		private Language reportLanguage;
-		private Boolean printPreview;
+		@NonNull private OptionalBoolean printPreview = OptionalBoolean.UNKNOWN;
 		private Boolean archiveReportData;
 
 		private OutputType jrDesiredOutputType = null;
@@ -1452,12 +1453,12 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		/**
-		 * Only really matters when forking with the swing client.
-		 * {@code true} means that the system shall just if the report data shall just be returned.
-		 * If not set, then the system will look at {@link Ini#P_PRINTPREVIEW} and {@code AD_Process.IsDirectPrint}.
-		 */
 		public ProcessInfoBuilder setPrintPreview(final Boolean printPreview)
+		{
+			return setPrintPreview(OptionalBoolean.ofNullableBoolean(printPreview));
+		}
+
+		public ProcessInfoBuilder setPrintPreview(@NonNull final OptionalBoolean printPreview)
 		{
 			this.printPreview = printPreview;
 			return this;
@@ -1469,9 +1470,9 @@ public final class ProcessInfo implements Serializable
 		 */
 		private boolean isPrintPreview()
 		{
-			if (this.printPreview != null)
+			if (this.printPreview.isPresent())
 			{
-				return this.printPreview;
+				return this.printPreview.isTrue();
 			}
 
 			if (Ini.isSwingClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
@@ -1480,12 +1481,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			if (adProcess != null && !adProcess.isDirectPrint())
-			{
-				return true;
-			}
-
-			return false;
+			return adProcess != null && !adProcess.isDirectPrint();
 		}
 
 		/**
@@ -1545,7 +1541,7 @@ public final class ProcessInfo implements Serializable
 
 		public AdSchedulerId getInvokedBySchedulerId()
 		{
-			if(invokedBySchedulerId != null)
+			if (invokedBySchedulerId != null)
 			{
 				return invokedBySchedulerId;
 			}
