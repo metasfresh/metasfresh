@@ -25,6 +25,7 @@ package de.metas.project.workorder.step;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
@@ -64,16 +65,20 @@ public class WOProjectStepService
 	private final WOProjectService woProjectService;
 	@NonNull
 	private final WOProjectSimulationService woProjectSimulationService;
+	@NonNull
+	private final SimulationPlanService simulationPlanService;
 
 	public WOProjectStepService(
 			@NonNull final WOProjectStepRepository woProjectStepRepository,
 			@NonNull final WOProjectService woProjectService,
-			final @NonNull WOProjectSimulationService woProjectSimulationService)
+			final @NonNull WOProjectSimulationService woProjectSimulationService,
+			final @NonNull SimulationPlanService simulationPlanService)
 	{
 
 		this.woProjectStepRepository = woProjectStepRepository;
 		this.woProjectService = woProjectService;
 		this.woProjectSimulationService = woProjectSimulationService;
+		this.simulationPlanService = simulationPlanService;
 	}
 
 	public void removeObsoleteSimulationsForLockedStep(@NonNull final WOProjectStep step)
@@ -84,9 +89,12 @@ public class WOProjectStepService
 					.markAsUserValidationError();
 		}
 
-		final ImmutableList<WOProjectSimulationPlan> simulationPlans = woProjectSimulationService.getSimulationPlansForStep(step.getWoProjectStepId());
+		final ImmutableList<WOProjectSimulationPlan> openSimulationPlans = woProjectSimulationService.getSimulationPlansForStep(step.getWoProjectStepId())
+				.stream()
+				.filter(simulationPlan -> simulationPlanService.getById(simulationPlan.getSimulationPlanId()).isEditable())
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableSet<SimulationPlanId> simulationIdsWithDiffDates = simulationPlans
+		final ImmutableSet<SimulationPlanId> simulationIdsWithDiffDates = openSimulationPlans
 				.stream()
 				.map(simulationPlan -> Pair.of(simulationPlan.getSimulationPlanId(), simulationPlan.getProjectStepByIdOrNull(step.getWoProjectStepId())))
 				.filter(planId2Step -> planId2Step.getValue() != null)
@@ -101,7 +109,7 @@ public class WOProjectStepService
 
 		final WOStepResources stepResources = woProjectService.getWOStepResources(step.getWoProjectStepId());
 
-		simulationPlans
+		openSimulationPlans
 				.stream()
 				.map(plan -> plan.removeSimulationForStepAndResources(stepResources))
 				.forEach(woProjectSimulationService::savePlan);
