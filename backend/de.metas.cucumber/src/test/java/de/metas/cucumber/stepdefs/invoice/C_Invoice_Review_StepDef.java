@@ -117,8 +117,6 @@ public class C_Invoice_Review_StepDef
 	{
 		final InvoiceReviewRepository invoiceReviewRepository = new InvoiceReviewRepository(customColumnService);
 
-		final SoftAssertions softly = new SoftAssertions();
-
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -126,7 +124,8 @@ public class C_Invoice_Review_StepDef
 
 			final InvoiceReview review = invoiceReviewRepository.getByInvoiceId(InvoiceId.ofRepoId(invoiceId));
 
-			softly.assertThat(review).as("Missing InvoiceReview for invoiceId %s (identifier=%s)", invoiceId, invoiceIdentifier).isNotNull();
+			// soft assertion makes no sense here, because if this fails we can't test any further and will run into an NPE
+			assertThat(review).as("Missing InvoiceReview for invoiceId %s (identifier=%s)", invoiceId, invoiceIdentifier).isNotNull();
 
 			final I_C_Invoice_Review reviewRecord = InterfaceWrapperHelper.load(review.getId(), I_C_Invoice_Review.class);
 
@@ -179,15 +178,16 @@ public class C_Invoice_Review_StepDef
 	{
 		final JsonCreateInvoiceReviewResponse jsonCreateInvoiceResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonCreateInvoiceReviewResponse.class);
 
-		final SoftAssertions softly = new SoftAssertions();
-
 		final JsonCreateInvoiceReviewResponseResult result = jsonCreateInvoiceResponse.getResult();
-		softly.assertThat(result).isNotNull();
-		softly.assertThat(result.getReviewId()).isNotNull();
-		softly.assertThat(jsonCreateInvoiceResponse.getErrors()).isNull();
+		assertThat(result).as("the received jsonCreateInvoiceResponse has a null-result; response=%s", jsonCreateInvoiceResponse).isNotNull();
+
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(result.getReviewId()).as("result.reviewId").isNotNull();
+		softly.assertThat(jsonCreateInvoiceResponse.getErrors()).as("result.errors").isNull();
+		softly.assertAll();
 
 		final I_C_Invoice_Review review = InterfaceWrapperHelper.load(result.getReviewId().getValue(), I_C_Invoice_Review.class);
-		softly.assertThat(review).isNotNull();
+		assertThat(review).isNotNull();
 
 		final Map<String, String> row = table.asMaps().get(0);
 
@@ -209,10 +209,9 @@ public class C_Invoice_Review_StepDef
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).isNotNull();
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).hasSize(1);
-
-			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
-
 			softly.assertAll();
+
+			assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
 		}
 	}
 }
