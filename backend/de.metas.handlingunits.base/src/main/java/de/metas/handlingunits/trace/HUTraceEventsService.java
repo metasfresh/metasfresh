@@ -661,7 +661,7 @@ public class HUTraceEventsService
 					.eventTime(ppCostCollector.getUpdated().toInstant())
 					.topLevelHuId(huId);
 
-			// createTraceForProductionIssueHU(builder, ppOrderId, huRecord);
+			// createTraceForProductionIssueHU(builder, ppOrderId, huRecord); the traces are already created for the vhus which  includes the huRecord. Making this call would result in duplicates.
 			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
 
 			for (final I_M_HU vhu : vhus)
