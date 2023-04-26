@@ -3,7 +3,10 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-
+import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -245,6 +248,10 @@ public class DeliveredDataLoader
 
 		for (final DeliveredQtyItem deliveredQtyItem : shippedQtyItems)
 		{
+			if (!deliveredQtyItem.isCompletedOrClosed())
+			{
+				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
+			}
 
 			final Quantity currentQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
 			final Quantity currentQtyNominal = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal());
@@ -292,10 +299,22 @@ public class DeliveredDataLoader
 
 		for (final I_C_InvoiceCandidate_InOutLine icIolAssociationRecord : icIolAssociationRecords)
 		{
-			final I_M_InOutLine inoutLine = create(icIolAssociationRecord.getM_InOutLine(), I_M_InOutLine.class);
+			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(icIolAssociationRecord.getM_InOutLine_ID());
+
+			if (inoutLineId == null)
+			{
+				continue;
+			}
+
+			final I_M_InOutLine inoutLine = inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
+
+			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+
+			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 
 			final DeliveredQtyItem.DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
-					.inDispute(inoutLine.isInDispute());
+					.inDispute(inoutLine.isInDispute())
+					.completedOrClosed(inoutCompletedOrClosed);
 
 			final Quantity qtyInStockUom = Quantitys
 					.create(

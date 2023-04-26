@@ -42,6 +42,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;

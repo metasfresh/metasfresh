@@ -49,8 +49,8 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Location_StepDef
 {
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
@@ -58,8 +58,8 @@ public class C_BPartner_Location_StepDef
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_Location_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final C_Location_StepDefData locationTable)
 	{
 		this.bPartnerTable = bPartnerTable;

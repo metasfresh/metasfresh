@@ -261,13 +261,6 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public Instant getParameterAsInstant(final String parameterName)
-	{
-		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		return processInfoParameter != null ? processInfoParameter.getParameterAsInstant() : null;
-	}
-	
-	@Override
 	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);

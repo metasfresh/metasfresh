@@ -100,9 +100,9 @@ public class C_OLCand_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_M_InOut> shipmentTable;
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Order_StepDefData orderTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_Invoice_StepDefData invoiceTable;
 	private final C_OLCand_StepDefData olCandTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
@@ -110,6 +110,7 @@ public class C_OLCand_StepDef
 	private final AD_Issue_StepDefData issueTable;
 	private final M_HU_PI_Item_Product_StepDefData huItemProductTable;
 	private final IMP_Processor_StepDefData impProcessorTable;
+
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -119,9 +120,9 @@ public class C_OLCand_StepDef
 			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	public C_OLCand_StepDef(
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_OLCand_StepDefData olCandTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,

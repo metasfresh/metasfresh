@@ -306,6 +306,11 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
+	default void setIsInEffect(final I_C_Invoice_Candidate ic)
+	{
+		ic.setIsInEffect(true);
+	}
+
 	default void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);

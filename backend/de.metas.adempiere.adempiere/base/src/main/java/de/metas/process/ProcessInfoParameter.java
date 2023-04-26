@@ -305,12 +305,6 @@ public final class ProcessInfoParameter implements Serializable
 	}
 
 	@Nullable
-	public Instant getParameterAsInstant()
-	{
-		return TimeUtil.asInstant(m_Parameter);
-	}
-
-	@Nullable
 	public BigDecimal getParameterAsBigDecimal()
 	{
 		return toBigDecimal(m_Parameter);

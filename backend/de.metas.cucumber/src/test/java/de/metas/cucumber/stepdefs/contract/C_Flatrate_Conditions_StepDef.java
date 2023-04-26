@@ -33,7 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;

@@ -60,7 +60,20 @@ public class DataTableUtil
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String fallbackPrefix)
 	{
-		return CoalesceUtil.coalesceSuppliers(() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER), () -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+	}
+
+	public String extractRecordIdentifier(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnNamePrefix,
+			@NonNull final String fallbackPrefix)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> dataTableRow.get(columnNamePrefix + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
@@ -84,14 +97,47 @@ public class DataTableUtil
 		}
 	}
 
-	public int extractIntOrMinusOneForColumnName(
+	@Nullable
+	public Integer extractIntegerOrNullForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+
+		try
+		{
+			return Check.isBlank(string) ? null : Integer.parseInt(string);
+		}
+		catch (final NumberFormatException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	public int extractIntOrZeroForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntOrDefaultForColumnName(dataTableRow, columnName, 0);
+	}
+
+	public int extractIntOrMinusOneForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntOrDefaultForColumnName(dataTableRow, columnName, -1);
+	}
+
+	private int extractIntOrDefaultForColumnName(
+			final @NonNull Map<String, String> dataTableRow,
+			final @NonNull String columnName,
+			final int defaultValue)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		if (EmptyUtil.isBlank(string))
 		{
-			return -1;
+			return defaultValue;
 		}
 		return extractIntForColumnName(dataTableRow, columnName);
 	}
@@ -261,16 +307,16 @@ public class DataTableUtil
 	}
 
 	@Nullable
-	public static Timestamp extractDateTimestampOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final Map<String, String> dataTableRow, final String columnName)
 	{
-		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
-
-		if (Check.isBlank(string))
+		try
+		{
+			return extractDateTimestampForColumnName(dataTableRow, columnName);
+		}
+		catch (final Exception e)
 		{
 			return null;
 		}
-
-		return extractDateTimestampForColumnName(dataTableRow, columnName);
 	}
 
 	public BigDecimal extractBigDecimalForIndex(final List<String> dataTableRow, final int index)
@@ -346,13 +392,27 @@ public class DataTableUtil
 		return result;
 	}
 
-	public static boolean extractBooleanForColumnNameOr(
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,
 			@Nullable final Boolean defaultValue)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		return StringUtils.toBoolean(string, defaultValue);
+	}
+
+	public static Boolean extractBooleanForColumnNameOrNull(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		if (Check.isBlank(string))
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(string);
 	}
 
 	public String extractStringForIndex(final List<String> dataTableRow, final int index)
@@ -375,4 +435,21 @@ public class DataTableUtil
 		return value;
 	}
 
+	@Nullable
+	public Double extractDoubleOrNullForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+
+		try
+		{
+			return Check.isBlank(string) ? null : Double.parseDouble(string);
+		}
+		catch (final NumberFormatException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
 }

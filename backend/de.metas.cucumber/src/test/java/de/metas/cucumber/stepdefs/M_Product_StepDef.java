@@ -78,8 +78,8 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
 public class M_Product_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_Product_Category_StepDefData productCategoryTable;
 	private final AD_Org_StepDefData orgTable;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -90,8 +90,8 @@ public class M_Product_StepDef
 	private final SectionCodeRepository sectionCodeRepository = SpringContextHolder.instance.getBean(SectionCodeRepository.class);
 
 	public M_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_Product_Category_StepDefData productCategoryTable,
 			@NonNull final AD_Org_StepDefData orgTable)
 	{

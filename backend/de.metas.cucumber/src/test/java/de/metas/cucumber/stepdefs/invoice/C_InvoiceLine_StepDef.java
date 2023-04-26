@@ -78,7 +78,7 @@ public class C_InvoiceLine_StepDef
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
@@ -87,7 +87,7 @@ public class C_InvoiceLine_StepDef
 	private final C_Activity_StepDefData activityTable;
 
 	public C_InvoiceLine_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Project_StepDefData projectTable,

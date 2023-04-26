@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -494,7 +495,21 @@ public class NotificationSenderTemplate
 				(EMailCustomType)null);  // customType
 	}
 
-	private String extractMailContent(final UserNotificationRequest request)
+	@VisibleForTesting
+	String extractMailSubject(final UserNotificationRequest request)
+	{
+		final String subject = extractSubjectText(request);
+
+		if (Check.isEmpty(subject, true))
+		{
+			return extractSubjectFromContent(extractContentText(request, /* html */false));
+		}
+
+		return subject;
+	}
+
+	@VisibleForTesting
+	String extractMailContent(final UserNotificationRequest request)
 	{
 		final body htmlBody = new body();
 		final String htmlBodyString = extractContentText(request, /* html */true);

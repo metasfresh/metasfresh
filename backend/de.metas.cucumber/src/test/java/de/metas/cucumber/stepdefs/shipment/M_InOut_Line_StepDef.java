@@ -44,6 +44,8 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -61,6 +63,7 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_InOutLine_StepDefData shipmentLineTable;
@@ -103,7 +106,7 @@ public class M_InOut_Line_StepDef
 			//dev-note: we assume the tests are not using the same product on different lines
 			final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
 					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentRecord.getM_InOut_ID())
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, expectedProductId);
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
 
 			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orderLineIdentifier))

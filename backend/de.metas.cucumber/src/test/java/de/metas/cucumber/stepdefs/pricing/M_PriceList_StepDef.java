@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
@@ -73,21 +74,22 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
 public class M_PriceList_StepDef
 {
 	private final CurrencyRepository currencyRepository;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-	private final StepDefData<I_M_PriceList> priceListTable;
-	private final StepDefData<I_M_PriceList_Version> priceListVersionTable;
-	private final StepDefData<I_M_ProductPrice> productPriceTable;
+	private final M_Product_StepDefData productTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
+	private final M_PriceList_StepDefData priceListTable;
+	private final M_PriceList_Version_StepDefData priceListVersionTable;
+	private final M_ProductPrice_StepDefData productPriceTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final AD_Org_StepDefData orgTable;
+
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
@@ -96,11 +98,11 @@ public class M_PriceList_StepDef
 
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
-			@NonNull final StepDefData<I_M_PriceList> priceListTable,
-			@NonNull final StepDefData<I_M_PriceList_Version> priceListVersionTable,
-			@NonNull final StepDefData<I_M_ProductPrice> productPriceTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+			@NonNull final M_PriceList_StepDefData priceListTable,
+			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
+			@NonNull final M_ProductPrice_StepDefData productPriceTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final AD_Org_StepDefData orgTable)
@@ -161,7 +163,6 @@ public class M_PriceList_StepDef
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
 
 		saveRecord(m_pricingSystem);
-
 
 		pricingSystemTable.putOrReplace(recordIdentifier, m_pricingSystem);
 	}

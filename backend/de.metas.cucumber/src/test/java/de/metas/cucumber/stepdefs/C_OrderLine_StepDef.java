@@ -518,7 +518,7 @@ public class C_OrderLine_StepDef
 
 		Check.assumeNotNull(orderIdentifier, "orderIdentifier is missing, looked for C_Order_ID.Identifier || Order.Identifier");
 
-		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_DateOrdered);
+		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_OrderLine.COLUMNNAME_DateOrdered);
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
 		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);

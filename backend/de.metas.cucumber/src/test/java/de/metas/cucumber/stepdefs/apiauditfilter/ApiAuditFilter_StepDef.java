@@ -32,7 +32,6 @@ import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.web.audit.ApiRequestReplayService;
 import io.cucumber.datatable.DataTable;
@@ -53,15 +52,10 @@ public class ApiAuditFilter_StepDef
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final TestContext testContext;
-	private final API_Audit_Config_StepDefData apiAuditConfigTable;
 
-
-	public ApiAuditFilter_StepDef(
-			@NonNull final TestContext testContext,
-			@NonNull final API_Audit_Config_StepDefData apiAuditConfigTable)
+	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
 	{
 		this.testContext = testContext;
-		this.apiAuditConfigTable = apiAuditConfigTable;
 	}
 
 	@And("all the API audit data is reset")
@@ -71,31 +65,6 @@ public class ApiAuditFilter_StepDef
 		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
-	}
-
-	@And("the following API_Audit_Config record is set")
-	public void API_Audit_Config_insert(@NonNull final DataTable table)
-	{
-		final List<Map<String, String>> tableRows = table.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, "SeqNo");
-			final String method = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.Method");
-			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.PathPrefix");
-			final boolean isInvokerWaitsForResult = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsInvokerWaitsForResult", false);
-
-			final I_API_Audit_Config auditConfig = InterfaceWrapperHelper.newInstance(I_API_Audit_Config.class);
-
-			auditConfig.setSeqNo(seqNo);
-			auditConfig.setMethod(method);
-			auditConfig.setPathPrefix(pathPrefix);
-			auditConfig.setIsInvokerWaitsForResult(isInvokerWaitsForResult);
-
-			saveRecord(auditConfig);
-
-			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "API_Audit_Config");
-			apiAuditConfigTable.put(recordIdentifier, auditConfig);
-		}
 	}
 
 	@When("invoke replay audit")

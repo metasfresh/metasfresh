@@ -878,6 +878,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		setBPartnerData(ic, inOutLine);
 	}
 
+	@Override
+	public void setIsInEffect(final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+
+		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
+		invoiceCandBL.computeIsInEffect(inOutDocStatus, ic);
+	}
+
 	private void setBPartnerData(final I_C_Invoice_Candidate ic, final I_M_InOutLine fromInOutLine)
 	{
 		Check.assumeNotNull(fromInOutLine, "fromInOutLine not null");

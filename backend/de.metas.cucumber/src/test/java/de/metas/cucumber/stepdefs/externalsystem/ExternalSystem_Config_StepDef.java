@@ -92,7 +92,7 @@ public class ExternalSystem_Config_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
-	private final StepDefData<I_ExternalSystem_Config> configTable;
+	private final ExternalSystem_Config_StepDefData configTable;
 	private final AD_UserGroup_StepDefData userGroupTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	private final M_Product_StepDefData productTable;
@@ -101,7 +101,7 @@ public class ExternalSystem_Config_StepDef
 	private final TestContext testContext;
 
 	public ExternalSystem_Config_StepDef(
-			@NonNull final StepDefData<I_ExternalSystem_Config> configTable,
+			@NonNull final ExternalSystem_Config_StepDefData configTable,
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
 			@NonNull final AD_UserGroup_StepDefData userGroupTable,
 			@NonNull final M_Product_StepDefData productTable,

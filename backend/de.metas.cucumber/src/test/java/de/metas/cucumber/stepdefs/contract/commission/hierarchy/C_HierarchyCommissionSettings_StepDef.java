@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,11 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.contract.commission;
+package de.metas.cucumber.stepdefs.contract.commission.hierarchy;
 
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -34,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 

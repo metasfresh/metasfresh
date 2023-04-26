@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.inventory;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
@@ -49,6 +50,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;

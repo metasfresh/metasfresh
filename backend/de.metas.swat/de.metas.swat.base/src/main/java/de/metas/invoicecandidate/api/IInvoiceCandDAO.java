@@ -24,6 +24,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceLine;

@@ -71,6 +71,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
 import org.slf4j.Logger;

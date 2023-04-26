@@ -50,6 +50,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_ExportAudit_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;

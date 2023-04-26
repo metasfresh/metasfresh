@@ -11,6 +11,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -22,6 +24,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
@@ -91,6 +94,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
 	private static final transient IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
+
+	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@Override
 	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
@@ -277,6 +283,16 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_M_InventoryLine inventoryLine = getM_InventoryLine(ic);
 		setBPartnerData(ic, inventoryLine);
+	}
+
+	@Override
+	public void setIsInEffect(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InventoryLine inventoryLine = getM_InventoryLine(ic);
+
+		final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
+
+		invoiceCandBL.computeIsInEffect(inventoryDocStatus, ic);
 	}
 
 	public static I_M_InventoryLine getM_InventoryLine(final I_C_Invoice_Candidate ic)

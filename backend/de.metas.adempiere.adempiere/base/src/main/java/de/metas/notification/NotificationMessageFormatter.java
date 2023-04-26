@@ -1,11 +1,13 @@
 package de.metas.notification;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -68,6 +70,8 @@ final class NotificationMessageFormatter
 	// Constants
 	private static final String URL_TITLE_SEPARATOR = "><";
 	private static final AdMessageKey MSG_BottomText = AdMessageKey.of("de.metas.notification.email.BottomText");
+	@VisibleForTesting
+	static final AdMessageKey MSG_EmailOrigin = AdMessageKey.of("de.metas.notification.email.origin");
 
 	//
 	// Params
@@ -143,6 +147,11 @@ final class NotificationMessageFormatter
 			result += "\n" + bottomText;
 		}
 
+		final String emailOrigin = getEmailOrigin().orElse(null);
+		if (emailOrigin != null)
+		{
+			result += "\n\n" + emailOrigin;
+		}
 		return result;
 	}
 
@@ -351,6 +360,19 @@ final class NotificationMessageFormatter
 		return bottomText;
 	}
 
+	@NonNull
+	private Optional<String> getEmailOrigin()
+	{
+		final String frontendUrl = webuiURLs.getFrontendURL();
+		if (Check.isBlank(frontendUrl))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(msgBL.getTranslatableMsgText(MSG_EmailOrigin, Collections.singletonList(frontendUrl))
+				.translate(getLanguage()))
+				.filter(Check::isNotBlank);
+	}
 	//
 	//
 	//

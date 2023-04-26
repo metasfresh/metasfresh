@@ -62,7 +62,10 @@ public class InfrastructureSupport
 	 * {@code false} means that we need to start up our own postgresql and will also apply the location migration-scripts to bring that DB up to date.
 	 */
 	@Getter
-	private final boolean runAgainstProvidedDatabase = false;
+	private boolean runAgainstProvidedDatabase = false;
+
+	@Getter
+	private boolean cucumberIsUsingProvidedInfrastructure;
 
 	@Getter
 	private String dbHost;

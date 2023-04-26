@@ -379,6 +379,12 @@ public class InOutDAO implements IInOutDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
 	{
 		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());

@@ -27,7 +27,6 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
@@ -40,11 +39,9 @@ import org.compiere.model.I_M_Inventory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class OutOfStockNotice_StepDef
 {

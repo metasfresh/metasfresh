@@ -92,10 +92,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
@@ -167,7 +169,7 @@ public class C_Order_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -348,8 +350,8 @@ public class C_Order_StepDef
 		}
 	}
 
-	@And("^the order identified by (.*) is completed$")
-	public void order_is_completed(@NonNull final String orderIdentifier)
+	@And("^the order identified by (.*) is (reactivated|completed|closed|voided)$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
 
@@ -378,6 +380,34 @@ public class C_Order_StepDef
 		}
 	}
 
+	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided) expecting error$")
+	public void order_action_expecting_error(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		boolean errorThrown = false;
+
+		try
+		{
+			order_action(orderIdentifier, action);
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (errorMessageIdentifier != null)
+			{
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+
+				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+			}
+		}
+
+		assertThat(errorThrown).isTrue();
+	}
+
 	@And("^the order identified by (.*) is (completed) and the following exception is thrown: (.*)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final String exceptionMessage)
 	{
@@ -398,8 +428,8 @@ public class C_Order_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String purchaseType = DataTableUtil.extractStringForColumnName(tableRow, "PurchaseType");
 			final boolean purchaseBomComponents = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsPurchaseBOMComponents", false);
 
@@ -534,7 +564,7 @@ public class C_Order_StepDef
 		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
 		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
 
-		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (EmptyUtil.isNotBlank(orderIdentifier))
 		{
 			orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord);
@@ -836,7 +866,7 @@ public class C_Order_StepDef
 			final String groupCompensationType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationType);
 			final String groupCompensationAmtType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType);
 
-			final I_C_Order	orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+			final I_C_Order orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalHeaderId)
 					.create()
 					.firstOnlyNotNull(I_C_Order.class);
