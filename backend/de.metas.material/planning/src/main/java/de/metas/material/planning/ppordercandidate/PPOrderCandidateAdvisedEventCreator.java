@@ -64,7 +64,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMutableMRPContext mrpContext)
 	{
 		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
@@ -82,11 +82,11 @@ public class PPOrderCandidateAdvisedEventCreator
 
 		if(productPlanning.isLotForLot())
 		{
-			supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
 		}
 		else
 		{
-			supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);

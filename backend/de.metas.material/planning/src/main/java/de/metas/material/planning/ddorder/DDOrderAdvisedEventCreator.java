@@ -59,7 +59,7 @@ public class DDOrderAdvisedEventCreator
 	}
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMutableMRPContext mrpContext)
 	{
 		if(!ddOrderDemandMatcher.matches(mrpContext))
@@ -77,11 +77,11 @@ public class DDOrderAdvisedEventCreator
 
 		if(productPlanningData.isLotForLot())
 		{
-			supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
 		}
 		else
 		{
-			supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
 		final List<DDOrderAdvisedEvent> events = new ArrayList<>();
