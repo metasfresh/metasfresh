@@ -556,6 +556,101 @@ public class HUTraceEventsService
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@VisibleForTesting
+	void createAndAddEventsForInventoryLines(
+			@NonNull final HUTraceEventBuilder builder,
+			@NonNull final List<I_M_InventoryLine> inventoryLines)
+	{
+		for (final I_M_InventoryLine inventoryLineRecord : inventoryLines)
+		{
+			final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord);
+
+			final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
+
+			for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
+			{
+				final HuId huId = inventoryLineHU.getHuId();
+				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
+
+				if (huStatusBL.isStatusDestroyed(huRecord))
+				{
+					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
+				}
+
+				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
+				Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; inventoryLineHU={}", topLevelHuId, inventoryLineHU);
+
+				builder.orgId(OrgId.ofRepoIdOrNull(inventoryLineRecord.getAD_Org_ID()))
+						.eventTime(inventoryLineRecord.getUpdated().toInstant())
+						.topLevelHuId(topLevelHuId);
+
+				final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+
+				for (final I_M_HU vhu : vhus)
+				{
+					builderSetVhuProductAndQty(builder, vhu)
+							.vhuStatus(vhu.getHUStatus());
+
+					huTraceRepository.addEvent(builder.build());
+				}
+			}
+		}
+	}
+
+	@VisibleForTesting
+	void createAndAddEventsForManufacturingIssue(
+			@NonNull final HUTraceEventBuilder builder,
+			@NonNull final I_PP_Cost_Collector ppCostCollector)
+	{
+
+		final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(ppCostCollector);
+
+		for (final I_M_HU_Assignment huAssignment : huAssignments)
+		{
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
+
+			final HuId huId = HuId.ofRepoId(huAssignment.getM_HU_ID());
+			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
+
+			final HuId topLevelHuId = huId;
+			Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
+
+			builder.orgId(OrgId.ofRepoIdOrNull(ppCostCollector.getAD_Org_ID()))
+					.eventTime(ppCostCollector.getUpdated().toInstant())
+					.topLevelHuId(huId);
+
+			// createTraceForProductionIssueHU(builder, ppOrderId, huRecord); the traces are already created for the vhus which  includes the huRecord. Making this call would result in duplicates.
+			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+
+			for (final I_M_HU vhu : vhus)
+			{
+				createTraceForProductionIssueHU(builder, ppOrderId, vhu);
+			}
+		}
+
+	}
+
+	private void createTraceForProductionIssueHU(final @NonNull HUTraceEventBuilder builder, final @NonNull PPOrderId ppOrderId, @NonNull final I_M_HU hu)
+	{
+		final Optional<I_PP_Order_Qty> ppOrderQty = huPPOrderQtyDAO.retrieveOrderQtyForHu(
+				ppOrderId,
+				HuId.ofRepoId(hu.getM_HU_ID()));
+
+		if (!ppOrderQty.isPresent())
+		{
+			return;
+		}
+
+		builderSetVhuProductAndQty(builder, hu)
+				.vhuStatus(hu.getHUStatus())
+				.qty(Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())));
+
+		huTraceRepository.addEvent(builder.build());
+	}
+
+>>>>>>> 504059b41c4 (Do not create HU Trace for top HU in advance (#15173))
 	private HUTraceEventBuilder builderSetVhuProductAndQty(
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final I_M_HU vhu)
