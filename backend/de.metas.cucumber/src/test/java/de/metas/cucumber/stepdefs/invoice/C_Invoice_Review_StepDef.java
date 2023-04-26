@@ -112,7 +112,7 @@ public class C_Invoice_Review_StepDef
 		testContext.setRequestPayload(JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(payload));
 	}
 
-	@Then("validate invoice reviews and store their with their identifiers")
+	@Then("validate invoice reviews and store them with their identifiers")
 	public void validateInvoiceReviewAndStoreItsIdentifier(@NonNull final DataTable dataTable)
 	{
 		final InvoiceReviewRepository invoiceReviewRepository = new InvoiceReviewRepository(customColumnService);

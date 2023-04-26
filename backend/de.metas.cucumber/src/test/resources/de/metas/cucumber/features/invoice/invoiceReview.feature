@@ -1,16 +1,15 @@
 @from:cucumber
 @Topic:InvoiceReview
-Feature: external references for metasfresh resources
+Feature: invoice review
   As a REST-API invoker
   I want to push invoice review status changes to metasfresh
-  So that the invoices can be invoice
+  So that the invoices can be invoiced
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2023-04-05T12:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
@@ -48,7 +47,8 @@ Feature: external references for metasfresh resources
   @Id:S14758_100
   # Note: completing the invoice to exercise also the MI that might create an empty invoic review record
   Scenario: Insert review by C_Invoice_ID and update it via ExternalId, expect a review record to be created automatically on invoice completion
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code
+    When set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
+    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code
 """
 {
   "invoice": {
@@ -100,9 +100,12 @@ Feature: external references for metasfresh resources
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
       | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 30 Tage netto | true      | CO        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_1 |
 
-    And validate invoice reviews and store their with their identifiers
+    And validate invoice reviews and store them with their identifiers
       | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
       | invoice_Review_1               | invoice_1               |                  |
+
+    # cleanup that sysconfig after we don't need it anymore
+    And set sys config boolean value false for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
 
     And the user creates a JsonInvoiceReviewUpsertItem and stores it in the context
       | OPT.C_Invoice_ID.Identifier | orgCode | customColumn |
@@ -215,6 +218,3 @@ Feature: external references for metasfresh resources
       | OPT.ExternalId                | orgCode | customColumn |
       | externalHeaderId_2023-04-05_3 | 001     | 500          |
     And the metasfresh REST-API endpoint path 'api/v2/invoices/docReview' receives a 'POST' request with the payload from context and responds with '400' status code
-
-  Scenario: change the AutoCreateForSalesInvoice sysconfig back to the refault (=N)
-    And set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
