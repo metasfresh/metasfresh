@@ -1,34 +1,8 @@
 package de.metas.contracts.invoicecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collections;
-import java.util.Iterator;
-
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -37,26 +11,35 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.QueryLimit;
+
+import java.util.Collections;
+import java.util.Iterator;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {
+
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}
@@ -79,11 +62,13 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Flatrate_DataEntry dataEntry = create(dataEntryObj, I_C_Flatrate_DataEntry.class);
 		if (dataEntry.getC_Invoice_Candidate_ID() > 0)
 		{
-			Services.get(IInvoiceCandDAO.class).invalidateCand(dataEntry.getC_Invoice_Candidate());
+			final InvoiceCandidateId id = InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_ID());
+			invoiceCandDAO.invalidateCandFor(id);
 		}
 		if (dataEntry.getC_Invoice_Candidate_Corr_ID() > 0)
 		{
-			Services.get(IInvoiceCandDAO.class).invalidateCand(dataEntry.getC_Invoice_Candidate_Corr());
+			final InvoiceCandidateId id = InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_Corr_ID());
+			invoiceCandDAO.invalidateCandFor(id);
 		}
 	}
 

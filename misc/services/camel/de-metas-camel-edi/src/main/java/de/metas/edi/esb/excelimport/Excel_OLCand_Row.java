@@ -22,34 +22,33 @@
 
 package de.metas.edi.esb.excelimport;
 
+import lombok.Getter;
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import lombok.NonNull;
 
 /**
  * Internal row representation of a customer's Excel file which shall be imported to C_OLCands.
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 public class Excel_OLCand_Row
 {
-	public static final Excel_OLCand_Row_Builder builder()
+	public static Excel_OLCand_Row_Builder builder()
 	{
 		return new Excel_OLCand_Row_Builder();
 	}
 
-	public static final Map<Integer, Excel_OLCand_Row> indexByLineNo(final Collection<Excel_OLCand_Row> rows)
+	public static Map<Integer, Excel_OLCand_Row> indexByLineNo(final Collection<Excel_OLCand_Row> rows)
 	{
-		final Map<Integer, Excel_OLCand_Row> lineNo2row = new HashMap<Integer, Excel_OLCand_Row>(rows.size());
-		for (Excel_OLCand_Row row : rows)
+		final Map<Integer, Excel_OLCand_Row> lineNo2row = new HashMap<>(rows.size());
+		for (final Excel_OLCand_Row row : rows)
 		{
 			final Integer lineNo = row.getLineNo();
 			lineNo2row.put(lineNo, row);
@@ -58,7 +57,7 @@ public class Excel_OLCand_Row
 		return lineNo2row;
 	}
 
-	public static final Excel_OLCand_Row ofMap(@NonNull final Map<String, Object> map)
+	public static Excel_OLCand_Row ofMap(@NonNull final Map<String, Object> map)
 	{
 		return builder()
 				.setFromMap(map)
@@ -103,8 +102,18 @@ public class Excel_OLCand_Row
 	private final int M_ProductPrice_ID;
 	private final int M_ProductPrice_Attribute_ID;
 	private final int M_HU_PI_Item_Product_ID;
+
 	private final int C_BPartner_ID;
 	private final int C_BPartner_Location_ID;
+	
+	@Getter private final int Bill_BPartner_ID;
+	@Getter private final int Bill_Location_ID;
+	@Getter private final int HandOver_Partner_ID;
+	@Getter private final int HandOver_Location_ID;
+	@Getter private final int DropShip_BPartner_ID;
+	@Getter private final int DropShip_Location_ID;
+
+
 
 	/* package */Excel_OLCand_Row(final Excel_OLCand_Row_Builder builder)
 	{
@@ -145,8 +154,15 @@ public class Excel_OLCand_Row
 		this.M_ProductPrice_ID = builder.M_ProductPrice_ID;
 		this.M_ProductPrice_Attribute_ID = builder.M_ProductPrice_Attribute_ID;
 		this.M_HU_PI_Item_Product_ID = builder.M_HU_PI_Item_Product_ID;
+
 		this.C_BPartner_ID = builder.C_BPartner_ID;
 		this.C_BPartner_Location_ID = builder.C_BPartner_Location_ID;
+		this.Bill_BPartner_ID = builder.Bill_BPartner_ID;
+		this.Bill_Location_ID = builder.Bill_Location_ID;
+		this.HandOver_Partner_ID = builder.HandOver_Partner_ID;
+		this.HandOver_Location_ID = builder.HandOver_Location_ID;
+		this.DropShip_BPartner_ID = builder.DropShip_BPartner_ID;
+		this.DropShip_Location_ID = builder.DropShip_Location_ID;
 	}
 
 	@Override

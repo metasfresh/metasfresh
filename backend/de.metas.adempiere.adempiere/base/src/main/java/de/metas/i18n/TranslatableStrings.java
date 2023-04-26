@@ -1,10 +1,23 @@
 package de.metas.i18n;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.currency.Amount;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -18,17 +31,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.currency.Amount;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -84,8 +86,7 @@ public class TranslatableStrings
 		}
 		else if (obj instanceof Collection)
 		{
-			@SuppressWarnings("unchecked")
-			final Collection<Object> coll = (Collection<Object>)obj;
+			@SuppressWarnings("unchecked") final Collection<Object> coll = (Collection<Object>)obj;
 			return coll.stream()
 					.flatMap(TranslatableStrings::explodeCollections);
 		}
@@ -142,8 +143,7 @@ public class TranslatableStrings
 	public Collector<ITranslatableString, ?, ITranslatableString> joining(final String joiningString)
 	{
 		final Supplier<List<ITranslatableString>> supplier = ArrayList::new;
-		@SuppressWarnings("Convert2MethodRef")
-		final BiConsumer<List<ITranslatableString>, ITranslatableString> accumulator = (accum, e) -> accum.add(e);
+		@SuppressWarnings("Convert2MethodRef") final BiConsumer<List<ITranslatableString>, ITranslatableString> accumulator = (accum, e) -> accum.add(e);
 		final BinaryOperator<List<ITranslatableString>> combiner = (accum1, accum2) -> {
 			accum1.addAll(accum2);
 			return accum1;
@@ -165,7 +165,7 @@ public class TranslatableStrings
 	@NonNull
 	public ITranslatableString singleLanguage(@Nullable final String adLanguage, @Nullable final String value)
 	{
-		if (Check.isEmpty(adLanguage, true))
+		if (adLanguage == null || Check.isBlank(adLanguage))
 		{
 			return ConstantTranslatableString.of(value);
 		}
@@ -186,13 +186,13 @@ public class TranslatableStrings
 		{
 			return true;
 		}
-		else if (trl == ConstantTranslatableString.EMPTY)
-		{
-			return true;
-		}
 		else if (trl instanceof ConstantTranslatableString)
 		{
-			return Check.isEmpty(trl.getDefaultValue(), false);
+			return ((ConstantTranslatableString)trl).isEmpty();
+		}
+		else if (trl instanceof ImmutableTranslatableString)
+		{
+			return ((ImmutableTranslatableString)trl).isEmpty();
 		}
 		else
 		{
@@ -268,6 +268,11 @@ public class TranslatableStrings
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
 
+	public DateTimeTranslatableString temporal(@NonNull final Temporal date)
+	{
+		return DateTimeTranslatableString.ofObject(date);
+	}
+
 	public ITranslatableString ofMap(final Map<String, String> trlMap)
 	{
 		if (trlMap == null || trlMap.isEmpty())
@@ -341,7 +346,7 @@ public class TranslatableStrings
 	{
 		return TimeZoneTranslatableString.ofZoneId(timeZone, textStyle);
 	}
-	
+
 	public static ITranslatableString parse(@Nullable final String text)
 	{
 		if (text == null || text.isEmpty())
@@ -356,7 +361,7 @@ public class TranslatableStrings
 		while (idx != -1)
 		{
 			builder.append(inStr.substring(0, idx)); // up to @
-			inStr = inStr.substring(idx + 1, inStr.length()); // from first @
+			inStr = inStr.substring(idx + 1); // from first @
 
 			final int j = inStr.indexOf('@'); // next @
 			if (j < 0) // no second tag
@@ -375,12 +380,12 @@ public class TranslatableStrings
 				builder.appendADElement(token); // replace context
 			}
 
-			inStr = inStr.substring(j + 1, inStr.length());	// from second @
+			inStr = inStr.substring(j + 1);    // from second @
 			idx = inStr.indexOf('@');
 		}
 
 		// add remainder
-		if (inStr != null && inStr.length() > 0)
+		if (inStr.length() > 0)
 		{
 			builder.append(inStr);
 		}
@@ -388,10 +393,31 @@ public class TranslatableStrings
 		return builder.build();
 	}
 
-	public static ITranslatableString adMessage(@NonNull final AdMessageKey adMessage, @Nullable final Object ... msgParameters)
+	public static ITranslatableString adElementOrMessage(@NonNull final String columnName)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		return msgBL.translatable(columnName);
+	}
+
+	public static ITranslatableString adMessage(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		return msgBL.getTranslatableMsgText(adMessage, msgParameters);
+	}
+
+	public static ITranslatableString adRefList(final int adReferenceId, @NonNull final String value)
+	{
+		return adRefList(ReferenceId.ofRepoId(adReferenceId), value);
+	}
+
+	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final String value)
+	{
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+
+		return adReferenceService.getRefListById(adReferenceId)
+				.getItemByValue(value)
+				.map(ADRefListItem::getName)
+				.orElseGet(() -> anyLanguage(value));
 	}
 
 }

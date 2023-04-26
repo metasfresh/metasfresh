@@ -1,15 +1,13 @@
 package de.metas.tax.api;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -64,6 +62,11 @@ public class TaxId implements RepoIdAware
 		return toRepoId(id);
 	}
 
+	public static int toRepoIdOrNoTaxId(@Nullable final TaxId id)
+	{
+		return id != null ? id.getRepoId() : Tax.C_TAX_ID_NO_TAX_FOUND;
+	}
+	
 	int repoId;
 
 	private TaxId(final int repoId)
@@ -76,5 +79,10 @@ public class TaxId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public boolean isNoTaxId()
+	{
+		return repoId == Tax.C_TAX_ID_NO_TAX_FOUND;
 	}
 }

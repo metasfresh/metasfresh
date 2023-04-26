@@ -234,7 +234,7 @@ public class ShipmentDeclarationCreator
 	{
 		final InOutLineId shipmentLineId = shipmentAndLineId.getInOutLineId();
 
-		final I_M_InOutLine shipmentLineRecord = Services.get(IInOutDAO.class).getLineById(shipmentLineId);
+		final I_M_InOutLine shipmentLineRecord = Services.get(IInOutDAO.class).getLineByIdInTrx(shipmentLineId);
 
 		final ProductId productId = ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);

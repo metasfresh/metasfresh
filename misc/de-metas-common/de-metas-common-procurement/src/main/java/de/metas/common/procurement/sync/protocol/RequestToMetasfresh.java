@@ -47,4 +47,5 @@ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutUs
 })
 public abstract class RequestToMetasfresh
 {
+	public abstract String getEventId();
 }

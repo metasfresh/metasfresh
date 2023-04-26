@@ -1,17 +1,15 @@
 package de.metas.impexp.format;
 
-import java.util.Arrays;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_AD_ImpFormat;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_AD_ImpFormat;
+
+import java.util.Arrays;
 
 /*
  * #%L
@@ -23,12 +21,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,6 +54,21 @@ public enum ImpFormatType implements ReferenceListAwareEnum
 	public String getCode()
 	{
 		return code;
+	}
+
+	public char getCellDelimiterChar()
+	{
+		switch (this)
+		{
+			case COMMA_SEPARATED:
+				return ',';
+			case SEMICOLON_SEPARATED:
+				return ';';
+			case TAB_SEPARATED:
+				return '\t';
+			default:
+				throw new AdempiereException("Cannot find delimiter for " + this);
+		}
 	}
 
 	@JsonCreator

@@ -24,6 +24,8 @@ package de.metas.remittanceadvice.document;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceId;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
@@ -33,9 +35,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_RemittanceAdvice;
 import org.compiere.model.X_C_RemittanceAdvice;
-import org.compiere.util.TimeUtil;
-
-import java.time.LocalDate;
 
 public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 {
@@ -61,11 +60,10 @@ public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
 		final I_C_RemittanceAdvice remittanceAdvice = extractRemittanceAdvice(docFields);
-
-		return TimeUtil.asLocalDate(remittanceAdvice.getDateDoc());
+		return InstantAndOrgId.ofTimestamp(remittanceAdvice.getDateDoc(), OrgId.ofRepoId(remittanceAdvice.getAD_Org_ID()));
 	}
 
 	@Override

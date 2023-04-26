@@ -1,0 +1,100 @@
+{
+  "name": "mobile-webui-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "license": "GPL 2",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.2.0",
+    "@redux-offline/redux-offline": "^2.6.0",
+    "@reduxjs/toolkit": "^1.6.1",
+    "@stomp/stompjs": "^6.1.2",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@zxing/browser": "^0.0.10",
+    "@zxing/library": "^0.18.6",
+    "axios": "^0.21.4",
+    "bulma": "^0.9.3",
+    "classnames": "^2.3.1",
+    "connected-react-router": "^6.9.1",
+    "counterpart": "^0.18.6",
+    "immer": "9.0.7",
+    "js-cookie": "^3.0.1",
+    "lodash": "^4.17.21",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-hot-toast": "^2.1.1",
+    "react-redux": "^7.2.5",
+    "react-router": "^5.2.1",
+    "react-router-dom": "^5.3.0",
+    "react-scripts": "4.0.3",
+    "redux-localstorage-simple": "^2.4.1",
+    "reselect": "^4.0.0",
+    "sockjs-client": "^1.5.2",
+    "uuid": "^8.3.2",
+    "web-vitals": "^0.2.4",
+    "workbox-background-sync": "^5.1.3",
+    "workbox-broadcast-update": "^5.1.3",
+    "workbox-cacheable-response": "^5.1.3",
+    "workbox-core": "^5.1.3",
+    "workbox-expiration": "^5.1.3",
+    "workbox-google-analytics": "^5.1.3",
+    "workbox-navigation-preload": "^5.1.3",
+    "workbox-precaching": "^5.1.3",
+    "workbox-range-requests": "^5.1.3",
+    "workbox-routing": "^5.1.3",
+    "workbox-strategies": "^5.1.3",
+    "workbox-streams": "^5.1.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "lint": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --quiet",
+    "lintfix": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --fix",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "env": {
+      "browser": true,
+      "node": true
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/eslint-parser": "7.15.0",
+    "@babel/plugin-syntax-dynamic-import": "7.8.3",
+    "@babel/plugin-transform-regenerator": "^7.14.5",
+    "@babel/preset-env": "^7.15.0",
+    "@babel/preset-react": "7.14.5",
+    "@babel/register": "7.15.3",
+    "@babel/runtime": "7.15.3",
+    "babel-plugin-dynamic-import-node": "2.3.3",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "2.24.0",
+    "eslint-plugin-jest": "24.4.0",
+    "eslint-plugin-jsx-a11y": "6.4.1",
+    "eslint-plugin-prettier": "3.4.0",
+    "eslint-plugin-react": "7.24.0",
+    "prettier": "2.3.2",
+    "react-hot-loader": "4.13.0",
+    "sass": "^1.46.0"
+  },
+  "homepage": "/mobile"
+}

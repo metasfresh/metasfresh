@@ -16,12 +16,30 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,24 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 /**
  * Payment Allocation Model.
@@ -327,7 +327,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		final String sql = "UPDATE C_AllocationHdr SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_AllocationHdr_ID=" + getC_AllocationHdr_ID();
-		final int no = DB.executeUpdate(sql, get_TrxName());
+		final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 
 		log.debug(processed + " - #" + no);
 	}	// setProcessed
@@ -365,7 +365,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 		if (isPosted())
 		{
-			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.PaymentAllocation, getAD_Org_ID());
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		}
@@ -442,7 +442,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.PaymentAllocation, getAD_Org_ID());
 		MAllocationLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
@@ -478,7 +478,10 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		BigDecimal approval = BigDecimal.ZERO;
 		for (final MAllocationLine line : lines)
 		{
-			approval = approval.add(line.getWriteOffAmt()).add(line.getDiscountAmt());
+			approval = approval.add(line.getWriteOffAmt())
+					.add(line.getDiscountAmt())
+					.add(line.getPaymentWriteOffAmt());
+
 			// Make sure there is BP
 			if (line.getC_BPartner_ID() <= 0)
 			{
@@ -837,9 +840,9 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	}	// getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateTrx());
+		return InstantAndOrgId.ofTimestamp(getDateTrx(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**
@@ -879,7 +882,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// Can we delete posting
-		MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.PaymentAllocation, getAD_Org_ID());
 
 		// Set Inactive
 		setIsActive(false);
@@ -943,8 +946,6 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	/**
 	 * Reverse current allocation (another allocation is produced)
 	 * NOTE: this method is not saving current object's modifications
-	 *
-	 * @see http://dewiki908/mediawiki/index.php/02181:_Verbuchungsfehler_bei_Zuordnungen_%282011092910000015%29
 	 */
 	private void reverseCorrectIt0()
 	{
@@ -987,6 +988,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 			reversalLine.setDiscountAmt(reversalLine.getDiscountAmt().negate());
 			reversalLine.setOverUnderAmt(reversalLine.getOverUnderAmt().negate());
 			reversalLine.setWriteOffAmt(reversalLine.getWriteOffAmt().negate());
+			reversalLine.setPaymentWriteOffAmt(reversalLine.getPaymentWriteOffAmt().negate());
 			reversalLine.setReversalLine_ID(line.getC_AllocationLine_ID());
 			InterfaceWrapperHelper.save(reversalLine);
 

@@ -1,0 +1,102 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:FulfilmentCancellation-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "FulfilmentCancellation":{
+ "UBLVersionID":{"_":"2.1"},
+ "ID":{"_":"00384"},
+ "CopyIndicator":{"_":false},
+ "IssueDate":{"_":"2005-06-22"},
+ "Note":[{"_":"sample"}],
+ "CancellationNote":[{"_":"The quality check has detected that the beeswax doesn't become liquid at the\n        expected temperature."}],
+ "DespatchDocumentReference":[{
+  "ID":{"_":"565899"},
+  "UUID":{"_":"88C7280E-8F10-419F-9949-8EFFFA2842B8"},
+  "IssueDate":{"_":"2005-06-20"}
+ }],
+ "ReceiptDocumentReference":[{
+  "ID":{"_":"658398"},
+  "UUID":{"_":"89F82FA6-5331-491D-83BC-7B6CA7FD047C"},
+  "IssueDate":{"_":"2005-06-21"}
+ }],
+ "OrderReference":[{
+  "ID":{"_":"AEG012345"},
+  "SalesOrderID":{"_":"CON0095678"},
+  "UUID":{"_":"6E09886B-DC6E-439F-82D1-7CCAC7F4E3B1"},
+  "IssueDate":{"_":"2005-06-20"}
+ }],
+ "BuyerCustomerParty":{
+  "CustomerAssignedAccountID":{"_":"XFB01"},
+  "SupplierAssignedAccountID":{"_":"GT00978567"},
+  "Party":{
+   "PartyName":[{
+    "Name":{"_":"IYT Corporation"}
+   }],
+   "PostalAddress":{
+    "StreetName":{"_":"Avon Way"},
+    "BuildingName":{"_":"Thereabouts"},
+    "BuildingNumber":{"_":"56A"},
+    "CityName":{"_":"Bridgtow"},
+    "PostalZone":{"_":"ZZ99 1ZZ"},
+    "CountrySubentity":{"_":"Avon"},
+    "AddressLine":[{
+     "Line":{"_":"3rd Floor, Room 5"}
+    }],
+    "Country":{
+     "IdentificationCode":{"_":"GB"}
+    }
+   },
+   "PartyTaxScheme":[{
+    "RegistrationName":{"_":"Bridgtow District Council"},
+    "CompanyID":{"_":"12356478"},
+    "ExemptionReason":[{"_":"Local Authority"}],
+    "TaxScheme":{
+     "ID":{"_":"UK VAT"},
+     "TaxTypeCode":{"_":"VAT"}
+    }
+   }],
+   "Contact":{
+    "Name":{"_":"Mr Fred Churchill"},
+    "Telephone":{"_":"0127 2653214"},
+    "Telefax":{"_":"0127 2653215"},
+    "ElectronicMail":{"_":"fred@iytcorporation.gov.uk"}
+   }
+  }
+ },
+ "SellerSupplierParty":{
+  "CustomerAssignedAccountID":{"_":"CO001"},
+  "Party":{
+   "PartyName":[{
+    "Name":{"_":"Consortial"}
+   }],
+   "PostalAddress":{
+    "StreetName":{"_":"Busy Street"},
+    "BuildingName":{"_":"Thereabouts"},
+    "BuildingNumber":{"_":"56A"},
+    "CityName":{"_":"Farthing"},
+    "PostalZone":{"_":"AA99 1BB"},
+    "CountrySubentity":{"_":"Heremouthshire"},
+    "AddressLine":[{
+     "Line":{"_":"The Roundabout"}
+    }],
+    "Country":{
+     "IdentificationCode":{"_":"GB"}
+    }
+   },
+   "PartyTaxScheme":[{
+    "RegistrationName":{"_":"Farthing Purchasing Consortium"},
+    "CompanyID":{"_":"175 269 2355"},
+    "ExemptionReason":[{"_":"N/A"}],
+    "TaxScheme":{
+     "ID":{"_":"VAT"},
+     "TaxTypeCode":{"_":"VAT"}
+    }
+   }],
+   "Contact":{
+    "Name":{"_":"Mrs Bouquet"},
+    "Telephone":{"_":"0158 1233714"},
+    "Telefax":{"_":"0158 1233856"},
+    "ElectronicMail":{"_":"bouquet@fpconsortial.co.uk"}
+   }
+  }
+ }
+}}

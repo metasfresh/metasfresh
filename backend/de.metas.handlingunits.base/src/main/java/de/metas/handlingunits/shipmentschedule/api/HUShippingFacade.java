@@ -3,17 +3,21 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
-import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
@@ -25,13 +29,11 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Package;
@@ -44,6 +46,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -76,16 +79,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager" })
+@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "invoiceCandDAO", "invoiceCandBL", "trxManager", "inOutCandidateBL", "inOutDAO", "shipmentService" })
 public class HUShippingFacade
 {
 	private static final Logger logger = LogManager.getLogger(HUShippingFacade.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+	private final IShipmentService shipmentService = ShipmentService.getInstance();
 
 	private final Supplier<ShipperGatewayFacade> shipperGatewayFacadeSupplier = //
 			() -> SpringContextHolder.instance.getBean(ShipperGatewayFacade.class);
@@ -162,8 +168,12 @@ public class HUShippingFacade
 	{
 		if (addToShipperTransportationId > 0)
 		{
-			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(addToShipperTransportationId), hus);
+			final List<I_M_Package> result = trxManager
+					//dev-note: call in new trx so they are available in ServerBoot when generating the shipments
+					.callInNewTrx(() -> huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(addToShipperTransportationId), hus));
+
 			mPackagesCreated.addAll(result);
+
 			Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
 		}
 	}
@@ -173,7 +183,6 @@ public class HUShippingFacade
 		final List<ShipmentScheduleWithHU> candidates = getCandidates();
 		if (candidates.isEmpty())
 		{
-			//noinspection ThrowableNotThrown
 			new AdempiereException("No shipment candidates found")
 					.appendParametersToMessage()
 					.setParameter("context", this)
@@ -181,17 +190,23 @@ public class HUShippingFacade
 			return;
 		}
 
-		shipmentsGenerateResult = huShipmentScheduleBL
-				.createInOutProducerFromShipmentSchedule()
-				.setProcessShipments(completeShipments)
-				.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
-				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY) // if this is ever used, it should be on true to keep legacy
-				// Fail on any exception, because we cannot create just a part of those shipments.
-				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
-				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
-				.createShipments(candidates);
-		Loggables.addLog("Generated {}", shipmentsGenerateResult);
+		final ImmutableSet<ShipmentScheduleId> candidatesIds = candidates.stream()
+				.map(ShipmentScheduleWithHU::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
 
+		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
+				.scheduleIds(candidatesIds)
+				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY)
+				.isShipDateToday(true)
+				.isCompleteShipment(completeShipments)
+				.onTheFlyPickToPackingInstructions(false) /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */
+				.build();
+
+		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(request);
+
+		loadGeneratedShipments(generatedInOutIds);
+
+		Loggables.addLog("Generated {}", shipmentsGenerateResult);
 	}
 
 	private void generateInvoicesIfNeeded()
@@ -217,10 +232,12 @@ public class HUShippingFacade
 					.setParameter("shipments", shipments);
 		}
 
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-
 		final boolean adhereToInvoiceSchedule = invoiceMode == BillAssociatedInvoiceCandidates.IF_INVOICE_SCHEDULE_PERMITS;
-		invoicingParams.setIgnoreInvoiceSchedule(!adhereToInvoiceSchedule);
+
+		final InvoicingParams invoicingParams = InvoicingParams.builder()
+				.ignoreInvoiceSchedule(!adhereToInvoiceSchedule)
+				.supplementMissingPaymentTermIds(true) // e.g. "packaging" ICs from shipments might lack the order's payment term, but we still want them to be in the same invoice, unless they explicitly have a different payment term.
+				.build();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setFailOnChanges(false)
@@ -289,5 +306,14 @@ public class HUShippingFacade
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
+	}
+
+	private void loadGeneratedShipments(@NonNull final Set<InOutId> shipmentIds)
+	{
+		shipmentsGenerateResult = inOutCandidateBL.createEmptyInOutGenerateResult(true);
+
+		final Map<InOutId, I_M_InOut> id2Shipment = inOutDAO.getShipmentsByIds(shipmentIds, I_M_InOut.class);
+
+		id2Shipment.values().forEach(shipmentsGenerateResult::addInOut);
 	}
 }

@@ -406,7 +406,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsApplySecuritySettings.
+	 * Set Apply Security Settings.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -415,7 +415,7 @@ public interface I_AD_Process
 	void setIsApplySecuritySettings (boolean IsApplySecuritySettings);
 
 	/**
-	 * Get IsApplySecuritySettings.
+	 * Get Apply Security Settings.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -471,6 +471,71 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_IsDirectPrint = new ModelColumn<>(I_AD_Process.class, "IsDirectPrint", null);
 	String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
+
+	/**
+	 * Set Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateExportDate (boolean IsUpdateExportDate);
+
+	/**
+	 * Get Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateExportDate();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsUpdateExportDate = new ModelColumn<>(I_AD_Process.class, "IsUpdateExportDate", null);
+	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
+
+	/**
+	 * Set Format Excel File.
+	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFormatExcelFile (boolean IsFormatExcelFile);
+
+	/**
+	 * Get Format Excel File.
+	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFormatExcelFile();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsFormatExcelFile = new ModelColumn<>(I_AD_Process.class, "IsFormatExcelFile", null);
+	String COLUMNNAME_IsFormatExcelFile = "IsFormatExcelFile";
+
+	/**
+	 * Set Log Warning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsLogWarning (boolean IsLogWarning);
+
+	/**
+	 * Get Log Warning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLogWarning();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsLogWarning = new ModelColumn<>(I_AD_Process.class, "IsLogWarning", null);
+	String COLUMNNAME_IsLogWarning = "IsLogWarning";
 
 	/**
 	 * Set Notify user after execution.

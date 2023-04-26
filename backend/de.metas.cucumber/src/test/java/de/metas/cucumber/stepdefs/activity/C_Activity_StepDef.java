@@ -77,4 +77,20 @@ public class C_Activity_StepDef
 			activityTable.putOrReplace(activityIdentifier, activity);
 		}
 	}
+
+	@And("validate C_Activity:$")
+	public void retrieve_C_Activity(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_Value);
+			final String name = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_Name);
+
+			final String activityIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_C_Activity_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Activity activity = activityTable.get(activityIdentifier);
+
+			assertThat(activity.getName()).isEqualTo(name);
+			assertThat(activity.getValue()).isEqualTo(value);
+		}
+	}
 }

@@ -19,7 +19,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordField;
 import de.metas.dataentry.data.DataEntryRecordFieldString;
@@ -87,7 +87,7 @@ public class DataEntryRecordCacheTest
 			final DataEntrySubTabId subTabId,
 			final String fieldValue)
 	{
-		final DataEntryCreatedUpdatedInfo createdUpdatedInfo = DataEntryCreatedUpdatedInfo.createNew(USER_ID, ZonedDateTime.now());
+		final CreatedUpdatedInfo createdUpdatedInfo = CreatedUpdatedInfo.createNew(USER_ID, ZonedDateTime.now());
 		final DataEntryRecordField<?> field = DataEntryRecordFieldString.of(FIELD_ID1, createdUpdatedInfo, fieldValue);
 
 		return entryRecordsRepo.save(DataEntryRecord.builder()

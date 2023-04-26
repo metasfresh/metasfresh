@@ -114,7 +114,7 @@ public class HUInOutDAO implements IHUInOutDAO
 	@Override
 	public List<I_M_HU> retrieveHandlingUnitsByInOutLineId(@NonNull final InOutLineId inOutLineId)
 	{
-		return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutDAO.getLineById(inOutLineId));
+		return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutDAO.getLineByIdInTrx(inOutLineId));
 	}
 
 	@Override

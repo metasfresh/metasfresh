@@ -1,15 +1,13 @@
 package de.metas.bpartner.composite;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Builder;
 import lombok.Data;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L

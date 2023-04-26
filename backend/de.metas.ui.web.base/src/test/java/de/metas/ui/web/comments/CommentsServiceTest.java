@@ -41,6 +41,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -50,7 +51,6 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.user.UserId;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -105,7 +105,7 @@ class CommentsServiceTest
 			{
 				@Nullable
 				@Override
-				public DocumentFilterDescriptorsProvider createFiltersProvider(final AdTabId adTabId, final String tableName, final @NonNull Collection<DocumentFieldDescriptor> fields)
+				public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context, final @NonNull Collection<DocumentFieldDescriptor> fields)
 				{
 					return null;
 				}

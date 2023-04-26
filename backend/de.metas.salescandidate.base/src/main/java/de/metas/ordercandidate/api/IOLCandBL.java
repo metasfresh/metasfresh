@@ -37,11 +37,14 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.process.PInstanceId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.PO;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -55,7 +58,7 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 */
-	void process(OLCandProcessorDescriptor processor, AsyncBatchId asyncBatchId);
+	void process(OLCandProcessorDescriptor processor, @NonNull PInstanceId selectionId, @Nullable AsyncBatchId asyncBatchId);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
@@ -75,7 +78,7 @@ public interface IOLCandBL extends ISingletonService
 	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
 	 * @param date to be used in retrieving the actual price
 	 */
-	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
+	IPricingResult computePriceActual(I_C_OLCand olCand, @Nullable BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
 
 	AttachmentEntry addAttachment(OLCandQuery olCandQuery, AttachmentEntryCreateRequest attachmentEntryCreateRequest);
 
@@ -110,4 +113,8 @@ public interface IOLCandBL extends ISingletonService
 	void markAsProcessed(final OLCand olCand);
 
 	void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex);
+
+	OLCand toOLCand(@NonNull I_C_OLCand olCandRecord, @NonNull OLCandOrderDefaults orderDefaults);
+
+	void saveCandidate(@NonNull final OLCand cand);
 }

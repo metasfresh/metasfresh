@@ -1,21 +1,18 @@
 package de.metas.ui.web.view;
 
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -99,7 +96,7 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 	private void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final IView view = (IView)notification.getValue();
-		logger.debug("View <" + view.getViewId() + "> removed from cache. Cause: " + notification.getCause());
+		logger.debug("View `{}` removed from cache. Cause: {}", view.getViewId(), notification.getCause());
 		view.afterDestroy();
 	}
 

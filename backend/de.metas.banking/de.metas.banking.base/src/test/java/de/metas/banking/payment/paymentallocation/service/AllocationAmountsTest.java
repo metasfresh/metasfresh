@@ -99,7 +99,7 @@ public class AllocationAmountsTest
 
 			assertThatThrownBy(builder::build)
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Moneys shall have the same currency");
+					.hasMessageStartingWith("All given Money(s) shall have the same currency");
 		}
 	}
 

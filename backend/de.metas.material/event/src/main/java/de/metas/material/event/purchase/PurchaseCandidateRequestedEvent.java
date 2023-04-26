@@ -1,18 +1,16 @@
 package de.metas.material.event.purchase;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.forecast.ForecastLine;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -77,28 +75,31 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 	String userElementString6;
 	String userElementString7;
 
+	boolean simulated;
+
 	@Builder
 	@JsonCreator
 	public PurchaseCandidateRequestedEvent(
 			@JsonProperty("supplyCandidateRepoId") final int supplyCandidateRepoId,
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
-			@JsonProperty("salesOrderLineRepoId") @Nullable final int salesOrderLineRepoId,
-			@JsonProperty("salesOrderRepoId") @Nullable final int salesOrderRepoId,
-			@JsonProperty("forecastId") @Nullable final int forecastId,
-			@JsonProperty("forecastLineId") @Nullable final int forecastLineId,
+			@JsonProperty("salesOrderLineRepoId") final int salesOrderLineRepoId,
+			@JsonProperty("salesOrderRepoId") final int salesOrderRepoId,
+			@JsonProperty("forecastId") final int forecastId,
+			@JsonProperty("forecastLineId") final int forecastLineId,
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("activityId") @Nullable final int activityId,
-			@JsonProperty("campaignId") @Nullable final int campaignId,
-			@JsonProperty("projectId") @Nullable final int projectId,
-			@JsonProperty("userElementId1") @Nullable final int userElementId1,
-			@JsonProperty("userElementId2") @Nullable final int userElementId2,
+			@JsonProperty("activityId") final int activityId,
+			@JsonProperty("campaignId") final int campaignId,
+			@JsonProperty("projectId") final int projectId,
+			@JsonProperty("userElementId1") final int userElementId1,
+			@JsonProperty("userElementId2") final int userElementId2,
 			@JsonProperty("userElementString1") @Nullable final String userElementString1,
 			@JsonProperty("userElementString2") @Nullable final String userElementString2,
 			@JsonProperty("userElementString3") @Nullable final String userElementString3,
 			@JsonProperty("userElementString4") @Nullable final String userElementString4,
 			@JsonProperty("userElementString5") @Nullable final String userElementString5,
 			@JsonProperty("userElementString6") @Nullable final String userElementString6,
-			@JsonProperty("userElementString7") @Nullable final String userElementString7)
+			@JsonProperty("userElementString7") @Nullable final String userElementString7,
+			@JsonProperty("simulated") final boolean simulated)
 	{
 		this.supplyCandidateRepoId = Check.assumeGreaterThanZero(supplyCandidateRepoId, "supplyCandidateRepoId");
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
@@ -121,6 +122,6 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 		this.userElementString5 = userElementString5;
 		this.userElementString6 = userElementString6;
 		this.userElementString7 = userElementString7;
-
+		this.simulated = simulated;
 	}
 }

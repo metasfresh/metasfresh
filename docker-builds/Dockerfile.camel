@@ -1,0 +1,12 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-common:$REFNAME as common
+
+FROM maven:3.8.4-eclipse-temurin-17 as build
+
+COPY --from=common /root/.m2 /root/.m2/
+
+WORKDIR /camel
+COPY misc/services/camel .
+
+RUN mvn de.qaware.maven:go-offline-maven-plugin:1.2.8:resolve-dependencies
+RUN mvn clean install -o -Dmaven.gitcommitid.skip=true -Djib.skip=true -DskipTests

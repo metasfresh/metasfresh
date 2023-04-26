@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -88,7 +88,7 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("purchaseDateOrdered")
 	ZonedDateTime purchaseDateOrdered;
 
-	@ApiModelProperty("The vendor (`C_BPartner`) in question. Can be\n"
+	@Schema(description = "The vendor (`C_BPartner`) in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* a plain `gln-<C_BPartner_Location.GLN>`\n"
 			+ "* a plain `val-<C_BPartner.Value>`\n"
@@ -97,7 +97,7 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("vendor")
 	JsonVendor vendor;
 
-	@ApiModelProperty("The warehouse (`M_Warehouse`) in question. Can be\n"
+	@Schema(description = "The warehouse (`M_Warehouse`) in question. Can be\n"
 			+ "* a plain `<M_Warehouse_ID>`\n"
 			+ "* a plain `val-<M_Warehouse.Value>`\n"
 			+ "* or an External Business Key with type `Warehouse` such as `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n")
@@ -105,7 +105,7 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("warehouseIdentifier")
 	String warehouseIdentifier;
 
-	@ApiModelProperty(value = PRODUCT_IDENTIFIER_DOC)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC)
 	@NonNull
 	@JsonProperty("productIdentifier")
 	String productIdentifier;
@@ -122,7 +122,7 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("productDescription")
 	String productDescription;
 
-	@ApiModelProperty(value = ACTIVITY_IDENTIFIER_DOC)
+	@Schema(description = ACTIVITY_IDENTIFIER_DOC)
 	@Nullable
 	@JsonProperty("activityIdentifier")
 	String activityIdentifier;

@@ -1,51 +1,10 @@
 package de.metas.letters.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.letter.BoilerPlateId;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
@@ -66,6 +25,26 @@ import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public final class TextTemplateBL implements ITextTemplateBL
 {
@@ -179,7 +158,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		final Properties ctx = Env.getCtx();
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setAD_Process_ID(getJasperProcess_ID(request))
+				.setAD_Process_ID(getJasperProcessId(request).orElse(AD_Process_ID_T_Letter_Spool_Print))
 				// .setRecord(recordRef) // no record
 				.setReportLanguage(request.getAdLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
@@ -194,26 +173,34 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return report.getReportContent();
 	}
 
-	private static AdProcessId getJasperProcess_ID(final Letter request)
+	@NonNull
+	public static Optional<AdProcessId> getJasperProcessId(@NonNull final Letter request)
 	{
-		if (request.getBoilerPlateId() == null)
+		final BoilerPlateId boilerPlateId = request.getBoilerPlateId();
+		if (boilerPlateId == null)
 		{
-			return AD_Process_ID_T_Letter_Spool_Print;
+			return Optional.empty();
 		}
 
-		final I_AD_BoilerPlate textTemplate = loadOutOfTrx(request.getBoilerPlateId().getRepoId(), I_AD_BoilerPlate.class);
+		return getJasperProcessId(boilerPlateId);
+	}
+
+	@NonNull
+	public static Optional<AdProcessId> getJasperProcessId(@NonNull final BoilerPlateId boilerPlateId)
+	{
+		final I_AD_BoilerPlate textTemplate = loadOutOfTrx(boilerPlateId.getRepoId(), I_AD_BoilerPlate.class);
 		if (textTemplate == null)
 		{
-			return AD_Process_ID_T_Letter_Spool_Print;
+			return Optional.empty();
 		}
 
 		AdProcessId jasperProcessId = AdProcessId.ofRepoIdOrNull(textTemplate.getJasperProcess_ID());
 		if (jasperProcessId == null)
 		{
-			jasperProcessId = AD_Process_ID_T_Letter_Spool_Print;
+			return Optional.empty();
 		}
 
-		return jasperProcessId;
+		return Optional.of(jasperProcessId);
 	}
 
 	private static void createLetterSpoolRecord(final PInstanceId pinstanceId, final Letter request, final int adClientId)
@@ -239,8 +226,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 				+ "?,?,?,?,?,?,?,?,?,?"
 				+ ",getdate(),0,getdate(),0,'Y'"
 				+ ")";
-		DB.executeUpdateEx(sql,
-				new Object[] {
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												new Object[] {
 						adClientId,
 						request.getAdOrgId(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
 						pinstanceId,
@@ -252,7 +239,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 						request.getAddress(),
 						request.getUserId() == null ? null : request.getUserId().getRepoId(),
 				},
-				ITrx.TRXNAME_None);
+												ITrx.TRXNAME_None);
 	}
 
 	@Override

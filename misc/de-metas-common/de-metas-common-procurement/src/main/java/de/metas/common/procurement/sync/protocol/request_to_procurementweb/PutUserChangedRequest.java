@@ -22,24 +22,23 @@
 
 package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.UUID;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 @Builder
-@JsonDeserialize(builder = PutUserChangedRequest.PutUserChangedRequestBuilder.class)
+@Jacksonized
 public class PutUserChangedRequest extends RequestToMetasfresh
 {
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class PutUserChangedRequestBuilder
-	{
-	}
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
 
 	@NonNull String userUUID;
 

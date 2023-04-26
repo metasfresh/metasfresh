@@ -1,9 +1,8 @@
 package org.adempiere.ad.wrapper;
 
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
@@ -11,9 +10,11 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -41,7 +42,6 @@ import lombok.NonNull;
  * Allows to combine a number of different handlers and will delegate the actual works to the particular handler for the particular type of <code>model</code>.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 {
@@ -64,7 +64,8 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return true;
 	}
 
-	private final IInterfaceWrapperHelper getHelperThatCanHandleOrNull(final Object model)
+	@Nullable
+	private IInterfaceWrapperHelper getHelperThatCanHandleOrNull(final Object model)
 	{
 		for (final IInterfaceWrapperHelper helper : helpers)
 		{
@@ -77,7 +78,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return null;
 	}
 
-	private final IInterfaceWrapperHelper getHelperThatCanHandle(final Object model)
+	private IInterfaceWrapperHelper getHelperThatCanHandle(final Object model)
 	{
 		final IInterfaceWrapperHelper helper = getHelperThatCanHandleOrNull(model);
 		if (helper == null)
@@ -119,7 +120,11 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
-	public boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
+	public boolean setValue(
+			@NonNull final Object model,
+			@NonNull final String columnName,
+			@Nullable final Object value,
+			final boolean throwExIfColumnNotFound)
 	{
 		return getHelperThatCanHandle(model)
 				.setValue(model, columnName, value, throwExIfColumnNotFound);
@@ -240,8 +245,9 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 				.isNull(model, columnName);
 	}
 
+	@Nullable
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(@NonNull final Object model, @NonNull final String attributeName)
 	{
 		return getHelperThatCanHandle(model)
 				.getDynAttribute(model, attributeName);
@@ -252,6 +258,13 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	{
 		return getHelperThatCanHandle(model)
 				.setDynAttribute(model, attributeName, value);
+	}
+
+	@Nullable
+	@Override
+	public <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return getHelperThatCanHandle(model).computeDynAttributeIfAbsent(model, attributeName, supplier);
 	}
 
 	@Override
@@ -265,8 +278,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		// Short-circuit: model is already a PO instance
 		if (model instanceof PO)
 		{
-			@SuppressWarnings("unchecked")
-			final T po = (T)model;
+			@SuppressWarnings("unchecked") final T po = (T)model;
 			return po;
 		}
 

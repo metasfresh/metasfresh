@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_AcctSchema_Element
  *  @author metasfresh (generated) 
@@ -32,7 +33,7 @@ public interface I_C_AcctSchema_Element
 	 * Set Link Column.
 	 * Link Column for Multi-Parent tables
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -42,7 +43,7 @@ public interface I_C_AcctSchema_Element
 	 * Get Link Column.
 	 * Link Column for Multi-Parent tables
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -78,7 +79,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Buchführungsschema-Element.
+	 * Set Acct.Schema Element.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -87,7 +88,7 @@ public interface I_C_AcctSchema_Element
 	void setC_AcctSchema_Element_ID (int C_AcctSchema_Element_ID);
 
 	/**
-	 * Get Buchführungsschema-Element.
+	 * Get Acct.Schema Element.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -214,15 +215,10 @@ public interface I_C_AcctSchema_Element
 	 */
 	int getC_Element_ID();
 
-	org.compiere.model.I_C_Element getC_Element();
-
-	void setC_Element(org.compiere.model.I_C_Element C_Element);
-
-	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_C_Element> COLUMN_C_Element_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "C_Element_ID", org.compiere.model.I_C_Element.class);
 	String COLUMNNAME_C_Element_ID = "C_Element_ID";
 
 	/**
-	 * Set Kontenart.
+	 * Set Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: Search
@@ -232,7 +228,7 @@ public interface I_C_AcctSchema_Element
 	void setC_ElementValue_ID (int C_ElementValue_ID);
 
 	/**
-	 * Get Kontenart.
+	 * Get Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: Search
@@ -241,11 +237,6 @@ public interface I_C_AcctSchema_Element
 	 */
 	int getC_ElementValue_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getC_ElementValue();
-
-	void setC_ElementValue(@Nullable org.compiere.model.I_C_ElementValue C_ElementValue);
-
-	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "C_ElementValue_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
 
 	/**
@@ -274,6 +265,33 @@ public interface I_C_AcctSchema_Element
 
 	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
 	String COLUMNNAME_C_Location_ID = "C_Location_ID";
+
+	/**
+	 * Set Order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Set Project.
@@ -350,7 +368,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
-	 * Set Art.
+	 * Set Type.
 	 * Element Type (account or user defined)
 	 *
 	 * <br>Type: List
@@ -360,7 +378,7 @@ public interface I_C_AcctSchema_Element
 	void setElementType (java.lang.String ElementType);
 
 	/**
-	 * Get Art.
+	 * Get Type.
 	 * Element Type (account or user defined)
 	 *
 	 * <br>Type: List
@@ -396,7 +414,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Ausgeglichen.
+	 * Set Balanced.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -405,7 +423,7 @@ public interface I_C_AcctSchema_Element
 	void setIsBalanced (boolean IsBalanced);
 
 	/**
-	 * Get Ausgeglichen.
+	 * Get Balanced.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -438,7 +456,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_IsDisplayInEditor = "IsDisplayInEditor";
 
 	/**
-	 * Set Pflichtangabe.
+	 * Set mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -448,7 +466,7 @@ public interface I_C_AcctSchema_Element
 	void setIsMandatory (boolean IsMandatory);
 
 	/**
-	 * Get Pflichtangabe.
+	 * Get mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -481,6 +499,31 @@ public interface I_C_AcctSchema_Element
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Name.
@@ -572,4 +615,151 @@ public interface I_C_AcctSchema_Element
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 }

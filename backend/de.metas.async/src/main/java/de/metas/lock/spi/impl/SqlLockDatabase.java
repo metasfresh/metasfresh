@@ -10,14 +10,13 @@ import de.metas.lock.exceptions.LockChangeFailedException;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.model.I_T_Lock;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.lock.spi.ILockDatabase;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
@@ -243,7 +242,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	{
 		try
 		{
-			final int countLocked = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+			final int countLocked = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
 			if (countLocked <= 0 && lockCommand.isFailIfNothingLocked())
 			{
 				throw new LockFailedException("Nothing locked for selection");
@@ -298,7 +297,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 						+ I_T_Lock.COLUMNNAME_Record_ID + ", "
 						+ I_T_Lock.COLUMNNAME_Owner + ", "
 						+ I_T_Lock.COLUMNNAME_IsAutoCleanup + ", "
-						+ I_T_Lock.COLUMNNAME_IsAllowMultipleOwners
+						+ I_T_Lock.COLUMNNAME_IsAllowMultipleOwners + ", "
+						+ I_T_Lock.COLUMNNAME_Created
 						+ " FROM " + I_T_Lock.Table_Name
 						+ " WHERE " + I_T_Lock.COLUMNNAME_AD_Table_ID + " = " + adTableId.getRepoId()
 						+ " AND " + whereSql;
@@ -320,18 +320,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				))
 				.allowMultipleOwners(StringUtils.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAllowMultipleOwners)))
 				.autoCleanup(StringUtils.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup)))
+				.created(rs.getTimestamp(I_T_Lock.COLUMNNAME_Created).toInstant())
 				.build();
-	}
-
-	@Value
-	@Builder
-	public static class ExistingLockInfo
-	{
-		int lockId;
-		String ownerName;
-		TableRecordReference lockedRecord;
-		boolean autoCleanup;
-		boolean allowMultipleOwners;
 	}
 
 	@Override
@@ -367,7 +357,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
-			DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
 			return true;
 		}
 		catch (final DBUniqueConstraintException e)
@@ -433,7 +423,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
-			final int countChanged = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+			final int countChanged = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
 			return countChanged > 0;
 		}
 		catch (final Exception e)
@@ -465,7 +455,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
-			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+			final int countUnlocked = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
 			return countUnlocked;
 		}
 		catch (final Exception e)
@@ -490,7 +480,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
-			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+			final int countUnlocked = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
 			return countUnlocked > 0;
 		}
 		catch (final Exception e)
@@ -514,7 +504,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
-			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
+			final int countUnlocked = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
 			return countUnlocked;
 		}
 		catch (final Exception e)
@@ -663,11 +653,42 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	{
 		final String sql = "DELETE FROM " + I_T_Lock.Table_Name + " WHERE " + I_T_Lock.COLUMNNAME_IsAutoCleanup + "=?";
 		final Object[] sqlParams = new Object[] { true };
-		final int countLocksReleased = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
+		final int countLocksReleased = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
 		if (countLocksReleased > 0)
 		{
 			logger.info("Deleted {} lock records from {} which were flagged with IsAutoCleanup=true", countLocksReleased, I_T_Lock.Table_Name);
 		}
 		return countLocksReleased;
+	}
+
+	@Override
+	@Nullable
+	public ExistingLockInfo getLockInfo(@NonNull final TableRecordReference tableRecordReference, @Nullable final LockOwner lockOwner)
+	{
+		final LockOwner lockOwnerToUse = lockOwner == null ? LockOwner.NONE : lockOwner;
+
+		final String sql =
+				"SELECT " + I_T_Lock.COLUMNNAME_AD_Table_ID + ", "
+						+ I_T_Lock.COLUMNNAME_T_Lock_ID + ", "
+						+ I_T_Lock.COLUMNNAME_Record_ID + ", "
+						+ I_T_Lock.COLUMNNAME_Owner + ", "
+						+ I_T_Lock.COLUMNNAME_IsAutoCleanup + ", "
+						+ I_T_Lock.COLUMNNAME_IsAllowMultipleOwners + ", "
+						+ I_T_Lock.COLUMNNAME_Created
+						+ " FROM " + I_T_Lock.Table_Name
+						+ " WHERE " + I_T_Lock.COLUMNNAME_AD_Table_ID + " = ?"
+						+ " AND " + I_T_Lock.COLUMNNAME_Record_ID + " = ?"
+						+ " AND " + I_T_Lock.COLUMNNAME_Owner + " = ?";
+
+		final List<Object> sqlParams = ImmutableList.of(tableRecordReference.getAD_Table_ID(),
+														tableRecordReference.getRecord_ID(),
+														lockOwnerToUse.getOwnerName());
+
+		final List<ExistingLockInfo> result = trxManager
+				.callInNewTrx(() -> DB.retrieveRows(sql, sqlParams, SqlLockDatabase::extractExistingLockInfo));
+
+		Check.assume(result.size() <= 1, "There can be only one lock for the same owner");
+
+		return result.isEmpty() ? null : result.get(0);
 	}
 }

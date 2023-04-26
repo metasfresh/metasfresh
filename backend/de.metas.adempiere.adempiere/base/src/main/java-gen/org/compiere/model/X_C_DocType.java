@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -968195200L;
+	private static final long serialVersionUID = 1624442889L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -79,16 +79,43 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID() 
+	public int getC_DocType_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_Invoicing_Pool_ID, org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	}
+
+	@Override
+	public void setC_DocType_Invoicing_Pool(final org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_Invoicing_Pool_ID, org.compiere.model.I_C_DocType_Invoicing_Pool.class, C_DocType_Invoicing_Pool);
+	}
+
+	@Override
+	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
+	{
+		if (C_DocType_Invoicing_Pool_ID < 1)
+			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, null);
+		else
+			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, C_DocType_Invoicing_Pool_ID);
+	}
+
+	@Override
+	public int getC_DocType_Invoicing_Pool_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
@@ -255,8 +282,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
 	/** Interne Rechnung (Lieferant) = AVI */
 	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
-	/** Speditionsauftrag/Ladeliste = MST */
-	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** ShipperTransportation = MST */
+	public static final String DOCBASETYPE_ShipperTransportation = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */
@@ -271,6 +298,10 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
+	/** Cost Revaluation = CRD */
+	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -401,10 +432,34 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_FrameAgrement = "FA";
 	/** Order Call = OC */
 	public static final String DOCSUBTYPE_OrderCall = "OC";
-	/** Cost Estimate = CE */
-	public static final String DOCSUBTYPE_CostEstimate = "CE";
 	/** Mediated = MED */
 	public static final String DOCSUBTYPE_Mediated = "MED";
+	/** RD = RD */
+	public static final String DOCSUBTYPE_RD = "RD";
+	/** Cost Estimate = CE */
+	public static final String DOCSUBTYPE_CostEstimate = "CE";
+	/** Kreditoren Nachbelastung = NBK */
+	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
+	/** LS = LS */
+	public static final String DOCSUBTYPE_LS = "LS";
+	/** Payment service provider invoice = SI */
+	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
+	/** CallOrder = CAO */
+	public static final String DOCSUBTYPE_CallOrder = "CAO";
+	/** InterimInvoice = II */
+	public static final String DOCSUBTYPE_InterimInvoice = "II";
+	/** Withholding = WH */
+	public static final String DOCSUBTYPE_Withholding = "WH";
+	/** InternalVendorInvoice = IVI */
+	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
+	/** Delivery Instruction = DI */
+	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
+	/** InventoryShortageDocument = ISD */
+	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
+	/** InventoryOverageDocument = IOD */
+	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
+	/** CorrectionInvoice = CI */
+	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -576,7 +631,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public boolean isExcludeFromCommision()
+	public boolean isExcludeFromCommision() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromCommision);
 	}
@@ -675,6 +730,33 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public boolean isSplitWhenDifference() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSplitWhenDifference);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Sequence getLotNo_Sequence()
+	{
+		return get_ValueAsPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setLotNo_Sequence(final org.compiere.model.I_AD_Sequence LotNo_Sequence)
+	{
+		set_ValueFromPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, LotNo_Sequence);
+	}
+
+	@Override
+	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
+	{
+		if (LotNo_Sequence_ID < 1)
+			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
+		else
+			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
+	}
+
+	@Override
+	public int getLotNo_Sequence_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
 
 	@Override

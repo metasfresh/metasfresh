@@ -22,25 +22,6 @@ package de.metas.acct.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import de.metas.organization.OrgId;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Campaign;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_SalesRegion;
-import org.compiere.model.I_C_SubAcct;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_ElementValue;
-import org.slf4j.Logger;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -50,14 +31,30 @@ import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDimensionValidator;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Campaign;
+import org.compiere.model.I_C_ElementValue;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_SalesRegion;
+import org.compiere.model.I_C_SubAcct;
+import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_SectionCode;
+import org.slf4j.Logger;
 
 public class AccountBL implements IAccountBL
 {
 	private static final Logger log = LogManager.getLogger(AccountBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
 
@@ -95,9 +92,10 @@ public class AccountBL implements IAccountBL
 
 			if (AcctSchemaElementType.Organization.equals(elementType))
 			{
-				if (account.getAD_Org_ID() > 0)
+				final OrgId orgId = OrgId.ofRepoIdOrAny(account.getAD_Org_ID());
+				if (orgId.isRegular())
 				{
-					final I_AD_Org org = account.getAD_Org();
+					final I_AD_Org org = orgDAO.getById(orgId);
 					segmentCombination = org.getValue();
 					segmentDescription = org.getName();
 				}
@@ -219,9 +217,9 @@ public class AccountBL implements IAccountBL
 			{
 				if (account.getC_Project_ID() > 0)
 				{
-					final I_C_Project project = account.getC_Project();
-					segmentCombination = project.getValue();
-					segmentDescription = project.getName();
+					// final I_C_Project project = account.getC_Project();
+					// segmentCombination = project.getValue();
+					// segmentDescription = project.getName();
 				}
 				else if (element.isMandatory())
 				{
@@ -257,6 +255,33 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
+			else if (AcctSchemaElementType.SalesOrder.equals(elementType))
+			{
+				if (account.getC_OrderSO_ID() > 0)
+				{
+					final I_C_Order order = account.getC_OrderSO();
+					segmentCombination = order.getDocumentNo();
+				}
+				else if (element.isMandatory())
+				{
+					log.warn("Mandatory Element missing: C_Order_ID");
+					fullyQualified = false;
+				}
+			}
+			else if (AcctSchemaElementType.SectionCode.equals(elementType))
+			{
+				if (account.getM_SectionCode_ID() > 0)
+				{
+					final I_M_SectionCode sectionCode = account.getM_SectionCode();
+					segmentCombination = sectionCode.getValue();
+					segmentDescription = sectionCode.getName();
+				}
+				else if (element.isMandatory())
+				{
+					log.warn("Mandatory Element missing: C_Order_ID");
+					fullyQualified = false;
+				}
+			}
 			else if (AcctSchemaElementType.UserList1.equals(elementType))
 			{
 				if (account.getUser1_ID() > 0)
@@ -275,20 +300,19 @@ public class AccountBL implements IAccountBL
 					segmentDescription = ev.getName();
 				}
 			}
-			else if (AcctSchemaElementType.UserElement1.equals(elementType))
-			{
-				// TODO: implement
-				// if (acct.getUserElement1_ID() > 0)
-				// {
-				// }
-			}
-			else if (AcctSchemaElementType.UserElement2.equals(elementType))
-			{
-				// TODO: implement
-				// if (acct.getUserElement2_ID() > 0)
-				// {
-				// }
-			}
+			// TODO: implement
+			// else if (AcctSchemaElementType.UserElement1.equals(elementType))
+			// {
+			// 	// if (acct.getUserElement1_ID() > 0)
+			// 	// {
+			// 	// }
+			// }
+			// else if (AcctSchemaElementType.UserElement2.equals(elementType))
+			// {
+			// 	// if (acct.getUserElement2_ID() > 0)
+			// 	// {
+			// 	// }
+			// }
 
 			//
 			// Append segment combination and description
@@ -338,84 +362,4 @@ public class AccountBL implements IAccountBL
 				.build();
 	}
 
-	@Override
-	public AccountDimension createAccountDimension(final I_C_ValidCombination account)
-	{
-		return AccountDimension.builder()
-				.setAlias(account.getAlias())
-				.setAcctSchemaId(AcctSchemaId.ofRepoId(account.getC_AcctSchema_ID()))
-				.setAD_Client_ID(account.getAD_Client_ID())
-				.setAD_Org_ID(account.getAD_Org_ID())
-				.setC_ElementValue_ID(account.getAccount_ID())
-				.setC_SubAcct_ID(account.getC_SubAcct_ID())
-				.setM_Product_ID(account.getM_Product_ID())
-				.setC_BPartner_ID(account.getC_BPartner_ID())
-				.setAD_OrgTrx_ID(account.getAD_OrgTrx_ID())
-				.setC_LocFrom_ID(account.getC_LocFrom_ID())
-				.setC_LocTo_ID(account.getC_LocTo_ID())
-				.setC_SalesRegion_ID(account.getC_SalesRegion_ID())
-				.setC_Project_ID(account.getC_Project_ID())
-				.setC_Campaign_ID(account.getC_Campaign_ID())
-				.setC_Activity_ID(account.getC_Activity_ID())
-				.setUser1_ID(account.getUser1_ID())
-				.setUser2_ID(account.getUser2_ID())
-				.setUserElement1_ID(account.getUserElement1_ID())
-				.setUserElement2_ID(account.getUserElement2_ID())
-				.setUserElementString1(account.getUserElementString1())
-				.setUserElementString2(account.getUserElementString2())
-				.setUserElementString3(account.getUserElementString3())
-				.setUserElementString4(account.getUserElementString4())
-				.setUserElementString5(account.getUserElementString5())
-				.setUserElementString6(account.getUserElementString6())
-				.setUserElementString7(account.getUserElementString7())
-				.build();
-	}
-
-	@Override
-	public BigDecimal calculateBalance(final I_C_ElementValue account, final BigDecimal amtDr, final BigDecimal amtCr)
-	{
-		// NOTE: keep in sync with database function "acctBalance"
-
-		//
-		// Calculate initial balance as: DR - CR
-		// (consider NULLs as ZERO)
-		BigDecimal balance = amtDr == null ? BigDecimal.ZERO : amtDr;
-		if (amtCr != null)
-		{
-			balance = balance.subtract(amtCr);
-		}
-
-		//
-		// If there is no account, we can not adjust the balance based on AccountSign and AccountType
-		if (account == null)
-		{
-			return balance;
-		}
-
-		//
-		// If Natural Sign => detect the actual sign (Debit/Credit) based on AccountType
-		String accountSign = account.getAccountSign();
-		if (X_C_ElementValue.ACCOUNTSIGN_Natural.equals(accountSign))
-		{
-			final String accountType = account.getAccountType();
-			if (X_C_ElementValue.ACCOUNTTYPE_Asset.equals(accountType)
-					|| X_C_ElementValue.ACCOUNTTYPE_Expense.equals(accountType))
-			{
-				accountSign = X_C_ElementValue.ACCOUNTSIGN_Debit;
-			}
-			else
-			{
-				accountSign = X_C_ElementValue.ACCOUNTSIGN_Credit;
-			}
-		}
-
-		//
-		// If account sign is Credit => adjust the balance
-		if (X_C_ElementValue.ACCOUNTSIGN_Credit.equals(accountSign))
-		{
-			balance = balance.negate(); // i.e. CR - DR
-		}
-
-		return balance;
-	}
 }

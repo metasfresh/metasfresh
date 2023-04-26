@@ -416,7 +416,7 @@ public class TrialBalance extends JavaProcess
 			}
 		}
 		//
-		int no = DB.executeUpdate(sql.toString(), get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no == 0)
 			log.debug(sql.toString());
 		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
@@ -454,7 +454,7 @@ public class TrialBalance extends JavaProcess
 			.append(" AND DateAcct >= ").append(DB.TO_DATE(p_DateAcct_From, true))
 			.append(" AND TRUNC(DateAcct) <= ").append(DB.TO_DATE(p_DateAcct_To, true));
 		//
-		int no = DB.executeUpdate(sql.toString(), get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no == 0)
 			log.debug(sql.toString());
 		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
@@ -463,7 +463,7 @@ public class TrialBalance extends JavaProcess
 		String sql2 = "UPDATE T_TrialBalance tb SET AccountValue = "
 			+ "(SELECT Value FROM C_ElementValue ev WHERE ev.C_ElementValue_ID=tb.Account_ID) "
 			+ "WHERE tb.Account_ID IS NOT NULL";
-		no = DB.executeUpdate(sql2, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql2, get_TrxName());
 		if (no > 0)
 			log.debug("Set AccountValue #" + no);
 		

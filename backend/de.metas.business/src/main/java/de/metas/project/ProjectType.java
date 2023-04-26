@@ -23,22 +23,39 @@
 package de.metas.project;
 
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import static de.metas.project.ProjectConstants.RESERVATION_PROJECT_TYPE;
+
 @Value
 @Builder
 public class ProjectType
 {
+	@NonNull
+	ClientAndOrgId clientAndOrgId;
+
 	@NonNull
 	ProjectTypeId id;
 
 	@NonNull
 	ProjectCategory projectCategory;
 
+	@NonNull
+	String name;
+
 	@Nullable
 	DocSequenceId docSequenceId;
+
+	@NonNull
+	RequestStatusCategoryId requestStatusCategoryId;
+
+	public boolean isReservation()
+	{
+		return name.equals(RESERVATION_PROJECT_TYPE);
+	}
 }

@@ -22,22 +22,7 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -46,9 +31,23 @@ import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 {
@@ -70,7 +69,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		helper.assignPackageProcessor(processorDef, StaticMockedWorkpackageProcessor.class);
 
 		processorsExecutor = new QueueProcessorsExecutor();
-		processorsExecutor.addQueueProcessor(processorDef);
+		processorsExecutor.addQueueProcessor(QueueProcessorDescriptorRepository.mapToQueueProcessor(processorDef));
 	}
 
 	@Override

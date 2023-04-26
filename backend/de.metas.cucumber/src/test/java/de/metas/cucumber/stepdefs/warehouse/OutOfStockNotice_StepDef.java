@@ -30,9 +30,6 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.document.engine.IDocument;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -52,15 +49,11 @@ import static org.junit.Assert.assertTrue;
 public class OutOfStockNotice_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final TestContext testContext;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 
-	public OutOfStockNotice_StepDef(@NonNull final TestContext testContext,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+	public OutOfStockNotice_StepDef(@NonNull final TestContext testContext)
 	{
 		this.testContext = testContext;
-		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
 
 	@Then("there is a new completed inventory for the issued out of stock notice")

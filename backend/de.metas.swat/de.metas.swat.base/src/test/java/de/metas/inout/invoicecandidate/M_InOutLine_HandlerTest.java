@@ -1,6 +1,7 @@
 package de.metas.inout.invoicecandidate;
 
 import com.jgoodies.common.base.Objects;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
@@ -15,11 +16,15 @@ import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFac
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.material.MovementType;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
 import org.compiere.SpringContextHolder;
@@ -27,6 +32,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
@@ -77,6 +83,8 @@ public class M_InOutLine_HandlerTest
 
 	private I_M_InOutLine packagingInOutLine;
 	private I_M_InOut inout;
+
+	private I_C_Project project;
 	private PaymentTermId orderPaymentTermId;
 	private PaymentTermId paymentTermA;
 	private PaymentTermId paymentTermB;
@@ -94,6 +102,11 @@ public class M_InOutLine_HandlerTest
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		save(bPartner);
 
@@ -102,13 +115,20 @@ public class M_InOutLine_HandlerTest
 		bPartnerLocation.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		save(bPartnerLocation);
 
+		project = newInstance(I_C_Project.class);
+		project.setValue("P01");
+		project.setName("Project 01");
+		save(project);
+
 		inout = newInstance(I_M_InOut.class);
 		inout.setIsSOTrx(true);
+		inout.setMovementType(MovementType.CustomerShipment.getCode());
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
 		inout.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		inout.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		inout.setM_Warehouse_ID(1);
 		inout.setMovementDate(SystemTime.asTimestamp());
+		inout.setC_Project_ID(project.getC_Project_ID());
 		save(inout);
 
 		final I_C_UOM packagingProductUom = newInstance(I_C_UOM.class);
@@ -137,6 +157,7 @@ public class M_InOutLine_HandlerTest
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+
 	}
 
 	private PaymentTermId createPaymentTerm(final String name)
@@ -191,6 +212,9 @@ public class M_InOutLine_HandlerTest
 		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdOrNull(packagingInOutLine);
 		assertThat(paymentTermId).isEqualTo(paymentTermB);
 	}
+
+
+
 
 	@Test
 	public void createCandidatesForInOutLine_one_materialInOutLine_with_PaymentTerm()
@@ -248,6 +272,19 @@ public class M_InOutLine_HandlerTest
 		inOutLineHandlerUnderTest.setOrderedData(ic);
 		inOutLineHandlerUnderTest.setDeliveredData(ic);
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
+	}
+
+
+	@Test
+	public void createCandidatesForInOutLine_one_inout_with_project()
+	{
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		assertThat(ic.getC_Project_ID()).isEqualTo(project.getC_Project_ID());
 	}
 
 	@Test

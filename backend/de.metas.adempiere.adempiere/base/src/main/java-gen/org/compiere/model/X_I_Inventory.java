@@ -1,6 +1,7 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -8,20 +9,20 @@ import java.util.Properties;
 /** Generated Model for I_Inventory
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1947633462L;
+	private static final long serialVersionUID = 2100316678L;
 
     /** Standard Constructor */
-    public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
+    public X_I_Inventory (final Properties ctx, final int I_Inventory_ID, @Nullable final String trxName)
     {
       super (ctx, I_Inventory_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_I_Inventory (Properties ctx, ResultSet rs, String trxName)
+    public X_I_Inventory (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,30 +30,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Issue getAD_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
-	}
-
-	@Override
-	public void setAD_Issue_ID (int AD_Issue_ID)
+	public void setAD_Issue_ID (final int AD_Issue_ID)
 	{
 		if (AD_Issue_ID < 1) 
 			set_Value (COLUMNNAME_AD_Issue_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+			set_Value (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
 	}
 
 	@Override
@@ -62,7 +51,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setAttributeCode1 (java.lang.String AttributeCode1)
+	public void setAttributeCode1 (final @Nullable java.lang.String AttributeCode1)
 	{
 		set_Value (COLUMNNAME_AttributeCode1, AttributeCode1);
 	}
@@ -70,11 +59,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeCode1() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeCode1);
+		return get_ValueAsString(COLUMNNAME_AttributeCode1);
 	}
 
 	@Override
-	public void setAttributeCode2 (java.lang.String AttributeCode2)
+	public void setAttributeCode2 (final @Nullable java.lang.String AttributeCode2)
 	{
 		set_Value (COLUMNNAME_AttributeCode2, AttributeCode2);
 	}
@@ -82,11 +71,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeCode2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeCode2);
+		return get_ValueAsString(COLUMNNAME_AttributeCode2);
 	}
 
 	@Override
-	public void setAttributeCode3 (java.lang.String AttributeCode3)
+	public void setAttributeCode3 (final @Nullable java.lang.String AttributeCode3)
 	{
 		set_Value (COLUMNNAME_AttributeCode3, AttributeCode3);
 	}
@@ -94,11 +83,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeCode3() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeCode3);
+		return get_ValueAsString(COLUMNNAME_AttributeCode3);
 	}
 
 	@Override
-	public void setAttributeCode4 (java.lang.String AttributeCode4)
+	public void setAttributeCode4 (final @Nullable java.lang.String AttributeCode4)
 	{
 		set_Value (COLUMNNAME_AttributeCode4, AttributeCode4);
 	}
@@ -106,11 +95,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeCode4() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeCode4);
+		return get_ValueAsString(COLUMNNAME_AttributeCode4);
 	}
 
 	@Override
-	public void setAttributeValueString1 (java.lang.String AttributeValueString1)
+	public void setAttributeValueString1 (final @Nullable java.lang.String AttributeValueString1)
 	{
 		set_Value (COLUMNNAME_AttributeValueString1, AttributeValueString1);
 	}
@@ -118,11 +107,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeValueString1() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeValueString1);
+		return get_ValueAsString(COLUMNNAME_AttributeValueString1);
 	}
 
 	@Override
-	public void setAttributeValueString2 (java.lang.String AttributeValueString2)
+	public void setAttributeValueString2 (final @Nullable java.lang.String AttributeValueString2)
 	{
 		set_Value (COLUMNNAME_AttributeValueString2, AttributeValueString2);
 	}
@@ -130,11 +119,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeValueString2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeValueString2);
+		return get_ValueAsString(COLUMNNAME_AttributeValueString2);
 	}
 
 	@Override
-	public void setAttributeValueString3 (java.lang.String AttributeValueString3)
+	public void setAttributeValueString3 (final @Nullable java.lang.String AttributeValueString3)
 	{
 		set_Value (COLUMNNAME_AttributeValueString3, AttributeValueString3);
 	}
@@ -142,11 +131,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeValueString3() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeValueString3);
+		return get_ValueAsString(COLUMNNAME_AttributeValueString3);
 	}
 
 	@Override
-	public void setAttributeValueString4 (java.lang.String AttributeValueString4)
+	public void setAttributeValueString4 (final @Nullable java.lang.String AttributeValueString4)
 	{
 		set_Value (COLUMNNAME_AttributeValueString4, AttributeValueString4);
 	}
@@ -154,7 +143,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getAttributeValueString4() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributeValueString4);
+		return get_ValueAsString(COLUMNNAME_AttributeValueString4);
 	}
 
 	@Override
@@ -164,18 +153,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
+	public void setC_DataImport(final org.compiere.model.I_C_DataImport C_DataImport)
 	{
 		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
 	}
 
 	@Override
-	public void setC_DataImport_ID (int C_DataImport_ID)
+	public void setC_DataImport_ID (final int C_DataImport_ID)
 	{
 		if (C_DataImport_ID < 1) 
 			set_Value (COLUMNNAME_C_DataImport_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+			set_Value (COLUMNNAME_C_DataImport_ID, C_DataImport_ID);
 	}
 
 	@Override
@@ -191,18 +180,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setC_DataImport_Run(org.compiere.model.I_C_DataImport_Run C_DataImport_Run)
+	public void setC_DataImport_Run(final org.compiere.model.I_C_DataImport_Run C_DataImport_Run)
 	{
 		set_ValueFromPO(COLUMNNAME_C_DataImport_Run_ID, org.compiere.model.I_C_DataImport_Run.class, C_DataImport_Run);
 	}
 
 	@Override
-	public void setC_DataImport_Run_ID (int C_DataImport_Run_ID)
+	public void setC_DataImport_Run_ID (final int C_DataImport_Run_ID)
 	{
 		if (C_DataImport_Run_ID < 1) 
 			set_Value (COLUMNNAME_C_DataImport_Run_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DataImport_Run_ID, Integer.valueOf(C_DataImport_Run_ID));
+			set_Value (COLUMNNAME_C_DataImport_Run_ID, C_DataImport_Run_ID);
 	}
 
 	@Override
@@ -212,20 +201,20 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setCostPrice (java.math.BigDecimal CostPrice)
+	public void setCostPrice (final @Nullable BigDecimal CostPrice)
 	{
 		set_Value (COLUMNNAME_CostPrice, CostPrice);
 	}
 
 	@Override
-	public java.math.BigDecimal getCostPrice() 
+	public BigDecimal getCostPrice() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostPrice);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostPrice);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setDateLastInventory (java.sql.Timestamp DateLastInventory)
+	public void setDateLastInventory (final @Nullable java.sql.Timestamp DateLastInventory)
 	{
 		set_Value (COLUMNNAME_DateLastInventory, DateLastInventory);
 	}
@@ -237,7 +226,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setDateReceived (java.sql.Timestamp DateReceived)
+	public void setDateReceived (final @Nullable java.sql.Timestamp DateReceived)
 	{
 		set_Value (COLUMNNAME_DateReceived, DateReceived);
 	}
@@ -249,7 +238,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -257,11 +246,34 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * ExplicitCostPrice AD_Reference_ID=541571
+	 * Reference name: ExplicitCostPrice
+	 */
+	public static final int EXPLICITCOSTPRICE_AD_Reference_ID=541571;
+	/** Yes = Y */
+	public static final String EXPLICITCOSTPRICE_Yes = "Y";
+	/** No = N */
+	public static final String EXPLICITCOSTPRICE_No = "N";
+	/** Auto = A */
+	public static final String EXPLICITCOSTPRICE_Auto = "A";
+	@Override
+	public void setExplicitCostPrice (final java.lang.String ExplicitCostPrice)
+	{
+		set_Value (COLUMNNAME_ExplicitCostPrice, ExplicitCostPrice);
 	}
 
 	@Override
-	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
+	public java.lang.String getExplicitCostPrice() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExplicitCostPrice);
+	}
+
+	@Override
+	public void setExternalHeaderId (final @Nullable java.lang.String ExternalHeaderId)
 	{
 		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
 	}
@@ -269,11 +281,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getExternalHeaderId() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
+		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
 	}
 
 	@Override
-	public void setExternalLineId (java.lang.String ExternalLineId)
+	public void setExternalLineId (final @Nullable java.lang.String ExternalLineId)
 	{
 		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
 	}
@@ -281,19 +293,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getExternalLineId() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalLineId);
-	}
-
-	@Override
-	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate)
-	{
-		set_Value (COLUMNNAME_HU_BestBeforeDate, HU_BestBeforeDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getHU_BestBeforeDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_HU_BestBeforeDate);
+		return get_ValueAsString(COLUMNNAME_ExternalLineId);
 	}
 
 	/** 
@@ -306,20 +306,31 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/** MULTIPLE_HUS = M */
 	public static final String HUAGGREGATIONTYPE_MULTIPLE_HUS = "M";
 	@Override
-	public void setHUAggregationType (java.lang.String HUAggregationType)
+	public void setHUAggregationType (final @Nullable java.lang.String HUAggregationType)
 	{
-
 		set_Value (COLUMNNAME_HUAggregationType, HUAggregationType);
 	}
 
 	@Override
 	public java.lang.String getHUAggregationType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HUAggregationType);
+		return get_ValueAsString(COLUMNNAME_HUAggregationType);
 	}
 
 	@Override
-	public void setI_ErrorMsg (java.lang.String I_ErrorMsg)
+	public void setHU_BestBeforeDate (final @Nullable java.sql.Timestamp HU_BestBeforeDate)
+	{
+		set_Value (COLUMNNAME_HU_BestBeforeDate, HU_BestBeforeDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getHU_BestBeforeDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_HU_BestBeforeDate);
+	}
+
+	@Override
+	public void setI_ErrorMsg (final @Nullable java.lang.String I_ErrorMsg)
 	{
 		set_Value (COLUMNNAME_I_ErrorMsg, I_ErrorMsg);
 	}
@@ -327,16 +338,16 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getI_ErrorMsg() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_I_ErrorMsg);
+		return get_ValueAsString(COLUMNNAME_I_ErrorMsg);
 	}
 
 	@Override
-	public void setI_Inventory_ID (int I_Inventory_ID)
+	public void setI_Inventory_ID (final int I_Inventory_ID)
 	{
 		if (I_Inventory_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_I_Inventory_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_I_Inventory_ID, Integer.valueOf(I_Inventory_ID));
+			set_ValueNoCheck (COLUMNNAME_I_Inventory_ID, I_Inventory_ID);
 	}
 
 	@Override
@@ -346,9 +357,9 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setI_IsImported (boolean I_IsImported)
+	public void setI_IsImported (final boolean I_IsImported)
 	{
-		set_Value (COLUMNNAME_I_IsImported, Boolean.valueOf(I_IsImported));
+		set_Value (COLUMNNAME_I_IsImported, I_IsImported);
 	}
 
 	@Override
@@ -358,7 +369,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setI_LineContent (java.lang.String I_LineContent)
+	public void setI_LineContent (final @Nullable java.lang.String I_LineContent)
 	{
 		set_Value (COLUMNNAME_I_LineContent, I_LineContent);
 	}
@@ -366,13 +377,13 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getI_LineContent() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_I_LineContent);
+		return get_ValueAsString(COLUMNNAME_I_LineContent);
 	}
 
 	@Override
-	public void setI_LineNo (int I_LineNo)
+	public void setI_LineNo (final int I_LineNo)
 	{
-		set_Value (COLUMNNAME_I_LineNo, Integer.valueOf(I_LineNo));
+		set_Value (COLUMNNAME_I_LineNo, I_LineNo);
 	}
 
 	@Override
@@ -382,7 +393,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setInventoryDate (java.sql.Timestamp InventoryDate)
+	public void setInventoryDate (final @Nullable java.sql.Timestamp InventoryDate)
 	{
 		set_Value (COLUMNNAME_InventoryDate, InventoryDate);
 	}
@@ -394,9 +405,9 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setIsLotBlocked (boolean IsLotBlocked)
+	public void setIsLotBlocked (final boolean IsLotBlocked)
 	{
-		set_Value (COLUMNNAME_IsLotBlocked, Boolean.valueOf(IsLotBlocked));
+		set_Value (COLUMNNAME_IsLotBlocked, IsLotBlocked);
 	}
 
 	@Override
@@ -406,7 +417,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setLocatorValue (java.lang.String LocatorValue)
+	public void setLocatorValue (final @Nullable java.lang.String LocatorValue)
 	{
 		set_Value (COLUMNNAME_LocatorValue, LocatorValue);
 	}
@@ -414,11 +425,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getLocatorValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_LocatorValue);
+		return get_ValueAsString(COLUMNNAME_LocatorValue);
 	}
 
 	@Override
-	public void setLot (java.lang.String Lot)
+	public void setLot (final @Nullable java.lang.String Lot)
 	{
 		set_Value (COLUMNNAME_Lot, Lot);
 	}
@@ -426,7 +437,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getLot() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Lot);
+		return get_ValueAsString(COLUMNNAME_Lot);
 	}
 
 	@Override
@@ -436,18 +447,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
@@ -463,18 +474,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory)
+	public void setM_Inventory(final org.compiere.model.I_M_Inventory M_Inventory)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
 	}
 
 	@Override
-	public void setM_Inventory_ID (int M_Inventory_ID)
+	public void setM_Inventory_ID (final int M_Inventory_ID)
 	{
 		if (M_Inventory_ID < 1) 
 			set_Value (COLUMNNAME_M_Inventory_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Inventory_ID, Integer.valueOf(M_Inventory_ID));
+			set_Value (COLUMNNAME_M_Inventory_ID, M_Inventory_ID);
 	}
 
 	@Override
@@ -490,18 +501,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setM_InventoryLine(org.compiere.model.I_M_InventoryLine M_InventoryLine)
+	public void setM_InventoryLine(final org.compiere.model.I_M_InventoryLine M_InventoryLine)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InventoryLine_ID, org.compiere.model.I_M_InventoryLine.class, M_InventoryLine);
 	}
 
 	@Override
-	public void setM_InventoryLine_ID (int M_InventoryLine_ID)
+	public void setM_InventoryLine_ID (final int M_InventoryLine_ID)
 	{
 		if (M_InventoryLine_ID < 1) 
 			set_Value (COLUMNNAME_M_InventoryLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_InventoryLine_ID, Integer.valueOf(M_InventoryLine_ID));
+			set_Value (COLUMNNAME_M_InventoryLine_ID, M_InventoryLine_ID);
 	}
 
 	@Override
@@ -511,12 +522,12 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
 	@Override
@@ -526,12 +537,12 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
@@ -541,12 +552,12 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
 	@Override
@@ -556,9 +567,9 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
 	@Override
@@ -568,9 +579,9 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
 	@Override
@@ -580,7 +591,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public void setProductValue (java.lang.String ProductValue)
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
 	{
 		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}
@@ -588,24 +599,24 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getProductValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}
 
 	@Override
-	public void setQtyCount (java.math.BigDecimal QtyCount)
+	public void setQtyCount (final @Nullable BigDecimal QtyCount)
 	{
 		set_Value (COLUMNNAME_QtyCount, QtyCount);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyCount() 
+	public BigDecimal getQtyCount() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCount);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCount);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setSerNo (java.lang.String SerNo)
+	public void setSerNo (final @Nullable java.lang.String SerNo)
 	{
 		set_Value (COLUMNNAME_SerNo, SerNo);
 	}
@@ -613,16 +624,16 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getSerNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
+		return get_ValueAsString(COLUMNNAME_SerNo);
 	}
 
 	@Override
-	public void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID)
+	public void setSubProducer_BPartner_ID (final int SubProducer_BPartner_ID)
 	{
 		if (SubProducer_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_SubProducer_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_SubProducer_BPartner_ID, Integer.valueOf(SubProducer_BPartner_ID));
+			set_Value (COLUMNNAME_SubProducer_BPartner_ID, SubProducer_BPartner_ID);
 	}
 
 	@Override
@@ -637,20 +648,19 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	 */
 	public static final int SUBPRODUCERBPARTNER_VALUE_AD_Reference_ID=138;
 	@Override
-	public void setSubProducerBPartner_Value (java.lang.String SubProducerBPartner_Value)
+	public void setSubProducerBPartner_Value (final @Nullable java.lang.String SubProducerBPartner_Value)
 	{
-
 		set_Value (COLUMNNAME_SubProducerBPartner_Value, SubProducerBPartner_Value);
 	}
 
 	@Override
 	public java.lang.String getSubProducerBPartner_Value() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_SubProducerBPartner_Value);
+		return get_ValueAsString(COLUMNNAME_SubProducerBPartner_Value);
 	}
 
 	@Override
-	public void setTE (java.lang.String TE)
+	public void setTE (final @Nullable java.lang.String TE)
 	{
 		set_Value (COLUMNNAME_TE, TE);
 	}
@@ -658,11 +668,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getTE() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TE);
+		return get_ValueAsString(COLUMNNAME_TE);
 	}
 
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
@@ -670,11 +680,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getUPC() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return get_ValueAsString(COLUMNNAME_UPC);
 	}
 
 	@Override
-	public void setWarehouseLocatorIdentifier (java.lang.String WarehouseLocatorIdentifier)
+	public void setWarehouseLocatorIdentifier (final @Nullable java.lang.String WarehouseLocatorIdentifier)
 	{
 		set_Value (COLUMNNAME_WarehouseLocatorIdentifier, WarehouseLocatorIdentifier);
 	}
@@ -682,11 +692,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getWarehouseLocatorIdentifier() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WarehouseLocatorIdentifier);
+		return get_ValueAsString(COLUMNNAME_WarehouseLocatorIdentifier);
 	}
 
 	@Override
-	public void setWarehouseValue (java.lang.String WarehouseValue)
+	public void setWarehouseValue (final @Nullable java.lang.String WarehouseValue)
 	{
 		set_Value (COLUMNNAME_WarehouseValue, WarehouseValue);
 	}
@@ -694,11 +704,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getWarehouseValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WarehouseValue);
+		return get_ValueAsString(COLUMNNAME_WarehouseValue);
 	}
 
 	@Override
-	public void setX (java.lang.String X)
+	public void setX (final @Nullable java.lang.String X)
 	{
 		set_Value (COLUMNNAME_X, X);
 	}
@@ -706,11 +716,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getX() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_X);
+		return get_ValueAsString(COLUMNNAME_X);
 	}
 
 	@Override
-	public void setX1 (java.lang.String X1)
+	public void setX1 (final @Nullable java.lang.String X1)
 	{
 		set_Value (COLUMNNAME_X1, X1);
 	}
@@ -718,11 +728,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getX1() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_X1);
+		return get_ValueAsString(COLUMNNAME_X1);
 	}
 
 	@Override
-	public void setY (java.lang.String Y)
+	public void setY (final @Nullable java.lang.String Y)
 	{
 		set_Value (COLUMNNAME_Y, Y);
 	}
@@ -730,11 +740,11 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getY() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Y);
+		return get_ValueAsString(COLUMNNAME_Y);
 	}
 
 	@Override
-	public void setZ (java.lang.String Z)
+	public void setZ (final @Nullable java.lang.String Z)
 	{
 		set_Value (COLUMNNAME_Z, Z);
 	}
@@ -742,6 +752,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	@Override
 	public java.lang.String getZ() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Z);
+		return get_ValueAsString(COLUMNNAME_Z);
 	}
 }

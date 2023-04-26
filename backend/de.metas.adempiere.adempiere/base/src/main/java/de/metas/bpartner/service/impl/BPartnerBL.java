@@ -1,7 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -28,6 +26,7 @@ import de.metas.location.ILocationBL;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -38,7 +37,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -47,34 +45,47 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
+	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
 
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
+
+	public BPartnerBL()
+	{
+		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
+		this.userRepository = new UserRepository();
+		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
+		this.locationDAO = Services.get(ILocationDAO.class);
+	}
 
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
 		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
 		this.userRepository = userRepository;
 		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
+		this.locationDAO = Services.get(ILocationDAO.class);
 	}
 
 	@Override
@@ -90,7 +101,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public String getBPartnerName(final BPartnerId bpartnerId)
+	public String getBPartnerName(@Nullable final BPartnerId bpartnerId)
 	{
 		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getName);
 	}
@@ -101,7 +112,7 @@ public class BPartnerBL implements IBPartnerBL
 		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue() + "_" + bpartner.getName());
 	}
 
-	private String toBPartnerDisplayName(final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
+	private String toBPartnerDisplayName(@Nullable final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
 	{
 		if (bpartnerId == null)
 		{
@@ -542,7 +553,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
 		final LocationId locationId = getLocationId(bpartnerLocationAndCaptureId);
 		return locationDAO.getCountryIdByLocationId(locationId);
@@ -562,7 +573,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	public LocationId getLocationId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
 		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
 		{
@@ -661,21 +672,21 @@ public class BPartnerBL implements IBPartnerBL
 		final BPartnerNameAndGreetingStrategies partnerNameAndGreetingStrategies = SpringContextHolder.instance.getBean(BPartnerNameAndGreetingStrategies.class);
 
 		final NameAndGreeting nameAndGreeting = partnerNameAndGreetingStrategies.compute(
-				strategyId,
-				ComputeNameAndGreetingRequest.builder()
-						.adLanguage(bpartner.getAD_Language())
-						.contacts(bpartnersRepo.retrieveContacts(bpartner)
-								.stream()
-								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
-										.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
-										.firstName(contact.getFirstname())
-										.lastName(contact.getLastname())
-										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
-										.isDefaultContact(contact.isDefaultContact())
-										.isMembershipContact(contact.isMembershipContact())
-										.build())
-								.collect(ImmutableList.toImmutableList()))
-						.build())
+						strategyId,
+						ComputeNameAndGreetingRequest.builder()
+								.adLanguage(bpartner.getAD_Language())
+								.contacts(bpartnersRepo.retrieveContacts(bpartner)
+										.stream()
+										.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
+												.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
+												.firstName(contact.getFirstname())
+												.lastName(contact.getLastname())
+												.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
+												.isDefaultContact(contact.isDefaultContact())
+												.isMembershipContact(contact.isMembershipContact())
+												.build())
+										.collect(ImmutableList.toImmutableList()))
+								.build())
 				.orElse(null);
 
 		if (nameAndGreeting == null)
@@ -686,5 +697,127 @@ public class BPartnerBL implements IBPartnerBL
 		bpartner.setName(nameAndGreeting.getName());
 		bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
 		bpartnersRepo.save(bpartner);
+	}
+
+	@Override
+	public void setPreviousIdIfPossible(@NonNull final I_C_BPartner_Location location)
+	{
+		final List<I_C_BPartner_Location> locations = bpartnersRepo.retrieveBPartnerLocations(BPartnerId.ofRepoId(location.getC_BPartner_ID()));
+		final Set<Integer> oldLocations = locations.stream()
+				.map(I_C_BPartner_Location::getPrevious_ID)
+				.collect(Collectors.toSet());
+		final List<I_C_BPartner_Location> locationCandidates = locations.stream()
+				.filter(loc -> !oldLocations.contains(loc.getC_BPartner_Location_ID()) && loc.getC_BPartner_Location_ID() != location.getC_BPartner_Location_ID())
+				.collect(Collectors.toList());
+		if (locationCandidates.size() == 1)
+		{
+			location.setPrevious_ID(locationCandidates.stream().findFirst().get().getC_BPartner_Location_ID());
+			bpartnersRepo.save(location);
+		}
+	}
+
+	@Override
+	public void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation)
+	{
+		updateFromPreviousLocationNoSave(bpLocation);
+		bpartnersRepo.save(bpLocation);
+	}
+
+	@Override
+	public void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation)
+	{
+		final int previousId = bpLocation.getPrevious_ID();
+		if (previousId <= 0)
+		{
+			return;
+		}
+
+		final Timestamp validFrom = bpLocation.getValidFrom();
+		if (validFrom == null)
+		{
+			return;
+		}
+
+		final I_C_BPartner_Location previousLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), previousId));
+		if (previousLocation == null)
+		{
+			return;
+		}
+		// Don't update the defaults if the current location is still valid.
+		if (validFrom.before(Env.getDate()))
+		{
+			bpLocation.setIsBillToDefault(previousLocation.isBillToDefault());
+			bpLocation.setIsShipToDefault(previousLocation.isShipToDefault());
+
+			previousLocation.setIsBillToDefault(false);
+			previousLocation.setIsShipToDefault(false);
+			bpartnersRepo.save(previousLocation);
+		}
+
+		bpLocation.setIsBillTo(previousLocation.isBillTo());
+		bpLocation.setIsShipTo(previousLocation.isShipTo());
+	}
+
+
+	@Override
+	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
+	{
+		I_C_BPartner_Location bPartnerLocation = null;
+
+		final List<I_C_BPartner_Location> locations = bpartnersRepo.retrieveBPartnerLocations(bp);
+
+		// Set Locations
+		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
+		boolean foundLoc = false;
+		for (final I_C_BPartner_Location loc : locations)
+		{
+			if (loc.isShipTo() && loc.isActive())
+			{
+				shipLocations.add(loc);
+			}
+
+			final org.compiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, org.compiere.model.I_C_BPartner_Location.class);
+			if (bpLoc.isShipToDefault())
+			{
+				bPartnerLocation = bpLoc;
+				foundLoc = true;
+			}
+		}
+
+		// set first ship location if is not set
+		if (!foundLoc)
+		{
+			if (!shipLocations.isEmpty())
+			{
+				bPartnerLocation = shipLocations.get(0);
+			}
+			//No longer setting any location when no shipping location exists for the bpartner
+		}
+
+		if (!foundLoc)
+		{
+			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
+		}
+
+		return bPartnerLocation;
+	}
+
+	@NonNull
+	@Override
+	public Optional<String> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
+		{
+			return Optional.of(bpartnerLocation.getVATaxID());
+		}
+
+		final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
+		if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
+		{
+			return Optional.of(bPartner.getVATaxID());
+		}
+
+		return Optional.empty();
 	}
 }

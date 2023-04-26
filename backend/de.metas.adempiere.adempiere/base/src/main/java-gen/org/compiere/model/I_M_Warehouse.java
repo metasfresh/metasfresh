@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_Warehouse
  *  @author metasfresh (generated) 
@@ -51,6 +52,51 @@ public interface I_M_Warehouse
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Invoices with suppliers.
+	 * If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order's bill-partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerInvoicesWithVendors (boolean BPartnerInvoicesWithVendors);
+
+	/**
+	 * Get Invoices with suppliers.
+	 * If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order's bill-partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBPartnerInvoicesWithVendors();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_BPartnerInvoicesWithVendors = new ModelColumn<>(I_M_Warehouse.class, "BPartnerInvoicesWithVendors", null);
+	String COLUMNNAME_BPartnerInvoicesWithVendors = "BPartnerInvoicesWithVendors";
+
+	/**
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -95,7 +141,7 @@ public interface I_M_Warehouse
 	/**
 	 * Set Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -104,7 +150,7 @@ public interface I_M_Warehouse
 	/**
 	 * Get Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -117,7 +163,7 @@ public interface I_M_Warehouse
 	 * Location or Address
 	 *
 	 * <br>Type: Location
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_Location_ID (int C_Location_ID);
@@ -127,14 +173,14 @@ public interface I_M_Warehouse
 	 * Location or Address
 	 *
 	 * <br>Type: Location
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_Location_ID();
 
-	org.compiere.model.I_C_Location getC_Location();
+	@Nullable org.compiere.model.I_C_Location getC_Location();
 
-	void setC_Location(org.compiere.model.I_C_Location C_Location);
+	void setC_Location(@Nullable org.compiere.model.I_C_Location C_Location);
 
 	ModelColumn<I_M_Warehouse, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new ModelColumn<>(I_M_Warehouse.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
 	String COLUMNNAME_C_Location_ID = "C_Location_ID";
@@ -253,6 +299,90 @@ public interface I_M_Warehouse
 	String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
+	 * Set Beanstandungslager.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsIssueWarehouse (boolean IsIssueWarehouse);
+
+	/**
+	 * Get Beanstandungslager.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isIssueWarehouse();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_IsIssueWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsIssueWarehouse", null);
+	String COLUMNNAME_IsIssueWarehouse = "IsIssueWarehouse";
+
+	/**
+	 * Set Kommissionierlager.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingWarehouse (boolean IsPickingWarehouse);
+
+	/**
+	 * Get Kommissionierlager.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingWarehouse();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_IsPickingWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsPickingWarehouse", null);
+	String COLUMNNAME_IsPickingWarehouse = "IsPickingWarehouse";
+
+	/**
+	 * Set IsQualityReturnWarehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsQualityReturnWarehouse (boolean IsQualityReturnWarehouse);
+
+	/**
+	 * Get IsQualityReturnWarehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQualityReturnWarehouse();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_IsQualityReturnWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsQualityReturnWarehouse", null);
+	String COLUMNNAME_IsQualityReturnWarehouse = "IsQualityReturnWarehouse";
+
+	/**
+	 * Set IsQuarantineWarehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsQuarantineWarehouse (boolean IsQuarantineWarehouse);
+
+	/**
+	 * Get IsQuarantineWarehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQuarantineWarehouse();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_IsQuarantineWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsQuarantineWarehouse", null);
+	String COLUMNNAME_IsQuarantineWarehouse = "IsQuarantineWarehouse";
+
+	/**
 	 * Set Receive as Source HU.
 	 * Automatically marks all received HUs carrying BOM components as 'Source HUs'.
 	 *
@@ -274,27 +404,6 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_IsReceiveAsSourceHU = new ModelColumn<>(I_M_Warehouse.class, "IsReceiveAsSourceHU", null);
 	String COLUMNNAME_IsReceiveAsSourceHU = "IsReceiveAsSourceHU";
-
-	/**
-	 * Set Exclude from MRP.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMRP_Exclude (@Nullable java.lang.String MRP_Exclude);
-
-	/**
-	 * Get Exclude from MRP.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMRP_Exclude();
-
-	ModelColumn<I_M_Warehouse, Object> COLUMN_MRP_Exclude = new ModelColumn<>(I_M_Warehouse.class, "MRP_Exclude", null);
-	String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
 
 	/**
 	 * Set Warehouse.
@@ -345,28 +454,6 @@ public interface I_M_Warehouse
 	String COLUMNNAME_M_Warehouse_PickingGroup_ID = "M_Warehouse_PickingGroup_ID";
 
 	/**
-	 * Set Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_WarehouseSource_ID (int M_WarehouseSource_ID);
-
-	/**
-	 * Get Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_WarehouseSource_ID();
-
-	String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
-
-	/**
 	 * Set Warehouse Type.
 	 *
 	 * <br>Type: TableDir
@@ -390,6 +477,74 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Type> COLUMN_M_Warehouse_Type_ID = new ModelColumn<>(I_M_Warehouse.class, "M_Warehouse_Type_ID", org.compiere.model.I_M_Warehouse_Type.class);
 	String COLUMNNAME_M_Warehouse_Type_ID = "M_Warehouse_Type_ID";
+
+	/**
+	 * Set Source Warehouse.
+	 * Optional Warehouse to replenish from
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_WarehouseSource_ID (int M_WarehouseSource_ID);
+
+	/**
+	 * Get Source Warehouse.
+	 * Optional Warehouse to replenish from
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_WarehouseSource_ID();
+
+	String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
+
+	/**
+	 * Set Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturing_Warehouse_Group_ID (int Manufacturing_Warehouse_Group_ID);
+
+	/**
+	 * Get Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getManufacturing_Warehouse_Group_ID();
+
+	@Nullable org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group();
+
+	void setManufacturing_Warehouse_Group(@Nullable org.compiere.model.I_M_Warehouse_Group Manufacturing_Warehouse_Group);
+
+	ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Group> COLUMN_Manufacturing_Warehouse_Group_ID = new ModelColumn<>(I_M_Warehouse.class, "Manufacturing_Warehouse_Group_ID", org.compiere.model.I_M_Warehouse_Group.class);
+	String COLUMNNAME_Manufacturing_Warehouse_Group_ID = "Manufacturing_Warehouse_Group_ID";
+
+	/**
+	 * Set Exclude from MRP.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMRP_Exclude (@Nullable java.lang.String MRP_Exclude);
+
+	/**
+	 * Get Exclude from MRP.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMRP_Exclude();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_MRP_Exclude = new ModelColumn<>(I_M_Warehouse.class, "MRP_Exclude", null);
+	String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
 
 	/**
 	 * Set Name.

@@ -19,12 +19,12 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,16 +52,19 @@ public class BankAccount
 
 	@Nullable
 	String esrRenderedAccountNo;
-	
+
 	@Nullable
 	String IBAN;
-	
+
+	@Nullable
+	String SwiftCode;
+
 	@Nullable
 	String QR_IBAN;
 
 	@Nullable
 	String SEPA_CreditorIdentifier;
-	
+
 	@NonNull
 	CurrencyId currencyId;
 
@@ -70,19 +73,24 @@ public class BankAccount
 
 	@Nullable
 	String routingNo;
-	
-	
-	public boolean isAccountNoMatching(@NonNull final String accountNo) 
+
+	public boolean isAccountNoMatching(@NonNull final String accountNo)
 	{
 		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());
 		final String IBAN = StringUtils.trimBlankToNull(getIBAN());
 		final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier());
-		
-		final String postAcctNoCleaned = StringUtils.cleanWhitespace(accountNo);
-		
-		return postAcctNoCleaned.equals(QR_IBAN) 
+
+		final int indexOfSlash = StringUtils.findIndexOf(accountNo, "/");
+
+		final String accountNoWithoutTrailingSlash = indexOfSlash >= 0
+				? accountNo.substring(0, indexOfSlash)
+				: accountNo;
+
+		final String postAcctNoCleaned = StringUtils.cleanWhitespace(accountNoWithoutTrailingSlash);
+
+		return postAcctNoCleaned.equals(QR_IBAN)
 				|| postAcctNoCleaned.equals(IBAN)
 				|| postAcctNoCleaned.equals(SEPA_CreditorIdentifier);
-		
+
 	}
 }

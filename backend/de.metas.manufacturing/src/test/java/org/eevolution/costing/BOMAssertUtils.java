@@ -45,7 +45,7 @@ final class BOMAssertUtils
 		}
 		else
 		{
-			ownCostPrice = costElementPrice.getCostPrice().getOwnCostPrice().getValue();
+			ownCostPrice = costElementPrice.getCostPrice().getOwnCostPrice().toBigDecimal();
 		}
 
 		assertThat(ownCostPrice)
@@ -67,7 +67,7 @@ final class BOMAssertUtils
 		}
 		else
 		{
-			componentsCostPrice = costElementPrice.getCostPrice().getComponentsCostPrice().getValue();
+			componentsCostPrice = costElementPrice.getCostPrice().getComponentsCostPrice().toBigDecimal();
 		}
 
 		assertThat(componentsCostPrice)

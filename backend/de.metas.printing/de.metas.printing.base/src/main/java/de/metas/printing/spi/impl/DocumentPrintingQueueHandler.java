@@ -1,18 +1,5 @@
 package de.metas.printing.spi.impl;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -28,6 +15,18 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
 import de.metas.util.Services;
+import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  *
@@ -205,6 +204,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	private void handleInvoices(final I_C_Printing_Queue queueItem, final I_C_Invoice invoice)
 	{
 		queueItem.setBill_BPartner_ID(invoice.getC_BPartner_ID());
+		queueItem.setBill_User_ID(invoice.getAD_User_ID());
 		queueItem.setBill_Location_ID(invoice.getC_BPartner_Location_ID());
 		queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
 		queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());

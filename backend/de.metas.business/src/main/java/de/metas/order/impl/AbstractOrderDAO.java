@@ -3,21 +3,22 @@ package de.metas.order.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.GetOrdersQuery;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderQuery;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -27,10 +28,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -79,17 +80,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		{
 			throw new AdempiereException("@NotFound@: " + orderId);
 		}
-		return order;
-	}
-
-	@Nullable
-	private I_C_Order getByExternalId(@Nullable final ExternalId externalId)
-	{
-		final I_C_Order order = createQueryBuilder()
-				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
-				.create()
-				.first();
-
 		return order;
 	}
 
@@ -241,7 +231,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds)
 	{
-		if(orderIds.isEmpty())
+		if (orderIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -325,9 +315,27 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.stream();
 	}
 
+	@Override
+	@NonNull
+	public List<I_C_Order> getOrdersByQuery(@NonNull final GetOrdersQuery query)
+	{
+		return createQueryBuilder(query)
+				.create()
+				.listImmutable(I_C_Order.class);
+	}
+
+	@NonNull
+	public Optional<I_C_Order> retrieveFirstByQuery(@NonNull final GetOrdersQuery query)
+	{
+		return createQueryBuilder(query)
+				.create()
+				.firstOptional(I_C_Order.class);
+	}
+
+	@NonNull
 	private IQueryBuilder<I_C_Order> createQueryBuilder()
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Order.class);
 	}
 
@@ -335,6 +343,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	public void delete(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		InterfaceWrapperHelper.delete(orderLine);
+	}
+
+	@Override
+	public void deleteByLineId(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final I_C_OrderLine record = InterfaceWrapperHelper.load(orderAndLineId.getOrderLineId(), I_C_OrderLine.class);
+		if (record != null)
+		{
+			InterfaceWrapperHelper.delete(record);
+		}
 	}
 
 	@Override
@@ -374,19 +392,126 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public I_C_Order assignAsyncBatchId(@NonNull final OrderId orderId, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+		orderRecord.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+		save(orderRecord);
+
+		return orderRecord;
+	}
+
 	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
-		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
 
 		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
+				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo);
 
-		final I_C_Order order = queryBuilder.create().firstOnly(I_C_Order.class);
-		return order == null ? null : order;
+		return queryBuilder.create().firstOnly(I_C_Order.class);
+	}
+
+	@NonNull
+	public Set<OrderLineId> retrieveSOLineIdsByPOLineId(@NonNull final OrderLineId poLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, poLineId)
+				.create()
+				.list()
+				.stream()
+				.map(I_C_PO_OrderLine_Alloc::getC_SO_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ImmutableSet<OrderId> getSalesOrderIdsViaPOAllocation(@NonNull final OrderId purchaseOrderId)
+	{
+		return retrieveOrderLines(purchaseOrderId)
+				.stream()
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.map(this::retrieveSOLineIdsByPOLineId)
+				.map(this::retrieveIdsByOrderLineIds)
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public void allocatePOLineToSOLine(
+			@NonNull final OrderAndLineId purchaseOrderLineId,
+			@NonNull final OrderAndLineId salesOrderLineId)
+	{
+		final I_C_PO_OrderLine_Alloc poLineAllocation = InterfaceWrapperHelper.newInstance(I_C_PO_OrderLine_Alloc.class);
+		poLineAllocation.setC_OrderPO_ID(purchaseOrderLineId.getOrderRepoId());
+		poLineAllocation.setC_PO_OrderLine_ID(purchaseOrderLineId.getOrderLineRepoId());
+		poLineAllocation.setC_OrderSO_ID(salesOrderLineId.getOrderRepoId());
+		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getOrderLineRepoId());
+		InterfaceWrapperHelper.save(poLineAllocation);
+	}
+
+	@Override
+	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull final OrderAndLineId purchaseOrderLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, purchaseOrderLineId.getOrderLineId())
+				.create()
+				.stream()
+				.map(allocRecord -> OrderAndLineId.ofRepoIds(allocRecord.getC_OrderSO_ID(), allocRecord.getC_SO_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private IQueryBuilder<I_C_Order> createQueryBuilder(@NonNull final GetOrdersQuery query)
+	{
+		final IQueryBuilder<I_C_Order> queryBuilder;
+
+		final ImmutableSet<ProductId> productIds = query.getProductIds();
+		if (productIds != null && !productIds.isEmpty())
+		{
+			queryBuilder = queryBL
+					.createQueryBuilder(I_C_OrderLine.class)
+					.addInArrayFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productIds)
+					.andCollect(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_Order.class);
+		}
+		else
+		{
+			queryBuilder = createQueryBuilder();
+		}
+
+		queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, query.getBPartnerId());
+
+		if (query.getDocTypeTargetId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, query.getDocTypeTargetId());
+		}
+
+		if (query.getDocStatus() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+
+		if (query.isDescSortByDateOrdered())
+		{
+			queryBuilder.orderByDescending(I_C_Order.COLUMNNAME_DateOrdered);
+			queryBuilder.orderByDescending(I_C_Order.COLUMNNAME_C_Order_ID);
+		}
+
+		return queryBuilder;
+	}
+
+	@Override
+	public boolean hasIsOnConsignmentLines(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsOnConsignment, true)
+				.anyMatch();
 	}
 }

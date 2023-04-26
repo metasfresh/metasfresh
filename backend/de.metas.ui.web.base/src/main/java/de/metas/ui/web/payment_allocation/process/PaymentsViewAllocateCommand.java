@@ -44,7 +44,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import lombok.Builder;
@@ -169,14 +169,14 @@ public class PaymentsViewAllocateCommand
 			final InvoiceProcessingContext invoiceProcessingContext = extractInvoiceProcessingContext(row, paymentDocuments, invoiceProcessingServiceCompanyService);
 
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
-					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
-							.orgId(row.getClientAndOrgId().getOrgId())
-							.paymentDate(invoiceProcessingContext.getPaymentDate())
-							.customerId(row.getBPartnerId())
-							.invoiceId(row.getInvoiceId())
-							.feeAmountIncludingTax(serviceFeeAmt)
-							.serviceCompanyBPartnerId(invoiceProcessingContext.getServiceCompanyId())
-							.build())
+							InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+									.orgId(row.getClientAndOrgId().getOrgId())
+									.paymentDate(invoiceProcessingContext.getPaymentDate())
+									.customerId(row.getBPartnerId())
+									.invoiceId(row.getInvoiceId())
+									.feeAmountIncludingTax(serviceFeeAmt)
+									.serviceCompanyBPartnerId(invoiceProcessingContext.getServiceCompanyId())
+									.build())
 					.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
 		}
 		else
@@ -200,11 +200,11 @@ public class PaymentsViewAllocateCommand
 				.creditMemo(row.getDocBaseType().isCreditMemo())
 				.openAmt(openAmt.negateIf(soTrx.isPurchase()))
 				.amountsToAllocate(AllocationAmounts.builder()
-						.payAmt(payAmt)
-						.discountAmt(discountAmt)
-						.invoiceProcessingFee(invoiceProcessingFee)
-						.build()
-						.negateIf(soTrx.isPurchase()))
+										   .payAmt(payAmt)
+										   .discountAmt(discountAmt)
+										   .invoiceProcessingFee(invoiceProcessingFee)
+										   .build()
+										   .convertToRealAmounts(row.getInvoiceAmtMultiplier()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(row.getDateInvoiced())
 				.clientAndOrgId(row.getClientAndOrgId())
@@ -274,15 +274,15 @@ public class PaymentsViewAllocateCommand
 			@NonNull final PaymentRow row,
 			@NonNull final MoneyService moneyService)
 	{
-		final PaymentDirection paymentDirection = row.getPaymentDirection();
-		final Money openAmt = moneyService.toMoney(row.getOpenAmt())
-				.negateIf(paymentDirection.isOutboundPayment());
+		final PaymentAmtMultiplier amtMultiplier = row.getPaymentAmtMultiplier();
+		final Money openAmt = amtMultiplier.convertToRealValue(row.getOpenAmt())
+				.toMoney(moneyService::getCurrencyIdByCurrencyCode);
 
 		return PaymentDocument.builder()
 				.paymentId(row.getPaymentId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
-				.paymentDirection(paymentDirection)
+				.paymentDirection(row.getPaymentDirection())
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())

@@ -1,20 +1,20 @@
 package de.metas.marketing.base.model;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.LocationId;
+import de.metas.organization.OrgId;
 import de.metas.user.User;
 import de.metas.user.UserId;
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -45,12 +45,16 @@ public class ContactPerson implements DataRecord
 	public static ContactPerson newForUserPlatformAndLocation(
 			@NonNull final User user,
 			@NonNull final PlatformId platformId,
+			@NonNull final OrgId orgId,
 			@Nullable final BPartnerLocationId bpLocationId)
 	{
-		final EmailAddress emailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.ofString(user.getEmailAddress());
+		final EmailAddress emailaddress = StringUtils.trimBlankToOptional(user.getEmailAddress())
+				.map(EmailAddress::ofString)
+				.orElse(null);
 
 		return ContactPerson.builder()
 				.platformId(platformId)
+				.orgId(orgId)
 				.name(user.getName())
 				.userId(user.getId())
 				.bPartnerId(user.getBpartnerId())
@@ -62,11 +66,9 @@ public class ContactPerson implements DataRecord
 
 	public static Optional<ContactPerson> cast(@Nullable final DataRecord dataRecord)
 	{
-		if (dataRecord instanceof ContactPerson)
-		{
-			return Optional.ofNullable((ContactPerson)dataRecord);
-		}
-		return Optional.empty();
+		return dataRecord instanceof ContactPerson
+				? Optional.of((ContactPerson)dataRecord)
+				: Optional.empty();
 	}
 
 	String name;
@@ -80,11 +82,15 @@ public class ContactPerson implements DataRecord
 	@Nullable
 	ContactAddress address;
 
-	/** might be null if the contact person was not stored yet */
+	/**
+	 * might be null if the contact person was not stored yet
+	 */
 	@Nullable
 	ContactPersonId contactPersonId;
 
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
+	/**
+	 * the remote system's ID which we can use to sync with the campaign on the remote marketing tool
+	 */
 	String remoteId;
 
 	@NonNull
@@ -106,13 +112,28 @@ public class ContactPerson implements DataRecord
 	@Nullable
 	Language language;
 
-	public String getEmailAddessStringOrNull()
+	@NonNull
+	OrgId orgId;
+
+	public String getEmailAddressStringOrNull()
 	{
-		return EmailAddress.getEmailAddessStringOrNull(getAddress());
+		return EmailAddress.getEmailAddressStringOrNull(getAddress());
 	}
 
-	public Boolean getEmailAddessIsActivatedOrNull()
+	public boolean hasEmailAddress()
 	{
-		return EmailAddress.getActiveOnRemotePlatformOrNull(getAddress());
+		return getEmailAddressStringOrNull() != null;
+	}
+
+	public DeactivatedOnRemotePlatform getDeactivatedOnRemotePlatform()
+	{
+		return EmailAddress.getDeactivatedOnRemotePlatform(getAddress());
+	}
+
+	public ContactPerson withContactPersonId(@NonNull final ContactPersonId contactPersonId)
+	{
+		return !ContactPersonId.equals(this.contactPersonId, contactPersonId)
+				? toBuilder().contactPersonId(contactPersonId).build()
+				: this;
 	}
 }

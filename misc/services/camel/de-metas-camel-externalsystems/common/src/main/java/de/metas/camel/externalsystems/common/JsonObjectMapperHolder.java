@@ -42,6 +42,9 @@ public class JsonObjectMapperHolder
 		return sharedJsonObjectMapper;
 	}
 
+	/**
+	 * @return the JSON object mapper config that is generally used when exchanging JSON-strings with metasfresh.
+	 */
 	@NonNull
 	public ObjectMapper newJsonObjectMapper()
 	{

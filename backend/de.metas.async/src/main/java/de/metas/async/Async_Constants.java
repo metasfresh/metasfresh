@@ -49,7 +49,7 @@ public final class Async_Constants
 
 	public static final Topic WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.async.UserNotifications.WorkpackageProcessingErrors")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	/**
@@ -57,16 +57,38 @@ public final class Async_Constants
 	 */
 	public static final Topic WORKPACKAGE_LIFECYCLE_TOPIC = Topic.builder()
 			.name("de.metas.async.WorkpackageLifeCycle")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	public static final int C_OlCandProcessor_ID_Default = 1000003;
 
+	public static final String C_Async_Batch_InternalName_Default = "Default";
+
+	/**
+	 * Referenced by the {@code C_OLCand}s that are to be processed. That means that when later-on,
+	 * the workpackage of {@link #C_Async_Batch_InternalName_ProcessOLCands} creates and waits for the execution of new WPs,
+	 * those new WP will belong to this async-batch.
+	 */
 	public static final String C_Async_Batch_InternalName_OLCand_Processing = "OLCand_Processing";
 	public static final String C_Async_Batch_InternalName_ShipmentSchedule = "ShipmentSchedule_Processing";
 	public static final String C_Async_Batch_InternalName_InvoiceCandidate_Processing = "InvoiceCandidate_Processing";
+	public static final String C_Async_Batch_InternalName_DunningCandidate_Processing = "DunningCandidate_Processing";
+	public static final String C_Async_Batch_InternalName_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";
+	public static final String C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation = "EnqueueInvoiceCandidateCreation";
+
+	/**
+	 * Used when a single olCand-Prozessing workpackage is enqueued.
+	 * That WPs job is to do the processing, which entails creating further workpackages.
+	 * In other words, we create and wait for a workpackage, the processor of which then creates and wait for a number of other WPs.
+	 * That is we need two different async-batches.
+	 *
+	 * @see #C_Async_Batch_InternalName_OLCand_Processing
+	 */
+	public static final String C_Async_Batch_InternalName_ProcessOLCands = "ProcessOLCands";
+	public static final String C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting = "AutomaticallyInvoicePdfPrinting";
+	public static final String C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting = "AutomaticallyDunningPdfPrinting";
 
 	public static final String SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION = "SKIP_WP_PROCESSOR_FOR_AUTOMATION";
-	public static final String SYS_Config_WaitTimeOutMS = "de.metas.async.AsyncBatchMilestoneObserver.WaitTimeOutMS";
+	public static final String SYS_Config_WaitTimeOutMS = "de.metas.async.AsyncBatchObserver.WaitTimeOutMS";
 	public static final int SYS_Config_WaitTimeOutMS_DEFAULT_VALUE = 1000 * 60 * 5;
 }

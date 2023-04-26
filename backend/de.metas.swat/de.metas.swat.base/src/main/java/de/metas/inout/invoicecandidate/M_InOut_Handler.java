@@ -1,15 +1,6 @@
 package de.metas.inout.invoicecandidate;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -22,6 +13,15 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -58,22 +58,22 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	/**
 	 * @see M_InOutLine_Handler#getModelForInvoiceCandidateGenerateScheduling(Object)
 	 */
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
+	public List<InvoiceCandidateGenerateRequest> expandRequest(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final I_M_InOut inout = request.getModel(I_M_InOut.class);
 
@@ -108,7 +108,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_M_InOut> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_M_InOut> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}

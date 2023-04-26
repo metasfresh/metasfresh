@@ -53,6 +53,8 @@ services:
     ports:
       - "8082:8082"
 #      - "8793:8793"
+    volumes:
+      - ./volumes/backend/resources/application.properties:/app/resources/application.properties:ro    
     networks:
       - rmq_backend
   frontend:

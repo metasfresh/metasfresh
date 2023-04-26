@@ -26,8 +26,8 @@ import de.metas.Profiles;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -49,10 +49,10 @@ public class AttachmentRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Attachment successfully created"),
-			@ApiResponse(code = 401, message = "You are not authorized to invoke attachment endpoint"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(responseCode = "200", description = "Attachment successfully created"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to invoke attachment endpoint"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request could not be processed")
 	})
 	@PostMapping()
 	public ResponseEntity<JsonAttachmentResponse> createAttachment(@RequestBody @NonNull final JsonAttachmentRequest jsonAttachmentRequest)

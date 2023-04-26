@@ -147,6 +147,7 @@ public class Amount implements Comparable<Amount>
 	{
 		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
 
+		//noinspection ConstantConditions
 		final Iterator<Amount> moneysIterator = Stream.of(amounts)
 				.filter(Objects::nonNull)
 				.iterator();

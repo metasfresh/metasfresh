@@ -634,6 +634,28 @@ DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 578064
 INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 578064, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 5276
 ;
 
+
+INSERT INTO ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) 
+SELECT 1000579, 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, null, 'D', 'Attribute Set Instance To', 'Attribute Set Instance To', 'Target Product Attribute Set Instance', null, null, null, null, null, null, null, null, null, null
+WHERE not exists (select 1 from ad_element where ad_element_id=1000579);
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized) 
+SELECT 1000579, 'de_CH', 0, 0, 'Y', '2021-07-26 09:18:13.210779 +00:00', -1, '2021-07-26 09:18:13.210779 +00:00', -1, 'Attribute Set Instance To', 'Attribute Set Instance To', 'Target Product Attribute Set Instance', null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000579 and ad_language='de_CH');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+SELECT 1000579, 'de_DE', 0, 0, 'Y', '2018-11-26 07:57:00.353716 +00:00', 100, '2018-11-26 07:57:00.353716 +00:00', 100, 'Attribute Set Instance To', 'Attribute Set Instance To', 'Target Product Attribute Set Instance', null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000579 and ad_language='de_DE');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+SELECT 1000579, 'en_US', 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, 'Attribute Set Instance To', 'Attribute Set Instance To', 'Target Product Attribute Set Instance', null, null, null, null, null, 'Y', null, null, null, null, 'N', null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000579 and ad_language='en_US');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+SELECT 1000579, 'nl_NL', 0, 0, 'Y', '2021-07-26 09:18:17.647262 +00:00', -1, '2021-07-26 09:18:17.647262 +00:00', -1, 'Attribute Set Instance To', 'Attribute Set Instance To', 'Target Product Attribute Set Instance', null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000579 and ad_language='nl_NL');
+
+
 -- 2019-03-25T12:08:23.712
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,6607,578065,1000579,0,541683,0,TO_TIMESTAMP('2019-03-25 12:08:23','YYYY-MM-DD HH24:MI:SS'),100,'Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst',11,'D','"Reihenfolge" bestimmt die Reihenfolge der Einträge',0,'Y','Y','Y','N','N','N','N','N','Reihenfolge',50,50,1,1,1,TO_TIMESTAMP('2019-03-25 12:08:23','YYYY-MM-DD HH24:MI:SS'),100)

@@ -1,6 +1,24 @@
 package de.metas.async.api;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockCommand;
+import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Future;
 
 /*
  * #%L
@@ -24,45 +42,24 @@ import java.util.Map;
  * #L%
  */
 
-import java.util.UUID;
-import java.util.concurrent.Future;
-
-import de.metas.async.Async_Constants;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.ITableRecordReference;
-
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockCommand;
-import de.metas.user.UserId;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 public interface IWorkPackageBuilder
 {
 	/**
 	 * Creates the workpackage and marks it as ready for processing (but also see {@link #bindToTrxName(String)}).
 	 * <p>
-	 * Is this builder's parent ({@link IWorkPackageBlockBuilder}) was not yet created/stored in the DB, this method will do it on the fly.
-	 * <p>
 	 * If a locker was specified (see {@link #setElementsLocker(ILockCommand)}) all elements will be locked.
 	 */
-	I_C_Queue_WorkPackage build();
+	I_C_Queue_WorkPackage buildAndEnqueue();
 
 	@NonNull
 	default QueueWorkPackageId buildAndGetId()
 	{
-		final I_C_Queue_WorkPackage workpackage = build();
+		final I_C_Queue_WorkPackage workpackage = buildAndEnqueue();
 		return QueueWorkPackageId.ofRepoId(workpackage.getC_Queue_WorkPackage_ID());
 	}
 
 	/**
-	 * This is the sibling of {@link #build()}, but it doesn't build/enqueue the work package. Instead it discards it.
+	 * This is the sibling of {@link #buildAndEnqueue()}, but it doesn't build/enqueue the work package. Instead it discards it.
 	 * Note that this method also marks the package builder as "build", so no more elements can be added after this method was called.
 	 *
 	 * <b>IMPORTANT</b> as of now, the method does nothing about possible locks.
@@ -72,20 +69,13 @@ public interface IWorkPackageBuilder
 	void discard();
 
 	/**
-	 * Only return the (parent) block builder. Don't do anything else (no sideeffects)
-	 *
-	 * @return parent builder
-	 */
-	IWorkPackageBlockBuilder end();
-
-	/**
 	 * Creates or returns the existing workpackage parameters builder of this package builder.
 	 * <p>
 	 * NOTE: the {@link IWorkPackageParamsBuilder} will trigger the creation of {@link I_C_Queue_WorkPackage}.
 	 */
 	IWorkPackageParamsBuilder parameters();
 
-	default IWorkPackageBuilder parameters(final Map<String, ? extends Object> parameters)
+	default IWorkPackageBuilder parameters(final Map<String, ?> parameters)
 	{
 		parameters().setParameters(parameters);
 		return this;
@@ -127,7 +117,7 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If the async batch it's not set, it will be inherited.
 	 */
-	IWorkPackageBuilder setC_Async_Batch(I_C_Async_Batch asyncBatch);
+	IWorkPackageBuilder setC_Async_Batch(@Nullable I_C_Async_Batch asyncBatch);
 
 	/**
 	 * Sets workpackage's user in charge.
@@ -156,7 +146,7 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
 	 */
-	IWorkPackageBuilder bindToTrxName(String trxName);
+	IWorkPackageBuilder bindToTrxName(@Nullable String trxName);
 
 	/**
 	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
@@ -170,13 +160,24 @@ public interface IWorkPackageBuilder
 	}
 
 	/**
-	 * Sets locker to be used to lock enqueued elements
+	 * Sets locker to be used to lock enqueued elements.
+	 * The elements are unlocked right after the WP was processed.
 	 */
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);
 
 	/**
-	 * @return Lock aquired when enqueued elements were locked (on {@link #build()}).
-	 * Could be null if no lock was aquired.
+	 * @return Lock acquired when enqueued elements were locked (on {@link #buildAndEnqueue()}).
+	 * Could be null if no lock was acquired.
 	 */
 	Future<ILock> getElementsLock();
+
+	/**
+	 * Overloading set async batch, to enable setting async batch also by id (optional).
+	 * If the asyncBatchId is not set, it will be inherited.
+	 */
+	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
+
+	I_C_Queue_WorkPackage buildWithPackageProcessor();
+
+	IWorkPackageBuilder setAD_PInstance_ID(final PInstanceId adPInstanceId);
 }

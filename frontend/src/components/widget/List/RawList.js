@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
+import onClickOutsideHOC from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { isEqual, findIndex, pullAt } from 'lodash';
+import { findIndex, isEqual, pullAt } from 'lodash';
 import counterpart from 'counterpart';
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
@@ -56,12 +56,8 @@ const setSelectedValue = function (dropdownList, selected, defaultValue) {
   return changedValues;
 };
 
-/**
- * @file Class based component.
- * @module RawList
- * @extends Component
- */
-export class RawList extends PureComponent {
+// NOTE: exporting it (without wrapping with onClickOutsideHOC) for testing purposes
+export class RawList0 extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -70,12 +66,18 @@ export class RawList extends PureComponent {
       dropdownList: [...props.list],
     };
 
-    this.focusDropdown = this.focusDropdown.bind(this);
-    this.handleSelect = this.handleSelect.bind(this);
+    // NOTE: we use this approach to be able to jest.spyOn
+    this.requestFocus = this.requestFocus.bind(this);
   }
 
   componentDidMount() {
     window.addEventListener('keydown', this.handleTab);
+
+    //
+    // On initial focus gained when component was created first time
+    if (this.props.isFocused) {
+      this.focus();
+    }
   }
 
   componentWillUnmount() {
@@ -83,15 +85,20 @@ export class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { list, mandatory, defaultValue, selected, emptyText, listHash } =
-      this.props;
-    let dropdownList = this.state.dropdownList;
+    const { listHash, list = [] } = this.props;
     let changedValues = {};
 
-    // If data in the list changed, we either opened or closed the selection dropdown.
-    // If we're closing it (bluring), then we don't care about the whole thing.
-    if (listHash && !prevProps.listHash) {
-      dropdownList = [...list];
+    const { listHash: prevListHash, list: prevList = [] } = prevProps;
+
+    // dev-note: compare the listHashes in order to be able to update the list on the fly (but only when the dropdown is closed)
+    // OR when the dropdown was not rendered and the list is empty (display only `none` value); avoid an infinite loop call
+    const loadDropdown =
+      (listHash !== prevListHash && (list.length > 0 || prevList.length > 0)) ||
+      (listHash && !prevListHash);
+
+    if (loadDropdown) {
+      const { mandatory, defaultValue, selected, emptyText } = this.props;
+      let dropdownList = [...list];
       if (!mandatory && emptyText) {
         dropdownList.push({
           caption: this.props.properties.clearValueText,
@@ -132,41 +139,36 @@ export class RawList extends PureComponent {
     }
 
     if (Object.keys(changedValues).length) {
-      this.setState(
-        {
-          ...changedValues,
-        },
-        () => {
-          this.focusDropdown();
-        }
-      );
+      this.setState({ ...changedValues }, () => {
+        // NOTE: don't request focus here because we will get a weird behaviour when multiple fields will open their dropdown at once
+        //this.requestFocus();
+      });
+    }
+
+    //
+    // On focus gained (via props)
+    if (this.props.isFocused) {
+      // NOTE: commented out condition: && this.props.isFocused !== prevProps.isFocused
+      // because we want to cover the case when the isFocused was set before but for some reason,
+      // the field was not focused because maybe was not created yet or the focus was somehow lost...
+      //
+      // Test case: GL Journal (SAP), batch entry, first field D/C was not focused after comple of complete entries.
+
+      this.focus();
     }
   }
 
-  /*
-   * Alternative method to open dropdown, in case of disabled opening
-   * on focus.
-   */
-  /**
-   * @method handleClick
-   * @summary ToDo: Describe the method.
-   */
   handleClick = () => {
     const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
 
     if (!isToggled) {
-      this.focusDropdown();
+      this.requestFocus();
       onOpenDropdown();
     } else {
       onCloseDropdown();
     }
   };
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleClickOutside(e) {
     const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
     const { target } = e;
@@ -181,24 +183,14 @@ export class RawList extends PureComponent {
         return;
       }
 
-      this.setState(
-        {
-          selected: selected || null,
-        },
-        () => {
-          onCloseDropdown();
-          onBlur();
-        }
-      );
+      this.setState({ selected: selected || null }, () => {
+        onCloseDropdown();
+        onBlur();
+      });
     }
   }
 
-  /**
-   * @method handleSelect
-   * @summary ToDo: Describe the method.
-   * @param {*} selected
-   */
-  handleSelect(selected) {
+  handleSelect = (selected) => {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
     const changedValues = {
@@ -216,39 +208,23 @@ export class RawList extends PureComponent {
         }
         onCloseDropdown();
 
-        setTimeout(() => {
-          this.focusDropdown();
-        }, 0);
+        setTimeout(() => this.requestFocus(), 0);
       });
     }
-  }
+  };
 
-  /**
-   * @method handleClear
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleClear = (event) => {
     event.stopPropagation();
 
     this.props.onSelect(null);
   };
 
-  /**
-   * @method handleTemporarySelection
-   * @summary ToDo: Describe the method.
-   * @param {*} selected
-   */
   handleTemporarySelection = (selected) => {
     this.setState({
       selected,
     });
   };
 
-  /**
-   * @method handleCancel
-   * @summary ToDo: Describe the method.
-   */
   handleCancel = () => {
     const { disableAutofocus, onCloseDropdown } = this.props;
     disableAutofocus && disableAutofocus();
@@ -256,11 +232,6 @@ export class RawList extends PureComponent {
     onCloseDropdown && onCloseDropdown();
   };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleKeyDown = (e) => {
     const { onSelect, list, loading, readonly, isToggled, onOpenDropdown } =
       this.props;
@@ -278,11 +249,6 @@ export class RawList extends PureComponent {
     }
   };
 
-  /**
-   * @method handleTab
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleTab = (e) => {
     const { isToggled, isFocused, onCloseDropdown } = this.props;
 
@@ -296,26 +262,22 @@ export class RawList extends PureComponent {
     }
   };
 
-  /**
-   * @method handleBlur
-   * @summary ToDo: Describe the method.
-   */
   handleBlur = () => {
     const { onBlur } = this.props;
 
-    this.dropdown.blur();
+    this.inputContainerElement.blur();
     onBlur();
   };
 
-  /**
-   * @method focusDropdown
-   * @summary ToDo: Describe the method.
-   */
-  focusDropdown() {
+  requestFocus() {
     this.props.onFocus();
   }
 
-  render() {
+  focus = () => {
+    this.inputContainerElement?.focus?.();
+  };
+
+  renderSingleSelect = () => {
     const {
       rank,
       readonly,
@@ -334,10 +296,10 @@ export class RawList extends PureComponent {
       isToggled,
       isFocused,
       clearable,
-      isMultiselect,
       compositeWidgetData, // for composite lookups - all the widgets data
       field,
       listHash,
+      wrapperElement,
     } = this.props;
 
     let value = '';
@@ -345,7 +307,7 @@ export class RawList extends PureComponent {
     const widgetData =
       compositeWidgetData &&
       compositeWidgetData.filter((itemWidgetData) => {
-        return itemWidgetData.field == field;
+        return itemWidgetData.field === field;
       })[0];
     const widgetDataValidStatus =
       widgetData && widgetData.validStatus
@@ -373,7 +335,15 @@ export class RawList extends PureComponent {
       ? this.props.properties.emptyText
       : placeholder;
 
-    const classicDropdown = (
+    let width = this.inputContainerElement?.offsetWidth ?? 0;
+    if (wrapperElement) {
+      const wrapperWidth = wrapperElement.offsetWidth;
+      const offset = this.inputContainerElement?.offsetLeft ?? 0;
+
+      width = wrapperWidth - offset;
+    }
+
+    return (
       <TetherComponent
         attachment="top left"
         targetAttachment="bottom left"
@@ -388,9 +358,9 @@ export class RawList extends PureComponent {
         ]}
         renderTarget={(ref) => {
           return (
-            <div ref={ref}>
+            <div ref={ref} className={this.props.className}>
               <div
-                ref={(ref) => (this.dropdown = ref)}
+                ref={(ref) => (this.inputContainerElement = ref)}
                 className={classnames('input-dropdown-container', {
                   'input-disabled': readonly,
                   'input-dropdown-container-static': rowId,
@@ -408,7 +378,7 @@ export class RawList extends PureComponent {
                       !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
-                onFocus={readonly ? null : this.focusDropdown}
+                //onFocus={readonly ? null : this.requestFocus} // not needed because cancels the effect of handleClick
                 onClick={readonly ? null : this.handleClick}
                 onKeyDown={this.handleKeyDown}
                 onKeyUp={this.handleKeyUp}
@@ -424,7 +394,6 @@ export class RawList extends PureComponent {
                       !validStatus.initialValue &&
                       !isToggled,
                   })}
-                  ref={(c) => (this.inputContainer = c)}
                 >
                   <div
                     className={classnames(
@@ -475,7 +444,7 @@ export class RawList extends PureComponent {
               options={this.state.dropdownList}
               empty={`${counterpart.translate('widget.list.hasNoResults')}`}
               selected={this.state.selected}
-              width={this.dropdown.offsetWidth}
+              width={width}
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
@@ -484,8 +453,12 @@ export class RawList extends PureComponent {
         }
       />
     );
+  };
 
-    const multiSelectDropdown = (
+  renderMultiSelectDropdown = () => {
+    const { listHash } = this.props;
+
+    return (
       <MultiSelect
         listHash={listHash}
         options={this.state.dropdownList}
@@ -497,13 +470,14 @@ export class RawList extends PureComponent {
         selectedItems={this.props.selected}
       />
     );
+  };
 
-    return (
-      <React.Fragment>
-        {isMultiselect && multiSelectDropdown}
-        {!isMultiselect && classicDropdown}
-      </React.Fragment>
-    );
+  render() {
+    const { isMultiselect } = this.props;
+
+    return isMultiselect
+      ? this.renderMultiSelectDropdown()
+      : this.renderSingleSelect();
   }
 }
 
@@ -540,8 +514,11 @@ export class RawList extends PureComponent {
  * @prop {func} onSelect
  * @prop {func} onOpenDropdown
  * @prop {func} onCloseDropdown
+ * @prop {func} enableOnClickOutside - callback to be used to enable click outside for parent component
+ * @prop {func} disableOnClickOutside - callback to be used to disable click outside for parent component
  */
-RawList.propTypes = {
+RawList0.propTypes = {
+  className: PropTypes.string,
   filter: PropTypes.object,
   readonly: PropTypes.bool,
   clearable: PropTypes.bool,
@@ -577,11 +554,14 @@ RawList.propTypes = {
   isMultiselect: PropTypes.bool,
   compositeWidgetData: PropTypes.array,
   field: PropTypes.string,
+  wrapperElement: PropTypes.object,
+  enableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
+  disableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
 };
 
-RawList.defaultProps = {
+RawList0.defaultProps = {
   tabIndex: -1,
   clearable: true,
 };
 
-export default onClickOutside(RawList);
+export default onClickOutsideHOC(RawList0);

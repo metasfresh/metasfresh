@@ -47,7 +47,7 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -2907,8 +2907,8 @@ public class GridTable extends AbstractTableModel
 						// give the other processes a chance
 						try
 						{
-							yield();
-							sleep(10); // .01 second
+							Thread.yield();
+							Thread.sleep(10); // .01 second
 						}
 						catch (InterruptedException ie)
 						{
@@ -3021,7 +3021,7 @@ public class GridTable extends AbstractTableModel
 	 * Feature Request [1707462]
 	 * Enable runtime change of VFormat
 	 *
-	 * @param Identifier field ident
+	 * @param identifier field ident
 	 * @param strNewFormat new mask
 	 * @author fer_luck
 	 */

@@ -1,39 +1,38 @@
 package org.compiere.acct;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 /*
  * #%L
@@ -59,47 +58,67 @@ import java.sql.Timestamp;
 
 final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 {
-	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
 
 	private final I_C_OrderLine orderLine;
+	private final I_M_InOutLine _receiptLine;
+	private final I_M_InOut _receipt;
+	private final CurrencyConversionContext _currencyConversionContext;
 
-	public DocLine_MatchPO(final I_M_MatchPO matchPO, final Doc_MatchPO doc)
+	DocLine_MatchPO(final I_M_MatchPO matchPO, final Doc_MatchPO doc)
 	{
 		super(InterfaceWrapperHelper.getPO(matchPO), doc);
 
-		final int orderLineId = matchPO.getC_OrderLine_ID();
-		orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
+		IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(matchPO.getC_OrderLine_ID());
+		this.orderLine = orderDAO.getOrderLineById(orderLineId);
 
-		setDateDoc(TimeUtil.asLocalDate(matchPO.getDateTrx()));
+		IInOutBL inoutBL = Services.get(IInOutBL.class);
+		final InOutLineId receiptLineId = InOutLineId.ofRepoId(matchPO.getM_InOutLine_ID());
+		this._receiptLine = inoutBL.getLineByIdInTrx(receiptLineId);
+		this._receipt = inoutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
+		this._currencyConversionContext = inoutBL.getCurrencyConversionContext(_receipt);
+
+		setDateDoc(LocalDateAndOrgId.ofTimestamp(
+				matchPO.getDateTrx(),
+				OrgId.ofRepoId(matchPO.getAD_Org_ID()),
+				doc.getServices()::getTimeZone));
 
 		final Quantity qty = Quantity.of(matchPO.getQty(), getProductStockingUOM());
 		final boolean isSOTrx = false;
 		setQty(qty, isSOTrx);
 	}
 
-	/** @return PO cost amount in accounting schema currency */
-	CostAmount getPOCostAmount(final AcctSchema as)
+	CostAmount getPOCostAmountInAcctCurrency(final AcctSchema acctSchema)
 	{
-		final I_C_OrderLine orderLine = getOrderLine();
-		final ProductPrice poCostPrice = getOrderLineCostPrice();
-		final CostAmount poCost = CostAmount.multiply(poCostPrice, getQty());
-		if (poCost.getCurrencyId().equals(as.getCurrencyId()))
+		final CostAmount poCostAmt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), getQty());
+		return convertToAcctCurrency(poCostAmt, acctSchema);
+	}
+
+	private CostAmount convertToAcctCurrency(final CostAmount amt, final AcctSchema acctSchema)
+	{
+		if (amt.getCurrencyId().equals(acctSchema.getCurrencyId()))
 		{
-			return poCost;
+			return amt;
 		}
 
-		final I_C_Order order = orderLine.getC_Order();
-		final CurrencyRate conversionRate = currencyConversionBL.getCurrencyRate(
-				poCost.getCurrencyId(),
-				as.getCurrencyId(),
-				TimeUtil.asLocalDate(order.getDateAcct()),
-				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
-				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
-				OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+		final CurrencyConversionResult poCostConv = currencyBL.convert(
+				getCurrencyConversionContext().withPrecision(acctSchema.getCosting().getCostingPrecision()),
+				amt.toMoney(),
+				acctSchema.getCurrencyId());
 
-		return poCost
-				.multiply(conversionRate.getConversionRate())
-				.roundToPrecisionIfNeeded(as.getCosting().getCostingPrecision());
+		return CostAmount.of(poCostConv.getAmount(), acctSchema.getCurrencyId());
+	}
+
+	private ProductPrice getOrderLineCostPriceInStockingUOM()
+	{
+		final I_C_OrderLine orderLine = getOrderLine();
+		final ProductPrice costPrice = orderLineBL.getCostPrice(orderLine);
+
+		final CurrencyPrecision precision = currencyBL.getCostingPrecision(costPrice.getCurrencyId());
+		return uomConversionsBL.convertProductPriceToUom(costPrice, getProductStockingUOMId(), precision);
 	}
 
 	CostAmount getStandardCosts(final AcctSchema acctSchema)
@@ -122,35 +141,28 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costPrice.multiply(getQty());
 	}
 
-	AggregatedCostAmount createCostDetails(final AcctSchema as)
+	void createCostDetails(final AcctSchema as)
 	{
-		final I_M_InOutLine receiptLine = getReceiptLine();
-		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
-
-		final I_C_OrderLine orderLine = getOrderLine();
-		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(orderLine.getC_Order().getC_ConversionType_ID());
-		final Timestamp receiptDateAcct = receiptLine.getM_InOut().getDateAcct();
-
+		final I_M_InOut receipt = getReceipt();
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
+		final CostAmount amt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), qty);
 
-		final ProductPrice costPrice = getOrderLineCostPrice();
-		final CostAmount amt = CostAmount.multiply(costPrice, qty);
-
-		final AcctSchemaId acctSchemaId = as.getId();
-
-		return services.createCostDetail(
+		// NOTE: there is no need to fail if no cost details were created because:
+		// * not all costing methods are creating cost details for MatchPO
+		// * we are not using the result of cost details
+		services.createCostDetailOrEmpty(
 				CostDetailCreateRequest.builder()
-						.acctSchemaId(acctSchemaId)
-						.clientId(ClientId.ofRepoId(orderLine.getAD_Client_ID()))
-						.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+						.acctSchemaId(as.getId())
+						.clientId(ClientId.ofRepoId(receipt.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(receipt.getAD_Org_ID()))
 						.productId(getProductId())
 						.attributeSetInstanceId(getAttributeSetInstanceId())
 						.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
 						.qty(qty)
 						.amt(amt)
-						.currencyConversionTypeId(currencyConversionTypeId)
-						.date(TimeUtil.asLocalDate(receiptDateAcct))
-						.description(orderLine.getDescription())
+						.currencyConversionContext(getCurrencyConversionContext())
+						.date(getReceiptDateAcct())
+						.description(getOrderLine().getDescription())
 						.build());
 	}
 
@@ -159,34 +171,32 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return orderLine;
 	}
 
-	private ProductPrice getOrderLineCostPrice()
-	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
-
-		final I_C_OrderLine orderLine = getOrderLine();
-		final ProductPrice costPrice = orderLineBL.getCostPrice(orderLine);
-
-		final CurrencyPrecision precision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
-		return uomConversionsBL.convertProductPriceToUom(costPrice, getProductStockingUOMId(), precision);
-	}
-
-	int getReceipt_InOutLine_ID()
-	{
-		return getModel(I_M_MatchPO.class).getM_InOutLine_ID();
-	}
-
 	I_M_InOutLine getReceiptLine()
 	{
-		return getModel(I_M_MatchPO.class).getM_InOutLine();
+		return this._receiptLine;
+	}
+
+	I_M_InOut getReceipt()
+	{
+		return this._receipt;
+	}
+
+	private CurrencyConversionContext getCurrencyConversionContext()
+	{
+		return this._currencyConversionContext;
+	}
+
+	Instant getReceiptDateAcct()
+	{
+		final I_M_InOut receipt = getReceipt();
+		final Timestamp receiptDateAcct = receipt.getDateAcct();
+		return receiptDateAcct.toInstant();
 	}
 
 	boolean isReturnTrx()
 	{
-		final I_M_InOutLine receiptLine = getReceiptLine();
-		final I_M_InOut inOut = receiptLine.getM_InOut();
-		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(inOut.getMovementType());
+		final I_M_InOut receipt = getReceipt();
+		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(receipt.getMovementType());
 	}
 
 	private int getM_MatchPO_ID()

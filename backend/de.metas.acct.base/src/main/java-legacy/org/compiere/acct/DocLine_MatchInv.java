@@ -1,12 +1,12 @@
 package org.compiere.acct;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MAccount;
-
+import de.metas.acct.Account;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.ProductAcctType;
+import de.metas.invoice.matchinv.MatchInv;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 /*
  * #%L
@@ -33,21 +33,24 @@ import de.metas.quantity.Quantity;
 final class DocLine_MatchInv extends DocLine<Doc_MatchInv>
 {
 
-	public DocLine_MatchInv(final I_M_MatchInv matchInv, final Doc_MatchInv doc)
+	public DocLine_MatchInv(final Doc_MatchInv doc)
 	{
-		super(InterfaceWrapperHelper.getPO(matchInv), doc);
-		
-		final Quantity qty = Quantity.of(matchInv.getQty(), getProductStockingUOM());
+		super(InterfaceWrapperHelper.getPO(doc.getMatchInvRecord()), doc);
+
+		final MatchInv matchInv = doc.getMatchInv();
+		final Quantity qty = matchInv.getQty().getStockQty();
 		setQty(qty, false);
 	}
 
-	public MAccount getInventoryClearingAccount(final AcctSchema as)
+	@NonNull
+	public Account getInventoryClearingAccount(final AcctSchema as)
 	{
-		return getAccount(isService() ? ProductAcctType.Expense : ProductAcctType.InventoryClearing, as);
+		return getAccount(isService() ? ProductAcctType.P_Expense_Acct : ProductAcctType.P_InventoryClearing_Acct, as);
 	}
 
-	public MAccount getInvoicePriceVarianceAccount(final AcctSchema as)
+	@NonNull
+	public Account getInvoicePriceVarianceAccount(final AcctSchema as)
 	{
-		return getAccount(ProductAcctType.IPV, as);
+		return getAccount(ProductAcctType.P_InvoicePriceVariance_Acct, as);
 	}
 }

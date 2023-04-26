@@ -24,14 +24,15 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
@@ -57,6 +58,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions.Access;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -109,7 +111,7 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
-	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -377,8 +379,8 @@ public class CalloutOrder extends CalloutEngine
 				+ " p.AD_Org_ID "
 				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
-				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
-				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
+				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y' AND lbill.IsEphemeral='N')"
+				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y' AND lship.IsEphemeral='N')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) AND c.IsActive = 'Y' "
 				// #928
 				// Only join with Users that have the right SOTrx value (Sales Contact for SO and PurchaseContact for PO) and are set as default for that SOTrxValue
@@ -387,7 +389,9 @@ public class CalloutOrder extends CalloutEngine
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				// metas (2009 0027 G1): making sure that the default billTo
 				// and shipTo location is used
-				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
+				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
+				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault + " DESC"
+				+ " , lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
 				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
 				// metas end
 				// 08578 take default users first.
@@ -409,7 +413,7 @@ public class CalloutOrder extends CalloutEngine
 
 				if (isCopyOrgFromBPartner())
 				{
-					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, Access.WRITE);
+					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, null, Access.WRITE);
 
 					if (userHasOrgPermissions)
 					{
@@ -451,6 +455,9 @@ public class CalloutOrder extends CalloutEngine
 				 * Integer(i)); }
 				 */
 				int shipTo_ID = rs.getInt("C_BPartner_Location_ID");
+				// metas (2009 0027 G1): setting billTo location. Why has it
+				// been selected above when it isn't used?
+				final int billTo_ID = rs.getInt("Bill_Location_ID");
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong
 				// to different BP)
@@ -468,11 +475,13 @@ public class CalloutOrder extends CalloutEngine
 						// metas end
 					}
 				}
-				order.setC_BPartner_Location_ID(shipTo_ID <= 0 ? -1 : shipTo_ID);
 
-				// metas (2009 0027 G1): setting billTo location. Why has it
-				// been selected above when it isn't used?
-				final int billTo_ID = rs.getInt("Bill_Location_ID");
+				final int computedBPartnerLocationId = billTo_ID > 0 && orderBL.isUseDefaultBillToLocationForBPartner(order)
+						? billTo_ID
+						: (shipTo_ID <= 0 ? -1 : shipTo_ID);
+
+				order.setC_BPartner_Location_ID(computedBPartnerLocationId);
+
 				if (billTo_ID <= 0)
 				{
 					order.setBill_Location_ID(-1);
@@ -646,22 +655,22 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-																				   .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-																				   .defaultDocType(true)
-																				   .adClientId(adClientId)
-																				   .adOrgId(adOrgId)
-																				   .build());
+				.docBaseType(DocBaseType.SalesOrder)
+				.defaultDocType(true)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-																						 .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-																						 .adClientId(adClientId)
-																						 .adOrgId(adOrgId)
-																						 .build());
+				.docBaseType(DocBaseType.SalesOrder)
+				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
 
 		return standardOrderDocTypeId;
 	}
@@ -670,12 +679,13 @@ public class CalloutOrder extends CalloutEngine
 			@NonNull final ICalloutField calloutField,
 			@NonNull final I_C_Order order)
 	{
+		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final BPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartnerId);
+		final BPartnerStats bPartnerStats = bPartnerStatsService.getCreateBPartnerStats(bpartnerId);
 
 		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 				.bpartnerId(bpartnerId.getRepoId())
-				.creditStatus(bPartnerStats.getSOCreditStatus())
+				.creditStatus(bPartnerStats.getSoCreditStatus())
 				.evalCreditstatus(true)
 				.evaluationDate(order.getDateOrdered())
 				.build();
@@ -688,7 +698,7 @@ public class CalloutOrder extends CalloutEngine
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId.getRepoId(), order.getDateOrdered());
 
-		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
+		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSoCreditUsed());
 		if (CreditAvailable.signum() < 0)
 		{
 			calloutField.fireDataStatusEEvent(
@@ -821,7 +831,7 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					final String creditStatus = rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus);
+					final CreditStatus creditStatus = CreditStatus.ofCode(rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus));
 					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 							.bpartnerId(bill_BPartner_ID)
 							.creditStatus(creditStatus)
@@ -1051,11 +1061,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-										 .orderLine(ol)
-										 .resultUOM(ResultUOM.CONTEXT_UOM)
-										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-										 .updateLineNetAmt(true)
-										 .build());
+				.orderLine(ol)
+				.resultUOM(ResultUOM.CONTEXT_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updateLineNetAmt(true)
+				.build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1117,12 +1127,15 @@ public class CalloutOrder extends CalloutEngine
 		}
 		log.debug("Bill BP_Location={}", billBPLocationId);
 
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ol.getC_VAT_Code_ID());
+
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-									 shipDate, AD_Org_ID, M_Warehouse_ID,
-									 billBPLocationId,
-									 shipBPLocationId,
-									 order.isSOTrx());
+				shipDate, AD_Org_ID, M_Warehouse_ID,
+				billBPLocationId,
+				shipBPLocationId,
+				order.isSOTrx(),
+				vatCodeId);
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
@@ -1163,8 +1176,8 @@ public class CalloutOrder extends CalloutEngine
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-											 .applyPriceLimitRestrictions(false)
-											 .build());
+					.applyPriceLimitRestrictions(false)
+					.build());
 
 			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
@@ -1390,8 +1403,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-																	   M_Warehouse_ID, M_Product_ID,
-																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
+							M_Warehouse_ID, M_Product_ID,
+							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;
@@ -1465,11 +1478,9 @@ public class CalloutOrder extends CalloutEngine
 	private static class CreditLimitRequest
 	{
 		final int bpartnerId;
-		@NonNull
-		final String creditStatus;
+		@NonNull final CreditStatus creditStatus;
 		final boolean evalCreditstatus;
-		@NonNull
-		final Timestamp evaluationDate;
+		@NonNull final Timestamp evaluationDate;
 	}
 
 	/**
@@ -1478,7 +1489,7 @@ public class CalloutOrder extends CalloutEngine
 	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest)
 	{
 		final int bpartnerId = creditlimitrequest.getBpartnerId();
-		final String creditStatus = creditlimitrequest.getCreditStatus();
+		final CreditStatus creditStatus = creditlimitrequest.getCreditStatus();
 		final boolean evalCreditstatus = creditlimitrequest.isEvalCreditstatus();
 		final Timestamp evaluationDate = creditlimitrequest.getEvaluationDate();
 
@@ -1487,7 +1498,7 @@ public class CalloutOrder extends CalloutEngine
 		boolean dontCheck = true;
 		if (evalCreditstatus)
 		{
-			dontCheck = creditLimit.signum() == 0 || X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(creditStatus);
+			dontCheck = creditLimit.signum() == 0 || CreditStatus.NoCreditCheck.equals(creditStatus);
 		}
 		else
 		{
@@ -1610,8 +1621,8 @@ public class CalloutOrder extends CalloutEngine
 				OrderDocumentLocationAdapterFactory
 						.deliveryLocationAdapter(order)
 						.setFrom(OrderDocumentLocationAdapterFactory
-										 .locationAdapter(order)
-										 .toDocumentLocation());
+								.locationAdapter(order)
+								.toDocumentLocation());
 			}
 			else
 			{
@@ -1655,12 +1666,7 @@ public class CalloutOrder extends CalloutEngine
 			return false;
 		}
 
-		if (!orderLine.isEnforcePriceLimit())
-		{
-			return false;
-		}
-
-		return true;
+		return orderLine.isEnforcePriceLimit();
 	}
 
 	public String attributeSetInstance(final ICalloutField calloutField)

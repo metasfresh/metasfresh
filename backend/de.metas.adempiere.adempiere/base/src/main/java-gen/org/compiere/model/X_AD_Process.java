@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1522330060L;
+	private static final long serialVersionUID = -1946797104L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -300,6 +300,17 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setIsFormatExcelFile (final boolean IsFormatExcelFile)
+	{
+		set_Value (COLUMNNAME_IsFormatExcelFile, IsFormatExcelFile);
+	}
+
+	@Override
+	public boolean isFormatExcelFile()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFormatExcelFile);
+	}
+	@Override
 	public void setIsNotifyUserAfterExecution (final boolean IsNotifyUserAfterExecution)
 	{
 		set_Value (COLUMNNAME_IsNotifyUserAfterExecution, IsNotifyUserAfterExecution);
@@ -357,6 +368,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isTranslateExcelHeaders() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsTranslateExcelHeaders);
+	}
+
+	@Override
+	public void setIsUpdateExportDate (final boolean IsUpdateExportDate)
+	{
+		set_Value (COLUMNNAME_IsUpdateExportDate, IsUpdateExportDate);
+	}
+
+	@Override
+	public boolean isUpdateExportDate()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateExportDate);
 	}
 
 	@Override
@@ -596,4 +619,17 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	{
 		return get_ValueAsString(COLUMNNAME_WorkflowValue);
 	}
+
+	@Override
+	public void setIsLogWarning (final boolean IsLogWarning)
+	{
+		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
+	}
+
+	@Override
+	public boolean isLogWarning()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
+	}
+
 }

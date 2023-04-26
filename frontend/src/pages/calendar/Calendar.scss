@@ -1,0 +1,44 @@
+.calendar {
+  padding: 15px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .calendar-top {
+    display: flex;
+    flex: 0 0 auto;
+    padding-bottom: 2px;
+
+    .calendar-top-left {
+      flex: 0 0 auto;
+    }
+
+    .calendar-top-center {
+      flex: 1 1 auto;
+    }
+
+    .calendar-top-right {
+      flex: 0 0 auto;
+    }
+  }
+
+  .calendar-content {
+    flex: 1 1 auto;
+
+    .fc-event.has-conflict {
+      border-left: 4px solid red !important;
+    }
+
+    .fc-resource-label.has-conflict {
+      color: red !important;
+      font-weight: bold;
+    }
+
+    .fc-day-today
+    {
+      background: yellow !important;
+    }
+  }
+}
+

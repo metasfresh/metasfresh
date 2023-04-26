@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Order_CompensationGroup
  *  @author metasfresh (generated) 
@@ -144,6 +145,27 @@ public interface I_C_Order_CompensationGroup
 
 	ModelColumn<I_C_Order_CompensationGroup, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_C_Order_CompensationGroup.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set CompensationGroupOrderBy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompensationGroupOrderBy (@Nullable java.lang.String CompensationGroupOrderBy);
+
+	/**
+	 * Get CompensationGroupOrderBy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompensationGroupOrderBy();
+
+	ModelColumn<I_C_Order_CompensationGroup, Object> COLUMN_CompensationGroupOrderBy = new ModelColumn<>(I_C_Order_CompensationGroup.class, "CompensationGroupOrderBy", null);
+	String COLUMNNAME_CompensationGroupOrderBy = "CompensationGroupOrderBy";
 
 	/**
 	 * Get Created.

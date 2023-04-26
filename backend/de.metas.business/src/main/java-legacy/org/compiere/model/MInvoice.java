@@ -21,8 +21,8 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
@@ -37,13 +37,16 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.IPriceListDAO;
@@ -61,18 +64,15 @@ import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -130,7 +130,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 * @param trxName            trx
 	 * @param setOrder           set Order links
 	 * @return Invoice
-	 * @deprecated please use {@link IInvoiceBL#copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)} instead.
+	 * @deprecated please use {@link IInvoiceBL#copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean, boolean)} instead.
 	 */
 	@Deprecated
 	public static MInvoice copyFrom(final MInvoice from, final Timestamp dateDoc, final Timestamp dateAcct,
@@ -141,7 +141,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// NOTE: the old crap is deleted from here.... search it in SCM history
 		final I_C_Invoice to = Services.get(IInvoiceBL.class).copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, counter, setOrder,
 																	   false,  // setInvoiceRef == false
-																	   true); // copyLines == true
+																	   true, // copyLines == true
+																	   false);
 
 		// Make sure DateAcct is set (08356)
 		to.setDateAcct(dateAcct);
@@ -171,7 +172,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	} // get
 
 	private static final Logger s_log = LogManager.getLogger(MInvoice.class);
-	private static CCache<Integer, MInvoice> s_cache = new CCache<>("C_Invoice", 20, 2);    // 2 minutes
+	private static final CCache<Integer, MInvoice> s_cache = new CCache<>("C_Invoice", 20, 2);    // 2 minutes
 
 	private MInvoiceLine[] m_lines;
 	private MInvoiceTax[] m_taxes;
@@ -281,9 +282,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setSalesRep_ID(ship.getSalesRep_ID());
 		setAD_User_ID(ship.getAD_User_ID()); // metas
 
+		setEMail((ship.getEMail()));
+
+		setAD_InputDataSource_ID(ship.getAD_InputDataSource_ID());
+
 		// metas: additional fields
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, C_Invoice_INCOTERMLOCATION);
 		ship.setDescriptionBottom(getDescriptionBottom());
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
@@ -358,9 +363,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setUser1_ID(ship.getUser1_ID());
 		setUser2_ID(ship.getUser2_ID());
 
+		setEMail(ship.getEMail());
+
+		setAD_InputDataSource_ID(ship.getAD_InputDataSource_ID());
+
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
@@ -381,6 +390,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setC_ConversionType_ID(order.getC_ConversionType_ID());
 			setPaymentRule(order.getPaymentRule());
 			setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
+			setC_Incoterms_ID(order.getC_Incoterms_ID());
+			setIncotermLocation(order.getIncotermLocation());
+
+			final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+			if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID())))
+			{
+				setEMail(order.getEMail());
+			}
 			//
 			final I_C_DocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
@@ -407,6 +424,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setC_ConversionType_ID(rmaOrder.getC_ConversionType_ID());
 			setPaymentRule(rmaOrder.getPaymentRule());
 			setC_PaymentTerm_ID(rmaOrder.getC_PaymentTerm_ID());
+			setEMail(rmaOrder.getEMail());
 
 			// Retrieves the invoice DocType
 			final I_C_DocType dt = MDocType.get(getCtx(), rma.getC_DocType_ID());
@@ -591,8 +609,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String set = "SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Invoice_ID=" + getC_Invoice_ID();
-		final int noLine = DB.executeUpdate("UPDATE C_InvoiceLine " + set, get_TrxName());
-		final int noTax = DB.executeUpdate("UPDATE C_InvoiceTax " + set, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceLine " + set, get_TrxName());
+		final int noTax = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceTax " + set, get_TrxName());
 		m_lines = null;
 		m_taxes = null;
 		log.debug(processed + " - Lines=" + noLine + ", Tax=" + noTax);
@@ -707,7 +725,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}
 
-		if (Check.isEmpty(getIncoterm()))
+		if (getC_Incoterms_ID() <= 0)
 		{
 			setIncotermLocation("");
 		}
@@ -755,7 +773,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM C_Invoice o WHERE ol.C_Invoice_ID=o.C_Invoice_ID) "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #" + no);
 		}
 		return true;
@@ -825,6 +843,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public String prepareIt()
 	{
+		// Services
+		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
+
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocTypeTarget_ID(), getAD_Org_ID());
@@ -867,17 +890,15 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		if (isSOTrx() && !isReversal())
 		{
 			// task FRESH-152
-			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
+			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSoCreditStatus()))
 			{
-				final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 				final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
 
-				if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true), getDateInvoiced()))
+				if (bPartnerStatsService.isCreditStopSales(stats, getGrandTotal(true), getDateInvoiced()))
 				{
 					throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-														 + stats.getSOCreditUsed()
+														 + stats.getSoCreditUsed()
 														 + ", @SO_CreditLimit@=" + creditLimit);
 				}
 			}
@@ -915,7 +936,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String trxName = get_TrxName();
 
 		// Delete Taxes
-		DB.executeUpdateEx("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
 		m_taxes = null;
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -969,7 +990,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, trxName);
 					newITax.setClientOrg(this);
 					newITax.setC_Invoice(this);
-					newITax.setC_Tax(cTax);
+					newITax.setC_Tax_ID(cTax.getC_Tax_ID());
 					newITax.setPrecision(taxPrecision.toInt());
 					newITax.setIsTaxIncluded(taxIncluded);
 					newITax.setTaxBaseAmt(taxBaseAmt);
@@ -1031,6 +1052,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public String completeIt()
 	{
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+
 		// Re-Check
 		if (!m_justPrepared)
 		{
@@ -1094,8 +1117,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}    // CashBook
 
 		// Update Order & Match
-		int matchInv = 0;
-		int matchPO = 0;
 		final MInvoiceLine[] lines = getLines(false);
 		for (final MInvoiceLine line : lines)
 		{
@@ -1122,7 +1143,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					// MatchPO is created also from MInOut when Invoice exists before Shipment
 					final BigDecimal matchQty = line.getQtyInvoiced();
 					Services.get(IMatchPOBL.class).create(line, null, getDateInvoiced(), matchQty);
-					matchPO++;
 				}
 			}
 
@@ -1150,18 +1170,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					&& !isReversal() // in case of reversal, the job is done by IInvoiceBL.handleReversalForInvoice()
 			)
 			{
-				final boolean matchInvCreated = Services.get(IMatchInvBL.class).createMatchInvBuilder()
-						.setContext(this)
-						.setC_InvoiceLine(line)
-						.setM_InOutLine(line.getM_InOutLine())
-						.setDateTrx(getDateInvoiced())
-						.setConsiderQtysAlreadyMatched(false) // backward compatibility
-						.setAllowQtysOfOppositeSigns(true)// backward compatibility
+				matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
+						.invoiceLine(line)
+						.inoutLine(line.getM_InOutLine())
+						.dateTrx(getDateInvoiced())
+						.considerQtysAlreadyMatched(false) // backward compatibility
+						.allowQtysOfOppositeSigns()// backward compatibility
 						.build();
-				if (matchInvCreated)
-				{
-					matchInv++;
-				}
 			}
 		}    // for all lines
 
@@ -1177,7 +1192,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 						amt,
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(C_CurrencyTo_ID),
-						TimeUtil.asLocalDate(getDateAcct()),
+						getDateAcct().toInstant(),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));
@@ -1446,19 +1461,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			// for (int i = 0; i < mInv.length; i++)
 			// mInv[i].delete(true);
 
-			for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByInvoiceId(InvoiceId.ofRepoId(getC_Invoice_ID())))
-			{
-				if (matchPO.getM_InOutLine_ID() <= 0)
-				{
-					matchPO.setProcessed(false);
-					InterfaceWrapperHelper.delete(matchPO);
-				}
-				else
-				{
-					matchPO.setC_InvoiceLine_ID(-1);
-					InterfaceWrapperHelper.save(matchPO);
-				}
-			}
+			Services.get(IMatchPOBL.class).unlink(InvoiceId.ofRepoId(getC_Invoice_ID()));
 		}
 		//
 		load(get_TrxName());    // reload allocation reversal info
@@ -1615,9 +1618,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	}    // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateInvoiced());
+		return InstantAndOrgId.ofTimestamp(getDateInvoiced(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	@Override

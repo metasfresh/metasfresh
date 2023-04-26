@@ -6,6 +6,7 @@ import de.metas.logging.LogManager;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
+import lombok.NonNull;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.compiere.util.Env;
 import org.jxls.area.Area;
@@ -64,6 +65,7 @@ public class JXlsExporter
 	static
 	{
 		XlsCommentAreaBuilder.addCommandMapping(HideColumnIfCommand.NAME, HideColumnIfCommand.class);
+		XlsCommentAreaBuilder.addCommandMapping(LockSheetCommand.NAME, LockSheetCommand.class);
 	}
 
 	private static final String PROPERTY_Data = "data";
@@ -79,7 +81,7 @@ public class JXlsExporter
 	private IXlsDataSource _dataSource;
 	private String _adLanguage;
 	private ResourceBundle _resourceBundle;
-	private Map<String, Object> _properties = new HashMap<>();
+	private final Map<String, Object> _properties = new HashMap<>();
 
 	private JXlsExporter()
 	{
@@ -97,7 +99,7 @@ public class JXlsExporter
 				final ByteArrayOutputStream os = new ByteArrayOutputStream();
 				final Transformer transformer = createTransformer(is, os);
 
-				JexlExpressionEvaluator evaluator = (JexlExpressionEvaluator)transformer.getTransformationConfig().getExpressionEvaluator();
+				final JexlExpressionEvaluator evaluator = (JexlExpressionEvaluator)transformer.getTransformationConfig().getExpressionEvaluator();
 
 				//setting the evaluator to silent & lenient doesn't show warnings anymore for 0 or null values.
 				evaluator.getJexlEngine().setSilent(true);
@@ -118,7 +120,7 @@ public class JXlsExporter
 		}
 	}
 
-	private void processTemplate(final Transformer transformer, final Context context) throws IOException, InvalidFormatException
+	private void processTemplate(final Transformer transformer, final Context context) throws IOException
 	{
 
 		//
@@ -144,7 +146,7 @@ public class JXlsExporter
 		transformer.write();
 	}
 
-	private final Transformer createTransformer(final InputStream is, final ByteArrayOutputStream os) throws InvalidFormatException, IOException
+	private Transformer createTransformer(final InputStream is, final ByteArrayOutputStream os) throws InvalidFormatException, IOException
 	{
 		final PoiTransformer transformer = PoiTransformer.createTransformer(is, os);
 		transformer.setLastCommentedColumn(250);
@@ -181,7 +183,7 @@ public class JXlsExporter
 		return xlsContext;
 	}
 
-	public JXlsExporter setContext(Properties ctx)
+	public JXlsExporter setContext(final Properties ctx)
 	{
 		this._ctx = ctx;
 		return this;
@@ -214,8 +216,7 @@ public class JXlsExporter
 	{
 		if (!Check.isEmpty(_adLanguage, true))
 		{
-			final Language language = Language.getLanguage(_adLanguage);
-			return language;
+			return Language.getLanguage(_adLanguage);
 		}
 
 		return Env.getLanguage(getContext());
@@ -232,7 +233,7 @@ public class JXlsExporter
 		return Locale.getDefault();
 	}
 
-	public JXlsExporter setTemplateResourceName(String templateResourceName)
+	public JXlsExporter setTemplateResourceName(final String templateResourceName)
 	{
 		this._templateResourceName = templateResourceName;
 		return this;
@@ -277,7 +278,7 @@ public class JXlsExporter
 		return this;
 	}
 
-	public JXlsExporter setResourceBundle(ResourceBundle resourceBundle)
+	public JXlsExporter setResourceBundle(final ResourceBundle resourceBundle)
 	{
 		this._resourceBundle = resourceBundle;
 		return this;
@@ -300,7 +301,7 @@ public class JXlsExporter
 
 				return ResourceBundle.getBundle(baseName, getLocale(), getLoader());
 			}
-			catch (MissingResourceException e)
+			catch (final MissingResourceException e)
 			{
 				logger.debug("No resource found for {}", baseName);
 			}
@@ -319,10 +320,9 @@ public class JXlsExporter
 		return ResourceBundleMapWrapper.of(bundle);
 	}
 
-	public JXlsExporter setProperty(final String name, final Object value)
+	public JXlsExporter setProperty(@NonNull final String name, @NonNull final Object value)
 	{
 		Check.assumeNotEmpty(name, "name not empty");
-		Check.assumeNotNull(value, "value not null");
 
 		_properties.put(name, value);
 

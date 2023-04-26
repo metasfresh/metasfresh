@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.api;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +20,10 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
+package de.metas.inoutcandidate.api;
+
 import de.metas.document.engine.DocStatus;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.ProductId;

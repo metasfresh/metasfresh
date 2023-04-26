@@ -1,9 +1,7 @@
 package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -121,7 +119,7 @@ final class OrderLinePriceCalculator
 		{
 			return;
 		}
-
+		
 		//
 		// Calculate Pricing Result
 		final IEditablePricingContext pricingCtx = createPricingContext();
@@ -129,6 +127,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.appendParametersToMessage()
 					.setParameter("log", pricingResult.getLoggableMessages())
 					.setParameter("pricingResult", pricingResult);
 		}
@@ -164,8 +163,6 @@ final class OrderLinePriceCalculator
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM
-		orderLine.setBase_Commission_Points_Per_Price_UOM(pricingResult.getBaseCommissionPointsPerPriceUOM());
-		orderLine.setTraded_Commission_Percent(Percent.toBigDecimalOrNull(pricingResult.getTradedCommissionPercent()));
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID

@@ -1,18 +1,10 @@
 package de.metas.payment.sepa.api.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.sql.Timestamp;
-import java.util.Date;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.util.MimeType;
-
 import de.metas.banking.api.BankRepository;
+import de.metas.common.util.time.SystemTime;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
+import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
@@ -21,6 +13,14 @@ import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
 import de.metas.util.FileUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.util.MimeType;
+
+import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class SEPADocumentBL implements ISEPADocumentBL
 {
@@ -46,14 +46,20 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	}
 
 	@Override
-	public SEPACreditTransferXML exportCreditTransferXML(@NonNull final I_SEPA_Export sepaExport)
+	public SEPACreditTransferXML exportCreditTransferXML(@NonNull final I_SEPA_Export sepaExport, @NonNull final SEPAExportContext exportContext)
 	{
 		final SEPAProtocol protocol = SEPAProtocol.ofCode(sepaExport.getSEPA_Protocol());
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		final SEPAMarshaler marshaler = newSEPAMarshaler(protocol);
-		marshaler.marshal(sepaExport, out);
-
+		final SEPAMarshaler marshaler = newSEPAMarshaler(protocol, exportContext);
+		try
+		{
+			marshaler.marshal(sepaExport, out);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 		return SEPACreditTransferXML.builder()
 				.filename(FileUtil.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
 				.contentType(MimeType.TYPE_XML)
@@ -61,12 +67,12 @@ public class SEPADocumentBL implements ISEPADocumentBL
 				.build();
 	}
 
-	private SEPAMarshaler newSEPAMarshaler(@NonNull final SEPAProtocol protocol)
+	private SEPAMarshaler newSEPAMarshaler(@NonNull final SEPAProtocol protocol, @NonNull final SEPAExportContext exportContext)
 	{
 		if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.equals(protocol))
 		{
 			final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository);
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
 		}
 		else if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(protocol))
 		{

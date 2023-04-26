@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,8 +28,6 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_ExportAudit;
 import de.metas.organization.OrgId;
@@ -54,7 +52,7 @@ public class ReceiptScheduleAuditRepository implements APIExportAuditRepository<
 	public APIExportAudit<ReceiptScheduleExportAuditItem> getByTransactionId(@NonNull final String transactionId)
 	{
 		final StagingData stagingData = retrieveStagingData(transactionId);
-		final APIExportAuditBuilder<ReceiptScheduleExportAuditItem> result = APIExportAudit
+		final APIExportAudit.APIExportAuditBuilder<ReceiptScheduleExportAuditItem> result = APIExportAudit
 				.<ReceiptScheduleExportAuditItem>builder()
 				.orgId(OrgId.ANY) // avoid NPE; TODO: make a change similar to I_M_ShipmentSchedule_ExportAudit_Item.java	
 				.transactionId(transactionId);

@@ -24,9 +24,8 @@ package de.metas.common.bpartner.v1.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import de.metas.common.externalreference.v1.JsonSingleExternalReferenceCreateReq;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,20 +36,20 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIE
 
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestLocationUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, position = 10, //
-			value = LOCATION_IDENTIFIER_DOC
+	@Schema(minLength = 1,
+			description = LOCATION_IDENTIFIER_DOC
 					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created lcoation.") //
 	@NonNull
-	final String locationIdentifier;
+	String locationIdentifier;
 
-	@ApiModelProperty(allowEmptyValue = false, position = 20, value = "The location to upsert")
+	@Schema(description = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
 
-	@ApiModelProperty(position = 30, value = "Id of the business partner location from an external system. ")
+	@Schema(nullable = true, description = "Id of the business partner location from an external system. ")
 	@Nullable
 	JsonSingleExternalReferenceCreateReq locationExternalRef;
 

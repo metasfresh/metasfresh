@@ -1,31 +1,31 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_S_Resource;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -60,13 +60,20 @@ public class MaterialCockpitRowFactory
 		LocalDate date;
 
 		@NonNull
+		@Singular("productIdToListEvenIfEmpty")
 		ImmutableSet<ProductId> productIdsToListEvenIfEmpty;
 
 		@NonNull
+		@Singular
 		List<I_MD_Cockpit> cockpitRecords;
 
 		@NonNull
+		@Singular
 		List<I_MD_Stock> stockRecords;
+
+		@NonNull
+		@Singular
+		List<I_QtyDemand_QtySupply_V> quantitiesRecords;
 
 		boolean includePerPlantDetailRows;
 	}
@@ -84,6 +91,7 @@ public class MaterialCockpitRowFactory
 
 		addCockpitRowsToResult(request, dimensionSpec, result);
 		addStockRowsToResult(request, dimensionSpec, result);
+		addQuantitiesRowsToResult(request, dimensionSpec, result);
 
 		return result.values()
 				.stream()
@@ -133,7 +141,7 @@ public class MaterialCockpitRowFactory
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_S_Resource.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.Plant)
 				.create()
 				.list();
 	}
@@ -148,7 +156,7 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
 			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
@@ -162,9 +170,22 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
 			mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
 
+	private void addQuantitiesRowsToResult(
+			@NonNull final CreateRowsRequest request,
+			@NonNull final DimensionSpec dimensionSpec,
+			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
+	{
+		for (final I_QtyDemand_QtySupply_V qtyRecord : request.getQuantitiesRecords())
+		{
+			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
+
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
+			mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+		}
+	}
 }

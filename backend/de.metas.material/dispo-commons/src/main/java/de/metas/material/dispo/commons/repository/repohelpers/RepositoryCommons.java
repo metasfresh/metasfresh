@@ -17,6 +17,7 @@ import de.metas.material.dispo.commons.repository.query.StockChangeDetailQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -28,6 +29,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
@@ -35,8 +37,8 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.common.util.IdConstants.toRepoId;
 
 /*
  * #%L
@@ -148,6 +150,8 @@ public class RepositoryCommons
 		addTransactionDetailToFilter(query, builder);
 
 		addStockChangeDetailToFilter(query, builder);
+
+		addSimulatedConstraints(query, builder);
 
 		return builder;
 	}
@@ -346,7 +350,14 @@ public class RepositoryCommons
 					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, toRepoId(demandDetailsQuery.getForecastLineId()));
 		}
 
-		if (hasOrderLine || hasForecastLine || hasShipmentschedule)
+		final boolean hasShipmentLine = demandDetailsQuery.getInOutLineId() != UNSPECIFIED_REPO_ID;
+		if (hasShipmentLine)
+		{
+			demandDetailsSubQueryBuilder
+					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMNNAME_M_InOutLine_ID, toRepoId(demandDetailsQuery.getInOutLineId()));
+		}
+
+		if (hasOrderLine || hasForecastLine || hasShipmentschedule || hasSubscriptionLine || hasShipmentLine)
 		{
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
 					I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,
@@ -444,6 +455,25 @@ public class RepositoryCommons
 		if (stockChangeDetail != null)
 		{
 			stockChangeDetail.augmentQueryBuilder(builder);
+		}
+	}
+
+	private static void addSimulatedConstraints(@NonNull final CandidatesQuery query, @NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		switch (query.getSimulatedQueryQualifier())
+		{
+			case ONLY_SIMULATED:
+				builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated);
+				break;
+			case EXCLUDE_SIMULATED:
+				builder.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated);
+				break;
+			case INCLUDE_SIMULATED:
+				break;
+			default:
+				throw new AdempiereException("Unknown SimulatedQueryQualifier!")
+						.appendParametersToMessage()
+						.setParameter("SimulatedQueryQualifier", query.getSimulatedQueryQualifier());
 		}
 	}
 }

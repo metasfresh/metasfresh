@@ -22,6 +22,7 @@
 
 package de.metas.common.util;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -37,5 +38,36 @@ class NumberUtilsTest
 		assertThat(NumberUtils.asBigDecimalList("1,2", ",")).containsExactly(new BigDecimal("1"), new BigDecimal("2"));
 		assertThat(NumberUtils.asBigDecimalList("1, 2", ",")).containsExactly(new BigDecimal("1"), new BigDecimal("2"));
 		assertThat(NumberUtils.asBigDecimalList("1, 2, ", ",")).containsExactly(new BigDecimal("1"), new BigDecimal("2"));
+	}
+
+	@Nested
+	class asInt
+	{
+		@Test
+		void from_int()
+		{
+			assertThat(NumberUtils.asInt(123)).isEqualTo(123);
+		}
+
+		@Test
+		void from_BigDecimal()
+		{
+			assertThat(NumberUtils.asInt(new BigDecimal("123"))).isEqualTo(123);
+		}
+
+		@Test
+		void from_String()
+		{
+			assertThat(NumberUtils.asInt("123")).isEqualTo(123);
+		}
+
+		@Test
+		void from_InvalidString()
+		{
+			assertThatThrownBy(() -> NumberUtils.asInt("123aaa"))
+					.isInstanceOf(RuntimeException.class)
+					.hasMessageStartingWith("Cannot convert `123aaa` (class java.lang.String) to int");
+		}
+
 	}
 }

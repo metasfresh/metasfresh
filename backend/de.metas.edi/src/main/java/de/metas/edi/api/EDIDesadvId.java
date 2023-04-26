@@ -49,6 +49,11 @@ public class EDIDesadvId implements RepoIdAware
 		return repoId > 0 ? new EDIDesadvId(repoId) : null;
 	}
 
+	public static int toRepoId(@Nullable final EDIDesadvId ediDesadvId)
+	{
+		return ediDesadvId != null ? ediDesadvId.getRepoId() : -1;
+	}
+
 	private EDIDesadvId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "EDI_Desadv_ID");

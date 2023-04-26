@@ -1,6 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 import javax.annotation.Nullable;
 
@@ -62,7 +62,7 @@ public class DeliveredQtyItem
 		this.qtyCatch = qtyCatch;
 		this.qtyOverride = qtyOverride;
 
-		this.inDispute = coalesce(inDispute, false);
+		this.inDispute = coalesceNotNull(inDispute, false);
 	}
 
 }

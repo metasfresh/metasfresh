@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -36,6 +37,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -72,6 +75,26 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(statusCode))
 				.authToken(userAuthToken)
 				.payload(payload)
+				.additionalHeaders(testContext.getHttpHeaders())
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@When("a {string} request is sent to metasfresh REST-API with endpointPath from context and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_a_request_from_context_responds_with_code_for_payload(
+			@NonNull final String verb,
+			@NonNull final String statusCode) throws IOException
+	{
+		final String endpointPath = testContext.getEndpointPath();
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.additionalHeaders(testContext.getHttpHeaders())
+				.authToken(userAuthToken)
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -111,6 +134,7 @@ public class REST_API_StepDef
 				.authToken(userAuthToken)
 				.payload(payload)
 				.statusCode(Integer.parseInt(statusCode))
+				.additionalHeaders(testContext.getHttpHeaders())
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -132,16 +156,61 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
-	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context")
+	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context, expecting status={string}")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers(
 			@NonNull final String endpointPath,
-			@NonNull final String verb) throws IOException
+			@NonNull final String verb,
+			@NonNull final String status) throws IOException
 	{
 		final APIRequest request = APIRequest.builder()
 				.endpointPath(endpointPath)
 				.verb(verb)
 				.authToken(userAuthToken)
 				.additionalHeaders(testContext.getHttpHeaders())
+				.statusCode(Integer.parseInt(status))
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@When("a {string} request is sent to metasfresh REST-API with endpointPath and payload from context and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_endpointPath_and_request_from_context_responds_with_code_for_payload(
+			@NonNull final String verb,
+			@NonNull final String statusCode) throws IOException
+	{
+		final String endpointPath = testContext.getEndpointPath();
+		final String payload = testContext.getRequestPayload();
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.additionalHeaders(testContext.getHttpHeaders())
+				.payload(payload)
+				.authToken(userAuthToken)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@When("a {string} request with the below payload and headers from context is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers_and_below_payload(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String statusCode,
+			@NonNull final String payload) throws IOException
+	{
+		testContext.setRequestPayload(payload);
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.authToken(userAuthToken)
+				.additionalHeaders(testContext.getHttpHeaders())
+				.payload(payload)
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -182,5 +251,52 @@ public class REST_API_StepDef
 		final JsonTestResponse mappedResponseBody = mapper.readValue(responseBody, JsonTestResponse.class);
 
 		assertThat(apiResponse.getMessageBody()).isEqualTo(mappedResponseBody.getMessageBody());
+	}
+
+	@And("the actual response body is empty")
+	public void validate_empty_response_body()
+	{
+		final String responseJson = testContext.getApiResponse().getContent();
+
+		assertThat(responseJson).isBlank();
+	}
+
+	@And("the actual non JSON response body is")
+	public void validate_non_JSON_response_body(@NonNull final String responseBody)
+	{
+		final String content = testContext.getApiResponse().getContent();
+
+		assertThat(content).isEqualTo(responseBody);
+	}
+
+	@When("add HTTP header")
+	public void add_http_header(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> additionalHeaders = new HashMap<>();
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String key = DataTableUtil.extractStringForColumnName(row, "Key");
+			final String value = DataTableUtil.extractStringForColumnName(row, "Value");
+
+			additionalHeaders.put(key, value);
+		}
+
+		testContext.setHttpHeaders(additionalHeaders);
+	}
+
+	@And("following http headers are set on context")
+	public void add_http_headers(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> customHeaders = new HashMap<>();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String headerName = DataTableUtil.extractStringForColumnName(row, "Name");
+			final String headerValue = DataTableUtil.extractStringForColumnName(row, "Value");
+
+			customHeaders.put(headerName, headerValue);
+		}
+
+		testContext.setHttpHeaders(customHeaders);
 	}
 }

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,19 +22,20 @@
 
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
+import de.metas.camel.externalsystems.common.v2.ExternalReferenceLookupCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
-import lombok.NonNull;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -45,28 +46,39 @@ public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 	{
 		errorHandler(noErrorHandler());
 
-		from(direct(MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_ROUTE_ID))
-				.routeId(MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_ROUTE_ID)
+		from(direct(MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI))
+				.routeId(MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI)
 				.streamCaching()
-				.process(this::validateRequest)
+				.log("Route invoked")
+				.process(exchange -> {
+					final Object camelRequest = exchange.getIn().getBody();
+					if (!(camelRequest instanceof ExternalReferenceLookupCamelRequest))
+					{
+						throw new RuntimeCamelException("The route " + MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI + " requires the body to be instanceof ExternalReferenceLookupCamelRequest. "
+																+ "However, it is " + (camelRequest == null ? "null" : camelRequest.getClass().getName()));
+					}
+
+					final ExternalReferenceLookupCamelRequest externalReferenceLookupCamelRequest = (ExternalReferenceLookupCamelRequest)camelRequest;
+
+					exchange.getIn().setHeader(HEADER_EXTERNALSYSTEM_CONFIG_ID, externalReferenceLookupCamelRequest.getExternalSystemConfigId().getValue());
+					exchange.getIn().setHeader(HEADER_ORG_CODE, externalReferenceLookupCamelRequest.getOrgCode());
+
+					if (externalReferenceLookupCamelRequest.getAdPInstanceId() != null)
+					{
+						exchange.getIn().setHeader(ExternalSystemConstants.HEADER_PINSTANCE_ID, externalReferenceLookupCamelRequest.getAdPInstanceId().getValue());
+					}
+
+					final JsonExternalReferenceLookupRequest request = externalReferenceLookupCamelRequest.getJsonExternalReferenceLookupRequest();
+
+					exchange.getIn().setBody(request);
+
+					log.info("Route invoked with " + request.getItems().size() + " request items");
+				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("{{" + MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_URI + "}}/${header.orgCode}")
+				.toD("{{metasfresh.lookup-externalreference-v2.api.uri}}/${header.orgCode}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
-	}
-
-	private void validateRequest(@NonNull final Exchange exchange)
-	{
-		final var lookupRequest = exchange.getIn().getBody();
-		if (!(lookupRequest instanceof JsonExternalReferenceLookupRequest))
-		{
-			throw new RuntimeCamelException("The route " + MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_ROUTE_ID + " requires the body to be instanceof JsonExternalReferenceLookupRequest. "
-													+ "However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
-		}
-		final JsonExternalReferenceLookupRequest lookupRequest1 = (JsonExternalReferenceLookupRequest)lookupRequest;
-		log.info("Route invoked with " + lookupRequest1.getItems().size() + " request items");
 	}
 }

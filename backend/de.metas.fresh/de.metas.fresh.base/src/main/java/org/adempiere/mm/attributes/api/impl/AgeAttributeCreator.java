@@ -102,8 +102,7 @@ public class AgeAttributeCreator
 		}
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asiId, ageAttributeId);
-		final int defaultAge = ageAttributesService.computeDefaultAge();
-		attributeSetInstanceBL.setAttributeInstanceValue(asiId, ageAttributeId, defaultAge);
+		attributeSetInstanceBL.setAttributeInstanceValue(asiId, ageAttributeId, ageAttributesService.computeDefaultAgeOrNull());
 	}
 
 	private @NonNull Object getSourceModel()

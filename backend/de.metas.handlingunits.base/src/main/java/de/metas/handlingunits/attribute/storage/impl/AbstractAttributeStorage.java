@@ -1,39 +1,10 @@
 package de.metas.handlingunits.attribute.storage.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.NamePair;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IAttributeValueListener;
@@ -62,8 +33,34 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
+import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.NamePair;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractAttributeStorage implements IAttributeStorage
 {
@@ -102,12 +99,14 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		// @formatter:off
-		@Override public String toString() { return "AbstractAttributeStorage[<anonymous IAttributeValueListener>]"; }; // @formatter:on
+		@Override
+		public String toString() {return "AbstractAttributeStorage[<anonymous IAttributeValueListener>]";}
+		// @formatter:on
 	};
 
 	/**
 	 * Callouts invoker listener
-	 *
+	 * <p>
 	 * NOTE: we are keeping a hard reference here because listeners are registered weakly.
 	 */
 	private final CalloutAttributeStorageListener calloutAttributeStorageListener;
@@ -220,7 +219,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	protected abstract List<IAttributeValue> loadAttributeValues();
 
 	/**
-	 * Set the inner {@link #attributeValuesRO}, build up the indexing maps and add {@link #attributeValueListener}.
+	 * Set the inner {@link #_indexedAttributeValues}, build up the indexing maps and add {@link #attributeValueListener}.
 	 */
 	private void setInnerAttributeValues(final List<IAttributeValue> attributeValues)
 	{
@@ -247,7 +246,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 	}
 
-	private final IndexedAttributeValues getIndexedAttributeValues()
+	private IndexedAttributeValues getIndexedAttributeValues()
 	{
 		_indexedAttributeValuesLock.lock();
 		try
@@ -302,7 +301,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Gets current {@link IAttributeValue}s.
-	 *
+	 * <p>
 	 * Compared with {@link #getAttributeValues()} which is also loading them if needed, this method is just returning current ones, loaded or not.
 	 *
 	 * @return current attribute values
@@ -313,7 +312,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final IAttributeValue getAttributeValue(final AttributeCode attributeCode)
+	public final IAttributeValue getAttributeValue(@NonNull final AttributeCode attributeCode)
 	{
 		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
 		if (NullAttributeValue.isNull(attributeValue))
@@ -360,6 +359,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		return getIndexedAttributeValues().getAttributes();
 	}
 
+	@Nullable
 	@Override
 	public final I_M_Attribute getAttributeByIdIfExists(final int attributeId)
 	{
@@ -458,6 +458,20 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
+	@Nullable
+	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
+	{
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
+
+		if (NullAttributeValue.isNull(attributeValue))
+		{
+			return null;
+		}
+
+		return attributeValue.getValueAsString();
+	}
+
+	@Override
 	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		// assertNotDisposed(); // checked in next called method
@@ -538,17 +552,16 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 * @return {@link IHUAttributePropagationContext} available or <code>null</code> if propagation wasn't started yet
 	 */
 	@VisibleForTesting
-	/* package */final IHUAttributePropagationContext getCurrentPropagationContextOrNull()
+	/* package */ final IHUAttributePropagationContext getCurrentPropagationContextOrNull()
 	{
 		final IAttributeValueContext attributesContext = CurrentAttributeValueContextProvider.getCurrentAttributesContextOrNull();
 		return toHUAttributePropagationContext(attributesContext);
 	}
 
-	private static final IHUAttributePropagationContext toHUAttributePropagationContext(final IAttributeValueContext attributesContext)
+	private static IHUAttributePropagationContext toHUAttributePropagationContext(final IAttributeValueContext attributesContext)
 	{
 		Check.assumeInstanceOfOrNull(attributesContext, IHUAttributePropagationContext.class, "attributesContext");
-		final IHUAttributePropagationContext huAttributesContext = (IHUAttributePropagationContext)attributesContext;
-		return huAttributesContext;
+		return (IHUAttributePropagationContext)attributesContext;
 	}
 
 	/**
@@ -556,13 +569,9 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 * <br>
 	 * Set propagation context in {@link CurrentAttributeValueContextProvider}. This method will validate that the new context will have the old registered context as a parent.<br>
 	 * However, if <code>validateParentContext=false</code> (rollback), then don't check for parent, because we assume that when first setting it we have already checked.
-	 *
-	 * @param huAttributePropagationContext
-	 * @param validateParentContext
-	 * @return
 	 */
 	@VisibleForTesting
-	/* package */final IHUAttributePropagationContext setCurrentPropagationContext(final IHUAttributePropagationContext huAttributePropagationContext, final boolean validateParentContext)
+	/* package */ final IHUAttributePropagationContext setCurrentPropagationContext(final IHUAttributePropagationContext huAttributePropagationContext, final boolean validateParentContext)
 	{
 		final IAttributeValueContext attributesContextOld = CurrentAttributeValueContextProvider.setCurrentAttributesContext(huAttributePropagationContext);
 		final IHUAttributePropagationContext huAttributePropagationContextOld = toHUAttributePropagationContext(attributesContextOld);
@@ -604,7 +613,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public void setValue(@NonNull final AttributeId attributeId, Object value)
+	public void setValue(@NonNull final AttributeId attributeId, final Object value)
 	{
 		final I_M_Attribute attribute = getAttributeByIdIfExists(attributeId);
 		if (attribute == null)
@@ -653,7 +662,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		final IHUAttributePropagator lastPropagatorForAttribute = propagationContext.getLastPropagatorOrNull(attribute);
 		if (lastPropagatorForAttribute != null
 				&& attributePropagator.getReversalPropagationType()
-						.equals(lastPropagatorForAttribute.getPropagationType()))              // if we're propagating in reverse
+				.equals(lastPropagatorForAttribute.getPropagationType()))              // if we're propagating in reverse
 		{
 			pushingDirectionReverse = true;
 		}
@@ -696,9 +705,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 * <p>
 	 * Note: not only the actual propagation, but also the set-invocation to <code>this</code> storage is the propagator's job.
 	 *
-	 * @param propagationContext
-	 * @param value
-	 *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	private void setValue(final IHUAttributePropagationContext propagationContext, final Object value)
@@ -710,7 +716,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		if (propagationContext.isValueUpdatedBefore())
 		{
 			logger.debug("ALREADY UPDATED: Skipping attribute value propagation for Value={}, Attribute={}, this={}, propagationContext={}",
-					new Object[] { value, propagationContext.getAttribute(), this, propagationContext });
+					value, propagationContext.getAttribute(), this, propagationContext);
 			return;
 		}
 
@@ -821,8 +827,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	/**
 	 * Helper method which checks if given attribute can <b>AND</b> actually it is propagated from children.
 	 *
-	 * @param attributeStorage
-	 * @param attribute
 	 * @return true if given attribute is propagated from children
 	 */
 	private static boolean isPropagatedFromChildren(final IAttributeStorage attributeStorage, final I_M_Attribute attribute)
@@ -854,8 +858,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	/**
 	 * Helper method which checks if given attribute can <b>AND</b> actually it is propagated from it's parent.
 	 *
-	 * @param attributeStorage
-	 * @param attribute
 	 * @return true if given attribute is propagated from it's parent
 	 */
 	private static boolean isPropagatedFromParents(final IAttributeStorage attributeStorage, final I_M_Attribute attribute)
@@ -873,12 +875,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 			return true;
 		}
 
-		if (isPropagatedFromParents(parentAttributeStorage, attribute))
-		{
-			return true;
-		}
-
-		return false;
+		return isPropagatedFromParents(parentAttributeStorage, attribute);
 	}
 
 	@Override
@@ -901,19 +898,15 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Method called when this storage is notified that a child was added.
-	 *
+	 * <p>
 	 * NOTE: in case our attribute storage implementation is caching the child storages, this is the place where we need to adjust our internal child storages cache
-	 *
-	 * @param childAttributeStorage
 	 */
 	protected abstract void addChildAttributeStorage(final IAttributeStorage childAttributeStorage);
 
 	/**
 	 * Method called when this storage is notified that a child was removed.
-	 *
+	 * <p>
 	 * NOTE: in case our attribute storage implementation is caching the child storages, this is the place where we need to adjust our internal child storages cache
-	 *
-	 * @param childAttributeStorage
 	 */
 	protected abstract IAttributeStorage removeChildAttributeStorage(final IAttributeStorage childAttributeStorage);
 
@@ -989,13 +982,13 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Check if given attribute can be propagated as desired.
-	 *
+	 * <p>
 	 * NOTE: this method is not checking what kind of attribute is on parent level or on children level, that's the reason why it's static
 	 *
 	 * @param attributeValue attribute
 	 * @return <code>true</code> if the given attribute's propagation type is not <code>NONE</code> and if it is equal to the given <code>desiredPropagationType</code>.
 	 */
-	private static final boolean isPropagable(final IAttributeValue attributeValue)
+	private static boolean isPropagable(final IAttributeValue attributeValue)
 	{
 		Check.assumeNotNull(attributeValue, "attributeValue not null");
 
@@ -1005,11 +998,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		// NOTE: we are not calling isPropagatedValue(attribute) method because at this moment it can be that not all information are available
 		// so we just check if propagation type is not None
 		final String attributePropagationType = attributeValue.getPropagationType();
-		if (X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation.equals(attributePropagationType))
-		{
-			return false;
-		}
-		return true;
+		return !X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation.equals(attributePropagationType);
 	}
 
 	/**
@@ -1019,17 +1008,16 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 * <li>DOWN to it's children, if <code>desiredPropagationType</code> is {@link X_M_HU_PI_Attribute#PROPAGATIONTYPE_TopDown}
 	 * </ul>
 	 * <p>
-	 * Note that the method will do nothing if {@link #isPropagable(IAttributeValue, String)} returns <code>false</code>.
+	 * Note that the method will do nothing if {@link #isPropagable(IAttributeValue)} returns <code>false</code>.
 	 *
-	 * @param attributeValue attribute/value to be propagated (see {@link IAttributeValue#getValue()}).
+	 * @param attributeValue         attribute/value to be propagated (see {@link IAttributeValue#getValue()}).
 	 * @param desiredPropagationType propagation direction (TopDown, BottomUp)
-	 * @param pushNullValue if true, then don't propagate the actual value of the given <code>attributeValue</code>, but propagate <code>null</code> instead (behave like a rollback)
-	 *
+	 * @param pushNullValue          if true, then don't propagate the actual value of the given <code>attributeValue</code>, but propagate <code>null</code> instead (behave like a rollback)
 	 * @see IHUAttributePropagatorFactory#getReversalPropagator(String)
 	 */
 	private void pushAttributePropagation(final IAttributeValue attributeValue,
-			final String desiredPropagationType,
-			final boolean pushNullValue)
+										  final String desiredPropagationType,
+										  final boolean pushNullValue)
 	{
 		//
 		// Check if attribute is propagable
@@ -1102,16 +1090,16 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute)
+	public boolean isDisplayedUI(final I_M_Attribute attribute, final Set<ProductId> productIds)
 	{
 		assertNotDisposed();
 
-		final boolean isDisplayFromAttributeSet = productIDs.stream().anyMatch(productId -> isDisplayFromAttributeSet(productId, attribute));
-
+		final boolean isDisplayFromAttributeSet = productIds.stream().anyMatch(productId -> isDisplayFromAttributeSet(productId, attribute));
 		if (!isDisplayFromAttributeSet)
 		{
 			return false;
 		}
+
 		if (!isDisplayFromCallout(attribute))
 		{
 			return false;
@@ -1124,17 +1112,15 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		final IAttributeValue attributeValue = getAttributeValue(attribute);
 
-		final boolean isOnlyIfInProductAttributeSet = attributeValue.isOnlyIfInProductAttributeSet();
-
-		if (!isOnlyIfInProductAttributeSet)
+		if (attributeValue.isOnlyIfInProductAttributeSet())
+		{
+			final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+			return attributesBL.hasAttributeAssigned(productId, attributeId);
+		}
+		else
 		{
 			return true;
 		}
-
-		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		final boolean isAttributeInSet = attributesBL.getAttributeOrNull(productId, attributeId) != null;
-
-		return isAttributeInSet;
 	}
 
 	private boolean isDisplayFromCallout(final I_M_Attribute attribute)
@@ -1144,6 +1130,43 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		return callout.isDisplayedUI(this, attribute);
 	}
 
+	@Override
+	public boolean isMandatory(
+			@NonNull final I_M_Attribute attribute,
+			@NonNull final Set<ProductId> productIds,
+			@Nullable final AttributeSourceDocument attributeSourceDocument)
+	{
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+		if (getAttributeValue(attributeCode).isMandatory())
+		{
+			return true;
+		}
+
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		return productIds.stream().anyMatch(productId -> isMandatoryForAttributeSet(attributeId, productId, attributeSourceDocument));
+	}
+
+	private boolean isMandatoryForAttributeSet(
+			@NonNull final AttributeId attributeId,
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSourceDocument attributeSourceDocument)
+	{
+
+		if(attributeSourceDocument == null)
+		{
+			// NOTE: don't check M_Attribute.IsMandatory because
+			// we assume IAttributeValue.isMandatory implementation shall check that if it's relevant.
+			return false;
+		}
+		else
+		{
+			return attributesBL.isMandatoryOn(productId, attributeId, attributeSourceDocument);
+		}
+
+
+	}
+
+	@Nullable
 	protected final Object getDefaultAttributeValue(@Nullable final Map<AttributeId, Object> defaultAttributesValue, final AttributeId attributeId)
 	{
 		if (defaultAttributesValue == null || defaultAttributesValue.isEmpty())
@@ -1211,8 +1234,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Utility method for subclasses. To be called if {@link #assertNotDisposed()} finds that the storage was disposed.
-	 *
-	 * @param disposedTS
 	 */
 	protected void throwOrLogDisposedException(final Long disposedTS)
 	{
@@ -1252,7 +1273,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Fires {@link IAttributeStorageListener#onAttributeStorageDisposed(IAttributeStorage)} event.
-	 *
+	 * <p>
 	 * Please make sure you are calling this method BEFORE clearing the listeners.
 	 */
 	protected final void fireAttributeStorageDisposed()
@@ -1279,7 +1300,9 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		private final ImmutableMap<AttributeCode, I_M_Attribute> attributesByCode;
 		private final ImmutableMap<AttributeCode, IAttributeValue> attributeValuesByCode;
 
-		/** Null constructor */
+		/**
+		 * Null constructor
+		 */
 		private IndexedAttributeValues()
 		{
 			attributeValues = ImmutableList.of();
@@ -1290,8 +1313,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		private IndexedAttributeValues(final List<IAttributeValue> attributeValues)
 		{
-			final List<IAttributeValue> attributeValuesList = new ArrayList<>(attributeValues);
-			Collections.sort(attributeValuesList, AbstractAttributeStorage.attributeValueSortBySeqNo);
+			final ArrayList<IAttributeValue> attributeValuesList = new ArrayList<>(attributeValues);
+			attributeValuesList.sort(AbstractAttributeStorage.attributeValueSortBySeqNo);
 
 			final Map<AttributeId, I_M_Attribute> attributeId2attribute = new HashMap<>(attributeValuesList.size());
 			final Map<AttributeCode, I_M_Attribute> attributeKey2attribute = new HashMap<>(attributeValuesList.size());

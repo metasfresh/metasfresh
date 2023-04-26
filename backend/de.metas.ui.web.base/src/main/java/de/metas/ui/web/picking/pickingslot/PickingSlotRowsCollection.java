@@ -1,24 +1,23 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -163,7 +162,7 @@ public final class PickingSlotRowsCollection
 					.collect(GuavaCollectors.toImmutableMap());
 		}
 
-		private static final Stream<Map.Entry<PickingSlotRowId, PickingSlotRowId>> streamChild2RootRowIdsRecursivelly(final PickingSlotRow row)
+		private static Stream<Map.Entry<PickingSlotRowId, PickingSlotRowId>> streamChild2RootRowIdsRecursivelly(final PickingSlotRow row)
 		{
 			final PickingSlotRowId rootRowId = row.getPickingSlotRowId();
 			return row.streamThisRowAndIncludedRowsRecursivelly()
@@ -176,6 +175,7 @@ public final class PickingSlotRowsCollection
 			return rowsById.get(rowId);
 		}
 
+		@Nullable
 		public PickingSlotRow getRootRow(final PickingSlotRowId rowId)
 		{
 			final PickingSlotRowId rootRowId = getRootRowId(rowId);

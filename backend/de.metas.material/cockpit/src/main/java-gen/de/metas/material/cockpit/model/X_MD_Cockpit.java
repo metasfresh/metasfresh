@@ -1,389 +1,413 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.material.cockpit.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for MD_Cockpit
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1645264476L;
+	private static final long serialVersionUID = -1989481417L;
 
     /** Standard Constructor */
-    public X_MD_Cockpit (Properties ctx, int MD_Cockpit_ID, String trxName)
+    public X_MD_Cockpit (final Properties ctx, final int MD_Cockpit_ID, @Nullable final String trxName)
     {
       super (ctx, MD_Cockpit_ID, trxName);
-      /** if (MD_Cockpit_ID == 0)
-        {
-			setDateGeneral (new Timestamp( System.currentTimeMillis() ));
-			setMD_Cockpit_ID (0);
-			setM_Product_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_MD_Cockpit (Properties ctx, ResultSet rs, String trxName)
+    public X_MD_Cockpit (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set AttributesKey (technical).
-		@param AttributesKey AttributesKey (technical)	  */
+	/** Load Meta Data */
 	@Override
-	public void setAttributesKey (java.lang.String AttributesKey)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAttributesKey (final @Nullable String AttributesKey)
 	{
 		set_Value (COLUMNNAME_AttributesKey, AttributesKey);
 	}
 
-	/** Get AttributesKey (technical).
-		@return AttributesKey (technical)	  */
 	@Override
-	public java.lang.String getAttributesKey () 
+	public String getAttributesKey() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AttributesKey);
+		return get_ValueAsString(COLUMNNAME_AttributesKey);
 	}
 
-	/** Set Datum.
-		@param DateGeneral Datum	  */
 	@Override
-	public void setDateGeneral (java.sql.Timestamp DateGeneral)
+	public void setDateGeneral (final java.sql.Timestamp DateGeneral)
 	{
 		set_Value (COLUMNNAME_DateGeneral, DateGeneral);
 	}
 
-	/** Get Datum.
-		@return Datum	  */
 	@Override
-	public java.sql.Timestamp getDateGeneral () 
+	public java.sql.Timestamp getDateGeneral() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
-	}
-
-	/** Set Materialcockpit.
-		@param MD_Cockpit_ID Materialcockpit	  */
-	@Override
-	public void setMD_Cockpit_ID (int MD_Cockpit_ID)
-	{
-		if (MD_Cockpit_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, Integer.valueOf(MD_Cockpit_ID));
-	}
-
-	/** Get Materialcockpit.
-		@return Materialcockpit	  */
-	@Override
-	public int getMD_Cockpit_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsTimestamp(COLUMNNAME_DateGeneral);
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
-	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
-	}
-
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
-	@Override
-	public int getM_Product_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Zusage Lieferant.
-		@param PMM_QtyPromised_OnDate 
-		Vom Lieferanten per Webapplikation zugesagte Menge
-	  */
-	@Override
-	public void setPMM_QtyPromised_OnDate (java.math.BigDecimal PMM_QtyPromised_OnDate)
-	{
-		set_Value (COLUMNNAME_PMM_QtyPromised_OnDate, PMM_QtyPromised_OnDate);
-	}
-
-	/** Get Zusage Lieferant.
-		@return Vom Lieferanten per Webapplikation zugesagte Menge
-	  */
-	@Override
-	public java.math.BigDecimal getPMM_QtyPromised_OnDate () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PMM_QtyPromised_OnDate);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getPP_Plant() throws RuntimeException
+	public int getM_Product_ID() 
 	{
-		return get_ValueAsPO(COLUMNNAME_PP_Plant_ID, org.compiere.model.I_S_Resource.class);
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override
-	public void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_PP_Plant_ID, org.compiere.model.I_S_Resource.class, PP_Plant);
-	}
-
-	/** Set Produktionsstätte.
-		@param PP_Plant_ID Produktionsstätte	  */
-	@Override
-	public void setPP_Plant_ID (int PP_Plant_ID)
-	{
-		if (PP_Plant_ID < 1) 
-			set_Value (COLUMNNAME_PP_Plant_ID, null);
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Plant_ID, Integer.valueOf(PP_Plant_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
-	/** Get Produktionsstätte.
-		@return Produktionsstätte	  */
 	@Override
-	public int getPP_Plant_ID () 
+	public int getM_Warehouse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Plant_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
-	/** Set Produktname.
-		@param ProductName 
-		Name des Produktes
-	  */
 	@Override
-	public void setProductName (java.lang.String ProductName)
+	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
+	{
+		if (MD_Cockpit_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
+	}
+
+	@Override
+	public int getMD_Cockpit_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
+	}
+
+	@Override
+	public void setMDCandidateQtyStock_AtDate (final @Nullable BigDecimal MDCandidateQtyStock_AtDate)
+	{
+		set_Value (COLUMNNAME_MDCandidateQtyStock_AtDate, MDCandidateQtyStock_AtDate);
+	}
+
+	@Override
+	public BigDecimal getMDCandidateQtyStock_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPMM_QtyPromised_OnDate_AtDate (final @Nullable BigDecimal PMM_QtyPromised_OnDate_AtDate)
+	{
+		set_Value (COLUMNNAME_PMM_QtyPromised_OnDate_AtDate, PMM_QtyPromised_OnDate_AtDate);
+	}
+
+	@Override
+	public BigDecimal getPMM_QtyPromised_OnDate_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PMM_QtyPromised_OnDate_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setProductName (final @Nullable String ProductName)
 	{
 		set_Value (COLUMNNAME_ProductName, ProductName);
 	}
 
-	/** Get Produktname.
-		@return Name des Produktes
-	  */
 	@Override
-	public java.lang.String getProductName () 
+	public String getProductName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
-	/** Set Produktschlüssel.
-		@param ProductValue 
-		Schlüssel des Produktes
-	  */
 	@Override
-	public void setProductValue (java.lang.String ProductValue)
+	public void setProductValue (final @Nullable String ProductValue)
 	{
 		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}
 
-	/** Get Produktschlüssel.
-		@return Schlüssel des Produktes
-	  */
 	@Override
-	public java.lang.String getProductValue () 
+	public String getProductValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}
 
-	/** Set Zusagbar Zählbestand.
-		@param QtyAvailableToPromiseEstimate Zusagbar Zählbestand	  */
 	@Override
-	public void setQtyAvailableToPromiseEstimate (java.math.BigDecimal QtyAvailableToPromiseEstimate)
+	public void setQtyDemand_DD_Order_AtDate (final @Nullable BigDecimal QtyDemand_DD_Order_AtDate)
 	{
-		set_Value (COLUMNNAME_QtyAvailableToPromiseEstimate, QtyAvailableToPromiseEstimate);
+		set_Value (COLUMNNAME_QtyDemand_DD_Order_AtDate, QtyDemand_DD_Order_AtDate);
 	}
 
-	/** Get Zusagbar Zählbestand.
-		@return Zusagbar Zählbestand	  */
 	@Override
-	public java.math.BigDecimal getQtyAvailableToPromiseEstimate () 
+	public BigDecimal getQtyDemand_DD_Order_AtDate() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAvailableToPromiseEstimate);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemand_DD_Order_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Materialentnahme.
-		@param QtyMaterialentnahme Materialentnahme	  */
 	@Override
-	public void setQtyMaterialentnahme (java.math.BigDecimal QtyMaterialentnahme)
+	public void setQtyDemand_PP_Order_AtDate (final @Nullable BigDecimal QtyDemand_PP_Order_AtDate)
 	{
-		set_Value (COLUMNNAME_QtyMaterialentnahme, QtyMaterialentnahme);
+		set_Value (COLUMNNAME_QtyDemand_PP_Order_AtDate, QtyDemand_PP_Order_AtDate);
 	}
 
-	/** Get Materialentnahme.
-		@return Materialentnahme	  */
 	@Override
-	public java.math.BigDecimal getQtyMaterialentnahme () 
+	public BigDecimal getQtyDemand_PP_Order_AtDate() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMaterialentnahme);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemand_PP_Order_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Zählmenge.
-		@param QtyOnHandCount 
-		Für den jeweiligen Tag gezählte/geschätze Bestandsmenge
-	  */
 	@Override
-	public void setQtyOnHandCount (java.math.BigDecimal QtyOnHandCount)
+	public void setQtyDemand_SalesOrder_AtDate (final @Nullable BigDecimal QtyDemand_SalesOrder_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyDemand_SalesOrder_AtDate, QtyDemand_SalesOrder_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyDemand_SalesOrder_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemand_SalesOrder_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyDemandSum_AtDate (final @Nullable BigDecimal QtyDemandSum_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyDemandSum_AtDate, QtyDemandSum_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyDemandSum_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemandSum_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyExpectedSurplus_AtDate (final @Nullable BigDecimal QtyExpectedSurplus_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyExpectedSurplus_AtDate, QtyExpectedSurplus_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyExpectedSurplus_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyExpectedSurplus_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyInventoryCount_AtDate (final @Nullable BigDecimal QtyInventoryCount_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyInventoryCount_AtDate, QtyInventoryCount_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyInventoryCount_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInventoryCount_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyInventoryTime_AtDate (final @Nullable java.sql.Timestamp QtyInventoryTime_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyInventoryTime_AtDate, QtyInventoryTime_AtDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getQtyInventoryTime_AtDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_QtyInventoryTime_AtDate);
+	}
+
+	@Override
+	public void setQtyMaterialentnahme_AtDate (final @Nullable BigDecimal QtyMaterialentnahme_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyMaterialentnahme_AtDate, QtyMaterialentnahme_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyMaterialentnahme_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyMaterialentnahme_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOnHandCount (final @Nullable BigDecimal QtyOnHandCount)
 	{
 		set_Value (COLUMNNAME_QtyOnHandCount, QtyOnHandCount);
 	}
 
-	/** Get Zählmenge.
-		@return Für den jeweiligen Tag gezählte/geschätze Bestandsmenge
-	  */
 	@Override
-	public java.math.BigDecimal getQtyOnHandCount () 
+	public BigDecimal getQtyOnHandCount() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHandCount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOnHandCount);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Schätzbestand.
-		@param QtyOnHandEstimate 
-		Kombination aus der Zählmenge des jeweiligen Tages mit aktuellen Warenein- und Ausgängen sowie Materialentnahmen
-	  */
 	@Override
-	public void setQtyOnHandEstimate (java.math.BigDecimal QtyOnHandEstimate)
-	{
-		set_Value (COLUMNNAME_QtyOnHandEstimate, QtyOnHandEstimate);
-	}
-
-	/** Get Schätzbestand.
-		@return Kombination aus der Zählmenge des jeweiligen Tages mit aktuellen Warenein- und Ausgängen sowie Materialentnahmen
-	  */
-	@Override
-	public java.math.BigDecimal getQtyOnHandEstimate () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHandEstimate);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Menge für Produktion.
-		@param QtyRequiredForProduction Menge für Produktion	  */
-	@Override
-	public void setQtyRequiredForProduction (java.math.BigDecimal QtyRequiredForProduction)
-	{
-		set_Value (COLUMNNAME_QtyRequiredForProduction, QtyRequiredForProduction);
-	}
-
-	/** Get Menge für Produktion.
-		@return Menge für Produktion	  */
-	@Override
-	public java.math.BigDecimal getQtyRequiredForProduction () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyRequiredForProduction);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Bestellt.
-		@param QtyReserved_Purchase Bestellt	  */
-	@Override
-	public void setQtyReserved_Purchase (java.math.BigDecimal QtyReserved_Purchase)
-	{
-		set_Value (COLUMNNAME_QtyReserved_Purchase, QtyReserved_Purchase);
-	}
-
-	/** Get Bestellt.
-		@return Bestellt	  */
-	@Override
-	public java.math.BigDecimal getQtyReserved_Purchase () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved_Purchase);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Beauftragt.
-		@param QtyReserved_Sale Beauftragt	  */
-	@Override
-	public void setQtyReserved_Sale (java.math.BigDecimal QtyReserved_Sale)
-	{
-		set_Value (COLUMNNAME_QtyReserved_Sale, QtyReserved_Sale);
-	}
-
-	/** Get Beauftragt.
-		@return Beauftragt	  */
-	@Override
-	public java.math.BigDecimal getQtyReserved_Sale () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved_Sale);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Bestandsänderung.
-		@param QtyStockChange Bestandsänderung	  */
-	@Override
-	public void setQtyStockChange (java.math.BigDecimal QtyStockChange)
+	public void setQtyStockChange (final @Nullable BigDecimal QtyStockChange)
 	{
 		set_Value (COLUMNNAME_QtyStockChange, QtyStockChange);
 	}
 
-	/** Get Bestandsänderung.
-		@return Bestandsänderung	  */
 	@Override
-	public java.math.BigDecimal getQtyStockChange () 
+	public BigDecimal getQtyStockChange() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyStockChange);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyStockChange);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyStockCurrent_AtDate (final @Nullable BigDecimal QtyStockCurrent_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyStockCurrent_AtDate, QtyStockCurrent_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyStockCurrent_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyStockCurrent_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyStockEstimateCount_AtDate (final @Nullable BigDecimal QtyStockEstimateCount_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyStockEstimateCount_AtDate, QtyStockEstimateCount_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyStockEstimateCount_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyStockEstimateCount_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyStockEstimateSeqNo_AtDate (final int QtyStockEstimateSeqNo_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyStockEstimateSeqNo_AtDate, QtyStockEstimateSeqNo_AtDate);
+	}
+
+	@Override
+	public int getQtyStockEstimateSeqNo_AtDate() 
+	{
+		return get_ValueAsInt(COLUMNNAME_QtyStockEstimateSeqNo_AtDate);
+	}
+
+	@Override
+	public void setQtyStockEstimateTime_AtDate (final @Nullable java.sql.Timestamp QtyStockEstimateTime_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyStockEstimateTime_AtDate, QtyStockEstimateTime_AtDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getQtyStockEstimateTime_AtDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_QtyStockEstimateTime_AtDate);
+	}
+
+	@Override
+	public void setQtySupply_DD_Order_AtDate (final @Nullable BigDecimal QtySupply_DD_Order_AtDate)
+	{
+		set_Value (COLUMNNAME_QtySupply_DD_Order_AtDate, QtySupply_DD_Order_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtySupply_DD_Order_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupply_DD_Order_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtySupply_PP_Order_AtDate (final @Nullable BigDecimal QtySupply_PP_Order_AtDate)
+	{
+		set_Value (COLUMNNAME_QtySupply_PP_Order_AtDate, QtySupply_PP_Order_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtySupply_PP_Order_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupply_PP_Order_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtySupply_PurchaseOrder_AtDate (final @Nullable BigDecimal QtySupply_PurchaseOrder_AtDate)
+	{
+		set_Value (COLUMNNAME_QtySupply_PurchaseOrder_AtDate, QtySupply_PurchaseOrder_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtySupply_PurchaseOrder_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupply_PurchaseOrder_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtySupplyRequired_AtDate (final @Nullable BigDecimal QtySupplyRequired_AtDate)
+	{
+		set_Value (COLUMNNAME_QtySupplyRequired_AtDate, QtySupplyRequired_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtySupplyRequired_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupplyRequired_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtySupplySum_AtDate (final @Nullable BigDecimal QtySupplySum_AtDate)
+	{
+		set_Value (COLUMNNAME_QtySupplySum_AtDate, QtySupplySum_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtySupplySum_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupplySum_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtySupplyToSchedule_AtDate (final @Nullable BigDecimal QtySupplyToSchedule_AtDate)
+	{
+		set_Value (COLUMNNAME_QtySupplyToSchedule_AtDate, QtySupplyToSchedule_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtySupplyToSchedule_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupplyToSchedule_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

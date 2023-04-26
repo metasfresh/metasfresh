@@ -1,13 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
-import static de.metas.util.Check.fail;
-
-import java.math.BigInteger;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BalanceType;
@@ -94,7 +87,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTiers;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTreatment;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlBank;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlAddress;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsr5;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsr9;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsrRed;
@@ -112,7 +105,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordOther;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordParamed;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordTarmed;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlServiceEx;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlXtraDrug;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlBiller;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlEmployer;
@@ -131,10 +124,17 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVatRate;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlDemand;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.XmlVia;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlValidation;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlValidationResult;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.XmlVia;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBElement;
+import java.math.BigInteger;
+import java.util.List;
+
+import static de.metas.util.Check.fail;
 
 /*
  * #%L
@@ -205,7 +205,7 @@ public class Invoice440FromCrossVersionModelTool
 		final ProcessingType processingType = jaxbRequestObjectFactory.createProcessingType();
 
 		processingType.setPrintAtIntermediate(processing.getPrintAtIntermediate());
-		processingType.setPrintPatientCopy(processing.getPrintPatientCopy());
+		processingType.setPrintPatientCopy(processing.getPrintCustomerCopy());
 
 		processingType.setTransport(createTransportType(processing.getTransport()));
 
@@ -376,7 +376,7 @@ public class Invoice440FromCrossVersionModelTool
 
 		bodyType.setRemark(body.getRemark());
 
-		bodyType.setBalance(createBalanceType(body.getBalance()));
+		bodyType.setBalance(createBalanceType(CoalesceUtil.coalesce(body.getBalance(), body.getTiers().getBalance())));
 
 		createEsrType(bodyType, body.getEsr());
 
@@ -527,7 +527,7 @@ public class Invoice440FromCrossVersionModelTool
 		return esrRedType;
 	}
 
-	private EsrAddressType createEsrAddressType(@Nullable final XmlBank bank)
+	private EsrAddressType createEsrAddressType(@Nullable final XmlAddress bank)
 	{
 		if (bank == null)
 		{
@@ -1056,9 +1056,9 @@ public class Invoice440FromCrossVersionModelTool
 		for (final XmlService service : services)
 		{
 			final Object serviceType;
-			if (service instanceof XmlRecordTarmed)
+			if (service instanceof XmlServiceEx)
 			{
-				serviceType = createRecordTarmedType((XmlRecordTarmed)service);
+				serviceType = createRecordTarmedType((XmlServiceEx)service);
 			}
 			else if (service instanceof XmlRecordDrg)
 			{
@@ -1094,7 +1094,7 @@ public class Invoice440FromCrossVersionModelTool
 		return servicesType;
 	}
 
-	private RecordTarmedType createRecordTarmedType(@NonNull final XmlRecordTarmed xRecordTarmed)
+	private RecordTarmedType createRecordTarmedType(@NonNull final XmlServiceEx xRecordTarmed)
 	{
 		final RecordTarmedType recordTarmedType = jaxbRequestObjectFactory.createRecordTarmedType();
 

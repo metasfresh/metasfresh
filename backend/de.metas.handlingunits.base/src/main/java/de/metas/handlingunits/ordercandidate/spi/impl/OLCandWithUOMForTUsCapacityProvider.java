@@ -1,37 +1,10 @@
 package de.metas.handlingunits.ordercandidate.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.stereotype.Component;
-
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
+import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.product.ProductId;
@@ -42,6 +15,11 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 @Component
 public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
@@ -52,6 +30,7 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	@Override
 	public boolean isProviderNeededForOLCand(@NonNull final I_C_OLCand olCand)
@@ -61,45 +40,38 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 		{
 			return false; // nothing to do
 		}
-		if (!isNull(olCand, I_C_OLCand.COLUMNNAME_QtyItemCapacity))
+		if (!isNull(olCand, I_C_OLCand.COLUMNNAME_QtyItemCapacityInternal))
 		{
 			return false; // already set; nothing to do
 		}
-		final UomId uomId = extractUomId(olCand);
-		if (uomId == null)
-		{
-			return false; // nothing to do
-		}
-		if (!uomDAO.isUOMForTUs(uomId))
-		{
-			return false; // nothing to do
-		}
-		return true;
+
+		final UomId uomId = olCandEffectiveValuesBL.getEffectiveUomId(olCand);
+
+		return uomDAO.isUOMForTUs(uomId);
 	}
 
+	@NonNull
 	@Override
-	public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+	public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 	{
 		final OLCandHUPackingAware huPackingAware = new OLCandHUPackingAware(olCand);
 		final Capacity capacity = huPackingAwareBL.calculateCapacity(huPackingAware);
 		if (capacity == null)
 		{
-			final ITranslatableString msg = msgBL
-					.getTranslatableMsgText(MSG_TU_UOM_CAPACITY_REQUIRED,
-							uomDAO.getX12DE355ById(extractUomId(olCand)),
-							olCand.getC_OLCand_ID());
-			throw new AdempiereException(msg).markAsUserValidationError();
+			return Optional.empty();
 		}
 
 		final ProductId productId = ProductId.ofRepoId(olCand.getM_Product_ID());
-		final Quantity capacityInProductUOM = uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId);
-
-		return capacityInProductUOM;
+		// note that the product's stocking UOM is never a TU-UOM
+		if (capacity.isInfiniteCapacity())
+		{
+			return Optional.of(Quantity.infinite(capacity.getC_UOM()));
+		}
+		return Optional.of(uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId));
 	}
 
 	private UomId extractUomId(@NonNull final I_C_OLCand olCand)
 	{
-		final UomId uomId = UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
-		return uomId;
+		return UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
 	}
 }

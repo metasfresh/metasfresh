@@ -24,7 +24,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -37,6 +37,8 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.report.ReportResultData;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -45,6 +47,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.SchedulingPattern;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -70,7 +73,6 @@ import org.compiere.model.MNote;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MTask;
 import org.compiere.model.X_AD_Scheduler;
-import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -91,6 +93,18 @@ import java.util.Properties;
  */
 public class Scheduler extends AdempiereServer
 {
+	public static Scheduler cast(@NonNull final AdempiereServer server)
+	{
+		if(!(server instanceof Scheduler))
+		{
+			throw new AdempiereException("server is not a Scheduler: " + server);
+		}
+		else
+		{
+			return (Scheduler)server;
+		}
+	}
+
 	private static final String SYSCONFIG_NOTIFY_ON_NOT_OK = "org.compiere.server.Scheduler.notifyOnNotOK";
 
 	private static final String SYSCONFIG_NOTIFY_ON_OK = "org.compiere.server.Scheduler.notifyOnOK";
@@ -129,17 +143,19 @@ public class Scheduler extends AdempiereServer
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
 
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.scheduler.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Sets AD_Scheduler.Status and save the record
-	 *
-	 * @param status
 	 */
 	private void setSchedulerStatus(final String status, final PInstanceId pinstanceId)
 	{
 		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				if (pinstanceId != null)
 				{
@@ -185,22 +201,31 @@ public class Scheduler extends AdempiereServer
 	@Override
 	protected void doWork()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive)
+		{
+			doWork0();
+		}
+		else
+		{
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
 
-		service.monitorTransaction(
-				() -> doWork0(),
-				TransactionMetadata.builder()
-						.name("Scheduler - " + m_model.getName())
-						.type(Type.SCHEDULER)
-						.label("scheduler.name", m_model.getName())
-						.build());
+			service.monitor(
+					this::doWork0,
+					Metadata.builder()
+							.className("Scheduler")
+							.functionName("doWork")
+							.type(Type.SCHEDULER)
+							.label("scheduler.name", m_model.getName())
+							.build());
+		}
 	}
 
 	private void doWork0()
 	{
-		// metas us1030 updating staus
+		// metas us1030 updating status
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, null);
 
 		m_summary = new StringBuffer(m_model.toString()).append(" - ");
@@ -256,7 +281,7 @@ public class Scheduler extends AdempiereServer
 					}
 
 					@Override
-					public boolean doCatch(final Throwable e) throws Throwable
+					public boolean doCatch(final Throwable e)
 					{
 						log.warn("Failed running process/report: {}", process, e);
 						m_summary.append(e.toString());
@@ -296,7 +321,7 @@ public class Scheduler extends AdempiereServer
 
 	}	// doWork
 
-	private final Properties createSchedulerCtxForDoWork()
+	private Properties createSchedulerCtxForDoWork()
 	{
 		final Properties schedulerCtx = Env.newTemporaryCtx();
 
@@ -343,7 +368,7 @@ public class Scheduler extends AdempiereServer
 							orgId,
 							adUserId,
 							Env.getLocalDate(schedulerCtx))
-					.orNull();
+					.orElse(null);
 
 			// gh #2092: without a role, we won't be able to run the process, because ProcessExecutor.assertPermissions() will fail.
 			Check.errorIf(role == null,
@@ -364,11 +389,9 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * Run Report
 	 *
-	 * @param process
 	 * @return summary
-	 * @throws Exception
 	 */
-	private String runReport(final ProcessInfo pi, final I_AD_Process process) throws Exception
+	private String runReport(final ProcessInfo pi, final I_AD_Process process)
 	{
 		log.debug("Run report: {}", process);
 
@@ -389,12 +412,12 @@ public class Scheduler extends AdempiereServer
 
 		// Report
 		final Properties ctx = pi.getCtx();
-		final ReportEngine re = ReportEngine.get(ctx, pi);
-		if (re == null)
+		final ReportResultData reportData = pi.getResult().getReportData();
+		if (reportData == null)
 		{
 			return "Cannot create Report AD_Process_ID=" + process.getAD_Process_ID() + " - " + process.getName();
 		}
-		final File report = re.getPDF();
+		final File report = reportData.writeToTemporaryFile("report_");
 		// Notice
 		final int AD_Message_ID = 884;		// HARDCODED SchedulerResult
 		for (final UserId userId : m_model.getRecipientAD_User_IDs())
@@ -417,7 +440,7 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * Run Process
 	 */
-	private final String runProcess(final ProcessInfo pi) throws Exception
+	private String runProcess(final ProcessInfo pi) throws Exception
 	{
 		log.debug("Run process: {}", pi);
 
@@ -446,32 +469,28 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * Creates and setup the {@link ProcessInfo}.
 	 */
-	private static final ProcessInfo createProcessInfo(final Properties schedulerCtx, final MScheduler adScheduler)
+	private static ProcessInfo createProcessInfo(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
 		final I_AD_Process adProcess = adScheduler.getAD_Process();
 
-		final ProcessInfo pi = ProcessInfo.builder()
+		return ProcessInfo.builder()
 				.setCtx(schedulerCtx)
 				.setAD_Process(adProcess)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
-				.setInvokedByScheduler(true)
+				.setInvokedBySchedulerId(AdSchedulerId.ofRepoId(adScheduler.getAD_Scheduler_ID()))
 				.build();
-
-		return pi;
 	}
 
 	/**
 	 * metas: c.ghita@metas.ro
 	 * method for run a task
 	 *
-	 * @param task
-	 * @return
 	 */
 	private String runTask(final MTask task)
 	{
 		final String summary = task.execute() + task.getTask().getErrorLog();
 		final Integer exitValue = task.getTask().getExitValue();
-		final boolean ok = exitValue != 0 ? false : true;
+		final boolean ok = exitValue == 0;
 		final int adTaskTableID = Services.get(IADTableDAO.class).retrieveTableId(I_AD_Task.Table_Name);
 
 		notify(ok,
@@ -536,12 +555,12 @@ public class Scheduler extends AdempiereServer
 		return processInfoParameters.build();
 	}	// fillParameter
 
-	private static final ProcessInfoParameter createProcessInfoParameter(final Properties schedulerCtx, final String parameterName, final String variable, final int displayType)
+	private static ProcessInfoParameter createProcessInfoParameter(final Properties schedulerCtx, final String parameterName, final String variable, final int displayType)
 	{
 		log.debug("Filling parameter: {} = {}", parameterName, variable);
 		// Value - Constant/Variable
 		Object value = variable;
-		if (variable == null || variable != null && variable.length() == 0)
+		if (variable == null || variable.isEmpty())
 		{
 			value = null;
 		}

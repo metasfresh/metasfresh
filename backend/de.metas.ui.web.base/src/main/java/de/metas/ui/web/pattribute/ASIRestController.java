@@ -1,25 +1,10 @@
 package de.metas.ui.web.pattribute;
 
-import java.util.List;
-import java.util.function.Function;
-
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.util.ASIEditingInfo;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.pattribute.json.JSONASILayout;
+import de.metas.ui.web.pattribute.json.JSONASIDocument;
+import de.metas.ui.web.pattribute.json.JSONCompleteASIRequest;
 import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
@@ -37,13 +22,30 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
-import io.swagger.annotations.Api;
+import de.metas.util.Services;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.service.ISysConfigBL;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -67,15 +69,21 @@ import lombok.NonNull;
  * #L%
  */
 
-@Api
+/**
+ * @implNote IMPORTANT: Keep the API endpoints/requests/responses in sync with {@link de.metas.ui.web.address.AddressRestController} because on frontend side they are handled by the same code.
+ */
+@Tag(name = "ASIRestController")
 @RestController
-@RequestMapping(value = ASIRestController.ENDPOINT)
+@RequestMapping(ASIRestController.ENDPOINT)
 public class ASIRestController
 {
-	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/pattribute";
+	static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/pattribute";
 
 	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
+	private static final String SYSCONFIG_LookupAppendDescriptionToName = "webui.attributeValues.appendDescriptionToName";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final UserSession userSession;
 	private final ASIRepository asiRepo;
 	private final DocumentCollection documentsCollection;
@@ -104,12 +112,16 @@ public class ASIRestController
 	}
 
 	@PostMapping({ "", "/" })
-	public JSONDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
+	public JSONASIDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WebuiASIEditingInfo info = createWebuiASIEditingInfo(request);
-		return Execution.callInNewExecution("createASI", () -> asiRepo.createNewFrom(info).toJSONDocument(newJsonDocumentOpts()));
+		return Execution.callInNewExecution(
+				"createASI",
+				() -> asiRepo.createNewFrom(info)
+						.toJSONASIDocument(newJsonDocumentOpts(), newJsonDocumentLayoutOpts())
+		);
 	}
 
 	private WebuiASIEditingInfo createWebuiASIEditingInfo(final JSONCreateASIRequest request)
@@ -172,23 +184,13 @@ public class ASIRestController
 		}
 	}
 
-	@GetMapping("/{asiDocId}/layout")
-	public JSONASILayout getLayout(@PathVariable("asiDocId") final String asiDocIdStr)
-	{
-		userSession.assertLoggedIn();
-
-		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
-		final ASILayout asiLayout = forASIDocumentReadonly(asiDocId, ASIDocument::getLayout);
-		return JSONASILayout.of(asiLayout, newJsonDocumentLayoutOpts());
-	}
-
 	@GetMapping("/{asiDocId}")
-	public JSONDocument getASIDocument(@PathVariable("asiDocId") final String asiDocIdStr)
+	public JSONASIDocument getASIDocument(@PathVariable("asiDocId") final String asiDocIdStr)
 	{
 		userSession.assertLoggedIn();
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
-		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONDocument(newJsonDocumentOpts()));
+		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONASIDocument(newJsonDocumentOpts(), newJsonDocumentLayoutOpts()));
 	}
 
 	private <R> R forASIDocumentReadonly(@NonNull final DocumentId asiDocId, @NonNull final Function<ASIDocument, R> processor)
@@ -240,14 +242,19 @@ public class ASIRestController
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
+	private boolean isLookupsAppendDescriptionToName()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_LookupAppendDescriptionToName, true);
+	}
+
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
 	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language(), isLookupsAppendDescriptionToName());
 	}
 
 	private JSONLookupValue toJSONLookupValue(final LookupValue lookupValue)
 	{
-		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language());
+		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language(), isLookupsAppendDescriptionToName());
 	}
 
 	@GetMapping("/{asiDocId}/field/{attributeName}/dropdown")
@@ -263,23 +270,31 @@ public class ASIRestController
 	}
 
 	@PostMapping(value = "/{asiDocId}/complete")
-	public JSONLookupValue complete(@PathVariable("asiDocId") final String asiDocIdStr)
+	public JSONLookupValue complete(
+			@PathVariable("asiDocId") final String asiDocIdStr,
+			@RequestBody final JSONCompleteASIRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 
-		return Execution.callInNewExecution("complete", () -> complete(asiDocId))
+		return Execution.callInNewExecution("complete", () -> completeInTrx(asiDocId, request))
 				.transform(this::toJSONLookupValue);
 	}
 
-	private LookupValue complete(final DocumentId asiDocId)
+	private LookupValue completeInTrx(final DocumentId asiDocId, final JSONCompleteASIRequest request)
 	{
 		return asiRepo.forASIDocumentWritable(
 				asiDocId,
 				NullDocumentChangesCollector.instance,
 				documentsCollection,
-				ASIDocument::complete);
+				asiDoc -> {
+					final List<JSONDocumentChangedEvent> events = request.getEvents();
+					if (events != null && !events.isEmpty())
+					{
+						asiDoc.processValueChanges(events, REASON_ProcessASIDocumentChanges);
+					}
+					return asiDoc.complete();
+				});
 	}
-
 }

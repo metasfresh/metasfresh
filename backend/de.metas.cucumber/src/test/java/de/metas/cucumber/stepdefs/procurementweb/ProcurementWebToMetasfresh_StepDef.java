@@ -72,6 +72,9 @@ public class ProcurementWebToMetasfresh_StepDef
 
 	public ProcurementWebToMetasfresh_StepDef()
 	{
+		this.syncBPartnerStepDefData = syncBPartnerStepDefData;
+		this.syncContractStepDefData = syncContractStepDefData;
+
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
 		final CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();
 		assertThat(commandLineOptions.getRabbitPort()).isNotNull(); // guard
@@ -91,11 +94,11 @@ public class ProcurementWebToMetasfresh_StepDef
 		channel.queuePurge(Constants.QUEUE_NAME_MF_TO_PW);
 		channel.queuePurge(Constants.QUEUE_NAME_PW_TO_MF);
 	}
-	
+
 	@When("metasfresh receives a GetAllBPartnersRequest via RabbitMQ")
 	public void metasfresh_receives_a_get_all_b_partners_request() throws IOException, TimeoutException
 	{
-		final String string = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsString(GetAllBPartnersRequest.INSTANCE);
+		final String string = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsString(GetAllBPartnersRequest.builder().build());
 
 		try (final Connection connection = procurementWebuiFactory.newConnection())
 		{

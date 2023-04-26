@@ -1,0 +1,35 @@
+de.metas.contracts.commission.commissioninstance.businesslogic.margin.MarginAlgorithmTest.givenValidRequest_whenCreateCommissionShares_thenReturnOneShare=[
+  {
+    "beneficiary": {
+      "bPartnerId": 1
+    },
+    "config": {
+      "@type": "MarginConfig",
+      "commissionProductId": 1,
+      "customerTradeMarginLineId": 1,
+      "marginContract": {
+        "@type": "MarginContract",
+        "contractOwnerBPartnerId": 1,
+        "id": 1,
+        "simulation": false
+      },
+      "pointsPrecision": 2,
+      "tradedPercent": 10
+    },
+    "facts": [
+      {
+        "points": 50.00,
+        "state": "FORECASTED",
+        "timestamp": "2021-09-01T00:00:00Z"
+      }
+    ],
+    "level": 0,
+    "payer": {
+      "bPartnerId": 1
+    },
+    "soTrx": "PURCHASE",
+    "forecastedPointsSum": 50.00,
+    "invoiceablePointsSum": 0,
+    "invoicedPointsSum": 0
+  }
+]

@@ -1,14 +1,14 @@
 package de.metas.procurement.base.model.interceptor;
 
+import de.metas.procurement.base.IPMMContractsDAO;
+import de.metas.procurement.base.IWebuiPush;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
-
-import de.metas.procurement.base.IPMMContractsDAO;
-import de.metas.procurement.base.IWebuiPush;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -67,7 +67,7 @@ public class C_BPartner
 			I_C_BPartner.COLUMNNAME_AD_Language,
 			I_C_BPartner.COLUMNNAME_IsVendor } //
 			, afterCommit = true)
-	public void pushToWebUI(final I_C_BPartner bpartner)
+	public void pushToWebUI(@NonNull final I_C_BPartner bpartner)
 	{
 		Services.get(IWebuiPush.class).pushBPartnerAndUsers(bpartner);
 	}

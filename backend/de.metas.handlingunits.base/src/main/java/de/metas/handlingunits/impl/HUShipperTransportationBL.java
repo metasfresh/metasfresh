@@ -396,6 +396,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 					.inOutId(request.getShipmentId())
 					.shipperId(shipperId)
 					.processed(request.isProcessed())
+					.weight(request.getShipment().getWeight())
 					.build();
 
 			return ImmutableList.of(createPackagesRequest);

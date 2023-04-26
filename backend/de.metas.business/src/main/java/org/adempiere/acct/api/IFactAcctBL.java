@@ -22,36 +22,19 @@ package org.adempiere.acct.api;
  * #L%
  */
 
-
-import java.util.Map;
-import java.util.Properties;
-
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.MAccount;
-import org.compiere.report.core.RColumn;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.util.ISingletonService;
+import de.metas.acct.Account;
+import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_Fact_Acct;
 
 public interface IFactAcctBL extends ISingletonService
 {
-	/**
-	 * Create the {@link RColumn} for displaying the Ending Balance
-	 * 
-	 * @param ctx
-	 * @param columnName2whereClause a map of "column name" to SQL where clauses which are filtering the accounting dimensions
-	 * @return
-	 */
-	RColumn createEndingBalanceRColumn(Properties ctx, final Map<String, String> columnName2whereClause);
 
 	/**
 	 * Gets/creates the account (i.e. {@link I_C_ValidCombination}) of given fact line.
-	 * 
-	 * @param factAcct
-	 * @return
 	 */
-	MAccount getAccount(I_Fact_Acct factAcct);
+	Account getAccount(I_Fact_Acct factAcct);
 
 	void updateFactLineFromDimension(I_Fact_Acct fa, AccountDimension dim);
 

@@ -22,16 +22,15 @@ package de.metas.banking.payment.paymentallocation.service;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} when are too many documents assigned on vendor side
@@ -44,15 +43,12 @@ public class MultipleVendorDocumentsException extends PaymentAllocationException
 	private static final AdMessageKey MSG = AdMessageKey.of("PaymentAllocation.CannotAllocateMultipleDocumentsException");
 
 	private final ImmutableList<IPaymentDocument> payments;
-	private final ImmutableList<PayableDocument> payables;
 
 	MultipleVendorDocumentsException(
-			final Collection<? extends IPaymentDocument> payments,
-			final Collection<PayableDocument> payables)
+			final Collection<? extends IPaymentDocument> payments)
 	{
 		super();
 		this.payments = ImmutableList.copyOf(payments);
-		this.payables = ImmutableList.copyOf(payables);
 	}
 
 	@Override
@@ -60,21 +56,16 @@ public class MultipleVendorDocumentsException extends PaymentAllocationException
 	{
 		return TranslatableStrings.builder()
 				.appendADMessage(MSG)
-				.append(toCommaSeparatedDocumentNos(payables, payments))
+				.append(toCommaSeparatedDocumentNos(payments))
 				.build();
 	}
 
-	private static String toCommaSeparatedDocumentNos(
-			final List<PayableDocument> payables,
-			final List<IPaymentDocument> payments)
+	private static String toCommaSeparatedDocumentNos(final List<IPaymentDocument> payments)
 	{
 		final Stream<String> paymentDocumentNos = payments.stream()
 				.map(IPaymentDocument::getDocumentNo);
 
-		final Stream<String> payableDocumentNos = payables.stream()
-				.map(PayableDocument::getDocumentNo);
-
-		return Stream.concat(paymentDocumentNos, payableDocumentNos)
+		return paymentDocumentNos
 				.collect(Collectors.joining(", "));
 	}
 

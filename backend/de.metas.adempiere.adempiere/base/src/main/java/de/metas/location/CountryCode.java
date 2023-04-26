@@ -22,14 +22,20 @@
 
 package de.metas.location;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 
 @Value
+@JsonDeserialize(builder = CountryCode.CountryCodeBuilder.class)
 public class CountryCode
 {
+	@JsonProperty("alpha2")
 	String alpha2;
+
+	@JsonProperty("alpha3")
 	String alpha3;
 
 	@Builder
