@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import de.metas.common.util.time.SystemTime;
@@ -78,10 +79,11 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		bPartnerVendorRecord.setPO_DiscountSchema(discountSchemaRecord); // note that right now we don't need to have an actual price
 		save(bPartnerVendorRecord);
 
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
+		SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.materialDescriptor(createMaterialDescriptor())
 				.demandCandidateId(50)
+				.fullDemandQty(BigDecimal.TEN)
 				.build();
 
 		final MRPContextFactory mrpContextFactory = new MRPContextFactory();
@@ -98,10 +100,32 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 						supplyRequiredDescriptor,
 						mrpContext);
 
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
+
 		assertThat(purchaseAdvisedEvent).isPresent();
 		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
 		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+
+		productPlanningRecord.setIsLotForLot(true);
+		save(productPlanningRecord);
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(null).build();
+
+		// invoke the method under test
+		final Optional<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvent2 = purchaseCandidateAdvisedEventCreator
+				.createPurchaseAdvisedEvent(
+						supplyRequiredDescriptor,
+						mrpContext);
+
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+				.isLotForLot("Y")
+				.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(new BigDecimal("10")))
+				.build();
+
+		assertThat(purchaseAdvisedEvent2).isPresent();
+		assertThat(purchaseAdvisedEvent2.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
+		assertThat(purchaseAdvisedEvent2.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+		assertThat(purchaseAdvisedEvent2.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 
 	static MaterialDescriptor createMaterialDescriptor()
@@ -115,7 +139,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		return MaterialDescriptor.builder()
 				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
 				.warehouseId(WarehouseId.ofRepoId(40))
-				.quantity(TEN)
+				.quantity(BigDecimal.ONE)
 				.date(SystemTime.asInstant())
 				.build();
 	}
