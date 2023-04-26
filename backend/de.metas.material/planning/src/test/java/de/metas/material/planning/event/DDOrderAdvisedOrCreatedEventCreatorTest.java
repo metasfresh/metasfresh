@@ -83,7 +83,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	{
 		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(newInstance(I_PP_Product_Planning.class));
+				.thenReturn(ppProductPlanning);
 
 		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);

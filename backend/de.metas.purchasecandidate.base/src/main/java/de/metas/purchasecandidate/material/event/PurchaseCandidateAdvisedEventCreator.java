@@ -63,10 +63,10 @@ public class PurchaseCandidateAdvisedEventCreator
 		}
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
-		final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
-		if(!productPlanning.isLotForLot() && fullDemandQty.signum() <= 0)
+		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
 		{
-			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because LotForLot=false and fullDemandQty={}", fullDemandQty);
+			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
 			return Optional.empty();
 		}
 
@@ -88,11 +88,13 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		if(productPlanning.isLotForLot())
 		{
-			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(supplyRequiredDescriptor.getMaterialEventQty());
+			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(fullDemandQty);
 			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder()
 												   .materialDescriptor(updatedMaterialDescriptor)
 												   .isLotForLot("Y")
 												   .build());
+			Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true", fullDemandQty);
 		}
 		else
 		{

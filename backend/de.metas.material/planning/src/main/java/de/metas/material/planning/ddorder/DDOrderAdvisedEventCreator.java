@@ -68,16 +68,21 @@ public class DDOrderAdvisedEventCreator
 		}
 
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning(); // won't be null; if there was no productPlanningData, we wouldn't be here.
-		final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
-		if(!productPlanningData.isLotForLot() && fullDemandQty.signum() <= 0)
+		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(!productPlanningData.isLotForLot() && requiredQty.signum() == 0)
 		{
-			Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=false and fullDemandQty={}", fullDemandQty);
+			Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
 			return ImmutableList.of();
 		}
 
 		if(productPlanningData.isLotForLot())
 		{
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
+			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+					.isLotForLot("Y")
+					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(fullDemandQty))
+					.build();
+			Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true", fullDemandQty);
 		}
 		else
 		{

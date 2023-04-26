@@ -195,8 +195,8 @@ public class DemandCandiateHandler implements CandidateHandler
 
 		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getMinMaxDescriptor());
 		// note: since this candidate might need to be handled "lotForLot", we may fire the event even if requiredQty <= 0
-		final BigDecimal materialEventQty = demandCandidateWithId.getMaterialDescriptor().getQuantity();
-		if (requiredQty.signum() > 0 || materialEventQty.signum() > 0)
+		final BigDecimal fullDemandQty = demandCandidateWithId.getMaterialDescriptor().getQuantity();
+		if (requiredQty.signum() > 0 || fullDemandQty.signum() > 0)
 		{
 			postSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 		}
@@ -238,22 +238,31 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private void postSupplyRequiredEvent(@NonNull final Candidate demandCandidateWithId, @NonNull final BigDecimal requiredQty)
 	{
-		// create supply record now! otherwise
-		final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
-				.type(CandidateType.SUPPLY)
-				.businessCase(null)
-				.businessCaseDetail(null)
-				.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
-				//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
-				.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
-				.quantity(requiredQty)
-				.simulated(demandCandidateWithId.isSimulated())
-				.build();
 
-		final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
+		final SupplyRequiredEvent supplyRequiredEvent;
+		if(requiredQty.signum() != 0)
+		{
+			// create supply record now! otherwise
+			final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
+					.type(CandidateType.SUPPLY)
+					.businessCase(null)
+					.businessCaseDetail(null)
+					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
+					//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
+					.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
+					.quantity(requiredQty)
+					.simulated(demandCandidateWithId.isSimulated())
+					.build();
 
-		final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator
-				.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
+			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
+
+			supplyRequiredEvent = SupplyRequiredEventCreator
+					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
+		}
+		else
+		{
+			supplyRequiredEvent = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, null);
+		}
 
 		materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
 

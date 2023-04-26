@@ -1,11 +1,17 @@
 package de.metas.material.planning.event;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
+import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
+import de.metas.organization.IOrgDAO;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -13,6 +19,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -41,6 +48,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @UtilityClass
 public class SupplyRequiredHandlerUtils
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private final MainDataRequestHandler mainDataRequestHandler = new MainDataRequestHandler();
 
 	@NonNull
 	public MaterialRequest mkRequest(
@@ -55,30 +65,37 @@ public class SupplyRequiredHandlerUtils
 		final I_M_Product product = load(productId, I_M_Product.class);
 
 		final BigDecimal qtyToSupply = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
-		final BigDecimal materialEventQty = supplyRequiredDescriptor.getMaterialEventQty();
 
 		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
 
-		final MaterialRequest.MaterialRequestBuilder materialRequestBuilder =
-				MaterialRequest.builder()
-						.mrpContext(mrpContext)
-						.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
-						.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
-						.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
-						.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
-						.isSimulated(supplyRequiredDescriptor.isSimulated());
+		return MaterialRequest.builder()
+				.qtyToSupply(Quantity.of(qtyToSupply, uom))
+				.mrpContext(mrpContext)
+				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
+				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
+				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
+				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
+				.isSimulated(supplyRequiredDescriptor.isSimulated())
+				.build();
+	}
 
-		if(mrpContext.getProductPlanning().isLotForLot()) // won't NPE; if there was no productPlanningData, we wouldn't be here.
+	public void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		if (supplyRequiredDescriptor.isSimulated())
 		{
-			materialRequestBuilder.qtyToSupply(Quantity.of(materialEventQty, uom));
-			Loggables.addLog("Using materialEventQty={}, because of LotForLot=true", materialEventQty);
-		}
-		else
-		{
-			materialRequestBuilder.qtyToSupply(Quantity.of(qtyToSupply, uom));
-			Loggables.addLog("Using qtyToSupply={}, because of LotForLot=false", qtyToSupply);
+			return;
 		}
 
-		return materialRequestBuilder.build();
+		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
+				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
+
+		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
+				.identifier(mainDataRecordIdentifier)
+				.qtySupplyRequired(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.build();
+
+		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 }

@@ -25,6 +25,7 @@ package de.metas.material.planning.ppordercandidate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
@@ -73,20 +74,30 @@ public class PPOrderCandidateAdvisedEventCreator
 		}
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
-		final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
-		if(!productPlanning.isLotForLot() && fullDemandQty.signum() <= 0)
+		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
 		{
-			Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent because LotForLot=false and fullDemandQty={}", fullDemandQty);
+			Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
 			return ImmutableList.of();
 		}
 
 		if(productPlanning.isLotForLot())
 		{
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("Y").build();
+			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+					.isLotForLot("Y")
+					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(fullDemandQty))
+					.build();
+			Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true", fullDemandQty);
 		}
 		else
 		{
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
+		}
+
+		if(requiredQty.signum() == 0)
+		{
+			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
 		}
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
