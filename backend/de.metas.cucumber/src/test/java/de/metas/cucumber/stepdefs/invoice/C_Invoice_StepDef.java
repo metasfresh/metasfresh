@@ -666,7 +666,7 @@ public class C_Invoice_StepDef
 					.map(Integer::parseInt)
 					.orElse(0);
 
-			assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_RepoId);
+			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID").isEqualTo(expectedSalesRep_RepoId);
 		}
 
 		softly.assertAll();
