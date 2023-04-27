@@ -80,6 +80,7 @@ public class ManualPOCTest
 					.resource(resource(i))
 					.duration(Duration.ofHours(1))
 					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
+					.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
 					.build());
 		}
 
@@ -96,6 +97,7 @@ public class ManualPOCTest
 					.resource(resource(i))
 					.duration(Duration.ofHours(1))
 					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
+					.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
 					.build());
 		}
 

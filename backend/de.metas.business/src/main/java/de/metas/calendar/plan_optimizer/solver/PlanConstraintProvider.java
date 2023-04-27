@@ -32,6 +32,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				resourceConflict(constraintFactory),
 				projectStepsOverlap(constraintFactory),
 				projectStepsInOrder(constraintFactory),
+				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
 				// Soft:
 				minDurationFromEndToDueDateIsMaximum(constraintFactory),
@@ -46,7 +47,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getResource),
 						stepsOverlapping())
-				.penalize(ONE_HARD)
+				.penalize(ONE_HARD.multiply(10))
 				.asConstraint("Resource conflict");
 	}
 
@@ -56,7 +57,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getProjectId),
 						stepsOverlapping())
-				.penalize(ONE_HARD)
+				.penalize(ONE_HARD.multiply(10))
 				.asConstraint("Project steps overlap");
 	}
 
@@ -68,7 +69,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getProjectId),
 						projectStepsNotInOrder())
-				.penalize(ONE_HARD)
+				.penalize(ONE_HARD.multiply(10))
 				.asConstraint("Project steps not in order");
 	}
 
@@ -84,11 +85,19 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	private static boolean isAscending(final LocalDateTime date1, final LocalDateTime date2) {return !date1.isAfter(date2);}
 
+	Constraint startDateMin(ConstraintFactory constraintFactory)
+	{
+		return constraintFactory.forEach(Step.class)
+				.filter(step -> !step.isStartDateMinRespected())
+				.penalize(ONE_HARD.multiply(13))
+				.asConstraint("StartDateMin not respected");
+	}
+
 	Constraint dueDate(ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(Step::isDueDateNotRespected)
-				.penalize(ONE_HARD)
+				.penalize(ONE_HARD.multiply(5))
 				.asConstraint("DueDate not respected");
 	}
 
