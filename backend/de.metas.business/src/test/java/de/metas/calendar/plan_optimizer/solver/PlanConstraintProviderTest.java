@@ -26,6 +26,7 @@ class PlanConstraintProviderTest
 	private static final ProjectId PROJECT_ID1 = ProjectId.ofRepoId(1);
 	private static final ProjectId PROJECT_ID2 = ProjectId.ofRepoId(2);
 	private static final Resource RESOURCE = new Resource(ResourceId.ofRepoId(1), "R1");
+	private static final Resource RESOURCE2 = new Resource(ResourceId.ofRepoId(2), "R2");
 
 	private static ConstraintVerifier<PlanConstraintProvider, Plan> constraintVerifier;
 
@@ -50,6 +51,64 @@ class PlanConstraintProviderTest
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, stepRepoId))
 				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId))
 				.build();
+	}
+
+	@Nested
+	class resourceConflict
+	{
+		Step step(final Resource resource, final String startDate, String endDate)
+		{
+			Step step = new Step();
+			step.setId(nextStepId(PROJECT_ID1));
+			step.setResource(resource);
+			step.setStartDate(LocalDate.parse(startDate).atStartOfDay());
+			step.setEndDate(LocalDate.parse(endDate).atStartOfDay());
+			return step;
+		}
+
+		@Test
+		void sameResource_overlapping()
+		{
+			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict)
+					.given(
+							step(RESOURCE, "2023-04-01", "2023-04-05"),
+							step(RESOURCE, "2023-04-04", "2023-04-10")
+					)
+					.penalizesBy(1);
+		}
+
+		@Test
+		void sameResource_connected()
+		{
+			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict)
+					.given(
+							step(RESOURCE, "2023-04-01", "2023-04-05"),
+							step(RESOURCE, "2023-04-05", "2023-04-10")
+					)
+					.penalizesBy(0);
+		}
+
+		@Test
+		void sameResource_notOverlapping()
+		{
+			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict)
+					.given(
+							step(RESOURCE, "2023-04-01", "2023-04-05"),
+							step(RESOURCE, "2023-04-06", "2023-04-10")
+					)
+					.penalizesBy(0);
+		}
+
+		@Test
+		void differentResources_overlapping()
+		{
+			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict)
+					.given(
+							step(RESOURCE, "2023-04-01", "2023-04-05"),
+							step(RESOURCE2, "2023-04-04", "2023-04-10")
+					)
+					.penalizesBy(0);
+		}
 	}
 
 	@Nested
@@ -116,6 +175,7 @@ class PlanConstraintProviderTest
 		Step step(final String date, int seqNo)
 		{
 			Step step = new Step();
+			step.setId(nextStepId(PROJECT_ID1)); // needed for contraintVerifier
 			step.setStartDate(LocalDate.parse(date).atStartOfDay());
 			step.setProjectSeqNo(seqNo);
 			return step;
@@ -127,6 +187,7 @@ class PlanConstraintProviderTest
 			final Step step1 = step("2023-04-25", 10);
 			final Step step2 = step("2023-04-26", 20);
 			assertThat(PlanConstraintProvider.projectStepsNotInOrder(step1, step2)).isFalse();
+			constraintVerifier.verifyThat(PlanConstraintProvider::projectStepsInOrder).given(step1, step2).penalizesBy(0);
 		}
 
 		@Test
@@ -135,6 +196,7 @@ class PlanConstraintProviderTest
 			final Step step1 = step("2023-04-25", 20);
 			final Step step2 = step("2023-04-26", 10);
 			assertThat(PlanConstraintProvider.projectStepsNotInOrder(step1, step2)).isTrue();
+			constraintVerifier.verifyThat(PlanConstraintProvider::projectStepsInOrder).given(step1, step2).penalizesBy(1);
 		}
 
 		@Test
@@ -143,6 +205,7 @@ class PlanConstraintProviderTest
 			final Step step1 = step("2023-04-26", 10);
 			final Step step2 = step("2023-04-25", 20);
 			assertThat(PlanConstraintProvider.projectStepsNotInOrder(step1, step2)).isTrue();
+			constraintVerifier.verifyThat(PlanConstraintProvider::projectStepsInOrder).given(step1, step2).penalizesBy(1);
 		}
 
 		@Test
@@ -151,6 +214,7 @@ class PlanConstraintProviderTest
 			final Step step1 = step("2023-04-26", 20);
 			final Step step2 = step("2023-04-25", 10);
 			assertThat(PlanConstraintProvider.projectStepsNotInOrder(step1, step2)).isFalse();
+			constraintVerifier.verifyThat(PlanConstraintProvider::projectStepsInOrder).given(step1, step2).penalizesBy(0);
 		}
 	}
 
