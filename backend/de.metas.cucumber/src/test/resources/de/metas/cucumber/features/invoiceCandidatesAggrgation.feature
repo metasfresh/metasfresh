@@ -8,7 +8,7 @@ Feature: invoice generation and invoice candidates aggregation
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-  Scenario:
+  Scenario: case 10
   - C_AggregationItem for SalesRep_ID is inactive
   - two sales orders with the same salesRep_IDs => one invoice with the respective SalesRep_ID
     Given load C_AggregationItem
@@ -41,9 +41,9 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | GLN           | C_BPartner_ID.Identifier |
       | l_1        | 4012345000009 | endcustomer_1            |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
-      | o_2        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID | OPT.Bill_Location_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             | l_1                             |
+      | o_2        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             | l_1                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -82,7 +82,7 @@ Feature: invoice generation and invoice candidates aggregation
       | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 20
   - C_AggregationItem for SalesRep_ID is inactive
   - two sales orders, one order with salesRep_ID set and the second one with no salesRep_ID => one invoice with no SalesRep_ID
     Given load C_AggregationItem
@@ -115,9 +115,9 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | GLN           | C_BPartner_ID.Identifier |
       | l_1        | 4012345000009 | endcustomer_1            |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
-      | o_2        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              |                 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID | OPT.Bill_Location_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             | l_1                             |
+      | o_2        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              |                 | l_1                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -156,7 +156,7 @@ Feature: invoice generation and invoice candidates aggregation
       | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 30
   - C_AggregationItem for SalesRep_ID is inactive
   - two sales orders with two different salesRep_ID => one invoice with SalesRep_ID is null
     Given load C_AggregationItem
@@ -189,9 +189,9 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | GLN           | C_BPartner_ID.Identifier |
       | l_1        | 4012345000009 | endcustomer_1            |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
-      | o_2        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 99              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID | OPT.Bill_Location_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             | l_1                             |
+      | o_2        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 99              | l_1                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -230,7 +230,7 @@ Feature: invoice generation and invoice candidates aggregation
       | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 40
   - C_AggregationItem for SalesRep_ID is active
   - two sales orders with two different salesRep_ID => two invoices with their respective SalesRep_ID
     Given load C_AggregationItem
@@ -308,7 +308,7 @@ Feature: invoice generation and invoice candidates aggregation
       | a_1                             | false    |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 50
   - C_AggregationItem for SalesRep_ID is active
   - two sales orders with same salesRep_ID => one invoice with the respective SalesRep_ID
     Given load C_AggregationItem
