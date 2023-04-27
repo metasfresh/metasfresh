@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.services.repos;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
@@ -22,6 +23,9 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderLineDocId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords;
 import de.metas.contracts.commission.mediated.algorithm.MediatedCommissionConfig;
@@ -38,11 +42,19 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -54,7 +66,10 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -88,6 +103,7 @@ public class CommissionInstanceRepository
 {
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRepository.class);
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final CommissionRecordStagingService commissionRecordStagingService;
@@ -305,6 +321,15 @@ public class CommissionInstanceRepository
 		return commissionInstanceId;
 	}
 
+	@NonNull
+	public IQuery<I_C_Commission_Instance> computeQueryForTriggerDocumentIds(@NonNull final Set<CommissionTriggerDocumentId> documentIdSet)
+	{
+		return queryBL.createQueryBuilder(I_C_Commission_Instance.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(getDocumentBasedFilter(documentIdSet))
+				.create();
+	}
+
 	private void propagateAdditionalColumns(
 			@NonNull final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final I_C_Commission_Instance commissionInstanceRecord)
@@ -462,4 +487,42 @@ public class CommissionInstanceRepository
 		commissionInstanceRecord.setM_Product_Order_ID(orderLine.getM_Product_ID());
 	}
 
+	@NonNull
+	private IQueryFilter<I_C_Commission_Instance> getDocumentBasedFilter(@NonNull final Set<CommissionTriggerDocumentId> documentIdSet)
+	{
+		if (documentIdSet.isEmpty())
+		{
+			return ConstantQueryFilter.of(false);
+		}
+
+		final ICompositeQueryFilter<I_C_Commission_Instance> documentBasedFilter = queryBL.createCompositeQueryFilter(I_C_Commission_Instance.class)
+				.setJoinOr();
+
+		final Function<List<CommissionTriggerDocumentId>, Set<RepoIdAware>> convertToRepoIdAware = documentIds -> documentIds.stream()
+				.map(CommissionTriggerDocumentId::getRepoIdAware)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<Class<?>, List<CommissionTriggerDocumentId>> type2DocumentId = CollectionUtils
+				.groupMultiValueByKey(documentIdSet, CommissionTriggerDocumentId::getClass);
+
+		final List<CommissionTriggerDocumentId> invoiceCandIds = type2DocumentId.get(SalesInvoiceCandidateDocumentId.class);
+		if (!Check.isEmpty(invoiceCandIds))
+		{
+			documentBasedFilter.addInArrayFilter(I_C_Commission_Instance.COLUMNNAME_C_Invoice_Candidate_ID, convertToRepoIdAware.apply(invoiceCandIds));
+		}
+
+		final List<CommissionTriggerDocumentId> invoiceLineIds = type2DocumentId.get(SalesInvoiceLineDocumentId.class);
+		if (!Check.isEmpty(invoiceLineIds))
+		{
+			documentBasedFilter.addInArrayFilter(I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID, convertToRepoIdAware.apply(invoiceLineIds));
+		}
+
+		final List<CommissionTriggerDocumentId> mediatedOrderLines = type2DocumentId.get(MediatedOrderLineDocId.class);
+		if (!Check.isEmpty(mediatedOrderLines))
+		{
+			documentBasedFilter.addInArrayFilter(I_C_Commission_Instance.COLUMNNAME_C_OrderLine_ID, convertToRepoIdAware.apply(mediatedOrderLines));
+		}
+
+		return documentBasedFilter;
+	}
 }

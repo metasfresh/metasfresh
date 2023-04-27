@@ -23,20 +23,16 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.common.util.EmptyUtil;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
 import de.metas.order.InvoiceRule;
-import de.metas.util.Services;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
-import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Map;
@@ -44,18 +40,16 @@ import java.util.Map;
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Name;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Type_Conditions;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Conditions_StepDef
 {
-	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
-	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
+	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
+	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 
 	public C_Flatrate_Conditions_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable)
+			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.conditionsTable = conditionsTable;

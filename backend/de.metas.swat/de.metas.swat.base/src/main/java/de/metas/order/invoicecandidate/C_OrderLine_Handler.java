@@ -25,7 +25,11 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax.PriceA
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
@@ -73,6 +77,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -164,6 +171,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
+
+		icRecord.setProductDescription(orderLine.getProductDescription());
 
 		if (orderLine.getPriceEntered().compareTo(orderLine.getPriceStd()) == 0)
 		{
@@ -443,6 +452,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
 		setBPartnerData(ic, orderLine);
+	}
+
+	@Override
+	public void setIsInEffect(final I_C_Invoice_Candidate ic)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(ic.getC_OrderLine_ID()));
+
+		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		invoiceCandBL.computeIsInEffect(orderDocStatus, ic);
 	}
 
 	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
