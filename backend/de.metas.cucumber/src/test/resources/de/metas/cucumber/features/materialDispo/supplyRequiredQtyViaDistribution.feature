@@ -90,7 +90,9 @@ Feature: Stock shortage solved via distribution
       | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouse_2                   |
       | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 14                           | 0                             | 0                              | -14                            | -14                        | 14                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 14                           | -14                           | 14                             | 14                             | 14                         | 0                             | 14                            | warehouse_2                   | 0                            | 0                  |
@@ -121,7 +123,9 @@ Feature: Stock shortage solved via distribution
       | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouse_2                   |
       | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 14                           | 0                             | 0                              | -14                            | -14                        | 14                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 14                           | -14                           | 14                             | 14                             | 14                         | 0                             | 14                            | warehouse_2                   | 0                            | 0                  |
@@ -148,7 +152,9 @@ Feature: Stock shortage solved via distribution
       | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved |
       | dd_ol_1                    | 14             | 10       | ddNetworkLine_1                              | p_1                         | 14             | 0                | 14              |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 14                           | 0                             | 0                              | -14                            | -14                        | 14                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 14                           | -14                           | 14                             | 14                             | 14                         | 0                             | 14                            | warehouse_2                   | 0                            | 0                  |
@@ -177,7 +183,9 @@ Feature: Stock shortage solved via distribution
       | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouse_2                   |
       | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 14                           | 0                             | 0                              | -14                            | -14                        | 14                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 14                           | -14                           | 14                             | 14                             | 14                         | 0                             | 14                            | warehouse_2                   | 0                            | 0                  |
@@ -200,7 +208,9 @@ Feature: Stock shortage solved via distribution
       | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouse_2                   |
       | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 16                      | 14                           | 2                             | 0                              | -14                            | -14                        | 16                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 16                      | 0                       | 14                           | -16                           | 14                             | 14                             | 14                         | 0                             | 16                            | warehouse_2                   | 0                            | 0                  |
@@ -223,7 +233,9 @@ Feature: Stock shortage solved via distribution
       | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouse_2                   |
       | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 16                      | 14                           | 2                             | 0                              | -14                            | -14                        | 16                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 16                      | 0                       | 14                           | -16                           | 14                             | 14                             | 14                         | 0                             | 16                            | warehouse_2                   | 0                            | 0                  |
@@ -340,7 +352,9 @@ Feature: Stock shortage solved via distribution
       | c_3        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -14                    |
       | c_4        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 14                           | 0                             | 0                              | -14                            | -14                        | 14                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 0                            | -14                           | 0                              | 16                             | 16                         | 0                             | 14                            | warehouse_2                   | 16                           | 16                 |
@@ -365,7 +379,9 @@ Feature: Stock shortage solved via distribution
       | c_3        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -14                    |
       | c_4        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 14                           | 0                             | 0                              | -14                            | -14                        | 14                            | 0                             | warehouseStd                  | 0                            | 0                  |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 0                            | -14                           | 0                              | 16                             | 16                         | 0                             | 14                            | warehouse_2                   | 16                           | 16                 |
@@ -408,7 +424,9 @@ Feature: Stock shortage solved via distribution
       | c_5        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 0                      | warehouse_2                   |
       | c_6        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 2                      | warehouseStd                  |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 16                      | 0                            | 2                             | 0                              | 2                              | 2                          | 16                            | 0                             | warehouseStd                  | 0                            | 16                 |
       | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 16                      | 0                       | 0                            | -16                           | 0                              | 0                              | 0                          | 0                             | 16                            | warehouse_2                   | 16                           | 0                  |

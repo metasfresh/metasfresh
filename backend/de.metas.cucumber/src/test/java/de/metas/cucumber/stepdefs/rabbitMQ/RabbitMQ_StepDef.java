@@ -39,7 +39,9 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.BindingBuilder;
@@ -47,13 +49,16 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueInformation;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
@@ -63,6 +68,7 @@ public class RabbitMQ_StepDef
 {
 	private final RabbitMQDestinationResolver rabbitMQDestinationSolver = SpringContextHolder.instance.getBean(RabbitMQDestinationResolver.class);
 	private final EventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(EventBusFactory.class);
+	private final AmqpTemplate amqpTemplate = SpringContextHolder.instance.getBean(AmqpTemplate.class);
 
 	private final Queue_StepDefData queueTable;
 	private final Channel_StepDefData channelTable;
@@ -88,6 +94,12 @@ public class RabbitMQ_StepDef
 		connectionFactory = new CachingConnectionFactory(commandLineOptions.getRabbitHost(), commandLineOptions.getRabbitPort());
 		connectionFactory.setUsername(commandLineOptions.getRabbitUser());
 		connectionFactory.setPassword(commandLineOptions.getRabbitPassword());
+	}
+
+	@And("wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes")
+	public void wait_empty_material_queue() throws InterruptedException
+	{
+		waitEmptyMaterialQueue();
 	}
 
 	@Given("rabbitMQ queue is created")
@@ -324,5 +336,35 @@ public class RabbitMQ_StepDef
 		eventBus.enqueueEvent(Event.builder()
 									  .withBody(eventBody)
 									  .build());
+	}
+
+	private void waitEmptyMaterialQueue() throws InterruptedException
+	{
+		final long nowMillis = System.currentTimeMillis();
+		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
+
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName("de.metas.material");
+		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
+
+		long messageCount;
+		do
+		{
+			Thread.sleep(1000);
+
+			final QueueInformation queueInformation = Optional.ofNullable(rabbitAdmin.getQueueInfo(queueName))
+					.orElseThrow(() -> new AdempiereException("Queue does not exist!")
+							.appendParametersToMessage()
+							.setParameter("QueueName", queueName));
+
+			messageCount = queueInformation.getMessageCount();
+		}
+		while (messageCount > 0 && deadLineMillis > System.currentTimeMillis());
+
+		if (messageCount > 0)
+		{
+			throw new AdempiereException("Queue has not been entirely processed in 5 minutes !")
+					.appendParametersToMessage()
+					.setParameter("QueueName", queueName);
+		}
 	}
 }
