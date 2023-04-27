@@ -237,7 +237,7 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			logger.info("{} - Posting event: {}, Timestamp={}, ThreadId={}", this, event, Instant.now(), Thread.currentThread().getId());
+			logger.debug("{} - Posting event: {}, Timestamp={}, ThreadId={}", this, event, Instant.now(), Thread.currentThread().getId());
 			eventBus.post(event);
 
 			micrometerEventBusStatsCollector.incrementEventsEnqueued();
