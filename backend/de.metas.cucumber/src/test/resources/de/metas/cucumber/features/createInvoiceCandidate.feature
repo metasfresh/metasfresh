@@ -120,7 +120,7 @@ Feature: create invoice candidate via API
       | invoice_1               | IC_Customer_05012023     | IC_Customer_Location_05012023     | testICByExtRef  | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_05012023        | 2           | true      |
 
 

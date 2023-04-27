@@ -142,7 +142,7 @@ Feature: Partial Payment Invoicing
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus |
       | invoice_PO_29082022_1   | vendor_29082022          | vendor_location_29082022          | 30 Tage netto | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | QtyInvoiced | Processed |
       | invoice_line_PO_29082022_1  | invoice_PO_29082022_1   | product_PO_happy_29082022 | 30          | true      |
 
     And validate C_InterimInvoice_FlatrateTerm:
@@ -186,7 +186,7 @@ Feature: Partial Payment Invoicing
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus |
       | invoice_PO_29082022_2   | vendor_29082022          | vendor_location_29082022          | 30 Tage netto | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | QtyInvoiced | Processed |
       | invoice_line_PO_29082022_2  | invoice_PO_29082022_2   | product_PO_happy_29082022 | 20          | true      |
 
     And validate C_InterimInvoice_FlatrateTerm:
@@ -399,7 +399,7 @@ Feature: Partial Payment Invoicing
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus |
       | invoice_PO_29082022     | vendor_29082022          | vendor_location_29082022          | 30 Tage netto | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoice_line_PO_29082022    | invoice_PO_29082022     | product_PO_2_29082022   | 30          | true      |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Processed |

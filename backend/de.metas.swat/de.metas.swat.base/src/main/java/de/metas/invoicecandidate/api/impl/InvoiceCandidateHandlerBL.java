@@ -376,8 +376,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			@NonNull final IInvoiceCandidateHandler handler,
 			@NonNull final I_C_Invoice_Candidate ic)
 	{
-		Check.assumeNotNull(handler, "handler not null");
-
 		//
 		// Make sure there is a link to creator/handler.
 		// We are setting the handler only if it was not set because it might be that the handler was set by a delegated handler which is not this one.
