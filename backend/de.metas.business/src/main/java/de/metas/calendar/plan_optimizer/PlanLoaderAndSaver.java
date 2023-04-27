@@ -112,6 +112,13 @@ class PlanLoaderAndSaver
 							.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(PLANNING_TIME_PRECISION))
 							.orElse(null);
 
+					boolean manuallyLocked = step.isManuallyLocked();
+					if (manuallyLocked && (startDate == null || endDate == null))
+					{
+						logger.warn("Cannot consider resource as locked because it has no start/end date: {}", resource);
+						manuallyLocked = false;
+					}
+
 					optaPlannerSteps.add(Step.builder()
 							.id(StepId.builder()
 									.woProjectStepId(resource.getWoProjectStepId())
@@ -124,6 +131,7 @@ class PlanLoaderAndSaver
 							.dueDate(dueDateEffective)
 							.startDate(startDate)
 							.endDate(endDate)
+							.pinned(manuallyLocked)
 							.build());
 
 				}
