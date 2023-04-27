@@ -140,6 +140,11 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
       simulationOptimizerStatus = {
         simulationId: apiWSEvent.simulationId,
         status: apiWSEvent.status,
+        // Troubleshoot info:
+        score: apiWSEvent.score,
+        scoreExplanation: apiWSEvent.scoreExplanation,
+        isFinalSolution: apiWSEvent.isFinalSolution,
+        timeSpent: apiWSEvent.timeSpent,
       };
 
       if (

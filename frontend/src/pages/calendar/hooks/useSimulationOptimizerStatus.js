@@ -21,6 +21,7 @@ export const useSimulationOptimizerStatus = ({ simulationId }) => {
       setState({ status: apiResponse?.status });
     },
     setStatusFromWSEvents: (wsEvents) => {
+      console.log('Got new simulation optimizer status from WS', wsEvents);
       if (wsEvents?.simulationOptimizerStatus?.status) {
         setState({ status: wsEvents.simulationOptimizerStatus.status });
       }
