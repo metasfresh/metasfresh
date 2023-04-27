@@ -171,6 +171,12 @@ class CalendarWebSocketProducer
 				.simulationId(solution.getSimulationId())
 				.status(JsonSimulationOptimizerStatusType.STARTED)
 				.simulationPlanChanged(true)
+				//
+				.score(solution.getScore() != null ? solution.getScore().toString() : null)
+				.scoreExplanation(solution.getScoreExplanation() != null ? solution.getScoreExplanation().getSummary() : null)
+				.isFinalSolution(solution.isFinalSolution())
+				.timeSpent(solution.getTimeSpent() != null ? solution.getTimeSpent().toString() : null)
+				//
 				.build()));
 	}
 

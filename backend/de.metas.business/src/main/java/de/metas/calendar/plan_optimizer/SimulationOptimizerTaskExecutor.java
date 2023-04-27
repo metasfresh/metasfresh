@@ -19,7 +19,7 @@ public class SimulationOptimizerTaskExecutor
 {
 	private final ISysConfigBL sysconfigBL = Services.get(ISysConfigBL.class);
 	private final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher;
-	private final PlanLoaderAndSaver planLoaderAndSaver;
+	private final DatabasePlanLoaderAndSaver planLoaderAndSaver;
 
 	private static final String SYSCONFIG_TerminationSpentLimit = "de.metas.calendar.plan_optimizer.TerminationSpentLimitMillis";
 	private static final Duration DEFAULT_TerminationSpentLimit = Duration.ofMinutes(5);
@@ -34,7 +34,7 @@ public class SimulationOptimizerTaskExecutor
 			@NonNull final ResourceService resourceService)
 	{
 		this.simulationOptimizerStatusDispatcher = simulationOptimizerStatusDispatcher;
-		this.planLoaderAndSaver = new PlanLoaderAndSaver(
+		this.planLoaderAndSaver = new DatabasePlanLoaderAndSaver(
 				Services.get(IOrgDAO.class),
 				woProjectService,
 				woProjectSimulationService,

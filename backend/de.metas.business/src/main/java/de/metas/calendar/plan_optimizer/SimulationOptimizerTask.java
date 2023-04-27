@@ -9,6 +9,8 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
+import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
+import org.optaplanner.core.api.solver.SolutionManager;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.config.solver.SolverConfig;
@@ -31,7 +33,9 @@ class SimulationOptimizerTask implements Runnable
 
 	//
 	// State
+	private SolverFactory<Plan> solverFactory;
 	private Solver<Plan> solver;
+	private SolutionManager<Plan, BendableScore> _solutionManager;
 	private CompletableFuture<?> future;
 
 	@Builder
@@ -106,7 +110,7 @@ class SimulationOptimizerTask implements Runnable
 			this.solver = null;
 		}
 
-		final SolverFactory<Plan> solverFactory = createSolverFactory();
+		final SolverFactory<Plan> solverFactory = getSolverFactory();
 		final Solver<Plan> solver = this.solver = solverFactory.buildSolver();
 		solver.addEventListener(event -> {
 			final Plan solution = event.getNewBestSolution();
@@ -117,13 +121,28 @@ class SimulationOptimizerTask implements Runnable
 		return solver;
 	}
 
-	private SolverFactory<Plan> createSolverFactory()
+	private SolverFactory<Plan> getSolverFactory()
 	{
-		return SolverFactory.create(new SolverConfig()
-				.withSolutionClass(Plan.class)
-				.withEntityClasses(Step.class)
-				.withConstraintProviderClass(PlanConstraintProvider.class)
-				.withTerminationSpentLimit(terminationSpentLimit));
+		SolverFactory<Plan> solverFactory = this.solverFactory;
+		if (solverFactory == null)
+		{
+			solverFactory = this.solverFactory = SolverFactory.create(new SolverConfig()
+					.withSolutionClass(Plan.class)
+					.withEntityClasses(Step.class)
+					.withConstraintProviderClass(PlanConstraintProvider.class)
+					.withTerminationSpentLimit(terminationSpentLimit));
+		}
+		return solverFactory;
+	}
+
+	private SolutionManager<Plan, BendableScore> getSolutionManager()
+	{
+		SolutionManager<Plan, BendableScore> solutionManager = this._solutionManager;
+		if (solutionManager == null)
+		{
+			solutionManager = this._solutionManager = SolutionManager.create(getSolverFactory());
+		}
+		return solutionManager;
 	}
 
 	@Override
@@ -136,7 +155,7 @@ class SimulationOptimizerTask implements Runnable
 		simulationOptimizerStatusDispatcher.notifyStarted(simulationId);
 
 		final Plan problem = planLoaderAndSaver.getPlan(simulationId);
-		printSolution(problem);
+		logger.debug("problem: {}", problem);
 
 		final Solver<Plan> solver = createSolver();
 
@@ -151,33 +170,14 @@ class SimulationOptimizerTask implements Runnable
 
 	private void onSolutionFound(final Plan solution)
 	{
-		printSolution(solution);
+		if (solution.getScore() != null)
+		{
+			solution.setScoreExplanation(getSolutionManager().explain(solution));
+		}
+
+		logger.info("onSolutionFound: {}", solution);
+
 		planLoaderAndSaver.saveSolution(solution);
 		simulationOptimizerStatusDispatcher.notifyProgress(solution);
 	}
-
-	private static void printSolution(final Plan solution)
-	{
-		System.out.println(toString(solution));
-	}
-
-	private static String toString(final Plan solution)
-	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append("**************************************************************************************************");
-		sb.append("\nsimulationId: ").append(solution.getSimulationId());
-		sb.append("\nPlan score: ").append(solution.getScore()).append(", Time spent: ").append(solution.getTimeSpent()).append(", IsFinalSolution=").append(solution.isFinalSolution());
-		sb.append("\nPlanning dates: ").append(solution.getPlanningStartDate()).append(" -> ").append(solution.getPlanningEndDate());
-		solution.getStepsList().forEach(step -> sb.append("\n").append(toString(step)));
-		sb.append("\n**************************************************************************************************");
-		return sb.toString();
-	}
-
-	private static String toString(final Step step)
-	{
-		return step.getStartDate() + " -> " + step.getEndDate()
-				+ " (" + step.getDuration() + ")"
-				+ ": dueDate=" + step.getDueDate() + ", " + step.getResource() + ", ID=" + step.getId().getWoProjectResourceId().getRepoId();
-	}
-
 }

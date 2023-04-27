@@ -66,6 +66,17 @@ public class Step
 		this.pinned = pinned;
 	}
 
+	@Override
+	public String toString()
+	{
+		// NOTE: keep it concise, important for optaplanner troubleshooting
+		return startDate + " -> " + endDate
+				+ " (" + duration + ")"
+				+ ": dueDate=" + dueDate
+				+ ", " + resource
+				+ ", ID=" + (id != null ? id.getWoProjectResourceId().getRepoId() : "?");
+	}
+
 	public ProjectId getProjectId() {return getId().getProjectId();}
 
 	public void updateEndDate()
