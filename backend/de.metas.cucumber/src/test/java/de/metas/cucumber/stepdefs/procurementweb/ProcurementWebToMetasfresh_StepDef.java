@@ -42,7 +42,6 @@ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPa
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -61,17 +60,21 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ProcurementWebToMetasfresh_StepDef
 {
 	private final ConnectionFactory procurementWebuiFactory;
 
-	private final StepDefData<SyncBPartner> syncBPartnerStepDefData = new StepDefData<>();
-	private final StepDefData<SyncContract> syncContractStepDefData = new StepDefData<>();
+	private final SyncBPartner_StepDefData syncBPartnerStepDefData;
+	private final SyncContract_StepDefData syncContractStepDefData;
 
-	public ProcurementWebToMetasfresh_StepDef()
+	public ProcurementWebToMetasfresh_StepDef(
+			@NonNull final SyncBPartner_StepDefData syncBPartnerStepDefData,
+			@NonNull final SyncContract_StepDefData syncContractStepDefData)
 	{
+		this.syncBPartnerStepDefData = syncBPartnerStepDefData;
+		this.syncContractStepDefData = syncContractStepDefData;
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
 		final CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();
 		assertThat(commandLineOptions.getRabbitPort()).isNotNull(); // guard

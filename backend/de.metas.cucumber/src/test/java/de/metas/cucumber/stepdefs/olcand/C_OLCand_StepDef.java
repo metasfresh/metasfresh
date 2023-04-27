@@ -31,10 +31,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
@@ -64,9 +66,9 @@ public class C_OLCand_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_M_InOut> shipmentTable;
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Order_StepDefData orderTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_Invoice_StepDefData invoiceTable;
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -76,9 +78,9 @@ public class C_OLCand_StepDef
 			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	public C_OLCand_StepDef(
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final TestContext testContext)
 	{
 		this.orderTable = orderTable;
