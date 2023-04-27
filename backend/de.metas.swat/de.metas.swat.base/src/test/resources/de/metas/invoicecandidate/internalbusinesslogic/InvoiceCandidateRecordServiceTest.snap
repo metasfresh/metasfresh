@@ -228,6 +228,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
             }
           },
           {
+            "completedOrClosed": true,
             "inDispute": false,
             "qtyInStockUom": {
               "qty": "5",
