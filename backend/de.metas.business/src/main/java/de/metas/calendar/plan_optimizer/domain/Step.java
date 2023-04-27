@@ -6,6 +6,7 @@ import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Data;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.entity.PlanningPin;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 import org.optaplanner.core.api.domain.variable.ShadowVariable;
@@ -36,6 +37,9 @@ public class Step
 	@ShadowVariable(variableListenerClass = EndDateUpdatingVariableListener.class, sourceVariableName = FIELD_startDate)
 	@Nullable private LocalDateTime endDate;
 
+	@PlanningPin
+	boolean pinned;
+
 	// No-arg constructor required for OptaPlanner
 	public Step() {}
 
@@ -48,7 +52,8 @@ public class Step
 			final Duration duration,
 			final LocalDateTime dueDate,
 			@Nullable final LocalDateTime startDate,
-			@Nullable final LocalDateTime endDate)
+			@Nullable final LocalDateTime endDate,
+			final boolean pinned)
 	{
 		this.id = id;
 		this.projectPriority = projectPriority;
@@ -58,6 +63,7 @@ public class Step
 		this.dueDate = dueDate;
 		this.startDate = startDate;
 		this.endDate = endDate;
+		this.pinned = pinned;
 	}
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
@@ -70,5 +76,22 @@ public class Step
 	public boolean isDueDateNotRespected()
 	{
 		return dueDate != null && (endDate == null || endDate.isAfter(dueDate));
+	}
+
+	public Duration getDurationFromEndToDueDate()
+	{
+		if (dueDate == null || endDate == null)
+		{
+			return Duration.ZERO;
+		}
+		else
+		{
+			return Duration.between(endDate, dueDate);
+		}
+	}
+
+	public int getDurationFromEndToDueDateInHoursAbs()
+	{
+		return Math.abs((int)getDurationFromEndToDueDate().toHours());
 	}
 }

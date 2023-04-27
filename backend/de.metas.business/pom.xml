@@ -84,6 +84,12 @@
 			<artifactId>optaplanner-core</artifactId>
 			<version>8.37.0.Final</version>
 		</dependency>
+		<dependency>
+			<groupId>org.optaplanner</groupId>
+			<artifactId>optaplanner-test</artifactId>
+			<version>8.37.0.Final</version>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>

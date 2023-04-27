@@ -25,6 +25,7 @@ package de.metas.project;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,21 +38,17 @@ import java.util.Optional;
 /**
  * Keep in sync with reference list "_PriorityRule" {@code AD_Reference_ID=154}
  */
+@AllArgsConstructor
 public enum InternalPriority implements ReferenceListAwareEnum
 {
-	HIGH(X_C_Project.INTERNALPRIORITY_High),
-	MEDIUM(X_C_Project.INTERNALPRIORITY_Medium),
-	LOW(X_C_Project.INTERNALPRIORITY_Low),
-	URGENT(X_C_Project.INTERNALPRIORITY_Urgent),
-	MINOR(X_C_Project.INTERNALPRIORITY_Minor);
+	HIGH(X_C_Project.INTERNALPRIORITY_High, 5),
+	MEDIUM(X_C_Project.INTERNALPRIORITY_Medium, 4),
+	LOW(X_C_Project.INTERNALPRIORITY_Low, 3),
+	URGENT(X_C_Project.INTERNALPRIORITY_Urgent, 2),
+	MINOR(X_C_Project.INTERNALPRIORITY_Minor, 1);
 
-	@Getter
-	private final String code;
-
-	InternalPriority(@NonNull final String code)
-	{
-		this.code = code;
-	}
+	@Getter @NonNull private final String code;
+	@Getter private final int intValue;
 
 	@Nullable
 	public static InternalPriority ofNullableCode(@Nullable final String code)
