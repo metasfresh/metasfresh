@@ -32,7 +32,7 @@ pull_request_rules:
        - base=inner_silence_uat
        - base=intensive_care_uat
        - base=iron_plant_uat
-       - base=epic_party_uat
+       - base=koala_yawn
        - base=mad_orange_uat
        - base=magic_oak_uat
        - base=neon_underwear_uat
