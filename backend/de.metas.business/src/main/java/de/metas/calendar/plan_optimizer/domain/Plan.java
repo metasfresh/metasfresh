@@ -6,14 +6,10 @@ import lombok.Data;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
-import org.optaplanner.core.api.domain.valuerange.CountableValueRange;
-import org.optaplanner.core.api.domain.valuerange.ValueRangeFactory;
-import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.score.ScoreExplanation;
 import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -22,10 +18,10 @@ import java.util.ArrayList;
 @Data
 public class Plan
 {
+	public static final ChronoUnit PLANNING_TIME_PRECISION = ChronoUnit.HOURS;
+
 	private SimulationPlanId simulationId;
 	private ZoneId timeZone;
-	private LocalDateTime planningStartDate;
-	private LocalDateTime planningEndDate;
 
 	@PlanningEntityCollectionProperty
 	private ArrayList<Step> stepsList;
@@ -43,7 +39,6 @@ public class Plan
 		final StringBuilder sb = new StringBuilder();
 		sb.append("\nsimulationId: ").append(simulationId);
 		sb.append("\nPlan score: ").append(score).append(", Time spent: ").append(timeSpent).append(", IsFinalSolution=").append(isFinalSolution);
-		sb.append("\nPlanning dates: ").append(planningStartDate).append(" -> ").append(planningEndDate);
 		if (stepsList != null && !stepsList.isEmpty())
 		{
 			stepsList.forEach(step -> sb.append("\n").append(step));
@@ -55,11 +50,5 @@ public class Plan
 		}
 
 		return sb.toString();
-	}
-
-	@ValueRangeProvider
-	public CountableValueRange<LocalDateTime> createStartDateList()
-	{
-		return ValueRangeFactory.createLocalDateTimeValueRange(planningStartDate, planningEndDate, 1, ChronoUnit.HOURS);
 	}
 }

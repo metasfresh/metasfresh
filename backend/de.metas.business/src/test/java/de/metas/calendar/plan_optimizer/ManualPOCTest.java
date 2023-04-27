@@ -114,8 +114,6 @@ public class ManualPOCTest
 		final Plan plan = new Plan();
 		plan.setSimulationId(simulationId);
 		plan.setTimeZone(SystemTime.zoneId());
-		plan.setPlanningStartDate(LocalDate.parse("2023-04-01").atStartOfDay());
-		plan.setPlanningEndDate(LocalDate.parse("2023-05-02").atStartOfDay());
 		plan.setStepsList(stepsList);
 
 		return plan;
