@@ -66,6 +66,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
+import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -75,6 +76,7 @@ import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.sap.SAPConfigMapper;
 import de.metas.externalsystem.sap.export.SAPExportAcctConfig;
+import de.metas.externalsystem.sap.importsettings.SAPBPartnerImportSettings;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
@@ -86,8 +88,8 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
-import de.metas.product.ProductCategoryId;
 import de.metas.process.AdProcessId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
@@ -1292,6 +1294,7 @@ public class ExternalSystemConfigRepo
 				.signedVersion(config.getSignedVersion())
 				.signedPermissions(config.getSignedPermissions())
 				.exportAcctConfigList(getSAPAcctConfigBySAPConfigId(sapConfigId))
+				.bPartnerImportSettings(getBPartnerImportSettingsBySAPConfigId(sapConfigId))
 				.build();
 	}
 
@@ -1396,6 +1399,18 @@ public class ExternalSystemConfigRepo
 						.docTypeId(DocTypeId.ofRepoId(exportConfigRecord.getC_DocType_ID()))
 						.processId(AdProcessId.ofRepoId(exportConfigRecord.getAD_Process_ID()))
 						.build())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<SAPBPartnerImportSettings> getBPartnerImportSettingsBySAPConfigId(@NonNull final ExternalSystemSAPConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_SAP_BPartnerImportSettings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_SAP_BPartnerImportSettings.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
+				.create()
+				.stream()
+				.map(SAPConfigMapper::ofBPartnerImportSettingsRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 }

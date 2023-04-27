@@ -860,6 +860,7 @@
             <xsd:element minOccurs="0" name="C_BPartner_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
             <xsd:element minOccurs="0" name="DateOrdered" type="xsd:date"/>
             <xsd:element name="DocumentNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="ShipmentDocumentNo" type="xsd:string"/>
             <xsd:element name="EDI_Desadv_ID" type="xsd:integer"/>
             <xsd:element name="EDI_ExportStatus" type="EDI_ExportStatusEnum"/>
             <xsd:element name="MovementDate" type="xsd:date"/>
