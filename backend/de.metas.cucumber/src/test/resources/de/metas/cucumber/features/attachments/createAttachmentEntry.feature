@@ -72,7 +72,7 @@ Feature: attachment creation using metasfresh api
   @from:cucumber
   Scenario:  Attachment entry and attachment multiRef given LocalFileURL
 
-    Given an existing local file in the temp folder
+    Given an existing local file
       | File.Identifier | FileName |
       | file_1          | Test.txt |
 
@@ -94,7 +94,7 @@ Feature: attachment creation using metasfresh api
 
   @from:cucumber
   Scenario:  Add a 'LocalFileURL' type attachment to multiple targets
-    Given an existing local file in the temp folder
+    Given an existing local file
       | File.Identifier | FileName |
       | file_1          | Test.txt |
     And store JsonAttachmentRequest in context
@@ -116,7 +116,7 @@ Feature: attachment creation using metasfresh api
 
   @from:cucumber
   Scenario:  Attachment entry with JsonTableRecordReference and attachment at a given LocalFileURL
-    Given an existing local file in the temp folder
+    Given an existing local file
       | File.Identifier | FileName |
       | file_xml        | Test.xml |
 

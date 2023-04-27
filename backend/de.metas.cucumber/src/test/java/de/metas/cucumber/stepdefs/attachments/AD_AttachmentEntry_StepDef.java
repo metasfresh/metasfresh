@@ -155,14 +155,14 @@ public class AD_AttachmentEntry_StepDef
 		attachmentEntryTable.putOrReplace(attachmentEntryIdentifier, attachmentEntry);
 	}
 
-	@Given("an existing local file in the temp folder")
+	@Given("an existing local file")
 	public void anExistingLocalFile(@NonNull final DataTable table) throws IOException
 	{
 		final Map<String, String> row = table.asMaps().get(0);
 		final String fileName = DataTableUtil.extractStringForColumnName(row, "FileName");
 		final String fileIdentifier = DataTableUtil.extractStringForColumnName(row, "File.Identifier");
 
-		final File file = new File(System.getProperty("java.io.tmpdir"), fileName);
+		final File file = new File(fileName);
 
 		fileTable.put(fileIdentifier, file);
 	}
