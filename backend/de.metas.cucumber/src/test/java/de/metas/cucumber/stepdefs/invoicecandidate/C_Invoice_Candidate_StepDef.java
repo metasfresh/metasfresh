@@ -23,12 +23,10 @@
 package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -77,8 +75,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
-import de.metas.rest_api.invoicecandidates.v2.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.v2.request.JsonInvoiceCandidateReference;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -124,13 +120,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -979,55 +973,6 @@ public class C_Invoice_Candidate_StepDef
 		assertThat(invoiceCandidateInOutLine).isNull();
 	}
 
-	@And("^locate invoice candidate list by record reference after (.*)s:$")
-	public void locate_invoice_candidate_list_by_record_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final Supplier<Boolean> invoiceCandidatesFound = () -> {
-				final String iInvoiceCandListIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
-				final List<I_I_Invoice_Candidate> iIInvoiceCandidateList = iInvoiceCandidateListTable.get(iInvoiceCandListIdentifier);
-
-				final List<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<>();
-
-				for (final I_I_Invoice_Candidate iIInvoiceCandidate : iIInvoiceCandidateList)
-				{
-					final String tableName = DataTableUtil.extractStringForColumnName(row, "TableName");
-
-					if (tableName.equals(I_I_Invoice_Candidate.Table_Name))
-					{
-						final int tableId = tableDAO.retrieveTableId(tableName);
-						final TableRecordReference recordReference = TableRecordReference.of(tableId, iIInvoiceCandidate.getI_Invoice_Candidate_ID());
-
-						final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.retrieveReferencing(recordReference);
-
-						if (!invoiceCandidateRecords.isEmpty())
-						{
-							invoiceCandidates.add(invoiceCandidateRecords.get(0));
-						}
-					}
-				}
-
-				final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.CandidateBatchSize");
-				if (numberOfCandidates != null)
-				{
-					if (invoiceCandidates.size() != numberOfCandidates)
-					{
-						return false;
-					}
-				}
-
-				final String invoiceCandidateListIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
-				invoiceCandidateListTable.putOrReplace(invoiceCandidateListIdentifier, invoiceCandidates);
-
-				return true;
-			};
-
-			StepDefUtil.tryAndWait(timeoutSec, 1000, invoiceCandidatesFound);
-		}
-	}
-
 	private void updateInvoiceCandidates(@NonNull final Map<String, String> row, @NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 
@@ -1267,90 +1212,20 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("build request payload with DateInvoiced set to enqueue invoice candidates for invoicing via API and add it to context")
-	public void enqueue_invoice_candidates_list_for_invoicing_via_API(@NonNull final DataTable dataTable) throws JsonProcessingException
+	@And("count invoice candidates by: external header id")
+	public void count_invoice_candidates_matching_external_header_id(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			final String invoiceCandidateListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
-			final LocalDate dateInvoiced = DataTableUtil.extractLocalDateOrNullForColumnName(tableRow, "OPT.DateInvoiced");
-
-			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidateListTable.get(invoiceCandidateListIdentifier);
-
-			final Function<String, JsonInvoiceCandidateReference> getInvoiceCandidateReference = (externalId) -> JsonInvoiceCandidateReference.builder()
-					.externalHeaderId(JsonExternalId.of(externalId))
-					.build();
-
-			final List<JsonInvoiceCandidateReference> invoiceCandidateReferences = invoiceCandidateList.stream()
-					.map(I_C_Invoice_Candidate::getExternalHeaderId)
-					.distinct()
-					.map(getInvoiceCandidateReference)
-					.collect(ImmutableList.toImmutableList());
-
-			final JsonEnqueueForInvoicingRequest enqueueForInvoicingRequest = JsonEnqueueForInvoicingRequest.builder()
-					.dateInvoiced(dateInvoiced != null ? dateInvoiced : LocalDate.now())
-					.dateAcct(dateInvoiced != null ? dateInvoiced : LocalDate.now())
-					.invoiceCandidates(invoiceCandidateReferences)
-					.build();
-
-			testContext.setRequestPayload(objectMapper.writeValueAsString(enqueueForInvoicingRequest));
-		}
-	}
-
-	@And("update invoice candidate list external header id")
-	public void update_invoice_candidate_list_external_header_id(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			final String invoiceCanidateListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
-			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateListTable.get(invoiceCanidateListIdentifier);
-
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-
 			final String externalHeaderId = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalHeaderId);
+			final int numberOfInvoiceCandidates = DataTableUtil.extractIntForColumnName(tableRow, "NumberOfCandidates");
 
-			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidates.stream()
-					.peek(invoiceCandidate -> {
-						if (invoiceCandidate.getM_Product_ID() == product.getM_Product_ID())
-						{
-							invoiceCandidate.setExternalHeaderId(externalHeaderId);
-							InterfaceWrapperHelper.saveRecord(invoiceCandidate);
-						}
-					})
-					.collect(ImmutableList.toImmutableList());
+			final int foundCandidates = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+					.addEqualsFilter(COLUMNNAME_ExternalHeaderId, externalHeaderId)
+					.create()
+					.count();
 
-			invoiceCandidateListTable.putOrReplace(invoiceCanidateListIdentifier, invoiceCandidateList);
-		}
-	}
-
-	@And("^after not more than (.*)s check number of invoice candidates having external header id$")
-	public void check_number_of_invoice_candidates_having_external_header_id(final int timeoutSeconds, @NonNull final DataTable dataTable) throws InterruptedException
-	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			final Supplier<Boolean> invoiceCandidatesFound = () ->
-			{
-				final String externalHeaderId = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalHeaderId);
-				final int numberOfInvoiceCandidates = DataTableUtil.extractIntForColumnName(tableRow, "NumberOfCandidates");
-
-				final List<I_C_Invoice_Candidate> invoiceCandidates = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-						.addEqualsFilter(COLUMNNAME_ExternalHeaderId, externalHeaderId)
-						.create()
-						.list(I_C_Invoice_Candidate.class);
-
-				if (invoiceCandidates == null)
-				{
-					return false;
-				}
-				if (invoiceCandidates.size() != numberOfInvoiceCandidates)
-				{
-					return false;
-				}
-				return true;
-			};
-
-			StepDefUtil.tryAndWait(timeoutSeconds, 1000, invoiceCandidatesFound);
+			assertThat(foundCandidates).as("Actual number of candidates").isEqualTo(numberOfInvoiceCandidates);
 		}
 	}
 

@@ -165,21 +165,20 @@ public class C_DataImport_StepDef
 	}
 
 	@And("store file content as requestBody in context")
-	public void store_file_content_requestBody_in_context(@NonNull final DataTable dataTable) throws IOException, IOException
+	public void store_file_content_requestBody_in_context(@NonNull final DataTable dataTable) throws IOException
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
 		final String fileName = DataTableUtil.extractStringForColumnName(row, "FileName");
 
- 		final InputStream inputStream = C_DataImport_StepDef.class.getClassLoader().getResourceAsStream(fileName);
+		final InputStream inputStream = C_DataImport_StepDef.class.getClassLoader().getResourceAsStream(fileName);
 
-		if (inputStream != null)
-		{
-			final byte[] fileContentByteArray = new byte[inputStream.available()];
+		assertThat(inputStream).isNotEmpty();
 
-			inputStream.read(fileContentByteArray);
+		final byte[] fileContentByteArray = new byte[inputStream.available()];
 
-			testContext.setRequestPayload(new String(fileContentByteArray, StandardCharsets.UTF_8));
-		}
+		inputStream.read(fileContentByteArray);
+
+		testContext.setRequestPayload(new String(fileContentByteArray, StandardCharsets.UTF_8));
 	}
 }

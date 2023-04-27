@@ -22,15 +22,18 @@ Feature: Invoice candidate separation based on header aggregation key
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
       | location_1_29032023      | DE          | addr 22      | 456        | locationCity_2 |
+    # manually setting C_BPartner_Location_ID to 90000000 as the exact repoId it's needed in the csv file
     And metasfresh contains C_BPartner_Locations:
       | Identifier            | OPT.C_BPartner_Location_ID | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
-      | bpLocation_1_29032020 | 2873409                    | 2894678902567 | endCustomer_1_29032023   | location_1_29032023          | true         | true         |
+      | bpLocation_1_29032020 | 90000000                   | 2894678902567 | endCustomer_1_29032023   | location_1_29032023          | true         | true         |
+    # manually setting AD_User_ID to 90000000 as the exact repoId it's needed in the csv file
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | OPT.AD_User_ID | Name            | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | endUser_1_29032023    | 2964590        | bpUser_29032023 | endCustomer_1_29032023       | bpLocation_1_29032020                 |
+      | endUser_1_29032023    | 90000000       | bpUser_29032023 | endCustomer_1_29032023       | bpLocation_1_29032020                 |
 
   @from:cucumber
-  Scenario: Verify that when there are a lot of invoice candidates enqueued only one invoice is created per invoice candidate with the same header aggregation key
+  Scenario: Verify that when there are a lot of invoice candidates enqueued only one invoice is created
+  per each batch of invoice candidates that share the same header aggregation key
     Given metasfresh contains M_Products:
       | Identifier         | Name               | Value                    |
       | product_1_29032023 | Product_1_29032023 | Product_1_Value_29032023 |
@@ -45,6 +48,7 @@ Feature: Invoice candidate separation based on header aggregation key
       | pp_3_29032023 | plv_1_29032023                    | product_3_29032023      | 10.0     | PCE               | Normal                        |
       | pp_4_29032023 | plv_1_29032023                    | product_4_29032023      | 10.0     | PCE               | Normal                        |
       | pp_5_29032023 | plv_1_29032023                    | product_5_29032023      | 10.0     | PCE               | Normal                        |
+    # the file has 1000 rows where the only difference is the `ProductId` => so all invoice candidates should end up in the same Invoice;
     And store file content as requestBody in context
       | FileName                                       |
       | InvoiceCandidatesAggregationTestImportData.csv |
@@ -55,23 +59,24 @@ Feature: Invoice candidate separation based on header aggregation key
 
     Then the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And multiple I_Invoice_Candidate records are found after not more than 60s: searching by bill partner value
-      | Bill_BPartner_Value          | I_Invoice_Candidate_ID_List.Identifier | OPT.CandidateBatchSize |
-      | Endcustomer_1_Value_29032023 | iInvoiceCandidateList_1                | 1000                   |
+    And locate I_Invoice_Candidate list searching by bill partner value
+      | Bill_BPartner_Value          | I_Invoice_Candidate_ID_List.Identifier | OPT.ExpectedCount |
+      | Endcustomer_1_Value_29032023 | iInvoiceCandidateList_1                | 1000              |
 
-    And locate invoice candidate list by record reference after 60s:
-      | C_Invoice_Candidate_ID_List.Identifier | TableName           | I_Invoice_Candidate_ID_List.Identifier | OPT.CandidateBatchSize |
-      | invoiceCandidateList_1                 | I_Invoice_Candidate | iInvoiceCandidateList_1                | 1000                   |
+    And locate C_Invoice_Candidate records for each import record from list
+      | C_Invoice_Candidate_ID_List.Identifier | I_Invoice_Candidate_ID_List.Identifier |
+      | invoiceCandidateList_1                 | iInvoiceCandidateList_1                |
 
-    And update invoice candidate list external header id
-      | C_Invoice_Candidate_ID_List.Identifier | M_Product_ID.Identifier | ExternalHeaderId            |
+    # setting a different externalId for every 200 candidates grouped by product => they should be aggregated into 5 invoices in the end
+    And update invoice candidate list: filter by product
+      | C_Invoice_Candidate_ID_List.Identifier | M_Product_ID.Identifier | OPT.ExternalHeaderId        |
       | invoiceCandidateList_1                 | product_1_29032023      | externalHeaderId_1_29032023 |
       | invoiceCandidateList_1                 | product_2_29032023      | externalHeaderId_2_29032023 |
       | invoiceCandidateList_1                 | product_3_29032023      | externalHeaderId_3_29032023 |
       | invoiceCandidateList_1                 | product_4_29032023      | externalHeaderId_4_29032023 |
       | invoiceCandidateList_1                 | product_5_29032023      | externalHeaderId_5_29032023 |
 
-    And after not more than 60s check number of invoice candidates having external header id
+    And count invoice candidates by: external header id
       | ExternalHeaderId            | NumberOfCandidates |
       | externalHeaderId_1_29032023 | 200                |
       | externalHeaderId_2_29032023 | 200                |
@@ -79,7 +84,7 @@ Feature: Invoice candidate separation based on header aggregation key
       | externalHeaderId_4_29032023 | 200                |
       | externalHeaderId_5_29032023 | 200                |
 
-    When build request payload with DateInvoiced set to enqueue invoice candidates for invoicing via API and add it to context
+    When build enqueue invoice candidates REST-API request
       | C_Invoice_Candidate_ID_List.Identifier | OPT.DateInvoiced |
       | invoiceCandidateList_1                 | 2023-03-28       |
     And add HTTP header
@@ -88,7 +93,7 @@ Feature: Invoice candidate separation based on header aggregation key
 
     Then the metasfresh REST-API endpoint path 'api/v2/invoices/enqueueForInvoicing' receives a 'POST' request with the payload from context and responds with '202' status code
 
-    And locate invoice by external id after not more than 420s and validate
+    And locate invoice by external id after not more than 600s and validate
       | C_Invoice_ID.Identifier | ExternalId                  | OPT.NumberOfCandidates | OPT.DateInvoiced |
       | invoice_1               | externalHeaderId_1_29032023 | 200                    | 2023-03-28       |
       | invoice_2               | externalHeaderId_2_29032023 | 200                    | 2023-03-28       |

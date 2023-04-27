@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -61,9 +62,9 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -118,7 +119,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -421,74 +421,32 @@ public class C_Invoice_StepDef
 	@And("^locate invoice by external id after not more than (.*)s and validate$")
 	public void locate_invoice_by_external_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final Supplier<Boolean> invoiceFound = () ->
+			final I_C_Invoice invoice = StepDefUtil.tryAndWaitForItem(timeoutSec,
+																	  5000,
+																	  () -> findInvoiceByExternalId(row));
+
+			final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
+
+			if (dateInvoiced != null)
 			{
-				final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
-				final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.NumberOfCandidates");
-				final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
+				softly.assertThat(invoice.getDateInvoiced()).as("DateInvoiced").isEqualTo(dateInvoiced);
+			}
 
-				final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)
-						.addEqualsFilter(COLUMNNAME_ExternalId, externalId)
-						.create()
-						.firstOnlyOrNull(I_C_Invoice.class);
+			final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.NumberOfCandidates");
 
-				if (invoice == null)
-				{
-					return false;
-				}
-
+			if (numberOfCandidates != null)
+			{
 				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 
-				if (dateInvoiced != null)
-				{
-					final LocalDate expectedDateInvoiced = TimeUtil.asLocalDateTime(dateInvoiced).toLocalDate();
-					final LocalDate invoiceDateInvoiced = TimeUtil.asLocalDateTime(invoice.getDateInvoiced()).toLocalDate();
-
-					if (!invoiceDateInvoiced.equals(expectedDateInvoiced))
-					{
-						return false;
-					}
-					for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
-					{
-						final LocalDate invoiceCandidateDateInvoiced = TimeUtil.asLocalDateTime(invoiceCandidate.getDateInvoiced()).toLocalDate();
-						if (!invoiceCandidateDateInvoiced.equals(expectedDateInvoiced))
-						{
-							return false;
-						}
-					}
-				}
-
-				if (numberOfCandidates != null)
-				{
-					if (invoiceCandidates.size() != numberOfCandidates)
-					{
-						return false;
-					}
-				}
-
-				if (!invoiceCandidates.isEmpty())
-				{
-					final String invoiceCandidatesHeaderAggregationKey = aggregationBL.mkHeaderAggregationKey(invoiceCandidates.get(0)).getAggregationKeyString();
-
-					for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
-					{
-						if (!invoiceCandidate.getHeaderAggregationKey().equals(invoiceCandidatesHeaderAggregationKey))
-						{
-							return false;
-						}
-					}
-				}
-
-				final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-				invoiceTable.put(invoiceIdentifier, invoice);
-
-				return true;
-			};
-
-			StepDefUtil.tryAndWait(timeoutSec, 2000, invoiceFound);
+				softly.assertThat(invoiceCandidates.size()).as("NumberOfInvoiceCandidates").isEqualTo(numberOfCandidates);
+			}
 		}
+
+		softly.assertAll();
 	}
 
 	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
@@ -673,9 +631,9 @@ public class C_Invoice_StepDef
 			{
 				final InvoiceToAllocate invoiceToAllocate = paymentAllocationRepository
 						.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-								.evaluationDate(ZonedDateTime.now())
-								.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-								.build()).get(0);
+															.evaluationDate(ZonedDateTime.now())
+															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+															.build()).get(0);
 				softly.assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).as("OpenAmountConverted").isEqualByComparingTo(invoiceOpenAmt);
 			}
 		}
@@ -891,7 +849,7 @@ public class C_Invoice_StepDef
 		{
 			invoice.setExternalId(externalId);
 		}
-		
+
 		invoiceDAO.save(invoice);
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
@@ -944,5 +902,23 @@ public class C_Invoice_StepDef
 		InterfaceWrapperHelper.save(invoice);
 
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+	}
+
+	@NonNull
+	private ItemProvider.ProviderResult<I_C_Invoice> findInvoiceByExternalId(@NonNull final Map<String, String> row)
+	{
+		final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
+
+		final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addEqualsFilter(COLUMNNAME_ExternalId, externalId)
+				.create()
+				.firstOnlyOrNull(I_C_Invoice.class);
+
+		if (invoice != null)
+		{
+			return ItemProvider.ProviderResult.resultWasFound(invoice);
+		}
+
+		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice not found for row=" + row);
 	}
 }
