@@ -1,7 +1,11 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
+<<<<<<< HEAD
 FROM maven:3.8.4-eclipse-temurin-17
+=======
+FROM maven:3.8.4-jdk-8
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8

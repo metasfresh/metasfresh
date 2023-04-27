@@ -215,6 +215,18 @@ public class DataTableUtil
 		}
 	}
 
+	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		return dataTableRow.get(columnName);
+	}
+
+	@Nullable
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
+	}
+
 	public Instant extractInstantForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -452,4 +464,8 @@ public class DataTableUtil
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

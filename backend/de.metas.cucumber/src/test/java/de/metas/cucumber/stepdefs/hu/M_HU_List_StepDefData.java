@@ -33,4 +33,8 @@ public class M_HU_List_StepDefData extends StepDefData<List<I_M_HU>>
 	{
 		super(null);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

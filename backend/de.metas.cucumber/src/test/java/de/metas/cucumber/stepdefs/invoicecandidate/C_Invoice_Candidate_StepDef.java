@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -34,12 +35,16 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+=======
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
@@ -82,12 +87,31 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
+=======
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
+import de.metas.rest_api.v2.invoice.impl.InvoiceService;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LogbackLoggable;
+<<<<<<< HEAD
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -104,22 +128,33 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
+=======
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_OrderLine;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+<<<<<<< HEAD
 import org.compiere.util.Trx;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+<<<<<<< HEAD
 import java.sql.Timestamp;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+<<<<<<< HEAD
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -160,10 +195,26 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override;
+=======
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInEffect;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
+<<<<<<< HEAD
+=======
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 public class C_Invoice_Candidate_StepDef
 {
@@ -172,6 +223,7 @@ public class C_Invoice_Candidate_StepDef
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+<<<<<<< HEAD
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
@@ -268,6 +320,30 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	// TODO give it a better name or merge it with "C_Invoice_Candidates are found:" step
+=======
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
+	private final M_Product_StepDefData productTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_InOutLine_StepDefData inoutLineTable;
+	private final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil;
+
+	public C_Invoice_Candidate_StepDef(
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_InOutLine_StepDefData inoutLineTable,
+			@NonNull final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil)
+	{
+		this.invoiceCandTable = invoiceCandTable;
+		this.productTable = productTable;
+		this.orderLineTable = orderLineTable;
+		this.inoutLineTable = inoutLineTable;
+		this.tableRecordReferenceStepDefUtil = tableRecordReferenceStepDefUtil;
+	}
+
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws Throwable
 	{
@@ -286,6 +362,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("validate C_Invoice_Candidates does not exist")
 	public void validate_no_created_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
@@ -304,6 +381,51 @@ public class C_Invoice_Candidate_StepDef
 					.firstOnlyOrNull(I_C_Invoice_Candidate.class);
 
 			assertThat(invoiceCandidate).isNull();
+=======
+	@And("process invoice candidates")
+	public void process_invoice_cand(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
+		for (final Map<String, String> row : tableRows)
+		{
+			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
+			{
+				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+
+				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+				invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+			}
+		}
+	}
+
+	@And("process invoice candidate expecting error")
+	public void process_invoice_cand_expecting_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
+		for (final Map<String, String> row : tableRows)
+		{
+			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
+			{
+				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+
+				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+				boolean isError = false;
+				try
+				{
+					invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+				}
+				catch (final Exception e)
+				{
+					isError = true;
+				}
+
+				assumeThat(isError).isTrue();
+			}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		}
 	}
 
@@ -344,6 +466,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
 	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier)
 	{
@@ -537,6 +660,8 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@And("validate C_Invoice_Candidate:")
 	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable) throws Throwable
 	{
@@ -564,6 +689,7 @@ public class C_Invoice_Candidate_StepDef
 					updatedInvoiceCandidate = StepDefUtil.tryAndWaitForItem(5, 1000, () -> isInvoiceCandidateUpdated(row));
 				}
 
+<<<<<<< HEAD
 				final SoftAssertions softly = new SoftAssertions();
 
 				final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
@@ -574,16 +700,25 @@ public class C_Invoice_Candidate_StepDef
 				{
 					softly.assertThat(updatedInvoiceCandidate.getQtyToInvoiceInUOM_Calc()).isEqualTo(qtyToInvoiceInUomCalc);
 				}
+=======
+				final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
+				assertThat(updatedInvoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 				final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered);
 				if (qtyOrdered != null)
 				{
+<<<<<<< HEAD
 					softly.assertThat(updatedInvoiceCandidate.getQtyOrdered()).isEqualTo(qtyOrdered);
+=======
+					assertThat(updatedInvoiceCandidate.getQtyOrdered()).isEqualTo(qtyOrdered);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				}
 
 				final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered);
 				if (qtyDelivered != null)
 				{
+<<<<<<< HEAD
 					softly.assertThat(updatedInvoiceCandidate.getQtyDelivered()).isEqualTo(qtyDelivered);
 				}
 
@@ -668,12 +803,16 @@ public class C_Invoice_Candidate_StepDef
 				if (Check.isNotBlank(paymentRule))
 				{
 					softly.assertThat(updatedInvoiceCandidate.getPaymentRule()).isEqualTo(paymentRule);
+=======
+					assertThat(updatedInvoiceCandidate.getQtyDelivered()).isEqualTo(qtyDelivered);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				}
 
 				final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if (Check.isNotBlank(productIdentifier))
 				{
 					final I_M_Product product = productTable.get(productIdentifier);
+<<<<<<< HEAD
 					softly.assertThat(updatedInvoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 				}
 
@@ -692,6 +831,9 @@ public class C_Invoice_Candidate_StepDef
 				{
 					final I_C_Tax taxEffective = taxTable.get(taxEffectiveIdentifier);
 					softly.assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffective.getC_Tax_ID());
+=======
+					assertThat(updatedInvoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				}
 
 				final String recordIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -701,13 +843,19 @@ public class C_Invoice_Candidate_StepDef
 				{
 					final TableRecordReference tableRecordReference = tableRecordReferenceStepDefUtil.getTableRecordReferenceFromIdentifier(recordIdentifier, tableName);
 
+<<<<<<< HEAD
 					softly.assertThat(updatedInvoiceCandidate.getRecord_ID()).isEqualTo(tableRecordReference.getRecord_ID());
 					softly.assertThat(updatedInvoiceCandidate.getAD_Table_ID()).isEqualTo(tableRecordReference.getAD_Table_ID());
+=======
+					assertThat(updatedInvoiceCandidate.getRecord_ID()).isEqualTo(tableRecordReference.getRecord_ID());
+					assertThat(updatedInvoiceCandidate.getAD_Table_ID()).isEqualTo(tableRecordReference.getAD_Table_ID());
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				}
 
 				final Boolean isInEffect = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsInEffect, null);
 				if (isInEffect != null)
 				{
+<<<<<<< HEAD
 					softly.assertThat(updatedInvoiceCandidate.isInEffect()).isEqualTo(isInEffect);
 				}
 
@@ -767,6 +915,10 @@ public class C_Invoice_Candidate_StepDef
 				}
 
 				softly.assertAll();
+=======
+					assertThat(updatedInvoiceCandidate.isInEffect()).isEqualTo(isInEffect);
+				}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			}
 			catch (final Throwable e)
 			{
@@ -775,6 +927,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("process invoice candidates")
 	public void process_invoice_cand(@NonNull final DataTable dataTable)
 	{
@@ -1215,13 +1368,27 @@ public class C_Invoice_Candidate_StepDef
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
 
 		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+=======
+	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
+	{
+		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, COLUMNNAME_QtyToInvoice);
+
+		final IQueryBuilder<I_C_Invoice_Candidate> invCandQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(COLUMNNAME_QtyToInvoice, qtyToInvoice);
+
+		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		if (shipmentLineIdentifier != null)
 		{
 			final I_M_InOutLine shipmentLine = inoutLineTable.get(shipmentLineIdentifier);
 
 			final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+<<<<<<< HEAD
 					.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID())
+=======
+					.addEqualsFilter(COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID())
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 					.create()
 					.firstOnlyOrNull(I_C_InvoiceCandidate_InOutLine.class);
 
@@ -1233,20 +1400,32 @@ public class C_Invoice_Candidate_StepDef
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateInOutLine.getC_Invoice_Candidate_ID());
 		}
 
+<<<<<<< HEAD
 		final String orderLineIdentifier = Optional.ofNullable(DataTableUtil.extractNullableStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.orElseGet(() -> DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER));
 
+=======
+		final String orderLineIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		if (Check.isNotBlank(orderLineIdentifier))
 		{
 			final String orderLineIdentifierValue = DataTableUtil.nullToken2Null(orderLineIdentifier);
 			if (orderLineIdentifierValue != null)
 			{
 				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+<<<<<<< HEAD
 				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 			}
 			else
 			{
 				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_OrderLine_ID, null);
+=======
+				invCandQueryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+			}
+			else
+			{
+				invCandQueryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, null);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			}
 		}
 
@@ -1256,6 +1435,7 @@ public class C_Invoice_Candidate_StepDef
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
 		}
 
+<<<<<<< HEAD
 		final String isInterimInvoiceStr = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_IsInterimInvoice);
 		if (Check.isNotBlank(isInterimInvoiceStr))
 		{
@@ -1272,12 +1452,15 @@ public class C_Invoice_Candidate_StepDef
 
 		addTableRecordReferenceFiltersForInvoiceCandidate(row, invCandQueryBuilder);
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		final Boolean isInEffect = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsInEffect, null);
 		if (isInEffect != null)
 		{
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInEffect, isInEffect);
 		}
 
+<<<<<<< HEAD
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
@@ -1299,6 +1482,9 @@ public class C_Invoice_Candidate_StepDef
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId)
+=======
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
@@ -1313,6 +1499,7 @@ public class C_Invoice_Candidate_StepDef
 		return true;
 	}
 
+<<<<<<< HEAD
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InterfaceWrapperHelper.refresh(invoiceCandidate);
@@ -1321,12 +1508,45 @@ public class C_Invoice_Candidate_StepDef
 			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
 		}
 		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
+=======
+	private void manuallyRecomputeInvoiceCandidate(
+			@NonNull final Throwable throwable,
+			@NonNull final Map<String, String> row,
+			final int timeoutSec) throws Throwable
+	{
+		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
+							+ "Error message: {}", timeoutSec, throwable.getMessage());
+
+		final String invoiceCandIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = Optional
+				.ofNullable(invoiceCandIdentifier)
+				.flatMap(invoiceCandTable::getOptional);
+
+		if (!invoiceCandidate.isPresent())
+		{
+			logger.warn("*** C_Invoice_Candidate was not previously loaded => cannot invalidate!");
+			throw throwable;
+		}
+
+		invoiceCandDAO.invalidateCand(invoiceCandidate.get());
+
+		invoiceCandBL.updateInvalid()
+				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.setTaggedWithAnyTag()
+				.setOnlyC_Invoice_Candidates(ImmutableList.of(invoiceCandidate.get()))
+				.update();
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@NonNull
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateUpdated(@NonNull final Map<String, String> row)
 	{
+<<<<<<< HEAD
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+=======
+		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
 		InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
@@ -1366,6 +1586,7 @@ public class C_Invoice_Candidate_StepDef
 
 		}
 
+<<<<<<< HEAD
 		final BigDecimal qtyWithIssuesEffective = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective);
 		if (qtyWithIssuesEffective != null)
 		{
@@ -1386,6 +1607,8 @@ public class C_Invoice_Candidate_StepDef
 			}
 		}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
 			errorCollectors.add("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");
@@ -1402,6 +1625,7 @@ public class C_Invoice_Candidate_StepDef
 		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
 	}
 
+<<<<<<< HEAD
 	private boolean isInvoiceCandidateProcessed(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final Map<String, String> row)
@@ -1701,11 +1925,14 @@ public class C_Invoice_Candidate_StepDef
 		logger.error("*** Error while looking for C_Invoice_Candidate records, see current context: \n" + message);
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private void wrapInvoiceCandidateRelatedException(
 			@NonNull final Throwable e,
 			@NonNull final I_C_Invoice_Candidate invCandidate,
 			@NonNull final String invoiceCandidateIdentifier)
 	{
+<<<<<<< HEAD
 		final BigDecimal orderLineQtyDelivered = Optional
 				.of(TableRecordReference.of(invCandidate.getAD_Table_ID(), invCandidate.getRecord_ID()))
 				.filter(tableRecordReference -> I_C_OrderLine.Table_Name.equals(tableRecordReference.getTableName()))
@@ -1725,6 +1952,8 @@ public class C_Invoice_Candidate_StepDef
 						.append("QtyDelivered=").append(record.getQtyDelivered()).append(";")
 						.append("M_InOutLine_ID=").append(record.getM_InOutLine_ID()).append("\n"));
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		final String rawSQLQuery = "select * from c_invoice_candidate where c_invoice_candidate_id = " + invCandidate.getC_Invoice_Candidate_ID();
 
 		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
@@ -1736,9 +1965,13 @@ public class C_Invoice_Candidate_StepDef
 
 		throw AdempiereException.wrapIfNeeded(e)
 				.appendParametersToMessage()
+<<<<<<< HEAD
 				.setParameter("InvoiceCandidateDetails", invCandDetails)
 				.setParameter("OrderLineQtyDelivered", orderLineQtyDelivered)
 				.setParameter("C_InvoiceCandidate_InOutLines", invoiceCandidateInOutLineBindings.toString());
+=======
+				.setParameter("InvoiceCandidateDetails", invCandDetails);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@NonNull
@@ -1755,12 +1988,16 @@ public class C_Invoice_Candidate_StepDef
 				.append(COLUMNNAME_QtyToInvoice).append(":").append("I_->").append(invoiceCandidate.getQtyToInvoice()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyToInvoice))
 				.append(", ")
 				.append(COLUMNNAME_QtyDelivered).append(":").append("I_->").append(invoiceCandidate.getQtyDelivered()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyDelivered))
+<<<<<<< HEAD
 				.append(", ")
 				.append(COLUMNNAME_QtyWithIssues_Effective).append(":").append("I_->").append(invoiceCandidate.getQtyWithIssues_Effective()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyWithIssues_Effective))
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				.append("]");
 
 		return detailsBuilder.toString();
 	}
+<<<<<<< HEAD
 
 	private void validate_C_Invoice_Candidate_mandatory_fields(@NonNull final I_C_Invoice_Candidate invoiceCandidate, @NonNull final Map<String, String> row)
 	{
@@ -1864,4 +2101,6 @@ public class C_Invoice_Candidate_StepDef
 				throw new AdempiereException("Table not supported! TableName:" + tableName);
 		}
 	}
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

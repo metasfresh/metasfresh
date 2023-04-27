@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.C_Location_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.externalreference.S_ExternalReference_StepDefData;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
@@ -46,6 +47,10 @@ import de.metas.cucumber.stepdefs.project.workOrder.C_Project_WO_ObjectUnderTest
 import de.metas.cucumber.stepdefs.project.workOrder.C_Project_WO_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.project.workOrder.C_Project_WO_Step_StepDefData;
 import de.metas.externalreference.model.I_S_ExternalReference;
+=======
+import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
+import de.metas.cucumber.stepdefs.pinstance.AD_PInstance_StepDefData;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Services;
@@ -86,6 +91,7 @@ public class DataExportAudit_StepDef
 	private final Data_Export_Audit_StepDefData dataExportAuditTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	private final AD_PInstance_StepDefData pinstanceTable;
+<<<<<<< HEAD
 	private final M_HU_StepDefData huTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Project_Resource_Budget_StepDefData projectResourceBudgetTable;
@@ -94,6 +100,8 @@ public class DataExportAudit_StepDef
 	private final C_Project_WO_ObjectUnderTest_StepDefData woObjectUnderTestTable;
 
 	private final S_ExternalReference_StepDefData externalReferenceTable;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	private final TestContext testContext;
 
@@ -106,6 +114,7 @@ public class DataExportAudit_StepDef
 			@NonNull final Data_Export_Audit_StepDefData dataExportAuditTable,
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final AD_PInstance_StepDefData pinstanceTable,
+<<<<<<< HEAD
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Project_Resource_Budget_StepDefData projectResourceBudgetTable,
@@ -113,6 +122,8 @@ public class DataExportAudit_StepDef
 			@NonNull final C_Project_WO_Resource_StepDefData woResourceTable,
 			@NonNull final C_Project_WO_ObjectUnderTest_StepDefData woObjectUnderTestTable,
 			@NonNull final S_ExternalReference_StepDefData externalReferenceTable,
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;

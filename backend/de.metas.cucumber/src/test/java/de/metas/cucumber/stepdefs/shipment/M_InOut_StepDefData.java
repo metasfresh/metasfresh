@@ -34,4 +34,8 @@ public class M_InOut_StepDefData extends StepDefData<I_M_InOut>
 	{
 		super(I_M_InOut.class);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

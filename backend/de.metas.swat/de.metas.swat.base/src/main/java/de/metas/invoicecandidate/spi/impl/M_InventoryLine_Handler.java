@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.spi.impl;
 
+<<<<<<< HEAD
+=======
+import de.metas.acct.api.IProductAcctDAO;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;

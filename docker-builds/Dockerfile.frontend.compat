@@ -1,6 +1,10 @@
 ARG REFNAME=local
 FROM metasfresh/metas-frontend:$REFNAME as frontend
+<<<<<<< HEAD
 FROM metasfresh/metas-mobile:$REFNAME-compat as mobile
+=======
+# FROM metasfresh/metas-mobile:$REFNAME-compat as mobile
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 FROM ubuntu:16.04 as runtime
 
@@ -12,7 +16,11 @@ COPY --chmod=544 docker-builds/compat/start_webui.sh /start_webui.sh
 COPY docker-builds/compat/sites/ /etc/apache2/sites-available/
 
 COPY --from=frontend /usr/share/nginx/html/ /opt/metasfresh-webui-frontend/dist/
+<<<<<<< HEAD
 COPY --from=mobile /usr/share/nginx/html/ /opt/metasfresh-webui-frontend/dist/mobile/
+=======
+# COPY --from=mobile /usr/share/nginx/html/ /opt/metasfresh-webui-frontend/dist/mobile/
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 # downstream Dockerfile will:
 # ENTRYPOINT ["/start_webui.sh"]

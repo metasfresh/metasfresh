@@ -22,25 +22,33 @@
 
 package de.metas.cucumber.stepdefs;
 
+<<<<<<< HEAD
 import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+=======
+import de.metas.util.Services;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+<<<<<<< HEAD
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 public class AD_SysConfig_StepDef
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+<<<<<<< HEAD
 	private final AD_User_StepDefData userTable;
 
 	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
@@ -48,6 +56,8 @@ public class AD_SysConfig_StepDef
 		this.userTable = userTable;
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
@@ -72,6 +82,7 @@ public class AD_SysConfig_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("update AD_SysConfig with login AD_User_ID")
 	public void set_sysConfig_login_user(@NonNull final DataTable dataTable)
 	{
@@ -93,6 +104,8 @@ public class AD_SysConfig_StepDef
 		CacheMgt.get().reset();
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private void setSysConfigIntValue(@NonNull final String name, final int value)
 	{
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);

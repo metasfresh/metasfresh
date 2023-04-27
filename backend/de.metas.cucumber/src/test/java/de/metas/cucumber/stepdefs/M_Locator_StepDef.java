@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2023 metas GmbH
+=======
+ * Copyright (C) 2022 metas GmbH
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,14 +26,20 @@
 
 package de.metas.cucumber.stepdefs;
 
+<<<<<<< HEAD
 import de.metas.common.util.CoalesceUtil;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
 import org.adempiere.model.InterfaceWrapperHelper;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -37,10 +47,15 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 
+=======
+import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 public class M_Locator_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -78,6 +93,7 @@ public class M_Locator_StepDef
 			locatorTable.put(locatorIdentifier, locatorRecord);
 		}
 	}
+<<<<<<< HEAD
 
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator_record(@NonNull final DataTable dataTable)
@@ -127,4 +143,6 @@ public class M_Locator_StepDef
 		final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 		locatorTable.put(locatorIdentifier, locatorRecord);
 	}
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

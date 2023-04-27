@@ -28,9 +28,15 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+<<<<<<< HEAD
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
+=======
+import org.codehaus.commons.nullanalysis.NotNull;
+import org.compiere.model.PO;
+import org.compiere.util.TimeUtil;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -125,6 +131,85 @@ public abstract class StepDefData<T>
 		assertThat(recordDataItem).as("Missing recordDataItem for identifier=%s", identifier).isNotNull();
 
 		return recordDataItem;
+<<<<<<< HEAD
+	}
+
+	@NonNull
+	public Optional<T> getOptional(@NonNull final String identifier)
+	{
+		return Optional.ofNullable(records.get(identifier)).map(RecordDataItem::getRecord);
+	}
+
+	public ImmutableList<T> getRecords()
+	{
+		return records.values().stream().map(RecordDataItem::getRecord).collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @param productRecord the item to store.
+	 *                      In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
+	 */
+	@NotNull
+	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
+	{
+		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()) && clazz != null)
+		{
+			final Instant updated = InterfaceWrapperHelper
+					.getValueOptional(productRecord, InterfaceWrapperHelper.COLUMNNAME_Updated)
+					.map(TimeUtil::asInstant)
+					.orElse(Instant.MIN);
+
+			// just store ID and table name, to avoid any leaks
+			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(productRecord), InterfaceWrapperHelper.getId(productRecord));
+
+			return new RecordDataItem<>((T)null,
+										tableRecordReference,
+										clazz,
+										Instant.now(),
+										updated);
+
+		}
+		return new RecordDataItem<T>(productRecord, null, null, Instant.now(), Instant.MIN);
+	}
+
+	@Value
+	public static class RecordDataItem<T>
+	{
+		@Nullable
+		T record;
+
+		@Nullable
+		TableRecordReference tableRecordReference;
+
+		@Nullable
+		Class<T> tableRecordReferenceClazz;
+
+		@NonNull
+		Instant recordAdded;
+		@NonNull
+
+		Instant recordUpdated;
+
+		public T getRecord()
+		{
+			if (record != null)
+			{
+				return record;
+			}
+
+			try
+			{
+				return tableRecordReference.getModel(tableRecordReferenceClazz);
+			}
+			catch (final RuntimeException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+						.setParameter("recordDataItem", this);
+			}
+		}
+
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@NonNull

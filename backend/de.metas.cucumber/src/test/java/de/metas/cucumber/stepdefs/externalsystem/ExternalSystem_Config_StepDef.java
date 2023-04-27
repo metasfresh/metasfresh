@@ -25,8 +25,11 @@ package de.metas.cucumber.stepdefs.externalsystem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_UserGroup_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
@@ -93,20 +96,27 @@ public class ExternalSystem_Config_StepDef
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
 	private final ExternalSystem_Config_StepDefData configTable;
+<<<<<<< HEAD
 	private final AD_UserGroup_StepDefData userGroupTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	private final M_Product_StepDefData productTable;
 	private final M_Product_Category_StepDefData productCategoryTable;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	private final TestContext testContext;
 
 	public ExternalSystem_Config_StepDef(
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
+<<<<<<< HEAD
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
 			@NonNull final AD_UserGroup_StepDefData userGroupTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_Product_Category_StepDefData productCategoryTable,
 			@NonNull final TestContext testContext)
+=======
+			final TestContext testContext)
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.configTable = configTable;
 		this.leichMehlConfigTable = leichMehlConfigTable;

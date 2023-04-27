@@ -97,9 +97,13 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
 
+<<<<<<< HEAD
 	void setPickedData(I_C_Invoice_Candidate ic);
 
 	void setIsInEffect(I_C_Invoice_Candidate ic);
 
 	void postUpdate(I_C_Invoice_Candidate ic);
+=======
+	void setIsInEffect(I_C_Invoice_Candidate ic);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

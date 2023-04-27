@@ -60,6 +60,7 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_Phone;
 public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+<<<<<<< HEAD
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	
 	private final AD_User_StepDefData userTable;
@@ -70,6 +71,14 @@ public class AD_User_StepDef
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable)
+=======
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final AD_User_StepDefData userTable;
+
+	public AD_User_StepDef(
+			final C_BPartner_StepDefData bpartnerTable,
+			final AD_User_StepDefData userTable)
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.userTable = userTable;
 		this.bpartnerTable = bpartnerTable;

@@ -34,4 +34,8 @@ public class SyncContract_StepDefData extends StepDefData<SyncContract>
 	{
 		super(null);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

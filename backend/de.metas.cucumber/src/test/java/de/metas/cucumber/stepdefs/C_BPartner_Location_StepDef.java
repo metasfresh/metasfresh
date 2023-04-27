@@ -51,6 +51,7 @@ public class C_BPartner_Location_StepDef
 {
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+<<<<<<< HEAD
 	private final C_Location_StepDefData locationTable;
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
@@ -61,6 +62,12 @@ public class C_BPartner_Location_StepDef
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final C_Location_StepDefData locationTable)
+=======
+
+	public C_BPartner_Location_StepDef(
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -125,6 +132,14 @@ public class C_BPartner_Location_StepDef
 
 		bPartnerLocationRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		bPartnerLocationRecord.setGLN(gln);
+<<<<<<< HEAD
+=======
+		bPartnerLocationRecord.setIsBillToDefault(true);
+		bPartnerLocationRecord.setIsBillTo(true);
+		bPartnerLocationRecord.setIsShipTo(true);
+		bPartnerLocationRecord.setIsShipToDefault(true);
+		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		final boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, false);
 		bPartnerLocationRecord.setIsShipToDefault(isShipToDefault);

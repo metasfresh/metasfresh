@@ -52,8 +52,17 @@ public class ApiAuditFilter_StepDef
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final TestContext testContext;
+<<<<<<< HEAD
 
 	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
+=======
+	private final API_Audit_Config_StepDefData apiAuditConfigTable;
+
+
+	public ApiAuditFilter_StepDef(
+			@NonNull final TestContext testContext,
+			@NonNull final API_Audit_Config_StepDefData apiAuditConfigTable)
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.testContext = testContext;
 	}

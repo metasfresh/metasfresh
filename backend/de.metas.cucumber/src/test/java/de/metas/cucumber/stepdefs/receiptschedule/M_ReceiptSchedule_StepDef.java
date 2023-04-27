@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
@@ -39,18 +40,28 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.order.OrderLineId;
 import de.metas.util.Check;
+=======
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+<<<<<<< HEAD
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -59,6 +70,12 @@ import org.compiere.model.X_M_InOut;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+=======
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+
+import java.math.BigDecimal;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import java.util.Map;
 import java.util.Optional;
 
@@ -71,6 +88,7 @@ import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_Pro
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_QtyOrdered;
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
@@ -85,6 +103,13 @@ public class M_ReceiptSchedule_StepDef
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+=======
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+public class M_ReceiptSchedule_StepDef
+{
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final C_Order_StepDefData orderTable;
@@ -93,7 +118,10 @@ public class M_ReceiptSchedule_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_Product_StepDefData productTable;
+<<<<<<< HEAD
 	private final M_InOut_StepDefData inOutTable;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	public M_ReceiptSchedule_StepDef(
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
@@ -102,8 +130,12 @@ public class M_ReceiptSchedule_StepDef
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
+<<<<<<< HEAD
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_InOut_StepDefData inOutTable)
+=======
+			@NonNull final M_Product_StepDefData productTable)
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.orderTable = orderTable;
@@ -112,7 +144,10 @@ public class M_ReceiptSchedule_StepDef
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.warehouseTable = warehouseTable;
 		this.productTable = productTable;
+<<<<<<< HEAD
 		this.inOutTable = inOutTable;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@And("^after not more than (.*)s, M_ReceiptSchedule are found:$")
@@ -180,6 +215,7 @@ public class M_ReceiptSchedule_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("^there is no M_ReceiptSchedule for C_OrderLine (.*)$")
 	public void validate_no_M_ReceiptSchedule_created(@NonNull final String purchaseOrderLineIdentifier)
 	{
@@ -235,6 +271,8 @@ public class M_ReceiptSchedule_StepDef
 		}
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@NonNull
 	private Boolean loadReceiptSchedule(@NonNull final Map<String, String> tableRow)
 	{
@@ -257,6 +295,7 @@ public class M_ReceiptSchedule_StepDef
 
 		return true;
 	}
+<<<<<<< HEAD
 
 	private void validateNoReceiptScheduleCreatedForPurchaseOrderLine(@NonNull final OrderLineId orderLineId)
 	{
@@ -325,4 +364,6 @@ public class M_ReceiptSchedule_StepDef
 		final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 		inOutTable.putOrReplace(inOutIdentifier, inOut);
 	}
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

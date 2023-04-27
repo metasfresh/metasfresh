@@ -20,19 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.message;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_AD_Message;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
-public class AD_Message_StepDefData extends StepDefData<I_AD_Message>
+public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedule>
 {
-	public AD_Message_StepDefData()
+	public M_ReceiptSchedule_StepDefData()
 	{
-		super(I_AD_Message.class);
+		super(I_M_ReceiptSchedule.class);
 	}
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

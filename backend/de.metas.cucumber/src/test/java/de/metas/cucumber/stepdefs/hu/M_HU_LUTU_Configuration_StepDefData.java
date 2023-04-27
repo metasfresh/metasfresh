@@ -31,4 +31,8 @@ public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU
 	{
 		super(I_M_HU_LUTU_Configuration.class);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -70,6 +71,16 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.util.Check;
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -79,6 +90,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+<<<<<<< HEAD
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -120,11 +132,29 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COL
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
+=======
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_OrderLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class M_ShipmentSchedule_StepDef
 {
+<<<<<<< HEAD
 	private final static Logger logger = LogManager.getLogger(M_ShipmentSchedule_StepDef.class);
 
 	private static final String SHIP_BPARTNER = "shipBPartner";
@@ -186,6 +216,19 @@ public class M_ShipmentSchedule_StepDef
 		this.testContext = testContext;
 
 		this.jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
+=======
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+
+	public M_ShipmentSchedule_StepDef(
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
+	{
+		this.orderLineTable = orderLineTable;
+		this.shipmentScheduleTable = shipmentScheduleTable;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	/**
@@ -223,7 +266,11 @@ public class M_ShipmentSchedule_StepDef
 			final I_M_ShipmentSchedule record = queryBL
 					.createQueryBuilder(I_M_ShipmentSchedule.class)
 					.addOnlyActiveRecordsFilter()
+<<<<<<< HEAD
 					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+=======
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 					.create()
 					.firstOnlyNotNull(I_M_ShipmentSchedule.class);
 
@@ -247,6 +294,7 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("validate that there are no M_ShipmentSchedule_Recompute records after no more than {int} seconds for order {string}")
 	public void validate_no_records(final int timeoutSec, final String orderIdentifier) throws InterruptedException
 	{
@@ -294,6 +342,8 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@And("update shipment schedules")
 	public void update_shipment_schedule(@NonNull final DataTable dataTable)
 	{
@@ -304,6 +354,7 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("^after not more than (.*)s, validate shipment schedules:$")
 	public void validate_shipment_schedule(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -534,6 +585,8 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(schedule).isNull();
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
@@ -554,6 +607,7 @@ public class M_ShipmentSchedule_StepDef
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
 			}
 
+<<<<<<< HEAD
 			final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, COLUMNNAME_QtyToDeliver);
 			if (qtyToDeliver != null)
 			{
@@ -566,6 +620,8 @@ public class M_ShipmentSchedule_StepDef
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_QtyDelivered, qtyDelivered);
 			}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
 
 			final String isToRecompute = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute);
@@ -580,6 +636,7 @@ public class M_ShipmentSchedule_StepDef
 		return queries.build();
 	}
 
+<<<<<<< HEAD
 	private void assertShipmentScheduleIsClosed(@NonNull final Map<String, String> tableRow)
 	{
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
@@ -704,6 +761,8 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@Value
 	private static class ShipmentScheduleQueries
 	{
@@ -774,6 +833,7 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	private void validateSchedule(@NonNull final Map<String, String> row)
 	{
 		final String scheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -961,5 +1021,34 @@ public class M_ShipmentSchedule_StepDef
 						.append("\n"));
 
 		logger.error("*** Work package progress: \n" + message);
+=======
+	private void assertShipmentScheduleIsClosed(@NonNull final Map<String, String> tableRow)
+	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final I_M_ShipmentSchedule refreshedSchedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.create()
+				.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+
+		assertNotNull(shipmentSchedule);
+		assertEquals(Boolean.TRUE, refreshedSchedule.isClosed());
+	}
+
+	private void alterShipmentSchedule(@NonNull final Map<String, String> tableRow)
+	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
+
+		if (qtyToDeliverOverride != null)
+		{
+			shipmentScheduleRecord.setQtyToDeliver_Override(qtyToDeliverOverride);
+		}
+
+		saveRecord(shipmentScheduleRecord);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 }

@@ -1189,6 +1189,7 @@ public class OrderBL implements IOrderBL
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Order closed for C_Order_ID={}", order.getC_Order_ID());
 	}
 
+<<<<<<< HEAD
 	@Override
 	@Nullable
 	public String getLocationEmail(@NonNull final OrderId orderId)
@@ -1319,5 +1320,13 @@ public class OrderBL implements IOrderBL
 	public void deleteLineById(final OrderAndLineId orderAndLineId)
 	{
 		orderDAO.deleteByLineId(orderAndLineId);
+=======
+	@NonNull
+	public DocStatus getDocStatus(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+
+		return DocStatus.ofCode(order.getDocStatus());
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 }

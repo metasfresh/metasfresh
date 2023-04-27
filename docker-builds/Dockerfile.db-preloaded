@@ -5,8 +5,11 @@ FROM metasfresh/metas-db:$REFNAME as db
 # https://cadu.dev/creating-a-docker-image-with-database-preloaded/
 # dirty but works
 
+<<<<<<< HEAD
 # TODO: see how RunMigrationScriptsTest.java does it using our own java-tool. It's better for different reasons.
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 FROM db as init
 
 RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]

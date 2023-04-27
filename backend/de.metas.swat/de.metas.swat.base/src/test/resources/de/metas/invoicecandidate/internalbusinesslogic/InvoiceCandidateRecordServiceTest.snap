@@ -14,10 +14,19 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty": "10",
               "uomId": 100000
             },
+<<<<<<< HEAD
             "qtyNominal": {
               "qty": "400",
               "uomId": 100003
             }
+=======
+            "qtyCatch" : {
+              "qty" : "420",
+              "uomId" : 100003
+            },
+            "completedOrClosed" : true,
+            "inDispute" : false
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
           },
           {
             "completedOrClosed": true,
@@ -30,10 +39,19 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty": "5",
               "uomId": 100000
             },
+<<<<<<< HEAD
             "qtyNominal": {
               "qty": "200",
               "uomId": 100003
             }
+=======
+            "qtyCatch" : {
+              "qty" : "190",
+              "uomId" : 100003
+            },
+            "completedOrClosed" : true,
+            "inDispute" : false
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
           }
         ],
         "productId": 300000,
@@ -222,10 +240,19 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty": "10",
               "uomId": 100000
             },
+<<<<<<< HEAD
             "qtyNominal": {
               "qty": "400",
               "uomId": 100003
             }
+=======
+            "qtyNominal" : {
+              "qty" : "400",
+              "uomId" : 100003
+            },
+            "completedOrClosed" : true,
+            "inDispute" : false
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
           },
           {
             "completedOrClosed": true,
@@ -234,10 +261,19 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty": "5",
               "uomId": 100000
             },
+<<<<<<< HEAD
             "qtyNominal": {
               "qty": "200",
               "uomId": 100003
             }
+=======
+            "qtyNominal" : {
+              "qty" : "200",
+              "uomId" : 100003
+            },
+            "completedOrClosed" : true,
+            "inDispute" : false
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
           }
         ],
         "productId": 300000,

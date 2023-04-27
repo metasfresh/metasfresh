@@ -37,7 +37,10 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.exceptions.AdempiereException;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
@@ -61,6 +64,7 @@ public class M_HU_CreateReceipt_StepDef
 
 	public M_HU_CreateReceipt_StepDef(
 			@NonNull final M_HU_StepDefData huTable,
+<<<<<<< HEAD
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
 			@NonNull final M_InOut_StepDefData inOutTable,
 			@NonNull final M_HU_List_StepDefData huListTable)
@@ -88,6 +92,18 @@ public class M_HU_CreateReceipt_StepDef
 		}
 	}
 	
+=======
+			@NonNull final M_HU_List_StepDefData huListTable,
+			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
+			@NonNull final M_InOut_StepDefData inOutTable)
+	{
+		this.huTable = huTable;
+		this.huListTable = huListTable;
+		this.receiptScheduleTable = receiptScheduleTable;
+		this.inOutTable = inOutTable;
+	}
+
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@And("create material receipt")
 	public void create_materialReceipt(@NonNull final DataTable dataTable)
 	{

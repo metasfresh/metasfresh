@@ -1,9 +1,12 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+<<<<<<< HEAD
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 import javax.annotation.Nullable;
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.quantity.Quantity;
@@ -69,7 +72,11 @@ public class DeliveredQtyItem
 		this.qtyCatch = qtyCatch;
 		this.qtyOverride = qtyOverride;
 		this.completedOrClosed = completedOrClosed;
+<<<<<<< HEAD
 		this.inDispute = coalesceNotNull(inDispute, false);
+=======
+		this.inDispute = coalesce(inDispute, false);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 }

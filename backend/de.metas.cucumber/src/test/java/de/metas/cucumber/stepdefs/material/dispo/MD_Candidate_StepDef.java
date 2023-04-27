@@ -30,9 +30,12 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.StepDefData.RecordDataItem;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.SimulatedCandidateService;
@@ -118,12 +121,24 @@ public class MD_Candidate_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
+<<<<<<< HEAD
 	public MD_Candidate_StepDef(
 			@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final MD_Candidate_StepDefData stockCandidateTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+=======
+	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
+
+	public MD_Candidate_StepDef(@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData)
+	{
+		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
+	}
+
+	@Before
+	public void beforeEach()
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
 

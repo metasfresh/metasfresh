@@ -1883,6 +1883,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createSelection(pInstanceId);
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	public ImmutableList<I_C_Invoice> getInvoicesForCandidateId(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
@@ -1905,6 +1906,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return Optional.ofNullable(getInvoiceLineAlloc(invoiceLineAllocId))
 				.map(I_C_Invoice_Line_Alloc::getC_Invoice_Candidate_ID)
 				.map(InvoiceCandidateId::ofRepoId);
+=======
+	@Override
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
+				.create()
+				.list(I_C_InvoiceCandidate_InOutLine.class);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)

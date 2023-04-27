@@ -8,7 +8,11 @@ COPY backend .
 RUN find . -type f ! -name "pom.xml" -exec rm -r {} \;
 
 
+<<<<<<< HEAD
 FROM maven:3.8.4-eclipse-temurin-17 as build
+=======
+FROM maven:3.8.4-jdk-8 as build
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 WORKDIR /backend
 

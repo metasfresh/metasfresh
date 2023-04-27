@@ -56,7 +56,11 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 **/node_modules/
 
 /misc/services/camel/de-metas-camel-externalsystems/alberta/de-metas-camel-alberta-camelroutes/src/test/java/de/metas/camel/alberta/GetAlbertaPatientsRouteBuilderTest_dont_commit.java
+<<<<<<< HEAD
 /misc/services/mobile-webui/mobile-webui-frontend/public/config.js
 
 # Mac DS_Store files
 .DS_Store
+=======
+
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

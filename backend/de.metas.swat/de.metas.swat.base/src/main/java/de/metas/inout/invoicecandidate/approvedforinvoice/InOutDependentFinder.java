@@ -59,7 +59,11 @@ public class InOutDependentFinder implements IApprovedForInvoicingFinder
 		return inOutDAO.retrieveLinesForInOutId(inOutId)
 				.stream()
 				.map(InOutAndLineId::getInOutLineId)
+<<<<<<< HEAD
 				.map(inOutDAO::getLineByIdInTrx)
+=======
+				.map(inOutDAO::getLineById)
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
 				.flatMap(List::stream)
 				.filter(I_C_Invoice_Candidate::isApprovalForInvoicing)

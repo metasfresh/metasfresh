@@ -28,7 +28,12 @@ public enum StepDefDocAction
 	reactivated,
 	reversed,
 	voided,
+<<<<<<< HEAD
 	closed,
 	canceled,
 	opened
 }
+=======
+	closed
+}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

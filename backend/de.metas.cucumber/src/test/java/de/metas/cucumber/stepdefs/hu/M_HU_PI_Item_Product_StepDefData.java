@@ -34,4 +34,8 @@ public class M_HU_PI_Item_Product_StepDefData extends StepDefData<I_M_HU_PI_Item
 	{
 		super(I_M_HU_PI_Item_Product.class);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

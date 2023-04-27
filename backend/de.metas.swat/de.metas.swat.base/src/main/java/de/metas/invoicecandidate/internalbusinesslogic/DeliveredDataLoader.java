@@ -1,6 +1,9 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+<<<<<<< HEAD
 import ch.qos.logback.classic.Level;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import de.metas.document.engine.DocStatus;
@@ -10,6 +13,12 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+<<<<<<< HEAD
+=======
+import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDataBuilder;
+import de.metas.invoicecandidate.internalbusinesslogic.DeliveredQtyItem.DeliveredQtyItemBuilder;
+import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
@@ -27,7 +36,10 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_M_InOut;
+<<<<<<< HEAD
 import org.slf4j.Logger;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -35,7 +47,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+<<<<<<< HEAD
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
@@ -63,10 +78,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 @Value
 public class DeliveredDataLoader
 {
+<<<<<<< HEAD
 	private static final Logger logger = LogManager.getLogger(DeliveredDataLoader.class);
 
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+=======
+	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	UomId stockUomId;
 
 	UomId icUomId;
@@ -121,7 +142,19 @@ public class DeliveredDataLoader
 	{
 		final DeliveredData.DeliveredDataBuilder result = DeliveredData.builder();
 
+<<<<<<< HEAD
 		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords = loadInvoiceCandidateInOutLines();
+=======
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
+		if (invoiceCandidateId == null)
+		{
+			icIolAssociationRecords = ImmutableList.of();
+		}
+		else
+		{
+			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
+		}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		if (soTrx.isPurchase())
 		{
 			result.receiptData(loadReceiptQualityData(icIolAssociationRecords));
@@ -181,7 +214,11 @@ public class DeliveredDataLoader
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
 		for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
 		{
+<<<<<<< HEAD
 			if (!deliveredQtyItem.isCompletedOrClosed())
+=======
+			if(!shippedQtyItem.isCompletedOrClosed())
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
@@ -248,11 +285,18 @@ public class DeliveredDataLoader
 
 		for (final DeliveredQtyItem deliveredQtyItem : shippedQtyItems)
 		{
+<<<<<<< HEAD
 			if (!deliveredQtyItem.isCompletedOrClosed())
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
 
+=======
+			if(!deliveredQtyItem.isCompletedOrClosed())
+			{
+				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
+			}
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			final Quantity currentQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
 			final Quantity currentQtyNominal = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal());
 			final Quantity currentQtyCatch = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyCatch());
@@ -300,6 +344,7 @@ public class DeliveredDataLoader
 		for (final I_C_InvoiceCandidate_InOutLine icIolAssociationRecord : icIolAssociationRecords)
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(icIolAssociationRecord.getM_InOutLine_ID());
+<<<<<<< HEAD
 
 			if (inoutLineId == null)
 			{
@@ -313,6 +358,18 @@ public class DeliveredDataLoader
 			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 
 			final DeliveredQtyItem.DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
+=======
+			if(inoutLineId == null)
+			{
+				continue;
+			}
+
+			final I_M_InOutLine inoutLine = inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
+			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
+
+			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 					.inDispute(inoutLine.isInDispute())
 					.completedOrClosed(inoutCompletedOrClosed);
 

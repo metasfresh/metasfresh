@@ -65,11 +65,15 @@
         <objenesis.version>3.3</objenesis.version>
 
         <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
+<<<<<<< HEAD
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
 
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
+=======
+        <junit-jupiter.version>5.7.0</junit-jupiter.version>
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
     </properties>
 
     <modules>

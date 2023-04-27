@@ -24,7 +24,10 @@ package de.metas.notification;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.engine.IDocumentBL;
+<<<<<<< HEAD
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
@@ -77,7 +80,11 @@ public class NotificationSenderTemplateTest
 		Services.registerService(IDocumentBL.class, mockedDocumentBL);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+<<<<<<< HEAD
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
+=======
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());

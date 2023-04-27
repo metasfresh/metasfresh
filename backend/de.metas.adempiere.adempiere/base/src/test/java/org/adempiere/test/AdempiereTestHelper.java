@@ -369,4 +369,32 @@ public class AdempiereTestHelper
 
 		staticInitialized = true;
 	}
+
+	private void staticInit0()
+	{
+		Adempiere.enableUnitTestMode();
+
+		Check.setDefaultExClass(AdempiereException.class);
+
+		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
+
+		//
+		// Configure services; note the this is not the place to register individual services, see init() for that.
+		Services.setAutodetectServices(true);
+		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
+		{
+			@Override
+			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
+			{
+				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
+			}
+		});
+
+		//
+		// Make sure cache is empty
+		CacheMgt.get().reset();
+
+		staticInitialized = true;
+	}
 }

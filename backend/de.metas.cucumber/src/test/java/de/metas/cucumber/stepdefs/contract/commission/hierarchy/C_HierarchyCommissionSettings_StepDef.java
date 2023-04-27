@@ -25,7 +25,11 @@ package de.metas.cucumber.stepdefs.contract.commission.hierarchy;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+<<<<<<< HEAD
 import de.metas.util.Services;
+=======
+import de.metas.cucumber.stepdefs.StepDefConstants;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -46,8 +50,11 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_HierarchyCommissionSettings_StepDef
 {
+<<<<<<< HEAD
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private final M_Product_StepDefData productTable;
 	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
 

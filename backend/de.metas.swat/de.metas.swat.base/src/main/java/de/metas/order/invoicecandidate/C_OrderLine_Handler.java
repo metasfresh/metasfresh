@@ -26,7 +26,11 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+<<<<<<< HEAD
 import de.metas.money.CurrencyId;
+=======
+import de.metas.lang.SOTrx;
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -89,6 +93,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+<<<<<<< HEAD
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -96,6 +101,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+=======
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -518,6 +528,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setBPartnerData(ic, orderLine);
 	}
 
+<<<<<<< HEAD
 	public void setShipmentSchedule(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(ic.getC_OrderLine_ID());
@@ -544,6 +555,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
 
+=======
+>>>>>>> 9ca46724894 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@Override
 	public void setIsInEffect(final I_C_Invoice_Candidate ic)
 	{
