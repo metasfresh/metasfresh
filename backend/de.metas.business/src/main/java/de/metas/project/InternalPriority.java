@@ -41,10 +41,10 @@ import java.util.Optional;
 @AllArgsConstructor
 public enum InternalPriority implements ReferenceListAwareEnum
 {
-	HIGH(X_C_Project.INTERNALPRIORITY_High, 5),
-	MEDIUM(X_C_Project.INTERNALPRIORITY_Medium, 4),
+	URGENT(X_C_Project.INTERNALPRIORITY_Urgent, 9),
+	HIGH(X_C_Project.INTERNALPRIORITY_High, 7),
+	MEDIUM(X_C_Project.INTERNALPRIORITY_Medium, 5),
 	LOW(X_C_Project.INTERNALPRIORITY_Low, 3),
-	URGENT(X_C_Project.INTERNALPRIORITY_Urgent, 2),
 	MINOR(X_C_Project.INTERNALPRIORITY_Minor, 1);
 
 	@Getter @NonNull private final String code;
