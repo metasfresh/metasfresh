@@ -570,6 +570,7 @@ public final class CollectionUtils
 		return list1;
 	}
 
+<<<<<<< HEAD
 	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable Collection<T> excludes)
 	{
 		if (set.isEmpty())
@@ -634,6 +635,8 @@ public final class CollectionUtils
 		}
 	}
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@NonNull
 	public <K, V> Map<K, List<V>> groupMultiValueByKey(
 			@NonNull final Collection<V> values,
@@ -653,6 +656,7 @@ public final class CollectionUtils
 
 		return ImmutableMap.copyOf(key2Values);
 	}
+<<<<<<< HEAD
 
 	public static boolean hasDuplicatesForValue(@NonNull final Collection<String> collection, @NonNull final String value)
 	{
@@ -660,4 +664,6 @@ public final class CollectionUtils
 				.filter(elem -> value.equals(elem))
 				.count() > 1;
 	}
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

@@ -547,6 +547,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setPickedData(final I_C_Invoice_Candidate ic)
 	{
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
@@ -568,11 +569,14 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	public void setIsInEffect(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
 		handler.setIsInEffect(ic);
 	}
+<<<<<<< HEAD
 
 	@Override
 	public void postUpdate(@NonNull final I_C_Invoice_Candidate ic)
@@ -580,4 +584,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
 		handler.postUpdate(ic);
 	}
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

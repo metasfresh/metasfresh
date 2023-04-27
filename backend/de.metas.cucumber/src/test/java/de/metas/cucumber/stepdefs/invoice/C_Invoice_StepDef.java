@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.invoice;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -35,9 +36,14 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+=======
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
@@ -71,6 +77,15 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+=======
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
@@ -97,6 +112,7 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+<<<<<<< HEAD
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
@@ -113,6 +129,10 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+=======
+import org.compiere.model.X_C_Invoice;
+
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -121,6 +141,7 @@ import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
+<<<<<<< HEAD
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
@@ -145,12 +166,17 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
+=======
+import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 public class C_Invoice_StepDef
 {
 	private static final Logger logger = LogManager.getLogger(C_Invoice_StepDef.class);
 
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+<<<<<<< HEAD
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -208,6 +234,20 @@ public class C_Invoice_StepDef
 		this.invoiceCandTable = invoiceCandTable;
 		this.docTypeTable = docTypeTable;
 		this.testContext = testContext;
+=======
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
+
+	public C_Invoice_StepDef(
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable)
+	{
+		this.invoiceTable = invoiceTable;
+		this.invoiceCandTable = invoiceCandTable;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@And("validate created invoices")
@@ -224,6 +264,7 @@ public class C_Invoice_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("^the invoice identified by (.*) is (completed|reversed|voided)$")
 	public void invoice_action(@NonNull final String invoiceIdentifier, @NonNull final String action)
 	{
@@ -290,6 +331,8 @@ public class C_Invoice_StepDef
 		}
 	}
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@And("^after not more than (.*)s, C_Invoice are found:$")
 	public void wait_until_there_are_invoices(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -299,6 +342,7 @@ public class C_Invoice_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@Deprecated
 	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
 	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
@@ -449,6 +493,8 @@ public class C_Invoice_StepDef
 		}
 	}
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
 	{
 		InterfaceWrapperHelper.refresh(invoice);
@@ -929,4 +975,97 @@ public class C_Invoice_StepDef
 
 		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateId);
 	}
+
+	public Boolean loadInvoice(@NonNull final Map<String, String> row)
+	{
+		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifierCandidate);
+
+		if (invoiceIdentifiers.isEmpty())
+		{
+			throw new RuntimeException("No invoice identifier present for column: " + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		}
+
+		final boolean lookingForMultipleInvoices = invoiceIdentifiers.size() > 1;
+
+		return lookingForMultipleInvoices ? loadMultipleInvoices(row) : loadSingleInvoiceByDocStatus(row);
+	}
+
+	private Boolean loadMultipleInvoices(@NonNull final Map<String, String> row)
+	{
+		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+		final Set<InvoiceId> invoiceIds = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
+				.stream()
+				.map(I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final String invoiceIdCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdCandidate);
+
+		if (invoiceIds.size() != invoiceIdentifiers.size())
+		{
+			return false;
+		}
+
+		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds)
+				.stream()
+				.sorted(Comparator.comparingInt(I_C_Invoice::getC_Invoice_ID))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(invoices).isNotEmpty();
+		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
+
+		for (int invoiceIndex = 0; invoiceIndex < invoices.size(); invoiceIndex++)
+		{
+			invoiceTable.putOrReplace(invoiceIdentifiers.get(invoiceIndex), invoices.get(invoiceIndex));
+		}
+
+		return true;
+	}
+
+	private Boolean loadSingleInvoiceByDocStatus(@NonNull final Map<String, String> row)
+	{
+		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+		final Set<InvoiceId> invoiceIds = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
+				.stream()
+				.map(I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (invoiceIds.isEmpty())
+		{
+			return false;
+		}
+
+		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
+
+		final String invoiceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_DocStatus);
+		final String docStatus = Optional.ofNullable(invoiceStatus)
+				.orElse(X_C_Invoice.DOCACTION_Complete);
+
+		final Optional<I_C_Invoice> invoice = invoices.stream()
+				.filter(i -> i.getDocStatus().equals(docStatus))
+				.findFirst();
+
+		if (!invoice.isPresent())
+		{
+			return false;
+		}
+
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceTable.putOrReplace(invoiceIdentifier, invoice.get());
+
+		return true;
+	}
+
 }

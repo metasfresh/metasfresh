@@ -25,11 +25,15 @@ package de.metas.cucumber.stepdefs;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+<<<<<<< HEAD
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -38,6 +42,10 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.order.DeliveryRule;
 import de.metas.product.IProductDAO;
+=======
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -46,7 +54,10 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
 import org.compiere.SpringContextHolder;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -62,13 +73,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+<<<<<<< HEAD
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
+<<<<<<< HEAD
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
@@ -80,10 +97,16 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
+<<<<<<< HEAD
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
+=======
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static org.compiere.model.X_C_BPartner.DELIVERYRULE_Force;
 
 public class C_BPartner_StepDef
@@ -93,6 +116,7 @@ public class C_BPartner_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final M_PricingSystem_StepDefData pricingSystemTable;
+<<<<<<< HEAD
 	private final M_Product_StepDefData productTable;
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final C_Dunning_StepDefData dunningTable;
@@ -103,23 +127,50 @@ public class C_BPartner_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
+=======
+	private final M_DiscountSchema_StepDefData discountSchemaTable;
+	private final AD_Org_StepDefData orgTable;
+
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	public C_BPartner_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+<<<<<<< HEAD
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final C_Dunning_StepDefData dunningTable)
+=======
+			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
+			@NonNull final AD_Org_StepDefData orgTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.pricingSystemTable = pricingSystemTable;
+<<<<<<< HEAD
 		this.productTable = productTable;
 		this.discountSchemaTable = discountSchemaTable;
 		this.dunningTable = dunningTable;
 		this.orgTable = orgTable;
+=======
+		this.discountSchemaTable = discountSchemaTable;
+		this.orgTable = orgTable;
+	}
+
+	@Given("update C_BPartner:")
+	public void update_c_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateBPartner(tableRow);
+		}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@Given("metasfresh contains C_BPartners:")
@@ -142,6 +193,7 @@ public class C_BPartner_StepDef
 		}
 	}
 
+<<<<<<< HEAD
 	@And("preexisting test data is put into tableData")
 	public void store_test_data_in_table_data(@NonNull final DataTable dataTable)
 	{
@@ -215,6 +267,8 @@ public class C_BPartner_StepDef
 		}
 	}
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");
@@ -223,7 +277,11 @@ public class C_BPartner_StepDef
 		final Integer bpGroupId = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BP_Group_ID))
 				.orElse(BP_GROUP_ID);
 
+<<<<<<< HEAD
 		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
+=======
+		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER))
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(StepDefConstants.ORG_ID.getRepoId());
@@ -240,7 +298,10 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
 		bPartnerRecord.setAD_Org_ID(orgId);
+<<<<<<< HEAD
 		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		final String discountSchemaIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_DiscountSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -391,6 +452,7 @@ public class C_BPartner_StepDef
 		bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord);
 	}
 
+<<<<<<< HEAD
 	private void changeBPartner(@NonNull final Map<String, String> row)
 	{
 		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
@@ -474,6 +536,8 @@ public class C_BPartner_StepDef
 		}
 	}
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private void updateBPartner(@NonNull final Map<String, String> tableRow)
 	{
 		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
@@ -494,6 +558,7 @@ public class C_BPartner_StepDef
 			bPartner.setPO_InvoiceRule(poInvoiceRule);
 		}
 
+<<<<<<< HEAD
 		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Dunning_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (EmptyUtil.isNotBlank(dunningIdentifier))
 		{
@@ -501,6 +566,8 @@ public class C_BPartner_StepDef
 			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
 		}
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		InterfaceWrapperHelper.save(bPartner);
 
 		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);

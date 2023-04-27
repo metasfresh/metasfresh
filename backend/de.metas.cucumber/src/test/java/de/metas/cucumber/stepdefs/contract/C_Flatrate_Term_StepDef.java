@@ -31,8 +31,11 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.PMM_Product_StepDefData;
@@ -78,9 +81,12 @@ public class C_Flatrate_Term_StepDef
 	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 	private final PMM_Product_StepDefData pmmProductTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
+<<<<<<< HEAD
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -91,9 +97,13 @@ public class C_Flatrate_Term_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
 			@NonNull final PMM_Product_StepDefData pmmProductTable,
+<<<<<<< HEAD
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable)
+=======
+			@NonNull final C_Flatrate_Term_StepDefData contractTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.productTable = productTable;

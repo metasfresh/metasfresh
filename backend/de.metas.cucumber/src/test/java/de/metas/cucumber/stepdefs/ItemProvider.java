@@ -59,4 +59,8 @@ public interface ItemProvider<T>
 	}
 
 	ProviderResult<T> execute();
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

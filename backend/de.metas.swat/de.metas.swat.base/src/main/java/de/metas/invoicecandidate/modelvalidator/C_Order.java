@@ -27,6 +27,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+<<<<<<< HEAD
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
@@ -34,6 +35,15 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 import org.compiere.util.TimeUtil;
+=======
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_BPartner_Stats;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import javax.naming.OperationNotSupportedException;
 import java.math.BigDecimal;

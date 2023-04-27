@@ -1,7 +1,11 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
+<<<<<<< HEAD
 FROM postgres:15.1
+=======
+FROM postgres:15.0
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
 

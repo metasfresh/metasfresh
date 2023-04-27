@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 FROM postgres:15.1
+=======
+FROM postgres:15.0
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 LABEL maintainer="dev@metasfresh-com"
 

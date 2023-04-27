@@ -25,7 +25,10 @@ package de.metas.cucumber.stepdefs.contract;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+<<<<<<< HEAD
 import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.model.I_C_LicenseFeeSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
@@ -34,6 +37,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;
@@ -42,12 +46,18 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+=======
+import de.metas.order.InvoiceRule;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
 import org.compiere.model.I_C_Interim_Invoice_Settings;
 import org.compiere.model.I_M_PricingSystem;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import java.util.List;
 import java.util.Map;
@@ -62,11 +72,15 @@ import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Medi
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_InvoiceRule;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
+<<<<<<< HEAD
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Conditions_StepDef
 {
+<<<<<<< HEAD
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
@@ -85,6 +99,14 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable)
+=======
+	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
+	private final C_Flatrate_Conditions_StepDefData conditionsTable;
+
+	public C_Flatrate_Conditions_StepDef(
+			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;

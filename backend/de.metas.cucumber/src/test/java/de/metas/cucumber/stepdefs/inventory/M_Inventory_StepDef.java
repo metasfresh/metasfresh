@@ -26,6 +26,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
@@ -35,11 +36,17 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
+=======
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
+<<<<<<< HEAD
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -47,11 +54,17 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+=======
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -66,6 +79,15 @@ import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
+=======
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.I_M_Product;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -84,6 +106,7 @@ public class M_Inventory_StepDef
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+<<<<<<< HEAD
 	private final M_Inventory_StepDefData inventoryTable;
 	private final M_InventoryLine_StepDefData inventoryLineTable;
 	private final M_Product_StepDefData productTable;
@@ -91,23 +114,39 @@ public class M_Inventory_StepDef
 	private final M_HU_StepDefData huTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+=======
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	private final M_Inventory_StepDefData inventoryTable;
+	private final M_InventoryLine_StepDefData inventoryLineTable;
+	private final M_Product_StepDefData productTable;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
 			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
+<<<<<<< HEAD
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+=======
+			@NonNull final M_Product_StepDefData productTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
 		this.productTable = productTable;
+<<<<<<< HEAD
 		this.huTable = huTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.warehouseTable = warehouseTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@Given("metasfresh contains M_Inventories:")
@@ -137,6 +176,7 @@ public class M_Inventory_StepDef
 		final I_M_Inventory inventory = inventoryTable.get(inventoryIdentifier);
 		inventory.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(inventory, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+<<<<<<< HEAD
 	}
 
 	@And("the following virtual inventory is created")
@@ -179,6 +219,8 @@ public class M_Inventory_StepDef
 		final HuId huId = inventoryService.createInventoryForMissingQty(req);
 
 		huTable.put(huIdentifier, InterfaceWrapperHelper.load(huId, I_M_HU.class));
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@And("metasfresh initially has M_Inventory data")
@@ -211,15 +253,20 @@ public class M_Inventory_StepDef
 
 	private void addNewInventory(@NonNull final Map<String, String> tableRow)
 	{
+<<<<<<< HEAD
 		final String warehouseIdOrIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
 		final int warehouseId = warehouseTable.getOptional(warehouseIdOrIdentifier)
 				.map(I_M_Warehouse::getM_Warehouse_ID)
 				.orElseGet(() -> Integer.parseInt(warehouseIdOrIdentifier));
+=======
+		final int warehouseId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
 
 		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(WarehouseId.ofRepoId(warehouseId).getRepoId());
+<<<<<<< HEAD
 		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(DataTableUtil.extractLocalDateForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate)));
 
 		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Inventory.COLUMNNAME_DocumentNo);
@@ -236,6 +283,13 @@ public class M_Inventory_StepDef
 
 		final String inventoryIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory");
 		inventoryTable.put(inventoryIdentifier, inventoryRecord);
+=======
+		inventoryRecord.setMovementDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate));
+
+		saveRecord(inventoryRecord);
+
+		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "M_Inventory"), inventoryRecord);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	private void addNewInventoryLine(@NonNull final Map<String, String> tableRow)
@@ -249,6 +303,7 @@ public class M_Inventory_StepDef
 		inventoryLine.setM_Inventory_ID(inventory.getM_Inventory_ID());
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, de.metas.invoicecandidate.model.I_M_InventoryLine.COLUMNNAME_M_Product_ID + ".Identifier");
+<<<<<<< HEAD
 		final Integer productId = productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
@@ -258,6 +313,16 @@ public class M_Inventory_StepDef
 
 		inventoryLine.setQtyCount(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyCount"));
 		inventoryLine.setQtyBook(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyBook"));
+=======
+		final I_M_Product product = productTable.get(productIdentifier);
+
+
+		inventoryLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+		inventoryLine.setM_Product_ID(product.getM_Product_ID());
+
+		inventoryLine.setQtyCount(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyCount"));
+		inventoryLine.setQtyBook(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyBooked"));
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		inventoryLine.setIsCounted(true);
 
 		final String uomX12DE355Code = DataTableUtil.extractStringForColumnName(tableRow, "UOM.X12DE355");
@@ -267,6 +332,7 @@ public class M_Inventory_StepDef
 
 		inventoryLine.setC_UOM_ID(eachUomRecord.getC_UOM_ID());
 
+<<<<<<< HEAD
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (de.metas.common.util.Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
@@ -279,6 +345,11 @@ public class M_Inventory_StepDef
 		saveRecord(inventoryLine);
 
 		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID, "M_InventoryLine"), inventoryLine);
+=======
+		saveRecord(inventoryLine);
+
+		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "M_InventoryLine"), inventoryLine);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	private void createM_Inventory(@NonNull final Map<String, String> row)

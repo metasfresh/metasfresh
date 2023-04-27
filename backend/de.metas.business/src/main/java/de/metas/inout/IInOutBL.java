@@ -1,8 +1,12 @@
 package de.metas.inout;
 
+<<<<<<< HEAD
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderLineId;
+=======
+import de.metas.document.engine.DocStatus;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -180,6 +184,7 @@ public interface IInOutBL extends ISingletonService
 
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
 
+<<<<<<< HEAD
 	LocalDate retrieveMovementDate(I_M_InOut inOut);
 
 	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
@@ -197,4 +202,7 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull OrderLineId orderLineId);
 
 	Instant getDateAcct(InOutId inoutId);
+=======
+	DocStatus getDocStatus(InOutId inOutId);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

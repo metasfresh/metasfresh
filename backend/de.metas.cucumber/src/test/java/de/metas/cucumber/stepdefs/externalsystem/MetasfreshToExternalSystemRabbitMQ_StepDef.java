@@ -39,6 +39,7 @@ import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonAvailableForSales;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+<<<<<<< HEAD
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.util.Check;
@@ -49,6 +50,10 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+=======
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.handlingunits.model.I_M_HU;
@@ -98,6 +103,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final C_BPartner_StepDefData bpartnerTable;
+<<<<<<< HEAD
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	private final PP_Order_StepDefData ppOrderTable;
@@ -112,6 +118,13 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			@NonNull final PP_Order_StepDefData ppOrderTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Project_StepDefData projectTable)
+=======
+	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+
+	public MetasfreshToExternalSystemRabbitMQ_StepDef(
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.huTable = huTable;

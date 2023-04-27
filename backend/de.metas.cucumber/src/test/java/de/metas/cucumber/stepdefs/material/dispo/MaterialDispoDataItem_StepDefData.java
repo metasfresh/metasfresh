@@ -22,9 +22,13 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+=======
+import de.metas.cucumber.stepdefs.StepDefData;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
 
 /**
@@ -37,9 +41,12 @@ public class MaterialDispoDataItem_StepDefData extends StepDefData<MaterialDispo
 	{
 		super(null);
 	}
+<<<<<<< HEAD
 
 	public ImmutableSet<CandidateId> getCandidateIds()
 	{
 		return getRecords().stream().map(MaterialDispoDataItem::getCandidateId).collect(ImmutableSet.toImmutableSet());
 	}
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

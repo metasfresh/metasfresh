@@ -31,4 +31,8 @@ public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedu
 	{
 		super(I_M_ReceiptSchedule.class);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

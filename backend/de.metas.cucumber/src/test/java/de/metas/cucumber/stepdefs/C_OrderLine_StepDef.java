@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+<<<<<<< HEAD
 import de.metas.common.util.Check;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -35,6 +36,9 @@ import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+=======
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -98,6 +102,7 @@ public class C_OrderLine_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final M_Product_StepDefData productTable;
+<<<<<<< HEAD
 	private final C_BPartner_StepDefData partnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
@@ -135,6 +140,17 @@ public class C_OrderLine_StepDef
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final C_Currency_StepDefData currencyTable)
+=======
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_Activity_StepDefData activityTable;
+
+	public C_OrderLine_StepDef(
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_Activity_StepDefData activityTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
@@ -513,6 +529,7 @@ public class C_OrderLine_StepDef
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
+<<<<<<< HEAD
 		final String orderIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "C_Order_ID.Identifier"))
 				.orElseGet(() -> DataTableUtil.extractStringOrNullForColumnName(row, "Order.Identifier"));
 
@@ -520,6 +537,10 @@ public class C_OrderLine_StepDef
 
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_OrderLine.COLUMNNAME_DateOrdered);
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
+=======
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "dateordered");
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
 		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");

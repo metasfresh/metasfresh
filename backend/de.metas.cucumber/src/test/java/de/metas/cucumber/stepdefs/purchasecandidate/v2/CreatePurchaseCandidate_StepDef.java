@@ -89,8 +89,12 @@ public class CreatePurchaseCandidate_StepDef
 
 	public CreatePurchaseCandidate_StepDef(
 			@NonNull final C_Activity_StepDefData activityTable,
+<<<<<<< HEAD
 			@NonNull final TestContext testContext,
 			@NonNull final C_OrderLine_StepDefData orderLineTable)
+=======
+			@NonNull final TestContext testContext)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.activityTable = activityTable;
 		this.testContext = testContext;

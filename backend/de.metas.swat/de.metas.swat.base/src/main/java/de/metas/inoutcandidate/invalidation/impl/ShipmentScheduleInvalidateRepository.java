@@ -557,7 +557,11 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
 		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
+<<<<<<< HEAD
 				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() + " " +
+=======
+				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				" FROM (" +
 				"	SELECT s.M_ShipmentSchedule_ID " +
 				"	FROM M_ShipmentSchedule s " +

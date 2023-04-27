@@ -60,4 +60,8 @@ public class AD_Message_StepDef
 			messageTable.putOrReplace(messageIdentifier, adMessageRecord);
 		}
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

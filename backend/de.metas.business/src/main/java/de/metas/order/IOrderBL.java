@@ -29,8 +29,11 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+<<<<<<< HEAD
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -275,6 +278,7 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isHaddexOrder(I_C_Order order);
 
+<<<<<<< HEAD
 	void closeOrder(OrderId orderId);
 
 	Optional<DeliveryViaRule> findDeliveryViaRule(@NonNull I_C_Order orderRecord);
@@ -321,4 +325,9 @@ public interface IOrderBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
+=======
+	void closeOrder(final OrderId orderId);
+
+	DocStatus getDocStatus(OrderId orderId);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

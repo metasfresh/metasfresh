@@ -22,24 +22,32 @@
 
 package de.metas.cucumber.stepdefs.warehouse;
 
+<<<<<<< HEAD
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Check;
+=======
+import de.metas.cucumber.stepdefs.DataTableUtil;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
 import java.util.Map;
+<<<<<<< HEAD
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -48,12 +56,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
+=======
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
+import static org.compiere.model.I_M_Warehouse_Acct.COLUMNNAME_M_Warehouse_ID;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 public class M_Warehouse_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Warehouse_StepDefData warehouseTable;
+<<<<<<< HEAD
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 
@@ -76,6 +91,13 @@ public class M_Warehouse_StepDef
 		{
 			updateWarehouse(row);
 		}
+=======
+
+	public M_Warehouse_StepDef(
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
+	{
+		this.warehouseTable = warehouseTable;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@And("load M_Warehouse:")
@@ -91,6 +113,7 @@ public class M_Warehouse_StepDef
 					.create()
 					.firstOnlyNotNull(I_M_Warehouse.class);
 
+<<<<<<< HEAD
 			final String bpartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(bpartnerLocationIdentifier))
 			{
@@ -233,4 +256,11 @@ public class M_Warehouse_StepDef
 
 		saveRecord(warehouseRecord);
 	}
+=======
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			warehouseTable.put(warehouseIdentifier, warehouseRecord);
+		}
+	}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

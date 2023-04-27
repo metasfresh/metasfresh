@@ -24,7 +24,10 @@ package de.metas.cucumber;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -65,7 +68,14 @@ public class InfrastructureSupport
 	private boolean runAgainstProvidedDatabase = false;
 
 	@Getter
+<<<<<<< HEAD
 	private boolean cucumberIsUsingProvidedInfrastructure;
+=======
+	private boolean runAgainstDockerizedDatabase = true;
+
+    @Getter
+    private boolean cucumberIsUsingProvidedInfrastructure;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	@Getter
 	private String dbHost;
@@ -92,6 +102,7 @@ public class InfrastructureSupport
 	{
 		assertThat(started).isFalse(); // guard
 
+<<<<<<< HEAD
 		cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
 
 		// note that this will only matter if CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE is false
@@ -119,6 +130,26 @@ public class InfrastructureSupport
 			started = true;
 			return;
 		}
+=======
+        cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
+
+	// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
+        if (cucumberIsUsingProvidedInfrastructure) {
+            logger.info("using provided infrasstructure, not starting any containers");
+
+            runAgainstDockerizedDatabase = false;
+
+            dbHost = "db";
+            dbPort = 5432;
+            rabbitHost = "rabbitmq";
+            rabbitPort = 5672;
+            rabbitUser = "metasfresh";
+            rabbitPassword = "metasfresh";
+
+            started = true;
+            return;
+        }
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.7.4");
 		rabbitMQContainer.start();

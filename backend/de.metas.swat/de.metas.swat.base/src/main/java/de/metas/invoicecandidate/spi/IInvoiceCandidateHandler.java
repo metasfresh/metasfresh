@@ -11,18 +11,25 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.TaxCategoryId;
+<<<<<<< HEAD
 import de.metas.tax.api.TaxId;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+<<<<<<< HEAD
 import org.adempiere.ad.dao.QueryLimit;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
+<<<<<<< HEAD
 
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
 
@@ -47,6 +54,9 @@ import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesA
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+=======
+import java.util.Properties;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.

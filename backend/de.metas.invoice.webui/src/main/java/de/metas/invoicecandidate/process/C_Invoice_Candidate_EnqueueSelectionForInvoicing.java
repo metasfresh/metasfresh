@@ -334,7 +334,11 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 	private IQuery<I_C_Invoice_Candidate> prepareNetAmountsToInvoiceForSelectionQuery(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
 	{
+<<<<<<< HEAD:backend/de.metas.invoice.webui/src/main/java/de/metas/invoicecandidate/process/C_Invoice_Candidate_EnqueueSelectionForInvoicing.java
 		return createICQueryBuilder(selectionFilter, false)
+=======
+		return createICQueryBuilder(selectionFilter)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192)):backend/de.metas.swat/de.metas.swat.base/src/main/java/de/metas/invoicecandidate/process/C_Invoice_Candidate_EnqueueSelectionForInvoicing.java
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInEffect, true)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();

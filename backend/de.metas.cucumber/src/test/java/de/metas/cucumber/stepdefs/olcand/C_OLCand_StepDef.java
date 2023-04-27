@@ -34,13 +34,17 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.edi.impprocessor.IMP_Processor_StepDefData;
@@ -50,6 +54,11 @@ import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.model.I_AD_InputDataSource;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+=======
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
@@ -111,6 +120,12 @@ public class C_OLCand_StepDef
 	private final M_HU_PI_Item_Product_StepDefData huItemProductTable;
 	private final IMP_Processor_StepDefData impProcessorTable;
 
+<<<<<<< HEAD
+=======
+	private final C_Order_StepDefData orderTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_Invoice_StepDefData invoiceTable;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -123,6 +138,7 @@ public class C_OLCand_StepDef
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final M_InOut_StepDefData shipmentTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
+<<<<<<< HEAD
 			@NonNull final C_OLCand_StepDefData olCandTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
@@ -130,6 +146,8 @@ public class C_OLCand_StepDef
 			@NonNull final AD_Issue_StepDefData issueTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huItemProductTable,
 			@NonNull final IMP_Processor_StepDefData impProcessorTable,
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			@NonNull final TestContext testContext)
 	{
 		this.orderTable = orderTable;

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+<<<<<<< HEAD
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
@@ -31,6 +32,10 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+=======
+import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -42,8 +47,11 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+<<<<<<< HEAD
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
@@ -59,6 +67,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.copy.CopyRecordRequest;
 import org.adempiere.model.copy.CopyRecordService;
@@ -68,11 +77,15 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
+=======
+import org.compiere.model.I_AD_Message;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+<<<<<<< HEAD
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
@@ -82,6 +95,9 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
+=======
+import org.compiere.util.Env;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -124,12 +140,16 @@ public class C_Order_StepDef
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+<<<<<<< HEAD
 	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
+<<<<<<< HEAD
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final AD_User_StepDefData userTable;
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
@@ -138,10 +158,14 @@ public class C_Order_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final AD_Message_StepDefData messageTable;
 	private final M_SectionCode_StepDefData sectionCodeTable;
+=======
+	private final AD_Message_StepDefData messageTable;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
+<<<<<<< HEAD
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final AD_User_StepDefData userTable,
@@ -161,6 +185,13 @@ public class C_Order_StepDef
 		this.orgTable = orgTable;
 		this.messageTable = messageTable;
 		this.sectionCodeTable = sectionCodeTable;
+=======
+			@NonNull final AD_Message_StepDefData messageTable)
+	{
+		this.bpartnerTable = bpartnerTable;
+		this.orderTable = orderTable;
+		this.messageTable = messageTable;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -170,6 +201,7 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+<<<<<<< HEAD
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -186,6 +218,10 @@ public class C_Order_StepDef
 			final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+=======
+			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
+			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setC_BPartner_ID(bPartnerId);
@@ -344,13 +380,34 @@ public class C_Order_StepDef
 				order.setSalesRep_ID(salesRepID);
 			}
 
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+			if (EmptyUtil.isNotBlank(docBaseType))
+			{
+				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
+
+				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+						.create()
+						.firstOnlyNotNull(I_C_DocType.class);
+
+				assertThat(docType).isNotNull();
+
+				order.setC_DocType_ID(docType.getC_DocType_ID());
+				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			}
+
 			saveRecord(order);
 
 			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
 		}
 	}
 
+<<<<<<< HEAD
 	@And("^the order identified by (.*) is (reactivated|completed|closed|voided)$")
+=======
+	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided)$")
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
@@ -358,7 +415,11 @@ public class C_Order_StepDef
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case reactivated:
+<<<<<<< HEAD
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+=======
+				order.setDocAction(IDocument.ACTION_Complete);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				break;
 			case completed:
@@ -406,6 +467,7 @@ public class C_Order_StepDef
 		}
 
 		assertThat(errorThrown).isTrue();
+<<<<<<< HEAD
 	}
 
 	@And("^the order identified by (.*) is (completed) and the following exception is thrown: (.*)$")
@@ -420,6 +482,8 @@ public class C_Order_StepDef
 		{
 			assertThat(exception.getMessage()).contains(exceptionMessage);
 		}
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@Given("generate PO from SO is invoked with parameters:")
@@ -564,11 +628,16 @@ public class C_Order_StepDef
 		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
 		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
 
+<<<<<<< HEAD
 		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (EmptyUtil.isNotBlank(orderIdentifier))
 		{
 			orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord);
 		}
+=======
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@And("validate the created orders")

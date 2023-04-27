@@ -34,4 +34,8 @@ public class C_Flatrate_Conditions_StepDefData extends StepDefData<I_C_Flatrate_
 	{
 		super(I_C_Flatrate_Conditions.class);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

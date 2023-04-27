@@ -26,7 +26,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
+<<<<<<< HEAD
 import lombok.NonNull;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;

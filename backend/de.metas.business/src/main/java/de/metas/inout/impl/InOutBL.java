@@ -3,7 +3,6 @@ package de.metas.inout.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -12,9 +11,12 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+<<<<<<< HEAD
 import de.metas.forex.ForexContractRef;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -619,6 +621,7 @@ public class InOutBL implements IInOutBL
 		return requestsRepo.createRequest(requestCandidate);
 	}
 
+<<<<<<< HEAD
 	@Nullable
 	public String getLocationEmail(@NonNull final InOutId inOutId)
 	{
@@ -680,6 +683,8 @@ public class InOutBL implements IInOutBL
 		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
 	}
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@NonNull
 	public DocStatus getDocStatus(@NonNull final InOutId inOutId)
 	{
@@ -687,6 +692,7 @@ public class InOutBL implements IInOutBL
 
 		return DocStatus.ofCode(inOut.getDocStatus());
 	}
+<<<<<<< HEAD
 
 	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)
 	{
@@ -733,4 +739,6 @@ public class InOutBL implements IInOutBL
 	{
 		return inOutDAO.retrieveCompleteOrClosedLinesForOrderLine(orderLineId, I_M_InOutLine.class);
 	}
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

@@ -20,22 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.activity;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_Activity;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class C_Activity_StepDefData extends StepDefData<I_C_Activity>
+public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedule>
 {
-	public C_Activity_StepDefData()
+	public M_ReceiptSchedule_StepDefData()
 	{
-		super(I_C_Activity.class);
+		super(I_M_ReceiptSchedule.class);
 	}
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

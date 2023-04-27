@@ -1,8 +1,9 @@
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -51,6 +52,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Inputsource.
 	 *
 	 * <br>Type: Search
@@ -73,6 +75,10 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Note.
+=======
+	 * Set Statusmeldung.
+	 * System-Nachricht
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1741,6 +1747,30 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Kopf-Aggregationsmerkmal (vorgegeben).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHeaderAggregationKey_Calc (@Nullable java.lang.String HeaderAggregationKey_Calc);
+
+	/**
+	 * Get Kopf-Aggregationsmerkmal (vorgegeben).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHeaderAggregationKey_Calc();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_HeaderAggregationKey_Calc = new ModelColumn<>(I_C_Invoice_Candidate.class, "HeaderAggregationKey_Calc", null);
+	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
+
+	/**
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	 * Set Header aggregation builder.
 	 *
 	 * <br>Type: Search
@@ -1833,7 +1863,11 @@ public interface I_C_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	void setInvoiceAdditionalText (@Nullable java.lang.String InvoiceAdditionalText);
+=======
+	void setInvoiceRule (java.lang.String InvoiceRule);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	/**
 	 * Get Additional Text for Invoice.
@@ -1855,6 +1889,7 @@ public interface I_C_Invoice_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	void setInvoiceRule (java.lang.String InvoiceRule);
 
 	/**
@@ -1865,6 +1900,8 @@ public interface I_C_Invoice_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	java.lang.String getInvoiceRule();
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoiceRule", null);
@@ -2111,7 +2148,10 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set In Effect.
+<<<<<<< HEAD
 	 * Invoice candidates that are not in effect are no longer eligible for invoicing. Normally, an invoice candidates goes out of effect when the source document is reopened.
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2121,7 +2161,10 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get In Effect.
+<<<<<<< HEAD
 	 * Invoice candidates that are not in effect are no longer eligible for invoicing. Normally, an invoice candidates goes out of effect when the source document is reopened.
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2133,7 +2176,11 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInEffect = "IsInEffect";
 
 	/**
+<<<<<<< HEAD
 	 * Set Approve in/out shipment.
+=======
+	 * Set Lieferung/ Wareneingang freigeben.
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2196,7 +2243,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInvoicingError = "IsInvoicingError";
 
 	/**
-	 * Set Invoice manually allocated.
+	 * Set Manuell.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -2206,7 +2253,7 @@ public interface I_C_Invoice_Candidate
 	void setIsManual (boolean IsManual);
 
 	/**
-	 * Get Invoice manually allocated.
+	 * Get Manuell.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -2491,6 +2538,32 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_LineAggregationKey = "LineAggregationKey";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Aggregations-Zusatz.
+	 * Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLineAggregationKey_Suffix (@Nullable java.lang.String LineAggregationKey_Suffix);
+
+	/**
+	 * Get Aggregations-Zusatz.
+	 * Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLineAggregationKey_Suffix();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKey_Suffix = new ModelColumn<>(I_C_Invoice_Candidate.class, "LineAggregationKey_Suffix", null);
+	String COLUMNNAME_LineAggregationKey_Suffix = "LineAggregationKey_Suffix";
+
+	/**
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	 * Set Line aggregation builder.
 	 *
 	 * <br>Type: Search
@@ -3626,7 +3699,36 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
 
 	/**
+<<<<<<< HEAD
 	 * Set Quality Discount Reason.
+=======
+	 * Set Qualitäts-Notiz (WED).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQualityNote_ReceiptSchedule (@Nullable java.lang.String QualityNote_ReceiptSchedule);
+
+	/**
+	 * Get Qualitäts-Notiz (WED).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getQualityNote_ReceiptSchedule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityNote_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityNote_ReceiptSchedule", null);
+	String COLUMNNAME_QualityNote_ReceiptSchedule = "QualityNote_ReceiptSchedule";
+
+	/**
+	 * Set ReasonDiscount.
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3977,4 +4079,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductDescription (@Nullable java.lang.String ProductDescription);
+
+	/**
+	 * Get Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductDescription();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ProductDescription = new ModelColumn<>(I_C_Invoice_Candidate.class, "ProductDescription", null);
+	String COLUMNNAME_ProductDescription = "ProductDescription";
 }

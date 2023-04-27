@@ -26,9 +26,12 @@ import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -86,9 +89,12 @@ public class M_PriceList_StepDef
 	private final M_PriceList_StepDefData priceListTable;
 	private final M_PriceList_Version_StepDefData priceListVersionTable;
 	private final M_ProductPrice_StepDefData productPriceTable;
+<<<<<<< HEAD
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final AD_Org_StepDefData orgTable;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -102,10 +108,14 @@ public class M_PriceList_StepDef
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final M_PriceList_StepDefData priceListTable,
 			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
+<<<<<<< HEAD
 			@NonNull final M_ProductPrice_StepDefData productPriceTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final AD_Org_StepDefData orgTable)
+=======
+			@NonNull final M_ProductPrice_StepDefData productPriceTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.currencyRepository = currencyRepository;
 		this.productTable = productTable;
@@ -121,8 +131,13 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
 	{
+<<<<<<< HEAD
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : rows)
+=======
+		final List<Map<String, String>> row = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : row)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		{
 			createM_PricingSystem(dataTableRow);
 		}
@@ -164,7 +179,12 @@ public class M_PriceList_StepDef
 
 		saveRecord(m_pricingSystem);
 
+<<<<<<< HEAD
 		pricingSystemTable.putOrReplace(recordIdentifier, m_pricingSystem);
+=======
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
+		pricingSystemTable.put(recordIdentifier, m_pricingSystem);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	private void createM_PriceList(@NonNull final Map<String, String> row)
@@ -357,13 +377,23 @@ public class M_PriceList_StepDef
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 
+<<<<<<< HEAD
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+=======
+		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final Optional<I_M_PriceList_Version> priceListVersionOptional = priceListVersionTable.getOptional(plvIdentifier);

@@ -31,4 +31,8 @@ public class AD_Message_StepDefData extends StepDefData<I_AD_Message>
 	{
 		super(I_AD_Message.class);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

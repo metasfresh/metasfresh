@@ -431,11 +431,15 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
+<<<<<<< HEAD
 	ImmutableList<org.compiere.model.I_C_Invoice> getInvoicesForCandidateId(InvoiceCandidateId invoiceCandidateId);
 
 	Optional<InvoiceCandidateId> getInvoiceCandidateIdByInvoiceLineAllocId(InvoiceLineAllocId invoiceLineAllocId);
 
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
+=======
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	@NonNull
 	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);

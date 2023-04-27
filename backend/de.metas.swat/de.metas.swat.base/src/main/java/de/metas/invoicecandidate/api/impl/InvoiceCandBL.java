@@ -2633,6 +2633,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Quantity getQtyOrderedStockUOM(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
@@ -2706,6 +2707,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	public void computeIsInEffect(@NonNull final DocStatus sourceDocStatus, @NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		switch (sourceDocStatus)
@@ -2719,6 +2722,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				break;
 		}
 	}
+<<<<<<< HEAD
 
 	@NonNull
 	private BigDecimal getActualDeliveredQty(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
@@ -2736,4 +2740,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		return ZERO;
 	}
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 }

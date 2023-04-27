@@ -23,7 +23,10 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.cucumber.stepdefs.receiptschedule.M_ReceiptSchedule_StepDefData;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -37,8 +40,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+<<<<<<< HEAD
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.impl.PPOrderDocumentLUTUConfigurationHandlerTestHelper;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -46,14 +52,20 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+<<<<<<< HEAD
 import io.cucumber.java.en.Then;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
+<<<<<<< HEAD
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -66,9 +78,13 @@ public class M_HU_LUTU_Configuration_StepDef
 {
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+<<<<<<< HEAD
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+=======
+	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_HU_PI_StepDefData huPiTable;
@@ -76,7 +92,10 @@ public class M_HU_LUTU_Configuration_StepDef
 	private final M_HU_LUTU_Configuration_StepDefData huLutuConfigurationTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_List_StepDefData huListTable;
+<<<<<<< HEAD
 	private final PP_Order_StepDefData ppOrderTable;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 	public M_HU_LUTU_Configuration_StepDef(
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
@@ -84,7 +103,10 @@ public class M_HU_LUTU_Configuration_StepDef
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
 			@NonNull final M_HU_LUTU_Configuration_StepDefData huLutuConfigurationTable,
 			@NonNull final M_HU_StepDefData huTable,
+<<<<<<< HEAD
 			@NonNull final PP_Order_StepDefData ppOrderTable,
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huPiItemProductTable = huPiItemProductTable;
@@ -92,6 +114,7 @@ public class M_HU_LUTU_Configuration_StepDef
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.huLutuConfigurationTable = huLutuConfigurationTable;
 		this.huTable = huTable;
+<<<<<<< HEAD
 		this.ppOrderTable = ppOrderTable;
 		this.huListTable = huListTable;
 	}
@@ -202,6 +225,11 @@ public class M_HU_LUTU_Configuration_StepDef
 		}
 	}
 
+=======
+		this.huListTable = huListTable;
+	}
+
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs")
 	public void create_I_M_HU_LUTU_Configuration_for_M_ReceiptSchedule(@NonNull final DataTable dataTable)
 	{
@@ -271,7 +299,11 @@ public class M_HU_LUTU_Configuration_StepDef
 		final String piProductItemIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer huPiItemProductId = huPiItemProductTable.getOptional(piProductItemIdentifier)
 				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+<<<<<<< HEAD
 				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));
+=======
+				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 		assertThat(huPiItemProductId).isNotNull();
 
 		final boolean isInfiniteQtyCU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);
@@ -308,9 +340,15 @@ public class M_HU_LUTU_Configuration_StepDef
 
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
 			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
+<<<<<<< HEAD
 					tuPI,
 					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
 					ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfig))
+=======
+							tuPI,
+							X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+							ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfig))
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 					.stream()
 					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
 					.findFirst()

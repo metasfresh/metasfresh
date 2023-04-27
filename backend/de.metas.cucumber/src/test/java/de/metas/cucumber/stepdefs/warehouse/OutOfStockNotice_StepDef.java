@@ -28,7 +28,12 @@ import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.document.engine.IDocument;
+<<<<<<< HEAD
+=======
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -47,8 +52,16 @@ public class OutOfStockNotice_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final TestContext testContext;
+<<<<<<< HEAD
 
 	public OutOfStockNotice_StepDef(@NonNull final TestContext testContext)
+=======
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+
+	public OutOfStockNotice_StepDef(
+			@NonNull final TestContext testContext,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.testContext = testContext;
 	}

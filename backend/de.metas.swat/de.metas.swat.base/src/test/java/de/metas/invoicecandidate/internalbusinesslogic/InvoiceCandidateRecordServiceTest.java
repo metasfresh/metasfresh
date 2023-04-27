@@ -1,10 +1,14 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+<<<<<<< HEAD
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+=======
+import de.metas.inout.model.I_M_InOut;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -13,7 +17,10 @@ import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
+<<<<<<< HEAD
 import lombok.NonNull;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
@@ -21,11 +28,19 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
+<<<<<<< HEAD
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
+=======
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import java.math.BigDecimal;
 
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.CURRENCY_ID;
@@ -34,6 +49,12 @@ import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFi
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.STOCK_UOM_ID;
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.createRequiredMasterdata;
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.loadJsonFixture;
+<<<<<<< HEAD
+=======
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;

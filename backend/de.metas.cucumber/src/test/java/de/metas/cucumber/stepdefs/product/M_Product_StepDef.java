@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2020 metas GmbH
+=======
+ * Copyright (C) 2022 metas GmbH
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -11,7 +15,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<<<<<<< HEAD
  * MERCHANTABILITY or FITNEcleanupSS FOR A PARTICULAR PURPOSE. See the
+=======
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
@@ -22,12 +30,16 @@
 
 package de.metas.cucumber.stepdefs.product;
 
+<<<<<<< HEAD
 import de.metas.common.util.Check;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
@@ -43,6 +55,12 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+=======
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductType;
+import de.metas.uom.UomId;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -50,6 +68,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Product;
@@ -59,11 +78,16 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_M_Product;
+=======
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+<<<<<<< HEAD
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -100,6 +124,26 @@ public class M_Product_StepDef
 		this.bpartnerTable = bpartnerTable;
 		this.productCategoryTable = productCategoryTable;
 		this.orgTable = orgTable;
+=======
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
+
+public class M_Product_StepDef
+{
+	public static final ProductCategoryId PRODUCT_CATEGORY_ID = ProductCategoryId.ofRepoId(1000000);
+
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	public M_Product_StepDef(
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable)
+	{
+		this.productTable = productTable;
+		this.bpartnerTable = bpartnerTable;
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	}
 
 	@Given("metasfresh contains M_Products:")
@@ -144,6 +188,7 @@ public class M_Product_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
+<<<<<<< HEAD
 			final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, false);
 			final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase, false);
 			final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
@@ -151,14 +196,21 @@ public class M_Product_StepDef
 			final String productNumber = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ProductNo);
 			final String upc = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_UPC);
 
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
 			bPartnerProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			bPartnerProduct.setM_Product_ID(productTable.get(productIdentifier).getM_Product_ID());
 			bPartnerProduct.setC_BPartner_ID(bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID());
+<<<<<<< HEAD
+=======
+			bPartnerProduct.setIsCurrentVendor(true);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 			bPartnerProduct.setUsedForVendor(true);
 			bPartnerProduct.setUsedForCustomer(true);
 			bPartnerProduct.setShelfLifeMinPct(0);
 			bPartnerProduct.setShelfLifeMinDays(0);
+<<<<<<< HEAD
 			bPartnerProduct.setIsExcludedFromSale(isExcludedFromSale);
 			bPartnerProduct.setIsExcludedFromPurchase(isExcludedFromPurchase);
 
@@ -184,11 +236,14 @@ public class M_Product_StepDef
 			{
 				bPartnerProduct.setUPC(upc);
 			}
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 			InterfaceWrapperHelper.saveRecord(bPartnerProduct);
 		}
 	}
 
+<<<<<<< HEAD
 	@And("locate product by external identifier")
 	public void locate_product_by_external_identifier(@NonNull final DataTable dataTable)
 	{
@@ -273,10 +328,18 @@ public class M_Product_StepDef
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(StepDefConstants.ORG_ID.getRepoId());
+=======
+	private void createM_Product(@NonNull final Map<String, String> tableRow)
+	{
+		final String productName = tableRow.get("Name");
+		final String productValue = CoalesceUtil.coalesce(tableRow.get("Value"), productName);
+		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
 				() -> productDAO.retrieveProductByValue(productValue),
 				() -> newInstanceOutOfTrx(I_M_Product.class));
+<<<<<<< HEAD
 
 		productRecord.setAD_Org_ID(orgId);
 		productRecord.setValue(productValue);
@@ -329,10 +392,20 @@ public class M_Product_StepDef
 
 		productRecord.setIsSold(isSold);
 		productRecord.setIsPurchased(isPurchased);
+=======
+		productRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		productRecord.setValue(productValue);
+		productRecord.setName(productName);
+		productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
+		productRecord.setProductType(ProductType.Item.getCode());
+		productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_ID.getRepoId());
+		productRecord.setIsStocked(isStocked);
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
+<<<<<<< HEAD
 		productTable.putOrReplace(recordIdentifier, productRecord);
 	}
 
@@ -453,3 +526,8 @@ public class M_Product_StepDef
 		saveRecord(productRecord);
 	}
 }
+=======
+		productTable.put(recordIdentifier, productRecord);
+	}
+}
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))

@@ -27,6 +27,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
@@ -36,6 +37,8 @@ import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+=======
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -78,6 +81,7 @@ public class C_InvoiceLine_StepDef
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+<<<<<<< HEAD
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final M_Product_StepDefData productTable;
@@ -94,6 +98,11 @@ public class C_InvoiceLine_StepDef
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
 			@NonNull final C_Activity_StepDefData activityTable)
+=======
+	final C_Invoice_StepDefData invoiceTable;
+
+	public C_InvoiceLine_StepDef(@NonNull final C_Invoice_StepDefData invoiceTable)
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;

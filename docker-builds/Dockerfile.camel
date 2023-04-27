@@ -1,7 +1,11 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-common:$REFNAME as common
 
+<<<<<<< HEAD
 FROM maven:3.8.4-eclipse-temurin-17 as build
+=======
+FROM maven:3.6.3-adoptopenjdk-14 as build
+>>>>>>> 01acf328a21 (Revert "Revert "Merge remote-tracking branch 'origin/mad_orange_uat' into mad_orange_hotfix"" (#15192))
 
 COPY --from=common /root/.m2 /root/.m2/
 
