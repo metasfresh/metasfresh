@@ -194,7 +194,7 @@ public final class CollectionUtils
 			return Optional.empty();
 		}
 	}
-	
+
 	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>

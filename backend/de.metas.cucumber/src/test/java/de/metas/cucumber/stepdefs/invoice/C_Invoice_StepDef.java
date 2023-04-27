@@ -333,7 +333,7 @@ public class C_Invoice_StepDef
 		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifierCandidate);
 		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
 
-		// dev-note: map either multiple orders (aggregated) to the same invoice or multiple orders to multiple invoices (each order with its invoice) 
+		// dev-note: map either multiple orders (aggregated) to the same invoice or multiple orders to multiple invoices (each order with its invoice)
 		if (invoiceIdentifiers.size() == 1)
 		{
 			invoiceTable.putOrReplace(invoiceIdentifiers.get(0), invoices.get(0));
@@ -666,7 +666,7 @@ public class C_Invoice_StepDef
 					.map(Integer::parseInt)
 					.orElse(0);
 
-			assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_RepoId);
+			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID").isEqualTo(expectedSalesRep_RepoId);
 		}
 
 		softly.assertAll();

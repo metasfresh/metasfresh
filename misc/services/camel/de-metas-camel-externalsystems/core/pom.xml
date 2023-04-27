@@ -274,7 +274,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <executions>
-					<execution>
+                    <execution>
 						<id>spring-boot-webui-api-repackage</id>
 						<goals>
 							<goal>repackage</goal>
@@ -282,8 +282,8 @@
 						<configuration>
 							<executable>true</executable>
 
-							<!-- this also provides the super-jar to the successive docker build 
-								Note that the ${docker.build.directory} property is set by the prepare-docker 
+							<!-- this also provides the super-jar to the successive docker build
+								Note that the ${docker.build.directory} property is set by the prepare-docker
 								profile that is activated by the presence of the scr/main/docker folder -->
 							<outputDirectory>target/uber</outputDirectory>
 						</configuration>
@@ -335,7 +335,7 @@
 					</archive>
 				</configuration>
 			</plugin>
-	
+
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>

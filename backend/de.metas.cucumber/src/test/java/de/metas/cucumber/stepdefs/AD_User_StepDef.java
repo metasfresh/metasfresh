@@ -61,7 +61,7 @@ public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;

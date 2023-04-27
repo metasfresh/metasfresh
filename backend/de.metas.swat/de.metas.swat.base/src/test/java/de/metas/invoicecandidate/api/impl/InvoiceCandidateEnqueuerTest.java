@@ -137,7 +137,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
 		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
-
+		
 		//
 		// Create invoice candidates
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()

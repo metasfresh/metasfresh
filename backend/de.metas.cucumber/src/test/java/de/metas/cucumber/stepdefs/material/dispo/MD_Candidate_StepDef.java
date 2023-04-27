@@ -142,7 +142,7 @@ public class MD_Candidate_StepDef
 
 
 	}
-	
+
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table)
 	{

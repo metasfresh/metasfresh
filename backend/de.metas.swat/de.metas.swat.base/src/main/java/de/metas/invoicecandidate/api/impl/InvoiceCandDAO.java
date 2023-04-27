@@ -854,7 +854,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				invoiceCandScheduler.scheduleForUpdate(request);
 			}
 		}
-		
+
 		return count;
 	}
 

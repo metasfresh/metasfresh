@@ -1,7 +1,8 @@
 Feature: BPartner interaction with RabbitMQ after export process was triggered
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
   Scenario: Create BPartner having one BPartnerLocation and send BPartnerID to RabbitMQ - export process is triggered on partner creation

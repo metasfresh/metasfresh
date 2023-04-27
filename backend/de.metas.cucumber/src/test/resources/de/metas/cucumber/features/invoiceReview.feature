@@ -28,8 +28,8 @@ Feature: external references for metasfresh resources
       | tax_1               | 1000023      |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.IsDefault |
-      | docType                 | ARI         | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.IsDefault |
+      | docType                 | ARI             | true          |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |
@@ -174,7 +174,7 @@ Feature: external references for metasfresh resources
       | invoice_2               | endCustomer_1            | endCustomerLocation_1             | poReference2    | 30 Tage netto | false     | DR        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_2 |
 
     And the user creates a JsonInvoiceReviewUpsertItem and stores it in the context
-      | OPT.ExternalId                    | orgCode | customColumn |
+      | OPT.ExternalId                | orgCode | customColumn |
       | externalHeaderId_2023-04-05_2 | 001     | 200          |
     And the metasfresh REST-API endpoint path 'api/v2/invoices/docReview' receives a 'POST' request with the payload from context and responds with '200' status code
 
