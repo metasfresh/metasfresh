@@ -170,6 +170,20 @@ public class CoalesceUtil
 		return Optional.ofNullable(coalesce(value1, value2));
 	}
 
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
+	{
+		return Optional.ofNullable(coalesce(value1, value2, value3));
+	}
+
+	@SuppressWarnings("unused")
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T... values)
+	{
+		return Optional.ofNullable(coalesce(values));
+	}
+
 	@SafeVarargs
 	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)

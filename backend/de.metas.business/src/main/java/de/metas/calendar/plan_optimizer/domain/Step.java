@@ -5,6 +5,7 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.entity.PlanningPin;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
@@ -27,6 +28,7 @@ public class Step
 	private Resource resource;
 	private Duration duration;
 
+	private LocalDateTime startDateMin;
 	private LocalDateTime dueDate;
 
 	public static final String FIELD_startDate = "startDate";
@@ -50,7 +52,8 @@ public class Step
 			final int projectSeqNo,
 			final Resource resource,
 			final Duration duration,
-			final LocalDateTime dueDate,
+			@NonNull final LocalDateTime dueDate,
+			@NonNull final LocalDateTime startDateMin,
 			@Nullable final LocalDateTime startDate,
 			@Nullable final LocalDateTime endDate,
 			final boolean pinned)
@@ -61,6 +64,7 @@ public class Step
 		this.resource = resource;
 		this.duration = duration;
 		this.dueDate = dueDate;
+		this.startDateMin = startDateMin;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.pinned = pinned;
@@ -73,6 +77,7 @@ public class Step
 		return startDate + " -> " + endDate
 				+ " (" + duration + ")"
 				+ ": dueDate=" + dueDate
+				+ ", startDateMin=" + startDateMin
 				+ ", " + resource
 				+ ", ID=" + (id != null ? id.getWoProjectResourceId().getRepoId() : "?");
 	}
@@ -82,6 +87,11 @@ public class Step
 	public void updateEndDate()
 	{
 		endDate = startDate != null ? startDate.plus(duration) : null;
+	}
+
+	public boolean isStartDateMinRespected()
+	{
+		return startDate != null && !startDate.isBefore(startDateMin);
 	}
 
 	public boolean isDueDateNotRespected()

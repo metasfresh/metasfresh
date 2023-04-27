@@ -88,12 +88,26 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 		final ArrayList<Step> optaPlannerSteps = new ArrayList<>(resources.size());
 		for (final WOProject woProject : projects)
 		{
+			final LocalDateTime projectStartDate = CoalesceUtil.optionalOfFirstNonNull(woProject.getDateOfProvisionByBPartner(), woProject.getDateContract(), woProject.getWoProjectCreatedDate())
+					.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(PLANNING_TIME_PRECISION))
+					.orElse(null);
+			if (projectStartDate == null)
+			{
+				logger.warn("Ignore the whole project because project start date could not be determined: {}", woProject);
+				continue;
+			}
+
 			final WOProjectSteps steps = stepsByProjectId.getByProjectId(woProject.getProjectId());
 			for (WOProjectStep step : steps.toOrderedList())
 			{
-				final LocalDateTime dueDateEffective = CoalesceUtil.optionalOfFirstNonNull(step.getWoDueDate(), woProject.getDateFinish())
+				final LocalDateTime dueDate = CoalesceUtil.optionalOfFirstNonNull(step.getWoDueDate(), woProject.getDateFinish())
 						.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(PLANNING_TIME_PRECISION))
 						.orElse(null);
+				if (dueDate == null)
+				{
+					logger.warn("Ignore step because due date could not be determined: {}", step);
+					continue;
+				}
 
 				for (final WOProjectResource resourceOrig : resources.getByStepId(step.getWoProjectStepId()))
 				{
@@ -129,7 +143,8 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 							.projectSeqNo(step.getSeqNo())
 							.resource(optaPlannerResources.computeIfAbsent(resource.getResourceId(), this::createOptaPlannerResource))
 							.duration(duration)
-							.dueDate(dueDateEffective)
+							.dueDate(dueDate)
+							.startDateMin(projectStartDate)
 							.startDate(startDate)
 							.endDate(endDate)
 							.pinned(manuallyLocked)
@@ -142,8 +157,8 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 		final Plan optaPlannerPlan = new Plan();
 		optaPlannerPlan.setSimulationId(simulationId);
 		optaPlannerPlan.setTimeZone(timeZone);
+		optaPlannerPlan.setPlanningStartDate(computePlanningStartDate(optaPlannerSteps));
 		optaPlannerPlan.setPlanningEndDate(computePlanningEndDate(optaPlannerSteps));
-		optaPlannerPlan.setPlanningStartDate(optaPlannerPlan.getPlanningEndDate().minusDays(100));
 		optaPlannerPlan.setStepsList(optaPlannerSteps);
 
 		return optaPlannerPlan;
@@ -157,12 +172,20 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 
 	private LocalDateTime computePlanningEndDate(final List<Step> stepsList)
 	{
-		// FIXME: come up with a better way of determining the minimum planning range
 		return stepsList.stream()
-				.map(step -> CoalesceUtil.coalesce(step.getDueDate(), step.getEndDate()))
+				.map(Step::getDueDate)
 				.filter(Objects::nonNull)
 				.max(LocalDateTime::compareTo)
 				.orElseGet(() -> LocalDate.now().atStartOfDay().plusDays(100));
+	}
+
+	private LocalDateTime computePlanningStartDate(final List<Step> stepsList)
+	{
+		return stepsList.stream()
+				.map(Step::getStartDateMin)
+				.filter(Objects::nonNull)
+				.max(LocalDateTime::compareTo)
+				.orElseGet(() -> LocalDate.now().atStartOfDay().minusDays(100));
 	}
 
 	@Override
