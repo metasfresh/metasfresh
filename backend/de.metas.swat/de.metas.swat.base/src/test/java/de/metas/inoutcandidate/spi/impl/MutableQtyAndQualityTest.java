@@ -37,6 +37,7 @@ import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.product.ProductId;
@@ -50,6 +51,12 @@ public class MutableQtyAndQualityTest
 {
 	private ProductId productId;
 	private UomId uomId;
+
+	@BeforeClass
+	public static void beforeClass()
+	{
+		AdempiereTestHelper.get().forceStaticInit();
+	}
 
 	@Before
 	public void beforeEach()

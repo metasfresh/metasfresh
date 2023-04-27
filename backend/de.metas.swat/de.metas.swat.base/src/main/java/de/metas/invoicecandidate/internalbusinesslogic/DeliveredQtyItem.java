@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;

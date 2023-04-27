@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -50,7 +50,6 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
-import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_ExportAudit_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -142,8 +141,8 @@ public class M_ShipmentSchedule_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final C_Order_StepDefData orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_Shipper_StepDefData shipperTable;
 	private final M_Product_StepDefData productTable;
 	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
@@ -164,8 +163,8 @@ public class M_ShipmentSchedule_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable,

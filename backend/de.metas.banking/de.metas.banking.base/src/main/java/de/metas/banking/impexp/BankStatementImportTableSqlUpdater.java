@@ -53,13 +53,13 @@ public class BankStatementImportTableSqlUpdater
 			@Nullable final BankStatementId bankStatementId)
 	{
 		updateOrgBankAccount(orgBankAccountId, selection);
+		updateBankAccountTo(selection);
 		updateStatementDate(selection, bankStatementDate);
 		updateName(selection, bankStatementName);
 		updateCurrency(selection);
 		updateAmount(selection);
 		updateValutaDate(selection);
 		updateC_BPartner(selection);
-		updateBankAccountTo(selection);
 		checkInvoiceBPartnerCombination(selection);
 
 		updateBankStatement(selection, bankStatementId);

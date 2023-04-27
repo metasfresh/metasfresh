@@ -180,6 +180,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
 
+		icRecord.setProductDescription(orderLine.getProductDescription());
+
 		if (orderLine.getPriceEntered().compareTo(orderLine.getPriceStd()) == 0)
 		{
 			icRecord.setBase_Commission_Points_Per_Price_UOM(orderLine.getBase_Commission_Points_Per_Price_UOM());

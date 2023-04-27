@@ -50,7 +50,6 @@ public interface I_C_Invoice_Candidate
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-
 	/**
 	 * Set Inputsource.
 	 *
@@ -158,6 +157,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Approved for Invoicing.
+	 * After an invoice candidate has been approved for invoicing, its prices and taxes are no longer updated automatically from the corresponding purchase or sales order line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -167,6 +167,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Approved for Invoicing.
+	 * After an invoice candidate has been approved for invoicing, its prices and taxes are no longer updated automatically from the corresponding purchase or sales order line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -229,7 +230,7 @@ public interface I_C_Invoice_Candidate
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setBill_BPartner_Name (@Nullable String Bill_BPartner_Name);
+	void setBill_BPartner_Name (@Nullable java.lang.String Bill_BPartner_Name);
 
 	/**
 	 * Get Name Bill Partner.
@@ -240,7 +241,7 @@ public interface I_C_Invoice_Candidate
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	@Nullable String getBill_BPartner_Name();
+	@Nullable java.lang.String getBill_BPartner_Name();
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Bill_BPartner_Name = new ModelColumn<>(I_C_Invoice_Candidate.class, "Bill_BPartner_Name", null);
 	String COLUMNNAME_Bill_BPartner_Name = "Bill_BPartner_Name";
@@ -640,9 +641,9 @@ public interface I_C_Invoice_Candidate
 	 */
 	int getC_ILCandHandler_ID();
 
-	I_C_ILCandHandler getC_ILCandHandler();
+	de.metas.invoicecandidate.model.I_C_ILCandHandler getC_ILCandHandler();
 
-	void setC_ILCandHandler(I_C_ILCandHandler C_ILCandHandler);
+	void setC_ILCandHandler(de.metas.invoicecandidate.model.I_C_ILCandHandler C_ILCandHandler);
 
 	ModelColumn<I_C_Invoice_Candidate, I_C_ILCandHandler> COLUMN_C_ILCandHandler_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_ILCandHandler_ID", I_C_ILCandHandler.class);
 	String COLUMNNAME_C_ILCandHandler_ID = "C_ILCandHandler_ID";
@@ -692,7 +693,7 @@ public interface I_C_Invoice_Candidate
 	 */
 	int getC_Invoice_Candidate_Agg_ID();
 
-	@Nullable I_C_Invoice_Candidate_Agg getC_Invoice_Candidate_Agg();
+	@Nullable de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg getC_Invoice_Candidate_Agg();
 
 	void setC_Invoice_Candidate_Agg(@Nullable I_C_Invoice_Candidate_Agg C_Invoice_Candidate_Agg);
 
@@ -849,7 +850,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Order_BPartner = "C_Order_BPartner";
 
 	/**
-	 * Set Group.
+	 * Set Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -858,7 +859,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID);
 
 	/**
-	 * Get Group.
+	 * Get Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

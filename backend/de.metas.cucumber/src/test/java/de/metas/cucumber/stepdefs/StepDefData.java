@@ -53,7 +53,9 @@ public abstract class StepDefData<T>
 		this.clazz = clazz;
 	}
 
-	public void put(@NonNull final String identifier, @NonNull final T productRecord)
+	public void put(
+			@NonNull final String identifier,
+			@NonNull final T productRecord)
 	{
 		final RecordDataItem<T> recordDataItem = createRecordDataItem(productRecord);
 
@@ -63,7 +65,9 @@ public abstract class StepDefData<T>
 				.isNull();
 	}
 
-	public void putOrReplace(@NonNull final String identifier, @NonNull final T productRecord)
+	public void putOrReplace(
+			@NonNull final String identifier,
+			@NonNull final T productRecord)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
 
@@ -77,7 +81,8 @@ public abstract class StepDefData<T>
 		}
 	}
 
-	public void putAll(@NonNull final Map<String, T> map)
+	public void putAll(
+			@NonNull final Map<String, T> map)
 	{
 		for (final Map.Entry<String, T> entry : map.entrySet())
 		{
@@ -85,7 +90,9 @@ public abstract class StepDefData<T>
 		}
 	}
 
-	public void putIfMissing(@NonNull final String identifier, @NonNull final T record)
+	public void putIfMissing(
+			@NonNull final String identifier,
+			@NonNull final T record)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
 
@@ -192,5 +199,6 @@ public abstract class StepDefData<T>
 						.setParameter("recordDataItem", this);
 			}
 		}
+
 	}
 }

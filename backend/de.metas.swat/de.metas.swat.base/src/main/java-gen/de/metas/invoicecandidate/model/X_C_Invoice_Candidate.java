@@ -1528,6 +1528,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInEffect);
 	}
+
 	@Override
 	public void setIsInOutApprovedForInvoicing (final boolean IsInOutApprovedForInvoicing)
 	{
@@ -2339,8 +2340,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-
-
 	@Override
 	public void setQtyToInvoiceBeforeDiscount (final BigDecimal QtyToInvoiceBeforeDiscount)
 	{
@@ -2482,8 +2481,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
-
-
 
 	/**
 	 * QualityInvoiceLineGroupType AD_Reference_ID=540617

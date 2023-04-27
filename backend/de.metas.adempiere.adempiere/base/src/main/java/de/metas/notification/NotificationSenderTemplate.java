@@ -1,33 +1,8 @@
 package de.metas.notification;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ecs.ClearElement;
-import org.apache.ecs.xhtml.body;
-import org.apache.ecs.xhtml.br;
-import org.apache.ecs.xhtml.html;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
@@ -467,12 +442,7 @@ public class NotificationSenderTemplate
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
-
-		String subject = extractSubjectText(request);
-		if (Check.isEmpty(subject, true))
-		{
-			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
-		}
+		final String subject = extractMailSubject(request);
 
 		final EMail mail = mailService.createEMail(
 				mailbox,

@@ -24,16 +24,15 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import de.metas.document.exception.DocumentActionException;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
-
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.util.Services;
 import org.springframework.stereotype.Component;
 
 import javax.naming.OperationNotSupportedException;

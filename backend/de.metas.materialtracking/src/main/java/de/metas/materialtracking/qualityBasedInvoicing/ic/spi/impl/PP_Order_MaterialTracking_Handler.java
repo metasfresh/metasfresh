@@ -22,14 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;

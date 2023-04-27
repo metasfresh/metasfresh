@@ -13,7 +13,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.util.Services;
-import org.compiere.model.I_Fact_Acct_Transactions_View;
 
 public final class Fact_Acct_OpenLinkedFacts_ProcessHelper
 {
@@ -25,7 +24,7 @@ public final class Fact_Acct_OpenLinkedFacts_ProcessHelper
 	{
 		final I_Fact_Acct factAcct = factAcctDAO.getById(factAcctRecordId);
 
-		final int factAcctTableId = getTableId(I_Fact_Acct_Transactions_View.class);
+		final int factAcctTableId = getTableId(I_Fact_Acct.class);
 
 		final TableRecordReference documentReference = TableRecordReference.of(factAcct.getAD_Table_ID(), factAcct.getRecord_ID());
 

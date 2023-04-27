@@ -22,10 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -70,7 +66,7 @@ import java.math.BigDecimal;
 	@Override
 	public boolean isByProduct()
 	{
-		return getComponentType().isByProduct();
+		return getComponentType() != null && getComponentType().isByProduct();
 	}
 
 }

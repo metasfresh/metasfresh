@@ -297,7 +297,7 @@ public class AllocationBL implements IAllocationBL
 
 		Timestamp dateTrx;
 		Timestamp dateAcct;
-		if (request.isUseInvoiceDate())
+		if(request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
 			dateAcct = invoice.getDateAcct();

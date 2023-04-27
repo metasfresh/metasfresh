@@ -1003,6 +1003,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return true;
 		}
 
+		//ignore candidates that are not in effect
+		if (!ic.isInEffect())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
+																	 + " as it's not in effect and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+			return true;
+		}
+
 		return false; // Don't skip!
 	}
 

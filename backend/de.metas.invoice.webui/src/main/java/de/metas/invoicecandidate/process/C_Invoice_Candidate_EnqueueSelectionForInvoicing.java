@@ -335,6 +335,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private IQuery<I_C_Invoice_Candidate> prepareNetAmountsToInvoiceForSelectionQuery(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
 	{
 		return createICQueryBuilder(selectionFilter, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInEffect, true)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();
 	}
