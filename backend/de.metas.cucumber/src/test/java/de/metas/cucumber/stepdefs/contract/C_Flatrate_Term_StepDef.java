@@ -29,9 +29,11 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.PMM_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -55,20 +57,20 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Term_StepDef
 {
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
-	private final StepDefData<I_PMM_Product> pmmProductTable;
-	private final StepDefData<I_C_Flatrate_Term> contractTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_Flatrate_Conditions_StepDefData conditionsTable;
+	private final PMM_Product_StepDefData pmmProductTable;
+	private final C_Flatrate_Term_StepDefData contractTable;
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_Flatrate_Term_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable,
-			@NonNull final StepDefData<I_PMM_Product> pmmProductTable,
-			@NonNull final StepDefData<I_C_Flatrate_Term> contractTable)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
+			@NonNull final PMM_Product_StepDefData pmmProductTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.productTable = productTable;

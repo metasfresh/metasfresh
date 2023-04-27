@@ -29,7 +29,6 @@ import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiRequestReplayService;
@@ -62,12 +61,12 @@ public class ApiAuditFilter_StepDef
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final TestContext testContext;
-	private final StepDefData<I_API_Audit_Config> apiAuditConfigTable;
+	private final API_Audit_Config_StepDefData apiAuditConfigTable;
 
 
 	public ApiAuditFilter_StepDef(
 			@NonNull final TestContext testContext,
-			@NonNull final StepDefData<I_API_Audit_Config> apiAuditConfigTable)
+			@NonNull final API_Audit_Config_StepDefData apiAuditConfigTable)
 	{
 		this.testContext = testContext;
 		this.apiAuditConfigTable = apiAuditConfigTable;

@@ -974,6 +974,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return true;
 		}
 
+		//ignore candidates that are not in effect
+		if (!ic.isInEffect())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
+																	 + " as it's not in effect and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+			return true;
+		}
+
 		return false; // Don't skip!
 	}
 
@@ -2461,5 +2469,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
 
 		invoiceCandDAO.save(invoiceCandidate);
+	}
+
+	@Override
+	public void computeIsInEffect(@NonNull final DocStatus sourceDocStatus, @NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		switch (sourceDocStatus)
+		{
+			case Completed:
+			case Closed:
+				invoiceCandidate.setIsInEffect(true);
+				break;
+			default:
+				invoiceCandidate.setIsInEffect(false);
+				break;
+		}
 	}
 }

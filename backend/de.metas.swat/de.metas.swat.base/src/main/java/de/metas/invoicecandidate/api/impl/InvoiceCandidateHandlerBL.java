@@ -554,4 +554,11 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(icRecord);
 		handler.setInvoiceScheduleAndDateToInvoice(icRecord);
 	}
+
+	@Override
+	public void setIsInEffect(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setIsInEffect(ic);
+	}
 }
