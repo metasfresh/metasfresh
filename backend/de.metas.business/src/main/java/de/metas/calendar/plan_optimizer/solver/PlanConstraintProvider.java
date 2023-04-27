@@ -3,7 +3,7 @@ package de.metas.calendar.plan_optimizer.solver;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.project.InternalPriority;
 import de.metas.util.Check;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
+import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintCollectors;
 import org.optaplanner.core.api.score.stream.ConstraintFactory;
@@ -16,6 +16,14 @@ import java.time.LocalDateTime;
 
 public class PlanConstraintProvider implements ConstraintProvider
 {
+	public static final int HARD_LEVELS_SIZE = 1;
+	public static final int SOFT_LEVELS_SIZE = 3;
+
+	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0 }, new int[] { 1, 0, 0 });
+	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0 }, new int[] { 0, 1, 0 });
+	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0 }, new int[] { 0, 0, 1 });
+
 	@Override
 	public Constraint[] defineConstraints(final ConstraintFactory constraintFactory)
 	{
@@ -38,7 +46,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getResource),
 						stepsOverlapping())
-				.penalize(HardSoftScore.ONE_HARD)
+				.penalize(ONE_HARD)
 				.asConstraint("Resource conflict");
 	}
 
@@ -48,7 +56,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getProjectId),
 						stepsOverlapping())
-				.penalize(HardSoftScore.ONE_HARD)
+				.penalize(ONE_HARD)
 				.asConstraint("Project steps overlap");
 	}
 
@@ -60,7 +68,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getProjectId),
 						projectStepsNotInOrder())
-				.penalize(HardSoftScore.ONE_HARD)
+				.penalize(ONE_HARD)
 				.asConstraint("Project steps not in order");
 	}
 
@@ -80,7 +88,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(Step::isDueDateNotRespected)
-				.penalize(HardSoftScore.ONE_HARD)
+				.penalize(ONE_HARD)
 				.asConstraint("DueDate not respected");
 	}
 
@@ -89,7 +97,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.groupBy(ConstraintCollectors.min(Step::getDurationFromEndToDueDateInHoursAbs))
-				.reward(HardSoftScore.ONE_SOFT, durationFromEndToDueDateInHours -> durationFromEndToDueDateInHours)
+				.reward(ONE_SOFT_1, durationFromEndToDueDateInHours -> durationFromEndToDueDateInHours)
 				.asConstraint("solution for which the minimum of |tdi-tei| is maximum");
 	}
 
@@ -98,7 +106,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.groupBy(ConstraintCollectors.sum(Step::getDurationFromEndToDueDateInHoursAbs))
-				.reward(HardSoftScore.ONE_SOFT, sum -> sum)
+				.reward(ONE_SOFT_2, sum -> sum)
 				.asConstraint("solution for which sum of |tdi-tei| is maximum");
 	}
 
@@ -108,7 +116,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getResource),
 						stepsNotRespectingProjectPriority())
-				.penalize(HardSoftScore.ONE_SOFT)
+				.penalize(ONE_SOFT_3)
 				.asConstraint("Steps not respecting project priority");
 	}
 
