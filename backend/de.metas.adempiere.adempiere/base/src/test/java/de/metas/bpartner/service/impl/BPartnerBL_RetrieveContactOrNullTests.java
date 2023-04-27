@@ -135,11 +135,13 @@ public class BPartnerBL_RetrieveContactOrNullTests
 		assertThat(result.getName()).isEqualTo("A");
 	}
 
+	@Nullable
 	private User invokeMethodUnderTest()
 	{
-		return invokeMethodUnderTestWithPredicate(Predicates.alwaysTrue());
+		return invokeMethodUnderTestWithPredicate(user -> true);
 	}
 
+	@Nullable
 	private User invokeMethodUnderTestWithPredicate(@NonNull final Predicate<User> predicate)
 	{
 		final RetrieveContactRequest request = RetrieveContactRequest
@@ -149,8 +151,7 @@ public class BPartnerBL_RetrieveContactOrNullTests
 				.contactType(ContactType.BILL_TO_DEFAULT)
 				.filter(predicate)
 				.build();
-		final User result = bPartnerBL.retrieveContactOrNull(request);
-		return result;
+		return bPartnerBL.retrieveContactOrNull(request);
 	}
 
 	/**
@@ -174,8 +175,7 @@ public class BPartnerBL_RetrieveContactOrNullTests
 				.name("C")
 				.bpartnerLocationId(bpartnerLocationId)
 				.billToDefaultContact(true)
-				.createAndSave()
-				.getUserRecord();
+				.createAndSave();
 
 		final I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setName("D");
@@ -187,12 +187,11 @@ public class BPartnerBL_RetrieveContactOrNullTests
 		assertThat(result.getName()).isEqualTo("C");
 	}
 
-	private de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
+	private UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
 	{
-		final de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder builder = UserRecordCreator
+		return UserRecordCreator
 				.builder()
 				.bpartnerId(bpartnerId);
-		return builder;
 	}
 
 	@Value
@@ -202,11 +201,11 @@ public class BPartnerBL_RetrieveContactOrNullTests
 
 		@Builder(buildMethodName = "createAndSave")
 		private UserRecordCreator(
-				@NonNull BPartnerId bpartnerId,
-				@Nullable BPartnerLocationId bpartnerLocationId,
-				@NonNull String name,
-				boolean defaultContact,
-				boolean billToDefaultContact)
+				@NonNull final BPartnerId bpartnerId,
+				@Nullable final BPartnerLocationId bpartnerLocationId,
+				@NonNull final String name,
+				final boolean defaultContact,
+				final boolean billToDefaultContact)
 		{
 			userRecord = newInstance(I_AD_User.class);
 			userRecord.setC_BPartner_ID(bpartnerId.getRepoId());
