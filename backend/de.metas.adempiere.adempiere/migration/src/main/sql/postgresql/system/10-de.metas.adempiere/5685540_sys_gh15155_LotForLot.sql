@@ -166,3 +166,63 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=715029
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,715029,0,542102,543143,617260,'F',TO_TIMESTAMP('2023-04-24 10:01:19.072','YYYY-MM-DD HH24:MI:SS.US'),100,'Erzwingt, dass die Menge gleich der bestellten Menge ist.','Y','N','N','Y','N','N','N',0,'Lot for Lot',130,0,0,TO_TIMESTAMP('2023-04-24 10:01:19.072','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+-- 2023-04-27T07:24:16.291Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582267,0,TO_TIMESTAMP('2023-04-27 09:24:16.12','YYYY-MM-DD HH24:MI:SS.US'),100,'Gibt an ob bei der Anzahl Lot for Lot verwendet wurde.','U','Y','Lot for Lot','Lot for Lot',TO_TIMESTAMP('2023-04-27 09:24:16.12','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-04-27T07:24:16.297Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582267 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2023-04-27T07:24:39.026Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-04-27 09:24:39.024','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582267 AND AD_Language='de_CH'
+;
+
+-- 2023-04-27T07:24:39.053Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582267,'de_CH')
+;
+
+-- 2023-04-27T07:24:40.438Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-04-27 09:24:40.436','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582267 AND AD_Language='de_DE'
+;
+
+-- 2023-04-27T07:24:40.439Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582267,'de_DE')
+;
+
+-- 2023-04-27T07:24:40.449Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582267,'de_DE')
+;
+
+-- 2023-04-27T07:25:49.272Z
+UPDATE AD_Element_Trl SET Description='Indicates if the Quantity is based on Lot for Lot.', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-04-27 09:25:49.27','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582267 AND AD_Language='en_US'
+;
+
+-- 2023-04-27T07:25:49.273Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582267,'en_US')
+;
+
+-- Field: Material Disposition -> Materialdispo -> Lot for Lot
+-- Column: MD_Candidate.IsLotForLot
+-- 2023-04-27T07:27:47.563Z
+UPDATE AD_Field SET AD_Name_ID=582267, Description='Gibt an ob bei der Anzahl Lot for Lot verwendet wurde.', Help=NULL, Name='Lot for Lot',Updated=TO_TIMESTAMP('2023-04-27 09:27:47.563','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=715028
+;
+
+-- 2023-04-27T07:27:47.565Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582267)
+;
+
+-- 2023-04-27T07:27:47.575Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=715028
+;
+
+-- 2023-04-27T07:27:47.577Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(715028)
+;
+
+-- UI Element: Material Disposition -> Materialdispo.Lot for Lot
+-- Column: MD_Candidate.IsLotForLot
+-- 2023-04-27T07:31:48.417Z
+UPDATE AD_UI_Element SET Description='Gibt an ob bei der Anzahl Lot for Lot verwendet wurde.',Updated=TO_TIMESTAMP('2023-04-27 09:31:48.417','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617259
+;
+

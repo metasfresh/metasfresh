@@ -170,7 +170,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
 				.simulated(ddOrder.isSimulated())
-				.lotForLot(ddOrderEvent.getSupplyRequiredDescriptor().getIsLotForLot())
 				.build();
 
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -196,7 +195,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.additionalDemandDetail(Optional.ofNullable(demanddetail).map(detail -> detail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId())).orElse(null))
 				.seqNo(expectedSeqNoForDemandCandidate)
 				.simulated(ddOrder.isSimulated())
-				.lotForLot(ddOrderEvent.getSupplyRequiredDescriptor().getIsLotForLot())
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
