@@ -338,6 +338,12 @@ public class C_Order_StepDef
 				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
 			}
 
+			final int salesRepID = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_SalesRep_ID);
+			if (salesRepID > 0)
+			{
+				order.setSalesRep_ID(salesRepID);
+			}
+
 			saveRecord(order);
 
 			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);

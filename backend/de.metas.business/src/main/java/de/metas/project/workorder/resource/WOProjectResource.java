@@ -183,6 +183,6 @@ public class WOProjectResource
 
 	public boolean isNotFullyResolved()
 	{
-		return duration.minus(getResolvedHours()).compareTo(Duration.ZERO) > 0;
+		return getResolvedHours().isZero() || duration.minus(getResolvedHours()).compareTo(Duration.ZERO) > 0;
 	}
 }

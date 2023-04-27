@@ -23,12 +23,15 @@
 package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.common.InvokeExternalSystemParametersUtil;
 import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.config.BPartnerFileEndpointConfig;
 import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
+import de.metas.common.externalsystem.JsonExternalSAPBPartnerImportSettings;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,8 +41,11 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
+import java.util.Optional;
+
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.sap.bpartner.ProcessSkippedBPartnerRouteBuilder.PROCESS_SKIPPED_BPARTNER_ROUTE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SAP_BPARTNER_IMPORT_SETTINGS;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
@@ -128,6 +134,14 @@ public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
 		final UpsertBPartnerRouteContext getBPartnerRouteContext = UpsertBPartnerRouteContext.builder()
 				.orgCode(enabledByExternalSystemRequest.getOrgCode())
 				.externalSystemConfigId(enabledByExternalSystemRequest.getExternalSystemConfigId())
+				.bPartnerImportSettings(Optional.ofNullable(InvokeExternalSystemParametersUtil
+																	.getDeserializedParameter(enabledByExternalSystemRequest.getParameters(),
+																							  PARAM_SAP_BPARTNER_IMPORT_SETTINGS,
+																							  JsonExternalSAPBPartnerImportSettings[].class))
+												.map(ImmutableList::copyOf)
+												.orElseGet(ImmutableList::of)
+												.stream()
+												.collect(ImmutableList.toImmutableList()))
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT, getBPartnerRouteContext);

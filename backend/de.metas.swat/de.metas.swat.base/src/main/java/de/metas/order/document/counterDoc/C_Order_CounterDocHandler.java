@@ -123,6 +123,12 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 					.deliveryLocationAdapter(counterOrder)
 					.setFromDeliveryLocation(order);
 		}
+		if(order.isUseHandOver_Location()){
+			counterOrder.setIsUseHandOver_Location(order.isUseHandOver_Location());
+			OrderDocumentLocationAdapterFactory
+					.handOverLocationAdapter(counterOrder)
+					.setFromHandOverLocation(order);
+		}
 		InterfaceWrapperHelper.save(counterOrder);
 
 		order.setRef_Order_ID(counterOrder.getC_Order_ID());
