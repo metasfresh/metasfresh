@@ -1,0 +1,28 @@
+FROM node:14 as build
+
+RUN npm install -g webpack webpack-cli
+
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
+
+WORKDIR /app 
+
+COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
+RUN yarn install
+
+COPY misc/services/mobile-webui/mobile-webui-frontend/ .
+RUN yarn lint
+# currently not terminating: RUN yarn test --ci --runInBand
+
+ENV PUBLIC_URL=/
+RUN yarn build
+
+
+FROM nginx:1.21.6 as runtime
+
+COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
+
+WORKDIR /usr/share/nginx/html
+
+COPY --from=build /app/build/ .

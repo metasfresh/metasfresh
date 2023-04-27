@@ -280,6 +280,18 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		processInvoiceCandidates(invoiceCandidateIds);
+
+		return invoiceCandidateIds.stream()
+				.map(invoiceCandDAO::retrieveIlForIc)
+				.flatMap(List::stream)
+				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBathId2InvoiceCandidateIds(invoiceCandidateIds);
