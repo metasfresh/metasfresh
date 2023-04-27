@@ -12,6 +12,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlanEditor;
@@ -33,14 +34,11 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
@@ -51,8 +49,6 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 	private final WOProjectSimulationService woProjectSimulationService;
 	private final WOProjectConflictService woProjectConflictService;
 	private final ResourceService resourceService;
-
-	private static final ChronoUnit PLANNING_TIME_PRECISION = ChronoUnit.HOURS;
 
 	DatabasePlanLoaderAndSaver(
 			@NonNull final IOrgDAO orgDAO,
@@ -89,7 +85,7 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 		for (final WOProject woProject : projects)
 		{
 			final LocalDateTime projectStartDate = CoalesceUtil.optionalOfFirstNonNull(woProject.getDateOfProvisionByBPartner(), woProject.getDateContract(), woProject.getWoProjectCreatedDate())
-					.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(PLANNING_TIME_PRECISION))
+					.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(Plan.PLANNING_TIME_PRECISION))
 					.orElse(null);
 			if (projectStartDate == null)
 			{
@@ -101,7 +97,7 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 			for (WOProjectStep step : steps.toOrderedList())
 			{
 				final LocalDateTime dueDate = CoalesceUtil.optionalOfFirstNonNull(step.getWoDueDate(), woProject.getDateFinish())
-						.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(PLANNING_TIME_PRECISION))
+						.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(Plan.PLANNING_TIME_PRECISION))
 						.orElse(null);
 				if (dueDate == null)
 				{
@@ -114,17 +110,17 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 					Duration duration = resourceOrig.getDuration();
 					if (duration.toSeconds() <= 0)
 					{
-						duration = Duration.of(1, PLANNING_TIME_PRECISION);
+						duration = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
 						logger.warn("Step/resource has invalid duration. Considering it {}: {}", duration, resourceOrig);
 					}
 
 					final WOProjectResource resource = simulationPlan.applyOn(resourceOrig);
 
 					final LocalDateTime startDate = resource.getStartDate()
-							.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(PLANNING_TIME_PRECISION))
+							.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(Plan.PLANNING_TIME_PRECISION))
 							.orElse(null);
 					final LocalDateTime endDate = resource.getEndDate()
-							.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(PLANNING_TIME_PRECISION))
+							.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(Plan.PLANNING_TIME_PRECISION))
 							.orElse(null);
 
 					boolean manuallyLocked = step.isManuallyLocked();
@@ -139,7 +135,7 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 									.woProjectStepId(resource.getWoProjectStepId())
 									.woProjectResourceId(resource.getWoProjectResourceId())
 									.build())
-							.projectPriority(woProject.getInternalPriority())
+							.projectPriority(CoalesceUtil.coalesceNotNull(woProject.getInternalPriority(), InternalPriority.MEDIUM))
 							.projectSeqNo(step.getSeqNo())
 							.resource(optaPlannerResources.computeIfAbsent(resource.getResourceId(), this::createOptaPlannerResource))
 							.duration(duration)
@@ -157,8 +153,6 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 		final Plan optaPlannerPlan = new Plan();
 		optaPlannerPlan.setSimulationId(simulationId);
 		optaPlannerPlan.setTimeZone(timeZone);
-		optaPlannerPlan.setPlanningStartDate(computePlanningStartDate(optaPlannerSteps));
-		optaPlannerPlan.setPlanningEndDate(computePlanningEndDate(optaPlannerSteps));
 		optaPlannerPlan.setStepsList(optaPlannerSteps);
 
 		return optaPlannerPlan;
@@ -168,24 +162,6 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 	{
 		final de.metas.resource.Resource resource = resourceService.getResourceById(resourceId);
 		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue());
-	}
-
-	private LocalDateTime computePlanningEndDate(final List<Step> stepsList)
-	{
-		return stepsList.stream()
-				.map(Step::getDueDate)
-				.filter(Objects::nonNull)
-				.max(LocalDateTime::compareTo)
-				.orElseGet(() -> LocalDate.now().atStartOfDay().plusDays(100));
-	}
-
-	private LocalDateTime computePlanningStartDate(final List<Step> stepsList)
-	{
-		return stepsList.stream()
-				.map(Step::getStartDateMin)
-				.filter(Objects::nonNull)
-				.max(LocalDateTime::compareTo)
-				.orElseGet(() -> LocalDate.now().atStartOfDay().minusDays(100));
 	}
 
 	@Override

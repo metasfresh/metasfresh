@@ -9,6 +9,9 @@ import lombok.NonNull;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.entity.PlanningPin;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
+import org.optaplanner.core.api.domain.valuerange.CountableValueRange;
+import org.optaplanner.core.api.domain.valuerange.ValueRangeFactory;
+import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 import org.optaplanner.core.api.domain.variable.ShadowVariable;
 
@@ -47,11 +50,11 @@ public class Step
 
 	@Builder
 	private Step(
-			final StepId id,
-			final InternalPriority projectPriority,
+			@NonNull final StepId id,
+			@NonNull final InternalPriority projectPriority,
 			final int projectSeqNo,
-			final Resource resource,
-			final Duration duration,
+			@NonNull final Resource resource,
+			@NonNull final Duration duration,
 			@NonNull final LocalDateTime dueDate,
 			@NonNull final LocalDateTime startDateMin,
 			@Nullable final LocalDateTime startDate,
@@ -80,6 +83,13 @@ public class Step
 				+ ", startDateMin=" + startDateMin
 				+ ", " + resource
 				+ ", ID=" + (id != null ? id.getWoProjectResourceId().getRepoId() : "?");
+	}
+
+	@ValueRangeProvider
+	public CountableValueRange<LocalDateTime> createStartDateList()
+	{
+		final LocalDateTime startDateMax = dueDate.minus(duration);
+		return ValueRangeFactory.createLocalDateTimeValueRange(startDateMin, startDateMax, 1, Plan.PLANNING_TIME_PRECISION);
 	}
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
