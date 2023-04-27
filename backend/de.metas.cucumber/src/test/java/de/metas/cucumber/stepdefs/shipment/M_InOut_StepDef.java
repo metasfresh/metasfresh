@@ -346,12 +346,12 @@ public class M_InOut_StepDef
 		}
 	}
 
-	@And("^the (shipment|material receipt) identified by (.*) is (completed) and the following exception is thrown: (.*)")
+	@And("^the (shipment|material receipt) identified by (.*) is (completed) and an exception with error-code (.*) is thrown")
 	public void complete_inOut_expect_exception(
 			@NonNull final String model_UNUSED,
 			@NonNull final String shipmentIdentifier,
 			@NonNull final String action,
-			@NonNull final String exceptionMessage)
+			@NonNull final String errorCode)
 	{
 		try
 		{
@@ -360,7 +360,7 @@ public class M_InOut_StepDef
 		}
 		catch (final AdempiereException exception)
 		{
-			assertThat(exception.getMessage()).contains(exceptionMessage);
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
 		}
 	}
 
