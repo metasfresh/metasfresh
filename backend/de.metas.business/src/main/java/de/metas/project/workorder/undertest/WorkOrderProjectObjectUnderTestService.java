@@ -113,7 +113,7 @@ public class WorkOrderProjectObjectUnderTestService
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(docBaseAndSubType.getDocBaseType())
-				// .docSubType(docBaseAndSubType.getDocSubType())
+				.docSubType(docBaseAndSubType.getDocSubType())
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);

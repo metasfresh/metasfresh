@@ -122,3 +122,139 @@ UPDATE C_DocType SET IsCreateCounter='N',Updated=TO_TIMESTAMP('2023-04-28 01:57:
 UPDATE C_DocType SET DocSubType=NULL,Updated=TO_TIMESTAMP('2023-04-28 01:57:18.302','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541103
 ;
 
+-- 2023-04-28T06:29:22.587615700Z
+UPDATE C_DocType SET C_DocTypeInvoice_ID=NULL,Updated=TO_TIMESTAMP('2023-04-28 09:29:22.571','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541104
+;
+
+-- 2023-04-28T06:29:34.217875700Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362258
+;
+
+-- 2023-04-28T06:29:34.238895900Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362259
+;
+
+-- 2023-04-28T06:29:34.247381300Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362260
+;
+
+-- 2023-04-28T06:29:34.254968500Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362261
+;
+
+-- 2023-04-28T06:29:34.264429700Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362262
+;
+
+-- 2023-04-28T06:29:34.271372900Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362263
+;
+
+-- 2023-04-28T06:29:34.277871600Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362264
+;
+
+-- 2023-04-28T06:29:34.285964600Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362265
+;
+
+-- 2023-04-28T06:29:34.293876300Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362266
+;
+
+-- 2023-04-28T06:29:34.302380100Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362267
+;
+
+-- 2023-04-28T06:29:34.310468900Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362268
+;
+
+-- 2023-04-28T06:29:34.317494800Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362269
+;
+
+-- 2023-04-28T06:29:34.323381500Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362270
+;
+
+-- 2023-04-28T06:29:34.330377700Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362271
+;
+
+-- 2023-04-28T06:29:34.336979200Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1362272
+;
+
+-- 2023-04-28T06:29:34.344377700Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363803
+;
+
+-- 2023-04-28T06:29:34.352396800Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363804
+;
+
+-- 2023-04-28T06:29:34.359932500Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363805
+;
+
+-- 2023-04-28T06:29:34.369886200Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363806
+;
+
+-- 2023-04-28T06:29:34.379506500Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363807
+;
+
+-- 2023-04-28T06:29:34.387899600Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363808
+;
+
+-- 2023-04-28T06:29:34.396893300Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363809
+;
+
+-- 2023-04-28T06:29:34.402886400Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363810
+;
+
+-- 2023-04-28T06:29:34.411879300Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363811
+;
+
+-- 2023-04-28T06:29:34.418388100Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363812
+;
+
+-- 2023-04-28T06:29:34.426472700Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363813
+;
+
+-- 2023-04-28T06:29:34.433879500Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363814
+;
+
+-- 2023-04-28T06:29:34.439383700Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363815
+;
+
+-- 2023-04-28T06:29:34.448999700Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363816
+;
+
+-- 2023-04-28T06:29:34.457953800Z
+DELETE FROM AD_Document_Action_Access WHERE AD_Document_Action_Access_ID=1363817
+;
+
+-- 2023-04-28T06:29:34.464386100Z
+DELETE FROM  C_DocType_Trl WHERE C_DocType_ID=541103
+;
+
+-- 2023-04-28T06:29:34.469012500Z
+DELETE FROM C_DocType WHERE C_DocType_ID=541103
+;
+
+-- 2023-04-28T06:29:34.583379200Z
+DELETE FROM AD_Document_Action_Access WHERE C_DocType_ID=541103
+;
+
