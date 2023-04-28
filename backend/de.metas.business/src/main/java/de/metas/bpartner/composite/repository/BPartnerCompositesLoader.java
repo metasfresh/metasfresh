@@ -409,6 +409,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+<<<<<<< HEAD
 				.visitorsAddress(bPartnerLocationRecord.isVisitorsAddress())
 				.handOverLocation(bPartnerLocationRecord.isHandOverLocation())
 				.remitTo(bPartnerLocationRecord.isRemitTo())
@@ -416,6 +417,9 @@ final class BPartnerCompositesLoader
 				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
 				.sapPaymentMethod(bPartnerLocationRecord.getSAP_PaymentMethod())
 				.sapBPartnerCode(bPartnerLocationRecord.getSAP_BPartnerCode())
+=======
+				.remitTo(bPartnerLocationRecord.isRemitTo())
+>>>>>>> 839e606c816 (`Remit-To Address` is set to `N` after api/v2/forum-datenaustausch.ch/importInvoiceXML)
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
