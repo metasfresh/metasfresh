@@ -207,8 +207,14 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		queueItem.setBill_BPartner_ID(invoice.getC_BPartner_ID());
 		queueItem.setBill_User_ID(invoice.getAD_User_ID());
 		queueItem.setBill_Location_ID(invoice.getC_BPartner_Location_ID());
-		queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
-		queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
+
+		// set drop ship partner only if was not already set
+		if (queueItem.getC_BPartner_ID()<=0)
+		{
+			queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
+			queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
+		}
+
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
