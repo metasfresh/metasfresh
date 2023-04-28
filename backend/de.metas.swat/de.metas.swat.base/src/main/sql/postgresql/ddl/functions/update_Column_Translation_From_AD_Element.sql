@@ -15,7 +15,8 @@ BEGIN
 	SET
 		IsTranslated = x.IsTranslated,
 		Name = x.Name,
-		Description = x.Description
+		Description = x.Description,
+        Updated = x.Updated
 	FROM
 	(
 		select
@@ -24,7 +25,8 @@ BEGIN
 			etrl.AD_Language,
 			etrl.IsTranslated,
 			etrl.Name,
-			etrl.Description
+			etrl.Description,
+            etrl.updated
 		from AD_Element_Trl_Effective_v etrl
 			join AD_Column c on c.AD_Element_ID = etrl.AD_Element_ID
 		where
@@ -34,6 +36,7 @@ BEGIN
 	WHERE
 		t.AD_Column_ID = x.AD_Column_ID
 		and t.AD_Language = x.AD_Language
+        AND t.updated <> x.updated
 	;
 	--
 	GET DIAGNOSTICS update_count = ROW_COUNT;
@@ -46,5 +49,5 @@ VOLATILE
 SECURITY DEFINER
 COST 100;
 
-COMMENT ON FUNCTION update_Column_Translation_From_AD_Element(numeric, character varying) IS 
+COMMENT ON FUNCTION update_Column_Translation_From_AD_Element(numeric, character varying) IS
 'Update AD_Column_Trl from AD_Column.AD_Element_ID.';

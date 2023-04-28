@@ -22,47 +22,53 @@
 
 package de.metas.cucumber.stepdefs.invoice;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.Optional;
 
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Invoice_StepDef
 {
+	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
+
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
@@ -100,48 +106,57 @@ public class C_Invoice_StepDef
 	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
 	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
-		final Map<String, String> row = table.asMaps().get(0);
+		final Map<String, String> singleRow = table.asMaps().get(0);
 
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+		final String orderIdentifierCandidate = DataTableUtil.extractStringForColumnName(singleRow, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final ImmutableList<OrderId> orderIds = StepDefUtil.extractIdentifiers(orderIdentifierCandidate)
+				.stream()
+				.map(orderTable::get)
+				.map(I_C_Order::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 
-		//make sure the given invoice candidate is ready for processing
-		final Supplier<Boolean> noInvoiceCandidateRecompute = () ->
+		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateIds = ImmutableSet.builder();
+
+		for (final OrderId targetOrderId : orderIds)
 		{
-			final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
+			//make sure the given invoice candidate is ready for processing
+			final InvoiceCandidateId invoiceCandidateId = StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
+																						() -> loadInvoiceCandidateReadyToBeProcessed(targetOrderId),
+																						() -> logCurrentContext(targetOrderId));
 
-			return invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId() != null;
-		};
+			invoiceCandidateIds.add(invoiceCandidateId);
+		}
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, noInvoiceCandidateRecompute);
+		final ImmutableSet<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds.build());
 
-		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
+		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
+		
+		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(singleRow, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifierCandidate);
+		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
 
-		//enqueue invoice candidate
-		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
+		// dev-note: map either multiple orders (aggregated) to the same invoice or multiple orders to multiple invoices (each order with its invoice) 
+		if (invoiceIdentifiers.size() == 1)
+		{
+			invoiceTable.putOrReplace(invoiceIdentifiers.get(0), invoices.get(0));
+		}
+		else
+		{
+			assertThat(orderIds.size()).isEqualTo(invoiceIdentifiers.size());
 
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
-
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-
-		invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setFailIfNothingEnqueued(true)
-				.setInvoicingParams(invoicingParams)
-				.enqueueSelection(invoiceCandidatesSelectionId);
-
-		//wait for the invoice to be created
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCandidateRecord::isProcessed);
-
-		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
-		assertThat(invoices.size()).isEqualTo(1);
-
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceTable.put(invoiceIdentifier, invoices.get(0));
+			for (int invoiceIndex = 0; invoiceIndex < invoiceIdentifiers.size(); invoiceIndex++)
+			{
+				final OrderId orderId = orderIds.get(invoiceIndex);
+				final I_C_Invoice invoiceRecord = invoices.stream()
+						.filter(invoice -> invoice.getC_Order_ID() == orderId.getRepoId())
+						.findFirst()
+						.orElseThrow(() -> new AdempiereException("No Invoice found with OrderId!")
+								.appendParametersToMessage()
+								.setParameter("OrderId", orderId));
+				invoiceTable.putOrReplace(invoiceIdentifiers.get(invoiceIndex), invoiceRecord);
+			}
+		}
 	}
 
 	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
@@ -152,6 +167,7 @@ public class C_Invoice_StepDef
 		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
+		final String expectedSalesRep_ID = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_SalesRep_ID);
 
 		final Integer expectedBPartnerId = bPartnerTable.getOptional(bpartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
@@ -167,6 +183,15 @@ public class C_Invoice_StepDef
 		assertThat(invoice.isProcessed()).isEqualTo(processed);
 		assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
 
+		if (expectedSalesRep_ID != null)
+		{
+			final int expectedSalesRep_RepoId = Optional.ofNullable(DataTableUtil.nullToken2Null(expectedSalesRep_ID))
+					.map(Integer::parseInt)
+					.orElse(0);
+			
+			assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_RepoId);
+		}
+
 		final PaymentTermQuery query = PaymentTermQuery.builder()
 				.orgId(StepDefConstants.ORG_ID)
 				.value(paymentTerm)
@@ -176,5 +201,53 @@ public class C_Invoice_StepDef
 
 		assertThat(paymentTermId).isNotNull();
 		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
+	}
+
+	@NonNull
+	private ItemProvider.ProviderResult<InvoiceCandidateId> loadInvoiceCandidateReadyToBeProcessed(@NonNull final OrderId targetOrderId)
+	{
+		final InvoiceCandidateId invoiceCandidateId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId).getFirstInvoiceableInvoiceCandId();
+
+		if (invoiceCandidateId == null)
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("No Invoiceable Invoice Candidate found for OrderId=" + targetOrderId.getRepoId());
+		}
+
+		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateId);
+	}
+
+	@NonNull
+	private String logCurrentContext(@NonNull final OrderId targetOrderId)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for invoice candidate with:").append("\n")
+				.append(COLUMNNAME_C_Order_ID).append(" : ").append(targetOrderId).append("\n")
+				.append(COLUMNNAME_QtyToInvoice).append(" > 0").append("\n")
+				.append("OR ").append(COLUMNNAME_QtyToInvoice_Override).append(" > 0");
+
+		message.append("C_Invoice_Candidate record:").append("\n");
+
+		Optional.ofNullable(getFirstInvoiceCandidateByOrderId(targetOrderId))
+				.map(invoiceCandidateRecord ->
+							 message.append(COLUMNNAME_C_Invoice_Candidate_ID).append(" : ").append(invoiceCandidateRecord.getC_Invoice_Candidate_ID()).append(" ; ")
+									 .append(COLUMNNAME_QtyToInvoice).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice()).append(" ; ")
+									 .append(COLUMNNAME_QtyToInvoice_Override).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice_Override()).append(" ; ")
+									 .append("\n"))
+				.orElseGet(() -> message.append("No invoice-able invoice candidate record found for ")
+						.append(COLUMNNAME_C_Order_ID).append(" : ").append(targetOrderId).append(" ; "));
+
+		return "*** Error while looking for first invoice-able invoice candidate record, see current context: \n" + message;
+	}
+
+	@Nullable
+	private I_C_Invoice_Candidate getFirstInvoiceCandidateByOrderId(@NonNull final OrderId targetOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, targetOrderId)
+				.orderBy(COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				.first(I_C_Invoice_Candidate.class);
 	}
 }

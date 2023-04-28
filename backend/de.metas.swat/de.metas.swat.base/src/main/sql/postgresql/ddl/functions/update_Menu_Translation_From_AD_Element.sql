@@ -19,7 +19,8 @@ BEGIN
 		Description = x.Description,
 		webui_namebrowse = x.webui_namebrowse,
 		webui_namenew = x.webui_namenew,
-		webui_namenewbreadcrumb = x.webui_namenewbreadcrumb
+		webui_namenewbreadcrumb = x.webui_namenewbreadcrumb,
+        Updated = x.Updated
 	FROM
 	(
 		select
@@ -31,7 +32,8 @@ BEGIN
 			etrl.Description,
 			etrl.webui_namebrowse, 
 			etrl.webui_namenew, 
-			etrl.webui_namenewbreadcrumb
+			etrl.webui_namenewbreadcrumb,
+			etrl.Updated
 		from AD_Element_Trl_Effective_v etrl
 			join AD_Menu m on m.AD_Element_ID = etrl.AD_Element_ID
 		where 
@@ -41,6 +43,7 @@ BEGIN
 	WHERE
 		t.AD_Menu_ID = x.AD_Menu_ID
 		and t.AD_Language = x.AD_Language
+		and t.Updated <> x.Updated
 	;
 
 	GET DIAGNOSTICS update_count = ROW_COUNT;

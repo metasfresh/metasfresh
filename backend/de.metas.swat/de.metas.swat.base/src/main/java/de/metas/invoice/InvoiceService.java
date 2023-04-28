@@ -22,6 +22,7 @@
 
 package de.metas.invoice;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -35,13 +36,16 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -59,6 +63,8 @@ import static org.compiere.util.Env.getCtx;
 @Service
 public class InvoiceService
 {
+	private final static Logger logger = LogManager.getLogger(InvoiceService.class);
+
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -74,20 +80,19 @@ public class InvoiceService
 	@NonNull
 	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
+		if (shipmentLines.isEmpty())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines list is empty; -> nothing to do");
+			return ImmutableSet.of();
+		}
+		
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		processInvoiceCandidates(invoiceCandidateIds);
-
-		return invoiceCandidateIds.stream()
-				.map(invoiceCandDAO::retrieveIlForIc)
-				.flatMap(List::stream)
-				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
-				.map(InvoiceId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
 	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
@@ -104,6 +109,19 @@ public class InvoiceService
 				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		processInvoiceCandidates(invoiceCandidateIds);
+
+		return invoiceCandidateIds.stream()
+				.map(invoiceCandDAO::retrieveIlForIc)
+				.flatMap(List::stream)
+				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
