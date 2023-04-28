@@ -5,6 +5,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -99,6 +100,11 @@ public class PurchaseCandidateAdvisedEventCreator
 		else
 		{
 			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
+		}
+
+		if(requiredQty.signum() == 0)
+		{
+			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
 		}
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
