@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
-@Builder
+@Builder(toBuilder = true)
 public class SAPGLJournalLine
 {
 	@Nullable private SAPGLJournalLineId id;
