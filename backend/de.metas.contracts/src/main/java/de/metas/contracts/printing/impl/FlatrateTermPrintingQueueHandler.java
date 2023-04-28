@@ -44,9 +44,11 @@ import org.slf4j.Logger;
 public class FlatrateTermPrintingQueueHandler extends PrintingQueueHandlerAdapter
 {
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private static final Logger logger = LogManager.getLogger(FlatrateTermPrintingQueueHandler.class);
 
 	public static final transient FlatrateTermPrintingQueueHandler instance = new FlatrateTermPrintingQueueHandler();
+
 
 	/**
 	 * Allays returns <code>true</code>.
@@ -64,7 +66,7 @@ public class FlatrateTermPrintingQueueHandler extends PrintingQueueHandlerAdapte
 		logger.debug("C_Printing_Queue={}; AD_Archive {} has [AD_Table_ID={}, Record_ID={}, C_BPartner_ID={}];",
 				new Object[] { queueItem, archive, archive.getAD_Table_ID(), archive.getRecord_ID(), archive.getC_BPartner_ID() });
 
-		final Object archiveRefencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
+		final Object archiveRefencedModel = archiveDAO.retrieveReferencedModel(archive, Object.class);
 		if (archiveRefencedModel == null)
 		{
 			logger.debug("AD_Archive {} does not reference a PO; returning", archive);
