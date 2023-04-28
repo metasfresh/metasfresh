@@ -39,12 +39,13 @@ package org.eevolution.model.reasoner;
  * #L%
  */
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import org.compiere.model.I_S_Resource;
+import de.metas.product.ResourceId;
+import de.metas.resource.Resource;
+import de.metas.resource.ResourceService;
+import de.metas.resource.ResourceType;
+import de.metas.util.Services;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_S_ResourceUnAvailable;
 import org.compiere.model.MResourceUnAvailable;
 import org.compiere.model.PO;
@@ -52,28 +53,25 @@ import org.compiere.model.POResultSet;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
-import de.metas.product.ResourceId;
-import de.metas.util.Services;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
- * @version 1.0, October 14th 2005
- *
- * @author Teo Sarca, http://www.arhipac.ro
+ * @author Teo Sarca, <a href="http://www.arhipac.ro">...</a>
  * @author Cristi Pup, http://www.arhipac.ro
  *         <li>BF [ 2854937 ] CRP calculate wrong DateFinishSchedule
- *         https://sourceforge.net/tracker/?func=detail&atid=934929&aid=2854937&group_id=176962
  */
 public class CRPReasoner
 {
-	protected final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
-	protected final IPPOrderDAO ordersRepo = Services.get(IPPOrderDAO.class);
+	private final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+	private final IPPOrderDAO ordersRepo = Services.get(IPPOrderDAO.class);
 
 	public Properties getCtx()
 	{
@@ -97,51 +95,29 @@ public class CRPReasoner
 		return ordersRepo.streamOpenPPOrderIdsOrderedByDatePromised(plantId);
 	}
 
-	protected final ResourceType getResourceType(final I_S_Resource r)
+	private ResourceType getResourceType(final Resource r)
 	{
-		final ResourceId resourceId = ResourceId.ofRepoId(r.getS_Resource_ID());
-		return getResourceType(resourceId);
+		return resourceService.getResourceTypeById(r.getResourceTypeId());
 	}
 
-	protected final ResourceType getResourceType(final ResourceId resourceId)
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public final boolean isAvailable(final Resource resource)
 	{
-		return resourcesRepo.getResourceTypeByResourceId(resourceId);
+		return resourceService.getResourceTypeByResourceId(resource.getResourceId()).isAvailable();
 	}
-
-	protected final boolean isAvailable(final ResourceId resourceId, final LocalDateTime dateTime)
-	{
-		final ResourceType resourceType = getResourceType(resourceId);
-		return resourceType.isDayAvailable(TimeUtil.asLocalDate(dateTime)) && !MResourceUnAvailable.isUnAvailable(resourceId.getRepoId(), dateTime);
-	}
-
-	protected final boolean isAvailable(final I_S_Resource resource, final LocalDateTime dateTime)
-	{
-		final ResourceType resourceType = getResourceType(resource);
-		return resourceType.isDayAvailable(TimeUtil.asLocalDate(dateTime)) && !MResourceUnAvailable.isUnAvailable(resource.getS_Resource_ID(), dateTime);
-	}
-
-	public final boolean isAvailable(final I_S_Resource resource)
-	{
-		return getResourceType(resource).isAvailable();
-	}
-
+	
 	/**
 	 * Get Next/Previous Available Date
-	 *
-	 * @param resourceType
-	 * @param dateTime
-	 * @param isScheduleBackward
-	 * @return
 	 */
-	private LocalDateTime getAvailableDate(final ResourceType resourceType, final LocalDateTime dateTime, final boolean isScheduleBackward)
+	private Instant getAvailableDate(final ResourceType resourceType, final Instant dateTime, final boolean isScheduleBackward)
 	{
 		final int direction = isScheduleBackward ? -1 : +1;
 
-		LocalDateTime date = dateTime;
+		Instant date = dateTime;
 		int daysAdded = 0;
-		if (!resourceType.isDayAvailable(date.toLocalDate()))
+		if (!resourceType.isDayAvailable(date))
 		{
-			date = date.plusDays(1 * direction);
+			date = date.plus(direction, ChronoUnit.DAYS);
 			daysAdded++;
 			if (daysAdded >= 7)
 			{
@@ -155,18 +131,17 @@ public class CRPReasoner
 
 	/**
 	 * @param r resource
-	 * @param dateTime
 	 * @return next available date
 	 */
-	public LocalDateTime getAvailableDate(final I_S_Resource r, final LocalDateTime dateTime, final boolean isScheduleBackward)
+	public Instant getAvailableDate(final Resource r, final Instant dateTime, final boolean isScheduleBackward)
 	{
 		final ResourceType resourceType = getResourceType(r);
 
-		LocalDateTime date = dateTime;
+		Instant date = dateTime;
 		final ArrayList<Object> params = new ArrayList<>();
 		String whereClause;
-		String orderByClause;
-		int direction;
+		final String orderByClause;
+		final int direction;
 		if (isScheduleBackward)
 		{
 			whereClause = I_S_ResourceUnAvailable.COLUMNNAME_DateFrom + " <= ?";
@@ -183,8 +158,8 @@ public class CRPReasoner
 		}
 
 		whereClause += " AND " + I_S_ResourceUnAvailable.COLUMNNAME_S_Resource_ID + "=? AND AD_Client_ID=?";
-		params.add(r.getS_Resource_ID());
-		params.add(r.getAD_Client_ID());
+		params.add(r.getResourceId());
+		params.add(ClientId.METASFRESH);
 
 		final POResultSet<MResourceUnAvailable> rs = new Query(getCtx(r), I_S_ResourceUnAvailable.Table_Name, whereClause, null)
 				.setOrderBy(orderByClause)
@@ -197,7 +172,7 @@ public class CRPReasoner
 				final MResourceUnAvailable rua = rs.next();
 				if (rua.isUnAvailable(date))
 				{
-					date = date.plusDays(1 * direction);
+					date = date.plus(direction, ChronoUnit.DAYS);
 				}
 				date = getAvailableDate(resourceType, date, isScheduleBackward);
 			}

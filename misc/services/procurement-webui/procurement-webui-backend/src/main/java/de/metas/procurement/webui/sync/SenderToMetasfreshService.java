@@ -140,7 +140,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 		logger.debug("Requesting all bpartners from metasfresh");
 		try
 		{
-			senderToMetasfresh.send(GetAllBPartnersRequest.INSTANCE);
+			senderToMetasfresh.send(GetAllBPartnersRequest.builder().build());
 		}
 		catch (final Exception e)
 		{
@@ -151,7 +151,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 		logger.debug("Requesting products from metasfresh");
 		try
 		{
-			senderToMetasfresh.send(GetAllProductsRequest.INSTANCE);
+			senderToMetasfresh.send(GetAllProductsRequest.builder().build());
 		}
 		catch (final Exception e)
 		{
@@ -162,7 +162,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 		logger.debug("Requesting info message from metasfresh");
 		try
 		{
-			senderToMetasfresh.send(GetInfoMessageRequest.INSTANCE);
+			senderToMetasfresh.send(GetInfoMessageRequest.builder().build());
 		}
 		catch (final Exception e)
 		{

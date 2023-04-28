@@ -2,10 +2,12 @@ package de.metas.ui.web.process;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
-import de.metas.ui.web.devices.DeviceDescriptorsList;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentValidStatus;
+
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -34,6 +36,8 @@ public interface IProcessInstanceParameter
 	String getParameterName();
 
 	DocumentFieldWidgetType getWidgetType();
+
+	OptionalInt getMinPrecision();
 
 	Object getValueAsJsonObject(JSONOptions jsonOpts);
 

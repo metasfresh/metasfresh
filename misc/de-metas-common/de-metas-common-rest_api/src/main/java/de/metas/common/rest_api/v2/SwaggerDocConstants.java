@@ -27,7 +27,8 @@ public class SwaggerDocConstants
 	public static final String BPARTNER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
-			+ "* or something like `gln-<C_Bartner_Location.GLN>`\n";
+			+ "* or something like `gln-<C_BPartner_Location.GLN>`\n"
+			+ "* or something like `val-<C_BPartner.Value>`\n";
 
 	public static final String BPARTNER_VALUE_DOC = "Code of the bPartner in question. Can be\n"
 			+ "* a plain `C_BPartner.Value`\n"
@@ -48,6 +49,11 @@ public class SwaggerDocConstants
 	public static final String NEXT_DOC = "Optional identifier for the next page that was provided to the client in the previous page.\n"
 			+ "If provided, any `since` value is ignored";
 
+	public static final String INVOICE_IDENTIFIER_DOC = "Identifier of the Invoice in question. Can be\n"
+			+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
+			+ "* or something like `doc-<C_Invoice.documentNo>`"
+			+ "* or something like `ext-<C_Invoice.ExternalId>`";
+
 	public static final String SINCE_DOC = "Optional epoch timestamp in ms. The endpoint returns all resources that were created or modified *after* the given time.";
 
 	public static final String READ_ONLY_SYNC_ADVISE_DOC = "Defaults to READ_ONLY, if not specified";
@@ -65,7 +71,7 @@ public class SwaggerDocConstants
 	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
 			+ "* a plain `<M_Product_ID>`\n"
 			+ "* or something like `val-<M_Product.Value>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference> where <ExternalReference> translates to an identifier of the product within the given <ExternalSystem>";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the product within the given `<ExternalSystem>`";
 
 	public static final String SHIPPER_IDENTIFIER_DOC = "Identifier of the M_Shipper in question. Can be\n"
 			+ "* a plain `<M_Shipper_ID>`\n"
@@ -74,7 +80,32 @@ public class SwaggerDocConstants
 
 	public static final String AD_SEQ_NO_ID_DOC = "AD_SeqNo_ID for the seqNo to be retrieved";
 
+	public static final String HU_IDENTIFIER_DOC = "Identifier of the handling unit in question. Can be\n"
+			+ "* a plain `<M_HU_ID>`";
+
 	public static final String ACTIVITY_IDENTIFIER_DOC = "Identifier of the activity in question. Can be\n"
 			+ "* a plain `<C_Activity_ID>`\n"
 			+ "* or something like `val-<C_Activity.Value>`";
+
+	public static final String PROJECT_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
+			+ "* a plain `<C_Project_ID>`\n"
+			+ "* or something like `ext-<C_Project.ExternalId>`\n"
+			+ "* or something like `val-<C_Project.value>`\n";
+
+	public static final String STEP_IDENTIFIER_DOC = "Identifier of the project step in question. Can be\n"
+			+ "* a plain `<C_Project_WO_Step_ID>`\n"
+			+ "* or something like `ext-<C_Project_WO_Step.ExternalId>`\n";
+
+	public static final String OBJECT_UNDER_TEST_IDENTIFIER_DOC = "Identifier of the project object under test in question. Can be\n"
+			+ "* a plain `<C_Project_WO_ObjectUnderTest_ID>`\n"
+			+ "* or something like `ext-<C_Project_WO_ObjectUnderTest.ExternalId>`\n";
+
+	public static final String RESOURCE_IDENTIFIER_DOC = "Identifier of the step resource in question. Can be\n"
+			+ "* a plain `<S_Resource_ID>`\n"
+			+ "* or something like `val-<S_Resource.Value>`\n"
+			+ "* or something like `int-<S_Resource.InternalName>`\n";
+
+	public static final String PAYMENT_TERM_IDENTIFIER_DOC = "Identifier of the paymentTerm in question. Can be\n"
+			+ "* a plain `<C_PaymentTerm_ID>`\n"
+			+ "* or something like `val-<C_PaymentTerm.Value>`\n";
 }

@@ -140,7 +140,7 @@ public class RollupWorkflow extends JavaProcess
 	protected String doIt()
 	{
 		routingService = RoutingServiceFactory.get().getRoutingService();
-		costElements = costElementsRepo.getByCostingMethod(p_ConstingMethod);
+		costElements = costElementsRepo.getByCostingMethod(getClientId(), p_ConstingMethod);
 
 		for (final I_M_Product product : getProducts())
 		{
@@ -408,7 +408,7 @@ public class RollupWorkflow extends JavaProcess
 
 		public BigDecimal getCostAsBigDecimal()
 		{
-			return cost.getValue();
+			return cost.toBigDecimal();
 		}
 	}
 }

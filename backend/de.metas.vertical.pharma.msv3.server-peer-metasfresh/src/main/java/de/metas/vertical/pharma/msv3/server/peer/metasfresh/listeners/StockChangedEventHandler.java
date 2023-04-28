@@ -1,18 +1,16 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.listeners;
 
-import java.util.Collection;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	private MSV3StockAvailabilityService stockAvailabilityService;
 
 	@Override
-	public Collection<Class<? extends StockChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends StockChangedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(StockChangedEvent.class);
 	}

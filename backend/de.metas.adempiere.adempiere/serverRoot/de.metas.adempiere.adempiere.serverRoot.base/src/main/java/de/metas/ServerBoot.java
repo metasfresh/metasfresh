@@ -12,7 +12,6 @@ import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
-import lombok.NonNull;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -34,16 +33,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +80,8 @@ public class ServerBoot implements InitializingBean
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
+	private static final String SYSTEM_PROPERTY_APP_NAME = "spring.application.name";
+
 	private static final Logger logger = LogManager.getLogger(ServerBoot.class);
 
 	private static final String SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE = "de.metas.spring.profiles.active";
@@ -105,6 +101,8 @@ public class ServerBoot implements InitializingBean
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
+		setDefaultSystemProperties();
+
 		logger.info("Parse command line arguments (if any!)");
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
@@ -123,6 +121,8 @@ public class ServerBoot implements InitializingBean
 			activeProfiles.add(Profiles.PROFILE_ReportService);
 			activeProfiles.add(Profiles.PROFILE_PrintService);
 			activeProfiles.add(Profiles.PROFILE_AccountingService);
+
+			setDefaultProperties();
 
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 			new SpringApplicationBuilder(ServerBoot.class)
@@ -154,57 +154,6 @@ public class ServerBoot implements InitializingBean
 		return new ArrayList<>(sysConfigBL
 				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, ClientAndOrgId.SYSTEM)
 				.values());
-	}
-
-	@Configuration
-	public static class StaticResourceConfiguration implements WebMvcConfigurer
-	{
-		private static final Logger LOG = LogManager.getLogger(StaticResourceConfiguration.class);
-
-		@Nullable
-		@Value("${metasfresh.serverRoot.downloads:}")
-		private String downloadsPath;
-
-		@Override
-		public void addResourceHandlers(final @NonNull ResourceHandlerRegistry registry)
-		{
-			if (Check.isEmpty(downloadsPath, true))
-			{
-				downloadsPath = defaultDownloadsPath();
-			}
-
-			// Make sure the path ends with separator
-			// see https://jira.spring.io/browse/SPR-14063
-			if (downloadsPath != null && !downloadsPath.endsWith(File.separator))
-			{
-				downloadsPath += File.separator;
-			}
-
-			if (!Check.isEmpty(downloadsPath, true))
-			{
-				LOG.info("Serving static content from " + downloadsPath);
-				registry.addResourceHandler("/download/**").addResourceLocations("file:" + downloadsPath);
-
-				// the "binaries" download path is about to be removed soon!
-				registry.addResourceHandler("/binaries/**").addResourceLocations("file:" + downloadsPath);
-			}
-		}
-
-		@Nullable
-		private String defaultDownloadsPath()
-		{
-			try
-			{
-				final File cwd = new File(".").getCanonicalFile();
-				final File downloadsFile = new File(cwd, "download");
-				return downloadsFile.getCanonicalPath();
-			}
-			catch (final IOException e)
-			{
-				LOG.warn("Failed finding the default downloads path", e);
-				return null;
-			}
-		}
 	}
 
 	@Bean
@@ -241,6 +190,23 @@ public class ServerBoot implements InitializingBean
 					TimeUnit.SECONDS // timeUnit
 			);
 			logger.info("Clearing query selection tables each {} seconds", clearQuerySelectionsRateInSeconds);
+		}
+	}
+
+	private static void setDefaultSystemProperties()
+	{
+		if (System.getProperty("user.country") == null || System.getProperty("user.language") == null)
+		{
+			System.setProperty("user.country", Locale.US.getCountry());
+			System.setProperty("user.language", Locale.US.getLanguage());
+		}
+	}
+
+	private static void setDefaultProperties()
+	{
+		if (Check.isBlank(System.getProperty(SYSTEM_PROPERTY_APP_NAME)))
+		{
+			System.setProperty(SYSTEM_PROPERTY_APP_NAME, ServerBoot.class.getSimpleName());
 		}
 	}
 }

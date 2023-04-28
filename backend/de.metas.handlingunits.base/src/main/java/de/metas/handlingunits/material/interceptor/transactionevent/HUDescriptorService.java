@@ -39,8 +39,8 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.springframework.stereotype.Service;
@@ -52,6 +52,12 @@ public class HUDescriptorService
 {
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+	@NonNull
+	public ImmutableList<HUDescriptor> createHuDescriptors(@NonNull final I_M_HU huRecord)
+	{
+		return createHuDescriptors(huRecord, false);
+	}
 
 	public ImmutableList<HUDescriptor> createHuDescriptors(
 			@NonNull final I_M_HU huRecord,

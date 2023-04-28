@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_Product_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -927965123L;
+	private static final long serialVersionUID = 1283454371L;
 
     /** Standard Constructor */
     public X_PP_Product_BOMLine (final Properties ctx, final int PP_Product_BOMLine_ID, @Nullable final String trxName)
@@ -58,21 +58,6 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public java.lang.String getBackflushGroup() 
 	{
 		return get_ValueAsString(COLUMNNAME_BackflushGroup);
-	}
-
-	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
-	}
-
-	@Override
-	public int getC_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 
@@ -124,6 +109,21 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public java.lang.String getCULabelQuanitity() 
 	{
 		return get_ValueAsString(COLUMNNAME_CULabelQuanitity);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override
@@ -201,6 +201,30 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setIsEnforceIssuingTolerance (final boolean IsEnforceIssuingTolerance)
+	{
+		set_Value (COLUMNNAME_IsEnforceIssuingTolerance, IsEnforceIssuingTolerance);
+	}
+
+	@Override
+	public boolean isEnforceIssuingTolerance() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEnforceIssuingTolerance);
+	}
+
+	@Override
+	public void setIsManualQtyInput (final boolean IsManualQtyInput)
+	{
+		set_Value (COLUMNNAME_IsManualQtyInput, IsManualQtyInput);
+	}
+
+	@Override
+	public boolean isManualQtyInput() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyInput);
+	}
+
+	@Override
 	public void setIsQtyPercentage (final boolean IsQtyPercentage)
 	{
 		set_Value (COLUMNNAME_IsQtyPercentage, IsQtyPercentage);
@@ -235,6 +259,68 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public java.lang.String getIssueMethod() 
 	{
 		return get_ValueAsString(COLUMNNAME_IssueMethod);
+	}
+
+	@Override
+	public void setIssuingTolerance_Perc (final @Nullable BigDecimal IssuingTolerance_Perc)
+	{
+		set_Value (COLUMNNAME_IssuingTolerance_Perc, IssuingTolerance_Perc);
+	}
+
+	@Override
+	public BigDecimal getIssuingTolerance_Perc() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_IssuingTolerance_Perc);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIssuingTolerance_Qty (final @Nullable BigDecimal IssuingTolerance_Qty)
+	{
+		set_Value (COLUMNNAME_IssuingTolerance_Qty, IssuingTolerance_Qty);
+	}
+
+	@Override
+	public BigDecimal getIssuingTolerance_Qty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_IssuingTolerance_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIssuingTolerance_UOM_ID (final int IssuingTolerance_UOM_ID)
+	{
+		if (IssuingTolerance_UOM_ID < 1) 
+			set_Value (COLUMNNAME_IssuingTolerance_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_IssuingTolerance_UOM_ID, IssuingTolerance_UOM_ID);
+	}
+
+	@Override
+	public int getIssuingTolerance_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_IssuingTolerance_UOM_ID);
+	}
+
+	/** 
+	 * IssuingTolerance_ValueType AD_Reference_ID=541693
+	 * Reference name: IssuingTolerance_ValueType
+	 */
+	public static final int ISSUINGTOLERANCE_VALUETYPE_AD_Reference_ID=541693;
+	/** Percentage = P */
+	public static final String ISSUINGTOLERANCE_VALUETYPE_Percentage = "P";
+	/** Quantity = Q */
+	public static final String ISSUINGTOLERANCE_VALUETYPE_Quantity = "Q";
+	@Override
+	public void setIssuingTolerance_ValueType (final @Nullable java.lang.String IssuingTolerance_ValueType)
+	{
+		set_Value (COLUMNNAME_IssuingTolerance_ValueType, IssuingTolerance_ValueType);
+	}
+
+	@Override
+	public java.lang.String getIssuingTolerance_ValueType() 
+	{
+		return get_ValueAsString(COLUMNNAME_IssuingTolerance_ValueType);
 	}
 
 	@Override

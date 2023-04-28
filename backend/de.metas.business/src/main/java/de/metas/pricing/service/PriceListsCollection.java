@@ -64,11 +64,12 @@ public class PriceListsCollection
 	{
 		return getPriceLists()
 				.stream()
-				.map(priceList -> extractCountryIdOrNull(priceList))
+				.map(PriceListsCollection::extractCountryIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Nullable
 	private static CountryId extractCountryIdOrNull(final I_M_PriceList priceList)
 	{
 		return CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
@@ -77,7 +78,7 @@ public class PriceListsCollection
 	public Optional<PriceListId> getPriceListId(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
 	{
 		return getPriceList(countryId, soTrx)
-				.map(priceList -> extractPriceListId(priceList));
+				.map(PriceListsCollection::extractPriceListId);
 	}
 
 	public Optional<I_M_PriceList> getPriceList(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
@@ -120,8 +121,14 @@ public class PriceListsCollection
 				.filter(PriceListFilter.builder()
 						.countryIds(ImmutableSet.copyOf(countryIds))
 						.build())
-				.map(priceList -> extractPriceListId(priceList))
+				.map(PriceListsCollection::extractPriceListId)
 				.distinct();
+	}
+
+	@NonNull
+	public ImmutableList<I_M_PriceList> getPriceList()
+	{
+		return getPriceLists();
 	}
 
 	private static PriceListId extractPriceListId(final I_M_PriceList priceList)

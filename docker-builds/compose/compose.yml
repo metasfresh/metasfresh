@@ -30,7 +30,7 @@ services:
       replicas: 1
 
   search:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    image: elasticsearch:7.17.8
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -121,18 +121,18 @@ services:
       mode: replicated
       replicas: 1
 
-  # mobile:
-    # image: $mfregistry/metas-mobile:$mfversion
-    # ports:
-      # - "8880:80"
-    # volumes:
-      # - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
-    # depends_on:
-      # - webapi
-      # - app
-    # deploy:
-      # mode: replicated
-      # replicas: 1
+  mobile:
+    image: $mfregistry/metas-mobile:$mfversion
+    ports:
+      - "8880:80"
+    volumes:
+      - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
+    depends_on:
+      - webapi
+      - app
+    deploy:
+      mode: replicated
+      replicas: 1
 
 volumes: {}
 configs: {}

@@ -1,46 +1,22 @@
 package org.adempiere.ad.dao;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import de.metas.process.PInstanceId;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import java.util.Properties;
 
 /**
  * @param <T> model type
  * @author tsa
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IQueryBuilder<T>
+		extends
+		IQueryBuilderExecutors<T>,
+		ICompositeQueryFilterProxy<T, IQueryBuilder<T>>,
+		IQueryBuilderOrderBys<T>
 {
 	/**
 	 * Advice the SQL query builder, in case our filters are joined by OR, to explode them in several UNIONs.
@@ -76,15 +52,15 @@ public interface IQueryBuilder<T>
 	/**
 	 * Add the given filter.
 	 */
-	IQueryBuilder<T> filter(IQueryFilter<T> filter);
+	IQueryBuilder<T> filter(@NonNull IQueryFilter<T> filter);
 
-	/**
-	 * Unboxes and adds the filters contained in the <code>compositeFilter</code>.
-	 * If it could not be unboxed (e.g. because JOIN method does not match) the composite filter is added as is.
-	 * Note that by "unboxing" we mean getting the filters included in the given {@code compositeFilter} and adding them to this instance directly, rather than adding the given {@code compositeFilter} itself.
-	 */
-	IQueryBuilder<T> addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter);
+	@Override
+	default IQueryBuilder<T> addFilter(@NonNull IQueryFilter<T> filter) {return filter(filter);}
 
+	@Override
+	String getModelTableName();
+
+	@Deprecated
 	IQueryBuilder<T> filterByClientId();
 
 	ICompositeQueryFilter<T> getCompositeFilter();
@@ -92,10 +68,7 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> setLimit(QueryLimit limit);
 
 	@Deprecated
-	default IQueryBuilder<T> setLimit(final int limit)
-	{
-		return setLimit(QueryLimit.ofInt(limit));
-	}
+	default IQueryBuilder<T> setLimit(final int limit) {return setLimit(QueryLimit.ofInt(limit));}
 
 	/**
 	 * Sets a query option which will be used while building the query or while executing the query.
@@ -113,161 +86,17 @@ public interface IQueryBuilder<T>
 
 	QueryLimit getLimit();
 
-	/**
-	 * Make sure this instance now has an order-by-builder and return it.
-	 */
+	@Override
 	IQueryBuilderOrderByClause<T> orderBy();
 
-	//@formatter:off
-	default IQueryBuilder<T> clearOrderBys() { orderBy().clear(); return this; }
-	/** order ascending, with {@code NULLS LAST} */
-	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
-	/** order ascending, with {@code NULLS LAST} */
-	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
-	default IQueryBuilder<T> orderByDescending(final String columnName) { orderBy().addColumnDescending(columnName); return this; }
-	default IQueryBuilder<T> orderByDescending(final ModelColumn<T, ?> column) { orderBy().addColumnDescending(column.getColumnName()); return this; }
-	//@formatter:on
-
+	@Override
 	IQuery<T> create();
 
-	IQueryBuilder<T> addNotEqualsFilter(String columnName, @Nullable Object value);
-
-	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
-
-	IQueryBuilder<T> addNotNull(ModelColumn<T, ?> column);
-
-	IQueryBuilder<T> addNotNull(String columnName);
-
-	IQueryBuilder<T> addCoalesceEqualsFilter(Object value, String... columnNames);
-
-	IQueryBuilder<T> addEqualsFilter(String columnName, @Nullable Object value, IQueryFilterModifier modifier);
-
-	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value, IQueryFilterModifier modifier);
-
-	IQueryBuilder<T> addEqualsFilter(String columnName, @Nullable Object value);
-
-	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
-
-	/**
-	 * Filters using the given string as a <b>substring</b>.
-	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
-	 *
-	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
-	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
-	 */
-	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
-
-	IQueryBuilder<T> addCompareFilter(String columnName, Operator operator, Object value);
-
-	IQueryBuilder<T> addCompareFilter(ModelColumn<T, ?> column, Operator operator, Object value);
-
-	IQueryBuilder<T> addCompareFilter(String columnName, Operator operator, Object value, IQueryFilterModifier modifier);
-
-	IQueryBuilder<T> addCompareFilter(ModelColumn<T, ?> column, Operator operator, Object value, IQueryFilterModifier modifier);
-
-	IQueryBuilder<T> addOnlyContextClient(Properties ctx);
-
+	@Deprecated
 	IQueryBuilder<T> addOnlyContextClient();
 
+	@Deprecated
 	IQueryBuilder<T> addOnlyContextClientOrSystem();
-
-	IQueryBuilder<T> addOnlyActiveRecordsFilter();
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is accepted.
-	 */
-	@SuppressWarnings("unchecked")
-	<V> IQueryBuilder<T> addInArrayOrAllFilter(String columnName, V... values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is rejected.
-	 *
-	 * Note that "InArray*Filters" also support {@link RepoIdAware} and {@link de.metas.util.lang.ReferenceListAwareEnum}
-	 */
-	@SuppressWarnings("unchecked")
-	<V> IQueryBuilder<T> addInArrayFilter(String columnName, V... values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is accepted.
-	 */
-	@SuppressWarnings("unchecked")
-	<V> IQueryBuilder<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, V... values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is rejected.
-	 *
-	 * @param values the values to check again also supports {@code null} value among them.
-	 */
-	@SuppressWarnings("unchecked")
-	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, V... values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is accepted.
-	 */
-	<V> IQueryBuilder<T> addInArrayOrAllFilter(String columnName, Collection<V> values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is rejected.
-	 * Note: also works with {@link RepoIdAware} values.
-	 */
-	<V> IQueryBuilder<T> addInArrayFilter(String columnName, Collection<V> values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is accepted.
-	 * Note: also works with {@link RepoIdAware} values.
-	 */
-	<V> IQueryBuilder<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is rejected.
-	 * Note: also works with {@link RepoIdAware} values.
-	 */
-	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
-
-	/**
-	 * Notes:
-	 * <li>This filter <b>will not</b> match {@code null} column values.</li>
-	 * <li>If {@code values} is empty, then this filter will return {@code true} (as intuitively expected).</li>
-	 * <li>Also works with {@link RepoIdAware} values.</li>
-	 */
-	<V> IQueryBuilder<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
-
-	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
-	 */
-	<V> IQueryBuilder<T> addNotInArrayFilter(String columnName, Collection<V> values);
-
-	IInSubQueryFilterClause<T, IQueryBuilder<T>> addInSubQueryFilter();
-
-	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
-
-	/**
-	 * @param columnName the key column from the "main" query
-	 * @param subQueryColumnName the key column from the "sub" query
-	 * @param subQuery the actual sub query
-	 * @return this
-	 */
-	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
-
-	<ST> IQueryBuilder<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
-
-	/**
-	 * @param column the key column from the "main" query
-	 * @param subQueryColumn the key column from the "sub" query
-	 * @param subQuery the actual sub query
-	 * @return this
-	 */
-	<ST> IQueryBuilder<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
-
-	<ST> IQueryBuilder<T> addNotInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
 
 	/**
 	 * Create a new {@link IQueryBuilder} which collects models from given model column.
@@ -311,7 +140,7 @@ public interface IQueryBuilder<T>
 	 * </pre>
 	 *
 	 * @param linkColumnNameInChildTable the column in child model which will be used to join the child records to current record's primary key
-	 * @param childType child model to be used
+	 * @param childType                  child model to be used
 	 * @return query build for <code>ChildType</code>
 	 */
 	<ChildType> IQueryBuilder<ChildType> andCollectChildren(String linkColumnNameInChildTable, Class<ChildType> childType);
@@ -369,25 +198,4 @@ public interface IQueryBuilder<T>
 	<TargetModelType> IQueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(ModelColumn<T, TargetModelType> column);
 
 	<TargetModelType> IQueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(String collectOnColumnName, Class<TargetModelType> targetModelType);
-
-	IQueryBuilder<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
-
-	IQueryBuilder<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
-
-	IQueryBuilder<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo);
-
-	IQueryBuilder<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo);
-
-	IQueryBuilder<T> addEndsWithQueryFilter(String columnName, String endsWithString);
-
-	/**
-	 * Creates, appends and returns new composite filter.
-	 *
-	 * @return created composite filter
-	 */
-	ICompositeQueryFilter<T> addCompositeQueryFilter();
-
-	IQueryBuilder<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
-
-	String getModelTableName();
 }

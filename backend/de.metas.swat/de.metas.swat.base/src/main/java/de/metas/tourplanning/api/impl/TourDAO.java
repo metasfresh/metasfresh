@@ -6,7 +6,7 @@ package de.metas.tourplanning.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.standard.ICalendarBL;
 import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.api.ITourVersionRange;
 import de.metas.tourplanning.model.I_M_Tour;

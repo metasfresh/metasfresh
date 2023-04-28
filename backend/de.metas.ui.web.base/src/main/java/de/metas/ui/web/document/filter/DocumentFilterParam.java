@@ -79,16 +79,23 @@ public final class DocumentFilterParam
 	}
 
 	private final boolean joinAnd;
-	private final String fieldName;
-	private final Operator operator;
-	private final Object value;
-	private final Object valueTo;
+	@Nullable private final String fieldName;
+	@Nullable private final Operator operator;
+	@Nullable private final Object value;
+	@Nullable private final Object valueTo;
 	//
-	private final SqlAndParams sqlWhereClause;
+	@Nullable private final SqlAndParams sqlWhereClause;
 
 	public static Builder builder()
 	{
 		return new Builder();
+	}
+
+	@NonNull
+	public static DocumentFilterParam of(@NonNull final SqlAndParams sqlWhereClause)
+	{
+		final boolean joinAnd = true;
+		return new DocumentFilterParam(joinAnd, sqlWhereClause);
 	}
 
 	public static DocumentFilterParam ofSqlWhereClause(final String sqlWhereClause)
@@ -103,7 +110,7 @@ public final class DocumentFilterParam
 
 	public static DocumentFilterParam ofNameEqualsValue(
 			@NonNull final String fieldName,
-			@NonNull final Object value)
+			@Nullable final Object value)
 	{
 		return ofNameOperatorValue(fieldName, Operator.EQUAL, value);
 	}
@@ -114,7 +121,7 @@ public final class DocumentFilterParam
 	public static DocumentFilterParam ofNameOperatorValue(
 			@NonNull final String fieldName,
 			@NonNull final Operator operator,
-			@NonNull final Object value)
+			@Nullable final Object value)
 	{
 		return builder().setFieldName(fieldName).setOperator(operator).setValue(value).build();
 	}

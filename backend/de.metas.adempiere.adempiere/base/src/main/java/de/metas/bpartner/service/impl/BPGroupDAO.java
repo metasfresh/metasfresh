@@ -3,7 +3,7 @@ package de.metas.bpartner.service.impl;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
-import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.name.strategy.DoNothingBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
@@ -100,6 +100,6 @@ public class BPGroupDAO implements IBPGroupDAO
 
 		return StringUtils.trimBlankToOptional(bpGroup.getBPNameAndGreetingStrategy())
 				.map(BPartnerNameAndGreetingStrategyId::ofString)
-				.orElse(FirstContactBPartnerNameAndGreetingStrategy.ID);
+				.orElse(DoNothingBPartnerNameAndGreetingStrategy.ID);
 	}
 }

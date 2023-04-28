@@ -23,10 +23,11 @@ package de.metas.testsupport;
  */
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.document.DocBaseType;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -48,12 +49,14 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AbstractTestSupport
 {
@@ -85,9 +88,6 @@ public class AbstractTestSupport
 
 	/**
 	 * Create an organization with a given name
-	 *
-	 * @param name
-	 * @return
 	 */
 	public I_AD_Org org(final String name)
 	{
@@ -113,22 +113,6 @@ public class AbstractTestSupport
 		}
 
 		return productPrice;
-
-	}
-
-	protected I_M_DiscountSchemaLine discountSchemaLine(final int discountSchemaLineId)
-	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_DiscountSchemaLine discountSchemaLine = db.getFirstOnly(I_M_DiscountSchemaLine.class, pojo -> Objects.equals(pojo.getM_DiscountSchemaLine_ID(), discountSchemaLineId));
-
-		if (discountSchemaLine == null)
-		{
-			discountSchemaLine = db.newInstance(Env.getCtx(), I_M_DiscountSchemaLine.class);
-			discountSchemaLine.setM_DiscountSchemaLine_ID(discountSchemaLineId);
-			InterfaceWrapperHelper.save(discountSchemaLine);
-		}
-
-		return discountSchemaLine;
 
 	}
 
@@ -164,15 +148,15 @@ public class AbstractTestSupport
 
 	}
 
-	protected I_C_DocType docType(final String baseType, @Nullable final String subType)
+	protected I_C_DocType docType(final DocBaseType baseType, @Nullable final String subType)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_DocType docType = db.getFirstOnly(I_C_DocType.class, pojo -> Objects.equals(pojo.getDocBaseType(), baseType) && Objects.equals(pojo.getDocSubType(), baseType));
+		I_C_DocType docType = db.getFirstOnly(I_C_DocType.class, pojo -> DocBaseType.equals(DocBaseType.ofNullableCode(pojo.getDocBaseType()), baseType) && Objects.equals(pojo.getDocSubType(), subType));
 
 		if (docType == null)
 		{
 			docType = db.newInstance(Env.getCtx(), I_C_DocType.class);
-			docType.setDocBaseType(baseType);
+			docType.setDocBaseType(baseType.getCode());
 			docType.setDocSubType(subType);
 			InterfaceWrapperHelper.save(docType);
 		}
@@ -250,8 +234,8 @@ public class AbstractTestSupport
 
 	private I_C_DocType createSalesOrderDocType()
 	{
-		final I_C_DocType orderDocType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
-		final I_C_DocType invoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
+		final I_C_DocType orderDocType = docType(DocBaseType.SalesOrder, null);
+		final I_C_DocType invoiceDocType = docType(DocBaseType.ARInvoice, null);
 		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 
@@ -288,6 +272,8 @@ public class AbstractTestSupport
 			orderLine = db.newInstance(Env.getCtx(), I_C_OrderLine.class);
 			orderLine.setDescription(orderLineDescription);
 
+			orderLine.setC_Tax_ID(createTax().getRepoId());
+
 			final PlainCurrencyBL currencyConversionBL = (PlainCurrencyBL)Services.get(ICurrencyBL.class);
 			orderLine.setC_Currency_ID(currencyConversionBL.getBaseCurrency(Env.getCtx()).getId().getRepoId());
 			InterfaceWrapperHelper.save(orderLine);
@@ -295,6 +281,15 @@ public class AbstractTestSupport
 
 		return InterfaceWrapperHelper.create(orderLine, clazz);
 	}
+
+	private TaxId createTax()
+	{
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		saveRecord(tax);
+
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
+	}
+
 
 	protected I_C_InvoiceSchedule schedule(final String scheduleName, final String scheduleFrequency)
 	{

@@ -2,11 +2,13 @@ package de.metas.invoice.service.impl;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.DocTypeId;
+import de.metas.document.DocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -14,7 +16,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -59,6 +60,9 @@ public class InvoiceBLTest
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
@@ -68,18 +72,18 @@ public class InvoiceBLTest
 
 	private I_C_DocType createSalesOrderDocType()
 	{
-		final I_C_DocType orderDocType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
-		final I_C_DocType invoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
+		final I_C_DocType orderDocType = docType(DocBaseType.SalesOrder, null);
+		final I_C_DocType invoiceDocType = docType(DocBaseType.ARInvoice, null);
 		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 
 		return orderDocType;
 	}
 
-	protected I_C_DocType docType(final String baseType, final String subType)
+	protected I_C_DocType docType(final DocBaseType baseType, final String subType)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(baseType);
+		docType.setDocBaseType(baseType.getCode());
 		docType.setDocSubType(subType);
 		saveRecord(docType);
 		return docType;
@@ -136,7 +140,7 @@ public class InvoiceBLTest
 
 		final I_C_Invoice invoice = invoiceBL.createInvoiceFromOrder(
 				order,
-				(DocTypeId)null,
+				null,
 				SystemTime.asLocalDate(),
 				null);
 

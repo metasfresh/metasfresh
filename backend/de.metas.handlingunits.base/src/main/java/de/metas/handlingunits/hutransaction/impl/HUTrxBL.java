@@ -22,23 +22,7 @@
 
 package de.metas.handlingunits.hutransaction.impl;
 
-import java.util.ArrayList;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -57,6 +41,7 @@ import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.impl.CompositeHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -67,14 +52,29 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HUTrxBL implements IHUTrxBL
 {
-	private final CompositeHUTrxListener _trxListeners = new CompositeHUTrxListener();
-
 	private static final String DYNATTR_TableRecord = TrxLineTableRecordCacheLocal.class.getName();
+	
+	private final CompositeHUTrxListener _trxListeners = new CompositeHUTrxListener();
+	
+	private final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
 
 	private static final class TrxLineTableRecordCacheLocal extends TableRecordCacheLocal<I_M_HU_Trx_Line>
 	{
@@ -113,12 +113,6 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public IHUTrxListener getHUTrxListeners()
-	{
-		return _trxListeners;
-	}
-
-	@Override
 	public List<IHUTrxListener> getHUTrxListenersList()
 	{
 		return _trxListeners.asList();
@@ -141,8 +135,7 @@ public class HUTrxBL implements IHUTrxBL
 
 	private IHUTransactionProcessor createHUTransactionProcessor(final IHUContext huContext)
 	{
-		final HUTransactionProcessor trxProcessor = new HUTransactionProcessor(huContext);
-		return trxProcessor;
+		return new HUTransactionProcessor(huContext);
 	}
 
 	@Override
@@ -158,7 +151,7 @@ public class HUTrxBL implements IHUTrxBL
 		return line.getDateTrx();
 	}
 
-	private final TrxLineTableRecordCacheLocal getTrxLineTableRecordCacheLocal(final I_M_HU_Trx_Line trxLine)
+	private TrxLineTableRecordCacheLocal getTrxLineTableRecordCacheLocal(final I_M_HU_Trx_Line trxLine)
 	{
 		Check.assumeNotNull(trxLine, "trxLine not null");
 		TrxLineTableRecordCacheLocal recordRef = InterfaceWrapperHelper.getDynAttribute(trxLine, HUTrxBL.DYNATTR_TableRecord);
@@ -190,33 +183,122 @@ public class HUTrxBL implements IHUTrxBL
 		final IHUTransactionProcessor trxProcessor = createHUTransactionProcessor(huContext);
 		trxProcessor.reverseTrxLines(trxLines);
 	}
-
+	
 	@Override
-	public void setParentHU(final IHUContext huContext, @Nullable final I_M_HU_Item parentHUItem, final I_M_HU hu)
+	public void setParentHU(@NonNull final ChangeParentHURequest request)
 	{
-		final boolean destroyOldParentIfEmptyStorage = true;
-		setParentHU(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage);
-	}
-
-	@Override
-	public void setParentHU(final IHUContext huContext,
-			@Nullable final I_M_HU_Item parentHUItem,
-			@NonNull final I_M_HU hu,
-			final boolean destroyOldParentIfEmptyStorage)
-	{
-		// TODO: handle in HUTrx / allocation
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
 		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
 		// Afterwards, set the HU trx back to it's original one
-		//
+		final I_M_HU hu = request.getHu();
 		final String huTrxNameOld = InterfaceWrapperHelper.getTrxName(hu);
+
 		try
 		{
-			final String huTrxNameNew = huContext.getTrxName();
-			InterfaceWrapperHelper.setTrxName(hu, huTrxNameNew);
+			final IHUContext huContext = request.getHuContext() != null
+					? request.getHuContext()
+					: handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+			InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
 
-			setParentHU0(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage);
+			//
+			// Make sure hu's Parent will change
+			final I_M_HU_Item parentHUItem = request.getParentHUItem();
+			if (parentHUItem == null)
+			{
+				if (handlingUnitsDAO.retrieveParentItem(hu) == null)
+				{
+					//
+					// Nothing was changed: parent was null before
+					return;
+				}
+			}
+			else if (hu.getM_HU_Item_Parent_ID() == parentHUItem.getM_HU_Item_ID())
+			{
+				//
+				// Nothing was changed: same references
+				return;
+			}
+
+			if (request.isFailIfAggregateTU() && handlingUnitsBL.isAggregateHU(hu))
+			{
+				throw new AdempiereException("Changing parent for the entire Aggregate TU is not allowed")
+						.setParameter("hu", hu);
+			}
+
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+			final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
+
+			//
+			// Fire attribute storage removed on old parent
+			final IAttributeStorage parentAttributesOld;
+			final I_M_HU_Item parentHUItemOld = handlingUnitsDAO.retrieveParentItem(hu);
+
+			final I_M_HU parentHUOld;
+			if (parentHUItemOld != null)
+			{
+				parentHUOld = parentHUItemOld.getM_HU();
+				parentAttributesOld = attributeStorageFactory.getAttributeStorage(parentHUOld);
+			}
+			else
+			{
+				parentHUOld = null;
+				parentAttributesOld = NullAttributeStorage.instance;
+			}
+
+			final boolean huPureVirtual = handlingUnitsBL.isPureVirtual(hu);
+			if (!NullAttributeStorage.instance.equals(parentAttributesOld)
+					&& !huPureVirtual) // don't propagate pure-virtual HUs; they normally get automatically re-propagated (i.e WeightNet)
+			{
+				parentAttributesOld.onChildAttributeStorageRemoved(huAttributes);
+			}
+
+			//
+			// Revert rollup of the target HU's (the one we are assigning to the new parent) old parent storage
+			final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageOld = huStorageFactory.getStorage(hu);
+			huStorageOld.rollupRevert();
+
+			//
+			// Actually unlink the HU from old parent and link it to new parent
+			// NOTE: we need to do this AFTER we notify the old parent storages
+			handlingUnitsDAO.setParentItem(hu, parentHUItem);
+
+			//
+			// Rollup the target HU's (the one we are assigning to the new parent) new parent storage
+			final IHUStorage huStorageNew = huStorageFactory.getStorage(hu);
+			huStorageNew.rollup();
+
+			//
+			// Fire attribute storage added on new parent
+			final IAttributeStorage parentAttributesNew;
+			if (parentHUItem != null)
+			{
+				final I_M_HU parentHUNew = parentHUItem.getM_HU();
+				parentAttributesNew = attributeStorageFactory.getAttributeStorage(parentHUNew);
+			}
+			else
+			{
+				parentAttributesNew = NullAttributeStorage.instance;
+			}
+
+			if (!NullAttributeStorage.instance.equals(parentAttributesNew))
+			{
+				parentAttributesNew.onChildAttributeStorageAdded(huAttributes);
+			}
+
+			huContext.getTrxListeners().huParentChanged(hu, parentHUItemOld);
+
+			//
+			// If allowed,
+			// Mark old HU destroyed if that's the case
+			if (request.isDestroyOldParentIfEmptyStorage()
+					&& parentHUOld != null && parentHUOld.getM_HU_ID() > 0)
+			{
+				handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
+			}
 		}
 		finally
 		{
@@ -224,110 +306,14 @@ public class HUTrxBL implements IHUTrxBL
 		}
 	}
 
-	/**
-	 * Actual processing for HU (set parent & rollup incremental)
-	 */
-	private void setParentHU0(final IHUContext huContext,
-			@Nullable final I_M_HU_Item parentHUItem,
-			@NonNull final I_M_HU hu,
-			final boolean destroyOldParentIfEmptyStorage)
+	@Override
+	public void extractHUFromParentIfNeeded(final I_M_HU hu)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		//
-		// Make sure hu's Parent will change
-		if (parentHUItem == null)
-		{
-			if (handlingUnitsDAO.retrieveParentItem(hu) == null)
-			{
-				//
-				// Nothing was changed: parent was null before
-				return;
-			}
-		}
-		else if (hu.getM_HU_Item_Parent_ID() == parentHUItem.getM_HU_Item_ID())
-		{
-			//
-			// Nothing was changed: same references
-			return;
-		}
-
-		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
-
-		//
-		// Fire attribute storage removed on old parent
-		final IAttributeStorage parentAttributesOld;
-		final I_M_HU_Item parentHUItemOld = handlingUnitsDAO.retrieveParentItem(hu);
-
-		final I_M_HU parentHUOld;
-		if (parentHUItemOld != null)
-		{
-			parentHUOld = parentHUItemOld.getM_HU();
-			parentAttributesOld = attributeStorageFactory.getAttributeStorage(parentHUOld);
-		}
-		else
-		{
-			parentHUOld = null;
-			parentAttributesOld = NullAttributeStorage.instance;
-		}
-
-		final boolean huPureVirtual = handlingUnitsBL.isPureVirtual(hu);
-		if (!NullAttributeStorage.instance.equals(parentAttributesOld)
-				&& !huPureVirtual) // don't propagate pure-virtual HUs; they normally get automatically re-propagated (i.e WeightNet)
-		{
-			parentAttributesOld.onChildAttributeStorageRemoved(huAttributes);
-		}
-
-		//
-		// Revert rollup of the target HU's (the one we are assigning to the new parent) old parent storage
-		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
-		final IHUStorage huStorageOld = huStorageFactory.getStorage(hu);
-		huStorageOld.rollupRevert();
-
-		//
-		// Actually unlink the HU from old parent and link it to new parent
-		// NOTE: we need to do this AFTER we notify the old parent storages
-		handlingUnitsDAO.setParentItem(hu, parentHUItem);
-
-		//
-		// Rollup the target HU's (the one we are assigning to the new parent) new parent storage
-		final IHUStorage huStorageNew = huStorageFactory.getStorage(hu);
-		huStorageNew.rollup();
-
-		//
-		// Fire attribute storage added on new parent
-		final IAttributeStorage parentAttributesNew;
-		if (parentHUItem != null)
-		{
-			final I_M_HU parentHUNew = parentHUItem.getM_HU();
-			parentAttributesNew = attributeStorageFactory.getAttributeStorage(parentHUNew);
-		}
-		else
-		{
-			parentAttributesNew = NullAttributeStorage.instance;
-		}
-
-		if (!NullAttributeStorage.instance.equals(parentAttributesNew))
-		{
-			parentAttributesNew.onChildAttributeStorageAdded(huAttributes);
-		}
-
-		huContext.getTrxListeners().huParentChanged(hu, parentHUItemOld);
-
-		//
-		// If allowed,
-		// Mark old HU destroyed if that's the case
-		if (destroyOldParentIfEmptyStorage
-				&& parentHUOld != null && parentHUOld.getM_HU_ID() > 0)
-		{
-			handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
-		}
+		extractHUFromParentIfNeeded(null, hu);
 	}
 
 	@Override
-	public void extractHUFromParentIfNeeded(final I_M_HU hu)
+	public void extractHUFromParentIfNeeded(@Nullable final IHUContext huContext, @NonNull final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		if (handlingUnitsBL.isTopLevel(hu))
@@ -337,24 +323,25 @@ public class HUTrxBL implements IHUTrxBL
 
 		InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
-		final I_M_HU_Item parentHUItem = null; // no parent
-		setParentHU(huContext, parentHUItem, hu);
+		setParentHU(ChangeParentHURequest.builder()
+							.huContext(huContext)
+							.parentHUItem(null)
+							.hu(hu)
+							.build());
+
 	}
 
 	@Override
 	public IHUContextProcessorExecutor createHUContextProcessorExecutor(final IHUContext huContext)
 	{
-		final HUContextProcessorExecutor executor = new HUContextProcessorExecutor(huContext);
-		return executor;
+		return new HUContextProcessorExecutor(huContext);
 	}
 
 	@Override
 	public IHUContextProcessorExecutor createHUContextProcessorExecutor(final IContextAware context)
 	{
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(context);
-		final HUContextProcessorExecutor executor = new HUContextProcessorExecutor(huContext);
-		return executor;
+		return new HUContextProcessorExecutor(huContext);
 	}
 
 	@Override
@@ -390,25 +377,25 @@ public class HUTrxBL implements IHUTrxBL
 					trx.isSkipProcessing());
 
 			transactionsAggregateMap.merge(key,
-					trx,
-					(existingCand, newCand) -> {
+										   trx,
+										   (existingCand, newCand) -> {
 
-						final HUTransactionCandidate mergedCandidate = new HUTransactionCandidate(existingCand.getReferencedModel(),
-								existingCand.getM_HU_Item(),
-								existingCand.getVHU_Item(),
-								existingCand.getProductId(),
-								existingCand.getQuantity().add(newCand.getQuantity()),
-								existingCand.getDate(),
-								existingCand.getLocatorId(),
-								existingCand.getHUStatus());
+											   final HUTransactionCandidate mergedCandidate = new HUTransactionCandidate(existingCand.getReferencedModel(),
+																														 existingCand.getM_HU_Item(),
+																														 existingCand.getVHU_Item(),
+																														 existingCand.getProductId(),
+																														 existingCand.getQuantity().add(newCand.getQuantity()),
+																														 existingCand.getDate(),
+																														 existingCand.getLocatorId(),
+																														 existingCand.getHUStatus());
 
-						if (existingCand.isSkipProcessing())
-						{
-							mergedCandidate.setSkipProcessing();
-						}
+											   if (existingCand.isSkipProcessing())
+											   {
+												   mergedCandidate.setSkipProcessing();
+											   }
 
-						return mergedCandidate;
-					});
+											   return mergedCandidate;
+										   });
 
 		}
 

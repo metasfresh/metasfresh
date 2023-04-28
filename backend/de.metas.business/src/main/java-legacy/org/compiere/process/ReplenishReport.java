@@ -17,13 +17,15 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.Msg;
+import de.metas.order.DeliveryRule;
+import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -50,15 +52,12 @@ import org.compiere.util.ReplenishInterface;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.i18n.Msg;
-import de.metas.order.DeliveryRule;
-import de.metas.order.IOrderBL;
-import de.metas.organization.OrgId;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.IProductBL;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Replenishment Report
@@ -159,7 +158,7 @@ public class ReplenishReport extends JavaProcess
 		String sql = "UPDATE M_Replenish"
 				+ " SET Level_Max = Level_Min "
 				+ "WHERE Level_Max < Level_Min";
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected Max_Level=" + no);
 
@@ -167,7 +166,7 @@ public class ReplenishReport extends JavaProcess
 		sql = "UPDATE M_Product_PO"
 				+ " SET Order_Min = 1 "
 				+ "WHERE Order_Min IS NULL OR Order_Min < 1";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected Order Min=" + no);
 
@@ -175,7 +174,7 @@ public class ReplenishReport extends JavaProcess
 		sql = "UPDATE M_Product_PO"
 				+ " SET Order_Pack = 1 "
 				+ "WHERE Order_Pack IS NULL OR Order_Pack < 1";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected Order Pack=" + no);
 
@@ -187,7 +186,7 @@ public class ReplenishReport extends JavaProcess
 				+ "WHERE p.M_Product_ID=pp.M_Product_ID "
 				+ "GROUP BY pp.M_Product_ID "
 				+ "HAVING COUNT(*) = 1)";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected CurrentVendor(Y)=" + no);
 
@@ -199,13 +198,13 @@ public class ReplenishReport extends JavaProcess
 				+ "WHERE p.M_Product_ID=pp.M_Product_ID AND pp.IsCurrentVendor='Y' "
 				+ "GROUP BY pp.M_Product_ID "
 				+ "HAVING COUNT(*) > 1)";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected CurrentVendor(N)=" + no);
 
 		// Just to be sure
 		sql = "DELETE FROM T_Replenish WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Deleted Existing Temp=" + no);
 	}	// prepareTable
@@ -237,7 +236,7 @@ public class ReplenishReport extends JavaProcess
 				+ " AND r.M_Warehouse_ID=" + p_M_Warehouse_ID;
 		if (p_C_BPartner_ID != 0)
 			sql += " AND po.C_BPartner_ID=" + p_C_BPartner_ID;
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		log.trace(sql);
 		log.debug("Insert (1) #" + no);
 
@@ -261,7 +260,7 @@ public class ReplenishReport extends JavaProcess
 					+ " AND NOT EXISTS (SELECT * FROM T_Replenish t "
 					+ "WHERE r.M_Product_ID=t.M_Product_ID"
 					+ " AND AD_PInstance_ID=" + getAD_PInstance_ID() + ")";
-			no = DB.executeUpdate(sql, get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Insert (BP) #" + no);
 		}
 
@@ -275,7 +274,7 @@ public class ReplenishReport extends JavaProcess
 		if (p_C_DocType_ID != 0)
 			sql += ", C_DocType_ID=" + p_C_DocType_ID;
 		sql += " WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Update #" + no);
 
@@ -287,17 +286,17 @@ public class ReplenishReport extends JavaProcess
 				+ " WHERE rr.M_Product_ID=r.M_Product_ID AND rr.IsActive='N'"
 				+ " AND rr.M_Warehouse_ID=" + p_M_Warehouse_ID + " ))"
 				+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Deleted Inactive=" + no);
 
 		// Ensure Data consistency
 		sql = "UPDATE T_Replenish SET QtyOnHand = 0 WHERE QtyOnHand IS NULL";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		sql = "UPDATE T_Replenish SET QtyReserved = 0 WHERE QtyReserved IS NULL";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		sql = "UPDATE T_Replenish SET QtyOrdered = 0 WHERE QtyOrdered IS NULL";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 
 		// Set Minimum / Maximum Maintain Level
 		// X_M_Replenish.REPLENISHTYPE_ReorderBelowMinimumLevel
@@ -307,7 +306,7 @@ public class ReplenishReport extends JavaProcess
 				+ " ELSE 0 END "
 				+ "WHERE ReplenishType='1'"
 				+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Update Type-1=" + no);
 		//
@@ -316,7 +315,7 @@ public class ReplenishReport extends JavaProcess
 				+ " SET QtyToOrder = Level_Max - QtyOnHand + QtyReserved - QtyOrdered "
 				+ "WHERE ReplenishType='2'"
 				+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Update Type-2=" + no);
 
@@ -326,7 +325,7 @@ public class ReplenishReport extends JavaProcess
 				+ "WHERE QtyToOrder < Order_Min"
 				+ " AND QtyToOrder > 0"
 				+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Set MinOrderQty=" + no);
 
@@ -336,7 +335,7 @@ public class ReplenishReport extends JavaProcess
 				+ "WHERE MOD(QtyToOrder, Order_Pack) <> 0"
 				+ " AND QtyToOrder > 0"
 				+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Set OrderPackQty=" + no);
 
@@ -346,7 +345,7 @@ public class ReplenishReport extends JavaProcess
 			sql = "UPDATE T_Replenish"
 					+ " SET M_WarehouseSource_ID=" + wh.getM_WarehouseSource_ID()
 					+ " WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
-			no = DB.executeUpdate(sql, get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			if (no != 0)
 				log.debug("Set Source Warehouse=" + no);
 		}
@@ -355,7 +354,7 @@ public class ReplenishReport extends JavaProcess
 				+ " SET M_WarehouseSource_ID = NULL "
 				+ "WHERE M_Warehouse_ID=M_WarehouseSource_ID"
 				+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Set same Source Warehouse=" + no);
 
@@ -402,7 +401,7 @@ public class ReplenishReport extends JavaProcess
 		sql = "DELETE FROM T_Replenish "
 				+ "WHERE QtyToOrder < 1"
 				+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Deleted No QtyToOrder=" + no);
 	}	// fillTable
@@ -552,12 +551,12 @@ public class ReplenishReport extends JavaProcess
 				info += " - " + move.getDocumentNo();
 			}
 			//	To
-			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
 			//	From: Look-up Storage
 			final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(replenish.getM_Product_ID());
 			MStorage[] storages = MStorage.getWarehouse(getCtx(),
 					whSource.getM_Warehouse_ID(), replenish.getM_Product_ID(), 0, 0,
-					true, null,
+					true,
 					MClient.MMPOLICY_FiFo.equals(MMPolicy), get_TrxName());
 			//
 			BigDecimal target = replenish.getQtyToOrder();
@@ -683,8 +682,8 @@ public class ReplenishReport extends JavaProcess
 			}
 
 			// To
-			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
-			final LocatorId M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(whSource.getM_Warehouse_ID()));
+			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+			final LocatorId M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(whSource.getM_Warehouse_ID()));
 
 			// From: Look-up Storage
 			/*

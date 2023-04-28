@@ -63,6 +63,13 @@ public class AllocationBL implements IAllocationBL
 			return null;
 		}
 
+		//dev-note: don't allocate payments to reversal documents
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
+		if (docStatus.isReversed() || invoice.getReversal_ID() > 0)
+		{
+			return null;
+		}
+
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
@@ -290,7 +297,7 @@ public class AllocationBL implements IAllocationBL
 
 		Timestamp dateTrx;
 		Timestamp dateAcct;
-		if (request.isUseInvoiceDate())
+		if(request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
 			dateAcct = invoice.getDateAcct();

@@ -1,15 +1,9 @@
 package de.metas.handlingunits.trace;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.OptionalInt;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -17,7 +11,12 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -55,7 +54,7 @@ import lombok.experimental.Wither;
  */
 @Value
 @Builder
-@Wither
+@With
 public class HUTraceEventQuery
 {
 	public enum RecursionMode

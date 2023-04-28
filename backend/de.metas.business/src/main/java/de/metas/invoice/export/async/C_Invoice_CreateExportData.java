@@ -1,26 +1,24 @@
 package de.metas.invoice.export.async;
 
-import java.util.List;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Invoice;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.InvoiceExportService;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.util.List;
 
 public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 {
@@ -44,7 +42,7 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 			@NonNull final I_C_Queue_WorkPackage workpackage,
 			@NonNull final String localTrxName)
 	{
-		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_Invoice.class, localTrxName);
+		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveAllItemsSkipMissing(workpackage, I_C_Invoice.class);
 		for (final I_C_Invoice invoiceRecord : invoiceRecords)
 		{
 			try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(invoiceRecord))

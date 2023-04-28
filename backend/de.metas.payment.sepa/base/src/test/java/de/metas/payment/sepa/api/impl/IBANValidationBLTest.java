@@ -3,32 +3,7 @@
  */
 package de.metas.payment.sepa.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.payment.sepa
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
+import de.metas.payment.sepa.interfaces.I_C_Country;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -38,7 +13,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.payment.sepa.interfaces.I_C_Country;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author cg
@@ -94,6 +71,7 @@ public class IBANValidationBLTest
 		prepareCountry("NL", "a", "4", "10", null, null, null, "c", "10", "20", null, null, null, null, null, null);
 		prepareCountry("IT", "n", "5", "20", "n", "5", "30", "c", "12", "40", null, null, null, "a", "1", "10");
 		prepareCountry("SP", "n", "4", "10", "n", "4", "20", "n", "10", "40", null, null, null, "n", "2", "30");
+		prepareCountry("IE", "a", "4", "10", "n", "6", "20", "n", "8", "30", null, null, null, null, null, null);
 	}
 
 	/**
@@ -166,6 +144,7 @@ public class IBANValidationBLTest
 		final int checkDigitIT = ibanValidationBL.ISO7064Mod97_10("IT60X0542811101000000123456");
 		final int checkDigitSP = ibanValidationBL.ISO7064Mod97_10("ES9121000418450200051332");
 		final int checkDigitNL = ibanValidationBL.ISO7064Mod97_10("NL91ABNA0417164300");
+		final int checkDigitIE = ibanValidationBL.ISO7064Mod97_10("IE29AIBK93115212345678");
 
 		assertThat(checkDigitAD).isEqualTo(1);
 		assertThat(checkDigitAT).isEqualTo(1);
@@ -196,6 +175,7 @@ public class IBANValidationBLTest
 		assertThat(checkDigitIT).isEqualTo(1);
 		assertThat(checkDigitSP).isEqualTo(1);
 		assertThat(checkDigitNL).isEqualTo(1);
+		assertThat(checkDigitIE).isEqualTo(1);
 	}
 
 	@Test
@@ -232,6 +212,7 @@ public class IBANValidationBLTest
 		final int checkDigitIT = ibanValidationBL.ISO7064Mod97_10("IT60X0542811101000000123455");
 		final int checkDigitSP = ibanValidationBL.ISO7064Mod97_10("ES9121000418450200051331");
 		final int checkDigitNL = ibanValidationBL.ISO7064Mod97_10("NL91ABNA0417164301");
+		final int checkDigitIE = ibanValidationBL.ISO7064Mod97_10("IE29AIBK93115212345677");
 
 		assertThat(checkDigitAD).isNotEqualTo(1);
 		assertThat(checkDigitAT).isNotEqualTo(1);
@@ -262,6 +243,7 @@ public class IBANValidationBLTest
 		assertThat(checkDigitIT).isNotEqualTo(1);
 		assertThat(checkDigitSP).isNotEqualTo(1);
 		assertThat(checkDigitNL).isNotEqualTo(1);
+		assertThat(checkDigitIE).isNotEqualTo(1);
 	}
 
 	@Test
@@ -298,6 +280,7 @@ public class IBANValidationBLTest
 		ibanValidationBL.validate("IT60X0542811101000000123456");
 		ibanValidationBL.validate("ES9121000418450200051332");
 		ibanValidationBL.validate("NL91ABNA0417164300");
+		ibanValidationBL.validate("IE29AIBK93115212345678");
 
 	}
 

@@ -1,59 +1,32 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.time.ZonedDateTime;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.PPOrderPlanningStatus;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
@@ -72,6 +45,7 @@ public class HUPPOrderIssueProducer
 	// Services
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	//
 	// Parameters
@@ -83,7 +57,7 @@ public class HUPPOrderIssueProducer
 	private boolean considerIssueMethodForQtyToIssueCalculation = true;
 	private ProcessIssueCandidatesPolicy processCandidatesPolicy = ProcessIssueCandidatesPolicy.IF_ORDER_PLANNING_STATUS_IS_COMPLETE;
 	private boolean changeHUStatusToIssued = true;
-	private PickingCandidateId pickingCandidateId;
+	private IssueCandidateGeneratedBy generatedBy;
 
 	public HUPPOrderIssueProducer(@NonNull final PPOrderId ppOrderId)
 	{
@@ -127,7 +101,6 @@ public class HUPPOrderIssueProducer
 	 * If order's planning status is {@link PPOrderPlanningStatus#COMPLETE}
 	 * then the candidates will be processed (so cost collectors will be generated).
 	 *
-	 * @param hus
 	 * @return generated candidates
 	 */
 	public List<I_PP_Order_Qty> createIssues(@NonNull final Collection<I_M_HU> hus)
@@ -141,7 +114,7 @@ public class HUPPOrderIssueProducer
 				.considerIssueMethodForQtyToIssueCalculation(considerIssueMethodForQtyToIssueCalculation)
 				.issueFromHUs(hus)
 				.changeHUStatusToIssued(changeHUStatusToIssued)
-				.pickingCandidateId(pickingCandidateId)
+				.generatedBy(generatedBy)
 				.build()
 				.execute();
 
@@ -312,9 +285,9 @@ public class HUPPOrderIssueProducer
 		return this;
 	}
 
-	public HUPPOrderIssueProducer pickingCandidateId(final PickingCandidateId pickingCandidateId)
+	public HUPPOrderIssueProducer generatedBy(final IssueCandidateGeneratedBy generatedBy)
 	{
-		this.pickingCandidateId = pickingCandidateId;
+		this.generatedBy = generatedBy;
 		return this;
 	}
 }

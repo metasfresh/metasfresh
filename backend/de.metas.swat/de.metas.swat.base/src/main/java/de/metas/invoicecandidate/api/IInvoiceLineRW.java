@@ -100,4 +100,7 @@ public interface IInvoiceLineRW
 	int getC_PaymentTerm_ID();
 
 	void setC_PaymentTerm_ID(int paymentTermId);
+
+	int getC_VAT_Code_ID();
+	void setC_VAT_Code_ID(int vatCodeId);
 }

@@ -82,7 +82,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Import {@link I_I_Inventory} to {@link I_M_Inventory}.
- *
  */
 public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory, InventoryGroupKey>
 {
@@ -122,7 +121,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	@Override
 	protected Map<String, Object> getImportTableDefaultValues()
 	{
-		return ImmutableMap.<String, Object> builder()
+		return ImmutableMap.<String, Object>builder()
 				.put(I_I_Inventory.COLUMNNAME_InventoryDate, de.metas.common.util.time.SystemTime.asDayTimestamp())
 				.build();
 	}
@@ -208,11 +207,11 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		final int clientId = importRecord.getAD_Client_ID();
 
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseAndSubType.getDocBaseType())
-				.docSubType(docBaseAndSubType.getDocSubType())
-				.adClientId(clientId)
-				.adOrgId(orgId.getRepoId())
-				.build());
+											   .docBaseType(docBaseAndSubType.getDocBaseType())
+											   .docSubType(docBaseAndSubType.getDocSubType())
+											   .adClientId(clientId)
+											   .adOrgId(orgId.getRepoId())
+											   .build());
 	}
 
 	private static DocBaseAndSubType getDocBaseAndSubType(@Nullable final HUAggregationType huAggregationType)
@@ -294,6 +293,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		}
 
 		final Quantity qtyBooked = computeTotalQtyBooked(hus, qtyCount.getUOM(), UOMConversionContext.of(productId));
+		final BigDecimal costPrice = importRecord.getCostPrice();
 
 		final I_M_InventoryLine inventoryLineRecord = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
 		inventoryLineRecord.setM_Inventory_ID(inventoryId.getRepoId());
@@ -302,7 +302,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		inventoryLineRecord.setM_Locator_ID(locatorId.getRepoId());
 		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
 		inventoryLineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
-		inventoryLineRecord.setCostPrice(importRecord.getCostPrice());
+		inventoryLineRecord.setCostPrice(costPrice);
 		inventoryLineRecord.setC_Charge_ID(chargeId);
 
 		//
@@ -313,6 +313,28 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		inventoryLineRecord.setQtyCount(qtyCount.toBigDecimal());
 		inventoryLineRecord.setQtyBook(qtyBooked.toBigDecimal());
 		inventoryLineRecord.setIsCounted(true);
+
+		final ExplicitCostPrice explicitCostPrice = ExplicitCostPrice.ofCode(importRecord.getExplicitCostPrice());
+
+		if (explicitCostPrice.isAuto())
+		{
+			if (costPrice != null && costPrice.signum() > 0)
+			{
+				inventoryLineRecord.setIsExplicitCostPrice(true);
+			}
+			else
+			{
+				inventoryLineRecord.setIsExplicitCostPrice(false);
+			}
+		}
+		else if (explicitCostPrice.isTrue())
+		{
+			inventoryLineRecord.setIsExplicitCostPrice(true);
+		}
+		else
+		{
+			inventoryLineRecord.setIsExplicitCostPrice(false);
+		}
 
 		InterfaceWrapperHelper.saveRecord(inventoryLineRecord);
 		logger.trace("Insert inventory line - {}", inventoryLineRecord);
@@ -326,10 +348,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		else
 		{
 			inventoryLineHUs = ImmutableList.of(InventoryLineHU.builder()
-					.huId(null) // will be created later, on inventory complete. this is just a placeholder
-					.qtyCount(qtyCount)
-					.qtyBook(qtyBooked)
-					.build());
+														.huId(null) // will be created later, on inventory complete. this is just a placeholder
+														.qtyCount(qtyCount)
+														.qtyBook(qtyBooked)
+														.build());
 		}
 
 		//
@@ -372,6 +394,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.build();
 
 		return husFinder.streamHus()
+				.filter(huForInventoryLine -> ProductId.equals(productId, huForInventoryLine.getProductId()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -492,10 +515,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		else
 		{
 			return attributeDAO.createAttributeValue(AttributeListValueCreateRequest.builder()
-					.attributeId(AttributeId.ofRepoId(subProducerAttribute.getM_Attribute_ID()))
-					.value(subproducerBPartnerIdString)
-					.name(subproducerBPartnerValue)
-					.build());
+															 .attributeId(AttributeId.ofRepoId(subProducerAttribute.getM_Attribute_ID()))
+															 .value(subproducerBPartnerIdString)
+															 .name(subproducerBPartnerValue)
+															 .build());
 		}
 	}
 

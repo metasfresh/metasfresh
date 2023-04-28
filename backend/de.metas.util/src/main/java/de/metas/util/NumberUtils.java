@@ -23,10 +23,15 @@ package de.metas.util;
  */
 
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 /**
  * Number Utils
@@ -67,6 +72,7 @@ public final class NumberUtils
 		// If after removing our scale is negative, we can safely set the scale to ZERO because we don't want to get rid of zeros before decimal point
 		if (result.scale() < 0)
 		{
+			//noinspection BigDecimalMethodWithoutRoundingCalled
 			result = result.setScale(0);
 		}
 
@@ -191,7 +197,17 @@ public final class NumberUtils
 		}
 	}
 
-	public static int asIntOrZero(final Object value)
+	public static int asInt(@NonNull final Object value)
+	{
+		final Integer integerValue = asIntegerOrNull(value);
+		if (integerValue == null)
+		{
+			throw Check.mkEx("Cannot convert `" + value + "` (" + value.getClass() + ") to int");
+		}
+		return integerValue;
+	}
+
+	public static int asIntOrZero(@Nullable final Object value)
 	{
 		return asInt(value, 0);
 	}
@@ -204,7 +220,7 @@ public final class NumberUtils
 	 * <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
 	 * </ul>
 	 */
-	public static int asInt(final Object value, final int defaultValue)
+	public static int asInt(@Nullable final Object value, final int defaultValue)
 	{
 		return asInteger(value, defaultValue);
 	}
@@ -224,6 +240,10 @@ public final class NumberUtils
 		{
 			return ((RepoIdAware)value).getRepoId();
 		}
+		else if (value instanceof Integer)
+		{
+			return (Integer)value;
+		}
 		else if (value instanceof Number)
 		{
 			return ((Number)value).intValue();
@@ -232,7 +252,7 @@ public final class NumberUtils
 		{
 			try
 			{
-				final BigDecimal bd = new BigDecimal(value.toString());
+				final BigDecimal bd = new BigDecimal(value.toString().trim());
 				return bd.intValue();
 			}
 			catch (final NumberFormatException e)
@@ -251,11 +271,59 @@ public final class NumberUtils
 			final int scale)
 	{
 		final BigDecimal range = valueMax.subtract(valueMin);
-		final BigDecimal random = new BigDecimal(Math.random());
+		final BigDecimal random = BigDecimal.valueOf(Math.random());
 
 		return valueMin
 				.add(random.multiply(range))
 				.setScale(scale, RoundingMode.DOWN);
 
+	}
+
+	@Nullable
+	public static Integer graterThanZeroOrNull(@Nullable final Integer value)
+	{
+		return Optional.ofNullable(value)
+				.filter(v1 -> v1 > 0)
+				.orElse(null);
+	}
+
+	@NonNull
+	public static String toStringWithCustomDecimalSeparator(@NonNull final BigDecimal value, final char separator)
+	{
+		final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+		symbols.setDecimalSeparator(separator);
+
+		final int scale = value.scale();
+		final String format;
+
+		if (scale > 0)
+		{
+			final StringBuilder formatBuilder = new StringBuilder("0.");
+
+			IntStream.range(0, scale)
+					.forEach(ignored -> formatBuilder.append("0"));
+
+			format = formatBuilder.toString();
+		}
+		else
+		{
+			format = "0";
+		}
+
+		final DecimalFormat formatter = new DecimalFormat(format, symbols);
+
+		return formatter.format(value);
+	}
+
+	@Nullable
+	public static BigDecimal zeroToNull(@Nullable final BigDecimal value)
+	{
+		return value != null && value.signum() != 0 ? value : null;
+	}
+
+	public static boolean equalsByCompareTo(@Nullable final BigDecimal value1, @Nullable final BigDecimal value2)
+	{
+		//noinspection NumberEquality
+		return (value1 == value2) || (value1 != null && value1.compareTo(value2) == 0);
 	}
 }

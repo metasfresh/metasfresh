@@ -22,14 +22,13 @@ package de.metas.adempiere.gui.search;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.apps.search.IInfoSimple;
-
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
+import org.compiere.apps.search.IInfoSimple;
+
+import java.math.BigDecimal;
 
 /**
  * Service used for manipulating {@link IHUPackingAware}.
@@ -47,9 +46,6 @@ public interface IHUPackingAwareBL extends ISingletonService
 	/**
 	 * Creates an adapter which wraps a row from Info Window grid and make it behave like an {@link IHUPackingAware}
 	 *
-	 * @param infoWindow
-	 * @param rowIndexModel
-	 * @return
 	 */
 	IHUPackingAware create(final IInfoSimple infoWindow, final int rowIndexModel);
 
@@ -67,7 +63,7 @@ public interface IHUPackingAwareBL extends ISingletonService
 	}
 
 	/**
-	 * Calls {@link #calculateQtyTU(IHUPackingAware)}. Note: doesn't save.
+	 * Note: doesn't save.
 	 */
 	void setQtyTU(IHUPackingAware record);
 

@@ -22,12 +22,18 @@
 
 package de.metas.rest_api.v1.bpartner;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.user.UserId;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -38,10 +44,8 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
 
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
-import de.metas.money.CurrencyId;
-import de.metas.user.UserId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class BPartnerRecordsUtil
 {
@@ -54,6 +58,8 @@ public class BPartnerRecordsUtil
 	public static final String C_BPARTNER_LOCATION_GLN = "bpartnerLocationRecord.gln";
 	public static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
 	public static final int AD_ORG_ID = 10;
+	public static final String AD_ORG_VALUE = "orgRecord.value";
+
 	public static final String AD_USER_EXTERNAL_ID = "contactRecord.externalId";
 	public static final String AD_USER_VALUE = "contactRecord.value";
 
@@ -70,6 +76,17 @@ public class BPartnerRecordsUtil
 
 		final UserId adUserId = UserId.ofRepoId(AD_USER_ID + idOffSet);
 		final String idOffSetStr = idOffSet == 0 ? "" : "_" + Integer.toString(idOffSet);
+
+		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+		org.setAD_Org_ID(AD_ORG_ID);
+		org.setValue(AD_ORG_VALUE);
+		saveRecord(org);
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+		orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+											 .orgId(OrgId.ofRepoId(AD_ORG_ID))
+											 .build());
 
 		setupTimeSource();
 		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(adUserId))
@@ -148,6 +165,7 @@ public class BPartnerRecordsUtil
 				bpBankAccountRecord.setAD_Org_ID(AD_ORG_ID);
 				bpBankAccountRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 				bpBankAccountRecord.setIBAN("INITIAL-IBAN-1");
+				bpBankAccountRecord.setSwiftCode("INITIAL-SWIFTCODE-1");
 				bpBankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
 				setCreatedByAndWhen(bpBankAccountRecord, adUserId); // have to do it manually because we are setting the record ID too
 				saveRecord(bpBankAccountRecord);

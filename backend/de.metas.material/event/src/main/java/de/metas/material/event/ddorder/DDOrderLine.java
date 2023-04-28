@@ -50,6 +50,9 @@ public class DDOrderLine
 	@NonNull
 	BigDecimal qty;
 
+	@Nullable
+	BigDecimal qtyPending;
+
 	/**
 	 * {@link DDOrder#getDatePromised()} minus this number of days tells us when the distribution for this particular line needs to start
 	 */
@@ -68,7 +71,8 @@ public class DDOrderLine
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("fromWarehouseMinMaxDescriptor") @Nullable final MinMaxDescriptor fromWarehouseMinMaxDescriptor,
 			@JsonProperty("bPartnerId") final int bPartnerId,
- 			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("qtyPending") final @Nullable BigDecimal qtyPending,
 			@JsonProperty("durationDays") final int durationDays,
 			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
@@ -89,5 +93,7 @@ public class DDOrderLine
 		this.networkDistributionLineId = networkDistributionLineId; // can be <= 0 if the DD_Order was created "manually"
 
 		this.ddOrderLineId = ddOrderLineId;
+
+		this.qtyPending = qtyPending;
 	}
 }

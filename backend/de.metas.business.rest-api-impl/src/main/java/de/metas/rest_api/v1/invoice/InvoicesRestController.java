@@ -25,27 +25,27 @@ package de.metas.rest_api.v1.invoice;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.invoice.InvoiceId;
-import de.metas.rest_api.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
-import de.metas.rest_api.invoicecandidates.impl.CloseInvoiceCandidatesService;
-import de.metas.rest_api.invoicecandidates.impl.CreateInvoiceCandidatesService;
-import de.metas.rest_api.invoicecandidates.impl.EnqueueForInvoicingService;
-import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCheckInvoiceCandidatesStatusRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCloseInvoiceCandidatesRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v1.invoice.impl.InvoiceService;
 import de.metas.rest_api.v1.invoice.impl.JSONInvoiceInfoResponse;
+import de.metas.rest_api.v1.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
+import de.metas.rest_api.v1.invoicecandidates.impl.CloseInvoiceCandidatesService;
+import de.metas.rest_api.v1.invoicecandidates.impl.CreateInvoiceCandidatesService;
+import de.metas.rest_api.v1.invoicecandidates.impl.EnqueueForInvoicingService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
@@ -61,6 +61,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/invoices",
@@ -89,12 +93,12 @@ class InvoicesRestController
 		this.invoiceService = invoicePDFService;
 	}
 
-	@ApiOperation("Create new invoice candidates")
+	@Operation(summary = "Create new invoice candidates")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created new invoice candidate(s)"),
-			@ApiResponse(code = 401, message = "You are not authorized to create new invoice candidates"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created new invoice candidate(s)"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create new invoice candidates"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PostMapping(path = "/createCandidates", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(
@@ -107,9 +111,9 @@ class InvoicesRestController
 
 	@PostMapping(path = "/status", consumes = "application/json", produces = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved status for all matching invoice candidates"),
-			@ApiResponse(code = 401, message = "You are not authorized to retrieve the invoice candidates' status"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved status for all matching invoice candidates"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to retrieve the invoice candidates' status"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden")
 	})
 	public ResponseEntity<JsonCheckInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(@RequestBody @NonNull final JsonCheckInvoiceCandidatesStatusRequest request)
 	{
@@ -117,7 +121,7 @@ class InvoicesRestController
 		return ResponseEntity.ok(response);
 	}
 
-	@ApiOperation("Enqueues invoice candidates for invoicing")
+	@Operation(summary = "Enqueues invoice candidates for invoicing")
 	@PostMapping(path = "/enqueueForInvoicing", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
@@ -127,9 +131,9 @@ class InvoicesRestController
 
 	@PostMapping(path = "/close", consumes = "application/json", produces = "application/json")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully closed all matching invoice candidates"),
-			@ApiResponse(code = 401, message = "You are not authorized to close the invoice candidates"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden")
+			@ApiResponse(responseCode = "200", description = "Successfully closed all matching invoice candidates"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to close the invoice candidates"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden")
 	})
 	public ResponseEntity<JsonCloseInvoiceCandidatesResponse> closeInvoiceCandidates(@RequestBody @NonNull final JsonCloseInvoiceCandidatesRequest request)
 	{
@@ -138,13 +142,13 @@ class InvoicesRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "PDF retrieved for invoice"),
-			@ApiResponse(code = 401, message = "You are not authorized to see the invoice PDF"),
-			@ApiResponse(code = 404, message = "No archive found for the invoice")
+			@ApiResponse(responseCode = "200", description = "PDF retrieved for invoice"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to see the invoice PDF"),
+			@ApiResponse(responseCode = "404", description = "No archive found for the invoice")
 	})
 	@GetMapping(path = "/{invoiceId}/pdf")
 	public ResponseEntity<byte[]> getInvoicePDF(
-			@ApiParam(required = true, value = "metasfreshId of the invoice to get the PDF of") //
+			@Parameter(required = true, description = "metasfreshId of the invoice to get the PDF of") //
 			@PathVariable("invoiceId") final int invoiceRecordId)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
@@ -164,14 +168,14 @@ class InvoicesRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Invoice info retrieved"),
-			@ApiResponse(code = 401, message = "You are not authorized"),
-			@ApiResponse(code = 404, message = "No Invoice found"),
-			@ApiResponse(code = 422, message = "An error happened during Invoice info retrieval"),
+			@ApiResponse(responseCode = "200", description = "Invoice info retrieved"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized"),
+			@ApiResponse(responseCode = "404", description = "No Invoice found"),
+			@ApiResponse(responseCode = "422", description = "An error happened during Invoice info retrieval"),
 	})
 	@GetMapping(path = "{invoiceId}/invoiceInfo", produces = "application/json")
 	public ResponseEntity<?> getInvoiceInfo(
-			@ApiParam(required = true, value = "metasfreshId of the invoice")
+			@Parameter(required = true, description = "metasfreshId of the invoice")
 			@PathVariable("invoiceId") final int invoiceRecordId)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
@@ -196,7 +200,7 @@ class InvoicesRestController
 
 	@PutMapping(path = "/{invoiceId}/revert")
 	public ResponseEntity<?> revertInvoice(
-			@PathVariable("invoiceId") @ApiParam(required = true, value = "metasfreshId of the invoice to revert") final int invoiceRecordId)
+			@PathVariable("invoiceId") @Parameter(required = true, description = "metasfreshId of the invoice to revert") final int invoiceRecordId)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
 

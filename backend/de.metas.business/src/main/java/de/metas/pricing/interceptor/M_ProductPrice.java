@@ -1,17 +1,25 @@
 package de.metas.pricing.interceptor;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
-import de.metas.pricing.service.ProductPrices;
-import lombok.NonNull;
+import java.util.Optional;
 
 /*
  * #%L
@@ -43,6 +51,15 @@ import lombok.NonNull;
 @Component
 public class M_ProductPrice
 {
+	private static final AdMessageKey MSG_NO_C_TAX_CATEGORY_FOR_PRODUCT_PRICE = AdMessageKey.of("MissingTaxCategoryForProductPrice");
+
+	private final ProductTaxCategoryService productTaxCategoryService;
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	public M_ProductPrice(@NonNull final ProductTaxCategoryService productTaxCategoryService)
+	{
+		this.productTaxCategoryService = productTaxCategoryService;
+	}
 
 	@Init
 	public void init(final IModelValidationEngine engine)
@@ -61,5 +78,21 @@ public class M_ProductPrice
 	public void assertUomConversionExists(@NonNull final I_M_ProductPrice productPrice)
 	{
 		ProductPrices.assertUomConversionExists(productPrice);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID })
+	public void assertProductTaxCategoryExists(@NonNull final I_M_ProductPrice productPrice)
+	{
+		if (productPrice.getC_TaxCategory_ID() <= 0)
+		{
+			final Optional<TaxCategoryId> taxCategoryId = productTaxCategoryService.getTaxCategoryIdOptional(productPrice);
+
+			if (!taxCategoryId.isPresent())
+			{
+				final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NO_C_TAX_CATEGORY_FOR_PRODUCT_PRICE);
+				throw new AdempiereException(message).markAsUserValidationError();
+			}
+		}
 	}
 }

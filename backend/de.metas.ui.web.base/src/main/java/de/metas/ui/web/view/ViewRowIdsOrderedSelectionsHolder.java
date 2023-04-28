@@ -27,12 +27,12 @@ import java.util.function.UnaryOperator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -107,6 +107,12 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return getDefaultSelection().isQueryLimitHit();
 	}
 
+	@Nullable
+	public EmptyReason getEmptyReason()
+	{
+		return getDefaultSelection().getEmptyReason();
+	}
+
 	public ViewRowIdsOrderedSelection getDefaultSelectionBeforeFacetsFiltering()
 	{
 		return getCurrentSelections().getDefaultSelectionBeforeFacetsFiltering();
@@ -147,12 +153,18 @@ final class ViewRowIdsOrderedSelectionsHolder
 
 		final ViewEvaluationCtx viewEvalCtx = getViewEvaluationCtx();
 
+		final SqlDocumentFilterConverterContext filterConverterContext = SqlDocumentFilterConverterContext.builder()
+				.viewId(viewId)
+				.userRolePermissionsKey(viewEvalCtx.getPermissionsKey())
+				.queryIfNoFilters(viewDataRepository.isQueryIfNoFilters())
+				.build();
+
 		final ViewRowIdsOrderedSelection selectionBeforeFacetsFiltering = viewDataRepository.createOrderedSelection(
 				viewEvalCtx,
 				viewId,
 				filtersExcludingFacets,
 				applySecurityRestrictions,
-				SqlDocumentFilterConverterContext.EMPTY);
+				filterConverterContext);
 
 		final ViewRowIdsOrderedSelection selection;
 		if (!facetFilters.isEmpty())
@@ -162,7 +174,7 @@ final class ViewRowIdsOrderedSelectionsHolder
 					selectionBeforeFacetsFiltering,
 					facetFilters,
 					/* orderBys */DocumentQueryOrderByList.EMPTY,
-					SqlDocumentFilterConverterContext.EMPTY);
+					filterConverterContext);
 		}
 		else
 		{
@@ -188,32 +200,37 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return viewEvaluationCtxSupplier.get();
 	}
 
-	public void updateChangedRows(@NonNull final Set<DocumentId> changedRowIds)
+	public void updateChangedRows(
+			@NonNull final Set<DocumentId> changedRowIds,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
 		if (changedRowIds.isEmpty())
 		{
 			return;
 		}
 
-		computeCurrentSelectionsIfPresent(selections -> removeRowIdsNotMatchingFilters(selections, changedRowIds));
+		computeCurrentSelectionsIfPresent(selections -> addRemoveChangedRows(selections, changedRowIds, changesCollector));
 	}
 
-	private ViewRowIdsOrderedSelections removeRowIdsNotMatchingFilters(
+	private ViewRowIdsOrderedSelections addRemoveChangedRows(
 			@NonNull final ViewRowIdsOrderedSelections selections,
-			@NonNull final Set<DocumentId> rowIds)
+			@NonNull final Set<DocumentId> rowIds,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
-		final ViewRowIdsOrderedSelection defaultSelectionBeforeFacetsFiltering = viewDataRepository.removeRowIdsNotMatchingFilters(
+		final ViewRowIdsOrderedSelection defaultSelectionBeforeFacetsFiltering = viewDataRepository.addRemoveChangedRows(
 				selections.getDefaultSelectionBeforeFacetsFiltering(),
 				filtersExcludingFacets,
-				rowIds);
+				rowIds,
+				changesCollector);
 
 		final ViewRowIdsOrderedSelection defaultSelection;
 		if (!facetFilters.isEmpty())
 		{
-			defaultSelection = viewDataRepository.removeRowIdsNotMatchingFilters(
+			defaultSelection = viewDataRepository.addRemoveChangedRows(
 					selections.getDefaultSelection(),
 					facetFilters,
-					rowIds);
+					rowIds,
+					changesCollector);
 		}
 		else
 		{
@@ -242,12 +259,17 @@ final class ViewRowIdsOrderedSelectionsHolder
 			@NonNull final ViewRowIdsOrderedSelection fromSelection,
 			@Nullable final DocumentQueryOrderByList orderBys)
 	{
+		final ViewEvaluationCtx viewEvaluationCtx = getViewEvaluationCtx();
+		final SqlDocumentFilterConverterContext filterConverterContext = SqlDocumentFilterConverterContext.builder()
+				.userRolePermissionsKey(viewEvaluationCtx.getPermissionsKey())
+				.build();
+
 		return viewDataRepository.createOrderedSelectionFromSelection(
-				getViewEvaluationCtx(),
+				viewEvaluationCtx,
 				fromSelection,
 				DocumentFilterList.EMPTY,
 				orderBys,
-				SqlDocumentFilterConverterContext.EMPTY);
+				filterConverterContext);
 	}
 
 	public Set<DocumentId> retainExistingRowIds(@NonNull final Set<DocumentId> rowIds)

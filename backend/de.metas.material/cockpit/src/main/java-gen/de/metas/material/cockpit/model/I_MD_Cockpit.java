@@ -1,72 +1,56 @@
 package de.metas.material.cockpit.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for MD_Cockpit
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_MD_Cockpit 
 {
 
-    /** TableName=MD_Cockpit */
-    public static final String Table_Name = "MD_Cockpit";
+	String Table_Name = "MD_Cockpit";
 
-    /** AD_Table_ID=540863 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540863 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_Client>(I_MD_Cockpit.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_Org>(I_MD_Cockpit.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set AttributesKey (technical).
@@ -75,7 +59,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAttributesKey (java.lang.String AttributesKey);
+	void setAttributesKey (@Nullable String AttributesKey);
 
 	/**
 	 * Get AttributesKey (technical).
@@ -84,42 +68,35 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAttributesKey();
+	@Nullable String getAttributesKey();
 
-    /** Column definition for AttributesKey */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_AttributesKey = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "AttributesKey", null);
-    /** Column name AttributesKey */
-    public static final String COLUMNNAME_AttributesKey = "AttributesKey";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_AttributesKey = new ModelColumn<>(I_MD_Cockpit.class, "AttributesKey", null);
+	String COLUMNNAME_AttributesKey = "AttributesKey";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_Created = new ModelColumn<>(I_MD_Cockpit.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_User>(I_MD_Cockpit.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Datum.
@@ -128,7 +105,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateGeneral (java.sql.Timestamp DateGeneral);
+	void setDateGeneral (java.sql.Timestamp DateGeneral);
 
 	/**
 	 * Get Datum.
@@ -137,141 +114,140 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateGeneral();
+	java.sql.Timestamp getDateGeneral();
 
-    /** Column definition for DateGeneral */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_DateGeneral = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "DateGeneral", null);
-    /** Column name DateGeneral */
-    public static final String COLUMNNAME_DateGeneral = "DateGeneral";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_DateGeneral = new ModelColumn<>(I_MD_Cockpit.class, "DateGeneral", null);
+	String COLUMNNAME_DateGeneral = "DateGeneral";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_IsActive = new ModelColumn<>(I_MD_Cockpit.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Materialcockpit.
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Material Cockpit.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
+	void setMD_Cockpit_ID (int MD_Cockpit_ID);
 
 	/**
-	 * Get Materialcockpit.
+	 * Get Material Cockpit.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_Cockpit_ID();
+	int getMD_Cockpit_ID();
 
-    /** Column definition for MD_Cockpit_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
-    /** Column name MD_Cockpit_ID */
-    public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
+	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product>(I_MD_Cockpit.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Zusage Lieferant.
-	 * Vom Lieferanten per Webapplikation zugesagte Menge
+	 * Set 📆 MDCandidateQtyStock.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPMM_QtyPromised_OnDate (java.math.BigDecimal PMM_QtyPromised_OnDate);
+	void setMDCandidateQtyStock_AtDate (@Nullable BigDecimal MDCandidateQtyStock_AtDate);
 
 	/**
-	 * Get Zusage Lieferant.
-	 * Vom Lieferanten per Webapplikation zugesagte Menge
+	 * Get 📆 MDCandidateQtyStock.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPMM_QtyPromised_OnDate();
+	BigDecimal getMDCandidateQtyStock_AtDate();
 
-    /** Column definition for PMM_QtyPromised_OnDate */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_PMM_QtyPromised_OnDate = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "PMM_QtyPromised_OnDate", null);
-    /** Column name PMM_QtyPromised_OnDate */
-    public static final String COLUMNNAME_PMM_QtyPromised_OnDate = "PMM_QtyPromised_OnDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock_AtDate", null);
+	String COLUMNNAME_MDCandidateQtyStock_AtDate = "MDCandidateQtyStock_AtDate";
 
 	/**
-	 * Set Produktionsstätte.
+	 * Set 📆 Vendor Promised.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Plant_ID (int PP_Plant_ID);
+	void setPMM_QtyPromised_OnDate_AtDate (@Nullable BigDecimal PMM_QtyPromised_OnDate_AtDate);
 
 	/**
-	 * Get Produktionsstätte.
+	 * Get 📆 Vendor Promised.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Plant_ID();
+	BigDecimal getPMM_QtyPromised_OnDate_AtDate();
 
-	public org.compiere.model.I_S_Resource getPP_Plant();
-
-	public void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant);
-
-    /** Column definition for PP_Plant_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_S_Resource>(I_MD_Cockpit.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name PP_Plant_ID */
-    public static final String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_PMM_QtyPromised_OnDate_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "PMM_QtyPromised_OnDate_AtDate", null);
+	String COLUMNNAME_PMM_QtyPromised_OnDate_AtDate = "PMM_QtyPromised_OnDate_AtDate";
 
 	/**
 	 * Set Produktname.
@@ -281,7 +257,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProductName (java.lang.String ProductName);
+	void setProductName (@Nullable String ProductName);
 
 	/**
 	 * Get Produktname.
@@ -291,83 +267,217 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getProductName();
+	@Nullable String getProductName();
 
-    /** Column definition for ProductName */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductName = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "ProductName", null);
-    /** Column name ProductName */
-    public static final String COLUMNNAME_ProductName = "ProductName";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductName = new ModelColumn<>(I_MD_Cockpit.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
 
 	/**
-	 * Set Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Set Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProductValue (java.lang.String ProductValue);
+	void setProductValue (@Nullable String ProductValue);
 
 	/**
-	 * Get Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Get Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getProductValue();
+	@Nullable String getProductValue();
 
-    /** Column definition for ProductValue */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "ProductValue", null);
-    /** Column name ProductValue */
-    public static final String COLUMNNAME_ProductValue = "ProductValue";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductValue = new ModelColumn<>(I_MD_Cockpit.class, "ProductValue", null);
+	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set Zusagbar Zählbestand.
+	 * Set 📆 Pending distribution source.
+	 * Not-yet removed quantity from a distribution order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyAvailableToPromiseEstimate (java.math.BigDecimal QtyAvailableToPromiseEstimate);
+	void setQtyDemand_DD_Order_AtDate (@Nullable BigDecimal QtyDemand_DD_Order_AtDate);
 
 	/**
-	 * Get Zusagbar Zählbestand.
+	 * Get 📆 Pending distribution source.
+	 * Not-yet removed quantity from a distribution order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyAvailableToPromiseEstimate();
+	BigDecimal getQtyDemand_DD_Order_AtDate();
 
-    /** Column definition for QtyAvailableToPromiseEstimate */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyAvailableToPromiseEstimate = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyAvailableToPromiseEstimate", null);
-    /** Column name QtyAvailableToPromiseEstimate */
-    public static final String COLUMNNAME_QtyAvailableToPromiseEstimate = "QtyAvailableToPromiseEstimate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_DD_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_DD_Order_AtDate", null);
+	String COLUMNNAME_QtyDemand_DD_Order_AtDate = "QtyDemand_DD_Order_AtDate";
 
 	/**
-	 * Set Materialentnahme.
+	 * Set 📆 Manufacturing issue - pending.
+	 * Not-yet issued quantity from a manufacturing order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyMaterialentnahme (java.math.BigDecimal QtyMaterialentnahme);
+	void setQtyDemand_PP_Order_AtDate (@Nullable BigDecimal QtyDemand_PP_Order_AtDate);
 
 	/**
-	 * Get Materialentnahme.
+	 * Get 📆 Manufacturing issue - pending.
+	 * Not-yet issued quantity from a manufacturing order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyMaterialentnahme();
+	BigDecimal getQtyDemand_PP_Order_AtDate();
 
-    /** Column definition for QtyMaterialentnahme */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyMaterialentnahme = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyMaterialentnahme", null);
-    /** Column name QtyMaterialentnahme */
-    public static final String COLUMNNAME_QtyMaterialentnahme = "QtyMaterialentnahme";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_PP_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_PP_Order_AtDate", null);
+	String COLUMNNAME_QtyDemand_PP_Order_AtDate = "QtyDemand_PP_Order_AtDate";
+
+	/**
+	 * Set 📆 Sold - pending.
+	 * Quantity from sales orderes for the respective date that was not yet shipped.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyDemand_SalesOrder_AtDate (@Nullable BigDecimal QtyDemand_SalesOrder_AtDate);
+
+	/**
+	 * Get 📆 Sold - pending.
+	 * Quantity from sales orderes for the respective date that was not yet shipped.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyDemand_SalesOrder_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_SalesOrder_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_SalesOrder_AtDate", null);
+	String COLUMNNAME_QtyDemand_SalesOrder_AtDate = "QtyDemand_SalesOrder_AtDate";
+
+	/**
+	 * Set 📆 Pending demands.
+	 * Sum of the planned demands from purchase orders, manufacturing orders and destribution orders
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyDemandSum_AtDate (@Nullable BigDecimal QtyDemandSum_AtDate);
+
+	/**
+	 * Get 📆 Pending demands.
+	 * Sum of the planned demands from purchase orders, manufacturing orders and destribution orders
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyDemandSum_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemandSum_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemandSum_AtDate", null);
+	String COLUMNNAME_QtyDemandSum_AtDate = "QtyDemandSum_AtDate";
+
+	/**
+	 * Set 📆 Expected surplus.
+	 * Stock with added/subtracted pending supplies and issues
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyExpectedSurplus_AtDate (@Nullable BigDecimal QtyExpectedSurplus_AtDate);
+
+	/**
+	 * Get 📆 Expected surplus.
+	 * Stock with added/subtracted pending supplies and issues
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyExpectedSurplus_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyExpectedSurplus_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyExpectedSurplus_AtDate", null);
+	String COLUMNNAME_QtyExpectedSurplus_AtDate = "QtyExpectedSurplus_AtDate";
+
+	/**
+	 * Set 📆 Inventory count.
+	 * Bestand laut der letzten Inventur
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyInventoryCount_AtDate (@Nullable BigDecimal QtyInventoryCount_AtDate);
+
+	/**
+	 * Get 📆 Inventory count.
+	 * Bestand laut der letzten Inventur
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyInventoryCount_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyInventoryCount_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyInventoryCount_AtDate", null);
+	String COLUMNNAME_QtyInventoryCount_AtDate = "QtyInventoryCount_AtDate";
+
+	/**
+	 * Set 📆 Inventory time.
+	 * Zeipunkt, an dem die Inventur fertig gestellt wurde.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyInventoryTime_AtDate (@Nullable java.sql.Timestamp QtyInventoryTime_AtDate);
+
+	/**
+	 * Get 📆 Inventory time.
+	 * Zeipunkt, an dem die Inventur fertig gestellt wurde.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getQtyInventoryTime_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyInventoryTime_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyInventoryTime_AtDate", null);
+	String COLUMNNAME_QtyInventoryTime_AtDate = "QtyInventoryTime_AtDate";
+
+	/**
+	 * Set 📆 Internal Usage.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyMaterialentnahme_AtDate (@Nullable BigDecimal QtyMaterialentnahme_AtDate);
+
+	/**
+	 * Get 📆 Internal Usage.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyMaterialentnahme_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyMaterialentnahme_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyMaterialentnahme_AtDate", null);
+	String COLUMNNAME_QtyMaterialentnahme_AtDate = "QtyMaterialentnahme_AtDate";
 
 	/**
 	 * Set Zählmenge.
@@ -377,7 +487,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOnHandCount (java.math.BigDecimal QtyOnHandCount);
+	void setQtyOnHandCount (@Nullable BigDecimal QtyOnHandCount);
 
 	/**
 	 * Get Zählmenge.
@@ -387,106 +497,10 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOnHandCount();
+	BigDecimal getQtyOnHandCount();
 
-    /** Column definition for QtyOnHandCount */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOnHandCount = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyOnHandCount", null);
-    /** Column name QtyOnHandCount */
-    public static final String COLUMNNAME_QtyOnHandCount = "QtyOnHandCount";
-
-	/**
-	 * Set Schätzbestand.
-	 * Kombination aus der Zählmenge des jeweiligen Tages mit aktuellen Warenein- und Ausgängen sowie Materialentnahmen
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyOnHandEstimate (java.math.BigDecimal QtyOnHandEstimate);
-
-	/**
-	 * Get Schätzbestand.
-	 * Kombination aus der Zählmenge des jeweiligen Tages mit aktuellen Warenein- und Ausgängen sowie Materialentnahmen
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyOnHandEstimate();
-
-    /** Column definition for QtyOnHandEstimate */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOnHandEstimate = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyOnHandEstimate", null);
-    /** Column name QtyOnHandEstimate */
-    public static final String COLUMNNAME_QtyOnHandEstimate = "QtyOnHandEstimate";
-
-	/**
-	 * Set Menge für Produktion.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyRequiredForProduction (java.math.BigDecimal QtyRequiredForProduction);
-
-	/**
-	 * Get Menge für Produktion.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyRequiredForProduction();
-
-    /** Column definition for QtyRequiredForProduction */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyRequiredForProduction = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyRequiredForProduction", null);
-    /** Column name QtyRequiredForProduction */
-    public static final String COLUMNNAME_QtyRequiredForProduction = "QtyRequiredForProduction";
-
-	/**
-	 * Set Bestellt.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyReserved_Purchase (java.math.BigDecimal QtyReserved_Purchase);
-
-	/**
-	 * Get Bestellt.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyReserved_Purchase();
-
-    /** Column definition for QtyReserved_Purchase */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyReserved_Purchase = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyReserved_Purchase", null);
-    /** Column name QtyReserved_Purchase */
-    public static final String COLUMNNAME_QtyReserved_Purchase = "QtyReserved_Purchase";
-
-	/**
-	 * Set Beauftragt.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyReserved_Sale (java.math.BigDecimal QtyReserved_Sale);
-
-	/**
-	 * Get Beauftragt.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyReserved_Sale();
-
-    /** Column definition for QtyReserved_Sale */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyReserved_Sale = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyReserved_Sale", null);
-    /** Column name QtyReserved_Sale */
-    public static final String COLUMNNAME_QtyReserved_Sale = "QtyReserved_Sale";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOnHandCount = new ModelColumn<>(I_MD_Cockpit.class, "QtyOnHandCount", null);
+	String COLUMNNAME_QtyOnHandCount = "QtyOnHandCount";
 
 	/**
 	 * Set Bestandsänderung.
@@ -495,7 +509,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyStockChange (java.math.BigDecimal QtyStockChange);
+	void setQtyStockChange (@Nullable BigDecimal QtyStockChange);
 
 	/**
 	 * Get Bestandsänderung.
@@ -504,40 +518,261 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyStockChange();
+	BigDecimal getQtyStockChange();
 
-    /** Column definition for QtyStockChange */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockChange = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyStockChange", null);
-    /** Column name QtyStockChange */
-    public static final String COLUMNNAME_QtyStockChange = "QtyStockChange";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockChange = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockChange", null);
+	String COLUMNNAME_QtyStockChange = "QtyStockChange";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Set 📆 Stock.
+	 * On-hand quantity for the respective date, with added/subtracted material increases and decreases since the count or inventory.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyStockCurrent_AtDate (@Nullable BigDecimal QtyStockCurrent_AtDate);
+
+	/**
+	 * Get 📆 Stock.
+	 * On-hand quantity for the respective date, with added/subtracted material increases and decreases since the count or inventory.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyStockCurrent_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockCurrent_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockCurrent_AtDate", null);
+	String COLUMNNAME_QtyStockCurrent_AtDate = "QtyStockCurrent_AtDate";
+
+	/**
+	 * Set 📆 Stock count.
+	 * Menge laut "grober" Zählung.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyStockEstimateCount_AtDate (@Nullable BigDecimal QtyStockEstimateCount_AtDate);
+
+	/**
+	 * Get 📆 Stock count.
+	 * Menge laut "grober" Zählung.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyStockEstimateCount_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateCount_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateCount_AtDate", null);
+	String COLUMNNAME_QtyStockEstimateCount_AtDate = "QtyStockEstimateCount_AtDate";
+
+	/**
+	 * Set 📆 Zählbestand Reihenfolge.
+	 * "Reihenfolge"-Wert mit dem die entsprechende Position im Zählbestand erfasst wurde
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyStockEstimateSeqNo_AtDate (int QtyStockEstimateSeqNo_AtDate);
+
+	/**
+	 * Get 📆 Zählbestand Reihenfolge.
+	 * "Reihenfolge"-Wert mit dem die entsprechende Position im Zählbestand erfasst wurde
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getQtyStockEstimateSeqNo_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateSeqNo_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateSeqNo_AtDate", null);
+	String COLUMNNAME_QtyStockEstimateSeqNo_AtDate = "QtyStockEstimateSeqNo_AtDate";
+
+	/**
+	 * Set 📆 Stock estimate time.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyStockEstimateTime_AtDate (@Nullable java.sql.Timestamp QtyStockEstimateTime_AtDate);
+
+	/**
+	 * Get 📆 Stock estimate time.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getQtyStockEstimateTime_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateTime_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateTime_AtDate", null);
+	String COLUMNNAME_QtyStockEstimateTime_AtDate = "QtyStockEstimateTime_AtDate";
+
+	/**
+	 * Set 📆 Pending distribution target.
+	 * Not-yet added quantity from a distribution order.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtySupply_DD_Order_AtDate (@Nullable BigDecimal QtySupply_DD_Order_AtDate);
+
+	/**
+	 * Get 📆 Pending distribution target.
+	 * Not-yet added quantity from a distribution order.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtySupply_DD_Order_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_DD_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_DD_Order_AtDate", null);
+	String COLUMNNAME_QtySupply_DD_Order_AtDate = "QtySupply_DD_Order_AtDate";
+
+	/**
+	 * Set 📆 Pending manufacturing receipt.
+	 * Not-yet received quantity from a manufacturing order.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtySupply_PP_Order_AtDate (@Nullable BigDecimal QtySupply_PP_Order_AtDate);
+
+	/**
+	 * Get 📆 Pending manufacturing receipt.
+	 * Not-yet received quantity from a manufacturing order.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtySupply_PP_Order_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_PP_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_PP_Order_AtDate", null);
+	String COLUMNNAME_QtySupply_PP_Order_AtDate = "QtySupply_PP_Order_AtDate";
+
+	/**
+	 * Set 📆 Purchased - pending.
+	 * Quantity from purchase orders for the respective date that was not yet received
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtySupply_PurchaseOrder_AtDate (@Nullable BigDecimal QtySupply_PurchaseOrder_AtDate);
+
+	/**
+	 * Get 📆 Purchased - pending.
+	 * Quantity from purchase orders for the respective date that was not yet received
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtySupply_PurchaseOrder_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_PurchaseOrder_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_PurchaseOrder_AtDate", null);
+	String COLUMNNAME_QtySupply_PurchaseOrder_AtDate = "QtySupply_PurchaseOrder_AtDate";
+
+	/**
+	 * Set 📆 Required supplies.
+	 * Sum of all required supplies, where the planned stock is below the planned shippings
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtySupplyRequired_AtDate (@Nullable BigDecimal QtySupplyRequired_AtDate);
+
+	/**
+	 * Get 📆 Required supplies.
+	 * Sum of all required supplies, where the planned stock is below the planned shippings
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtySupplyRequired_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplyRequired_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplyRequired_AtDate", null);
+	String COLUMNNAME_QtySupplyRequired_AtDate = "QtySupplyRequired_AtDate";
+
+	/**
+	 * Set 📆 Pending supplies.
+	 * Sum of the planned supplies from purchase orders, manufacturing orders and destribution orders
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtySupplySum_AtDate (@Nullable BigDecimal QtySupplySum_AtDate);
+
+	/**
+	 * Get 📆 Pending supplies.
+	 * Sum of the planned supplies from purchase orders, manufacturing orders and destribution orders
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtySupplySum_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplySum_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplySum_AtDate", null);
+	String COLUMNNAME_QtySupplySum_AtDate = "QtySupplySum_AtDate";
+
+	/**
+	 * Set 📆 Open requriements.
+	 * Required supplies that are not yet covered by purchase, production or distribution.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtySupplyToSchedule_AtDate (@Nullable BigDecimal QtySupplyToSchedule_AtDate);
+
+	/**
+	 * Get 📆 Open requriements.
+	 * Required supplies that are not yet covered by purchase, production or distribution.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtySupplyToSchedule_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplyToSchedule_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplyToSchedule_AtDate", null);
+	String COLUMNNAME_QtySupplyToSchedule_AtDate = "QtySupplyToSchedule_AtDate";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_Updated = new ModelColumn<>(I_MD_Cockpit.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_AD_User>(I_MD_Cockpit.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

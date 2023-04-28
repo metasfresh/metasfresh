@@ -25,7 +25,13 @@ package de.metas.ui.web.window.controller;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
@@ -78,12 +84,10 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -104,7 +108,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-@Api
+@Tag(name = "WindowRestController")
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
 public class WindowRestController
@@ -127,6 +131,7 @@ public class WindowRestController
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CommentsService commentsService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+	private final ADReferenceService adReferenceService;
 
 	public WindowRestController(
 			@NonNull final UserSession userSession,
@@ -137,7 +142,8 @@ public class WindowRestController
 			@NonNull final ProcessRestController processRestController,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
 			@NonNull final CommentsService commentsService,
-			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		this.userSession = userSession;
 		this.documentCollection = documentCollection;
@@ -148,6 +154,7 @@ public class WindowRestController
 		this.websocketPublisher = websocketPublisher;
 		this.commentsService = commentsService;
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
+		this.adReferenceService = adReferenceService;
 	}
 
 	private JSONOptionsBuilder newJSONOptions()
@@ -168,6 +175,7 @@ public class WindowRestController
 				.userSession(userSession);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/layout")
 	public ResponseEntity<JSONDocumentLayout> getLayout(
 			@PathVariable("windowId") final String windowIdStr,
@@ -189,6 +197,7 @@ public class WindowRestController
 				.toLayoutJson(JSONDocumentLayout::ofHeaderLayout);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{tabId}/layout")
 	public ResponseEntity<JSONDocumentLayout> getLayout(
 			@PathVariable("windowId") final String windowIdStr,
@@ -213,13 +222,16 @@ public class WindowRestController
 				.toLayoutJson(JSONDocumentLayout::ofDetailTab);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> getRootDocuments(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
@@ -229,16 +241,19 @@ public class WindowRestController
 		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
 	public JSONDocumentList getIncludedTabRows(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
-			@RequestParam(name = "ids", required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = "ids", required = false) @Parameter(description = "comma separated rowIds") final String rowIdsListStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		final DetailId tabId = DetailId.fromJson(tabIdStr);
@@ -284,6 +299,7 @@ public class WindowRestController
 
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public List<JSONDocument> getIncludedTabRow(
 			@PathVariable("windowId") final String windowIdStr
@@ -298,13 +314,15 @@ public class WindowRestController
 			@PathVariable("rowId") final String rowIdStr
 			//
 			,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr
 			//
 			,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
 			//
 	)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
@@ -353,6 +371,7 @@ public class WindowRestController
 	/**
 	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
 	 */
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PatchMapping("/{windowId}/{documentId}")
 	public JSONDocumentPatchResult patchRootDocument(
 			@PathVariable("windowId") final String windowIdStr,
@@ -369,6 +388,7 @@ public class WindowRestController
 		return patchDocument(documentPath, advanced, events);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PatchMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public JSONDocumentPatchResult patchIncludedDocument(
 			@PathVariable("windowId") final String windowIdStr,
@@ -413,7 +433,7 @@ public class WindowRestController
 				documentPath,
 				changesCollector,
 				document -> {
-					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI, jsonOpts.getDocumentFieldReadonlyChecker());
 					changesCollector.setPrimaryChange(document.getDocumentPath());
 					return null; // void
 				});
@@ -428,6 +448,7 @@ public class WindowRestController
 				.build();
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/duplicate")
 	public JSONDocument duplicate(
 			@PathVariable("windowId") final String windowIdStr,
@@ -457,12 +478,13 @@ public class WindowRestController
 		return deleteDocuments(ImmutableList.of(documentPath));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{windowId}")
 	public List<JSONDocument> deleteRootDocumentsList(
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
-			@RequestParam(name = "ids") @ApiParam("comma separated documentIds") final String idsListStr
+			@RequestParam(name = "ids") @Parameter(description = "comma separated documentIds") final String idsListStr
 			//
 	)
 	{
@@ -476,6 +498,7 @@ public class WindowRestController
 		return deleteDocuments(documentPaths);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public List<JSONDocument> deleteIncludedDocument(
 			@PathVariable("windowId") final String windowIdStr
@@ -496,6 +519,7 @@ public class WindowRestController
 		return deleteDocuments(ImmutableList.of(documentPath));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{windowId}/{documentId}/{tabId}")
 	public List<JSONDocument> deleteIncludedDocumentsList(
 			@PathVariable("windowId") final String windowIdStr
@@ -507,7 +531,7 @@ public class WindowRestController
 			@PathVariable("tabId") final String tabId
 			//
 			,
-			@RequestParam(name = "ids") @ApiParam("comma separated rowIds") final String rowIdsListStr
+			@RequestParam(name = "ids") @Parameter(description = "comma separated rowIds") final String rowIdsListStr
 			//
 	)
 	{
@@ -542,6 +566,7 @@ public class WindowRestController
 	/**
 	 * Typeahead for root document's field
 	 */
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
@@ -565,6 +590,7 @@ public class WindowRestController
 	/**
 	 * Typeahead for included document's field
 	 */
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
@@ -610,6 +636,7 @@ public class WindowRestController
 		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr
@@ -627,6 +654,7 @@ public class WindowRestController
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr
@@ -663,7 +691,8 @@ public class WindowRestController
 				.transform(this::toJSONLookupValuesList);
 	}
 
-	@ApiOperation("field current value's window layout to zoom into")
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
+	@Operation(summary = "field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr
@@ -681,7 +710,8 @@ public class WindowRestController
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
 
-	@ApiOperation("field current value's window layout to zoom into")
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
+	@Operation(summary = "field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr
@@ -783,9 +813,10 @@ public class WindowRestController
 
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
-				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-				final TableRefInfo tableRefInfo = lookupDAO
-						.retrieveTableDirectRefInfo(labelsValueColumnName);
+				final ReferenceId labelsValueReferenceId = lookup.getLabelsValueReferenceId();
+				final ADRefTable tableRefInfo = labelsValueReferenceId != null
+						? adReferenceService.retrieveTableRefInfo(labelsValueReferenceId)
+						: adReferenceService.getTableDirectRefInfo(labelsValueColumnName);
 
 				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
 			}
@@ -811,6 +842,7 @@ public class WindowRestController
 		}
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -855,6 +887,7 @@ public class WindowRestController
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/topActions")
 	public JSONDocumentActionsList getIncludedTabTopActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -875,6 +908,7 @@ public class WindowRestController
 				DisplayPlace.IncludedTabTopActionsMenu);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
 	public JSONDocumentActionsList getIncludedDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -927,6 +961,7 @@ public class WindowRestController
 	/**
 	 * task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/processNewRecord")
 	public int processRecord(
 			@PathVariable("windowId") final String windowIdStr
@@ -949,12 +984,20 @@ public class WindowRestController
 				throw new AdempiereException("Not saved");
 			}
 
+			final NewRecordContext newRecordContext = NewRecordContext.builder()
+					.loginOrgId(userSession.getOrgId())
+					.loggedUserId(userSession.getLoggedUserId())
+					.loginLanguage(userSession.getAD_Language())
+					.build();
+
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
-					.processNewRecordDocument(document);
+					.processNewRecordDocument(document,
+							newRecordContext);
 		}));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/field/{fieldName}/advSearchResult")
 	public List<JSONDocument> advSearchResult(
 			@PathVariable("windowId") final String windowIdStr,
@@ -990,6 +1033,7 @@ public class WindowRestController
 		return jsonDocumentEvents;
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,
@@ -1001,6 +1045,7 @@ public class WindowRestController
 		documentCollection.invalidateRootDocument(documentPath);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/{tabId}/{rowId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,
@@ -1016,6 +1061,7 @@ public class WindowRestController
 		documentCollection.invalidateRootDocument(documentPath);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/changeLog")
 	public JSONDocumentChangeLog getDocumentChangeLog(
 			@PathVariable("windowId") final String windowIdStr,
@@ -1026,6 +1072,7 @@ public class WindowRestController
 		return getDocumentChangeLog(documentPath);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/changeLog")
 	public JSONDocumentChangeLog getDocumentChangeLog(
 			@PathVariable("windowId") final String windowIdStr,

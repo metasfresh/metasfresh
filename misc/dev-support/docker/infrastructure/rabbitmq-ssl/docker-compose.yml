@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  ssl-rabbitmq:
+    build: .
+    environment:
+      - RABBITMQ_CONFIG_FILE=/etc/rabbitmq/rabbitmq.conf
+    ports:      
+      - "5671:5671"
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./definitions.json:/etc/rabbitmq/definitions.json      
+      - ./cert.pem:/etc/rabbitmq/cert.pem      
+      - ./key.pem:/etc/rabbitmq/key.pem

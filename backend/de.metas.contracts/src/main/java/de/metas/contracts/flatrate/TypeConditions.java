@@ -27,9 +27,15 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_CallOrder;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_InterimInvoice;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_LicenseFee;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MarginCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MediatedCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Procurement;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing;
@@ -48,7 +54,12 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	PROCUREMENT(TYPE_CONDITIONS_Procurement),
 	REFUND(TYPE_CONDITIONS_Refund),
 	COMMISSION(TYPE_CONDITIONS_Commission),
-	MEDIATED_COMMISSION(TYPE_CONDITIONS_MediatedCommission);
+	MEDIATED_COMMISSION(TYPE_CONDITIONS_MediatedCommission),
+	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission),
+	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee),
+	CALL_ORDER(TYPE_CONDITIONS_CallOrder),
+
+	INTERIM_INVOICE(TYPE_CONDITIONS_InterimInvoice);
 
 	@Getter
 	private final String code;
@@ -56,6 +67,12 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	TypeConditions(@NonNull final String code)
 	{
 		this.code = code;
+	}
+
+	@Nullable
+	public static TypeConditions ofNullableCode(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : null;
 	}
 
 	public static TypeConditions ofCode(@NonNull final String code)

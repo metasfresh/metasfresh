@@ -46,7 +46,7 @@ public class CurrencyInfoProvider implements Serializable
 	{
 		final String isoCode = currencyId2IsoCode.get(currencyId);
 
-		if (isoCode == null || isoCode.isBlank())
+		if (isoCode == null /*|| isoCode.isBlank()*/)
 		{
 			throw new RuntimeException("Missing currency iso code for currencyId=" + currencyId);
 		}

@@ -1,7 +1,6 @@
 package de.metas.ui.web.receiptSchedule;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.view.ViewFactory;
@@ -10,6 +9,7 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColu
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 
 /*
  * #%L
@@ -50,13 +50,19 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 		viewLayoutBuilder
 				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
-						viewDataType,
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
+														  viewDataType,
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
+	}
+
+	@Override
+	protected AttributeSourceDocument getAttributeSourceDocument()
+	{
+		return AttributeSourceDocument.MaterialReceipt;
 	}
 }

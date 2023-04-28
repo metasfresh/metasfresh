@@ -8,14 +8,15 @@ import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.notification.json.JSONNotification;
 import de.metas.ui.web.notification.json.JSONNotificationEvent;
 import de.metas.ui.web.session.json.WebuiSessionId;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -99,10 +100,10 @@ public class UserNotificationsQueue
 		logger.trace("Fired notification to WS {}: {}", websocketEndpoint, event);
 	}
 
-	public UserNotificationsList getNotificationsAsList(final int limit)
+	public UserNotificationsList getNotificationsAsList(@NonNull final QueryLimit limit)
 	{
 		final List<UserNotification> notifications = notificationsRepo.getByUserId(userId, limit);
-		final boolean fullyLoaded = limit <= 0 || notifications.size() <= limit;
+		final boolean fullyLoaded = limit.isNoLimit() || notifications.size() <= limit.toInt();
 
 		final int totalCount;
 		final int unreadCount;

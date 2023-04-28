@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.picking.model.X_M_Picking_Config;
@@ -19,8 +20,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.util.Services;
-import org.adempiere.ad.service.IADReferenceDAO;
+import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -56,10 +57,9 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 
 	private static final String FIELDNAME_ProductOrBPartner = "ProductOrBPartner";
 
-	public PickingTerminalByWarehouseAndProductViewCustomizer()
+	public PickingTerminalByWarehouseAndProductViewCustomizer(@NonNull final ADReferenceService adReferenceService)
 	{
-		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
-		final ITranslatableString caption = referenceDAO.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByProduct);
+		final ITranslatableString caption = adReferenceService.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByProduct);
 		PROFILE = ViewProfile.of(PROFILE_ID, caption);
 	}
 
@@ -95,19 +95,19 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
 				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyOrdered, SqlSelectValue.builder()
-						.virtualColumnSql("SUM(QtyOrdered)")
+						.virtualColumnSql(ColumnSql.ofSql("SUM(QtyOrdered)"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_QtyOrdered)
 						.build())
 				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered, SqlSelectValue.builder()
-						.virtualColumnSql("SUM(" + I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered + ")")
+						.virtualColumnSql(ColumnSql.ofSql("SUM(" + I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered + ")"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_QtyPickedOrDelivered)
 						.build())
 				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, SqlSelectValue.builder()
-						.virtualColumnSql("MIN(DeliveryDate)")
+						.virtualColumnSql(ColumnSql.ofSql("MIN(DeliveryDate)"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_DeliveryDate)
 						.build())
 				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, SqlSelectValue.builder()
-						.virtualColumnSql("IF_MIN(DeliveryDate, PreparationDate)")
+						.virtualColumnSql(ColumnSql.ofSql("IF_MIN(DeliveryDate, PreparationDate)"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_PreparationDate)
 						.build())
 				.rowIdsConverter(SqlViewRowIdsConverters.TO_INT_EXCLUDING_STRINGS)

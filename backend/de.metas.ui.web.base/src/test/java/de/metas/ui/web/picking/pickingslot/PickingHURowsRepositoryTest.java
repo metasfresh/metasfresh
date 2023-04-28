@@ -1,20 +1,19 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.product.ProductId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.product.ProductId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -61,7 +60,7 @@ public class PickingHURowsRepositoryTest
 				.shipmentScheduleId(shipmentScheduleId2)
 				.build());
 
-		assertThat(query.getWarehouseId()).isEqualTo(warehouseId);
+		assertThat(query.getWarehouseIds()).containsExactly(warehouseId);
 		assertThat(query.getProductIds()).containsExactly(productId);
 	}
 

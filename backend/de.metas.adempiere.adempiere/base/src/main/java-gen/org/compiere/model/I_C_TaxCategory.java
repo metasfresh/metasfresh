@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_TaxCategory
  *  @author metasfresh (generated) 
@@ -51,7 +52,7 @@ public interface I_C_TaxCategory
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Statistische Warennummer.
+	 * Set Commodity Code.
 	 * Commodity code used for tax calculation
 	 *
 	 * <br>Type: String
@@ -61,7 +62,7 @@ public interface I_C_TaxCategory
 	void setCommodityCode (@Nullable java.lang.String CommodityCode);
 
 	/**
-	 * Get Statistische Warennummer.
+	 * Get Commodity Code.
 	 * Commodity code used for tax calculation
 	 *
 	 * <br>Type: String
@@ -189,6 +190,27 @@ public interface I_C_TaxCategory
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Manual Tax.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualTax (boolean IsManualTax);
+
+	/**
+	 * Get Manual Tax.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualTax();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_IsManualTax = new ModelColumn<>(I_C_TaxCategory.class, "IsManualTax", null);
+	String COLUMNNAME_IsManualTax = "IsManualTax";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -208,6 +230,29 @@ public interface I_C_TaxCategory
 
 	ModelColumn<I_C_TaxCategory, Object> COLUMN_Name = new ModelColumn<>(I_C_TaxCategory.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Product Type.
+	 * Type of product
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductType (@Nullable java.lang.String ProductType);
+
+	/**
+	 * Get Product Type.
+	 * Type of product
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductType();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_ProductType = new ModelColumn<>(I_C_TaxCategory.class, "ProductType", null);
+	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
 	 * Get Updated.

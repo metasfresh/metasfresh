@@ -1,18 +1,17 @@
 package de.metas.process;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.collect.ImmutableSet;
-
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -74,6 +73,11 @@ public interface IProcessPreconditionsContext
 	 */
 	int getSingleSelectedRecordId();
 
+	default <T extends RepoIdAware> T getSingleSelectedRecordId(final Class<T> type)
+	{
+		return RepoIdAwares.ofRepoId(getSingleSelectedRecordId(), type);
+	}
+
 	/**
 	 * Gets how many rows were selected.
 	 * In case the size is not determined, an exception is thrown.
@@ -105,5 +109,26 @@ public interface IProcessPreconditionsContext
 		return ImmutableSet.of();
 	}
 
+	default boolean isSingleIncludedRecordSelected()
+	{
+		return getSelectedIncludedRecords().size() == 1;
+	}
+
 	<T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass);
+
+	default ProcessPreconditionsResolution acceptIfSingleSelection()
+	{
+		if (isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		else if (isMoreThanOneSelected())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		else
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+	}
 }

@@ -95,6 +95,9 @@ public interface CopyRecordSupport
 	@FunctionalInterface
 	interface IOnRecordCopiedListener
 	{
+		/**
+		 * Called after the record was copied, right before saving it (and before it's children are copied)
+		 */
 		void onRecordCopied(final PO to, final PO from);
 	}
 }

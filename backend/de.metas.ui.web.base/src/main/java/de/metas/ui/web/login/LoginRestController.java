@@ -1,18 +1,19 @@
 package de.metas.ui.web.login;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
-import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
@@ -41,10 +42,10 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.LoginContext;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -96,13 +98,15 @@ public class LoginRestController
 	private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 	private final ILanguageBL languageBL = Services.get(ILanguageBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final UserSession userSession;
 	private final UserSessionRepository userSessionRepo;
 	private final UserNotificationsService userNotificationsService;
 	private final WebuiImageService imageService;
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
-
+	
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
 	public LoginRestController(
@@ -185,18 +189,18 @@ public class LoginRestController
 
 		try
 		{
-			final Set<KeyNamePair> availableRoleKNPs = loginService.authenticate(username, password);
-			final Set<JSONLoginRole> availableRoles;
+			final List<Role> availableRolesList = loginService.authenticate(username, password).getAvailableRoles();
+			final List<JSONLoginRole> jsonAvailableRoles;
 			final JSONLoginRole roleToLogin;
 			if (role != null)
 			{
 				roleToLogin = role;
-				availableRoles = ImmutableSet.of(role);
+				jsonAvailableRoles = ImmutableList.of(role);
 			}
 			else
 			{
-				availableRoles = createJSONLoginRoles(loginService, availableRoleKNPs);
-				roleToLogin = availableRoles.size() == 1 ? availableRoles.iterator().next() : null;
+				jsonAvailableRoles = createJSONLoginRoles(loginService, availableRolesList);
+				roleToLogin = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.iterator().next() : null;
 			}
 
 			if (roleToLogin != null)
@@ -206,7 +210,7 @@ public class LoginRestController
 			}
 			else
 			{
-				return JSONLoginAuthResponse.of(availableRoles);
+				return JSONLoginAuthResponse.of(jsonAvailableRoles);
 			}
 		}
 		catch (final Exception ex)
@@ -231,42 +235,48 @@ public class LoginRestController
 		return metasfreshException;
 	}
 
-	private static Set<JSONLoginRole> createJSONLoginRoles(final Login loginService, final Set<KeyNamePair> availableRoles)
+	private List<JSONLoginRole> createJSONLoginRoles(final Login loginService, final List<Role> availableRoles)
 	{
 		if (availableRoles.isEmpty())
 		{
-			return ImmutableSet.of();
+			return ImmutableList.of();
 		}
 
 		final LoginContext ctx = loginService.getCtx();
-		final ImmutableSet.Builder<JSONLoginRole> jsonRoles = ImmutableSet.builder();
-		for (final KeyNamePair role : availableRoles)
-		{
-			final RoleId roleId = RoleId.ofRepoId(role.getKey());
-			final UserId userId = ctx.getUserId();
-			for (final KeyNamePair tenant : loginService.getAvailableClients(roleId, userId))
-			{
-				final ClientId clientId = ClientId.ofRepoId(tenant.getKey());
+		final UserId userId = ctx.getUserId();
 
-				final Set<KeyNamePair> availableOrgs = loginService.getAvailableOrgs(roleId, userId, clientId);
-				for (final KeyNamePair org : availableOrgs)
+		final Joiner captionJoiner = Joiner.on(", ");
+
+		final ImmutableList.Builder<JSONLoginRole> result = ImmutableList.builder();
+		for (final Role role : availableRoles)
+		{
+			final RoleId roleId = role.getId();
+			for (final ClientId clientId : loginService.getAvailableClients(roleId, userId))
+			{
+				final String clientName = clientDAO.getClientNameById(clientId);
+				final Set<OrgId> availableOrgsIds = loginService.getAvailableOrgs(roleId, userId, clientId);
+				for (final OrgId orgId : availableOrgsIds)
 				{
 					// If there is more than one available Org, then skip the "*" org
-					final OrgId orgId = OrgId.ofRepoIdOrAny(org.getKey());
-					if (availableOrgs.size() > 1 && orgId.isAny())
+					if (availableOrgsIds.size() > 1 && orgId.isAny())
 					{
 						continue;
 					}
 
-					final String caption = Joiner.on(", ").join(role.getName(), tenant.getName(), org.getName());
-					final JSONLoginRole jsonRole = JSONLoginRole.of(caption, roleId.getRepoId(), clientId.getRepoId(), orgId.getRepoId());
-					jsonRoles.add(jsonRole);
+					final String orgName = orgDAO.getOrgName(orgId);
+					final String caption = captionJoiner.join(role.getName(), clientName, orgName);
 
+					result.add(JSONLoginRole.builder()
+							.caption(caption)
+							.roleId(roleId.getRepoId())
+							.tenantId(clientId.getRepoId())
+							.orgId(orgId.getRepoId())
+							.build());
 				}
 			}
 		}
 
-		return jsonRoles.build();
+		return result.build();
 	}
 
 	private void startMFSession(final Login loginService)
@@ -329,17 +339,17 @@ public class LoginRestController
 		assertAuthenticated();
 		userSession.assertNotLoggedIn();
 
-		final KeyNamePair role = KeyNamePair.of(loginRole.getRoleId());
-		final KeyNamePair tenant = KeyNamePair.of(loginRole.getTenantId());
-		final KeyNamePair org = KeyNamePair.of(loginRole.getOrgId());
+		final RoleId roleId = RoleId.ofRepoId(loginRole.getRoleId());
+		final ClientId clientId = ClientId.ofRepoId(loginRole.getTenantId());
+		final OrgId orgId = OrgId.ofRepoId(loginRole.getOrgId());
 
 		//
 		// Update context
 		final Login loginService = getLoginService();
 
 		// TODO: optimize
-		loginService.setRoleAndGetClients(role);
-		loginService.setClientAndGetOrgs(tenant);
+		loginService.setRoleAndGetClients(roleId);
+		loginService.setClientAndGetOrgs(clientId);
 
 		//
 		// Load preferences and export them to context
@@ -351,7 +361,7 @@ public class LoginRestController
 		//
 		// Validate login: fires login complete model interceptors
 		{
-			final String msg = loginService.validateLogin(org);
+			final String msg = loginService.validateLogin(orgId);
 			if (msg != null && !Check.isBlank(msg))
 			{
 				throw new AdempiereException(msg);
@@ -361,7 +371,7 @@ public class LoginRestController
 		//
 		// Load preferences
 		{
-			final String msg = loginService.loadPreferences(org, null);
+			final String msg = loginService.loadPreferences(orgId, null);
 			if (!Check.isEmpty(msg, true))
 			{
 				throw new AdempiereException(msg);
@@ -411,7 +421,7 @@ public class LoginRestController
 				.stream()
 				.map(JSONLookupValue::ofNamePair)
 				.collect(JSONLookupValuesList.collect())
-				.setDefaultValue(userSession.getAD_Language());
+				.setDefaultId(userSession.getAD_Language());
 	}
 
 	@GetMapping("/logout")

@@ -1,0 +1,407 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "json-schema-model/maindoc/UBL-SelfBilledCreditNote-2.3.json",
+  "description": "\n  Library:           OASIS Universal Business Language (UBL) 2.3 OS\n                     http://docs.oasis-open.org/ubl/os-UBL-2.3/\n  Release Date:      15 June 2021\n  Module:            json-schema-model/maindoc/UBL-SelfBilledCreditNote-2.3.json\n  Generated on:      2021-12-15 21:56z\n  Copyright (c) OASIS Open 2021. All Rights Reserved.\n\n\n  OASIS takes no position regarding the validity or scope of any \n  intellectual property or other rights that might be claimed to pertain \n  to the implementation or use of the technology described in this \n  document or the extent to which any license under such rights \n  might or might not be available; neither does it represent that it has \n  made any effort to identify any such rights. Information on OASIS's \n  procedures with respect to rights in OASIS specifications can be \n  found at the OASIS website. Copies of claims of rights made \n  available for publication and any assurances of licenses to be made \n  available, or the result of an attempt made to obtain a general \n  license or permission for the use of such proprietary rights by \n  implementors or users of this specification, can be obtained from \n  the OASIS Executive Director.\n\n  OASIS invites any interested party to bring to its attention any \n  copyrights, patents or patent applications, or other proprietary \n  rights which may cover technology that may be required to \n  implement this specification. Please address the information to the \n  OASIS Executive Director.\n  \n  This document and translations of it may be copied and furnished to \n  others, and derivative works that comment on or otherwise explain \n  it or assist in its implementation may be prepared, copied, \n  published and distributed, in whole or in part, without restriction of \n  any kind, provided that the above copyright notice and this \n  paragraph are included on all such copies and derivative works. \n  However, this document itself may not be modified in any way, \n  such as by removing the copyright notice or references to OASIS, \n  except as needed for the purpose of developing OASIS \n  specifications, in which case the procedures for copyrights defined \n  in the OASIS Intellectual Property Rights document must be \n  followed, or as required to translate it into languages other than \n  English. \n\n  The limited permissions granted above are perpetual and will not be \n  revoked by OASIS or its successors or assigns. \n\n  This document and the information contained herein is provided on \n  an \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \n  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \n  WARRANTY THAT THE USE OF THE INFORMATION HEREIN \n  WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \n  WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \n  PARTICULAR PURPOSE.    \n",
+  "required": [
+    "SelfBilledCreditNote"
+    ],
+  "properties": {
+    "_D": {
+      "description": "Document ABIE XML namespace string",
+      "type": "string"
+      },
+    "_A": {
+      "description": "Library ABIE XML namespace string (for ASBIEs)",
+      "type": "string"
+      },
+    "_B": {
+      "description": "BBIE XML namespace string",
+      "type": "string"
+      },
+    "_E": {
+      "description": "Extension scaffolding XML namespace string",
+      "type": "string"
+      },
+    "SelfBilledCreditNote": {
+      "description": "A credit note created by the debtor in a self billing arrangement with a creditor; Self Billed Credit Note replaces Debit Note in such arrangements.",
+      "$ref": "#/definitions/SelfBilledCreditNote"
+      }
+    },
+  "additionalProperties": false,
+  "type": "object",
+  "definitions": {
+    "SelfBilledCreditNote": {
+      "title": "Self Billed Credit Note. Details",
+      "description": "A credit note created by the debtor in a self billing arrangement with a creditor; Self Billed Credit Note replaces Debit Note in such arrangements.",
+      "required": [
+        "ID",
+        "IssueDate",
+        "DocumentCurrencyCode",
+        "AccountingCustomerParty",
+        "AccountingSupplierParty",
+        "LegalMonetaryTotal",
+        "CreditNoteLine"
+        ],
+      "properties": {
+
+        "UBLExtensions": {
+          "title": "UBLExtensions",
+          "description": "An optional set of extensions to the committee model",
+          "items": { 
+            "$ref": "../common/UBL-CommonExtensionComponents-2.3.json#/definitions/UBLExtensions" },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+
+        "UBLVersionID": {
+          "title": "Self Billed Credit Note. UBL Version Identifier. Identifier",
+          "description": "Identifies the earliest version of the UBL 2 schema for this document type that defines all of the elements that might be encountered in the current instance.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UBLVersionID"
+          },
+        "CustomizationID": {
+          "title": "Self Billed Credit Note. Customization Identifier. Identifier",
+          "description": "Identifies a user-defined customization of UBL for a specific use.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CustomizationID"
+          },
+        "ProfileID": {
+          "title": "Self Billed Credit Note. Profile Identifier. Identifier",
+          "description": "Identifies a user-defined profile of the customization of UBL being used.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileID"
+          },
+        "ProfileExecutionID": {
+          "title": "Self Billed Credit Note. Profile Execution Identifier. Identifier",
+          "description": "Identifies an instance of executing a profile, to associate all transactions in a collaboration.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileExecutionID"
+          },
+        "ID": {
+          "title": "Self Billed Credit Note. Identifier",
+          "description": "An identifier for this document, assigned by the sender.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ID"
+          },
+        "CopyIndicator": {
+          "title": "Self Billed Credit Note. Copy_ Indicator. Indicator",
+          "description": "Indicates whether this document is a copy (true) or not (false).",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CopyIndicator"
+          },
+        "UUID": {
+          "title": "Self Billed Credit Note. UUID. Identifier",
+          "description": "A universally unique identifier for an instance of this document.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UUID"
+          },
+        "IssueDate": {
+          "title": "Self Billed Credit Note. Issue Date. Date",
+          "description": "The date, assigned by the sender, on which this document was issued.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueDate"
+          },
+        "IssueTime": {
+          "title": "Self Billed Credit Note. Issue Time. Time",
+          "description": "The time, assigned by the sender, at which this document was issued.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueTime"
+          },
+        "DueDate": {
+          "title": "Self Billed Credit Note. Due Date. Date",
+          "description": "  The date on which SelfBilledCreditNote is due.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/DueDate"
+          },
+        "TaxPointDate": {
+          "title": "Self Billed Credit Note. Tax Point Date. Date",
+          "description": "The date of the Self Billed Credit Note, used to indicate the point at which tax becomes applicable.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/TaxPointDate"
+          },
+        "CreditNoteTypeCode": {
+          "title": "Self Billed Credit Note. Credit Note Type Code. Code",
+          "description": "A code signifying the type of Selfbilled CreditNote",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CreditNoteTypeCode"
+          },
+        "Note": {
+          "title": "Self Billed Credit Note. Note. Text",
+          "description": "Free-form text pertinent to this document, conveying information that is not contained explicitly in other structures.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Note"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "DocumentCurrencyCode": {
+          "title": "Self Billed Credit Note. Document_ Currency Code. Code",
+          "description": "A code signifying the default currency for this document.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/DocumentCurrencyCode"
+          },
+        "TaxCurrencyCode": {
+          "title": "Self Billed Credit Note. Tax_ Currency Code. Code",
+          "description": "A code signifying the currency used for tax amounts in the Self Billed Credit Note.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/TaxCurrencyCode"
+          },
+        "PricingCurrencyCode": {
+          "title": "Self Billed Credit Note. Pricing_ Currency Code. Code",
+          "description": "A code signifying the currency used for prices in the Self Billed Credit Note.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/PricingCurrencyCode"
+          },
+        "PaymentCurrencyCode": {
+          "title": "Self Billed Credit Note. Payment_ Currency Code. Code",
+          "description": "A code signifying the currency used for payment in the Self Billed Credit Note.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/PaymentCurrencyCode"
+          },
+        "PaymentAlternativeCurrencyCode": {
+          "title": "Self Billed Credit Note. Payment Alternative_ Currency Code. Code",
+          "description": "A code signifying the alternative currency used for payment in the Self Billed Credit Note.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/PaymentAlternativeCurrencyCode"
+          },
+        "AccountingCostCode": {
+          "title": "Self Billed Credit Note. Accounting Cost Code. Code",
+          "description": "The buyer's accounting code, applied to the Self Billed Credit Note as a whole.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/AccountingCostCode"
+          },
+        "AccountingCost": {
+          "title": "Self Billed Credit Note. Accounting Cost. Text",
+          "description": "The buyer's accounting code, applied to the Self Billed Credit Note as a whole, expressed as text.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/AccountingCost"
+          },
+        "LineCountNumeric": {
+          "title": "Self Billed Credit Note. Line Count. Numeric",
+          "description": "The number of Self Billed Credit Note Lines in this document.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/LineCountNumeric"
+          },
+        "BuyerReference": {
+          "title": "Self Billed Credit Note. Buyer_ Reference. Text",
+          "description": "A reference provided by the buyer used for internal routing of the document.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/BuyerReference"
+          },
+        "InvoicePeriod": {
+          "title": "Self Billed Credit Note. Invoice_ Period. Period",
+          "description": "A period (rather than a specific Invoice) associated with the Self Billed Credit Note.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/InvoicePeriod"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "DiscrepancyResponse": {
+          "title": "Self Billed Credit Note. Discrepancy_ Response. Response",
+          "description": "A reason for the Self Billed Credit Note as a whole.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/DiscrepancyResponse"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "OrderReference": {
+          "title": "Self Billed Credit Note. Order Reference",
+          "description": "The Order associated with this Self Billed Credit Note.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/OrderReference"
+          },
+        "BillingReference": {
+          "title": "Self Billed Credit Note. Billing Reference",
+          "description": "A reference to a billing document associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/BillingReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "DespatchDocumentReference": {
+          "title": "Self Billed Credit Note. Despatch_ Document Reference. Document Reference",
+          "description": "A reference to a Despatch Advice associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/DespatchDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "ReceiptDocumentReference": {
+          "title": "Self Billed Credit Note. Receipt_ Document Reference. Document Reference",
+          "description": "A reference to a Receipt Advice associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ReceiptDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "ContractDocumentReference": {
+          "title": "Self Billed Credit Note. Contract_ Document Reference. Document Reference",
+          "description": "A reference to a contract associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ContractDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "StatementDocumentReference": {
+          "title": "Self Billed Credit Note. Statement_ Document Reference. Document Reference",
+          "description": "A reference to a Statement associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/StatementDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "OriginatorDocumentReference": {
+          "title": "Self Billed Credit Note. Originator_ Document Reference. Document Reference",
+          "description": "A reference to an originator document associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/OriginatorDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "AdditionalDocumentReference": {
+          "title": "Self Billed Credit Note. Additional_ Document Reference. Document Reference",
+          "description": "A reference to an additional document associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AdditionalDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProjectReference": {
+          "title": "Self Billed Credit Note. Project Reference",
+          "description": "A reference to a project associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ProjectReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "Signature": {
+          "title": "Self Billed Credit Note. Signature",
+          "description": "A signature applied to this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Signature"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "AccountingCustomerParty": {
+          "title": "Self Billed Credit Note. Accounting_ Customer Party. Customer Party",
+          "description": "The accounting customer party.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AccountingCustomerParty"
+          },
+        "AccountingSupplierParty": {
+          "title": "Self Billed Credit Note. Accounting_ Supplier Party. Supplier Party",
+          "description": "The accounting supplier party.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AccountingSupplierParty"
+          },
+        "PayeeParty": {
+          "title": "Self Billed Credit Note. Payee_ Party. Party",
+          "description": "The payee.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/PayeeParty"
+          },
+        "BuyerCustomerParty": {
+          "title": "Self Billed Credit Note. Buyer_ Customer Party. Customer Party",
+          "description": "The buyer.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/BuyerCustomerParty"
+          },
+        "SellerSupplierParty": {
+          "title": "Self Billed Credit Note. Seller_ Supplier Party. Supplier Party",
+          "description": "The seller.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/SellerSupplierParty"
+          },
+        "TaxRepresentativeParty": {
+          "title": "Self Billed Credit Note. Tax Representative_ Party. Party",
+          "description": "The tax representative.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/TaxRepresentativeParty"
+          },
+        "Delivery": {
+          "title": "Self Billed Credit Note. Delivery",
+          "description": "A delivery associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Delivery"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "DeliveryTerms": {
+          "title": "Self Billed Credit Note. Delivery Terms",
+          "description": "A set of delivery terms associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/DeliveryTerms"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "PaymentMeans": {
+          "title": "Self Billed Credit Note. Payment Means",
+          "description": "Expected means of payment.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/PaymentMeans"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "PaymentTerms": {
+          "title": "Self Billed Credit Note. Payment Terms",
+          "description": "A set of payment terms associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/PaymentTerms"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "AllowanceCharge": {
+          "title": "Self Billed Credit Note. Allowance Charge",
+          "description": "A discount or charge that applies to a price component.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AllowanceCharge"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "TaxExchangeRate": {
+          "title": "Self Billed Credit Note. Tax_ Exchange Rate. Exchange Rate",
+          "description": "The exchange rate between the document currency and the tax currency.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/TaxExchangeRate"
+          },
+        "PricingExchangeRate": {
+          "title": "Self Billed Credit Note. Pricing_ Exchange Rate. Exchange Rate",
+          "description": "The exchange rate between the document currency and the pricing currency.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/PricingExchangeRate"
+          },
+        "PaymentExchangeRate": {
+          "title": "Self Billed Credit Note. Payment_ Exchange Rate. Exchange Rate",
+          "description": "The exchange rate between the document currency and the payment currency.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/PaymentExchangeRate"
+          },
+        "PaymentAlternativeExchangeRate": {
+          "title": "Self Billed Credit Note. Payment Alternative_ Exchange Rate. Exchange Rate",
+          "description": "The exchange rate between the document currency and the payment alternative currency.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/PaymentAlternativeExchangeRate"
+          },
+        "TaxTotal": {
+          "title": "Self Billed Credit Note. Tax Total",
+          "description": "The total amount of a specific type of tax.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/TaxTotal"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "WithholdingTaxTotal": {
+          "title": "Self Billed Credit Note. Withholding_ Tax Total. Tax Total",
+          "description": "The total withholding tax.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/WithholdingTaxTotal"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "LegalMonetaryTotal": {
+          "title": "Self Billed Credit Note. Legal_ Monetary Total. Monetary Total",
+          "description": "The total amount payable on the Self Billed Credit Note, including Allowances, Charges, and Taxes.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/LegalMonetaryTotal"
+          },
+        "CreditNoteLine": {
+          "title": "Self Billed Credit Note. Credit Note Line",
+          "description": "A Self Billed Credit Note Line.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/CreditNoteLine"
+            },
+          "minItems": 1,
+          "type": "array"
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      }
+    }
+  }

@@ -69,8 +69,7 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	
 	/**
 	 * Create UI
-	 * 
-	 * @param c
+	 *
 	 * @return new instance of {@link AdempiereComboBoxUI}
 	 */
 	public static ComponentUI createUI(final JComponent c)
@@ -139,8 +138,7 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	@Override
 	protected JButton createArrowButton()
 	{
-		 final JButton button = super.createArrowButton();
-		 return button;
+		return super.createArrowButton();
 	}
 
 	public JButton getArrowButton()
@@ -151,7 +149,6 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	/**
 	 * Set Icon of arrow button
 	 * 
-	 * @param defaultIcon
 	 */
 	public void setIcon(Icon defaultIcon)
 	{
@@ -208,7 +205,7 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	{
 		private static final long serialVersionUID = 3226003169560939486L;
 
-		public AdempiereComboPopup(final JComboBox<?> combo)
+		public AdempiereComboPopup(final JComboBox<Object> combo)
 		{
 			super(combo);
 		}

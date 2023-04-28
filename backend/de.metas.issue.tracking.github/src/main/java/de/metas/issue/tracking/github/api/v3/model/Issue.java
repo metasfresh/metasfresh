@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.Instant;
 import java.util.List;
 
 @Value
@@ -65,6 +66,9 @@ public class Issue
 
 	@JsonProperty("pull_request")
 	PullRequest pullRequest;
+
+	@JsonProperty("updated_at")
+	Instant updatedAt;
 
 	public boolean isPullRequest()
 	{

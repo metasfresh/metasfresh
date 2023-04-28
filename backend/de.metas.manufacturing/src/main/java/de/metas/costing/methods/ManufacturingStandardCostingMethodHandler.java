@@ -5,13 +5,13 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -21,8 +21,6 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
-import org.eevolution.api.PPOrderBOMLineId;
-import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -37,6 +35,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -82,6 +81,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final ICostDetailService costDetailsService;
 	private final CostingMethodHandlerUtils utils;
 
+	private final StandardCostingMethodHandler standardCostingMethodHandler;
+
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
@@ -89,11 +90,13 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	public ManufacturingStandardCostingMethodHandler(
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailService costDetailsService,
-			@NonNull final CostingMethodHandlerUtils utils)
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final StandardCostingMethodHandler standardCostingMethodHandler)
 	{
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsService = costDetailsService;
 		this.utils = utils;
+		this.standardCostingMethodHandler = standardCostingMethodHandler;
 	}
 
 	@Override
@@ -111,7 +114,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
@@ -158,14 +161,6 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public Optional<CostAmount> calculateSeedCosts(
-			final CostSegment costSegment,
-			final OrderLineId orderLineId)
-	{
-		return Optional.empty();
-	}
-
 	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
@@ -181,6 +176,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(true)
@@ -214,6 +210,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -236,6 +233,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -479,5 +477,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		return standardCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
 }

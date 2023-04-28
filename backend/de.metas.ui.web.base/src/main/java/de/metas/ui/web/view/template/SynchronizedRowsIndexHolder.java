@@ -1,20 +1,19 @@
 package de.metas.ui.web.view.template;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
-
-import org.adempiere.util.lang.SynchronizedMutable;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.SynchronizedMutable;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -62,14 +61,14 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 
 	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows()
 	{
-		return holder.getValue().getDocumentId2TopLevelRows();
+		return getRowsIndex().getDocumentId2TopLevelRows();
 	}
 
 	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Function<DocumentId, ID> idMapper)
 	{
-		return holder.getValue().getRecordIdsToRefresh(rowIds, idMapper);
+		return getRowsIndex().getRecordIdsToRefresh(rowIds, idMapper);
 	}
 
 	public void compute(@NonNull final UnaryOperator<ImmutableRowsIndex<T>> remappingFunction)
@@ -77,9 +76,28 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		holder.compute(remappingFunction);
 	}
 
+	public void setRows(@NonNull final List<T> rows)
+	{
+		holder.setValue(ImmutableRowsIndex.of(rows));
+	}
+
+	@NonNull
+	private ImmutableRowsIndex<T> getRowsIndex()
+	{
+		final ImmutableRowsIndex<T> rowsIndex = holder.getValue();
+
+		// shall not happen
+		if (rowsIndex == null)
+		{
+			throw new AdempiereException("rowsIndex shall be set");
+		}
+
+		return rowsIndex;
+	}
+
 	public Predicate<DocumentId> isRelevantForRefreshingByDocumentId()
 	{
-		final ImmutableRowsIndex<T> rows = holder.getValue();
+		final ImmutableRowsIndex<T> rows = getRowsIndex();
 		return rows::isRelevantForRefreshing;
 	}
 }

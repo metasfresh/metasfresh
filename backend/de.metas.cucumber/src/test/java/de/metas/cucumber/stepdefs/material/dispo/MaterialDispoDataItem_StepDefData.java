@@ -22,7 +22,9 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
 
 /**
@@ -34,5 +36,10 @@ public class MaterialDispoDataItem_StepDefData extends StepDefData<MaterialDispo
 	public MaterialDispoDataItem_StepDefData()
 	{
 		super(null);
+	}
+
+	public ImmutableSet<CandidateId> getCandidateIds()
+	{
+		return getRecords().stream().map(MaterialDispoDataItem::getCandidateId).collect(ImmutableSet.toImmutableSet());
 	}
 }

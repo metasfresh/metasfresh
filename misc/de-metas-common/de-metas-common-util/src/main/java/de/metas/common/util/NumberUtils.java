@@ -28,9 +28,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class NumberUtils
 {
@@ -49,13 +47,64 @@ public class NumberUtils
 	}
 
 	@Nullable
-	private static BigDecimal asBigDecimal(@Nullable final Object value)
+	public static BigDecimal asBigDecimal(@Nullable final Object value)
 	{
-		if (value == null)
+		final boolean failIfNotParseable = true;
+		final BigDecimal defaultValue = null;
+		return asBigDecimal(value, defaultValue, failIfNotParseable);
+	}
+
+	@Nullable
+	public static BigDecimal asBigDecimal(@Nullable final Object value, @Nullable final BigDecimal defaultValue)
+	{
+		final boolean failIfNotParseable = false;
+		return asBigDecimal(value, defaultValue, failIfNotParseable);
+	}
+
+	public static int asInt(@NonNull final Object value)
+	{
+		if (value instanceof Integer)
 		{
-			return null;
+			return (int)value;
 		}
 		else if (value instanceof BigDecimal)
+		{
+			return ((BigDecimal)value).intValueExact();
+		}
+		else if (value instanceof Long)
+		{
+			return BigDecimal.valueOf((long)value).intValueExact();
+		}
+		else
+		{
+			final String valueStr = StringUtils.trimBlankToNull(value.toString());
+			if (valueStr == null)
+			{
+				throw Check.mkEx("Cannot convert empty `" + value + "` (" + value.getClass() + ") to int");
+			}
+
+			try
+			{
+				return Integer.parseInt(valueStr);
+			}
+			catch (final NumberFormatException numberFormatException)
+			{
+				throw Check.mkEx("Cannot convert `" + value + "` (" + value.getClass() + ") to int", numberFormatException);
+			}
+		}
+	}
+
+	@Nullable
+	private static BigDecimal asBigDecimal(
+			@Nullable final Object value,
+			@Nullable final BigDecimal defaultValue,
+			final boolean failIfUnparsable)
+	{
+		if (value == null) //note that a zero-BigDecimal is also "empty" according to Check.IsEmpty()!
+		{
+			return defaultValue;
+		}
+		if (value instanceof BigDecimal)
 		{
 			return (BigDecimal)value;
 		}
@@ -70,9 +119,9 @@ public class NumberUtils
 		else
 		{
 			final String valueStr = value.toString();
-			if(EmptyUtil.isBlank(valueStr))
+			if (Check.isBlank(valueStr))
 			{
-				return null;
+				return defaultValue;
 			}
 			try
 			{
@@ -82,10 +131,41 @@ public class NumberUtils
 			{
 				final String errorMsg = "Cannot convert `" + value + "` (" + value.getClass() + ") to BigDecimal";
 
-				final RuntimeException ex = Check.mkEx(errorMsg);
-				ex.initCause(numberFormatException);
-				throw ex;
+				if (failIfUnparsable)
+				{
+					final RuntimeException ex = Check.mkEx(errorMsg);
+					ex.initCause(numberFormatException);
+					throw ex;
+				}
+				else
+				{
+					System.err.println(errorMsg + ". Returning defaultValue=" + defaultValue);
+					numberFormatException.printStackTrace();
+					return defaultValue;
+				}
 			}
 		}
 	}
+
+	@Nullable
+	public static BigDecimal sumNullSafe(@Nullable final BigDecimal ag1, @Nullable final BigDecimal ag2)
+	{
+		if (ag1 == null && ag2 == null)
+		{
+			return null;
+		}
+		else if (ag1 == null)
+		{
+			return ag2;
+		}
+		else if (ag2 == null)
+		{
+			return ag1;
+		}
+		else
+		{
+			return ag1.add(ag2);
+		}
+	}
+
 }

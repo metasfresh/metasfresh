@@ -22,12 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -38,12 +32,24 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 public class HUCapacityBL implements IHUCapacityBL
 {
+	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	public Capacity getCapacity(
@@ -58,13 +64,14 @@ public class HUCapacityBL implements IHUCapacityBL
 	@Override
 	public Capacity getCapacity(
 			@NonNull final I_M_HU_PI_Item_Product itemDefProduct,
-			final ProductId productId,
+			@Nullable final ProductId productId,
 			@NonNull final I_C_UOM uom)
 	{
+		// first, get the productId of the product in question
 		final ProductId productToUseId;
 		if (itemDefProduct.isAllowAnyProduct())
 		{
-			Check.assumeNotNull(productId, "productId not null");
+			Check.assumeNotNull(productId, "M_HU_PI_Item_Produc_ID={} has AllowAnyProduct='Y', so the given productId not may not be null", itemDefProduct.getM_HU_PI_Item_Product_ID());
 			productToUseId = productId;
 		}
 		else
@@ -83,7 +90,6 @@ public class HUCapacityBL implements IHUCapacityBL
 			{
 				if (piipProductId != null && !ProductId.equals(piipProductId, productId))
 				{
-					final IProductBL productBL = Services.get(IProductBL.class);
 					final String productName = productBL.getProductValueAndName(productId);
 					final String piipProductName = productBL.getProductValueAndName(piipProductId);
 					throw new HUException("CU-TU assignment "
@@ -104,14 +110,24 @@ public class HUCapacityBL implements IHUCapacityBL
 			return Capacity.createInfiniteCapacity(productToUseId, uom);
 		}
 
-		final BigDecimal qty = itemDefProduct.getQty();
-		final I_C_UOM qtyUOM = IHUPIItemProductBL.extractUOMOrNull(itemDefProduct);
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class)
-				.convertQty(productToUseId, qty, qtyUOM, uom);
+		final BigDecimal piipQty = itemDefProduct.getQty();
+		final I_C_UOM piipUOM = IHUPIItemProductBL.extractUOMOrNull(itemDefProduct);
+
+		final BigDecimal qtyToUse;
+		final I_C_UOM uomToUse;
+		if(uomDAO.isUOMForTUs(UomId.ofRepoId(uom.getC_UOM_ID())))
+		{
+			qtyToUse = piipQty;
+			uomToUse = piipUOM;
+		}
+		else
+		{
+			qtyToUse = uomConversionBL.convertQty(productToUseId, piipQty, piipUOM, uom);
+			uomToUse = uom;
+		}
 
 		final boolean allowNegativeCapacity = false;
-
-		return Capacity.createCapacity(qtyConv, productToUseId, uom, allowNegativeCapacity);
+		return Capacity.createCapacity(qtyToUse, productToUseId, uomToUse, allowNegativeCapacity);
 	}
 
 	@Override
@@ -121,7 +137,7 @@ public class HUCapacityBL implements IHUCapacityBL
 			final I_C_UOM uom,
 			final ZonedDateTime date)
 	{
-		final I_M_HU_PI_Item_Product itemDefProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(huItem, productId, date);
+		final I_M_HU_PI_Item_Product itemDefProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(huItem, productId, date);
 		if (itemDefProduct == null)
 		{
 			final boolean allowNegativeCapacity = false;

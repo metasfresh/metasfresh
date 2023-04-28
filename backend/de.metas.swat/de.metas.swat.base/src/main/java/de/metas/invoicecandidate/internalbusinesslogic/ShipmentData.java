@@ -70,7 +70,7 @@ public class ShipmentData
 
 	public StockQtyAndUOMQty computeInvoicableQtyDelivered(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
-		Quantity deliveredInUom;
+		final Quantity deliveredInUom;
 		switch (invoicableQtyBasedOn)
 		{
 			case CatchWeight:

@@ -62,12 +62,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
-		final String asyncBatchTypeName = asyncBatch.getC_Async_Batch_Type_ID() > 0 
-				? asyncBatch.getC_Async_Batch_Type().getInternalName()
-				: null;
-
-		if (Printing_Constants.C_Async_Batch_InternalName_PDFPrinting.equals(asyncBatchTypeName))
+		if(asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, Printing_Constants.C_Async_Batch_InternalName_PDFPrinting))
 		{
 
 			final I_C_Queue_WorkPackage wp = asyncBatch.getLastProcessed_WorkPackage();
@@ -77,7 +72,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 
 				if (notifiableWP != null)
 				{
-					final List<I_C_Print_Job_Instructions> printJobInstructions = queueDAO.retrieveItems(notifiableWP, I_C_Print_Job_Instructions.class, trxName);
+					final List<I_C_Print_Job_Instructions> printJobInstructions = queueDAO.retrieveAllItems(notifiableWP, I_C_Print_Job_Instructions.class);
 					for (final I_C_Print_Job_Instructions pji : printJobInstructions)
 					{
 						final Iterator<I_C_Print_Job_Line> jobLines = dao.retrievePrintJobLines(pji);
@@ -132,7 +127,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 		for (final int printPackageId : seenPrintPackages.getPrintPackageIds())
 		{
 			final TableRecordReference printPackageRef = TableRecordReference.of(I_C_Print_Package.Table_Name, printPackageId);
-			final I_AD_Archive lastArchive = archiveBL.getLastArchive(printPackageRef).orElse(null);
+			final I_AD_Archive lastArchive = archiveBL.getLastArchiveRecord(printPackageRef).orElse(null);
 			if(lastArchive == null)
 			{
 				continue;

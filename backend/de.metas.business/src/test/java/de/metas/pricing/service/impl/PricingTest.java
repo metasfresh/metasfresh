@@ -1,19 +1,23 @@
 package de.metas.pricing.service.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -49,6 +53,8 @@ public class PricingTest
 	{
 		AdempiereTestHelper.get().init();
 		helper = new PricingTestHelper();
+
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test
@@ -94,5 +100,23 @@ public class PricingTest
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
 			Assert.assertThat("Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(3)));
 		}
+	}
+
+	@Test
+	public void test_MultipleDiscountChanges_WithAdvice()
+	{
+		final PricingResult build = PricingResult.builder()
+				.priceDate(SystemTime.asLocalDate())
+				.build();
+		final Percent discount1 = Percent.of(10);
+		final Percent discount2 = Percent.of(20);
+
+		build.setDiscount(discount1);
+		assertThat(build.getDiscount()).isEqualTo(discount1);
+		assertThat(build.isDontOverrideDiscountAdvice()).isFalse();
+
+		build.setDontOverrideDiscountAdvice(true);
+		build.setDiscount(discount2);
+		assertThat(build.getDiscount()).isEqualTo(discount1);
 	}
 }

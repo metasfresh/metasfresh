@@ -57,9 +57,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -77,7 +75,7 @@ public class M_InOut
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final IHUInOutDAO inOutDAO = Services.get(IHUInOutDAO.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
@@ -85,7 +83,6 @@ public class M_InOut
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 
 	public M_InOut(
@@ -146,10 +143,22 @@ public class M_InOut
 		updateAttributes(shipment);
 	}
 
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void afterReactivate(@NonNull final I_M_InOut shipment)
+	{
+		// Make sure we deal with a shipment
+		if (!shipment.isSOTrx())
+		{
+			return;
+		}
+
+		huShipmentAssignmentBL.updateHUsOnShipmentReactivate(shipment);
+	}
+
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
 	{
 		// Make sure we deal with a shipment
-		if(!shipment.isSOTrx())
+		if (!shipment.isSOTrx())
 		{
 			return;
 		}
@@ -160,7 +169,7 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_HU> hus = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(shipment);
 		for (final I_M_HU hu : hus)
 		{
 			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
@@ -196,7 +205,7 @@ public class M_InOut
 		// Retrieve all HUs which we need to remove from their picking slots
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
 
-		final List<I_M_HU> handlingUnits = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> handlingUnits = huInOutDAO.retrieveHandlingUnits(shipment);
 
 		husToRemove.addAll(handlingUnits);
 
@@ -292,7 +301,7 @@ public class M_InOut
 
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
-	 *
+	 * <p>
 	 * Task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
@@ -333,12 +342,12 @@ public class M_InOut
 			return; // nothing to do
 		}
 
-		if(returnsServiceFacade.isEmptiesReturn(customerReturn))
+		if (returnsServiceFacade.isEmptiesReturn(customerReturn))
 		{
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
-		
-		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
+
+		final List<I_M_HU> existingHandlingUnits = huInOutDAO.retrieveHandlingUnits(customerReturn);
 
 		// the handling units are already created
 		if (!existingHandlingUnits.isEmpty())
@@ -380,9 +389,7 @@ public class M_InOut
 
 		if (returnsServiceFacade.isCustomerReturn(returnInOut))
 		{
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(returnInOut.getM_Warehouse_ID());
-			final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-			huMovementBL.moveHUsToWarehouse(hus, warehouse);
+			huMovementBL.moveHUsToWarehouse(hus, WarehouseId.ofRepoId(returnInOut.getM_Warehouse_ID()));
 		}
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
@@ -395,4 +402,17 @@ public class M_InOut
 				.restoreFromSnapshot();
 
 	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateAttributesOnShipmentCompletion(final I_M_InOut shipment)
+	{
+		if (!shipment.isSOTrx())
+		{
+			// nothing to do
+			return;
+		}
+
+		huInOutBL.validateMandatoryOnShipmentAttributes(shipment);
+	}
+
 }

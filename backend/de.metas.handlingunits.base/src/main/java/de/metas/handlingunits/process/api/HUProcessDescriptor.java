@@ -1,19 +1,19 @@
 package de.metas.handlingunits.process.api;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.report.HUToReport;
 import de.metas.process.AdProcessId;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -47,8 +47,7 @@ public class HUProcessDescriptor
 
 	boolean acceptOnlyTopLevelHUs;
 
-	@Getter(AccessLevel.NONE)
-	private final ImmutableSet<String> acceptHUUnitTypes;
+	@Getter(AccessLevel.NONE) ImmutableSet<HuUnitType> acceptHUUnitTypes;
 
 	@Builder
 	private HUProcessDescriptor(
@@ -56,7 +55,7 @@ public class HUProcessDescriptor
 			@NonNull final String internalName,
 			final Boolean provideAsUserAction,
 			final Boolean acceptOnlyTopLevelHUs,
-			@Singular final Set<String> acceptHUUnitTypes)
+			@Singular final Set<HuUnitType> acceptHUUnitTypes)
 	{
 		Check.assumeNotEmpty(acceptHUUnitTypes, "acceptHUUnitTypes is not empty");
 
@@ -64,19 +63,19 @@ public class HUProcessDescriptor
 		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
 		this.acceptHUUnitTypes = ImmutableSet.copyOf(acceptHUUnitTypes);
 
-		this.provideAsUserAction = CoalesceUtil.coalesce(provideAsUserAction, true);
-		this.acceptOnlyTopLevelHUs = CoalesceUtil.coalesce(acceptOnlyTopLevelHUs, false);
+		this.provideAsUserAction = CoalesceUtil.coalesceNotNull(provideAsUserAction, true);
+		this.acceptOnlyTopLevelHUs = CoalesceUtil.coalesceNotNull(acceptOnlyTopLevelHUs, false);
 	}
 
-	public boolean appliesToHUUnitType(@NonNull final String huUnitType)
+	public boolean appliesToHUUnitType(@NonNull final HuUnitType huUnitType)
 	{
 		return acceptHUUnitTypes.contains(huUnitType);
 	}
 
-	public boolean appliesToAllHUUnitTypes(@NonNull final Collection<String> huUnitTypes)
+	public boolean isMatching(@NonNull final HUToReport huToReport)
 	{
-		final boolean doesNotApply = huUnitTypes.stream().anyMatch(huUnitType -> !appliesToHUUnitType(huUnitType));
-		return !doesNotApply;
+		return (!acceptOnlyTopLevelHUs || huToReport.isTopLevel())
+				&& appliesToHUUnitType(huToReport.getHUUnitType());
 	}
 
 }

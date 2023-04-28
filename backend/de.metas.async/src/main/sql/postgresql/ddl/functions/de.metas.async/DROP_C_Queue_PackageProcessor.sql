@@ -9,26 +9,21 @@ $BODY$
 -- c_queue_element
 begin
 DELETE FROM c_queue_element qe
-WHERE
-	EXISTS ( SELECT 1
-			FROM c_queue_workpackage qw
-			JOIN c_queue_block qb  ON qb.c_queue_block_ID = qw.c_queue_block_ID
-			WHERE qw.c_queue_workpackage_ID = qe.c_queue_workpackage_ID
-				AND qb.C_Queue_PackageProcessor_ID=$1);
+WHERE EXISTS(SELECT 1
+             FROM c_queue_workpackage qw
+             WHERE qw.c_queue_workpackage_ID = qe.c_queue_workpackage_ID
+               AND qw.C_Queue_PackageProcessor_ID = $1);
 
 
 -- c_queue_workpackage
 
 DELETE FROM c_queue_workpackage qw
-WHERE 
-	EXISTS ( SELECT 1 
-			FROM  c_queue_block qb  
-			WHERE qb.c_queue_block_ID = qw.c_queue_block_ID AND qb.C_Queue_PackageProcessor_ID=$1);
+WHERE qw.c_queue_workpackage_ID = $1;
 
 
 -- c_queue_block
 
-DELETE FROM c_queue_block  qb WHERE qb.C_Queue_PackageProcessor_ID=$1;
+DELETE FROM c_queue_block qb WHERE qb.C_Queue_PackageProcessor_ID=$1;
 
 -- c_queue_processor_assign
 

@@ -22,13 +22,16 @@
 
 package de.metas.invoicecandidate.document.dimension;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
-import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -48,6 +51,10 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -59,11 +66,15 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 	}
 
 	@Override
-	public void updateRecord(final I_C_Invoice_Candidate record, final Dimension from)
+	public void updateRecord(@NonNull final I_C_Invoice_Candidate record, @NonNull final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
+		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+		//record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

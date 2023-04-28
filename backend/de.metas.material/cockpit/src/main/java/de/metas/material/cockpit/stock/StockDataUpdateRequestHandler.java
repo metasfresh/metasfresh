@@ -100,11 +100,11 @@ public class StockDataUpdateRequestHandler
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMN_AD_Client_ID, identifier.getClientId())
-				.addEqualsFilter(I_MD_Stock.COLUMN_AD_Org_ID, identifier.getOrgId())
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, identifier.getProductId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, identifier.getOrgId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, identifier.getProductId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, identifier.getWarehouseId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, identifier.getWarehouseId())
 				.create();
 	}
 
@@ -152,6 +152,6 @@ public class StockDataUpdateRequestHandler
 				.changeDate(TimeUtil.asInstant(dataRecord.getUpdated()))
 				.build();
 
-		postMaterialEventService.postEventNow(event);
+		postMaterialEventService.enqueueEventNow(event);
 	}
 }

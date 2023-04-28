@@ -5,7 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
@@ -42,20 +41,24 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -65,6 +68,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -86,6 +90,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -126,24 +131,25 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
@@ -159,7 +165,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<org.compiere.model.I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<org.compiere.model.I_M_InOutLine> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		final InOutLinesWithMissingInvoiceCandidate dao = SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class);
 		return dao.retrieveLinesThatNeedAnInvoiceCandidate(limit);
@@ -206,6 +212,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private List<I_C_Invoice_Candidate> createCandidatesBasedOnReferencingInOutLines(
 			@NonNull final I_M_InOutLine inOutLine)
 	{
+		if (!invoiceCandBL.isAllowedToCreateInvoiceCandidateFor(inOutLine))
+		{
+			return ImmutableList.of();
+		}
 		final List<I_M_InOutLine> referencingLines = retrieveActiveReferencingInoutLines(inOutLine);
 
 		final ImmutableListMultimap<PaymentTermId, I_M_InOutLine> paymentTermId2referencingLines = //
@@ -252,8 +262,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final boolean qtyLeftWasAllocated = qtyLeftToAllocate.abs().compareTo(allocatedQty.abs()) == 0;
 
 			Check.errorIf(qtyLeftShouldHaveBeenAllocated && !qtyLeftWasAllocated,
-						  "We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
-						  qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
+					"We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
+					qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
 		}
 
 		return createdInvoiceCandidates.build();
@@ -283,18 +293,12 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return ZERO;
 	}
 
-	@VisibleForTesting
-	enum Mode
-	{
-		CREATE, UPDATE
-	}
-
+	@Nullable
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal forcedQtyToAllocate)
 	{
-
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final I_M_InOut inOut = create(inOutLineRecord.getM_InOut(), I_M_InOut.class);
@@ -317,6 +321,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Product & Charge - product and its UOM are needed when setting the delivered data
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+
 		final int chargeId = inOutLineRecord.getC_Charge_ID();
 		{
 			icRecord.setM_Product_ID(productId.getRepoId());
@@ -351,8 +356,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
+		calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
 
 		//
 		// Description
@@ -371,10 +376,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
 
 			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
-					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
+					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()) :
 					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
 
-			if (invoiceRule!= null)
+			if (invoiceRule != null)
 			{
 				icRecord.setInvoiceRule(invoiceRule.getCode());
 			}
@@ -390,33 +395,28 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			//
 			// Set C_Activity from Product (07442)
-			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+			final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(clientId, orgId, productId);
 			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
 		}
 
 		dimensionService.updateRecord(icRecord, inOutLineDimension);
 
-		//
-		// Set C_Tax from Product (07442)
-		final Properties ctx = getCtx(inOutLineRecord);
-		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
-		final Timestamp shipDate = inOut.getMovementDate();
-		final int locationId = inOut.getC_BPartner_Location_ID();
-		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
-				.locationAdapter(inOut)
-				.getBPartnerLocationAndCaptureId();
 
-		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
-				icRecord,
-				taxCategoryId,
-				productId.getRepoId(),
-				shipDate,
-				orgId,
-				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
-				deliveryLocation, // shipC_BPartner_Location_ID
-				SOTrx.ofBoolean(isSOTrx));
-		icRecord.setC_Tax_ID(taxId.getRepoId());
+		// task 13022 : set inout's project if dimension didn't already
+		if(icRecord.getC_Project_ID() <= 0)
+		{
+			if(inOut.getC_Project_ID() > 0)
+			{
+				icRecord.setC_Project_ID(inOut.getC_Project_ID());
+			}
+			// get order's project if exists
+			else if(inOut.getC_Order_ID() > 0
+					&& inOut.getC_Order().getC_Project_ID() > 0)
+			{
+				final I_C_Order order = inOut.getC_Order();
+				icRecord.setC_Project_ID(order.getC_Project_ID());
+			}
+		}
 
 		//DocType
 		final DocTypeId invoiceDocTypeId = extractDocTypeId(inOutLineRecord);
@@ -424,14 +424,23 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
+		else
+		{
+			setDefaultInvoiceDocType(icRecord);
+		}
+
+		icRecord.setC_Incoterms_ID(inOut.getC_Incoterms_ID());
+		icRecord.setIncotermLocation(inOut.getIncotermLocation());
 
 		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
+
+		icRecord.setC_Shipping_Location_ID(inOut.getC_BPartner_Location_Value_ID());
+
 		//
-		// Save the Invoice Candidate, so that we can use it's ID further down
+		// Save the Invoice Candidate, so that we can use its ID further down
 		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
-
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
@@ -460,6 +469,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			iciol.setQtyDeliveredInUOM_Nominal(icRecord.getQtyEntered().multiply(qtyMultiplier));
 
 			saveRecord(iciol);
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("Setting qtyDelivered={} on icIol_ID={}",
+							icRecord.getQtyOrdered().multiply(qtyMultiplier), iciol.getC_InvoiceCandidate_InOutLine_ID());
 		}
 		else
 		{
@@ -470,6 +482,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return icRecord;
 	}
 
+	@Nullable
 	private DocTypeId extractDocTypeId(final I_M_InOutLine inOutLineRecord)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
@@ -478,12 +491,12 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (inOutRecord.getC_DocType_ID() > 0)
 		{
-			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoIdOrNull(inOutRecord.getC_DocType_ID());
+			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID());
 			final I_C_DocType inOutDocType = docTypeBL.getById(inoutDocTypeId);
 			if (inOutDocType.getC_DocTypeInvoice_ID() > 0)
 			{
 				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has M_InOut_ID={} => C_DocType_ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
-								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getM_InOut_ID(), inOutRecord.getC_DocType_ID(), inOutDocType.getC_DocTypeInvoice_ID());
+						inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getM_InOut_ID(), inOutRecord.getC_DocType_ID(), inOutDocType.getC_DocTypeInvoice_ID());
 				return DocTypeId.ofRepoId(inOutDocType.getC_DocTypeInvoice_ID());
 			}
 		}
@@ -494,8 +507,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			if (orderDocType.getC_DocTypeInvoice_ID() > 0)
 			{
 				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has C_OrderLine_ID={} => C_Order_ID={} => doctype-ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
-								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
-								orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
+						inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
+						orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
 				return DocTypeId.ofRepoId(orderDocType.getC_DocTypeInvoice_ID());
 			}
 		}
@@ -506,8 +519,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			if (orderDocType.getC_DocTypeInvoice_ID() > 0)
 			{
 				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has M_InOut_ID={} => C_Order_ID={} => doctype-ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
-								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
-								orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
+						inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
+						orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
 				return DocTypeId.ofRepoId(orderDocType.getC_DocTypeInvoice_ID());
 			}
 		}
@@ -515,13 +528,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return null;
 	}
 
+	@NonNull
 	private I_C_DocType extractOrderDocTypeRecord(final I_C_Order order)
 	{
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
 				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
-		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
-		return orderDocType;
+		return docTypeBL.getById(orderDocTypeId);
 	}
 
 	@Override
@@ -549,7 +562,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 					.map(InvoiceCandidateId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
 
-
 			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
 
 			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
@@ -574,7 +586,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	/**
 	 * Qty Sign Multiplier
 	 *
-	 * @param ic
 	 * @return <ul>
 	 * <li>+1 on regular shipment/receipt
 	 * <li>-1 on material returns
@@ -586,7 +597,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
 		final String movementType = inout.getMovementType();
 
-		if (inOutBL.isReturnMovementType(movementType))
+		if (MovementType.isMaterialReturn(movementType))
 		{
 			return ONE.negate();
 		}
@@ -612,7 +623,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private void setOrderedData(
 			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable BigDecimal forcedQtyOrdered,
+			@Nullable final BigDecimal forcedQtyOrdered,
 			final boolean callerCanCreateAdditionalICs)
 	{
 		final I_M_InOutLine inOutLine = getM_InOutLine(icRecord);
@@ -623,7 +634,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (inOut.getC_Order_ID() > 0)
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
+			icRecord.setPaymentRule(order.getPaymentRule());
 			icRecord.setDateOrdered(order.getDateOrdered());
+
+			final boolean propagateToCInvoice = orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
+			if (Check.isBlank(icRecord.getEMail()) && propagateToCInvoice)
+			{
+				icRecord.setEMail(order.getEMail());
+			}
 		}
 		else if (icRecord.getC_Order_ID() <= 0)
 		{
@@ -636,7 +654,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (docStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(icRecord);
-			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
+			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> forcedQtyOrdered,
 					() -> extractQtyDelivered(icRecord, callerCanCreateAdditionalICs));
 
@@ -718,7 +736,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final List<I_C_Invoice_Candidate> icsForPackagingInOutLine = Services.get(IInvoiceCandDAO.class).retrieveInvoiceCandidatesForInOutLine(packagingInOutLine);
 		for (final I_C_Invoice_Candidate currentIcForPackagingInOutLine : icsForPackagingInOutLine)
 		{
-			boolean currentIcIsTheGivenIc = currentIcForPackagingInOutLine.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID();
+			final boolean currentIcIsTheGivenIc = currentIcForPackagingInOutLine.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID();
 			if (currentIcIsTheGivenIc)
 			{
 				continue;
@@ -743,6 +761,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				|| PaymentTermId.equals(paymentTermIdOfInOutLine, paymentTermId);
 	}
 
+	@Nullable
 	@VisibleForTesting
 	static PaymentTermId extractPaymentTermIdOrNull(@NonNull final I_M_InOutLine inOutLine)
 	{
@@ -795,6 +814,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @param inOutLine an inout line that is somehow related to the lines which this handler handles.
 	 */
 	@VisibleForTesting
+	@Nullable
 	static PaymentTermId extractPaymentTermIdViaOrderLineOrNull(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		if (inOutLine.getC_OrderLine_ID() <= 0)
@@ -802,8 +822,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			return null;
 		}
 
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
-		return Services.get(IOrderLineBL.class).getPaymentTermId(ol);
+		return orderLineBL.getPaymentTermId(ol);
 	}
 
 	/**
@@ -898,14 +919,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			);
 
 			final User billUser = bPartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-												   .bpartnerId(billLocationFromInOut.getBpartnerId())
-												   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-												   .build());
+					.bpartnerId(billLocationFromInOut.getBpartnerId())
+					.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+					.build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;
 
-			if(billBPContactId != null)
+			if (billBPContactId != null)
 			{
 				billLocation = billLocationFromInOut.toBuilder()
 						.contactId(billBPContactId)
@@ -925,45 +946,72 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
-		org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inoutLine.getReturn_Origin_InOutLine_ID() > 0 ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
+		final I_M_InOutLine inoutLine = getM_InOutLine(icRecord);
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inoutLine.getReturn_Origin_InOutLine_ID() > 0 ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
 
-		return calculatePriceAndTax(ic, inOutLineRecordToUse);
+		return calculatePriceAndTax(icRecord, inOutLineRecordToUse);
 	}
 
 	public static PriceAndTax calculatePriceAndTax(
-			final I_C_Invoice_Candidate ic,
-			final org.compiere.model.I_M_InOutLine inoutLine)
+			final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine inoutLineRecord)
 	{
-		final IPricingResult pricingResult = calculatePricingResult(inoutLine);
+		final IPricingResult pricingResult = calculatePricingResult(inoutLineRecord);
 
 		final boolean taxIncluded;
-		if (ic.getC_Order_ID() > 0)
+		if (icRecord.getC_Order_ID() > 0)
 		{
 			// task 08451: if the ic has an order, we use the order's IsTaxIncuded value, to make sure that we will be able to invoice them together
-			taxIncluded = ic.getC_Order().isTaxIncluded();
+			taxIncluded = icRecord.getC_Order().isTaxIncluded();
 		}
 		else
 		{
 			taxIncluded = pricingResult.isTaxIncluded();
 		}
-		final ProductPrice pp = inoutLine.getC_OrderLine_ID() != 0 ? Services.get(IOrderLineBL.class).getPriceActual(inoutLine.getC_OrderLine()) : null;
+
+		//
+		// Set C_Tax from Product (07442)
+		final OrgId orgId = OrgId.ofRepoId(inoutLineRecord.getAD_Org_ID());
+		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
+		final Properties ctx = getCtx(inoutLineRecord);
+		final Timestamp shipDate = inOutRecord.getMovementDate();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(icRecord.getC_VAT_Code_Override_ID(), icRecord.getC_VAT_Code_ID()));
+
+		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
+				.locationAdapter(inOutRecord)
+				.getBPartnerLocationAndCaptureId();
+
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+				icRecord,
+				pricingResult.getTaxCategoryId(),
+				ProductId.toRepoId(pricingResult.getProductId()),
+				shipDate,
+				orgId,
+				WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()),
+				deliveryLocation, // shipC_BPartner_Location_ID
+				SOTrx.ofBoolean(inOutRecord.isSOTrx()),
+				vatCodeId);
+
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		final ProductPrice pp = inoutLineRecord.getC_OrderLine_ID() != 0 ? orderLineBL.getPriceActual(inoutLineRecord.getC_OrderLine()) : null;
 
 		return PriceAndTax.builder()
 				.pricingSystemId(pricingResult.getPricingSystemId())
 				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
 				// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
 				.priceListVersionId(pricingResult.getPriceListVersionId())
+				.pricingSystemId(pricingResult.getPricingSystemId())
 				.currencyId(pricingResult.getCurrencyId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
+				.taxIncluded(taxIncluded)
+				.taxId(taxId)
 				//
 				.priceEntered(pricingResult.getPriceStd())
 				.priceActual(pp != null ? pp.toMoney().toBigDecimal() : pricingResult.getPriceStd())
 				.priceUOMId(pp != null ? pp.getUomId() : pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
 				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
-				.taxIncluded(taxIncluded)
 				//
 				.discount(pricingResult.getDiscount())
 				.build();
@@ -975,6 +1023,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return inOutBL.getProductPrice(fromInOutLine);
 	}
 
+	@Nullable
 	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
@@ -985,28 +1034,27 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 			return priceAndTax;
 		}
-		catch (final ProductNotOnPriceListException e)
-		{
-			final boolean askForDeleteRegeneration = true; // ask user for re-generation in the error-message
-			setError(icRecord, e, askForDeleteRegeneration);
-			return null;
-		}
 		catch (final Exception e)
 		{
-			final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation
-			setError(icRecord, e, askForDeleteRegeneration);
+			if (icRecord.getC_Tax_ID() <= 0)
+			{
+				icRecord.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND); // make sure that we will be able to save the icRecord
+			}
+
+			setError(icRecord, e);
 			return null;
 		}
 	}
 
-	private static final void setError(
+	private static void setError(
 			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final Exception ex,
-			final boolean askForDeleteRegeneration)
+			@NonNull final Exception ex)
 	{
 
 		logger.debug("Set IsInDispute=true, because an error occured");
 		ic.setIsInDispute(true); // 07193 - Mark's request
+
+		final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation
 
 		final I_AD_Note note = null; // we don't have a note
 		Services.get(IInvoiceCandBL.class).setError(ic, ex.getLocalizedMessage(), note, askForDeleteRegeneration);

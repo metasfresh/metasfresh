@@ -25,6 +25,7 @@ package de.metas.pricing.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -41,7 +42,6 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -71,7 +71,7 @@ import java.util.List;
 final class PricingResult implements IPricingResult
 {
 	private boolean calculated;
-
+	@Nullable
 	private PricingSystemId pricingSystemId;
 	@Nullable
 	private PriceListId priceListId;
@@ -79,11 +79,13 @@ final class PricingResult implements IPricingResult
 	private PriceListVersionId priceListVersionId;
 	@Nullable
 	private CurrencyId currencyId;
+	@Nullable
 	private UomId priceUomId;
 	private CurrencyPrecision precision;
 
 	@Nullable
 	private ProductId productId;
+	@Nullable
 	private ProductCategoryId productCategoryId;
 
 	private TaxCategoryId taxCategoryId;
@@ -91,14 +93,16 @@ final class PricingResult implements IPricingResult
 
 	@Nullable
 	private PricingConditionsResult pricingConditions;
-
+	@Nullable
 	private BigDecimal priceList = BigDecimal.ZERO;
 	@Nullable
 	private BigDecimal priceStd = BigDecimal.ZERO;
+	@Nullable
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
 
-	@NonNull private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
+	@NonNull
+	private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
 
 	private boolean usesDiscountSchema = false;
 	private boolean disallowDiscount;
@@ -110,6 +114,14 @@ final class PricingResult implements IPricingResult
 	private boolean discountEditable = true;
 
 	private boolean campaignPrice = false;
+
+	private boolean isDiscountCalculated;
+
+	/**
+	 * If this flag is set to true, then the discount should not be changed.
+	 *
+	 */
+	private boolean dontOverrideDiscountAdvice = false;
 
 	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
 
@@ -124,7 +136,8 @@ final class PricingResult implements IPricingResult
 
 	private BigDecimal baseCommissionPointsPerPriceUOM;
 
-	private Percent tradedCommissionPercent = Percent.ZERO;
+	@Nullable
+	private HUPIItemProductId packingMaterialId;
 
 	@Builder
 	private PricingResult(
@@ -137,7 +150,8 @@ final class PricingResult implements IPricingResult
 			//
 			@Nullable final ProductId productId,
 			//
-			final boolean disallowDiscount)
+			final boolean disallowDiscount,
+			final boolean isDiscountCalculated)
 	{
 		this.calculated = false;
 
@@ -151,6 +165,7 @@ final class PricingResult implements IPricingResult
 		this.productId = productId;
 
 		this.disallowDiscount = disallowDiscount;
+		this.isDiscountCalculated = isDiscountCalculated;
 	}
 
 	@Override
@@ -166,7 +181,7 @@ final class PricingResult implements IPricingResult
 	@NonNull
 	public Percent getDiscount()
 	{
-		return CoalesceUtil.coalesce(discount, Percent.ZERO);
+		return CoalesceUtil.coalesceNotNull(discount, Percent.ZERO);
 	}
 
 	@Override
@@ -178,7 +193,12 @@ final class PricingResult implements IPricingResult
 					.appendParametersToMessage()
 					.setParameter("this", this);
 		}
+		if (isDontOverrideDiscountAdvice())
+		{
+			return;
+		}
 		this.discount = discount;
+		this.isDiscountCalculated = true;
 	}
 
 	@Override

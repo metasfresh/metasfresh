@@ -30,13 +30,12 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public final class SqlViewRowIdsConverters
+public class SqlViewRowIdsConverters
 {
 	public static final transient SqlViewRowIdsConverter TO_INT_STRICT = new StrictToIntConverter();
 	public static final transient SqlViewRowIdsConverter TO_INT_EXCLUDING_STRINGS = new ToIntExcludingStringsConverter();
 
-	private final class StrictToIntConverter implements SqlViewRowIdsConverter
+	private static final class StrictToIntConverter implements SqlViewRowIdsConverter
 	{
 		@Override
 		public Set<Integer> convertToRecordIds(DocumentIdsSelection rowIds)
@@ -45,7 +44,7 @@ public final class SqlViewRowIdsConverters
 		}
 	}
 
-	private static final class ToIntExcludingStringsConverter implements SqlViewRowIdsConverter
+	private static class ToIntExcludingStringsConverter implements SqlViewRowIdsConverter
 	{
 		@Override
 		public Set<Integer> convertToRecordIds(final DocumentIdsSelection rowIds)

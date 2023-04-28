@@ -66,15 +66,12 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 *
 	 * Each created invoice candidate has a reference to the {@link I_C_ILCandHandler} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
 	 *
-	 * @param model
 	 * @return generated invoice candidates
 	 */
 	List<I_C_Invoice_Candidate> createMissingCandidatesFor(Object model);
 
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
-	 *
-	 * @param model
 	 */
 	void scheduleCreateMissingCandidatesFor(Object model);
 
@@ -82,8 +79,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	/**
 	 * Retrieve the {@link IInvoiceCandidateHandler} of the given <code>ic</code> and calls its {@link IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate) setOrderedData()} method.
-	 *
-	 * @param ic
 	 */
 	void setOrderedData(I_C_Invoice_Candidate ic);
 
@@ -102,5 +97,9 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
 
+	void setPickedData(I_C_Invoice_Candidate ic);
+
 	void setIsInEffect(I_C_Invoice_Candidate ic);
+
+	void postUpdate(I_C_Invoice_Candidate ic);
 }

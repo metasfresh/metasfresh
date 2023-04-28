@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import de.metas.document.engine.DocStatus;
@@ -9,12 +10,10 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDataBuilder;
-import de.metas.invoicecandidate.internalbusinesslogic.DeliveredQtyItem.DeliveredQtyItemBuilder;
-import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -22,11 +21,13 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_M_InOut;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
@@ -61,9 +63,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 @Value
 public class DeliveredDataLoader
 {
+	private static final Logger logger = LogManager.getLogger(DeliveredDataLoader.class);
+
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 	UomId stockUomId;
 
 	UomId icUomId;
@@ -76,7 +79,9 @@ public class DeliveredDataLoader
 
 	Boolean negateQtys;
 
-	/** always empty, if soTrx; sometimes set if poTrx */
+	/**
+	 * always empty, if soTrx; sometimes set if poTrx
+	 */
 	Optional<Percent> deliveryQualityDiscount;
 
 	/**
@@ -88,6 +93,7 @@ public class DeliveredDataLoader
 	 * <li>in these cases, {@link IInvoiceCandidateHandler#setDeliveredData(de.metas.invoicecandidate.model.I_C_Invoice_Candidate)} might delivered quantities that are not related to inout lines.
 	 * <li>these quantities need to end up in the IC's "deliveredData".
 	 */
+	@NonNull
 	StockQtyAndUOMQty defaultQtyDelivered;
 
 	@lombok.Builder
@@ -95,7 +101,7 @@ public class DeliveredDataLoader
 			@NonNull final UomId stockUomId,
 			@NonNull final UomId icUomId,
 			@NonNull final ProductId productId,
-			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final SOTrx soTrx,
 			@NonNull final Boolean negateQtys,
 			@NonNull final Optional<Percent> deliveryQualityDiscount,
@@ -108,22 +114,14 @@ public class DeliveredDataLoader
 		this.soTrx = soTrx;
 		this.negateQtys = negateQtys;
 		this.deliveryQualityDiscount = deliveryQualityDiscount;
-		this.defaultQtyDelivered = coalesce(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
+		this.defaultQtyDelivered = coalesceNotNull(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
 	}
 
-	DeliveredData loadDeliveredQtys()
+	public DeliveredData loadDeliveredQtys()
 	{
-		final DeliveredDataBuilder result = DeliveredData.builder();
+		final DeliveredData.DeliveredDataBuilder result = DeliveredData.builder();
 
-		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
-		if (invoiceCandidateId == null)
-		{
-			icIolAssociationRecords = ImmutableList.of();
-		}
-		else
-		{
-			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
-		}
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords = loadInvoiceCandidateInOutLines();
 		if (soTrx.isPurchase())
 		{
 			result.receiptData(loadReceiptQualityData(icIolAssociationRecords));
@@ -135,15 +133,37 @@ public class DeliveredDataLoader
 		return result.build();
 	}
 
+	private List<I_C_InvoiceCandidate_InOutLine> loadInvoiceCandidateInOutLines()
+	{
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
+		if (invoiceCandidateId == null)
+		{
+			icIolAssociationRecords = ImmutableList.of();
+		}
+		else
+		{
+			final List<I_C_InvoiceCandidate_InOutLine> inOutLinesViaInterimInvoice = invoiceCandDAO.retrieveICIOLAssociationsViaInterimInvoice(invoiceCandidateId);
+			if (!inOutLinesViaInterimInvoice.isEmpty())
+			{
+				icIolAssociationRecords = inOutLinesViaInterimInvoice;
+			}
+			else
+			{
+				icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
+			}
+		}
+		return icIolAssociationRecords;
+	}
+
 	private ShipmentData loadShipmentData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
-		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
+		final ImmutableList<DeliveredQtyItem> deliveredQtyItems = loadDeliveredQtyItems(icIolAssociationRecords);
 
-		final ShipmentDataBuilder result = ShipmentData.builder()
+		final ShipmentData.ShipmentDataBuilder result = ShipmentData.builder()
 				.productId(productId)
-				.deliveredQtyItems(shippedQtyItems);
+				.deliveredQtyItems(deliveredQtyItems);
 
-		if (shippedQtyItems.isEmpty())
+		if (deliveredQtyItems.isEmpty())
 		{
 			return result
 					.qtyInStockUom(defaultQtyDelivered.getStockQty())
@@ -159,33 +179,33 @@ public class DeliveredDataLoader
 
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithCatch = new ArrayList<>();
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
-		for (final DeliveredQtyItem shippedQtyItem : shippedQtyItems)
+		for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
 		{
-			if(!shippedQtyItem.isCompletedOrClosed())
+			if (!deliveredQtyItem.isCompletedOrClosed())
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
 			qtyInStockUom = Quantitys.add(conversionCtx,
-					qtyInStockUom,
-					shippedQtyItem.getQtyInStockUom());
+										  qtyInStockUom,
+										  deliveredQtyItem.getQtyInStockUom());
 
 			qtyNominal = Quantitys.add(conversionCtx,
-					qtyNominal,
-					coalesce(shippedQtyItem.getQtyOverride(), shippedQtyItem.getQtyNominal()));
+									   qtyNominal,
+									   coalesceNotNull(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal()));
 
 			final Quantity qtyCatchEffective = coalesce(
-					shippedQtyItem.getQtyOverride(),
-					shippedQtyItem.getQtyCatch());
+					deliveredQtyItem.getQtyOverride(),
+					deliveredQtyItem.getQtyCatch());
 			if (qtyCatchEffective == null)
 			{
-				deliveredQtyItemsWithoutCatch.add(shippedQtyItem);
+				deliveredQtyItemsWithoutCatch.add(deliveredQtyItem);
 			}
 			else
 			{
-				deliveredQtyItemsWithCatch.add(shippedQtyItem);
+				deliveredQtyItemsWithCatch.add(deliveredQtyItem);
 				qtyCatch = Quantitys.add(conversionCtx,
-						qtyCatch,
-						qtyCatchEffective);
+										 qtyCatch,
+										 qtyCatchEffective);
 			}
 		}
 
@@ -212,7 +232,7 @@ public class DeliveredDataLoader
 					.build();
 		}
 
-		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
+		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadDeliveredQtyItems(icIolAssociationRecords);
 
 		Quantity qtyTotalInStockUom = Quantitys.createZero(stockUomId);
 		Quantity qtyTotalNominal = Quantitys.createZero(icUomId);
@@ -228,10 +248,11 @@ public class DeliveredDataLoader
 
 		for (final DeliveredQtyItem deliveredQtyItem : shippedQtyItems)
 		{
-			if(!deliveredQtyItem.isCompletedOrClosed())
+			if (!deliveredQtyItem.isCompletedOrClosed())
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
+
 			final Quantity currentQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
 			final Quantity currentQtyNominal = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal());
 			final Quantity currentQtyCatch = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyCatch());
@@ -272,23 +293,26 @@ public class DeliveredDataLoader
 				.build();
 	}
 
-	private ImmutableList<DeliveredQtyItem> loadshippedQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
+	private ImmutableList<DeliveredQtyItem> loadDeliveredQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
 		final Builder<DeliveredQtyItem> result = ImmutableList.builder();
 
 		for (final I_C_InvoiceCandidate_InOutLine icIolAssociationRecord : icIolAssociationRecords)
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(icIolAssociationRecord.getM_InOutLine_ID());
-			if(inoutLineId == null)
+
+			if (inoutLineId == null)
 			{
 				continue;
 			}
 
 			final I_M_InOutLine inoutLine = inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
+
 			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+
 			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 
-			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
+			final DeliveredQtyItem.DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
 					.inDispute(inoutLine.isInDispute())
 					.completedOrClosed(inoutCompletedOrClosed);
 
@@ -329,5 +353,31 @@ public class DeliveredDataLoader
 			result.add(deliveredQtyItem.build());
 		}
 		return result.build();
+	}
+
+	@NonNull
+	private StockQtyAndUOMQty getDeliveredQtyWhenNoValidICIOL()
+	{
+		final boolean hasInOutLineAllocations = invoiceCandDAO.countICIOLAssociations(invoiceCandidateId) > 0;
+
+		if (hasInOutLineAllocations)
+		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns StockQtyAndUOMQty with 0 qty! Invoice_Candidate_ID={}", invoiceCandidateId);
+
+			return StockQtyAndUOMQty.builder()
+					.productId(productId)
+					.uomQty(Quantitys.createZero(icUomId))
+					.stockQty(Quantitys.createZero(productId))
+					.build();
+		}
+		else
+		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns default StockQtyAndUOMQty={}! Invoice_Candidate_ID={}",
+							defaultQtyDelivered, invoiceCandidateId);
+
+			return defaultQtyDelivered;
+		}
 	}
 }

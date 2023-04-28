@@ -1,0 +1,103 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestProductUpsert": {
+    "requestItems": [
+      {
+        "productIdentifier": "ext-GRSSignum-ProductId",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "requestProduct": {
+          "code": "ProductValue",
+          "codeSet": true,
+          "name": "Name1 Name2",
+          "nameSet": true,
+          "type": "ITEM",
+          "typeSet": true,
+          "uomCode": "KGM",
+          "uomCodeSet": true,
+          "ean": null,
+          "eanSet": false,
+          "gtin": "additional_gtin",
+          "gtinSet": true,
+          "description": null,
+          "descriptionSet": false,
+          "discontinued": null,
+          "discontinuedSet": false,
+          "active": false,
+          "activeSet": true,
+          "stocked": null,
+          "stockedSet": false,
+          "productCategoryIdentifier": null,
+          "productCategoryIdentifierSet": false,
+          "warehouseTemperature": "warehouse_temperature",
+          "warehouseTemperatureSet": true,
+          "guaranteeMonths": "12",
+          "guaranteeMonthsSet": true,
+          "syncAdvise": null,
+          "bpartnerProductItems": [
+            {
+              "bpartnerIdentifier": "100",
+              "bpartnerSet": true,
+              "active": false,
+              "activeSet": true,
+              "seqNo": null,
+              "seqNoSet": false,
+              "productNo": null,
+              "productNoSet": false,
+              "description": null,
+              "descriptionSet": false,
+              "cuEAN": null,
+              "cuEANSet": false,
+              "gtin": null,
+              "gtinSet": false,
+              "customerLabelName": null,
+              "customerLabelNameSet": false,
+              "ingredients": null,
+              "ingredientsSet": false,
+              "currentVendor": null,
+              "currentVendorSet": false,
+              "excludedFromSales": true,
+              "excludedFromSalesSet": true,
+              "exclusionFromSalesReason": "Imported setting",
+              "exclusionFromSalesReasonSet": true,
+              "excludedFromPurchase": true,
+              "excludedFromPurchaseSet": true,
+              "exclusionFromPurchaseReason": "Imported setting",
+              "exclusionFromPurchaseReasonSet": true,
+              "dropShip": null,
+              "dropShipSet": false,
+              "usedForVendor": null,
+              "usedForVendorSet": false
+            }
+          ],
+          "productAllergens": {
+            "allergenList": [
+              {
+                "identifier": "ext-GRSSignum-1",
+                "name": "AllergenName"
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          },
+          "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "BIO",
+              "EU_NON_EU_AGRICULTURE"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

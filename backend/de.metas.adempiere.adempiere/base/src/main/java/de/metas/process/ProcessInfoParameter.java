@@ -20,10 +20,9 @@ import java.util.function.Function;
  * Immutable Process Parameter
  *
  * @author Jorg Janke
- * @version $Id: ProcessInfoParameter.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
- *
  * @author Teo Sarca, www.arhipac.ro
- *         <li>FR [ 2430845 ] Add ProcessInfoParameter.getParameterAsBoolean method
+ * <li>FR [ 2430845 ] Add ProcessInfoParameter.getParameterAsBoolean method
+ * @version $Id: ProcessInfoParameter.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
  */
 public final class ProcessInfoParameter implements Serializable
 {
@@ -48,7 +47,6 @@ public final class ProcessInfoParameter implements Serializable
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
-
 
 	public static ProcessInfoParameter of(final String parameterName, final String parameterValue)
 	{
@@ -204,13 +202,12 @@ public final class ProcessInfoParameter implements Serializable
 	{
 		return mapper.apply(getParameterAsInt(-1));
 	}
-	
+
 	@Nullable
 	public <T extends RepoIdAware> T getParameterAsRepoId(@NonNull final Class<T> type)
 	{
 		return RepoIdAwares.ofRepoIdOrNull(getParameterAsInt(-1), type);
 	}
-
 
 	public int getParameter_ToAsInt()
 	{
@@ -296,15 +293,15 @@ public final class ProcessInfoParameter implements Serializable
 	}
 
 	@Nullable
-	public ZonedDateTime getParameter_ToAsZonedDateTime()
-	{
-		return TimeUtil.asZonedDateTime(m_Parameter_To);
-	}
-
-	@Nullable
 	public Instant getParameterAsInstant()
 	{
 		return TimeUtil.asInstant(m_Parameter);
+	}
+
+	@Nullable
+	public ZonedDateTime getParameter_ToAsZonedDateTime()
+	{
+		return TimeUtil.asZonedDateTime(m_Parameter_To);
 	}
 
 	@Nullable

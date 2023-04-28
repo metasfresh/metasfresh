@@ -1,17 +1,16 @@
 package org.adempiere.util.concurrent;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.experimental.Delegate;
+import org.slf4j.Logger;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import org.slf4j.Logger;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.experimental.Delegate;
 
 /*
  * #%L
@@ -112,5 +111,10 @@ public class BlockingExecutorWrapper implements ExecutorService
 			logger.error("execute - Caught RejectedExecutionException while trying to submit task=" + r + " to delegate thread-pool=" + delegate + "; -> released semaphore=" + semaphore + " and rethrow", e);
 			throw e;
 		}
+	}
+
+	public boolean hasAvailablePermits()
+	{
+		return semaphore.availablePermits() > 0;
 	}
 }

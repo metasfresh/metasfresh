@@ -17,6 +17,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
 
@@ -57,7 +58,7 @@ public class AbstractStockEstimateHandler
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(StockEstimateCreatedEvent.class, StockEstimateDeletedEvent.class);
 	}
@@ -78,12 +79,18 @@ public class AbstractStockEstimateHandler
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(stockEstimateEvent.getMaterialDescriptor())
 				.date(TimeUtil.getDay(stockEstimateEvent.getDate(), timeZone))
-				.plantId(stockEstimateEvent.getPlantId())
+				.warehouseId(stockEstimateEvent.getMaterialDescriptor().getWarehouseId())
 				.build();
 
+		final BigDecimal qtyStockEstimate = stockEstimateEvent instanceof StockEstimateDeletedEvent
+				? BigDecimal.ZERO
+				: stockEstimateEvent.getQuantityDelta();
+		
 		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
-				.countedQty(stockEstimateEvent.getQuantityDelta())
+				.qtyStockEstimateSeqNo(stockEstimateEvent.getQtyStockEstimateSeqNo())
+				.qtyStockEstimateCount(qtyStockEstimate)
+				.qtyStockEstimateTime(stockEstimateEvent.getDate())
 				.build();
 	}
 }

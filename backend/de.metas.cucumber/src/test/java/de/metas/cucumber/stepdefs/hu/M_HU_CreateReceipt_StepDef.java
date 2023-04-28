@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
@@ -60,16 +61,33 @@ public class M_HU_CreateReceipt_StepDef
 
 	public M_HU_CreateReceipt_StepDef(
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final M_HU_List_StepDefData huListTable,
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
-			@NonNull final M_InOut_StepDefData inOutTable)
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huTable = huTable;
-		this.huListTable = huListTable;
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.inOutTable = inOutTable;
+		this.huListTable = huListTable;
 	}
 
+	@And("create material receipt and the following exception is thrown")
+	public void create_materialReceipt_expect_exception(@NonNull final DataTable dataTable)
+	{
+		try
+		{
+			create_materialReceipt(dataTable);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			final Map<String, String> tableRow = dataTable.asMaps().get(0);
+			final String errorCode = DataTableUtil.extractStringForColumnName(tableRow, "ErrorCode");
+
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+		}
+	}
+	
 	@And("create material receipt")
 	public void create_materialReceipt(@NonNull final DataTable dataTable)
 	{

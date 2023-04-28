@@ -5,12 +5,9 @@ import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
-import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
-import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -22,7 +19,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,51 +92,16 @@ public class Fresh_QtyOnHand
 
 			if (createDeletedEvent)
 			{
-				event = buildDeletedEvent(line, materialDescriptor);
+				event = Fresh_QtyOnHand_Line.buildDeletedEvent(line, materialDescriptor);
 			}
 			else
 			{
-				event = buildCreatedEvent(line, materialDescriptor);
+				event = Fresh_QtyOnHand_Line.buildCreatedEvent(line, materialDescriptor);
 			}
 			events.add(event);
 		}
 
-		events.forEach(materialEventService::postEventAfterNextCommit);
+		events.forEach(materialEventService::enqueueEventAfterNextCommit);
 	}
 
-	@NonNull
-	private AbstractStockEstimateEvent buildCreatedEvent(
-			@NonNull final I_Fresh_QtyOnHand_Line line,
-			@NonNull final MaterialDescriptor materialDescriptor)
-	{
-		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
-
-		return StockEstimateCreatedEvent.builder()
-				.date(TimeUtil.asInstantNonNull(qtyOnHandRecord.getDateDoc()))
-				.eventDate(Instant.now())
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
-				.materialDescriptor(materialDescriptor)
-				.plantId(line.getPP_Plant_ID())
-				.freshQtyOnHandId(line.getFresh_QtyOnHand_ID())
-				.freshQtyOnHandLineId(line.getFresh_QtyOnHand_Line_ID())
-				.build();
-	}
-
-	@NonNull
-	private AbstractStockEstimateEvent buildDeletedEvent(
-			@NonNull final I_Fresh_QtyOnHand_Line line,
-			@NonNull final MaterialDescriptor materialDescriptor)
-	{
-		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
-
-		return StockEstimateDeletedEvent.builder()
-				.date(TimeUtil.asInstantNonNull(qtyOnHandRecord.getDateDoc()))
-				.eventDate(Instant.now())
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
-				.materialDescriptor(materialDescriptor)
-				.plantId(line.getPP_Plant_ID())
-				.freshQtyOnHandId(line.getFresh_QtyOnHand_ID())
-				.freshQtyOnHandLineId(line.getFresh_QtyOnHand_Line_ID())
-				.build();
-	}
 }

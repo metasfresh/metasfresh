@@ -71,6 +71,12 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.salesorder</groupId>
+            <artifactId>de-metas-salesorder</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
             <version>${metasfresh.version}</version>
@@ -108,9 +114,15 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.device.adempiere</groupId>
-            <artifactId>de.metas.device.adempiere</artifactId>
+            <groupId>de.metas.device.webui</groupId>
+            <artifactId>de.metas.device.webui</artifactId>
             <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.banking</groupId>
+            <artifactId>de.metas.banking.camt53</artifactId>
+            <version>${metasfresh.version}</version>
         </dependency>
 
         <!-- Elasticsearch -->
@@ -158,36 +170,35 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <!-- Swagger -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${springfox-swagger.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-
-        <!-- https://github.com/hoereth/springfox-enum-plugin -->
-        <dependency>
-            <groupId>de.pentabyte</groupId>
-            <artifactId>springfox-enum-plugin</artifactId>
-            <version>${springfox-enum-plugin.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-swagger.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${byte-buddy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>${objenesis.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

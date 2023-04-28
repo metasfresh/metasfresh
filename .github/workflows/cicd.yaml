@@ -1,5 +1,9 @@
 name: cicd
-on: [push]
+on: 
+  push:
+
+  # see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch for custom input parameters  
+  workflow_dispatch:
 jobs:
 
   init:
@@ -129,27 +133,27 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
-      # - name: build-mobile
-        # run: |
-          # docker buildx build \
-          # --file docker-builds/Dockerfile.mobile \
-          # --cache-to type=inline \
-          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
-          # .
+      - name: build-mobile
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: push-images
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
         run: |
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
-          # echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          
+          echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+
   test-frontend:
     name: test (frontend)
     runs-on: ubuntu-latest
@@ -296,16 +300,16 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      # - name: build-mobile-compat
-        # run: |
-          # docker buildx build \
-          # --file docker-builds/Dockerfile.mobile.compat \
-          # --cache-to type=inline \
-          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          # --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
-          # .
+      - name: build-mobile-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
       - name: build-frontend-compat
         run: |
           docker buildx build \
@@ -317,8 +321,6 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
         run: |
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
@@ -326,6 +328,8 @@ jobs:
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
           docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
           docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
           docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
@@ -361,6 +365,7 @@ jobs:
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -398,7 +403,7 @@ jobs:
           path: junit/**/junit.log
       - name: produce-summary
         run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/' >> $GITHUB_STEP_SUMMARY
+          echo 'test results can be found at http://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   cucumber:
     name: test (cucumber)
@@ -449,7 +454,7 @@ jobs:
           path: cucumber.log
       - name: produce-summary
         run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/' >> $GITHUB_STEP_SUMMARY
+          echo 'test results can be found at http://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   redeploy:
     runs-on: ubuntu-latest

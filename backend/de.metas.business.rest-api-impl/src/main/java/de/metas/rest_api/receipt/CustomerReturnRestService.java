@@ -26,8 +26,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.shipping.v2.customerreturns.JsonCreateCustomerReturnInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.shipping.v2.customerreturns.JsonCreateCustomerReturnInfo;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -38,7 +39,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.OrderId;
@@ -63,7 +64,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -214,7 +214,7 @@ public class CustomerReturnRestService
 		}
 
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.docBaseType(DocBaseType.MaterialDelivery)
 				.adClientId(Env.getAD_Client_ID())
 				.adOrgId(orgId.getRepoId())
 				.build();
@@ -337,7 +337,7 @@ public class CustomerReturnRestService
 		//at this point we are sure there is a shipment line id present on all the retrieved `pickedLines`
 		final InOutLineId shipmentLineId = InOutLineId.ofRepoId(pickedLines.get(0).getM_InOutLine_ID());
 
-		return inOutDAO.getLineById(shipmentLineId);
+		return inOutDAO.getLineByIdInTrx(shipmentLineId);
 	}
 
 	@Value

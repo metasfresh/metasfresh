@@ -22,45 +22,9 @@
 
 package de.metas.order.createFrom;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.X_C_Order;
-import org.compiere.model.X_M_Product;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.BOMCreateRequest;
-import org.eevolution.api.BOMType;
-import org.eevolution.api.BOMUse;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMId;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -86,6 +50,8 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCode;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -96,6 +62,42 @@ import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_C_Order;
+import org.compiere.model.X_M_Product;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.BOMCreateRequest;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.BOMUse;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.impl.ProductBOMService;
+import org.eevolution.model.I_PP_Product_BOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public final class CreateSalesOrderAndBOMsFromQuotationCommand
 {
@@ -109,6 +111,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+	private final ProductBOMService bomService;
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
@@ -131,6 +134,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 			@Nullable final DocTypeId docTypeId,
 			@NonNull final LocalDate dateOrdered,
 			@Nullable final String poReference,
+			@NonNull final ProductBOMService bomService,
 			final boolean completeIt)
 	{
 		this.fromQuotationId = fromQuotationId;
@@ -138,6 +142,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		this.salesOrderDocTypeId = docTypeId;
 		this.salesOrderDateOrdered = dateOrdered;
 		this.salesOrderPOReference = poReference;
+		this.bomService = bomService;
 
 		this.doCompleteSalesOrder = completeIt;
 	}
@@ -227,6 +232,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.bomProductId(existingBOMProductId)
 				//
 				.orgId(OrgId.ofRepoId(mainQuotationLine.getAD_Org_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(mainQuotationLine.getM_SectionCode_ID()))
 				.quotationTemplateProductId(ProductId.ofRepoId(mainQuotationLine.getM_Product_ID()))
 				.price(price)
 				.qty(mainQuotationLine.getQtyEntered())
@@ -305,12 +311,12 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 			final PriceListVersionId priceListVersionId = priceListsRepo.retrievePriceListVersionId(priceListId, priceDate);
 
 			priceListsRepo.addProductPrice(AddProductPriceRequest.builder()
-					.priceListVersionId(priceListVersionId)
-					.productId(line.getBomProductId())
-					.uomId(line.getUomId())
-					.priceStd(line.getPrice())
-					.taxCategoryId(line.getTaxCategoryId())
-					.build());
+												   .priceListVersionId(priceListVersionId)
+												   .productId(line.getBomProductId())
+												   .uomId(line.getUomId())
+												   .priceStd(line.getPrice())
+												   .taxCategoryId(line.getTaxCategoryId())
+												   .build());
 
 			line.setAddProductToPriceList(false);
 		}
@@ -339,6 +345,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 
 		final I_M_Product bomProduct = productsRepo.createProduct(CreateProductRequest.builder()
 				.orgId(candidate.getOrgId())
+                .sectionCodeId(candidate.getSectionCodeId())
 				// .productValue(null) // shall use the standard codification
 				.productName(candidate.getQuotationGroupName())
 				.productCategoryId(productCategoryId)
@@ -354,7 +361,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		// Create BOM
 		final ProductId bomProductId = ProductId.ofRepoId(bomProduct.getM_Product_ID());
 		final UomId bomProductUomId = UomId.ofRepoId(bomProduct.getC_UOM_ID());
-		final ProductBOMId bomId = bomsRepo.createBOM(BOMCreateRequest.builder()
+
+		final BOMCreateRequest bomCreateRequest = BOMCreateRequest.builder()
 				.orgId(candidate.getOrgId())
 				.productId(bomProductId)
 				.productValue(bomProduct.getValue())
@@ -363,14 +371,19 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.bomUse(BOMUse.Manufacturing)
 				.bomType(BOMType.MakeToOrder)
 				.lines(additionalQuotationLines
-						.stream()
-						.map(quotationLine -> toBOMLineCreateRequest(quotationLine, candidate.getQty()))
-						.collect(ImmutableList.toImmutableList()))
-				.build());
+							   .stream()
+							   .map(quotationLine -> toBOMLineCreateRequest(quotationLine, candidate.getQty()))
+							   .collect(ImmutableList.toImmutableList()))
+				.build();
+
+		final I_PP_Product_BOM productBOM = bomService.createBOM(bomCreateRequest);
+
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(productBOM.getPP_Product_BOM_ID());
+		final ProductBOMVersionsId versionsId = ProductBOMVersionsId.ofRepoId(productBOM.getPP_Product_BOMVersions_ID());
 
 		orderGroupsRepo.setGroupProductBOMId(candidate.getQuotationGroupId(), bomId);
 
-		productPlanningsRepo.setProductBOMIdIfAbsent(bomProductId, bomId);
+		productPlanningsRepo.setProductBOMVersionsIdIfAbsent(bomProductId, versionsId);
 
 		return bomProductId;
 	}
@@ -535,6 +548,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		final UomId uomId;
 		@NonNull
 		final TaxCategoryId taxCategoryId;
+		@Nullable
+		final SectionCodeId sectionCodeId;
 
 		//
 		// Additional quotation lines to copy directly

@@ -22,26 +22,40 @@
 
 package de.metas.util.web.audit;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.ApiAuditLoggable;
+import de.metas.audit.apirequest.config.ApiAuditConfig;
+import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.Status;
+import de.metas.audit.request.ApiRequestIterator;
 import de.metas.util.Loggables;
+import de.metas.util.web.audit.dto.ApiResponse;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ApiRequestReplayService
 {
 	private final ApiAuditService apiAuditService;
+	private final ApiAuditConfigRepository apiAuditConfigRepository;
 
-	public ApiRequestReplayService(final ApiAuditService apiAuditService)
+	public ApiRequestReplayService(
+			@NonNull final ApiAuditService apiAuditService,
+			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository)
 	{
 		this.apiAuditService = apiAuditService;
+		this.apiAuditConfigRepository = apiAuditConfigRepository;
 	}
 
+	public void replayApiRequests(@NonNull final ApiRequestIterator apiRequestIterator)
+	{
+		apiRequestIterator.forEach(this::replayAction);
+	}
+
+	@VisibleForTesting
 	public void replayApiRequests(@NonNull final ImmutableList<ApiRequestAudit> apiRequestAuditTimeSortedList)
 	{
 		apiRequestAuditTimeSortedList.forEach(this::replayActionNoFailing);
@@ -73,13 +87,9 @@ public class ApiRequestReplayService
 		{
 			final ApiResponse apiResponse = apiAuditService.executeHttpCall(apiRequestAudit);
 
-			final Status requestStatus = apiResponse.getStatusCode() / 100 > HttpStatus.OK.series().value()
-					? Status.ERROR
-					: Status.PROCESSED;
+			final ApiAuditConfig apiAuditConfig = apiAuditConfigRepository.getConfigById(apiRequestAudit.getApiAuditConfigId());
 
-			apiAuditService.updateRequestStatus(requestStatus, apiRequestAudit);
-
-			apiAuditService.logResponse(apiResponse, apiRequestAudit.getIdNotNull(), apiRequestAudit.getOrgId());
+			apiAuditService.auditResponse(apiAuditConfig, apiResponse, apiRequestAudit);
 		}
 		catch (final Exception e)
 		{

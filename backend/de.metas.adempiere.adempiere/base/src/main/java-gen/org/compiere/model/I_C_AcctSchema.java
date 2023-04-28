@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_AcctSchema
  *  @author metasfresh (generated) 
@@ -52,8 +51,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Nur für Organisation.
-	 * Kontrierung nur für die angegebene Organisation
+	 * Set Only Organization.
+	 * Create posting entries only for this organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -62,8 +61,8 @@ public interface I_C_AcctSchema
 	void setAD_OrgOnly_ID (int AD_OrgOnly_ID);
 
 	/**
-	 * Get Nur für Organisation.
-	 * Kontrierung nur für die angegebene Organisation
+	 * Get Only Organization.
+	 * Create posting entries only for this organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -74,7 +73,7 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_AD_OrgOnly_ID = "AD_OrgOnly_ID";
 
 	/**
-	 * Set Automatische Periodenkontrolle.
+	 * Set Automatic Period Control.
 	 * If selected, the periods are automatically opened and closed
 	 *
 	 * <br>Type: YesNo
@@ -84,7 +83,7 @@ public interface I_C_AcctSchema
 	void setAutoPeriodControl (boolean AutoPeriodControl);
 
 	/**
-	 * Get Automatische Periodenkontrolle.
+	 * Get Automatic Period Control.
 	 * If selected, the periods are automatically opened and closed
 	 *
 	 * <br>Type: YesNo
@@ -142,8 +141,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Art Reservierung.
-	 * Erstelle Reservierungen für Budgetkontrolle
+	 * Set Commitment Type.
+	 * Create Commitment and/or Reservations for Budget Control
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -152,8 +151,8 @@ public interface I_C_AcctSchema
 	void setCommitmentType (java.lang.String CommitmentType);
 
 	/**
-	 * Get Art Reservierung.
-	 * Erstelle Reservierungen für Budgetkontrolle
+	 * Get Commitment Type.
+	 * Create Commitment and/or Reservations for Budget Control
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -165,7 +164,7 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_CommitmentType = "CommitmentType";
 
 	/**
-	 * Set Kostenrechnungsstufe.
+	 * Set Costing Level.
 	 * The lowest level to accumulate Costing Information
 	 *
 	 * <br>Type: List
@@ -175,7 +174,7 @@ public interface I_C_AcctSchema
 	void setCostingLevel (java.lang.String CostingLevel);
 
 	/**
-	 * Get Kostenrechnungsstufe.
+	 * Get Costing Level.
 	 * The lowest level to accumulate Costing Information
 	 *
 	 * <br>Type: List
@@ -188,7 +187,7 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_CostingLevel = "CostingLevel";
 
 	/**
-	 * Set Kostenrechnungsmethode.
+	 * Set Costing Method.
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
@@ -198,7 +197,7 @@ public interface I_C_AcctSchema
 	void setCostingMethod (java.lang.String CostingMethod);
 
 	/**
-	 * Get Kostenrechnungsmethode.
+	 * Get Costing Method.
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
@@ -395,8 +394,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_HasCombination = "HasCombination";
 
 	/**
-	 * Set Umsatzrealisierung bei Rechnung.
-	 * Definiert ob der Umsatz bei Rechnung oder erst bei Zahlung realisiert wird
+	 * Set Accrual.
+	 * Indicates if Accrual or Cash Based accounting will be used
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -405,8 +404,8 @@ public interface I_C_AcctSchema
 	void setIsAccrual (boolean IsAccrual);
 
 	/**
-	 * Get Umsatzrealisierung bei Rechnung.
-	 * Definiert ob der Umsatz bei Rechnung oder erst bei Zahlung realisiert wird
+	 * Get Accrual.
+	 * Indicates if Accrual or Cash Based accounting will be used
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -464,8 +463,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_IsAdjustCOGS = "IsAdjustCOGS";
 
 	/**
-	 * Set Negativbuchung erlauben.
-	 * Erlaube die Buchung von negativen Werten
+	 * Set Allow Negative Posting.
+	 * Allow to post negative accounting values
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -474,8 +473,8 @@ public interface I_C_AcctSchema
 	void setIsAllowNegativePosting (boolean IsAllowNegativePosting);
 
 	/**
-	 * Get Negativbuchung erlauben.
-	 * Erlaube die Buchung von negativen Werten
+	 * Get Allow Negative Posting.
+	 * Allow to post negative accounting values
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -533,8 +532,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_IsDiscountCorrectsTax = "IsDiscountCorrectsTax";
 
 	/**
-	 * Set Bezugsnebenkosten direkt verbuchen.
-	 * Verbuchung der Bezugsnebenkosten direkt und nicht erst nach Aufteilung.
+	 * Set Explicit Cost Adjustment.
+	 * Post the cost adjustment explicitly
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -543,8 +542,8 @@ public interface I_C_AcctSchema
 	void setIsExplicitCostAdjustment (boolean IsExplicitCostAdjustment);
 
 	/**
-	 * Get Bezugsnebenkosten direkt verbuchen.
-	 * Verbuchung der Bezugsnebenkosten direkt und nicht erst nach Aufteilung.
+	 * Get Explicit Cost Adjustment.
+	 * Post the cost adjustment explicitly
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -556,8 +555,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_IsExplicitCostAdjustment = "IsExplicitCostAdjustment";
 
 	/**
-	 * Set Verbuchung bei identischen Konten.
-	 * Verbuchung bei identischen Konten (Transit) durchführen
+	 * Set Post if Clearing Equal.
+	 * This flag controls if Adempiere must post when clearing (transit) and final accounts are the same
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -566,8 +565,8 @@ public interface I_C_AcctSchema
 	void setIsPostIfClearingEqual (boolean IsPostIfClearingEqual);
 
 	/**
-	 * Get Verbuchung bei identischen Konten.
-	 * Verbuchung bei identischen Konten (Transit) durchführen
+	 * Get Post if Clearing Equal.
+	 * This flag controls if Adempiere must post when clearing (transit) and final accounts are the same
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -579,8 +578,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_IsPostIfClearingEqual = "IsPostIfClearingEqual";
 
 	/**
-	 * Set Leistungen seperat verbuchen.
-	 * Verbuchung soll unterscheiden soll zwischen Produkt Lieferungen und Dienstleistungen.
+	 * Set Post Services Separately.
+	 * Differentiate between Services and Product Receivable/Payables
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -589,8 +588,8 @@ public interface I_C_AcctSchema
 	void setIsPostServices (boolean IsPostServices);
 
 	/**
-	 * Get Leistungen seperat verbuchen.
-	 * Verbuchung soll unterscheiden soll zwischen Produkt Lieferungen und Dienstleistungen.
+	 * Get Post Services Separately.
+	 * Differentiate between Services and Product Receivable/Payables
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -602,8 +601,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_IsPostServices = "IsPostServices";
 
 	/**
-	 * Set Rabatte seperat verbuchen.
-	 * Erzeuge seperate Buchungen für Handelstrabatte
+	 * Set Post Trade Discount.
+	 * Generate postings for trade discounts
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -612,8 +611,8 @@ public interface I_C_AcctSchema
 	void setIsTradeDiscountPosted (boolean IsTradeDiscountPosted);
 
 	/**
-	 * Get Rabatte seperat verbuchen.
-	 * Erzeuge seperate Buchungen für Handelstrabatte
+	 * Get Post Trade Discount.
+	 * Generate postings for trade discounts
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -625,7 +624,7 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_IsTradeDiscountPosted = "IsTradeDiscountPosted";
 
 	/**
-	 * Set Kostenkategorie.
+	 * Set Cost Type.
 	 * Type of Cost (e.g. Current, Plan, Future)
 	 *
 	 * <br>Type: TableDir
@@ -635,7 +634,7 @@ public interface I_C_AcctSchema
 	void setM_CostType_ID (int M_CostType_ID);
 
 	/**
-	 * Get Kostenkategorie.
+	 * Get Cost Type.
 	 * Type of Cost (e.g. Current, Plan, Future)
 	 *
 	 * <br>Type: TableDir
@@ -740,7 +739,7 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Element-Trenner.
+	 * Set Element Separator.
 	 * Element Separator
 	 *
 	 * <br>Type: String
@@ -750,7 +749,7 @@ public interface I_C_AcctSchema
 	void setSeparator (java.lang.String Separator);
 
 	/**
-	 * Get Element-Trenner.
+	 * Get Element Separator.
 	 * Element Separator
 	 *
 	 * <br>Type: String
@@ -763,8 +762,8 @@ public interface I_C_AcctSchema
 	String COLUMNNAME_Separator = "Separator";
 
 	/**
-	 * Set MwSt. Korrektur.
-	 * Art der MwSt. Korrektur
+	 * Set Tax Correction.
+	 * Type of Tax Correction
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -773,8 +772,8 @@ public interface I_C_AcctSchema
 	void setTaxCorrectionType (java.lang.String TaxCorrectionType);
 
 	/**
-	 * Get MwSt. Korrektur.
-	 * Art der MwSt. Korrektur
+	 * Get Tax Correction.
+	 * Type of Tax Correction
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

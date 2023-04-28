@@ -1,47 +1,7 @@
 package de.metas.pricing.service.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -53,6 +13,8 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
@@ -60,6 +22,22 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @ToString
 class PricingContext implements IEditablePricingContext
@@ -83,9 +61,12 @@ class PricingContext implements IEditablePricingContext
 	 */
 	private LocalDate priceDateNow = SystemTime.asLocalDate();
 
+	@Nullable
 	private CountryId countryId;
 
+	@Nullable
 	private UomId uomId;
+	@Nullable
 	private CurrencyId currencyId;
 	private BPartnerId bpartnerId;
 	private BigDecimal qty;
@@ -97,6 +78,9 @@ class PricingContext implements IEditablePricingContext
 	private boolean failIfNotCalculated = false;
 
 	private boolean disallowDiscount;
+
+	@Nullable
+	private BigDecimal manualPrice;
 
 	@Getter
 	private PricingConditionsBreak forcePricingConditionsBreak;
@@ -130,6 +114,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.failIfNotCalculated = failIfNotCalculated;
 		pricingCtxNew.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 		pricingCtxNew.properties.putAll(properties);
+		pricingCtxNew.manualPrice = manualPrice;
 
 		return pricingCtxNew;
 	}
@@ -248,13 +233,14 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
+	@Nullable
 	public CurrencyId getCurrencyId()
 	{
 		return currencyId;
 	}
 
 	@Override
-	public IEditablePricingContext setCurrencyId(final CurrencyId currencyId)
+	public IEditablePricingContext setCurrencyId(@Nullable final CurrencyId currencyId)
 	{
 		this.currencyId = currencyId;
 		return this;
@@ -404,6 +390,7 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
+	@Nullable
 	public CountryId getCountryId()
 	{
 		return countryId;
@@ -436,6 +423,19 @@ class PricingContext implements IEditablePricingContext
 		return this;
 	}
 
+	@Nullable
+	public BigDecimal getManualPrice()
+	{
+		return manualPrice;
+	}
+
+	@Override
+	public IEditablePricingContext setManualPrice(@Nullable final BigDecimal manualPrice)
+	{
+		this.manualPrice = manualPrice;
+		return this;
+	}
+
 	@Override
 	public boolean isSkipCheckingPriceListSOTrxFlag()
 	{
@@ -462,5 +462,25 @@ class PricingContext implements IEditablePricingContext
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(referencedObj);
 		return Optional.ofNullable(asiAware);
+	}
+
+	@Override
+	public Quantity getQuantity()
+	{
+		final BigDecimal ctxQty = getQty();
+
+		if (ctxQty == null)
+		{
+			return null;
+		}
+
+		final UomId ctxUomId = getUomId();
+
+		if (ctxUomId == null)
+		{
+			return null;
+		}
+
+		return Quantitys.create(ctxQty, ctxUomId);
 	}
 }

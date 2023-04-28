@@ -22,29 +22,28 @@
 
 package de.metas.rest_api.v1.product;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
-import de.metas.rest_api.product.response.JsonGetProductsResponse;
-import de.metas.rest_api.product.response.JsonProduct;
-import de.metas.rest_api.product.response.JsonProductBPartner;
-import de.metas.rest_api.v1.product.ProductsRestController;
-import de.metas.rest_api.v1.product.ProductsServicesFacade;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
+import de.metas.rest_api.v1.product.response.JsonGetProductsResponse;
+import de.metas.rest_api.v1.product.response.JsonProduct;
+import de.metas.rest_api.v1.product.response.JsonProductBPartner;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -56,6 +55,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
@@ -64,20 +64,12 @@ public class ProductsRestControllerTest
 	private UomId kgUomId;
 	private JsonCreatedUpdatedInfo createdUpdatedInfo;
 
+	private Expect expect;
+
 	@BeforeAll
 	static void initStatic()
 	{
-		SnapshotMatcher.start(
-				AdempiereTestHelper.SNAPSHOT_CONFIG,
-				AdempiereTestHelper.createSnapshotJsonFunction());
-
 		LogManager.setLoggerLevel(ProductsRestController.class, Level.ALL);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		SnapshotMatcher.validateSnapshots();
 	}
 
 	@BeforeEach
@@ -215,7 +207,7 @@ public class ProductsRestControllerTest
 						.build());
 
 		//
-		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
 	}
 
 	private UomId createUOM(@NonNull final String uomSymbol)

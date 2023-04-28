@@ -22,16 +22,8 @@ package de.metas.document.archive.spi.impl;
  * #L%
  */
 
-import java.util.Properties;
-
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.api.IDocOutboundProducerService;
@@ -44,8 +36,14 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Properties;
 
 /**
  * {@link IDocOutboundProducer} base implementation.
@@ -178,12 +176,11 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 
 			workPackageQueueFactory
 					.getQueueForEnqueuing(ctx, packageProcessorClass)
-					.newBlock()
-					.newWorkpackage()
+					.newWorkPackage()
 					.bindToThreadInheritedTrx()
 					.addElement(model)
 					.setC_Async_Batch(asyncBatch)
 					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
-					.build();
+					.buildAndEnqueue();
 	}
 }

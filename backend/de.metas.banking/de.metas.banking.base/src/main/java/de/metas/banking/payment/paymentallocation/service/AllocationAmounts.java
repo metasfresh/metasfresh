@@ -1,21 +1,19 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.MoreObjects;
-
+import de.metas.common.util.CoalesceUtil;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -57,11 +55,11 @@ public class AllocationAmounts
 		return builder().payAmt(payAmt).build();
 	}
 
-	private final CurrencyId currencyId;
-	private final Money payAmt;
-	private final Money discountAmt;
-	private final Money writeOffAmt;
-	private final Money invoiceProcessingFee;
+	CurrencyId currencyId;
+	Money payAmt;
+	Money discountAmt;
+	Money writeOffAmt;
+	Money invoiceProcessingFee;
 
 	@Builder(toBuilder = true)
 	private AllocationAmounts(
@@ -187,7 +185,7 @@ public class AllocationAmounts
 		}
 	}
 
-	public AllocationAmounts add(AllocationAmounts other)
+	public AllocationAmounts add(@NonNull final AllocationAmounts other)
 	{
 		return toBuilder()
 				.payAmt(this.payAmt.add(other.payAmt))
@@ -197,7 +195,7 @@ public class AllocationAmounts
 				.build();
 	}
 
-	public AllocationAmounts subtract(AllocationAmounts other)
+	public AllocationAmounts subtract(@NonNull final AllocationAmounts other)
 	{
 		return toBuilder()
 				.payAmt(this.payAmt.subtract(other.payAmt))
@@ -207,7 +205,12 @@ public class AllocationAmounts
 				.build();
 	}
 
-	public AllocationAmounts negateIf(final boolean condition)
+	public AllocationAmounts convertToRealAmounts(@NonNull final InvoiceAmtMultiplier invoiceAmtMultiplier)
+	{
+		return negateIf(invoiceAmtMultiplier.isNegateToConvertToRealValue());
+	}
+
+	private AllocationAmounts negateIf(final boolean condition)
 	{
 		return condition ? negate() : this;
 	}

@@ -16,10 +16,10 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostId;
+import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -100,51 +101,89 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return ImmutableList.of();
 		}
 
-		return queryBL
+		final ImmutableList<I_M_Cost> records = queryBL
 				.createQueryBuilder(I_M_Cost.class)
 				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, ids)
-				.create()
-				.stream()
-				.map(this::toCurrentCost)
-				.collect(ImmutableList.toImmutableList());
+				.list();
 
+		return newLoader().toCurrentCosts(records);
+	}
+
+	private CurrentCostsLoader newLoader()
+	{
+		return CurrentCostsLoader.builder()
+				.acctSchemasRepo(acctSchemasRepo)
+				.uomsRepo(uomsRepo)
+				.productCostingBL(productCostingBL)
+				.costElementRepo(costElementRepo)
+				.build();
 	}
 
 	@Override
 	public CurrentCost getOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
-		if (costRecord == null)
-		{
-			return null;
-		}
-
-		return toCurrentCost(costRecord);
+		return costRecord != null
+				? newLoader().toCurrentCost(costRecord)
+				: null;
 	}
 
 	@Nullable
 	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return queryCostRecords(costSegmentAndElement)
-				.create()
-				.firstOnly(I_M_Cost.class);
+		return toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.firstOnly();
 	}
 
-	private IQueryBuilder<I_M_Cost> queryCostRecords(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	@Override
+	public Stream<CurrentCost> stream(@NonNull final CurrentCostQuery query)
 	{
-		return queryCostRecords(costSegmentAndElement.toCostSegment())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costSegmentAndElement.getCostElementId());
+		return list(query).stream();
 	}
 
-	private IQueryBuilder<I_M_Cost> queryCostRecords(@NonNull final CostSegment costSegment)
+	@Override
+	public ImmutableList<CurrentCost> list(@NonNull final CurrentCostQuery query)
 	{
-		return queryBL
-				.createQueryBuilder(I_M_Cost.class)
-				.addEqualsFilter(I_M_Cost.COLUMN_AD_Org_ID, costSegment.getOrgId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, costSegment.getProductId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_AttributeSetInstance_ID, costSegment.getAttributeSetInstanceId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostType_ID, costSegment.getCostTypeId())
-				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID, costSegment.getAcctSchemaId());
+		final ImmutableList<I_M_Cost> records = toSqlQuery(query).list();
+		return !records.isEmpty()
+				? newLoader().toCurrentCosts(records)
+				: ImmutableList.of();
+	}
+
+	private IQueryBuilder<I_M_Cost> toSqlQuery(@NonNull final CurrentCostQuery query)
+	{
+		final IQueryBuilder<I_M_Cost> queryBuilder = queryBL.createQueryBuilder(I_M_Cost.class);
+
+		if (query.getClientId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Client_ID, query.getClientId());
+		}
+		if (query.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+		if (!query.getProductIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Product_ID, query.getProductIds());
+		}
+		if (query.getAttributeSetInstanceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributeSetInstanceId());
+		}
+		if (query.getCostTypeId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostType_ID, query.getCostTypeId());
+		}
+		if (query.getAcctSchemaId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
+		}
+		if (!query.getCostElementIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, query.getCostElementIds());
+		}
+
+		return queryBuilder;
 	}
 
 	@Override
@@ -166,18 +205,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
 			return Optional.empty();
 		}
 
-		final ImmutableMap<CostElement, CostPrice> costPrices = queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
-				.create()
-				.stream(I_M_Cost.class)
-				.map(this::toCurrentCost)
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment).costElementIds(costElementIds).build();
+		final ImmutableMap<CostElement, CostPrice> costPrices = stream(query)
 				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCostPrice));
 		if (costPrices.isEmpty())
 		{
@@ -196,14 +232,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
 			return ImmutableList.of();
 		}
 
-		return getByCostSegmentAndCostElements(costSegment, costElementIds);
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment).costElementIds(costElementIds).build();
+		return list(query);
 	}
 
 	@Override
@@ -211,13 +248,11 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			@NonNull final Set<CostElementId> costElementIds)
 	{
-		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
-		return queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
-				.create()
-				.stream(I_M_Cost.class)
-				.map(this::toCurrentCost)
-				.collect(ImmutableList.toImmutableList());
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment)
+				.costElementIds(Check.assumeNotEmpty(costElementIds, "costElementIds is not empty"))
+				.build();
+
+		return list(query);
 	}
 
 	@Override
@@ -266,48 +301,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		currentCost.setId(CurrentCostId.ofRepoId(costRecord.getM_Cost_ID()));
 	}
 
-	private CurrentCost toCurrentCost(final I_M_Cost record)
-	{
-
-		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
-
-		final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
-		final CostElement costElement = costElementRepo.getById(costElementId);
-
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
-		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
-		final CurrencyPrecision costingPrecision = acctSchema.getCosting().getCostingPrecision();
-
-		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
-		final CostSegment costSegment = CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(acctSchemaId)
-				.costTypeId(acctSchema.getCosting().getCostTypeId())
-				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
-				.build();
-
-		return CurrentCost.builder()
-				.id(CurrentCostId.ofRepoId(record.getM_Cost_ID()))
-				.costSegment(costSegment)
-				.costElement(costElement)
-				.currencyId(currencyId)
-				.precision(costingPrecision)
-				.uom(uom)
-				.ownCostPrice(record.getCurrentCostPrice())
-				.componentsCostPrice(record.getCurrentCostPriceLL())
-				.currentQty(record.getCurrentQty())
-				.cumulatedAmt(record.getCumulatedAmt())
-				.cumulatedQty(record.getCumulatedQty())
-				.build();
-	}
-
-	private void updateCostRecord(
+	private static void updateCostRecord(
 			final I_M_Cost cost,
 			final CurrentCost from)
 	{
@@ -322,10 +316,10 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		cost.setC_Currency_ID(from.getCurrencyId().getRepoId());
 		cost.setC_UOM_ID(from.getUomId().getRepoId());
 
-		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().getValue());
-		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().getValue());
+		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().toBigDecimal());
+		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().toBigDecimal());
 		cost.setCurrentQty(from.getCurrentQty().toBigDecimal());
-		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
+		cost.setCumulatedAmt(from.getCumulatedAmt().toBigDecimal());
 		cost.setCumulatedQty(from.getCumulatedQty().toBigDecimal());
 	}
 
@@ -338,13 +332,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public void deleteForProduct(final I_M_Product product)
 	{
-		forEachCostSegmentAndElement(product, costSegmentAndElement -> {
-			final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
-			if (costRecord != null)
-			{
-				InterfaceWrapperHelper.delete(costRecord);
-			}
-		});
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.delete());
 	}
 
 	private void forEachCostSegmentAndElement(
@@ -355,7 +345,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final OrgId productOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(clientId);
+		final List<CostElement> costElements = costElementRepo.getByClientId(clientId);
 
 		for (final AcctSchema as : acctSchemasRepo.getAllByClient(clientId))
 		{
@@ -423,4 +413,13 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		saveRecord(costRecord);
 	}
 
+	public boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId)
+	{
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_Currency_ID, currencyId)
+				.create()
+				.anyMatch();
+	}
 }

@@ -22,8 +22,12 @@
 
 package de.metas.contracts.commission.mediated.algorithm;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Customer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
@@ -37,48 +41,38 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderLineDocId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@ExtendWith(SnapshotExtension.class)
 public class MediatedCommissionAlgorithmTest
 {
 	private MediatedCommissionAlgorithm mediatedCommissionAlgorithm;
+	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
+		AdempiereTestHelper.get().init();
 		mediatedCommissionAlgorithm = new MediatedCommissionAlgorithm();
-	}
-
-	@BeforeAll
-	static void init()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -93,7 +87,7 @@ public class MediatedCommissionAlgorithmTest
 		//then
 		assertThat(commissionShare.size()).isEqualTo(1);
 
-		expect(commissionShare.get(0)).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(commissionShare.get(0));
 	}
 
 	@Test
@@ -135,6 +129,8 @@ public class MediatedCommissionAlgorithmTest
 			final boolean invalidContract,
 			final boolean invalidTriggerType)
 	{
+		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("uom");
+
 		final Hierarchy emptyHierarchy = Hierarchy.builder().build();
 
 		final BPartnerId vendorId = BPartnerId.ofRepoId(1);
@@ -164,7 +160,9 @@ public class MediatedCommissionAlgorithmTest
 				.orgId(OrgId.ofRepoId(1))
 				.timestamp(Instant.ofEpochSecond(19898989898L))
 				.triggerDocumentId(MediatedOrderLineDocId.of(OrderLineId.ofRepoId(20)))
-				.tradedCommissionPercent(Percent.ZERO)
+				.productId(ProductId.ofRepoId(1))
+				.totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
+				.documentCurrencyId(CurrencyId.ofRepoId(1))
 				.build();
 
 		final CommissionTrigger commissionTrigger = CommissionTrigger.builder()

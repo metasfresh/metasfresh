@@ -36,12 +36,12 @@
 
 				<configuration>
 					<rules>
-						<banDuplicateClasses>
+			<!--			<banDuplicateClasses>
 							<dependencies>
-								<!--
+								&lt;!&ndash;
 									do not check this dependency, because the endcustomer allInOne-jar contains
 									all the classes that are also its dependencies
-								-->
+								&ndash;&gt;
 								<dependency>
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.groupId}.base</artifactId>
@@ -65,8 +65,8 @@
 									</ignoreClasses>
 								</dependency>
 
-								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
-								<!-- seems as if we need to repeat stuff from the parent pom :-( -->
+								&lt;!&ndash; see also https://www.elastic.co/blog/to-shade-or-not-to-shade &ndash;&gt;
+								&lt;!&ndash; seems as if we need to repeat stuff from the parent pom :-( &ndash;&gt;
 								<dependency>
 									<groupId>org.elasticsearch</groupId>
 									<artifactId>elasticsearch</artifactId>
@@ -77,7 +77,7 @@
 
 							</dependencies>
 							<findAllDuplicates>true</findAllDuplicates>
-						</banDuplicateClasses>
+						</banDuplicateClasses>-->
 					</rules>
 					<fail>true</fail>
 				</configuration>
@@ -101,22 +101,22 @@
 						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968
 							declare the the version properties of related artifacts which we can to set in the dist module
 						-->
-						<property>
-							<name>metasfresh-webui-frontend.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
-						<property>
-							<name>metasfresh-procurement-webui.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
-						<property>
-							<!-- metasfresh/metasfresh#1471 -->
-							<name>metasfresh-admin.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
+<!--						<property>-->
+<!--							<name>metasfresh-webui-frontend.version</name>-->
+<!--							<searchReactor>false</searchReactor>-->
+<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
+<!--						</property>-->
+<!--						<property>-->
+<!--							<name>metasfresh-procurement-webui.version</name>-->
+<!--							<searchReactor>false</searchReactor>-->
+<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
+<!--						</property>-->
+<!--						<property>-->
+<!--							&lt;!&ndash; metasfresh/metasfresh#1471 &ndash;&gt;-->
+<!--							<name>metasfresh-admin.version</name>-->
+<!--							<searchReactor>false</searchReactor>-->
+<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
+<!--						</property>-->
 					</properties>
 				</configuration>
 			</plugin>

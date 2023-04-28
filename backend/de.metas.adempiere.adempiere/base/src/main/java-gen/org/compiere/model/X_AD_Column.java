@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Column
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 437427151L;
+	private static final long serialVersionUID = 1882423707L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -156,6 +156,33 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public int getAD_Reference_Value_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Reference_Value_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Sequence getAD_Sequence()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setAD_Sequence(final org.compiere.model.I_AD_Sequence AD_Sequence)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class, AD_Sequence);
+	}
+
+	@Override
+	public void setAD_Sequence_ID (final int AD_Sequence_ID)
+	{
+		if (AD_Sequence_ID < 1) 
+			set_Value (COLUMNNAME_AD_Sequence_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
+	}
+
+	@Override
+	public int getAD_Sequence_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
 	}
 
 	@Override
@@ -302,6 +329,33 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
+	public org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule()
+	{
+		return get_ValueAsPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
+	}
+
+	@Override
+	public void setFilter_Val_Rule(final org.compiere.model.I_AD_Val_Rule Filter_Val_Rule)
+	{
+		set_ValueFromPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, Filter_Val_Rule);
+	}
+
+	@Override
+	public void setFilter_Val_Rule_ID (final int Filter_Val_Rule_ID)
+	{
+		if (Filter_Val_Rule_ID < 1)
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, null);
+		else
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, Filter_Val_Rule_ID);
+	}
+
+	@Override
+	public int getFilter_Val_Rule_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Filter_Val_Rule_ID);
+	}
+
+	@Override
 	public void setFilterDefaultValue (final @Nullable java.lang.String FilterDefaultValue)
 	{
 		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
@@ -432,6 +486,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return get_ValueAsBoolean(COLUMNNAME_IsCalculated);
 	}
 
+	@Override
+	public void setIsDLMPartitionBoundary (final boolean IsDLMPartitionBoundary)
+	{
+		set_Value (COLUMNNAME_IsDLMPartitionBoundary, IsDLMPartitionBoundary);
+	}
+
+	@Override
+	public boolean isDLMPartitionBoundary() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDLMPartitionBoundary);
+	}
+
 	/** 
 	 * IsEncrypted AD_Reference_ID=354
 	 * Reference name: AD_Column Encrypted
@@ -559,6 +625,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isParent() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsParent);
+	}
+
+	@Override
+	public void setIsRestAPICustomColumn (final boolean IsRestAPICustomColumn)
+	{
+		set_Value (COLUMNNAME_IsRestAPICustomColumn, IsRestAPICustomColumn);
+	}
+
+	@Override
+	public boolean isRestAPICustomColumn()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRestAPICustomColumn);
 	}
 
 	@Override

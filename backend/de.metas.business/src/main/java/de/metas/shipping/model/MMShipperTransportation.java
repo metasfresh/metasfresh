@@ -40,27 +40,26 @@ package de.metas.shipping.model;
  * #L%
  */
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Shipper Transportation model
@@ -119,7 +118,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean approveIt()
 	{
-		log.info(toString());
 		setIsApproved(true);
 		return true;
 	}    // approveIt
@@ -132,7 +130,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -307,9 +304,9 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	}    // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateDoc());
+		return InstantAndOrgId.ofTimestamp(getDateDoc(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**
@@ -320,7 +317,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info(toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}    // invalidateIt
@@ -333,7 +329,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
@@ -379,7 +374,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -420,7 +414,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean rejectIt()
 	{
-		log.info(toString());
 		setIsApproved(false);
 		return true;
 	}    // rejectIt
@@ -433,7 +426,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info(toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -455,7 +447,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -477,7 +468,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean unlockIt()
 	{
-		log.info(toString());
 		setProcessing(false);
 		return true;
 	}    // unlockIt
@@ -490,7 +480,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)

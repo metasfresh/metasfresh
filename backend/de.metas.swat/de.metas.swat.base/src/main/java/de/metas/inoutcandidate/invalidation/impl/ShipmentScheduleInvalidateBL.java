@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.invalidation.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,31 +20,16 @@ package de.metas.inoutcandidate.invalidation.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
+package de.metas.inoutcandidate.invalidation.impl;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.service.ITaskExecutorService;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -61,8 +44,22 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.springframework.stereotype.Service;
 
-@Component
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
+@Service
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -205,6 +202,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		notifySegmentChanged(segment);
 	}
 
+	@Override
+	public void notifySegmentChangedForShipmentScheduleInclSched(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+		flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
+		notifySegmentChangedForShipmentSchedule(shipmentSchedule);
+	}
+
 	/**
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
 	 * TODO: don't override this whole method, there are plenty of better ways
@@ -226,7 +232,6 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;
@@ -290,7 +295,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final ShipmentScheduleSegmentChangedProcessor collector = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(this);
 		if (collector != null)
 		{
-			collector.addSegments(segmentsEffective);
+			collector.addSegments(segmentsEffective); // they will be flagged for recompute after commit
 		}
 		else
 		{

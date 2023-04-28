@@ -22,6 +22,14 @@ package org.adempiere.sql.impl;
  * #L%
  */
 
+import de.metas.util.Check;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.exceptions.DBNoConnectionException;
+import org.compiere.db.AdempiereDatabase;
+import org.compiere.util.CPreparedStatement;
+import org.compiere.util.CStatementVO;
+import org.compiere.util.DB;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -44,19 +52,6 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-import javax.sql.RowSet;
-
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBNoConnectionException;
-import org.compiere.db.AdempiereDatabase;
-import org.compiere.util.CCachedRowSet;
-import org.compiere.util.CPreparedStatement;
-import org.compiere.util.CStatementVO;
-import org.compiere.util.DB;
-
-import de.metas.util.Check;
-
 /* package */class CPreparedStatementProxy extends AbstractCStatementProxy<PreparedStatement>implements CPreparedStatement
 {
 	public CPreparedStatementProxy(final int resultSetType, final int resultSetConcurrency, final String sql0, final String trxName)
@@ -64,7 +59,7 @@ import de.metas.util.Check;
 		super(createVO(resultSetType, resultSetConcurrency, sql0, trxName));
 	}
 
-	private static final CStatementVO createVO(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
+	private static CStatementVO createVO(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
 	{
 		Check.assumeNotEmpty(sql, "sql not empty");
 
@@ -75,9 +70,7 @@ import de.metas.util.Check;
 		}
 
 		final String sqlConverted = database.convertStatement(sql);
-		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency, sqlConverted, trxName);
-
-		return vo;
+		return new CStatementVO(resultSetType, resultSetConcurrency, sqlConverted, trxName);
 	}
 
 	public CPreparedStatementProxy(final CStatementVO vo)
@@ -88,34 +81,9 @@ import de.metas.util.Check;
 	@Override
 	protected PreparedStatement createStatement(final Connection conn, final CStatementVO vo) throws SQLException
 	{
-		final PreparedStatement pstmt = conn.prepareStatement(vo.getSql(),
+		return conn.prepareStatement(vo.getSql(),
 				vo.getResultSetType(),
 				vo.getResultSetConcurrency());
-		return pstmt;
-	}
-
-	@Override
-	public final RowSet getRowSet()
-	{
-		RowSet rowSet = null;
-		ResultSet rs = null;
-		PreparedStatement pstmt = getStatementImpl();
-		try
-		{
-			rs = pstmt.executeQuery();
-			rowSet = CCachedRowSet.getRowSet(rs);
-		}
-		catch (Exception ex)
-		{
-			final String sql = getSql();
-			throw new DBException(ex, sql);
-		}
-		finally
-		{
-			DB.close(rs);
-		}
-		return rowSet;
-
 	}
 
 	@Override

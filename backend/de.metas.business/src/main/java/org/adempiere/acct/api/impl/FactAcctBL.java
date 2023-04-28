@@ -22,40 +22,30 @@ package org.adempiere.acct.api.impl;
  * #L%
  */
 
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.util.Check;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
-import org.compiere.report.core.RColumn;
-import org.compiere.report.core.RModel;
-import org.compiere.util.DisplayType;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.impl.AcctSegmentType;
-import de.metas.util.Check;
+import java.util.Properties;
 
 public class FactAcctBL implements IFactAcctBL
 {
-	@Override
-	public RColumn createEndingBalanceRColumn(final Properties ctx, final Map<String, String> columnName2whereClause)
-	{
-		return new RColumn(ctx, "EndingBalance", DisplayType.Amount, IFactAcctDAO.DB_FUNC_Fact_Acct_EndingBalance + "(" + RModel.TABLE_ALIAS + ")");
-	}
 
 	@Override
-	public MAccount getAccount(final I_Fact_Acct factAcct)
+	public Account getAccount(final I_Fact_Acct factAcct)
 	{
 		Check.assumeNotNull(factAcct, "factAcct not null");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
 		final AccountDimension accountDimension = createAccountDimension(factAcct);
-		final MAccount acct = MAccount.get(ctx, accountDimension);
-		return acct;
+		return Account.of(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()), factAcct.getAccountConceptualName());
 	}
 
 	@Override
@@ -76,6 +66,8 @@ public class FactAcctBL implements IFactAcctBL
 				.setC_Project_ID(fa.getC_Project_ID())
 				.setC_Campaign_ID(fa.getC_Campaign_ID())
 				.setC_Activity_ID(fa.getC_Activity_ID())
+				.setSalesOrderId(fa.getC_OrderSO_ID())
+				.setM_SectionCode_ID(fa.getM_SectionCode_ID())
 				.setUser1_ID(fa.getUser1_ID())
 				.setUser2_ID(fa.getUser2_ID())
 				.setUserElement1_ID(fa.getUserElement1_ID())
@@ -150,6 +142,14 @@ public class FactAcctBL implements IFactAcctBL
 		if (dim.isSegmentValueSet(AcctSegmentType.Activity))
 		{
 			fa.setC_Activity_ID(dim.getC_Activity_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.SalesOrder))
+		{
+			fa.setC_OrderSO_ID(dim.getSalesOrderId());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.SectionCode))
+		{
+			fa.setM_SectionCode_ID(dim.getM_SectionCode_ID());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.UserList1))
 		{

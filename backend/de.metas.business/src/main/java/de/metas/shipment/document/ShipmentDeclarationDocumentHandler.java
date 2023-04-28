@@ -1,15 +1,13 @@
 package de.metas.shipment.document;
 
-import java.time.LocalDate;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Shipment_Declaration;
-import org.compiere.util.TimeUtil;
-
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Shipment_Declaration;
 
 /*
  * #%L
@@ -49,10 +47,10 @@ public class ShipmentDeclarationDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
-		final I_M_Shipment_Declaration shipmentDeclaration = extractShipmentDeclaration(docFields);
-		return TimeUtil.asLocalDate(shipmentDeclaration.getDeliveryDate());
+		final I_M_Shipment_Declaration record = extractShipmentDeclaration(docFields);
+		return InstantAndOrgId.ofTimestamp(record.getDeliveryDate(), OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@Override

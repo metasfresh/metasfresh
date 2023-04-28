@@ -22,6 +22,8 @@
 
 package de.metas.payment;
 
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyRepository;
 import de.metas.order.IOrderDAO;
@@ -35,6 +37,7 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -56,11 +59,16 @@ public class C_Payment
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
+	private final IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 	private final CurrencyRepository currencyRepository;
 
-	public C_Payment(@NonNull final CurrencyRepository currencyRepository)
+	private final BPartnerStatsService bPartnerStatsService;
+
+	public C_Payment(@NonNull final CurrencyRepository currencyRepository,
+			@NonNull BPartnerStatsService bPartnerStatsService)
 	{
 		this.currencyRepository = currencyRepository;
+		this.bPartnerStatsService = bPartnerStatsService;
 	}
 
 	@Init
@@ -109,5 +117,21 @@ public class C_Payment
 		record.setPayAmt(priceActual);
 		record.setDiscountAmt(discountAmount);
 		paymentBL.validateDocTypeIsInSync(record);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE, ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void checkCreditLimit(@NonNull final I_C_Payment payment)
+	{
+		bPartnerStatsService.checkPaymentCreditLimit(PaymentId.ofRepoId(payment.getC_Payment_ID()));
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_VOID })
+	public void updateBPartnerStats(@NonNull final I_C_Payment payment)
+	{
+		bPartnerStatisticsUpdater
+				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
+												  .bpartnerId(payment.getC_BPartner_ID())
+												  .build());
+
 	}
 }

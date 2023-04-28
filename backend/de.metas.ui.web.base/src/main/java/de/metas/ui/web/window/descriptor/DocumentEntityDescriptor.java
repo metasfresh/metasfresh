@@ -1,20 +1,39 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Ordering;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.printing.esb.base.util.Check;
+import de.metas.process.AdProcessId;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
+import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
+import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
+import de.metas.ui.web.window.model.SingleRowDetailIncludedDocumentsCollection;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -32,39 +51,19 @@ import org.adempiere.model.CopyRecordFactory;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Ordering;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
-import de.metas.process.AdProcessId;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
-import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
-import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
-import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentQueryOrderByList;
-import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
-import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
-import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
-import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
-import de.metas.ui.web.window.model.SingleRowDetailIncludedDocumentsCollection;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -88,6 +87,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class DocumentEntityDescriptor
 {
 	public static Builder builder()
@@ -122,6 +122,8 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression displayLogic;
 	@Getter
 	private final boolean allowQuickInput;
+	@Getter
+	private final boolean autodetectDefaultDateFilter;
 
 	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
 	@Getter
@@ -162,6 +164,13 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean cloneEnabled;
 
+	@Getter
+	private final boolean queryIfNoFilters;
+
+	@NonNull
+	@Getter
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -174,7 +183,8 @@ public class DocumentEntityDescriptor
 		allowDeleteLogic = builder.getAllowDeleteLogic();
 		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
-		allowQuickInput = builder.isAllowQuickInput();
+		allowQuickInput = builder.getQuickInputSupport() != null;
+		autodetectDefaultDateFilter = builder.isAutodetectDefaultDateFilter();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
@@ -207,6 +217,10 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
+
+		queryIfNoFilters = builder.queryIfNoFilters;
+
+		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
 	}
 
 	@Override
@@ -253,11 +267,7 @@ public class DocumentEntityDescriptor
 		return WindowId.of(documentTypeId);
 	}
 
-	public boolean hasIdFields()
-	{
-		return !idFields.isEmpty();
-	}
-
+	@Nullable
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
 		return idFields.size() == 1 ? idFields.get(0) : null;
@@ -309,7 +319,7 @@ public class DocumentEntityDescriptor
 		return getFields()
 				.stream()
 				.filter(field -> field.hasCharacteristic(characteristic))
-				.map(field -> field.getFieldName())
+				.map(DocumentFieldDescriptor::getFieldName)
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
@@ -329,8 +339,6 @@ public class DocumentEntityDescriptor
 	}
 
 	/**
-	 *
-	 * @param detailId
 	 * @return included {@link DocumentEntityDescriptor}; never returns null
 	 */
 	public DocumentEntityDescriptor getIncludedEntityByDetailId(final DetailId detailId) throws NoSuchElementException
@@ -356,14 +364,14 @@ public class DocumentEntityDescriptor
 				.filter(includedEntity -> tableName.equals(includedEntity.getTableNameOrNull()));
 	}
 
-	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(final Class<T> bindingType)
+	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(@SuppressWarnings("unused") final Class<T> ignoredBindingType)
 	{
-		@SuppressWarnings("unchecked")
-		final T dataBindingCasted = (T)getDataBinding();
+		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)getDataBinding();
 		return dataBindingCasted;
 	}
 
 	// legacy
+
 	/**
 	 * @throws IllegalArgumentException if AD_Tab_ID is not defined
 	 */
@@ -373,6 +381,7 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
+
 	/**
 	 * @return tableName
 	 * @throws IllegalArgumentException if TableName is not defined
@@ -383,6 +392,7 @@ public class DocumentEntityDescriptor
 		return tableName.orElseThrow(() -> new IllegalStateException("No TableName defined for " + this));
 	}
 
+	@Nullable
 	public String getTableNameOrNull()
 	{
 		return tableName.orElse(null);
@@ -416,7 +426,7 @@ public class DocumentEntityDescriptor
 	{
 		if (printProcessId == null)
 		{
-			new AdempiereException("No print process configured for " + this);
+			throw new AdempiereException("No print process configured for " + this);
 		}
 		return printProcessId;
 	}
@@ -432,10 +442,12 @@ public class DocumentEntityDescriptor
 	//
 	//
 
+	@SuppressWarnings({ "OptionalAssignedToNull", "UnusedReturnValue" })
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+		private ImmutableList<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -447,9 +459,9 @@ public class DocumentEntityDescriptor
 		private ITranslatableString _caption = TranslatableStrings.empty();
 		private ITranslatableString _description = TranslatableStrings.empty();
 
-		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
-		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
-		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
+		private final LinkedHashMap<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
+		private ImmutableMap<String, DocumentFieldDescriptor> _fields = null; // will be built
+		private final LinkedHashMap<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
 		private boolean _highVolume;
 
@@ -459,7 +471,12 @@ public class DocumentEntityDescriptor
 		private ILogicExpression _allowDeleteLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _displayLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
-		private boolean _allowQuickInput = false;
+
+		@Getter
+		private QuickInputSupportDescriptor quickInputSupport = null;
+
+		private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
+
 		private boolean _refreshViewOnChangeEvents = false;
 
 		//
@@ -474,10 +491,16 @@ public class DocumentEntityDescriptor
 		@Getter
 		private boolean singleRowDetail = false;
 
+		@Getter
+		private boolean autodetectDefaultDateFilter = true;
+
 		// Legacy
 		private Optional<AdTabId> _adTabId = Optional.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<SOTrx> _soTrx = Optional.empty();
+		private int viewPageLength;
+
+		private boolean queryIfNoFilters = true;
 
 		private Builder()
 		{
@@ -625,7 +648,6 @@ public class DocumentEntityDescriptor
 			assertFieldsNotBuilt();
 
 			_fieldBuilders.values()
-					.stream()
 					.forEach(fieldUpdater);
 		}
 
@@ -634,10 +656,11 @@ public class DocumentEntityDescriptor
 			return getFields()
 					.values()
 					.stream()
-					.filter(field -> field.isKey())
+					.filter(DocumentFieldDescriptor::isKey)
 					.collect(ImmutableList.toImmutableList());
 		}
 
+		@Nullable
 		public DocumentFieldDescriptor.Builder getSingleIdFieldBuilderOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
@@ -660,11 +683,6 @@ public class DocumentEntityDescriptor
 					.collect(ImmutableList.toImmutableList());
 		}
 
-		public boolean hasIdField()
-		{
-			return !getIdFieldBuilders().isEmpty();
-		}
-
 		private Map<String, DocumentFieldDescriptor> getFields()
 		{
 			if (_fields == null)
@@ -672,12 +690,13 @@ public class DocumentEntityDescriptor
 				_fields = _fieldBuilders
 						.values()
 						.stream()
-						.map(fieldBuilder -> fieldBuilder.getOrBuild())
-						.collect(GuavaCollectors.toImmutableMapByKey(field -> field.getFieldName()));
+						.map(DocumentFieldDescriptor.Builder::getOrBuild)
+						.collect(GuavaCollectors.toImmutableMapByKey(DocumentFieldDescriptor::getFieldName));
 			}
 			return _fields;
 		}
 
+		@Nullable
 		private DocumentFieldDescriptor getParentLinkFieldOrNull()
 		{
 			final List<DocumentFieldDescriptor> parentLinkFields = getFields()
@@ -752,13 +771,13 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(final Class<T> builderType)
+		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> ignoredBuilderType)
 		{
-			@SuppressWarnings("unchecked")
-			final T dataBindingBuilder = (T)_dataBinding;
+			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
 			return dataBindingBuilder;
 		}
 
+		@Nullable
 		private DocumentEntityDataBindingDescriptor getOrBuildDataBinding()
 		{
 			Preconditions.checkNotNull(_dataBinding, "dataBinding");
@@ -792,10 +811,10 @@ public class DocumentEntityDescriptor
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
 
 			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly,
-					getReadonlyLogic().getParameterNames(),
-					DependencyType.DocumentReadonlyLogic);
+									getReadonlyLogic().getParameterNames(),
+									DependencyType.DocumentReadonlyLogic);
 
-			getFields().values().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
+			getFields().values().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
 		}
 
@@ -842,6 +861,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setTableName(final Optional<String> tableName)
 		{
+			//noinspection OptionalAssignedToNull
 			_tableName = tableName != null ? tableName : Optional.empty();
 			return this;
 		}
@@ -851,14 +871,10 @@ public class DocumentEntityDescriptor
 			return _tableName;
 		}
 
+		@Nullable
 		public String getTableNameOrNull()
 		{
 			return _tableName.orElse(null);
-		}
-
-		public boolean isTableName(final String expectedTableName)
-		{
-			return Objects.equals(expectedTableName, _tableName.orElse(null));
 		}
 
 		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
@@ -917,6 +933,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setIsSOTrx(final Optional<SOTrx> soTrx)
 		{
+			//noinspection OptionalAssignedToNull
 			_soTrx = soTrx != null ? soTrx : Optional.empty();
 			return this;
 		}
@@ -926,6 +943,17 @@ public class DocumentEntityDescriptor
 			return _soTrx;
 		}
 
+		public Builder setViewPageLength(final int viewPageLength)
+		{
+			this.viewPageLength = Math.max(viewPageLength, 0);
+			return this;
+		}
+
+		public int getViewPageLength()
+		{
+			return viewPageLength;
+		}
+
 		public Builder setAllowCreateNewLogic(final ILogicExpression allowCreateNewLogic)
 		{
 			Check.assumeNotNull(allowCreateNewLogic, "Parameter allowCreateNewLogic is not null");
@@ -933,7 +961,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private ILogicExpression getAllowCreateNewLogic()
+		public ILogicExpression getAllowCreateNewLogic()
 		{
 			return _allowCreateNewLogic;
 		}
@@ -973,15 +1001,27 @@ public class DocumentEntityDescriptor
 			return _readonlyLogic;
 		}
 
-		public Builder setAllowQuickInput(final boolean allowQuickInput)
+		public Builder setQuickInputSupport(@Nullable final QuickInputSupportDescriptor quickInputSupport)
 		{
-			this._allowQuickInput = allowQuickInput;
+			this.quickInputSupport = quickInputSupport;
 			return this;
 		}
 
-		public boolean isAllowQuickInput()
+		public Builder setIncludedTabNewRecordInputMode(@NonNull final IncludedTabNewRecordInputMode includedTabNewRecordInputMode)
 		{
-			return _allowQuickInput;
+			this.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
+			return this;
+		}
+
+		public IncludedTabNewRecordInputMode getIncludedTabNewRecordInputMode()
+		{
+			return includedTabNewRecordInputMode;
+		}
+
+		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
+		{
+			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
+			return this;
 		}
 
 		/**
@@ -1072,13 +1112,32 @@ public class DocumentEntityDescriptor
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
-			return filterDescriptorsProvidersService.createFiltersProvider(adTabId, tableName, fields);
+			final CreateFiltersProviderContext context = CreateFiltersProviderContext.builder()
+					.adTabId(adTabId)
+					.tableName(tableName)
+					.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
+					.build();
+
+			return filterDescriptorsProvidersService.createFiltersProvider(context, fields);
 		}
 
 		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)
 		{
 			this.filterDescriptorsProvidersService = filterDescriptorsProvidersService;
 			return this;
+		}
+
+		@NonNull
+		public Builder setDocumentDecorators(final ImmutableList<IDocumentDecorator> documentDecorators)
+		{
+			this.documentDecorators = documentDecorators;
+			return this;
+		}
+
+		@Nullable
+		public ImmutableList<IDocumentDecorator> getDocumentDecorators()
+		{
+			return this.documentDecorators;
 		}
 
 		public Builder setRefreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
@@ -1101,12 +1160,6 @@ public class DocumentEntityDescriptor
 		private AdProcessId getPrintProcessId()
 		{
 			return _printProcessId;
-		}
-
-		public Builder setCloneEnabled(final boolean cloneEnabled)
-		{
-			_cloneEnabled = cloneEnabled;
-			return this;
 		}
 
 		private boolean isCloneEnabled()
@@ -1136,10 +1189,16 @@ public class DocumentEntityDescriptor
 		{
 			return getFieldBuilders()
 					.stream()
-					.filter(field -> field.isDefaultOrderBy())
-					.sorted(Ordering.natural().onResultOf(field -> field.getDefaultOrderByPriority()))
+					.filter(DocumentFieldDescriptor.Builder::isDefaultOrderBy)
+					.sorted(Ordering.natural().onResultOf(DocumentFieldDescriptor.Builder::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+		}
+
+		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
+		{
+			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
 		}
 	}
 }

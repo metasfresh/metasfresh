@@ -22,14 +22,11 @@
 
 package de.metas.banking.model.validator;
 
-import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
-import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
 import de.metas.impexp.config.DataImportConfigId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;

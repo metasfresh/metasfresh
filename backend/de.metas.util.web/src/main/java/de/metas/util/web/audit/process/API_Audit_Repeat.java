@@ -2,7 +2,7 @@
  * #%L
  * de.metas.util.web
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,44 +22,40 @@
 
 package de.metas.util.web.audit.process;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import de.metas.audit.apirequest.request.Status;
+import de.metas.audit.request.ApiRequestIterator;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 import de.metas.util.web.audit.ApiRequestReplayService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_API_Request_Audit;
 
-import java.util.Comparator;
+import java.util.Iterator;
 
 public class API_Audit_Repeat extends JavaProcess implements IProcessPrecondition
 {
-	private final static String ONLY_WITH_ERROR = "IsOnlyWithError";
-
-	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final static String ONLY_WITH_ERROR = "IsOnlyWithError";
 	@Param(parameterName = ONLY_WITH_ERROR)
 	private boolean isOnlyWithError;
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ImmutableList<ApiRequestAudit> timeSortedApiRequests = retrieveSelectedRecordsQueryBuilder(I_API_Request_Audit.class)
-				.create()
-				.stream()
-				.map(apiRequestAuditRepository::recordToRequestAudit)
-				.filter(request -> !isOnlyWithError || Status.ERROR.equals(request.getStatus()))
-				.sorted(Comparator.comparing(ApiRequestAudit::getTime))
-				.collect(ImmutableList.toImmutableList());
+		final ApiRequestIterator apiRequestIterator = getSelectedRequests();
 
-		apiRequestReplayService.replayApiRequests(timeSortedApiRequests);
+		apiRequestReplayService.replayApiRequests(apiRequestIterator);
 
 		return MSG_OK;
 	}
@@ -72,5 +68,26 @@ public class API_Audit_Repeat extends JavaProcess implements IProcessPreconditio
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@NonNull
+	private ApiRequestIterator getSelectedRequests()
+	{
+		final IQueryBuilder<I_API_Request_Audit> selectedApiRequestsQueryBuilder = retrieveActiveSelectedRecordsQueryBuilder(I_API_Request_Audit.class);
+
+		if (isOnlyWithError)
+		{
+			selectedApiRequestsQueryBuilder.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_Status, Status.ERROR.getCode());
+		}
+
+		final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class)
+				.addColumnAscending(I_API_Request_Audit.COLUMNNAME_Time)
+				.createQueryOrderBy();
+
+		final Iterator<I_API_Request_Audit> timeSortedApiRequests = selectedApiRequestsQueryBuilder.create()
+				.setOrderBy(orderBy)
+				.iterate(I_API_Request_Audit.class);
+
+		return ApiRequestIterator.of(timeSortedApiRequests, ApiRequestAuditRepository::recordToRequestAudit);
 	}
 }

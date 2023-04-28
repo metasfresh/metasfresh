@@ -29,6 +29,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Activity;
 import org.springframework.stereotype.Repository;
 
@@ -42,8 +43,46 @@ public class ActivityRepository
 	@NonNull
 	public Optional<ActivityId> getIdByActivityQuery(@NonNull final GetSingleActivityQuery activityQuery)
 	{
+		return toQueryBuilder(activityQuery)
+				.create()
+				.firstIdOnlyOptional(ActivityId::ofRepoIdOrNull);
+	}
+
+	@NonNull
+	public ActivityId save(@NonNull final CreateActivityRequest request)
+	{
+		final I_C_Activity record = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
+
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setName(request.getName());
+		record.setValue(request.getValue());
+
+		InterfaceWrapperHelper.save(record);
+
+		return ActivityId.ofRepoId(record.getC_Activity_ID());
+	}
+
+	@NonNull
+	public Optional<Activity> getByActivityQuery(@NonNull final GetSingleActivityQuery activityQuery)
+	{
+		return toQueryBuilder(activityQuery)
+				.create()
+				.firstOptional(I_C_Activity.class)
+				.map(ActivityRepository::fromRecord);
+	}
+
+	@NonNull
+	public Activity getById(@NonNull final ActivityId activityId)
+	{
+		return fromRecord(InterfaceWrapperHelper.load(activityId, I_C_Activity.class));
+	}
+
+	@NonNull
+	private IQueryBuilder<I_C_Activity> toQueryBuilder(@NonNull final GetSingleActivityQuery activityQuery)
+	{
 		final IQueryBuilder<I_C_Activity> activityQueryBuilder = queryBL.createQueryBuilder(I_C_Activity.class)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_Activity.COLUMNNAME_C_Activity_ID)
 				.addInArrayFilter(I_C_Activity.COLUMNNAME_AD_Org_ID, OrgId.ANY, activityQuery.getOrgId());
 
 		if (Check.isNotBlank(activityQuery.getValue()))
@@ -56,8 +95,17 @@ public class ActivityRepository
 			activityQueryBuilder.addEqualsFilter(I_C_Activity.COLUMNNAME_C_Activity_ID, activityQuery.getActivityId());
 		}
 
-		return activityQueryBuilder
-				.create()
-				.firstIdOnlyOptional(ActivityId::ofRepoIdOrNull);
+		return activityQueryBuilder;
+	}
+
+	@NonNull
+	private static Activity fromRecord(@NonNull final I_C_Activity record)
+	{
+		return Activity.builder()
+				.activityId(ActivityId.ofRepoId(record.getC_Activity_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.value(record.getValue())
+				.name(record.getName())
+				.build();
 	}
 }

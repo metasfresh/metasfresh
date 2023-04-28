@@ -1,24 +1,5 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_System;
-import org.compiere.util.Env;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.stereotype.Repository;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
@@ -27,6 +8,23 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig.MSV3
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.X_MSV3_Vendor_Config;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.ADSystemInfo;
+import org.adempiere.ad.service.ISystemBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.Adempiere;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Repository;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -196,8 +194,8 @@ public class MSV3ClientConfigRepository
 	{
 		try
 		{
-			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
-			return ClientSoftwareId.of("metasfresh-" + adSystem.getDBVersion());
+			final ADSystemInfo adSystem = Services.get(ISystemBL.class).get();
+			return ClientSoftwareId.of("metasfresh-" + adSystem.getDbVersion());
 		}
 		catch (final RuntimeException e)
 		{

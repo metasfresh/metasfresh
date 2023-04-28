@@ -1,14 +1,13 @@
 package org.eevolution.api;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.model.X_PP_Product_BOMLine;
-
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.eevolution.model.X_PP_Product_BOMLine;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -62,17 +61,24 @@ public enum BOMComponentType implements ReferenceListAwareEnum
 		return componentType != null ? componentType.getCode() : null;
 	}
 
+	@NonNull
 	public static BOMComponentType ofCode(@NonNull final String code)
 	{
-		final BOMComponentType type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + BOMComponentType.class + " found for code: " + code);
-		}
-		return type;
+		return index.ofCode(code);
 	}
 
-	private static final ImmutableMap<String, BOMComponentType> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+	public static BOMComponentType ofNullableCodeOrComponent(@Nullable final String code)
+	{
+		final BOMComponentType type = index.ofNullableCode(code);
+		return type != null ? type : Component;
+	}
+
+	public static Optional<BOMComponentType> optionalOfNullableCode(@Nullable final String code)
+	{
+		return index.optionalOfNullableCode(code);
+	}
+
+	private static final ReferenceListAwareEnums.ValuesIndex<BOMComponentType> index = ReferenceListAwareEnums.index(values());
 
 	public boolean isComponent()
 	{

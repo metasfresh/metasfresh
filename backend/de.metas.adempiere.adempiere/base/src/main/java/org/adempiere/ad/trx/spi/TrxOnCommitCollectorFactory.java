@@ -1,14 +1,12 @@
 package org.adempiere.ad.trx.spi;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.google.common.base.Supplier;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 
-import com.google.common.base.Supplier;
-
-import de.metas.util.Services;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -89,6 +87,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 					// Register a listener which will process the collector when the transaction is committed.
 					trx.getTrxListenerManager()
 							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.forceAfterNextCommit(true)
 							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(innerTrx -> {
 
@@ -165,8 +164,6 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 *
 	 * This method is called on transaction commit, if there was a transaction. If the processing was executed out of transaction, the method will be called right after the collector was created and
 	 * the item was added to it.
-	 *
-	 * @param collector
 	 */
 	protected abstract void processCollector(final CollectorType collector);
 
@@ -174,8 +171,6 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 * Discard the collector.
 	 *
 	 * This method is called on transaction rollback.
-	 *
-	 * @param collector
 	 */
 	protected void discardCollector(final CollectorType collector)
 	{

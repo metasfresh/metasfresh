@@ -16,70 +16,60 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaElement;
-import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Account Object Entity to maintain all segment values. C_ValidCombination
  *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, www.e-evolution.com
- *         <li>RF [ 2214883 ] Remove SQL code and Replace for Query
- *         http://sourceforge.net/tracker/index.php?func=detail&aid=2214883&group_id=176962&atid=879335
+ * <li>RF [ 2214883 ] Remove SQL code and Replace for Query
  * @author Teo Sarca, www.arhipac.ro
- *         <li>FR [ 2694043 ] Query. first/firstOnly usage best practice
- * @version $Id: MAccount.java,v 1.4 2006/07/30 00:58:04 jjanke Exp $
+ * <li>FR [ 2694043 ] Query. first/firstOnly usage best practice
  */
 public class MAccount extends X_C_ValidCombination
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8887316767838767993L;
 
 	/**
 	 * Get existing Account or create it
-	 * 
+	 *
 	 * @return account or null
-	 * @deprecated Use {@link #get(Properties,AccountDimension)} instead
+	 * @deprecated Use {@link #get(Properties, AccountDimension)} instead
 	 */
 	@Deprecated
 	public static MAccount get(Properties ctx,
-			int AD_Client_ID,
-			int AD_Org_ID,
-			AcctSchemaId acctSchemaId,
-			int Account_ID,
-			int C_SubAcct_ID,
-			int M_Product_ID,
-			int C_BPartner_ID,
-			int AD_OrgTrx_ID,
-			int C_LocFrom_ID,
-			int C_LocTo_ID,
-			int C_SalesRegion_ID,
-			int C_Project_ID,
-			int C_Campaign_ID,
-			int C_Activity_ID,
-			int User1_ID,
-			int User2_ID,
-			int UserElement1_ID,
-			int UserElement2_ID)
+							   int AD_Client_ID,
+							   int AD_Org_ID,
+							   AcctSchemaId acctSchemaId,
+							   int Account_ID,
+							   int C_SubAcct_ID,
+							   int M_Product_ID,
+							   int C_BPartner_ID,
+							   int AD_OrgTrx_ID,
+							   int C_LocFrom_ID,
+							   int C_LocTo_ID,
+							   int C_SalesRegion_ID,
+							   int C_Project_ID,
+							   int C_Campaign_ID,
+							   int C_Activity_ID,
+							   int User1_ID,
+							   int User2_ID,
+							   int UserElement1_ID,
+							   int UserElement2_ID,
+							   int C_OrderSO_ID,
+							   int M_SectionCode_ID)
 	{
 		final AccountDimension dim = AccountDimension.builder()
 				.setAcctSchemaId(acctSchemaId)
@@ -100,15 +90,17 @@ public class MAccount extends X_C_ValidCombination
 				.setUser2_ID(User2_ID)
 				.setUserElement1_ID(UserElement1_ID)
 				.setUserElement2_ID(UserElement2_ID)
+				.setSalesOrderId(C_OrderSO_ID)
+				.setM_SectionCode_ID(M_SectionCode_ID)
 
 				.build();
 		return get(ctx, dim);
-	}	// get
+	}    // get
 
 	/**
 	 * Get existing Account or create it.
 	 *
-	 * @param ctx context
+	 * @param ctx       context
 	 * @param dimension accounting dimension
 	 * @return existing account or a newly created one; never returns null
 	 */
@@ -154,111 +146,14 @@ public class MAccount extends X_C_ValidCombination
 		InterfaceWrapperHelper.save(newAccount);
 		logger.debug("New: {}", newAccount);
 		return newAccount;
-	}	// get
-	
-	public static I_C_ValidCombination getCreate(final AccountDimension dimension)
-	{
-		// services
-		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-
-		// Existing
-		final MAccount existingAccount = accountDAO.retrieveAccount(Env.getCtx(), dimension);
-		if (existingAccount != null)
-		{
-			return existingAccount;
-		}
-
-		final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstance(I_C_ValidCombination.class);
-		vc.setAD_Org_ID(dimension.getAD_Org_ID());
-		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
-		vc.setAccount_ID(dimension.getC_ElementValue_ID());
-		vc.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
-		vc.setM_Product_ID(dimension.getM_Product_ID());
-		vc.setC_BPartner_ID(dimension.getC_BPartner_ID());
-		vc.setAD_OrgTrx_ID(dimension.getAD_OrgTrx_ID());
-		vc.setC_LocFrom_ID(dimension.getC_LocFrom_ID());
-		vc.setC_LocTo_ID(dimension.getC_LocTo_ID());
-		vc.setC_SalesRegion_ID(dimension.getC_SalesRegion_ID());
-		vc.setC_Project_ID(dimension.getC_Project_ID());
-		vc.setC_Campaign_ID(dimension.getC_Campaign_ID());
-		vc.setC_Activity_ID(dimension.getC_Activity_ID());
-		vc.setUser1_ID(dimension.getUser1_ID());
-		vc.setUser2_ID(dimension.getUser2_ID());
-		vc.setUserElement1_ID(dimension.getUserElement1_ID());
-		vc.setUserElement2_ID(dimension.getUserElement2_ID());
-		vc.setUserElementString1(dimension.getUserElementString1());
-		vc.setUserElementString2(dimension.getUserElementString2());
-		vc.setUserElementString3(dimension.getUserElementString3());
-		vc.setUserElementString4(dimension.getUserElementString4());
-		vc.setUserElementString5(dimension.getUserElementString5());
-		vc.setUserElementString6(dimension.getUserElementString6());
-		vc.setUserElementString7(dimension.getUserElementString7());
-		InterfaceWrapperHelper.save(vc);
-		
-		return vc;
-	}	// get
-
-
-	/**
-	 * Factory: default combination
-	 * 
-	 * @param acctSchema accounting schema
-	 * @param optionalNull if true, the optional values are null
-	 * @return Account
-	 */
-	public static MAccount getDefault(final AcctSchema acctSchema, final boolean optionalNull)
-	{
-		final MAccount vc = new MAccount(acctSchema);
-		// Active Elements
-		for (final AcctSchemaElement ase : acctSchema.getSchemaElements())
-		{
-			final AcctSchemaElementType elementType = ase.getElementType();
-			final int defaultValue = ase.getDefaultValue();
-			final boolean setValue = ase.isMandatory() || (!ase.isMandatory() && !optionalNull);
-			//
-			if (elementType.equals(AcctSchemaElementType.Organization))
-				vc.setAD_Org_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.Account))
-				vc.setAccount_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.SubAccount) && setValue)
-				vc.setC_SubAcct_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.BPartner) && setValue)
-				vc.setC_BPartner_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.Product) && setValue)
-				vc.setM_Product_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.Activity) && setValue)
-				vc.setC_Activity_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.LocationFrom) && setValue)
-				vc.setC_LocFrom_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.LocationTo) && setValue)
-				vc.setC_LocTo_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.Campaign) && setValue)
-				vc.setC_Campaign_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.OrgTrx) && setValue)
-				vc.setAD_OrgTrx_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.Project) && setValue)
-				vc.setC_Project_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.SalesRegion) && setValue)
-				vc.setC_SalesRegion_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.UserList1) && setValue)
-				vc.setUser1_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.UserList2) && setValue)
-				vc.setUser2_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.UserElement1) && setValue)
-				vc.setUserElement1_ID(defaultValue);
-			else if (elementType.equals(AcctSchemaElementType.UserElement2) && setValue)
-				vc.setUserElement2_ID(defaultValue);
-		}
-
-		return vc;
-	}   // getDefault
+	}    // get
 
 	/**
 	 * Update Value/Description after change of account element value/description.
 	 *
-	 * @param ctx context
+	 * @param ctx         context
 	 * @param whereClause where clause
-	 * @param trxName transaction
+	 * @param trxName     transaction
 	 */
 	public static void updateValueDescription(final Properties ctx, final String whereClause, final String trxName)
 	{
@@ -273,9 +168,9 @@ public class MAccount extends X_C_ValidCombination
 			accountBL.setValueDescription(account);
 			InterfaceWrapperHelper.save(account);
 		}
-	}	// updateValueDescription
+	}    // updateValueDescription
 
-	private static final transient Logger logger = LogManager.getLogger(MAccount.class);
+	private static final Logger logger = LogManager.getLogger(MAccount.class);
 
 	public MAccount(Properties ctx, int C_ValidCombination_ID, String trxName)
 	{
@@ -292,13 +187,6 @@ public class MAccount extends X_C_ValidCombination
 	{
 		super(ctx, rs, trxName);
 	}
-
-	private MAccount(@NonNull final AcctSchema acctSchema)
-	{
-		this(Env.getCtx(), 0, ITrx.TRXNAME_None);
-		setClientOrg(acctSchema.getClientId().getRepoId(), acctSchema.getOrgId().getRepoId());
-		setC_AcctSchema_ID(acctSchema.getId().getRepoId());
-	}	// Account
 
 	@Override
 	public String toString()
@@ -347,7 +235,7 @@ public class MAccount extends X_C_ValidCombination
 		return sb.toString();
 	}
 
-	private final String getAccountType()
+	private String getAccountType()
 	{
 		final I_C_ElementValue elementValue = getAccount();
 		if (elementValue == null)

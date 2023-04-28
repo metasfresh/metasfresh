@@ -25,12 +25,12 @@ package de.metas.util.web.audit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.ApiAuditLoggable;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.common.HttpHeadersWrapper;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
-import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
@@ -42,12 +42,15 @@ import de.metas.audit.apirequest.response.ApiResponseAuditRepository;
 import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.audit.data.service.CompositeDataAuditService;
 import de.metas.audit.data.service.GenericDataExportAuditRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
+import de.metas.error.IErrorManager;
+import de.metas.error.IssueCreateRequest;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
@@ -57,7 +60,11 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
+import de.metas.util.web.audit.dto.ApiRequest;
+import de.metas.util.web.audit.dto.ApiRequestMapper;
+import de.metas.util.web.audit.dto.ApiResponse;
+import de.metas.util.web.audit.dto.ApiResponseMapper;
+import de.metas.util.web.audit.dto.CachedBodyHttpServletRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -67,30 +74,27 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
-import javax.servlet.ServletRequest;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
@@ -100,7 +104,22 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Service
 public class ApiAuditService
 {
-	public static final String API_FILTER_REQUEST_ID_HEADER = "X-ApiFilter-Request-ID";
+	private static final Logger logger = LogManager.getLogger(ApiAuditService.class);
+
+	/**
+	 * This header is used in a http-request to indicate that this request is a repeat and there is already an {@code API_Request_Audit} record in metasfresh.
+	 */
+	private static final String API_REQUEST_HEADER_EXISTING_AUDIT_ID = "X-ApiFilter-Request-ID";
+
+	/**
+	 * This header is used in a http-request to indicate that metasfresh shall process the request in an async matter and return just an API_Request_Audit_ID.
+	 */
+	private static final String API_ASYNC_HEADER = "X-Api-Async";
+
+	/**
+	 * If the Response is not wrapped in a {@link JsonApiResponse} with a dedicated property for the request audit, then this response header contains the respective {@code API_Request_Audit_ID}.
+	 */
+	public static final String API_RESPONSE_HEADER_REQUEST_AUDIT_ID = "X-Api-Request-Audit-ID";
 
 	private static final AdMessageKey MSG_SUCCESSFUL_API_INVOCATION =
 			AdMessageKey.of("de.metas.util.web.audit.successful_invocation");
@@ -118,6 +137,7 @@ public class ApiAuditService
 	private static final int CFG_INTERNAL_PORT_DEFAULT = 8282;
 
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final ApiAuditConfigRepository apiAuditConfigRepository;
 	private final ApiRequestAuditRepository apiRequestAuditRepository;
@@ -131,6 +151,7 @@ public class ApiAuditService
 	private final ObjectMapper objectMapper;
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
@@ -149,10 +170,10 @@ public class ApiAuditService
 
 		// allow up to 50MB large results in API responses; thx to https://stackoverflow.com/a/62543241/1012103
 		this.webClient = WebClient.builder().exchangeStrategies(ExchangeStrategies.builder()
-													   .codecs(configurer -> configurer
-															   .defaultCodecs()
-															   .maxInMemorySize(50 * 1024 * 1024))
-													   .build())
+																		.codecs(configurer -> configurer
+																				.defaultCodecs()
+																				.maxInMemorySize(50 * 1024 * 1024))
+																		.build())
 				.build();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
@@ -160,13 +181,13 @@ public class ApiAuditService
 
 	public boolean wasAlreadyFiltered(@NonNull final HttpServletRequest httpServletRequest)
 	{
-		return httpServletRequest.getHeader(API_FILTER_REQUEST_ID_HEADER) != null;
+		return httpServletRequest.getHeader(API_REQUEST_HEADER_EXISTING_AUDIT_ID) != null;
 	}
 
 	@NonNull
 	public Optional<ApiRequestAuditId> extractApiRequestAuditId(@NonNull final HttpServletRequest httpServletRequest)
 	{
-		return Optional.ofNullable(httpServletRequest.getHeader(API_FILTER_REQUEST_ID_HEADER))
+		return Optional.ofNullable(httpServletRequest.getHeader(API_REQUEST_HEADER_EXISTING_AUDIT_ID))
 				.map(requestId -> ApiRequestAuditId.ofRepoId(NumberUtils.asInt(requestId, -1)));
 	}
 
@@ -181,71 +202,43 @@ public class ApiAuditService
 				.build();
 	}
 
+	/**
+	 * Get the matching config with the smallest SeqNo.
+	 */
 	@NonNull
-	public Optional<ApiAuditConfig> getMatchingAuditConfig(@NonNull final ServletRequest request)
+	public Optional<ApiAuditConfig> getMatchingAuditConfig(@NonNull final HttpServletRequest request)
 	{
-		final CustomHttpRequestWrapper requestWrapper = new CustomHttpRequestWrapper((HttpServletRequest)request, objectMapper);
+		final String fullPath = ApiRequestMapper.getFullPath(request);
+		final String httpMethod = request.getMethod();
 
-		if (Check.isBlank(requestWrapper.getFullPath()) || Check.isBlank(requestWrapper.getHttpMethodString()))
+		if (Check.isBlank(fullPath) || Check.isBlank(httpMethod))
 		{
 			return Optional.empty();
 		}
 
 		final OrgId orgId = Env.getOrgId();
-		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getAllConfigsByOrgId(orgId);
+		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getActiveConfigsByOrgId(orgId);
 
 		return apiAuditConfigs.stream()
-				.filter(config -> config.matchesRequest(requestWrapper.getFullPath(), requestWrapper.getHttpMethodString()))
+				.filter(config -> config.matchesRequest(fullPath, httpMethod))
 				.min(Comparator.comparingInt(ApiAuditConfig::getSeqNo));
 	}
 
-	public void processHttpCall(
+	public void processRequest(
+			@NonNull final FilterChain filterChain,
 			@NonNull final HttpServletRequest request,
 			@NonNull final HttpServletResponse response,
-			@NonNull final ApiAuditConfig apiAuditConfig)
+			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException, ServletException
 	{
-		final OrgId orgId = apiAuditConfig.getOrgId();
+		final boolean processRequestAsync = this.shouldProcessRequestAsync(request, apiAuditConfig);
 
-		final CustomHttpRequestWrapper httpRequest = new CustomHttpRequestWrapper(request, objectMapper);
-
-		final ApiRequestAudit requestAudit = logRequest(httpRequest, apiAuditConfig.getApiAuditConfigId(), orgId);
-
-		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAudit.getIdNotNull(), requestAudit.getUserId());
-
-		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
+		if (processRequestAsync)
 		{
-			final CompletableFuture<ApiResponse> actualRestApiResponseCF = new CompletableFuture<>();
-
-			final FutureCompletionContext futureCompletionContext = FutureCompletionContext.builder()
-					.apiAuditConfig(apiAuditConfig)
-					.apiAuditLoggable(apiAuditLoggable)
-					.apiRequestAudit(requestAudit)
-					.orgId(orgId)
-					.build();
-
-			final CompletableFuture<ApiResponse> whenCompleteFuture = actualRestApiResponseCF
-					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, futureCompletionContext));
-
-			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
-
-			final ScheduledRequest scheduledRequest = new ScheduledRequest(actualRestApiResponseCF, callEndpointSupplier);
-
-			final UserId callerUserId = Env.getLoggedUserId();
-
-			final HttpCallScheduler httpCallScheduler = callerId2Scheduler.computeIfAbsent(callerUserId, (userId) -> new HttpCallScheduler());
-
-			httpCallScheduler.schedule(scheduledRequest);
-
-			handleSuccessfulResponse(apiAuditConfig, requestAudit, whenCompleteFuture, response);
+			processRequestAsync(request, response, apiAuditConfig);
 		}
-		catch (final Exception e)
+		else
 		{
-			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-		finally
-		{
-			apiAuditLoggable.flush();
+			processRequestSync(filterChain, request, response, apiAuditConfig);
 		}
 	}
 
@@ -273,10 +266,11 @@ public class ApiAuditService
 
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		apiRequestAudit.getRequestHeaders(objectMapper)
-				.map(HttpHeadersWrapper::getKeyValueHeaders)
-				.ifPresent(httpHeaders::addAll);
+				.map(HttpHeadersWrapper::streamHeaders)
+				.ifPresent(headers -> headers.forEach(headerEntry -> httpHeaders.add(headerEntry.getKey(), headerEntry.getValue())));
 
-		httpHeaders.add(API_FILTER_REQUEST_ID_HEADER, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
+
+		httpHeaders.add(API_REQUEST_HEADER_EXISTING_AUDIT_ID, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
 
 		httpHeaders.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
 
@@ -297,15 +291,11 @@ public class ApiAuditService
 
 		try
 		{
-			final ApiResponse apiResponse = bodySpec.exchangeToMono(cr -> cr
+			return bodySpec.exchangeToMono(cr -> cr
 					.bodyToMono(String.class)
-					.map(body -> ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
-					.defaultIfEmpty(ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
+					.map(body -> ApiResponseMapper.map(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
+					.defaultIfEmpty(ApiResponseMapper.map(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
 					.block();
-
-			performDataExportAudit(apiRequestAudit, apiResponse);
-
-			return apiResponse;
 		}
 		catch (final RuntimeException rte)
 		{
@@ -317,61 +307,20 @@ public class ApiAuditService
 		}
 	}
 
-	private String computeInternalHostName(@NonNull final ApiRequestAudit apiRequestAudit)
-	{
-		final String hostName;
-		if (apiRequestAudit.getPath().startsWith("http://localhost"))
-		{
-			hostName = "localhost";
-		}
-		else
-		{
-			hostName = sysConfigBL.getValue(CFG_INTERNAL_HOST_NAME, CFG_INTERNAL_HOST_NAME_DEFAULT);
-		}
-		return hostName;
-	}
-
-	public void logResponse(
+	public void auditResponse(
+			@NonNull final ApiAuditConfig apiAuditConfig,
 			@NonNull final ApiResponse apiResponse,
-			@NonNull final ApiRequestAuditId apiRequestAuditId,
-			@NonNull final OrgId orgId)
+			@NonNull final ApiRequestAudit apiRequestAudit)
 	{
-		try
-		{
-			final String bodyAsString = apiResponse.getBody() != null
-					? objectMapper.writeValueAsString(apiResponse.getBody())
-					: null;
+		logResponse(apiResponse, apiRequestAudit);
 
-			final LinkedMultiValueMap<String, String> responseHeadersMultiValueMap = new LinkedMultiValueMap<>();
+		final Status requestStatus = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
 
-			if (apiResponse.getHttpHeaders() != null)
-			{
-				apiResponse.getHttpHeaders().forEach(responseHeadersMultiValueMap::addAll);
-			}
+		updateRequestStatus(requestStatus, apiRequestAudit);
 
-			final String responseHeaders = responseHeadersMultiValueMap.isEmpty()
-					? null
-					: objectMapper.writeValueAsString(HttpHeadersWrapper.of(responseHeadersMultiValueMap));
+		notifyUserInCharge(apiAuditConfig, apiRequestAudit, !apiResponse.hasStatus2xx());
 
-			final ApiResponseAudit apiResponseAudit = ApiResponseAudit.builder()
-					.orgId(orgId)
-					.apiRequestAuditId(apiRequestAuditId)
-					.body(bodyAsString)
-					.httpCode(String.valueOf(apiResponse.getStatusCode()))
-					.time(Instant.now())
-					.httpHeaders(responseHeaders)
-					.build();
-
-			apiResponseAuditRepository.save(apiResponseAudit);
-		}
-		catch (final JsonProcessingException e)
-		{
-			final AdempiereException exception = AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("ApiResponse", apiResponse);
-
-			Loggables.addLog("Error when trying to parse the api response body!", exception);
-		}
+		performDataExportAudit(apiRequestAudit, apiResponse);
 	}
 
 	@NonNull
@@ -434,34 +383,157 @@ public class ApiAuditService
 		return !contentType.contains(APPLICATION_JSON_VALUE);
 	}
 
+	private boolean shouldProcessRequestAsync(@NonNull final HttpServletRequest request, @NonNull final ApiAuditConfig apiAuditConfig)
+	{
+		final Optional<Boolean> callerWantsToBeProcessedAsync = Optional.ofNullable(request.getHeader(API_ASYNC_HEADER))
+				.map(Boolean::parseBoolean);
+
+		if (!callerWantsToBeProcessedAsync.isPresent())
+		{
+			return apiAuditConfig.isForceProcessedAsync();
+
+		}
+		else if (callerWantsToBeProcessedAsync.get())
+		{
+			return true;
+
+		}
+		else if (apiAuditConfig.isForceProcessedAsync())
+		{
+			throw new AdempiereException("Request cannot be processed synchronously due to API configs!")
+					.appendParametersToMessage()
+					.setParameter("API_Audit_Config_ID", apiAuditConfig.getApiAuditConfigId());
+		}
+
+		return false;
+	}
+
+	private void processRequestAsync(
+			@NonNull final HttpServletRequest request,
+			@NonNull final HttpServletResponse response,
+			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException
+	{
+		final OrgId orgId = apiAuditConfig.getOrgId();
+
+		final ApiRequest apiRequest = ApiRequestMapper.map(new CachedBodyHttpServletRequest(request));
+
+		final ApiRequestAudit requestAudit = logRequest(apiRequest, apiAuditConfig, Status.RECEIVED);
+
+		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAudit.getIdNotNull(), requestAudit.getUserId());
+
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
+		{
+			final CompletableFuture<ApiResponse> actualRestApiResponseCF = new CompletableFuture<>();
+
+			final FutureCompletionContext futureCompletionContext = FutureCompletionContext.builder()
+					.apiAuditConfig(apiAuditConfig)
+					.apiAuditLoggable(apiAuditLoggable)
+					.apiRequestAudit(requestAudit)
+					.orgId(orgId)
+					.build();
+
+			actualRestApiResponseCF
+					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, futureCompletionContext));
+
+			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
+
+			final ScheduledRequest scheduledRequest = new ScheduledRequest(actualRestApiResponseCF, callEndpointSupplier);
+
+			final UserId callerUserId = Env.getLoggedUserId();
+
+			final HttpCallScheduler httpCallScheduler = callerId2Scheduler.computeIfAbsent(callerUserId, (userId) -> new HttpCallScheduler());
+
+			httpCallScheduler.schedule(scheduledRequest);
+
+			ResponseHandler.writeHttpResponse(getGenericNoWaitResponse(), apiAuditConfig, requestAudit, response);
+		}
+		catch (final Exception e)
+		{
+			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
+			ResponseHandler.writeErrorResponse(e, response, requestAudit, apiAuditConfig);
+		}
+		finally
+		{
+			apiAuditLoggable.flush();
+		}
+	}
+
+	private void processRequestSync(
+			@NonNull final FilterChain filterChain,
+			@NonNull final HttpServletRequest request,
+			@NonNull final HttpServletResponse response,
+			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException, ServletException
+	{
+		final ContentCachingResponseWrapper contentCachedResponse = new ContentCachingResponseWrapper(response);
+		final CachedBodyHttpServletRequest contentCachedRequest = new CachedBodyHttpServletRequest(request);
+
+		if (apiAuditConfig.isPerformAuditAsync())
+		{
+			filterChain.doFilter(contentCachedRequest, contentCachedResponse);
+
+			auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse);
+
+			contentCachedResponse.copyBodyToResponse();
+			return;
+		}
+
+		final ApiRequest apiRequest = ApiRequestMapper.map(contentCachedRequest);
+
+		final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, Status.RECEIVED);
+
+		final ApiAuditLoggable apiAuditLoggable = createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
+
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
+		{
+			filterChain.doFilter(contentCachedRequest, contentCachedResponse);
+
+			final ApiResponse apiResponse = ApiResponseMapper.map(contentCachedResponse);
+
+			auditResponse(apiAuditConfig, apiResponse, apiRequestAudit);
+
+			ResponseHandler.writeHttpResponse(apiResponse, apiAuditConfig, apiRequestAudit, response);
+		}
+		catch (final Exception e)
+		{
+			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
+			ResponseHandler.writeErrorResponse(e, response, apiRequestAudit, apiAuditConfig);
+		}
+		finally
+		{
+			apiAuditLoggable.flush();
+		}
+	}
+
 	private ApiRequestAudit logRequest(
-			@NonNull final CustomHttpRequestWrapper customHttpRequest,
-			@NonNull final ApiAuditConfigId apiAuditConfigId,
-			@NonNull final OrgId orgId)
+			@NonNull final ApiRequest apiRequest,
+			@NonNull final ApiAuditConfig apiAuditConfig,
+			@NonNull final Status status)
 	{
 		try
 		{
-			final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap = new LinkedMultiValueMap<>();
-			customHttpRequest.getAllHeaders().forEach(requestHeadersMultiValueMap::addAll);
+			final HttpHeadersWrapper requestHeaders = HttpHeadersWrapper.of(apiRequest.getHeaders());
 
-			final String requestHeaders = requestHeadersMultiValueMap.isEmpty()
-					? null
-					: objectMapper.writeValueAsString(HttpHeadersWrapper.of(requestHeadersMultiValueMap));
+			validateExternalRequestHeaders(requestHeaders);
+
+			final PInstanceId pInstanceId = extractExternalRequestHeader(requestHeaders, HEADER_PINSTANCE_ID)
+					.map(PInstanceId::ofRepoId)
+					.orElse(null);
 
 			final ApiRequestAudit apiRequestAudit = ApiRequestAudit.builder()
-					.apiAuditConfigId(apiAuditConfigId)
-					.orgId(orgId)
+					.apiAuditConfigId(apiAuditConfig.getApiAuditConfigId())
+					.orgId(apiAuditConfig.getOrgId())
 					.roleId(Env.getLoggedRoleId())
-					.userId(Env.getLoggedUserId())
-					.status(Status.RECEIVED)
-					.body(customHttpRequest.getRequestBodyAsString())
-					.method(HttpMethod.ofCodeOptional(customHttpRequest.getHttpMethodString()).orElse(null))
-					.path(customHttpRequest.getFullPath())
-					.remoteAddress(customHttpRequest.getRemoteAddr())
-					.remoteHost(customHttpRequest.getRemoteHost())
+					.userId(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM)) // there might be no logged in user yet in the case of /api/v2/auth
+					.status(status)
+					.body(apiRequest.getBody())
+					.method(HttpMethod.ofCodeOptional(apiRequest.getHttpMethod()).orElse(null))
+					.path(apiRequest.getFullPath())
+					.remoteAddress(apiRequest.getRemoteAddr())
+					.remoteHost(apiRequest.getRemoteHost())
 					.time(Instant.now())
-					.httpHeaders(requestHeaders)
-					.requestURI(customHttpRequest.getRequestURI())
+					.httpHeaders(requestHeaders.toJson(objectMapper))
+					.requestURI(apiRequest.getRequestURI())
+					.pInstanceId(pInstanceId)
 					.build();
 
 			return apiRequestAuditRepository.save(apiRequestAudit);
@@ -470,9 +542,8 @@ public class ApiAuditService
 		{
 			throw new AdempiereException("Failed to create ApiRequestAudit!", e)
 					.appendParametersToMessage()
-					.setParameter("Path", customHttpRequest.getFullPath())
-					.setParameter("Method", customHttpRequest.getHttpMethodString());
-
+					.setParameter("Path", apiRequest.getFullPath())
+					.setParameter("Method", apiRequest.getHttpMethod());
 		}
 	}
 
@@ -485,16 +556,7 @@ public class ApiAuditService
 		{
 			if (apiResponse != null)
 			{
-				logResponse(apiResponse, completionContext.getApiRequestAudit().getIdNotNull(), completionContext.getOrgId());
-
-				final Status requestStatus = !apiResponse.hasStatus2xx()
-						? Status.ERROR
-						: Status.PROCESSED;
-
-				updateRequestStatus(requestStatus, completionContext.getApiRequestAudit());
-
-				final boolean isError = Status.ERROR.equals(requestStatus);
-				notifyUserInCharge(completionContext.getApiAuditConfig(), completionContext.getApiRequestAudit(), isError);
+				auditResponse(completionContext.getApiAuditConfig(), apiResponse, completionContext.getApiRequestAudit());
 
 				Loggables.addLog("Request routed successfully!");
 			}
@@ -510,64 +572,13 @@ public class ApiAuditService
 		}
 	}
 
-	private void handleSuccessfulResponse(
-			@NonNull final ApiAuditConfig apiAuditConfig,
-			@NonNull final ApiRequestAudit apiRequestAudit,
-			@NonNull final CompletableFuture<ApiResponse> whenCompleteFuture,
-			@NonNull final HttpServletResponse httpServletResponse) throws IOException, InterruptedException, ExecutionException, TimeoutException
-	{
-		final ApiResponse actualAPIResponse = apiAuditConfig.isInvokerWaitsForResponse()
-				? whenCompleteFuture.get(300, TimeUnit.SECONDS)
-				: getGenericNoWaitResponse();
-
-		final JsonApiResponse apiResponse = JsonApiResponse.builder()
-				.requestId(JsonMetasfreshId.of(apiRequestAudit.getIdNotNull().getRepoId()))
-				.endpointResponse(actualAPIResponse.getBody())
-				.build();
-
-		if (actualAPIResponse.getHttpHeaders() != null)
-		{
-			forwardSomeResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
-		}
-
-		final String stringToForward = objectMapper.writeValueAsString(apiResponse);
-
-		httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
-		httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
-
-		httpServletResponse.resetBuffer();
-		if (stringToForward != null)
-		{
-			httpServletResponse.getWriter().write(stringToForward);
-		}
-		httpServletResponse.flushBuffer();
-	}
-
 	@NonNull
 	private ApiResponse getGenericNoWaitResponse()
 	{
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
-		return ApiResponse.of(HttpStatus.ACCEPTED.value(), httpHeaders, null);
-	}
-
-	private void forwardSomeResponseHttpHeaders(@NonNull final HttpHeaders httpHeaders, @NonNull final HttpServletResponse servletResponse)
-	{
-		httpHeaders.keySet()
-				.stream()
-				.filter(key -> !key.equals(HttpHeaders.CONNECTION))
-				.filter(key -> !key.equals(HttpHeaders.CONTENT_LENGTH))
-				.filter(key -> !key.equals(HttpHeaders.CONTENT_TYPE))
-				.filter(key -> !key.equals(HttpHeaders.TRANSFER_ENCODING)) // if we forwarded this without knowing what we do, we would annoy a possible nginx reverse proxy
-				.forEach(key -> {
-					final List<String> values = httpHeaders.get(key);
-					if (values != null)
-					{
-						values.forEach(value -> servletResponse.addHeader(key, value));
-					}
-				});
+		return ApiResponseMapper.map(HttpStatus.ACCEPTED.value(), httpHeaders, null);
 	}
 
 	private void performDataExportAudit(@NonNull final ApiRequestAudit apiRequestAudit, @NonNull final ApiResponse apiResponse)
@@ -588,17 +599,13 @@ public class ApiAuditService
 
 		// get the AD_PInstance_ID and external-config-id if they are specified in the headers
 		requestHeaders
-				.map(HttpHeadersWrapper::getKeyValueHeaders)
-				.map(headersMap -> headersMap.get(HEADER_EXTERNALSYSTEM_CONFIG_ID))
-				.map(CollectionUtils::singleElement)
+				.map(headers -> headers.getHeaderSingleValue(HEADER_EXTERNALSYSTEM_CONFIG_ID))
 				.map(Integer::parseInt)
 				.map(ExternalSystemParentConfigId::ofRepoId)
 				.ifPresent(genericRequestBuilder::externalSystemParentConfigId);
 
 		requestHeaders
-				.map(HttpHeadersWrapper::getKeyValueHeaders)
-				.map(headersMap -> headersMap.get(HEADER_PINSTANCE_ID))
-				.map(CollectionUtils::singleElement)
+				.map(headers -> headers.getHeaderSingleValue(HEADER_PINSTANCE_ID))
 				.map(Integer::parseInt)
 				.map(PInstanceId::ofRepoId)
 				.ifPresent(genericRequestBuilder::pInstanceId);
@@ -606,6 +613,139 @@ public class ApiAuditService
 		final GenericDataExportAuditRequest auditRequest = genericRequestBuilder.build();
 
 		compositeDataAuditService.performDataAuditForRequest(auditRequest);
+	}
+
+	private String computeInternalHostName(@NonNull final ApiRequestAudit apiRequestAudit)
+	{
+		final String hostName;
+		if (apiRequestAudit.getPath().startsWith("http://localhost"))
+		{
+			hostName = "localhost";
+		}
+		else
+		{
+			hostName = sysConfigBL.getValue(CFG_INTERNAL_HOST_NAME, CFG_INTERNAL_HOST_NAME_DEFAULT);
+		}
+		return hostName;
+	}
+
+	private void auditHttpCallAsync(
+			@NonNull final ApiAuditConfig apiAuditConfig,
+			@NonNull final CachedBodyHttpServletRequest executedRequest,
+			@NonNull final ContentCachingResponseWrapper response)
+	{
+		try
+		{
+			final ApiResponse apiResponse = ApiResponseMapper.map(response);
+			final ApiRequest apiRequest = ApiRequestMapper.map(executedRequest);
+
+			CompletableFuture.runAsync(() -> {
+				try
+				{
+					final Status status = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
+
+					final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, status);
+
+					auditResponse(apiAuditConfig, apiResponse, apiRequestAudit);
+
+					final ApiAuditLoggable apiAuditLogger = createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
+					apiAuditLogger.addLog("Async audit performed successfully!");
+					apiAuditLogger.flush();
+				}
+				catch (final Throwable throwable)
+				{
+					createIssue(throwable, "Exception on storing http call audit info: path: " + ApiRequestMapper.getFullPath(executedRequest) + "; method: " + executedRequest.getMethod());
+				}
+			});
+		}
+		catch (final Throwable throwable)
+		{
+			createIssue(throwable, "Exception caught while trying to audit http call! path: " + ApiRequestMapper.getFullPath(executedRequest) + "; method: " + executedRequest.getMethod());
+		}
+	}
+
+	private void createIssue(@NonNull final Throwable throwable, @Nullable final String msg)
+	{
+		final IssueCreateRequest issueCreateRequest = IssueCreateRequest.builder()
+				.summary(msg)
+				.throwable(throwable)
+				.build();
+
+		errorManager.createIssue(issueCreateRequest);
+	}
+
+	private void logResponse(
+			@NonNull final ApiResponse apiResponse,
+			@NonNull final ApiRequestAudit apiRequestAudit)
+	{
+		try
+		{
+			final String bodyAsString = apiResponse.getBody() != null
+					? objectMapper.writeValueAsString(apiResponse.getBody())
+					: null;
+
+			final ImmutableMultimap.Builder<String, String> responseHeadersBuilder = new ImmutableMultimap.Builder<>();
+
+			if (apiResponse.getHttpHeaders() != null)
+			{
+				apiResponse.getHttpHeaders().forEach(responseHeadersBuilder::putAll);
+			}
+
+			final HttpHeadersWrapper responseHeaders = HttpHeadersWrapper.of(responseHeadersBuilder.build());
+
+			final ApiResponseAudit apiResponseAudit = ApiResponseAudit.builder()
+					.orgId(apiRequestAudit.getOrgId())
+					.apiRequestAuditId(apiRequestAudit.getIdNotNull())
+					.body(bodyAsString)
+					.httpCode(String.valueOf(apiResponse.getStatusCode()))
+					.time(Instant.now())
+					.httpHeaders(responseHeaders.toJson(objectMapper))
+					.build();
+
+			apiResponseAuditRepository.save(apiResponseAudit);
+		}
+		catch (final JsonProcessingException e)
+		{
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("ApiResponse", apiResponse);
+
+			Loggables.addLog("Error when trying to parse the api response body!", exception);
+		}
+	}
+
+	@NonNull
+	private static Optional<Integer> extractExternalRequestHeader(@NonNull final HttpHeadersWrapper requestHeaders, @NonNull final String headerName)
+	{
+		try
+		{
+			return Optional.ofNullable(requestHeaders.getHeaderSingleValue(headerName))
+					.filter(Check::isNotBlank)
+					.map(Integer::parseInt);
+		}
+		catch (final Exception exception)
+		{
+			logger.error("Exception encountered while trying to read '" + headerName + "' header!", exception);
+			throw new AdempiereException("Invalid '" + headerName + "' header : " + requestHeaders.getHeaderSingleValue(headerName), exception);
+		}
+	}
+
+	private void validateExternalRequestHeaders(@NonNull final HttpHeadersWrapper requestHeaders)
+	{
+		final Integer pInstanceId = extractExternalRequestHeader(requestHeaders, HEADER_PINSTANCE_ID).orElse(null);
+
+		if (pInstanceId != null && pInstanceDAO.getByIdOrNull(PInstanceId.ofRepoId(pInstanceId)) == null)
+		{
+			throw new AdempiereException("No AD_PInstance record found for '" + HEADER_PINSTANCE_ID + "':" + pInstanceId);
+		}
+
+		final Integer externalSystemConfigId = extractExternalRequestHeader(requestHeaders, HEADER_EXTERNALSYSTEM_CONFIG_ID).orElse(null);
+
+		// TableRecordReference is used here in order to avoid circular dependencies that would emerge from using I_ExternalSystem_Config and it's repository
+		if (externalSystemConfigId != null && TableRecordReference.of("ExternalSystem_Config", externalSystemConfigId).getModel() == null)
+		{
+			throw new AdempiereException("No IExternalSystemChildConfigId record found for '" + HEADER_EXTERNALSYSTEM_CONFIG_ID + "':" + externalSystemConfigId);
+		}
 	}
 
 	@Value

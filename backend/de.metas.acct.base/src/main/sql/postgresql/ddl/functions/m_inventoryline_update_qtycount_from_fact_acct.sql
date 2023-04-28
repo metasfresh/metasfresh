@@ -1,33 +1,31 @@
 DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtycount_from_fact_acct(
     p_M_Inventory_ID      numeric,
     p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1)
+    p_RecreateLines       char(1),
+    p_DryRun              char(1)
 )
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtycount_from_fact_acct(
     p_M_Inventory_ID      numeric,
     p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1) = 'N'
+    p_RecreateLines       char(1) = 'N',
+    p_DryRun              char(1) = 'N'
 )
     RETURNS VOID
 AS
 $BODY$
 DECLARE
     v_inventoryInfo record;
-    --     v_M_Warehouse_ID     numeric;
-    --     v_InventoryDate      date;
-    --     v_InventoryDocStatus varchar(2);
-    --     v_AD_Client_ID       numeric;
-    --     v_AD_Org_ID          numeric;
     --
     v_rowcount      numeric;
     v_record        record;
 BEGIN
-    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%',
+    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%, p_DryRun=%',
         p_M_Inventory_ID,
         p_ProductAssetAccount,
-        p_RecreateLines;
+        p_RecreateLines,
+        p_DryRun;
 
     SELECT inv.m_warehouse_id,
            wh.name AS warehouse,
@@ -58,7 +56,6 @@ BEGIN
     -- Sum-up the qtys from Fact_Acct
     --
     DROP TABLE IF EXISTS tmp_fact_acct;
-
     CREATE TEMPORARY TABLE tmp_fact_acct AS
     SELECT loc.m_warehouse_id,
            fa.m_product_id,
@@ -82,16 +79,31 @@ BEGIN
         -- CASE: Recreate Inventory Lines
         --
 
-        RAISE WARNING '!!! Newly (re)created lines will have QtyCount=0 !!!';
+        --
+        -- Backup existing lines
+        DROP TABLE IF EXISTS tmp_prev_inventoryline;
+        CREATE TEMPORARY TABLE tmp_prev_inventoryline AS
+        SELECT line, m_product_id, c_uom_id, qtycount, qtybook, m_locator_id, isactive
+        FROM m_inventoryline invl
+        WHERE invl.m_inventory_id = p_M_Inventory_ID;
+        GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+        CREATE UNIQUE INDEX ON tmp_prev_inventoryline (m_product_id); -- atm we support only one product per line
+        RAISE NOTICE 'Backed up % inventory lines', v_rowcount;
 
+        --
+        -- Delete M_InventoryLine_HU records
         DELETE FROM m_inventoryline_hu invlhu WHERE invlhu.m_inventory_id = p_M_Inventory_ID;
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
         RAISE NOTICE 'Removed % M_InventoryLine_HU records', v_rowcount;
 
+        --
+        -- Delete M_InventoryLine records
         DELETE FROM m_inventoryline invl WHERE invl.m_inventory_id = p_M_Inventory_ID;
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
         RAISE NOTICE 'Removed % M_InventoryLine records', v_rowcount;
 
+        --
+        -- Create new M_InventoryLine records from tmp_fact_acct
         INSERT INTO m_inventoryline (m_inventoryline_id, ad_client_id, ad_org_id, createdby, updatedby, m_inventory_id, m_locator_id, m_product_id, line, description, c_charge_id, qtyinternaluse, reversalline_id, m_inoutline_id, c_uom_id, m_hu_pi_item_product_id, qtytu, qualitynote, m_hu_id, assignedto, externalid, costprice,
                                      qtybook,
                                      qtycount,
@@ -99,37 +111,104 @@ BEGIN
                                      processed,
                                      huaggregationtype)
         SELECT NEXTVAL('m_inventoryline_seq'),
-               v_inventoryInfo.ad_client_id                                                   AS ad_client_id,
-               v_inventoryInfo.ad_org_id                                                      AS ad_org_id,
-               99                                                                             AS createdby,
-               99                                                                             AS updatedby,
-               p_M_Inventory_ID                                                               AS m_inventory_id,
-               (SELECT loc.m_locator_id FROM m_locator loc WHERE loc.m_warehouse_id = 540005) AS m_locator_id,
+               v_inventoryInfo.ad_client_id                      AS ad_client_id,
+               v_inventoryInfo.ad_org_id                         AS ad_org_id,
+               99                                                AS createdby,
+               99                                                AS updatedby,
+               p_M_Inventory_ID                                  AS m_inventory_id,
+               (SELECT loc.m_locator_id
+                FROM m_locator loc
+                WHERE loc.m_warehouse_id = v_inventoryInfo.m_warehouse_id
+                ORDER BY loc.isdefault DESC, loc.m_locator_id
+                LIMIT 1)                                         AS m_locator_id,
                fa.m_product_id,
-               10 * DENSE_RANK() OVER (ORDER BY fa.m_product_id)                              AS line,
-               NULL                                                                           AS description,
-               NULL                                                                           AS c_charge_id,
-               NULL                                                                           AS qtyinternaluse,
-               NULL                                                                           AS reversalline_id,
-               NULL                                                                           AS m_inoutline_id,
+               10 * DENSE_RANK() OVER (ORDER BY fa.m_product_id) AS line,
+               NULL                                              AS description,
+               NULL                                              AS c_charge_id,
+               NULL                                              AS qtyinternaluse,
+               NULL                                              AS reversalline_id,
+               NULL                                              AS m_inoutline_id,
                fa.c_uom_id,
-               NULL                                                                           AS m_hu_pi_item_product_id,
-               NULL                                                                           AS qtytu,
-               NULL                                                                           AS qualitynote,
-               NULL                                                                           AS m_hu_id,
-               NULL                                                                           AS assignedto,
-               NULL                                                                           AS externalid,
-               NULL                                                                           AS costprice,
+               NULL                                              AS m_hu_pi_item_product_id,
+               NULL                                              AS qtytu,
+               NULL                                              AS qualitynote,
+               NULL                                              AS m_hu_id,
+               NULL                                              AS assignedto,
+               NULL                                              AS externalid,
+               NULL                                              AS costprice,
                --
-               fa.qty                                                                         AS qtybook,
-               0                                                                              AS qtycount,
-               'Y'                                                                            AS iscounted,
-               'Y'                                                                            AS processed,
-               'M'                                                                            AS huaggregationtype
+               fa.qty                                            AS qtybook,
+               0                                                 AS qtycount,
+               'Y'                                               AS iscounted,
+               'Y'                                               AS processed,
+               'M'                                               AS huaggregationtype
         FROM tmp_fact_acct fa
+        WHERE fa.qty != 0
         ORDER BY fa.m_product_id;
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-        RAISE NOTICE 'Inserted % M_InventoryLine records', v_rowcount;
+        RAISE NOTICE 'Inserted % M_InventoryLine records (from Fact_Acct)', v_rowcount;
+
+        --
+        -- Update newly created inventory lines from previous inventory lines
+        UPDATE M_InventoryLine invl
+        SET qtycount=uomConvert(invl.m_product_id,
+                                t.c_uom_id,
+                                invl.c_uom_id,
+                                t.qtycount)
+        FROM tmp_prev_inventoryline t
+        WHERE invl.m_inventory_id = p_M_Inventory_ID
+          AND invl.m_product_id = t.m_product_id;
+        GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+        RAISE NOTICE 'Updated QtyCount for % M_InventoryLine records', v_rowcount;
+
+
+        --
+        -- Create new M_InventoryLine records from previous inventory lines
+        INSERT INTO m_inventoryline (m_inventoryline_id, ad_client_id, ad_org_id, createdby, updatedby, m_inventory_id, m_locator_id, m_product_id, line, description, c_charge_id, qtyinternaluse, reversalline_id, m_inoutline_id, c_uom_id, m_hu_pi_item_product_id, qtytu, qualitynote, m_hu_id, assignedto, externalid, costprice,
+                                     qtybook,
+                                     qtycount,
+                                     iscounted,
+                                     processed,
+                                     huaggregationtype,
+                                     isactive)
+        SELECT NEXTVAL('m_inventoryline_seq'),
+               v_inventoryInfo.ad_client_id                                                           AS ad_client_id,
+               v_inventoryInfo.ad_org_id                                                              AS ad_org_id,
+               99                                                                                     AS createdby,
+               99                                                                                     AS updatedby,
+               p_M_Inventory_ID                                                                       AS m_inventory_id,
+               prev_invl.m_locator_id                                                                 AS m_locator_id,
+               prev_invl.m_product_id                                                                 AS m_product_id,
+               (SELECT MAX(line) FROM m_inventoryline invl WHERE invl.m_inventory_id = p_M_Inventory_ID)
+                   + 10 * DENSE_RANK() OVER (ORDER BY prev_invl.m_product_id, prev_invl.m_product_id) AS line,
+               NULL                                                                                   AS description,
+               NULL                                                                                   AS c_charge_id,
+               NULL                                                                                   AS qtyinternaluse,
+               NULL                                                                                   AS reversalline_id,
+               NULL                                                                                   AS m_inoutline_id,
+               prev_invl.c_uom_id                                                                     AS c_uom_id,
+               NULL                                                                                   AS m_hu_pi_item_product_id,
+               NULL                                                                                   AS qtytu,
+               NULL                                                                                   AS qualitynote,
+               NULL                                                                                   AS m_hu_id,
+               NULL                                                                                   AS assignedto,
+               NULL                                                                                   AS externalid,
+               NULL                                                                                   AS costprice,
+               --
+               prev_invl.qtybook                                                                      AS qtybook,
+               prev_invl.qtycount                                                                     AS qtycount,
+               'Y'                                                                                    AS iscounted,
+               'Y'                                                                                    AS processed,
+               'M'                                                                                    AS huaggregationtype,
+               prev_invl.isactive                                                                     AS isactive
+        FROM tmp_prev_inventoryline prev_invl
+        WHERE
+            -- for products we don't already have
+            NOT EXISTS(SELECT 1 FROM m_inventoryline invl WHERE invl.m_inventory_id = p_M_Inventory_ID AND invl.m_product_id = prev_invl.m_product_id)
+        ORDER BY prev_invl.line, prev_invl.m_product_id;
+        GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+        RAISE NOTICE 'Inserted % M_InventoryLine records (from previous lines)', v_rowcount;
+
 
         --
         -- Bring the HUs from that warehouse too
@@ -148,6 +227,18 @@ BEGIN
         CREATE INDEX ON tmp_hu (m_hu_id);
         CREATE INDEX ON tmp_hu (m_product_id);
         RAISE NOTICE 'Selected % M_HU records', v_rowcount;
+
+        -- IMPORTANT: we assume the Products from M_InventoryLine are distinct!!!
+        RAISE NOTICE 'Making sure we don''t have multiple lines with same product...';
+        FOR v_record IN (SELECT invl.m_product_id, p.Value, p.name, COUNT(1) AS duplicates
+                         FROM m_inventoryline invl
+                                  INNER JOIN m_product p ON p.m_product_id = invl.m_product_id
+                         WHERE invl.m_inventory_id = p_M_Inventory_ID
+                         GROUP BY invl.m_product_id, p.Value, p.name
+                         HAVING COUNT(1) > 1)
+            LOOP
+                RAISE EXCEPTION 'Found duplicate  product: %', v_record;
+            END LOOP;
 
         --
         -- Join HUs to existing inventory lines
@@ -171,6 +262,7 @@ BEGIN
         FROM m_inventoryline invl
                  INNER JOIN tmp_hu hu ON hu.m_product_id = invl.m_product_id
         WHERE invl.m_inventory_id = p_M_Inventory_ID
+          AND invl.isactive = 'Y'
         ORDER BY invl.m_inventoryline_id, hu.m_hu_id;
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
         RAISE NOTICE 'Inserted % M_InventoryLine_HU records', v_rowcount;
@@ -181,6 +273,7 @@ BEGIN
         PERFORM de_metas_acct.m_inventoryline_hu_update_qtycount(
                 p_M_Inventory_ID := p_M_Inventory_ID,
                 p_updatehuqtybook := 'N', -- was just calculated
+                p_FailOnError := 'N',
                 p_dryrun := 'N');
     ELSE
         --
@@ -192,7 +285,7 @@ BEGIN
         FOR v_record IN (SELECT invl.m_product_id, p.Value, p.name, COUNT(1) AS duplicates
                          FROM m_inventoryline invl
                                   INNER JOIN m_product p ON p.m_product_id = invl.m_product_id
-                         WHERE invl.m_inventory_id = 1000019
+                         WHERE invl.m_inventory_id = p_M_Inventory_ID
                          GROUP BY invl.m_product_id, p.Value, p.name
                          HAVING COUNT(1) > 1)
             LOOP
@@ -200,6 +293,7 @@ BEGIN
             END LOOP;
 
         --
+        -- Update existing lines
         UPDATE m_inventoryline il
         SET qtybook=COALESCE((SELECT COALESCE(t.qty, 0) FROM tmp_fact_acct t WHERE t.m_product_id = il.m_product_id), 0),
             iscounted='Y'
@@ -213,7 +307,12 @@ BEGIN
         PERFORM de_metas_acct.m_inventoryline_hu_update_qtycount(
                 p_M_Inventory_ID := p_M_Inventory_ID,
                 p_updatehuqtybook := 'Y',
+                p_FailOnError := 'N',
                 p_dryrun := 'N');
+    END IF;
+
+    IF (p_DryRun = 'Y') THEN
+        RAISE EXCEPTION '!!! DryRun mode !!! rolling back transaction...';
     END IF;
 
     RAISE NOTICE 'DONE';

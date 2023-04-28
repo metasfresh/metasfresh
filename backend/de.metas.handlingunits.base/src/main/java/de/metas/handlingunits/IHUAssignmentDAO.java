@@ -177,12 +177,12 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 */
 	List<I_M_HU_Assignment> retrieveIncludedHUAssignments(I_M_HU_Assignment assignment);
 
+	void deleteHUAssignments(@NonNull Properties ctx, @NonNull TableRecordReference modelRef, @NonNull Collection<HuId> huIds, String trxName);
+
 	/**
 	 * @return true if there are HUs assigned to given model
 	 */
 	boolean hasHUAssignmentsForModel(Object model);
-
-	void deleteHUAssignments(Object model, Collection<HuId> husToUnAssign, String trxName);
 
 	/**
 	 * @return all HU assignments for the given HU and table

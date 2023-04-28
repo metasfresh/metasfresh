@@ -22,19 +22,29 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeAction;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -53,25 +63,16 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.javaclasses.IJavaClassBL;
-import de.metas.javaclasses.IJavaClassDAO;
-import de.metas.javaclasses.model.I_AD_JavaClass;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.Date;
+import java.util.Properties;
 
 public class AttributesBL implements IAttributesBL
 {
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
 	private final IJavaClassDAO javaClassDAO = Services.get(IJavaClassDAO.class);
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
@@ -166,6 +167,7 @@ public class AttributesBL implements IAttributesBL
 		return handler;
 	}
 
+	@Nullable
 	@Override
 	public I_M_Attribute getAttributeOrNull(final ProductId productId, final AttributeId attributeId)
 	{
@@ -199,6 +201,99 @@ public class AttributesBL implements IAttributesBL
 		}
 
 		return InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
+	}
+
+	@Override
+	public boolean hasAttributeAssigned(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+		return attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.isPresent();
+	}
+
+	@Override
+	public boolean isMandatoryOn(@NonNull final ProductId productId,
+			@NonNull final AttributeId attributeId,
+			@NonNull AttributeSourceDocument attributeSourceDocument)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+
+		final AttributeSetAttribute attribute = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId).orElse(null);
+
+		if (attribute == null)
+		{
+			return false;
+		}
+
+		final Boolean mandatory;
+
+		if (attributeSourceDocument.isMaterialReceipt())
+		{
+			mandatory = attribute.getMandatoryOnReceipt().toBooleanOrNull();
+		}
+		else if (attributeSourceDocument.isManufacturing())
+		{
+			mandatory = attribute.getMandatoryOnManufacturing().toBooleanOrNull();
+		}
+		else if (attributeSourceDocument.isPicking())
+		{
+			mandatory = attribute.getMandatoryOnPicking().toBooleanOrNull();
+		}
+		else if (attributeSourceDocument.isShipment())
+		{
+			mandatory = attribute.getMandatoryOnShipment().toBooleanOrNull();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown: " + attributeSourceDocument);
+		}
+
+		if (mandatory != null)
+		{
+			return mandatory;
+		}
+
+		return attributesRepo.getAttributeById(attributeId).isMandatory();
+	}
+
+	@Override
+	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOn(productId,
+												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
+												   AttributeSourceDocument.Picking))
+				.collect(ImmutableList.toImmutableList());
+
+		return attributesMandatoryOnPicking;
+	}
+
+	@Override
+	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnManufacturing(final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnManufacturing = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOn(productId,
+												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
+												   AttributeSourceDocument.ManufacturingOrder))
+				.collect(ImmutableList.toImmutableList());
+
+		return attributesMandatoryOnManufacturing;
+	}
+
+	@Override
+	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOn(productId,
+												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
+												   AttributeSourceDocument.Shipment))
+				.collect(ImmutableList.toImmutableList());
+
+		return attributesMandatoryOnShipment;
 	}
 
 	@Override

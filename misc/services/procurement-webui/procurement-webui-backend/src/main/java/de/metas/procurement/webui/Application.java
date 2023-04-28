@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,10 +15,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /*
  * #%L
@@ -42,7 +41,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableJpaRepositories
-@EnableSwagger2
 public class Application
 {
 	public static final String ENDPOINT_ROOT = "/rest";
@@ -81,11 +79,10 @@ public class Application
 	}
 
 	@Bean
-	public Docket docket()
-	{
-		return new Docket(DocumentationType.SWAGGER_2)
-				.select()
-				.paths(PathSelectors.any())
-				.build();
+	public OpenAPI appOpenAPI() {
+		return new OpenAPI().info(new Info()
+										  .title("metasfresh webui (webapi) REST API")
+										  .license(new License().name("GNU General Public License, version 2")
+														   .url("http://www.gnu.org/licenses/gpl-2.0.html")));
 	}
 }

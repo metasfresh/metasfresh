@@ -1,15 +1,14 @@
 package org.adempiere.server.rpl.exceptions;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
- * 
  * @author ad
- * @task http://dewiki908/mediawiki/index.php/03000:_ADempiere_Replication_understandable_Errormessages_% 282012071810000029%29
+ * task http://dewiki908/mediawiki/index.php/03000:_ADempiere_Replication_understandable_Errormessages_% 282012071810000029%29
  */
 public class ReplicationException extends AdempiereException
 {
@@ -35,9 +34,6 @@ public class ReplicationException extends AdempiereException
 
 	/**
 	 * Constructs a new exception with the specified detail message and cause.
-	 * 
-	 * @param adMessage
-	 * @param cause
 	 */
 	public ReplicationException(final String adMessage, final Throwable cause)
 	{
@@ -50,10 +46,11 @@ public class ReplicationException extends AdempiereException
 	protected ITranslatableString buildMessage()
 	{
 		final TranslatableStringBuilder message = TranslatableStrings.builder();
-		
-		message.appendADMessage(adMessage);
-		
-		appendParameters(message);
+		if(Check.isNotBlank(adMessage)) // avoide NPE
+		{
+			message.appendADMessage(adMessage);
+			appendParameters(message);
+		}
 		
 		if (cause != null)
 		{

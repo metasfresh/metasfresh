@@ -22,11 +22,6 @@
 
 package de.metas.edi.esb.excelimport;
 
-import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
@@ -38,11 +33,7 @@ import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
-import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -53,11 +44,11 @@ import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
  * Builds {@link XLSImpCOLCandType}s.
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 public class ExcelImpCOLCandTypeBuilder
 {
-	public static final ExcelImpCOLCandTypeBuilder newBuilder()
+	public static ExcelImpCOLCandTypeBuilder newBuilder()
 	{
 		return new ExcelImpCOLCandTypeBuilder();
 	}
@@ -115,7 +106,6 @@ public class ExcelImpCOLCandTypeBuilder
 
 	public ExcelImpCOLCandTypeBuilder setFromRow(final Excel_OLCand_Row row)
 	{
-		olcand.setLine(toBigIntegerOrNull(row.getLineNo()));
 		olcand.setPOReference(row.getPOReference());
 
 		//
@@ -127,6 +117,12 @@ public class ExcelImpCOLCandTypeBuilder
 		// BPartner
 		olcand.setCBPartnerID(toBigIntegerID(row.getC_BPartner_ID()));
 		olcand.setCBPartnerLocationID(toBigIntegerID(row.getC_BPartner_Location_ID()));
+		olcand.setBillBPartnerID(toBigIntegerID(row.getBill_BPartner_ID()));
+		olcand.setBillLocationID(toBigIntegerID(row.getBill_Location_ID()));
+		olcand.setHandOverPartnerID(toBigIntegerID(row.getHandOver_Partner_ID()));
+		olcand.setHandOverLocationID(toBigIntegerID(row.getHandOver_Location_ID()));
+		olcand.setDropShipBPartnerID(toBigIntegerID(row.getDropShip_BPartner_ID()));
+		olcand.setDropShipLocationID(toBigIntegerID(row.getDropShip_Location_ID()));
 
 		//
 		// Product
@@ -189,7 +185,15 @@ public class ExcelImpCOLCandTypeBuilder
 		return this;
 	}
 
-	private static final EDIImpCCurrencyLookupISOCodeType currencyLookup(final String currencyISOCode)
+	@NonNull
+	public ExcelImpCOLCandTypeBuilder setLineNo(@NonNull final Integer lineNo)
+	{
+		olcand.setLine(BigInteger.valueOf(lineNo));
+
+		return this;
+	}
+
+	private static EDIImpCCurrencyLookupISOCodeType currencyLookup(final String currencyISOCode)
 	{
 		if (currencyISOCode == null)
 		{
@@ -202,12 +206,12 @@ public class ExcelImpCOLCandTypeBuilder
 		return currencyLookup;
 	}
 
-	private static final BigInteger toBigIntegerOrNull(final Integer valueInteger)
+	private static BigInteger toBigIntegerOrNull(final Integer valueInteger)
 	{
 		return valueInteger == null ? null : BigInteger.valueOf(valueInteger);
 	}
 
-	private static final BigInteger toBigIntegerID(final int id)
+	private static BigInteger toBigIntegerID(final int id)
 	{
 		if (id <= 0)
 		{
