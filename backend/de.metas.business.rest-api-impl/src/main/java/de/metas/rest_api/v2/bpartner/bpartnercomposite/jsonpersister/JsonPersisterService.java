@@ -79,7 +79,10 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.CoalesceUtil;
+<<<<<<< HEAD
 import de.metas.currency.ConversionTypeMethod;
+=======
+>>>>>>> 183177c587e (Use default when converting currencies with unspecified conversiontype)
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
@@ -2335,7 +2338,6 @@ public class JsonPersisterService
 	{
 		final CurrencyConversionContext currencyConversionContext =
 				currencyBL.createCurrencyConversionContext(Instant.now(),
-														   ConversionTypeMethod.Spot,
 														   clientAndOrgId.getClientId(),
 														   clientAndOrgId.getOrgId());
 
