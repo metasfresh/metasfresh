@@ -82,9 +82,9 @@ public class M_HU_CreateReceipt_StepDef
 		catch (final AdempiereException exception)
 		{
 			final Map<String, String> tableRow = dataTable.asMaps().get(0);
-			final String exceptionMessage = DataTableUtil.extractStringForColumnName(tableRow, Exception.class.getSimpleName());
+			final String errorCode = DataTableUtil.extractStringForColumnName(tableRow, "ErrorCode");
 
-			assertThat(exception.getMessage()).contains(exceptionMessage);
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
 		}
 	}
 	

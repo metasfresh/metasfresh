@@ -328,9 +328,8 @@ public final class Language implements Serializable
 	 *
 	 * @param baseADLanguageSupplier base language supplier
 	 */
-	public static void setBaseLanguage(final Supplier<String> baseADLanguageSupplier)
+	public static void setBaseLanguage(@NonNull final Supplier<String> baseADLanguageSupplier)
 	{
-		Check.assumeNotNull(baseADLanguageSupplier, "baseADLanguageSupplier not null");
 		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(() -> {
 			final String baseADLanguage = baseADLanguageSupplier.get();
 			final Language language = getLanguage(baseADLanguage);
