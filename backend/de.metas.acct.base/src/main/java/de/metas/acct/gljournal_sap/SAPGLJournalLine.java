@@ -64,14 +64,19 @@ public class SAPGLJournalLine
 		this.id = id;
 	}
 
-	public boolean isTaxLine()
+	public boolean isGeneratedTaxLine()
 	{
 		return parentId != null && taxId != null;
 	}
 
+	public boolean isTaxLine()
+	{
+		return taxId != null && (determineTaxBaseSAP || parentId != null);
+	}
+
 	public boolean isBaseTaxLine()
 	{
-		return parentId == null && taxId != null;
+		return parentId == null && taxId != null && !determineTaxBaseSAP;
 	}
 
 }
