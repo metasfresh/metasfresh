@@ -72,7 +72,6 @@ Feature: Camel-ExternalSystem authorization
     And set sys config String value null for sys config de.metas.externalsystem.externalservice.authorization.AD_User_ID
     ## 540024 -> WebUI
     And set sys config String value 540024 for sys config de.metas.externalsystem.externalservice.authorization.AD_Role_ID
-    And reset all cache
 
     And load AD_Message:
       | Identifier               | Value                                                    |
@@ -95,7 +94,6 @@ Feature: Camel-ExternalSystem authorization
     And set sys config String value 10168 for sys config de.metas.externalsystem.externalservice.authorization.AD_User_ID
     # 1000000 -> Admin
     And set sys config String value 1000000 for sys config de.metas.externalsystem.externalservice.authorization.AD_Role_ID
-    And reset all cache
 
     And load AD_Message:
       | Identifier          | Value                                                  |
@@ -118,7 +116,6 @@ Feature: Camel-ExternalSystem authorization
     And set sys config String value 10168 for sys config de.metas.externalsystem.externalservice.authorization.AD_User_ID
     ## 540024 -> WebUI
     And set sys config String value 540024 for sys config de.metas.externalsystem.externalservice.authorization.AD_Role_ID
-    And reset all cache
 
     And metasfresh contains AD_User_AuthToken:
       | AD_User_AuthToken_ID.Identifier | AD_User_ID.Identifier | AD_Role_ID | AuthToken   |
