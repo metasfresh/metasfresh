@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_Review_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_ExternalId;
@@ -208,17 +208,11 @@ public class C_Invoice_Review_StepDef
 			softly.assertThat(jsonCreateInvoiceResponse.getResult()).isNull();
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).isNotNull();
-<<<<<<< HEAD
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().size()).isEqualTo(1);
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
 
-=======
-			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).hasSize(1);
->>>>>>> 773760ea02c (Adorable badger uat autorecreate review (#15166))
 			softly.assertAll();
-
-			assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
 		}
 	}
 }
