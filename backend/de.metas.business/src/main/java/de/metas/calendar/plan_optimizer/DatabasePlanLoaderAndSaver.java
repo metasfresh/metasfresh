@@ -8,6 +8,7 @@ import de.metas.calendar.plan_optimizer.domain.StepId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -39,6 +40,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
@@ -87,11 +89,6 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 			final LocalDateTime projectStartDate = CoalesceUtil.optionalOfFirstNonNull(woProject.getDateOfProvisionByBPartner(), woProject.getDateContract(), woProject.getWoProjectCreatedDate())
 					.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(Plan.PLANNING_TIME_PRECISION))
 					.orElse(null);
-			if (projectStartDate == null)
-			{
-				logger.warn("Ignore the whole project because project start date could not be determined: {}", woProject);
-				continue;
-			}
 
 			final WOProjectSteps steps = stepsByProjectId.getByProjectId(woProject.getProjectId());
 			for (WOProjectStep step : steps.toOrderedList())
@@ -105,13 +102,22 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 					continue;
 				}
 
+				final LocalDateTime startDateMin = Optional.ofNullable(step.getDeliveryDate())
+						.map(date -> date.atZone(timeZone).toLocalDateTime().truncatedTo(Plan.PLANNING_TIME_PRECISION))
+						.orElse(projectStartDate);
+				if (startDateMin == null)
+				{
+					logger.warn("Ignore step because StartDateMin could not be determined: {}", step);
+					continue;
+				}
+
 				for (final WOProjectResource resourceOrig : resources.getByStepId(step.getWoProjectStepId()))
 				{
 					Duration duration = resourceOrig.getDuration();
 					if (duration.toSeconds() <= 0)
 					{
 						duration = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
-						logger.warn("Step/resource has invalid duration. Considering it {}: {}", duration, resourceOrig);
+						logger.info("Step/resource has invalid duration. Considering it {}: {}", duration, resourceOrig);
 					}
 
 					final WOProjectResource resource = simulationPlan.applyOn(resourceOrig);
@@ -126,11 +132,11 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 					boolean manuallyLocked = step.isManuallyLocked();
 					if (manuallyLocked && (startDate == null || endDate == null))
 					{
-						logger.warn("Cannot consider resource as locked because it has no start/end date: {}", resource);
+						logger.info("Cannot consider resource as locked because it has no start/end date: {}", resource);
 						manuallyLocked = false;
 					}
 
-					optaPlannerSteps.add(Step.builder()
+					final Step optaPlannerStep = Step.builder()
 							.id(StepId.builder()
 									.woProjectStepId(resource.getWoProjectStepId())
 									.woProjectResourceId(resource.getWoProjectResourceId())
@@ -140,11 +146,20 @@ class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 							.resource(optaPlannerResources.computeIfAbsent(resource.getResourceId(), this::createOptaPlannerResource))
 							.duration(duration)
 							.dueDate(dueDate)
-							.startDateMin(projectStartDate)
+							.startDateMin(startDateMin)
 							.startDate(startDate)
 							.endDate(endDate)
 							.pinned(manuallyLocked)
-							.build());
+							.build();
+
+					final BooleanWithReason valid = optaPlannerStep.checkProblemFactsValid();
+					if (valid.isFalse())
+					{
+						logger.info("Skip invalid step because `{}`: {}", valid.getReasonAsString(), step);
+						continue;
+					}
+
+					optaPlannerSteps.add(optaPlannerStep);
 
 				}
 			}

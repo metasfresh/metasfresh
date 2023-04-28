@@ -1,6 +1,7 @@
 package de.metas.calendar.plan_optimizer.domain;
 
 import de.metas.calendar.plan_optimizer.solver.EndDateUpdatingVariableListener;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import lombok.Builder;
@@ -85,6 +86,34 @@ public class Step
 				+ ", ID=" + (id != null ? id.getWoProjectResourceId().getRepoId() : "?");
 	}
 
+	public BooleanWithReason checkProblemFactsValid()
+	{
+		if (startDateMin == null)
+		{
+			return BooleanWithReason.falseBecause("StartDateMin not set");
+		}
+		if (dueDate == null)
+		{
+			return BooleanWithReason.falseBecause("DueDate not set");
+		}
+		if (!startDateMin.isBefore(dueDate))
+		{
+			return BooleanWithReason.falseBecause("StartDateMin shall be before DueDate");
+		}
+		if (duration == null || duration.getSeconds() <= 0)
+		{
+			return BooleanWithReason.falseBecause("Duration must be set and must be positive");
+		}
+
+		final Duration durationMax = Duration.between(startDateMin, dueDate);
+		if (duration.compareTo(durationMax) > 0)
+		{
+			return BooleanWithReason.falseBecause("Duration does not fit into StartDateMin/DueDate interval");
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
 	@ValueRangeProvider
 	public CountableValueRange<LocalDateTime> createStartDateList()
 	{
@@ -94,11 +123,17 @@ public class Step
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
 
+	public void updateStartDate()
+	{
+		startDate = endDate != null ? endDate.minus(duration) : null;
+	}
+
 	public void updateEndDate()
 	{
 		endDate = startDate != null ? startDate.plus(duration) : null;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isStartDateMinRespected()
 	{
 		return startDate != null && !startDate.isBefore(startDateMin);
@@ -106,7 +141,13 @@ public class Step
 
 	public boolean isDueDateNotRespected()
 	{
-		return dueDate != null && (endDate == null || endDate.isAfter(dueDate));
+		return !isDueDateRespected();
+	}
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean isDueDateRespected()
+	{
+		return endDate != null && !endDate.isAfter(dueDate);
 	}
 
 	public Duration getDurationFromEndToDueDate()

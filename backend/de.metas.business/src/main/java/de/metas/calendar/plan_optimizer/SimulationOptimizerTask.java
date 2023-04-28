@@ -155,7 +155,10 @@ class SimulationOptimizerTask implements Runnable
 		simulationOptimizerStatusDispatcher.notifyStarted(simulationId);
 
 		final Plan problem = planLoaderAndSaver.getPlan(simulationId);
-		logger.debug("problem: {}", problem);
+		logger.info("problem: {}", problem);
+
+		prepareProblem(problem);
+		logger.info("problem prepared: {}", problem);
 
 		final Solver<Plan> solver = createSolver();
 
@@ -166,6 +169,35 @@ class SimulationOptimizerTask implements Runnable
 		solution.setTimeSpent(stopwatch.elapsed());
 
 		onSolutionFound(solution);
+	}
+
+	private static void prepareProblem(final Plan plan)
+	{
+		for (final Step step : plan.getStepsList())
+		{
+			prepareProblemStep(step);
+		}
+	}
+
+	private static void prepareProblemStep(final Step step)
+	{
+		step.checkProblemFactsValid().assertTrue();
+
+		if (step.getStartDateMin() != null
+				&& step.getStartDate() != null
+				&& !step.isStartDateMinRespected())
+		{
+			step.setStartDate(step.getStartDateMin());
+			step.updateEndDate();
+		}
+
+		if (step.getDueDate() != null
+				&& step.getEndDate() != null
+				&& !step.isDueDateRespected())
+		{
+			step.setEndDate(step.getDueDate());
+			step.updateStartDate();
+		}
 	}
 
 	private void onSolutionFound(final Plan solution)
