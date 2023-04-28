@@ -41,6 +41,7 @@ import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.project.workorder.step.WOProjectSteps;
+import de.metas.project.workorder.step.WOProjectStepsCollection;
 import de.metas.project.workorder.step.WOStepResources;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
@@ -91,11 +92,17 @@ public class WOProjectService
 	}
 
 	@NonNull
+	public List<WOProject> getAllActiveProjects()
+	{
+		return woProjectRepository.getAllActiveProjectsByProjectCalendarQuery(WOProjectCalendarQuery.ANY);
+	}
+
+	@NonNull
 	public List<WOProject> getAllActiveProjects(@NonNull final Set<ProjectId> projectIds)
 	{
 		return woProjectRepository.getAllActiveProjectsByProjectCalendarQuery(WOProjectCalendarQuery.builder()
-																					  .projectIds(InSetPredicate.only(projectIds))
-																					  .build());
+				.projectIds(InSetPredicate.only(projectIds))
+				.build());
 	}
 
 	@NonNull
@@ -121,6 +128,11 @@ public class WOProjectService
 		return woProjectResourceRepository.getByProjectId(projectId);
 	}
 
+	public WOProjectResourcesCollection getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	{
+		return woProjectResourceRepository.getByProjectIds(projectIds);
+	}
+
 	public ImmutableSet<ResourceId> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
 	{
 		return woProjectResourceRepository.getResourceIdsByProjectResourceIds(projectResourceIds);
@@ -129,6 +141,11 @@ public class WOProjectService
 	public WOProjectSteps getStepsByProjectId(@NonNull final ProjectId projectId)
 	{
 		return woProjectStepRepository.getStepsByProjectId(projectId);
+	}
+
+	public WOProjectStepsCollection getStepsByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	{
+		return woProjectStepRepository.getByProjectIds(projectIds);
 	}
 
 	public ImmutableList<WOProjectStep> getStepsByIds(@NonNull final Set<WOProjectStepId> stepIds)
@@ -209,7 +226,7 @@ public class WOProjectService
 		if (Check.isNotBlank(logMessage)) // log this, particularly in case the change is done via API
 		{
 			Loggables.get().addLog("Update WO_Project_ID = {} with the following columns from C_Project_Parent_ID={}: {}",
-								   woProject.getProjectId().getRepoId(), parentProject.getProjectId().getRepoId(), logMessage);
+					woProject.getProjectId().getRepoId(), parentProject.getProjectId().getRepoId(), logMessage);
 		}
 	}
 
@@ -251,8 +268,8 @@ public class WOProjectService
 							.plusHours(min(woProjectResource.getUnresolvedHours().toHours(), hoursToResolve));
 
 					woProjectResourceRepository.updateAll(ImmutableList.of(woProjectResource.toBuilder()
-																		.resolvedHours(toResolve)
-																		.build()));
+							.resolvedHours(toResolve)
+							.build()));
 				}
 		);
 	}
@@ -264,8 +281,8 @@ public class WOProjectService
 					final WOProjectResource woProjectResource = woProjectResourceRepository.getById(resourceId);
 
 					woProjectResourceRepository.updateAll(ImmutableList.of(woProjectResource.toBuilder()
-																		.resolvedHours(Duration.ZERO)
-																		.build()));
+							.resolvedHours(Duration.ZERO)
+							.build()));
 				}
 		);
 	}

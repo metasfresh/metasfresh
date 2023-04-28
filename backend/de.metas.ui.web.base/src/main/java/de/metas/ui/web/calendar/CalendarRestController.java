@@ -32,6 +32,7 @@ import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.calendar.plan_optimizer.SimulationOptimizerTaskExecutor;
 import de.metas.calendar.simulation.SimulationPlanCreateRequest;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
@@ -53,6 +54,8 @@ import de.metas.ui.web.calendar.json.JsonDateTime;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
 import de.metas.ui.web.calendar.json.JsonGetAvailableSimulationsResponse;
 import de.metas.ui.web.calendar.json.JsonSimulationCreateRequest;
+import de.metas.ui.web.calendar.json.JsonSimulationOptimizerStatus;
+import de.metas.ui.web.calendar.json.JsonSimulationOptimizerStatusType;
 import de.metas.ui.web.calendar.json.JsonSimulationRef;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
@@ -97,6 +100,7 @@ public class CalendarRestController
 	private final UserSession userSession;
 	private final MultiCalendarService calendarService;
 	private final SimulationPlanService simulationService;
+	private final SimulationOptimizerTaskExecutor simulationOptimizerTaskExecutor;
 
 	private final LookupDataSource bpartnerLookup;
 	private final LookupDataSource resourceLookup;
@@ -108,11 +112,13 @@ public class CalendarRestController
 			@NonNull final UserSession userSession,
 			@NonNull final MultiCalendarService calendarService,
 			@NonNull final SimulationPlanService simulationService,
+			@NonNull final SimulationOptimizerTaskExecutor simulationOptimizerTaskExecutor,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.userSession = userSession;
 		this.calendarService = calendarService;
 		this.simulationService = simulationService;
+		this.simulationOptimizerTaskExecutor = simulationOptimizerTaskExecutor;
 
 		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		this.resourceLookup = lookupDataSourceFactory.searchInTableLookup(I_S_Resource.Table_Name);
@@ -178,8 +184,8 @@ public class CalendarRestController
 
 			final Set<CalendarResourceId> onlyResourceIds = query.getOnlyResourceIds();
 			result.resourceIds(onlyResourceIds != null && !onlyResourceIds.isEmpty()
-									   ? InSetPredicate.only(onlyResourceIds)
-									   : InSetPredicate.any());
+					? InSetPredicate.only(onlyResourceIds)
+					: InSetPredicate.any());
 
 			result.onlyProjectId(query.getOnlyProjectId());
 
@@ -240,16 +246,16 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final CalendarEntry calendarEntry = calendarService.addEntry(CalendarEntryAddRequest.builder()
-																			 .userId(userSession.getLoggedUserId())
-																			 .simulationId(request.getSimulationId())
-																			 .calendarId(request.getCalendarId())
-																			 .resourceId(request.getResourceId())
-																			 .title(request.getTitle())
-																			 .description(request.getDescription())
-																			 .dateRange(extractCalendarDateRange(request.getStartDate(),
-																												 request.getEndDate(),
-																												 request.isAllDay()))
-																			 .build());
+				.userId(userSession.getLoggedUserId())
+				.simulationId(request.getSimulationId())
+				.calendarId(request.getCalendarId())
+				.resourceId(request.getResourceId())
+				.title(request.getTitle())
+				.description(request.getDescription())
+				.dateRange(extractCalendarDateRange(request.getStartDate(),
+						request.getEndDate(),
+						request.isAllDay()))
+				.build());
 
 		return JsonCalendarEntryUpdateResult.ofChangedEntry(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
 	}
@@ -262,16 +268,16 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final CalendarEntryUpdateResult result = calendarService.updateEntry(CalendarEntryUpdateRequest.builder()
-																					 .entryId(CalendarEntryId.ofString(entryIdStr))
-																					 .simulationId(request.getSimulationId())
-																					 .updatedByUserId(userSession.getLoggedUserId())
-																					 .resourceId(request.getResourceId())
-																					 .title(request.getTitle())
-																					 .description(request.getDescription())
-																					 .dateRange(extractCalendarDateRange(request.getStartDate(),
-																														 request.getEndDate(),
-																														 request.getIsAllDay()))
-																					 .build());
+				.entryId(CalendarEntryId.ofString(entryIdStr))
+				.simulationId(request.getSimulationId())
+				.updatedByUserId(userSession.getLoggedUserId())
+				.resourceId(request.getResourceId())
+				.title(request.getTitle())
+				.description(request.getDescription())
+				.dateRange(extractCalendarDateRange(request.getStartDate(),
+						request.getEndDate(),
+						request.getIsAllDay()))
+				.build());
 
 		return JsonCalendarEntryUpdateResult.of(result, userSession.getTimeZone(), userSession.getAD_Language());
 	}
@@ -333,8 +339,8 @@ public class CalendarRestController
 		final CalendarConflictsQuery query = CalendarConflictsQuery.builder()
 				.simulationId(SimulationPlanId.ofNullableObject(simulationIdStr))
 				.resourceIds(CalendarResourceId.ofCommaSeparatedString(onlyResourceIdsStr)
-									 .map(InSetPredicate::only)
-									 .orElse(InSetPredicate.any()))
+						.map(InSetPredicate::only)
+						.orElse(InSetPredicate.any()))
 				.build();
 
 		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(query)
@@ -354,7 +360,7 @@ public class CalendarRestController
 			final boolean isAllDay)
 	{
 		final Instant endDateToBeUsed;
-		
+
 		if (endDate != null)
 		{
 			endDateToBeUsed = endDate.toInstant();
@@ -369,12 +375,52 @@ public class CalendarRestController
 		{
 			throw new AdempiereException("Missing mandatory endDate!");
 		}
-		
+
 		return CalendarDateRange.builder()
 				.startDate(startDate.toInstant())
 				.endDate(endDateToBeUsed)
 				.allDay(isAllDay)
 				.build();
+	}
+
+	@GetMapping("/simulations/optimizer")
+	public JsonSimulationOptimizerStatus getSimulationOptimizerStatus(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+		return getSimulationOptimizerStatus(simulationId);
+	}
+
+	private JsonSimulationOptimizerStatus getSimulationOptimizerStatus(final SimulationPlanId simulationId)
+	{
+		return JsonSimulationOptimizerStatus.builder()
+				.simulationId(simulationId)
+				.status(JsonSimulationOptimizerStatusType.ofIsRunningFlag(simulationOptimizerTaskExecutor.isRunning(simulationId)))
+				.build();
+	}
+
+	@PostMapping("/simulations/optimizer/start")
+	public JsonSimulationOptimizerStatus startSimulationOptimizer(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+		simulationOptimizerTaskExecutor.start(simulationId);
+		return getSimulationOptimizerStatus(simulationId);
+	}
+
+	@PostMapping("/simulations/optimizer/stop")
+	public JsonSimulationOptimizerStatus stopSimulationOptimizer(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+		simulationOptimizerTaskExecutor.stop(simulationId);
+		return getSimulationOptimizerStatus(simulationId);
 	}
 
 }

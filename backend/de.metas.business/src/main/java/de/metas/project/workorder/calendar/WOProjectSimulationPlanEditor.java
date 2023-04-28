@@ -1,7 +1,9 @@
 package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.time.SystemTime;
@@ -13,19 +15,23 @@ import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceSimulation;
 import de.metas.project.workorder.resource.WOProjectResources;
+import de.metas.project.workorder.resource.WOProjectResourcesCollection;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepSimulation;
 import de.metas.project.workorder.step.WOProjectSteps;
+import de.metas.project.workorder.step.WOProjectStepsCollection;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.OldAndNewValues;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,11 +47,11 @@ public class WOProjectSimulationPlanEditor
 	private static final AdMessageKey ERROR_MSG_STEP_NO_AVAILABLE_DURATION = AdMessageKey.of("de.metas.project.workorder.calendar.NoAvailableDuration");
 
 	@NonNull
-	private final WOProject _originalProject;
+	private final ImmutableMap<ProjectId, WOProject> _originalProjects;
 	@NonNull
-	private final WOProjectSteps _originalSteps;
+	private final WOProjectStepsCollection _originalStepsCollection;
 	@NonNull
-	private final WOProjectResources _originalProjectResources;
+	private final WOProjectResourcesCollection _originalProjectResourcesCollection;
 
 	@Getter
 	private final SimulationPlanId simulationPlanId;
@@ -56,14 +62,14 @@ public class WOProjectSimulationPlanEditor
 
 	@Builder
 	private WOProjectSimulationPlanEditor(
-			@NonNull final WOProject project,
-			@NonNull final WOProjectSteps steps,
-			@NonNull final WOProjectResources projectResources,
+			@NonNull @Singular final Collection<WOProject> projects,
+			@NonNull @Singular("steps") final Collection<WOProjectSteps> stepsCollection,
+			@NonNull @Singular("projectResources") final Collection<WOProjectResources> projectResourcesCollection,
 			@NonNull final WOProjectSimulationPlan currentSimulationPlan)
 	{
-		this._originalProject = project;
-		this._originalSteps = steps;
-		this._originalProjectResources = projectResources;
+		this._originalProjects = Maps.uniqueIndex(projects, WOProject::getProjectId);
+		this._originalStepsCollection = WOProjectStepsCollection.ofCollection(stepsCollection);
+		this._originalProjectResourcesCollection = WOProjectResourcesCollection.ofCollection(projectResourcesCollection);
 
 		this.simulationPlanId = currentSimulationPlan.getSimulationPlanId();
 		this.initialSimulationPlan = currentSimulationPlan;
@@ -85,11 +91,19 @@ public class WOProjectSimulationPlanEditor
 			@NonNull final CalendarDateRange newDateRange,
 			@NonNull final WOProjectStepId stepId)
 	{
-		changeResource(projectResourceId, newDateRange);
-		updateStepDateRangeFromResources(stepId);
+		changeResourceDateRange(projectResourceId, newDateRange, stepId);
 
 		shiftLeftAllStepsBefore(stepId);
 		shiftRightAllStepsAfter(stepId);
+	}
+
+	public void changeResourceDateRange(
+			@NonNull final WOProjectResourceId projectResourceId,
+			@NonNull final CalendarDateRange newDateRange,
+			@NonNull final WOProjectStepId stepId)
+	{
+		changeResource(projectResourceId, newDateRange);
+		updateStepDateRangeFromResources(stepId);
 	}
 
 	private void updateStepDateRangeFromResources(@NonNull final WOProjectStepId stepId)
@@ -99,37 +113,25 @@ public class WOProjectSimulationPlanEditor
 		changeStep(stepId, newDateRange);
 	}
 
-	public WOProject getProject()
-	{
-		return this._originalProject;
-	}
-
-	private ProjectId getProjectId()
-	{
-		return getProject().getProjectId();
-	}
-
 	public WOProject getProjectById(final ProjectId projectId)
 	{
-		WOProject project = getProject();
-		if (ProjectId.equals(project.getProjectId(), projectId))
-		{
-			return project;
-		}
-		else
+		final WOProject project = _originalProjects.get(projectId);
+		if (project == null)
 		{
 			throw new AdempiereException("Project " + projectId + " is not in scope");
 		}
+		return project;
 	}
 
 	public WOProjectStep getStepById(final @NonNull WOProjectStepId stepId)
 	{
-		return adjustBySimulation(this._originalSteps.getById(stepId));
+		return adjustBySimulation(this._originalStepsCollection.getById(stepId));
 	}
 
 	private List<WOProjectStep> getStepsBeforeFromLastToFirst(final @NonNull WOProjectStepId stepId)
 	{
-		return this._originalSteps.getStepsBeforeFromLastToFirst(stepId)
+		return this._originalStepsCollection.getByProjectId(stepId.getProjectId())
+				.getStepsBeforeFromLastToFirst(stepId)
 				.stream()
 				.map(this::adjustBySimulation)
 				.collect(ImmutableList.toImmutableList());
@@ -137,7 +139,8 @@ public class WOProjectSimulationPlanEditor
 
 	private List<WOProjectStep> getStepsAfterInOrder(final @NonNull WOProjectStepId stepId)
 	{
-		return this._originalSteps.getStepsAfterInOrder(stepId)
+		return this._originalStepsCollection.getByProjectId(stepId.getProjectId())
+				.getStepsAfterInOrder(stepId)
 				.stream()
 				.map(this::adjustBySimulation)
 				.collect(ImmutableList.toImmutableList());
@@ -145,7 +148,7 @@ public class WOProjectSimulationPlanEditor
 
 	private ImmutableList<WOProjectResource> getProjectResourcesByStepId(final @NonNull WOProjectStepId stepId)
 	{
-		return this._originalProjectResources.streamByStepId(stepId)
+		return this._originalProjectResourcesCollection.streamByStepId(stepId)
 				.map(this::adjustBySimulation)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -153,7 +156,7 @@ public class WOProjectSimulationPlanEditor
 	@NonNull
 	public OldAndNewValues<WOProjectResource> getProjectResourceInitialAndNow(final @NonNull WOProjectResourceId projectResourceId)
 	{
-		final WOProjectResource original = this._originalProjectResources.getById(projectResourceId);
+		final WOProjectResource original = this._originalProjectResourcesCollection.getById(projectResourceId);
 		final WOProjectResource initial = this.initialSimulationPlan.applyOn(original);
 		final WOProjectResource now = adjustBySimulation(original);
 
@@ -200,7 +203,7 @@ public class WOProjectSimulationPlanEditor
 					if (existingSimulation == null)
 					{
 						builder = WOProjectStepSimulation.builder()
-								.projectId(getProjectId())
+								.projectId(stepId.getProjectId())
 								.stepId(stepId);
 					}
 					else
@@ -315,7 +318,7 @@ public class WOProjectSimulationPlanEditor
 	public ImmutableSet<ResourceId> getAffectedResourceIds()
 	{
 		return changedProjectResourceIds.stream()
-				.map(_originalProjectResources::getById)
+				.map(_originalProjectResourcesCollection::getById)
 				.map(WOProjectResource::getResourceId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -350,7 +353,7 @@ public class WOProjectSimulationPlanEditor
 
 		if (lastBeforeStepDate == null && firstAfterStepDate == null)
 		{
-			return getDefaultCalendarDateRange(stepDuration);
+			return getDefaultCalendarDateRange(stepId.getProjectId(), stepDuration);
 		}
 
 		final CalendarDateRange proposedDateRange = Optional.ofNullable(lastBeforeStepDate)
@@ -370,9 +373,9 @@ public class WOProjectSimulationPlanEditor
 	}
 
 	@NonNull
-	private CalendarDateRange getDefaultCalendarDateRange(@NonNull final Duration stepDuration)
+	private CalendarDateRange getDefaultCalendarDateRange(@NonNull ProjectId projectId, @NonNull final Duration stepDuration)
 	{
-		final Instant defaultStartDate = Optional.ofNullable(getProject().getDateContract())
+		final Instant defaultStartDate = Optional.ofNullable(getProjectById(projectId).getDateContract())
 				.orElse(SystemTime.asInstant());
 
 		return CalendarDateRange.builder()
