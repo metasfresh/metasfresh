@@ -17,8 +17,8 @@ Feature: Invoice candidate separation based on header aggregation key
       | Identifier     | M_PriceList_ID.Identifier | ValidFrom  | Name                          |
       | plv_1_29032023 | pl_1_29032023             | 2022-08-01 | PriceListVersionTest_29032023 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier             | Name                   | Value                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endCustomer_1_29032023 | Endcustomer_1_29032023 | Endcustomer_1_Value_29032023 | N            | Y              | ps_1_29032023                 |
+      | Identifier             | Name                   | Value             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endCustomer_1_29032023 | Endcustomer_1_29032023 | BP_Value_29032023 | N            | Y              | ps_1_29032023                 |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
       | location_1_29032023      | DE          | addr 22      | 456        | locationCity_2 |
@@ -60,8 +60,8 @@ Feature: Invoice candidate separation based on header aggregation key
     Then the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And locate I_Invoice_Candidate list searching by bill partner value
-      | Bill_BPartner_Value          | I_Invoice_Candidate_ID_List.Identifier | OPT.ExpectedCount |
-      | Endcustomer_1_Value_29032023 | iInvoiceCandidateList_1                | 1000              |
+      | Bill_BPartner_Value | I_Invoice_Candidate_ID_List.Identifier | OPT.ExpectedCount |
+      | BP_Value_29032023   | iInvoiceCandidateList_1                | 1000              |
 
     And locate C_Invoice_Candidate records for each import record from list
       | C_Invoice_Candidate_ID_List.Identifier | I_Invoice_Candidate_ID_List.Identifier |
