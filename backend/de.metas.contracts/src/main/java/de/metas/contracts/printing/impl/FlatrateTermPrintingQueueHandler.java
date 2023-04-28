@@ -82,8 +82,11 @@ public class FlatrateTermPrintingQueueHandler extends PrintingQueueHandlerAdapte
 	private void handleInvoices(final I_C_Printing_Queue queueItem, final I_C_Invoice invoice)
 	{
 		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveFirstFlatrateTerm(invoice);
-		queueItem.setC_BPartner_ID(flatrateTerm.getDropShip_BPartner_ID());
-		queueItem.setAD_User_ID(flatrateTerm.getDropShip_User_ID());
-		queueItem.setC_BPartner_Location_ID(flatrateTerm.getDropShip_Location_ID());
+		if (flatrateTerm != null)
+		{
+			queueItem.setC_BPartner_ID(flatrateTerm.getDropShip_BPartner_ID());
+			queueItem.setAD_User_ID(flatrateTerm.getDropShip_User_ID());
+			queueItem.setC_BPartner_Location_ID(flatrateTerm.getDropShip_Location_ID());
+		}
 	}
 }

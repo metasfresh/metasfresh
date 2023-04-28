@@ -68,6 +68,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -1089,6 +1090,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_Flatrate_Term retrieveFirstFlatrateTerm(@NonNull final I_C_Invoice invoice)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
@@ -1097,13 +1099,13 @@ public class FlatrateDAO implements IFlatrateDAO
 				.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
 				.addOnlyActiveRecordsFilter()
 				//collect related invoice candidates
-				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
+				.andCollect(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
 				//collect flatrate terms
-				.andCollect(I_C_Invoice_Candidate.COLUMN_Record_ID)
+				.andCollect(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, I_C_Flatrate_Term.class)
 				.create()
-				.firstNotNull(I_C_Flatrate_Term.class); // could be more than one, but all belong to the same contract and have same billing infos
+				.first(I_C_Flatrate_Term.class); // could be more than one, but all belong to the same contract and have same billing infos
 
 	}
 }
