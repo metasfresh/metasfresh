@@ -381,6 +381,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.remitTo(bPartnerLocationRecord.isRemitTo())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
