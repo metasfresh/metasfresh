@@ -53,13 +53,13 @@ public class BankStatementImportTableSqlUpdater
 			@Nullable final BankStatementId bankStatementId)
 	{
 		updateOrgBankAccount(orgBankAccountId, selection);
-		updateBankAccountTo(selection);
 		updateStatementDate(selection, bankStatementDate);
 		updateName(selection, bankStatementName);
 		updateCurrency(selection);
 		updateAmount(selection);
 		updateValutaDate(selection);
 		updateC_BPartner(selection);
+		updateBankAccountTo(selection);
 		checkInvoiceBPartnerCombination(selection);
 
 		updateBankStatement(selection, bankStatementId);
@@ -265,6 +265,8 @@ public class BankStatementImportTableSqlUpdater
 															+ " FROM " + I_C_BP_BankAccount.Table_Name + " ba "
 															+ " WHERE ba." + I_C_BP_BankAccount.COLUMNNAME_IBAN
 															+ " = i." + I_I_BankStatement.COLUMNNAME_IBAN_To
+															+ " AND ba. " + I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID
+															+ " = i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID
 															+ " AND ba. " + I_C_BP_BankAccount.COLUMNNAME_AD_Org_ID
 															+ " IN (i." + I_I_BankStatement.COLUMNNAME_AD_Org_ID + ", 0 )"
 															+ " AND ba." + I_C_BP_BankAccount.COLUMNNAME_IsActive
