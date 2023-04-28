@@ -113,3 +113,24 @@ export const fetchConflicts = ({
     .then(extractAxiosResponseData)
     .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
 };
+
+export const getSimulationOptimizerStatus = ({ simulationId }) => {
+  return axios
+    .get(buildURL(`${API_URL}/simulations/optimizer`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPISimulationOptimizerStatus);
+};
+
+export const startSimulationOptimizer = ({ simulationId }) => {
+  return axios
+    .post(buildURL(`${API_URL}/simulations/optimizer/start`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPISimulationOptimizerStatus);
+};
+
+export const stopSimulationOptimizer = ({ simulationId }) => {
+  return axios
+    .post(buildURL(`${API_URL}/simulations/optimizer/stop`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPISimulationOptimizerStatus);
+};

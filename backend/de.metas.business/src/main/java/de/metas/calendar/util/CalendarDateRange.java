@@ -160,34 +160,22 @@ public class CalendarDateRange
 	@VisibleForTesting
 	Range<Instant> toRange()
 	{
-		return DateIntervalIntersectionQueryFilter.range(this.startDate, this.endDate);
-	}
-
-	public boolean isConnectedTo(@Nullable final Instant otherRangeStart, @Nullable final Instant otherRangeEnd)
-	{
-		final Range<Instant> otherGuavaRange = DateIntervalIntersectionQueryFilter.range(otherRangeStart, otherRangeEnd);
-		final Range<Instant> thisGuavaRange = this.toRange();
-		return thisGuavaRange.isConnected(otherGuavaRange);
+		return DateIntervalIntersectionQueryFilter.closedOpenRange(this.startDate, this.endDate);
 	}
 
 	public boolean isOverlappingWith(@NonNull final CalendarDateRange other)
 	{
-		final Range<Instant> thisGuavaRange = this.toRange();
-		final Range<Instant> otherGuavaRange = other.toRange();
+		return DateIntervalIntersectionQueryFilter.isOverlapping(this.toRange(), other.toRange());
+	}
 
-		if (thisGuavaRange.isConnected(otherGuavaRange))
-		{
-			final Range<Instant> intersection = thisGuavaRange.intersection(otherGuavaRange);
+	public boolean isOverlappingWith(@NonNull final Range<Instant> other)
+	{
+		return DateIntervalIntersectionQueryFilter.isOverlapping(this.toRange(), other);
+	}
 
-			// NOTE: we calculate and check duration instead of calling Range.isEmpty() because Range.isEmpty() is returning false for an [v, v] interval!?
-			// NOTE2: we assume the bounds are always finite because our ranges are always bounded
-			final Duration duration = Duration.between(intersection.lowerEndpoint(), intersection.upperEndpoint());
-			return !duration.isZero();
-		}
-		else
-		{
-			return false;
-		}
+	public boolean isOverlappingWith(@Nullable final Instant startClosed, @Nullable final Instant endOpen)
+	{
+		return isOverlappingWith(DateIntervalIntersectionQueryFilter.closedOpenRange(startClosed, endOpen));
 	}
 
 	public static boolean equals(@Nullable final CalendarDateRange dateRange1, @Nullable final CalendarDateRange dateRange2)

@@ -37,9 +37,9 @@ public class CalendarContinuousQueryDispatcher
 		return map.computeIfAbsent(query, CalendarContinuousQuery::ofQuery);
 	}
 
-	private void dispatchAfterCommit(@NonNull final Event event)
+	private void dispatchAfterCommit(@NonNull final Event eventToDispatch)
 	{
-		dispatchEventsNow(ImmutableList.of(event));
+		dispatchAfterCommit(ImmutableList.of(eventToDispatch));
 	}
 
 	private void dispatchAfterCommit(@NonNull final ImmutableList<Event> eventsToDispatch)
