@@ -171,7 +171,7 @@ public class SAPGLJournal
 		for (ListIterator<SAPGLJournalLine> it = lines.listIterator(); it.hasNext(); )
 		{
 			final SAPGLJournalLine line = it.next();
-			if (line.isTaxLine())
+			if (line.isGeneratedTaxLine())
 			{
 				// remove old tax lines, we will generate them if needed
 				it.remove();
