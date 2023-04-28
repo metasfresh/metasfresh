@@ -1,9 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
-
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_WO_ObjectUnderTest
  *  @author metasfresh (generated) 
@@ -51,6 +49,31 @@ public interface I_C_Project_WO_ObjectUnderTest
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Order Line Provision.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_Provision_ID (int C_OrderLine_Provision_ID);
+
+	/**
+	 * Get Order Line Provision.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_Provision_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_Provision();
+
+	void setC_OrderLine_Provision(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_Provision);
+
+	ModelColumn<I_C_Project_WO_ObjectUnderTest, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Provision_ID = new ModelColumn<>(I_C_Project_WO_ObjectUnderTest.class, "C_OrderLine_Provision_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_Provision_ID = "C_OrderLine_Provision_ID";
 
 	/**
 	 * Set Project.
@@ -165,6 +188,28 @@ public interface I_C_Project_WO_ObjectUnderTest
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
 	 * Set Number of test items.
 	 * Number of objects under test
 	 *
@@ -186,6 +231,27 @@ public interface I_C_Project_WO_ObjectUnderTest
 
 	ModelColumn<I_C_Project_WO_ObjectUnderTest, Object> COLUMN_NumberOfObjectsUnderTest = new ModelColumn<>(I_C_Project_WO_ObjectUnderTest.class, "NumberOfObjectsUnderTest", null);
 	String COLUMNNAME_NumberOfObjectsUnderTest = "NumberOfObjectsUnderTest";
+
+	/**
+	 * Set Object Delivered Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setObjectDeliveredDate (@Nullable java.sql.Timestamp ObjectDeliveredDate);
+
+	/**
+	 * Get Object Delivered Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getObjectDeliveredDate();
+
+	ModelColumn<I_C_Project_WO_ObjectUnderTest, Object> COLUMN_ObjectDeliveredDate = new ModelColumn<>(I_C_Project_WO_ObjectUnderTest.class, "ObjectDeliveredDate", null);
+	String COLUMNNAME_ObjectDeliveredDate = "ObjectDeliveredDate";
 
 	/**
 	 * Get Updated.
