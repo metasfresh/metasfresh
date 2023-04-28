@@ -1,4 +1,3 @@
-@dev:runThisOne
 @from:cucumber
 @Topic:InvoiceReview
 Feature: invoice review
@@ -48,7 +47,7 @@ Feature: invoice review
   @Id:S14758_100
   # Note: completing the invoice to exercise also the MI that might create an empty invoic review record
   Scenario: Insert review by C_Invoice_ID and update it via ExternalId, expect a review record to be created automatically on invoice completion
-    When set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
+#    When set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code
 """
 {
@@ -105,8 +104,8 @@ Feature: invoice review
 #      | C_Invoice_Review_ID.Identifier | C_Invoice_ID.Identifier | OPT.CustomColumn |
 #      | invoice_Review_1               | invoice_1               |                  |
 
-    # cleanup that sysconfig after we don't need it anymore
-    And set sys config boolean value false for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
+#    cleanup that sysconfig after we don't need it anymore
+#    And set sys config boolean value false for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
 
     And the user creates a JsonInvoiceReviewUpsertItem and stores it in the context
       | OPT.C_Invoice_ID.Identifier | orgCode | customColumn |
