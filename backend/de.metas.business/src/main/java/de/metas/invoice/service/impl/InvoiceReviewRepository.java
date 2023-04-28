@@ -34,6 +34,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice_Review;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+
 @Repository
 public class InvoiceReviewRepository
 {
@@ -73,4 +75,34 @@ public class InvoiceReviewRepository
 		return newReview;
 	}
 
+	public void delete(@NonNull final InvoiceId invoiceId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Review.class)
+				.addEqualsFilter(I_C_Invoice_Review.COLUMN_C_Invoice_ID, invoiceId)
+				.create()
+				.delete();
+	}
+
+	@Nullable
+	public InvoiceReview getByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		final I_C_Invoice_Review reviewRecord = queryBL.createQueryBuilder(I_C_Invoice_Review.class)
+				.addEqualsFilter(I_C_Invoice_Review.COLUMN_C_Invoice_ID, invoiceId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly();
+		if (reviewRecord == null)
+		{
+			return null;
+		}
+		return fromPO(reviewRecord);
+	}
+
+	private static InvoiceReview fromPO(@NonNull final I_C_Invoice_Review reviewRecord)
+	{
+		return InvoiceReview.builder()
+				.id(InvoiceReviewId.ofRepoId(reviewRecord.getC_Invoice_Review_ID()))
+				.invoiceId(InvoiceId.ofRepoId(reviewRecord.getC_Invoice_ID()))
+				.build();
+	}
 }
