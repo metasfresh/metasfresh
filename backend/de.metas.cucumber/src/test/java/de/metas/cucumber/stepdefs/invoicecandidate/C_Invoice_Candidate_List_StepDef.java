@@ -111,20 +111,19 @@ public class C_Invoice_Candidate_List_StepDef
 
 			final String externalHeaderId = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_ExternalHeaderId);
 
-			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidates
+			invoiceCandidates
 					.stream()
 					.filter(candidate -> candidate.getM_Product_ID() == product.getM_Product_ID())
-					.peek(invoiceCandidate -> {
+					.forEach(invoiceCandidate -> {
 						if (externalHeaderId != null)
 						{
 							invoiceCandidate.setExternalHeaderId(externalHeaderId);
 						}
 
 						InterfaceWrapperHelper.saveRecord(invoiceCandidate);
-					})
-					.collect(ImmutableList.toImmutableList());
+					});
 
-			invoiceCandidateListTable.putOrReplace(invoiceCandidateListIdentifier, invoiceCandidateList);
+			invoiceCandidateListTable.putOrReplace(invoiceCandidateListIdentifier, invoiceCandidates);
 		}
 	}
 
