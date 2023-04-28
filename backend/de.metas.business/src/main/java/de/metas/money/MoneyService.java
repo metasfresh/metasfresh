@@ -24,7 +24,6 @@ package de.metas.money;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
@@ -114,7 +113,6 @@ public class MoneyService
 
 		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
 				SystemTime.asInstant(),
-				ConversionTypeMethod.Spot,
 				Env.getClientId(),
 				Env.getOrgId());
 
