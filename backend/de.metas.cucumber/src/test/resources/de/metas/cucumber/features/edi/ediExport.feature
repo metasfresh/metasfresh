@@ -96,7 +96,7 @@ Feature: EDI_cctop_invoic_v export format
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | il1                         | invoice_1               | convenienceSalate       | 10          | true      |
 
     And invoice is EDI exported

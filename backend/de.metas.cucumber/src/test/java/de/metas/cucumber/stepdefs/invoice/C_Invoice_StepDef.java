@@ -467,7 +467,7 @@ public class C_Invoice_StepDef
 				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
 		softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);
 
-		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_POReference);
+		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_POReference);
 		if (Check.isNotBlank(poReference))
 		{
 			softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference);
@@ -666,7 +666,7 @@ public class C_Invoice_StepDef
 					.map(Integer::parseInt)
 					.orElse(0);
 
-			assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_RepoId);
+			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID").isEqualTo(expectedSalesRep_RepoId);
 		}
 
 		softly.assertAll();
