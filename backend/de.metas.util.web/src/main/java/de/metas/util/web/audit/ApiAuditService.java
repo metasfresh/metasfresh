@@ -469,8 +469,10 @@ public class ApiAuditService
 
 		if (apiAuditConfig.isPerformAuditAsync())
 		{
+			// process the request right now..
 			filterChain.doFilter(contentCachedRequest, contentCachedResponse);
 
+			// ..but create the API_Request_Audit asynchronously to save time for the caller!
 			auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse);
 
 			contentCachedResponse.copyBodyToResponse();
