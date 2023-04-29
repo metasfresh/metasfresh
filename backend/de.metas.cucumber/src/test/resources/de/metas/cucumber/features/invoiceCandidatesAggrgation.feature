@@ -74,7 +74,7 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1,o_2               | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
@@ -148,7 +148,7 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1,o_2               | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
@@ -222,7 +222,7 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1,o_2               | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
@@ -296,7 +296,7 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1,o_2               | invoice_1,invoice_2     |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
       | invoice_2               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 99              |
     And validate created invoice lines
@@ -374,7 +374,7 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1,o_2               | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
