@@ -1,3 +1,23 @@
+-- 2023-04-26T09:38:56.395913600Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+VALUES (0,582261,0,'Department',TO_TIMESTAMP('2023-04-26 12:38:56.148','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Abteilung','Abteilung',TO_TIMESTAMP('2023-04-26 12:38:56.148','YYYY-MM-DD HH24:MI:SS.US'),100)
+ON CONFLICT DO NOTHING
+;
+
+-- 2023-04-26T09:38:56.410192200Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582261 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+ON CONFLICT DO NOTHING
+;
+
+-- Element: Department
+-- 2023-04-26T09:39:06.756871500Z
+UPDATE AD_Element_Trl SET Name='Department', PrintName='Department',Updated=TO_TIMESTAMP('2023-04-26 12:39:06.755','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582261 AND AD_Language='en_US'
+;
+
+
+
 -- Table: S_HumanResourceTestGroup
 -- 2023-05-02T08:07:02.519851900Z
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy,WEBUI_View_PageLength) VALUES ('3',0,0,0,542326,'N',TO_TIMESTAMP('2023-05-02 11:07:01.446','YYYY-MM-DD HH24:MI:SS.US'),100,'D','N','Y','N','N','Y','N','N','N','N','N',0,'Test facility group','NP','L','S_HumanResourceTestGroup','DTI',TO_TIMESTAMP('2023-05-02 11:07:01.446','YYYY-MM-DD HH24:MI:SS.US'),100,0)
