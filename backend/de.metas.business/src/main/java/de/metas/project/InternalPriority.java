@@ -41,14 +41,14 @@ import java.util.Optional;
 @AllArgsConstructor
 public enum InternalPriority implements ReferenceListAwareEnum
 {
-	URGENT(X_C_Project.INTERNALPRIORITY_Urgent, 9),
-	HIGH(X_C_Project.INTERNALPRIORITY_High, 7),
+	URGENT(X_C_Project.INTERNALPRIORITY_Urgent, 1),
+	HIGH(X_C_Project.INTERNALPRIORITY_High, 3),
 	MEDIUM(X_C_Project.INTERNALPRIORITY_Medium, 5),
-	LOW(X_C_Project.INTERNALPRIORITY_Low, 3),
-	MINOR(X_C_Project.INTERNALPRIORITY_Minor, 1);
+	LOW(X_C_Project.INTERNALPRIORITY_Low, 7),
+	MINOR(X_C_Project.INTERNALPRIORITY_Minor, 9);
 
 	@Getter @NonNull private final String code;
-	@Getter private final int intValue;
+	private final int intValue;
 
 	@Nullable
 	public static InternalPriority ofNullableCode(@Nullable final String code)
@@ -75,4 +75,9 @@ public enum InternalPriority implements ReferenceListAwareEnum
 	}
 
 	private static final ImmutableMap<String, InternalPriority> prioritiesByCode = Maps.uniqueIndex(Arrays.asList(values()), InternalPriority::getCode);
+
+	public boolean isHigherThan(@NonNull final InternalPriority other)
+	{
+		return intValue < other.intValue;
+	}
 }
