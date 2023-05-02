@@ -48,21 +48,11 @@ public interface IInvoiceCandidateEnqueuer
 	String MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = "InvoiceGenerate_No_Candidates_Selected";
 
 	/**
-	 * Prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular
-	 * {@link de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor}.
-	 */
-	void prepareSelection(@NonNull PInstanceId pInstanceId);
-
-	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
-     */
+	 *
+	 * @return enqueueing result
+	 */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
-
-	default IInvoiceCandidateEnqueueResult prepareAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
-	{
-		prepareSelection(pinstanceId);
-		return enqueueSelection(pinstanceId);
-	};
 
 	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
 
@@ -90,13 +80,17 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Sets the total net amount to invoice checksum.
-	 * <p>
+	 *
 	 * If the amount is not null and "FailOnChanges" is set then this checksum will be enforced on enqueued invoice candidates.
+	 *
+	 * @param totalNetAmtToInvoiceChecksum
 	 */
 	IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum);
 
 	/**
 	 * Sets the asyncBatch that will be used for grouping
+	 * @param asyncBatch
+	 * @return
 	 */
 	IInvoiceCandidateEnqueuer setC_Async_Batch(I_C_Async_Batch asyncBatch);
 

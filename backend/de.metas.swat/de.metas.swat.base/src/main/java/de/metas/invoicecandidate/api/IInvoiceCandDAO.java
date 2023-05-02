@@ -71,14 +71,15 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_Invoice_Candidate> getByIds(Collection<InvoiceCandidateId> invoiceCandidateIds);
 
 	/**
-	 * @return invoice candidate iterator - with no particular promises with respect to ordering.
+	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
+	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
 	 */
-	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(@NonNull final PInstanceId pinstanceId, @NonNull final IContextAware contextAware);
+	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, PInstanceId pinstanceId, String trxName);
 
 	/**
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 */
-	Iterator<I_C_Invoice_Candidate> retrieveIcForSelectionStableOrdering(@NonNull final PInstanceId pinstanceId);
+	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
 
 	List<I_C_Invoice_Candidate> getByQuery(InvoiceCandidateMultiQuery multiQuery);
 
@@ -105,7 +106,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
-	boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag);
+	boolean hasInvalidInvoiceCandidatesForTag(InvoiceCandRecomputeTag tag);
+
+	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull PInstanceId selectionId);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 

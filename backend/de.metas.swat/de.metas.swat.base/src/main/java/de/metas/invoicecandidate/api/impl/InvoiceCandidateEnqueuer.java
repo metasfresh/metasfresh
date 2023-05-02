@@ -82,31 +82,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		setWorkpackageADPInstanceCreatorId = false;
 		_failOnInvoiceCandidateError = true;
 
-		prepareSelection(invoiceCandidatesSelectionId);
 		return enqueueSelection(invoiceCandidatesSelectionId);
-	}
-
-	@Override
-	public void prepareSelection(@NonNull final PInstanceId pInstanceId)
-	{
-		// Here we just need the "set" of ICs (in no particular order) and prepare them one by one.
-		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
-		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pInstanceId);
-
-		// Create invoice candidates changes checker.
-		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
-		icChangesChecker.setBeforeChanges(unorderedICs);
-
-		//
-		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
-		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
-
-		ensureICsAreUpdated(pInstanceId);
-
-		//
-		// Make sure there are no changes in amounts or relevant fields (if that is required)
-		icChangesChecker.assertNoChanges(unorderedICs);
-
 	}
 
 	@Override
@@ -175,19 +151,14 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
-		//
-		// now we get the ICs to enqueue, and we assume that their ordering is "stable".
-		// I.e. even if someone changes some values, that's nothing to bother us here
-		final Iterator<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForSelectionStableOrdering(pinstanceId);
-
-		while (invoiceCandidates.hasNext())
+		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
 		{
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				// Fail if the invoice candidate has issues
 				if (isFailOnInvoiceCandidateError() && icRecord.isError())
 				{
-					throw new AdempiereException(Check.assumeNotNull(icRecord.getErrorMsg(), "At this point, the errorMsg can't be null; icRecord={}", icRecord))
+					throw new AdempiereException(icRecord.getErrorMsg())
 							.setParameter("invoiceCandidate", icRecord);
 				}
 
@@ -249,44 +220,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				icLock);
 	}
 
-	private void ensureICsAreUpdated(final @NonNull PInstanceId pinstanceId)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
-			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
-			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
-			invoiceCandBL.updateInvalid()
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
-					.setTaggedWithAnyTag()
-					.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
-					.update();
-		}
-		else
-		{
-			// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
-			waitForInvoiceCandidatesUpdated(pinstanceId);
-		}
-	}
-
-	private void waitForInvoiceCandidatesUpdated(final @NonNull PInstanceId pinstanceId)
-	{
-		try
-		{
-			TryAndWaitUtil.tryAndWait(
-					3600 /*let's wait a full hour*/,
-					1000 /*check once a second*/,
-					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(pinstanceId),
-					null);
-		}
-		catch (final InterruptedException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("AD_PInstance_ID (ICs-selection)", pinstanceId.getRepoId());
-		}
-	}
-
 	/**
 	 * @return true if invoice candidate is eligible for enqueueing
 	 */
@@ -325,7 +258,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		return true;
 	}
 
-	private void updateSelectionBeforeEnqueueing(@NonNull final PInstanceId selectionId)
+	private void prepareSelectionForEnqueueing(final PInstanceId selectionId)
 	{
 		//
 		// Check incomplete compensation groups

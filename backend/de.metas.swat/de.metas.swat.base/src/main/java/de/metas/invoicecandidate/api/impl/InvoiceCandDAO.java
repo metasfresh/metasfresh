@@ -137,7 +137,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
@@ -434,6 +433,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.stream(I_C_InvoiceCandidate_InOutLine.class)
 				.filter(this::isInOutCompletedOrClosed)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public int countICIOLAssociations(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		// count all I_C_InvoiceCandidate_InOutLine regardless of I_M_InOut status
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
 	}
 
 	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
