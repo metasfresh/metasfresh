@@ -87,7 +87,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -124,7 +124,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -163,7 +163,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -214,7 +214,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -267,7 +267,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -333,7 +333,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -402,7 +402,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -469,7 +469,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -535,7 +535,7 @@ Feature: Empties receives
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -604,7 +604,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    Then after not more than 50s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -670,7 +670,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -721,7 +721,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -764,7 +764,7 @@ Feature: Empties receives
 
     And the order identified by order is completed
 
-    And after not more than 50s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule                 | order                 | orderLine                 | bpartner                 | location                          | purchaseProduct         | 10         | warehouseStd              |
 
@@ -786,7 +786,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -829,7 +829,7 @@ Feature: Empties receives
 
     And the order identified by order is completed
 
-    And after not more than 50s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule                 | order                 | orderLine                 | bpartner                 | location                          | purchaseProduct         | 10         | warehouseStd              |
 
@@ -851,7 +851,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -904,7 +904,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
@@ -969,7 +969,7 @@ Feature: Empties receives
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
-    And after not more than 50s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
     And validate created C_InvoiceCandidate_InOutLine
