@@ -89,6 +89,11 @@ public class DDOrderAdvisedEventCreator
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
+		if(requiredQty.signum() == 0)
+		{
+			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
+		}
+
 		final List<DDOrderAdvisedEvent> events = new ArrayList<>();
 
 		final List<DDOrder> ddOrders = ddOrderPojoSupplier
