@@ -436,17 +436,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Override
-	public int countICIOLAssociations(@NonNull final InvoiceCandidateId invoiceCandidateId)
-	{
-		// count all I_C_InvoiceCandidate_InOutLine regardless of I_M_InOut status
-		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
-				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-	}
-
 	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
 	{
 		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
