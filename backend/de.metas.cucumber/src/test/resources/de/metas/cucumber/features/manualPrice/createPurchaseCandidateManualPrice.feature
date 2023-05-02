@@ -110,10 +110,10 @@ Feature: create Purchase Candidate having manual price set
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus |
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_17052022_1 | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            |
 
 
@@ -223,10 +223,10 @@ Feature: create Purchase Candidate having manual price set
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus |
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_18052022_1 | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 25.00          | 0            |
 
   @from:cucumber
@@ -331,10 +331,10 @@ Feature: create Purchase Candidate having manual price set
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus |
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_06072022_1 | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            |
 
 
