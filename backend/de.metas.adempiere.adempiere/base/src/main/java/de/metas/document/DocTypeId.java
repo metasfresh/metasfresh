@@ -42,7 +42,7 @@ public class DocTypeId implements RepoIdAware
 	}
 
 	@Nullable
-	public static DocTypeId ofRepoIdOrNull(int repoId)
+	public static DocTypeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}

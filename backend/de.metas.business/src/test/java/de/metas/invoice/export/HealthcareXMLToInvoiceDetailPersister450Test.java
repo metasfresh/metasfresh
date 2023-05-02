@@ -31,6 +31,7 @@ import de.metas.invoice.detail.InvoiceWithDetailsRepository;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.Invoice450RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -65,7 +66,10 @@ public class HealthcareXMLToInvoiceDetailPersister450Test
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
 				.customerId(BPartnerId.ofRepoId(10))
-				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
+				.testInvoiceLine(TestInvoiceLine.builder()
+										 .productId(ProductId.ofRepoId(20))
+										 .uomId(UomId.EACH)
+										 .externalIds("doesnt_really_matter_1").build())
 				.build().createInvoiceRecord();
 
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/streha_invoice_03.xml");
@@ -91,7 +95,10 @@ public class HealthcareXMLToInvoiceDetailPersister450Test
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
 				.customerId(BPartnerId.ofRepoId(10))
-				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
+				.testInvoiceLine(TestInvoiceLine.builder()
+										 .productId(ProductId.ofRepoId(20))
+										 .uomId(UomId.EACH)
+										 .externalIds("doesnt_really_matter_1").build())
 				.build().createInvoiceRecord();
 
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/streha_invoice_03.xml");

@@ -22,23 +22,22 @@ package org.eevolution.process;
  * #L%
  */
 
-
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.process.JavaProcess;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.eevolution.api.IDDOrderBL;
+import org.compiere.SpringContextHolder;
 import org.eevolution.model.I_DD_Order;
-
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 /**
  * Process used to manually trigger the completion of forward and backward {@link I_DD_Order}s
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+ * @implNote Task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
  */
 public class DD_Order_CompleteForwardBackward extends JavaProcess
 {
+	private final DDOrderLowLevelService ddOrderLowLevelService = SpringContextHolder.instance.getBean(DDOrderLowLevelService.class);
 
 	private I_DD_Order p_ddOrder;
 
@@ -49,10 +48,10 @@ public class DD_Order_CompleteForwardBackward extends JavaProcess
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final I_DD_Order ddOrder = getDD_Order();
-		Services.get(IDDOrderBL.class).completeForwardAndBackwardDDOrders(ddOrder);
+		ddOrderLowLevelService.completeForwardAndBackwardDDOrders(ddOrder);
 
 		return MSG_OK;
 	}

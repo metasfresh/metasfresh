@@ -58,7 +58,6 @@ public interface IAcctSchemaDAO extends ISingletonService
 	@Nullable
 	AcctSchema getByClientAndOrgOrNull(ClientId clientId, OrgId orgId);
 
-	@NonNull
 	AcctSchemaId getAcctSchemaIdByClientAndOrg(ClientId clientId, OrgId orgId);
 
 	/**
@@ -77,6 +76,8 @@ public interface IAcctSchemaDAO extends ISingletonService
 	I_C_AcctSchema getRecordById(AcctSchemaId acctSchemaId);
 
 	I_C_AcctSchema_GL retrieveAcctSchemaGLRecordOrNull(AcctSchemaId acctSchemaId);
+
+	List<AcctSchema> getByChartOfAccountsId(@NonNull ChartOfAccountsId chartOfAccountsId);
 
 	I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(AcctSchemaId acctSchemaId);
 

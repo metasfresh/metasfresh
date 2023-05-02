@@ -642,4 +642,15 @@ public class ProductDAO implements IProductDAO
 				.map(I_M_Product_SupplierApproval_Norm::getSupplierApproval_Norm)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull final GroupTemplateId groupTemplateId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.create()
+				.firstId(ProductCategoryId::ofRepoIdOrNull);
+	}
 }

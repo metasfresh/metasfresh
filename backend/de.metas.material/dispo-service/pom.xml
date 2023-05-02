@@ -75,6 +75,12 @@
             <version>${metasfresh.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.material</groupId>
+            <artifactId>metasfresh-material-planning</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
         <!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE:
             if you don't need fancy things like @SneakyThrows then scope 'provided' it's
             totally fine Also note that the version is managed by spring-boot. -->

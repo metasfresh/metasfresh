@@ -22,18 +22,9 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageLogsRepository;
-import de.metas.async.exceptions.ConfigurationException;
+import de.metas.async.api.WorkPackageLockHelper;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IQueueProcessor;
@@ -41,23 +32,32 @@ import de.metas.async.processor.IQueueProcessorEventDispatcher;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorStatistics;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractQueueProcessor implements IQueueProcessor
 {
 	private static final Logger logger = LogManager.getLogger(AbstractQueueProcessor.class);
 
-	private final IWorkPackageQueue queue;
-	private long queuePollingTimeout = IWorkPackageQueue.TIMEOUT_Infinite;
-
+	private final ReentrantLock mainLock = new ReentrantLock();
+	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private IWorkpackageProcessorFactory workpackageProcessorFactory = null;
-	private final QueueProcessorStatistics statistics;
 
+	private final IWorkPackageQueue queue;
+	private final QueueProcessorStatistics statistics;
 	private final IWorkpackageLogsRepository logsRepository;
+
 
 	public AbstractQueueProcessor(
 			@NonNull final IWorkPackageQueue queue,
@@ -68,147 +68,12 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		this.statistics = new QueueProcessorStatistics();
 	}
 
-	protected abstract boolean isRunning();
-
 	protected abstract void executeTask(WorkpackageProcessorTask task);
 
 	@Override
 	public IWorkPackageQueue getQueue()
 	{
 		return queue;
-	}
-
-	/**
-	 * @return the queuePollingTimeout
-	 */
-	public long getQueuePollingTimeout()
-	{
-		return queuePollingTimeout;
-	}
-
-	/**
-	 * @param queuePollingTimeout the queuePollingTimeout to set
-	 */
-	protected void setQueuePollingTimeout(long queuePollingTimeout)
-	{
-		this.queuePollingTimeout = queuePollingTimeout;
-	}
-
-	@Override
-	public void run()
-	{
-		while (true)
-		{
-			if (Thread.interrupted())
-			{
-				logger.info("Thread interrupted. Shutdown executor and quit");
-				shutdown();
-				break;
-			}
-			if (!isRunning())
-			{
-				logger.info("Processor not running anymore. Shutdown executor and quit");
-				shutdown();
-				break;
-			}
-
-			boolean success = false;
-			boolean skip = false;
-			Exception error = null;
-			try
-			{
-				success = pollAndSubmitNextWorkPackageTask();
-			}
-			catch (final ConfigurationException e)
-			{
-				// We have a configuration issue (e.g. one processor class is missing)
-				error = e;
-				success = false;
-				skip = true;
-			}
-			catch (final Exception e)
-			{
-				error = e;
-				success = false;
-			}
-			logger.debug("run - pollAndSubmitNextWorkPackageTask returned success={}; skip={}; error={}", success, skip, error);
-
-			if (!success)
-			{
-				// Shall we skip this package?
-				if (skip)
-				{
-					continue;
-				}
-
-				if (getQueuePollingTimeout() == IWorkPackageQueue.TIMEOUT_OneTimeOnly)
-				{
-					if (error != null)
-					{
-						throw new AdempiereException("Polling and submit failed: " + error.getLocalizedMessage(), error);
-					}
-					else
-					{
-						logger.info("Last polling wasn't successful and QueuePollingTimeout is OneTimeOnly. Stopping here");
-						break;
-					}
-				}
-				else
-				{
-					if (error != null)
-					{
-						logger.warn(error.getLocalizedMessage(), error);
-					}
-					logger.info("Previous pollAndSubmit was not successful. Sleeping 1000ms");
-					try
-					{
-						Thread.sleep(1000);
-					}
-					catch (final InterruptedException e)
-					{
-						// thread was interrupted. Quit.
-						logger.debug("Thread interrupted while sleeping. Quit.", e);
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	private boolean pollAndSubmitNextWorkPackageTask()
-	{
-		final IWorkPackageQueue queue = getQueue();
-		final I_C_Queue_WorkPackage workPackage;
-		try (final MDCCloseable ignored = MDC.putCloseable("queue", queue.toString());
-				final MDCCloseable ignored1 = MDC.putCloseable("queue.pollAndLockStart", Long.toString(SystemTime.millis()));)
-		{
-			logger.debug("pollAndSubmitNextWorkPackageTask - going to invoke queue.pollAndLock() with timeout={} on queue={}", queuePollingTimeout, queue);
-			workPackage = queue.pollAndLock(queuePollingTimeout);
-			if (workPackage == null)
-			{
-				logger.debug("pollAndSubmitNextWorkPackageTask - queue returned workPackage", queuePollingTimeout, queue);
-				return false;
-			}
-		}
-		boolean success = false;
-		try
-		{
-			final IWorkpackageProcessor workPackageProcessor = getWorkpackageProcessor(workPackage);
-			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository);
-			executeTask(task);
-			success = true;
-			return true;
-		}
-		finally
-		{
-			if (!success)
-			{
-				logger.info("Submitting for processing next workpackage failed. Trying to unlock {}.", workPackage);
-				queue.unlockNoFail(workPackage);
-
-				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
-			}
-		}
 	}
 
 	@Override
@@ -287,18 +152,86 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		return factory;
 	}
 
-	protected IWorkpackageProcessor getWorkpackageProcessor(final I_C_Queue_WorkPackage workPackage)
+	@Override
+	public boolean processLockedWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage)
+	{
+		boolean success = false;
+		try
+		{
+			//dev-note: we acquire a lock to make sure the `isAvailableToWork` check is accurate
+			mainLock.lock();
+
+			if (!isAvailableToWork())
+			{
+				return false;
+			}
+
+			success = processWorkPackage(workPackage);
+			return success;
+		}
+		catch (final Throwable t)
+		{
+			logger.error("*** processLockedWorkPackage failed! Moving forward...", t);
+			success = false;
+			return false;
+		}
+		finally
+		{
+			if (!success)
+			{
+				WorkPackageLockHelper.unlockNoFail(workPackage);
+			}
+
+			mainLock.unlock();
+		}
+	}
+
+	@NonNull
+	public Set<QueuePackageProcessorId> getAssignedPackageProcessorIds() {
+		return getQueue().getQueuePackageProcessorIds();
+	}
+
+	@Override
+	public QueueProcessorId getQueueProcessorId()
+	{
+		return getQueue().getQueueProcessorId();
+	}
+
+	private boolean processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage)
+	{
+		boolean success = false;
+		try
+		{
+			final IWorkpackageProcessor workPackageProcessor = getWorkpackageProcessor(workPackage);
+			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository);
+			executeTask(task);
+			success = true;
+			return true;
+		}
+		finally
+		{
+			if (!success)
+			{
+				logger.info("Submitting for processing next workPackage failed. Trying to unlock {}.", workPackage);
+				queue.unlockNoFail(workPackage);
+
+				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
+			}
+		}
+	}
+
+	private IWorkpackageProcessor getWorkpackageProcessor(final I_C_Queue_WorkPackage workPackage)
 	{
 		final IWorkpackageProcessorFactory factory = getActualWorkpackageProcessorFactory();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
-		final int packageProcessorId = workPackage.getC_Queue_Block().getC_Queue_PackageProcessor_ID();
+		final int packageProcessorId = workPackage.getC_Queue_PackageProcessor_ID();
 
 		return factory.getWorkpackageProcessor(ctx, packageProcessorId);
 	}
 
-	protected IQueueProcessorEventDispatcher getEventDispatcher()
+	private IQueueProcessorEventDispatcher getEventDispatcher()
 	{
-		return Services.get(IQueueProcessorFactory.class).getQueueProcessorEventDispatcher();
+		return queueProcessorFactory.getQueueProcessorEventDispatcher();
 	}
 }

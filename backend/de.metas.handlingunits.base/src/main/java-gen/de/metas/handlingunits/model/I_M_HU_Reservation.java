@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_HU_Reservation
  *  @author metasfresh (generated) 
@@ -56,7 +57,7 @@ public interface I_M_HU_Reservation
 	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
@@ -66,7 +67,7 @@ public interface I_M_HU_Reservation
 	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_Customer_ID();
@@ -170,6 +171,31 @@ public interface I_M_HU_Reservation
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Distribution Order Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDD_OrderLine_ID (int DD_OrderLine_ID);
+
+	/**
+	 * Get Distribution Order Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDD_OrderLine_ID();
+
+	@Nullable org.eevolution.model.I_DD_OrderLine getDD_OrderLine();
+
+	void setDD_OrderLine(@Nullable org.eevolution.model.I_DD_OrderLine DD_OrderLine);
+
+	ModelColumn<I_M_HU_Reservation, org.eevolution.model.I_DD_OrderLine> COLUMN_DD_OrderLine_ID = new ModelColumn<>(I_M_HU_Reservation.class, "DD_OrderLine_ID", org.eevolution.model.I_DD_OrderLine.class);
+	String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -214,7 +240,32 @@ public interface I_M_HU_Reservation
 	String COLUMNNAME_M_HU_Reservation_ID = "M_HU_Reservation_ID";
 
 	/**
-	 * Set Open Qty.
+	 * Set Picking Job Step.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Step_ID (int M_Picking_Job_Step_ID);
+
+	/**
+	 * Get Picking Job Step.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Step_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Step getM_Picking_Job_Step();
+
+	void setM_Picking_Job_Step(@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Step M_Picking_Job_Step);
+
+	ModelColumn<I_M_HU_Reservation, de.metas.handlingunits.model.I_M_Picking_Job_Step> COLUMN_M_Picking_Job_Step_ID = new ModelColumn<>(I_M_HU_Reservation.class, "M_Picking_Job_Step_ID", de.metas.handlingunits.model.I_M_Picking_Job_Step.class);
+	String COLUMNNAME_M_Picking_Job_Step_ID = "M_Picking_Job_Step_ID";
+
+	/**
+	 * Set Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity
@@ -224,7 +275,7 @@ public interface I_M_HU_Reservation
 	void setQtyReserved (BigDecimal QtyReserved);
 
 	/**
-	 * Get Open Qty.
+	 * Get Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity

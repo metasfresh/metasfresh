@@ -1,14 +1,14 @@
 package de.metas.material.dispo.commons.candidate;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L
@@ -67,6 +67,8 @@ public enum CandidateType implements ReferenceListAwareEnum
 
 	ATTRIBUTES_CHANGED_TO(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_TO);
 
+	private final static Set<CandidateType> INCREASING_STOCK_TYPES = ImmutableSet.of(SUPPLY, UNEXPECTED_INCREASE, INVENTORY_UP, ATTRIBUTES_CHANGED_TO);
+
 	@Getter
 	private final String code;
 
@@ -81,4 +83,9 @@ public enum CandidateType implements ReferenceListAwareEnum
 	}
 
 	private static final ValuesIndex<CandidateType> index = ReferenceListAwareEnums.index(values());
+
+	public final boolean isIncreasingStock()
+	{
+		return INCREASING_STOCK_TYPES.contains(this);
+	}
 }

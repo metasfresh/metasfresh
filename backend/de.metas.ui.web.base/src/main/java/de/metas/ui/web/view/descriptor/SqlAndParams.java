@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.dao.sql.SqlParamsInliner;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -79,18 +81,44 @@ public class SqlAndParams
 				.orElseThrow(() -> new AdempiereException("No non null SQLs found in " + sqlAndParamsCollection));
 	}
 
-	public static Optional<SqlAndParams> andNullables(final SqlAndParams... sqlAndParamsCollection)
+	public static Optional<SqlAndParams> andNullables(final SqlAndParams... sqlAndParamsArray)
 	{
-		if (sqlAndParamsCollection == null || sqlAndParamsCollection.length == 0)
+		if (sqlAndParamsArray == null || sqlAndParamsArray.length == 0)
 		{
 			return Optional.empty();
 		}
 
-		return andNullables(Arrays.asList(sqlAndParamsCollection));
+		return andNullables(Arrays.asList(sqlAndParamsArray));
 	}
 
 	public static Optional<SqlAndParams> andNullables(final Collection<SqlAndParams> sqlAndParamsCollection)
 	{
+		return joinNullables("AND", sqlAndParamsCollection);
+	}
+
+	public static Optional<SqlAndParams> orNullables(@Nullable final SqlAndParams... sqlAndParamsArray)
+	{
+		if (sqlAndParamsArray == null || sqlAndParamsArray.length == 0)
+		{
+			return Optional.empty();
+		}
+
+		return orNullables(Arrays.asList(sqlAndParamsArray));
+	}
+
+	public static Optional<SqlAndParams> orNullables(@Nullable final Collection<SqlAndParams> sqlAndParamsCollection)
+	{
+		return joinNullables("OR", sqlAndParamsCollection);
+	}
+
+	private static Optional<SqlAndParams> joinNullables(@NonNull final String operator, @Nullable final Collection<SqlAndParams> sqlAndParamsCollection)
+	{
+		final String operatorNorm = StringUtils.trimBlankToNull(operator);
+		if (operatorNorm == null)
+		{
+			throw new AdempiereException("Invalid blank operator: `" + operator + "`");
+		}
+
 		if (sqlAndParamsCollection == null || sqlAndParamsCollection.isEmpty())
 		{
 			return Optional.empty();
@@ -120,7 +148,7 @@ public class SqlAndParams
 
 				if (!builder.isEmpty())
 				{
-					builder.append(" AND ");
+					builder.append(" ").append(operatorNorm).append(" ");
 				}
 				builder.append("(").append(sqlAndParams).append(")");
 			}
@@ -164,6 +192,8 @@ public class SqlAndParams
 		return builder().append(this);
 	}
 
+	public static boolean equals(@Nullable final SqlAndParams o1, @Nullable final SqlAndParams o2) {return Objects.equals(o1, o2);}
+
 	@Nullable
 	public Object[] getSqlParamsArray()
 	{
@@ -190,7 +220,6 @@ public class SqlAndParams
 		return !isEmpty()
 				? TypedSqlQueryFilter.of(sql, sqlParams)
 				: ConstantQueryFilter.of(true);
-
 	}
 
 	//
@@ -228,6 +257,13 @@ public class SqlAndParams
 			return new SqlAndParams(sql, sqlParamsArray);
 		}
 
+		public Builder clear()
+		{
+			sql = null;
+			sqlParams = null;
+			return this;
+		}
+
 		public boolean isEmpty()
 		{
 			return length() <= 0 && !hasParameters();
@@ -258,6 +294,15 @@ public class SqlAndParams
 			{
 				return this;
 			}
+		}
+
+		public Builder appendIfNotEmpty(@NonNull final CharSequence sql, @Nullable final Object... sqlParams)
+		{
+			if (!isEmpty())
+			{
+				append(sql, sqlParams);
+			}
+			return this;
 		}
 
 		public Builder append(@NonNull final CharSequence sql, @Nullable final Object... sqlParams)

@@ -1,14 +1,5 @@
 package de.metas.impexp.product;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.ModelValidationEngine;
-
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
@@ -19,11 +10,18 @@ import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.ModelValidationEngine;
+
+import java.sql.ResultSet;
+import java.util.Properties;
 
 public class IFAInitialImportProcess2 extends SimpleImportProcessTemplate<I_I_Pharma_Product>
 {
 	// AbstractImportJavaProcess
-	private final String DEACTIVATE_OPERATION_CODE = "2";
+	private static final String DEACTIVATE_OPERATION_CODE = "2";
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
@@ -51,7 +49,7 @@ public class IFAInitialImportProcess2 extends SimpleImportProcessTemplate<I_I_Ph
 	}
 
 	@Override
-	protected I_I_Pharma_Product retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	protected I_I_Pharma_Product retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Pharma_Product(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -66,6 +64,7 @@ public class IFAInitialImportProcess2 extends SimpleImportProcessTemplate<I_I_Ph
 				.ctx(getCtx())
 				.tableName(getImportTableName())
 				.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)
+				.build()
 				.updateIPharmaProduct();
 	}
 

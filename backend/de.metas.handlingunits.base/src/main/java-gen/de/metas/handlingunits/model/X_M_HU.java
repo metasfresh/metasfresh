@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 294382396L;
+	private static final long serialVersionUID = 2110603265L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -62,6 +62,41 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setClearanceNote (final @Nullable java.lang.String ClearanceNote)
+	{
+		set_Value (COLUMNNAME_ClearanceNote, ClearanceNote);
+	}
+
+	@Override
+	public java.lang.String getClearanceNote() 
+	{
+		return get_ValueAsString(COLUMNNAME_ClearanceNote);
+	}
+
+	/** 
+	 * ClearanceStatus AD_Reference_ID=541540
+	 * Reference name: Clearance
+	 */
+	public static final int CLEARANCESTATUS_AD_Reference_ID=541540;
+	/** Cleared = C */
+	public static final String CLEARANCESTATUS_Cleared = "C";
+	/** Locked = L */
+	public static final String CLEARANCESTATUS_Locked = "L";
+	/** Quarantined = Q */
+	public static final String CLEARANCESTATUS_Quarantined = "Q";
+	@Override
+	public void setClearanceStatus (final @Nullable java.lang.String ClearanceStatus)
+	{
+		set_Value (COLUMNNAME_ClearanceStatus, ClearanceStatus);
+	}
+
+	@Override
+	public java.lang.String getClearanceStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_ClearanceStatus);
 	}
 
 	@Override

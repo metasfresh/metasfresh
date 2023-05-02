@@ -56,6 +56,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.user.UserGroupRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -210,6 +211,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// this.huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		// this.huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);
 

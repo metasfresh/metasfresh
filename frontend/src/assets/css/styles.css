@@ -17,6 +17,7 @@
 @import './notification.css';
 @import './panel.css';
 @import './overlayfield.css';
+@import './sitemap.css';
 @import './table.css';
 @import './tabs.css';
 @import './tag.css';
@@ -1067,6 +1068,8 @@ body{
     width: 200px;
     max-width: 480px;
     max-height: 80vh;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -1086,6 +1089,7 @@ body{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 5px;
 }
 
 .filter-clear {
@@ -1164,7 +1168,7 @@ body{
 }
 
 .dashboard-cards {
-    height: 100%;
+    height: auto;
 }
 
 .dashboard-logo-wrapper {

@@ -1,6 +1,7 @@
 package de.metas.material.planning;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.time.SystemTime;
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
 import lombok.AccessLevel;
@@ -13,9 +14,11 @@ import org.compiere.util.TimeUtil;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.TemporalUnit;
 
 /*
@@ -82,10 +85,10 @@ public class ResourceType
 				&& getTimeSlotInHours() > 0;
 	}
 
-	public boolean isDayAvailable(final LocalDate date)
+	public boolean isDayAvailable(final Instant date)
 	{
 		return isActive()
-				&& isDayAvailable(date.getDayOfWeek());
+				&& isDayAvailable(date.atZone(SystemTime.zoneId()).getDayOfWeek());
 	}
 
 	public int getAvailableDaysPerWeek()
@@ -101,19 +104,29 @@ public class ResourceType
 	@Deprecated
 	public Timestamp getDayStart(final Timestamp date)
 	{
-		final LocalDateTime dayStart = getDayStart(TimeUtil.asLocalDateTime(date));
-		return TimeUtil.asTimestamp(dayStart);
+		final Instant dayStart = getDayStart(date.toInstant());
+		return Timestamp.from(dayStart);
+	}
+
+	public Instant getDayStart(@NonNull final Instant date)
+	{
+		return getDayStart(date.atZone(SystemTime.zoneId())).toInstant();
 	}
 
 	public LocalDateTime getDayStart(final LocalDateTime date)
 	{
+		return getDayStart(date.atZone(SystemTime.zoneId())).toLocalDateTime();
+	}
+
+	public ZonedDateTime getDayStart(final ZonedDateTime date)
+	{
 		if (isTimeSlot())
 		{
-			return date.toLocalDate().atTime(getTimeSlotStart());
+			return date.toLocalDate().atTime(getTimeSlotStart()).atZone(date.getZone());
 		}
 		else
 		{
-			return date.toLocalDate().atStartOfDay();
+			return date.toLocalDate().atStartOfDay().atZone(date.getZone());
 		}
 	}
 
@@ -124,15 +137,25 @@ public class ResourceType
 		return TimeUtil.asTimestamp(dayEnd);
 	}
 
+	public Instant getDayEnd(final Instant date)
+	{
+		return getDayEnd(date.atZone(SystemTime.zoneId())).toInstant();
+	}
+
 	public LocalDateTime getDayEnd(final LocalDateTime date)
+	{
+		return getDayEnd(date.atZone(SystemTime.zoneId())).toLocalDateTime();
+	}
+
+	public ZonedDateTime getDayEnd(final ZonedDateTime date)
 	{
 		if (isTimeSlot())
 		{
-			return date.toLocalDate().atTime(timeSlotEnd);
+			return date.toLocalDate().atTime(timeSlotEnd).atZone(date.getZone());
 		}
 		else
 		{
-			return date.toLocalDate().atTime(LocalTime.MAX);
+			return date.toLocalDate().atTime(LocalTime.MAX).atZone(date.getZone());
 		}
 	}
 }

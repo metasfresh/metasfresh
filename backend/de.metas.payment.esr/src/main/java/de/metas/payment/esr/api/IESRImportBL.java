@@ -104,4 +104,6 @@ public interface IESRImportBL extends ISingletonService
 	Set<PaymentId> getPaymentIds(ESRImportId esrImportId);
 
 	void linkBankStatementLinesByPaymentIds(Map<PaymentId, BankStatementAndLineAndRefId> bankStatementLineRefIdIndexByPaymentId);
+
+	I_ESR_Import getById(ESRImportId esrImportId);
 }

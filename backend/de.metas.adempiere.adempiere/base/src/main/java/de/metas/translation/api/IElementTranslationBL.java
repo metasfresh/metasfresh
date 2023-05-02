@@ -1,15 +1,11 @@
 package de.metas.translation.api;
 
-import java.sql.SQLException;
-
+import de.metas.util.ISingletonService;
 import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
-
-import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -39,29 +35,12 @@ public interface IElementTranslationBL extends ISingletonService
 	ModelDynAttributeAccessor<I_AD_Tab, Boolean> DYNATTR_AD_Tab_UpdateTranslations = new ModelDynAttributeAccessor<>("AD_Tab_UpdateTranslations", Boolean.class);
 	ModelDynAttributeAccessor<I_AD_Window, Boolean> DYNATTR_AD_Window_UpdateTranslations = new ModelDynAttributeAccessor<>("AD_Window_UpdateTranslations", Boolean.class);
 
-	/**
-	 * Method used for updating the data in the following tables:
-	 *
-	 * <li>AD_Column_TRL,
-	 * <li>AD_Process_Para_TRL,
-	 * <li>AD_Field_TRL,
-	 * <li>AD_PrintFormatItem_TRL
-	 * </li>
-	 *
-	 * Specific columns are updated based on the similar columns from the table AD_Element_TRL, where the AD_Element_ID and the AD_Language are the given ones
-	 *
-	 * @param elementId
-	 * @param adLanguage
-	 * @throws SQLException
-	 */
-	void updateTranslations(ElementChangedEvent event);
-	
+	void propagateElementTrls(AdElementId adElementId, String adLanguage);
+
 	void updateColumnTranslationsFromElement(AdElementId adElementId);
 
 	/**
 	 * Update Fields translation for the fields that have the element given as parameter as AD_Name_ID, delete translation if AD_Name was deleted
-	 *
-	 * @param ad_Element_ID
 	 */
 	void updateFieldTranslationsFromAD_Name(AdElementId adElementId);
 
@@ -71,7 +50,7 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void updateMenuTranslationsFromElement(AdElementId adElementId);
 
-	void updateDependentADEntries(ElementChangedEvent event);
+	void updateElementFromElementTrlIfBaseLanguage(AdElementId adElementId, String adLanguage);
 
 	void createAndAssignElementsToApplicationDictionaryEntries();
 }

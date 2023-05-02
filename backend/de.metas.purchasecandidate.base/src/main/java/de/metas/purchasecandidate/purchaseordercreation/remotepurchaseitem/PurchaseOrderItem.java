@@ -193,6 +193,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
+	@Nullable
 	public ForecastLineId getForecastLineId()
 	{
 		return getPurchaseCandidate().getForecastLineId();
@@ -234,23 +235,33 @@ public class PurchaseOrderItem implements PurchaseItem
 		}
 	}
 
+	@Nullable
 	public BigDecimal getPrice()
 	{
 		return purchaseCandidate.getPriceEnteredEff();
 	}
 
+	@Nullable
 	public Percent getDiscount()
 	{
 		return purchaseCandidate.getDiscountEff();
 	}
 
+	@Nullable
 	public String getExternalPurchaseOrderUrl()
 	{
 		return purchaseCandidate.getExternalPurchaseOrderUrl();
 	}
 
+	@Nullable
 	public ExternalId getExternalHeaderId()
 	{
 		return purchaseCandidate.getExternalHeaderId();
+	}
+
+	@Nullable
+	public String getPOReference()
+	{
+		return purchaseCandidate.getPOReference();
 	}
 }

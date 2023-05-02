@@ -132,6 +132,7 @@ public class ShipmentScheduleAvailableStockDetail
 		}
 	}
 
+	@Nullable
 	private Quantity computeQtyAvailableToPick()
 	{
 		if (pickingBOM == null)
@@ -158,7 +159,7 @@ public class ShipmentScheduleAvailableStockDetail
 	{
 		return componentStockDetails.get(componentId)
 				.stream()
-				.map(detail -> detail.getQtyAvailable())
+				.map(ShipmentScheduleAvailableStockDetail::getQtyAvailable)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 

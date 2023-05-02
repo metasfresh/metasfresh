@@ -1,39 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.util.Env;
-
 import com.google.common.base.Preconditions;
-
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -43,25 +10,40 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
-import de.metas.util.Check;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.util.Env;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+
+	private IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}
+
 	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(@NonNull final I_M_HU hu)
 	{
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		return queryByHU(hu).create().list();
+	}
 
+	private IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryByHU(final @NonNull I_M_HU hu)
+	{
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, hu)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID); //creation sequence
 
 		//
 		// Filter HU based on it's type (LU/TU)
+		final IHandlingUnitsBL handlingUnitsBL = handlingUnitsBL();
 		if (handlingUnitsBL.isVirtual(hu))
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, hu.getM_HU_ID());
@@ -76,38 +58,20 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		}
 		else
 		{
-			throw new HUException("HU shall be a LU or a TU: " + handlingUnitsBL.getDisplayName(hu));
+			throw new HUException("HU shall be a LU/TU/CU: " + handlingUnitsBL.getDisplayName(hu));
 		}
-
-		//
-		// Order by creation sequence
-		queryBuilder.orderBy()
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
-
-		//
-		// Execute the query and return the list
-		return queryBuilder
-				.create()
-				.list();
+		return queryBuilder;
 	}
 
-	@Override
-	public List<I_M_ShipmentSchedule_QtyPicked> retriveQtyPickedNotDeliveredForTopLevelHU(final I_M_HU hu)
+	private IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryByTopLevelHU(final @NonNull I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, hu)
-				// Not delivered
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
-				// Only Actives
-				.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, hu)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID); //creation sequence
 
 		//
 		// Filter by LU/TU/VHU
+		final IHandlingUnitsBL handlingUnitsBL = handlingUnitsBL();
 		if (handlingUnitsBL.isLoadingUnit(hu))
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_LU_HU_ID, hu.getM_HU_ID());
@@ -128,8 +92,26 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 			throw new HUException("Unsupported HU type: " + handlingUnitsBL.getDisplayName(hu));
 		}
 
-		return queryBuilder.create().list();
+		return queryBuilder;
+	}
 
+	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedNotDeliveredForTopLevelHU(@NonNull final I_M_HU topLevelHU)
+	{
+		return queryByTopLevelHU(topLevelHU)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null) // Not delivered
+				.create()
+				.list();
+	}
+
+	@Override
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveByTopLevelHUAndShipmentScheduleId(
+			@NonNull final I_M_HU topLevelHU,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return queryByTopLevelHU(topLevelHU)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.list();
 	}
 
 	@Override
@@ -139,14 +121,13 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		Preconditions.checkArgument(tuHUId > 0, "tuHUId > 0");
 
 		final Properties ctx = Env.getCtx();
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHUId)
-				.orderBy()
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).endOrderBy();
-
-		return queryBuilder.create().list();
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
+				.create()
+				.list();
 	}
 
 	@Override
@@ -160,26 +141,21 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	@Override
 	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHUQuery(@NonNull final I_M_HU vhu)
 	{
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, vhu)
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, vhu)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())
-				.orderBy()
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).endOrderBy();
-
-		return queryBuilder;
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
 	}
 
 	@Override
 	public List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
 	{
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 
 		//
 		// Iterate HUs and collect candidates from them
-		final List<ShipmentScheduleWithHU> result = new ArrayList<>();
+		final IHandlingUnitsBL handlingUnitsBL = handlingUnitsBL();
+		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 		for (final I_M_HU hu : hus)
 		{
 			// Make sure we are dealing with an top level HU
@@ -191,8 +167,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 			//
 			// Retrieve and create candidates from shipment schedule QtyPicked assignments
 			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
-			final List<I_M_ShipmentSchedule_QtyPicked> shipmentSchedulesQtyPicked //
-					= huShipmentScheduleDAO.retriveQtyPickedNotDeliveredForTopLevelHU(hu);
+			final List<I_M_ShipmentSchedule_QtyPicked> shipmentSchedulesQtyPicked = retrieveQtyPickedNotDeliveredForTopLevelHU(hu);
 			for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentSchedulesQtyPicked)
 			{
 				if (!shipmentScheduleQtyPicked.isActive())
@@ -206,8 +181,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				// continue;
 				// }
 
-				final ShipmentScheduleWithHU candidate = //
-						ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
+				final ShipmentScheduleWithHU candidate = ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
 				candidatesForHU.add(candidate);
 			}
 
@@ -219,14 +193,14 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 			if (candidatesForHU.isEmpty())
 			{
 				Loggables.addLog("No eligible {} records found for hu {}",
-						de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name,
-						handlingUnitsBL.getDisplayName(hu));
+						I_M_ShipmentSchedule_QtyPicked.Table_Name,
+						handlingUnitsBL().getDisplayName(hu));
 			}
 		}
 
 		//
 		// Sort result
-		Collections.sort(result, new ShipmentScheduleWithHUComparator());
+		result.sort(new ShipmentScheduleWithHUComparator());
 
 		// TODO: make sure all shipment schedules are valid
 

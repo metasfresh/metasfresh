@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -173,10 +172,11 @@ public class UOMConversionBL implements IUOMConversionBL
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
 
+	@NonNull
 	@Override
 	public Quantity convertToProductUOM(
 			@NonNull final Quantity quantity,
-			final ProductId productId)
+			@NonNull final ProductId productId)
 	{
 		final BigDecimal sourceQty = quantity.toBigDecimal();
 		final I_C_UOM sourceUOM = quantity.getUOM();
@@ -221,28 +221,6 @@ public class UOMConversionBL implements IUOMConversionBL
 	private static UOMPrecision extractCostingPrecision(final I_C_UOM uom)
 	{
 		return UOMPrecision.ofInt(uom.getCostingPrecision());
-	}
-
-	@Override
-	public BigDecimal convertPrice(
-			final int productId,
-			final BigDecimal price,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
-			final int pricePrecision)
-	{
-		BigDecimal priceConv = convertQty(
-				ProductId.ofRepoIdOrNull(productId),
-				Rounding.PRESERVE_SCALE, // *we* want to do the rounding if something has to be rounded
-				price,
-				uomFrom,
-				uomTo);
-		if (priceConv.scale() > pricePrecision)
-		{
-			// for prices, round half-up; when converting quantities, the rounding mode could be different
-			priceConv = priceConv.setScale(pricePrecision, RoundingMode.HALF_UP);
-		}
-		return priceConv;
 	}
 
 	@Nullable

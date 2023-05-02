@@ -9,6 +9,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -31,6 +33,9 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Aka {@code M_HU_PI_Attribute_ID}.
+ */
 @Value
 public class HuPackingInstructionsAttributeId implements RepoIdAware
 {
@@ -40,6 +45,7 @@ public class HuPackingInstructionsAttributeId implements RepoIdAware
 		return new HuPackingInstructionsAttributeId(repoId);
 	}
 
+	@Nullable
 	public static HuPackingInstructionsAttributeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;

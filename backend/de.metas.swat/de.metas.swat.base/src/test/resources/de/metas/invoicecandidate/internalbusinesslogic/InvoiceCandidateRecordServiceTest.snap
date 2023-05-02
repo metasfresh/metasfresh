@@ -67,6 +67,17 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
         ]
       }
     },
+    "pickedData" : {
+      "productId" : 300000,
+      "qtyPicked" : {
+        "qty" : "0",
+        "uomId" : 100000
+      },
+      "qtyPickedInUOM" : {
+        "qty" : "0",
+        "uomId" : 110000
+      }
+    },
     "invoicedData" : {
       "qtys" : {
         "productId" : 300000,
@@ -146,6 +157,17 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
             "inDispute" : false
           }
         ]
+      }
+    },
+    "pickedData" : {
+      "productId" : 300000,
+      "qtyPicked" : {
+        "qty" : "0",
+        "uomId" : 100000
+      },
+      "qtyPickedInUOM" : {
+        "qty" : "0",
+        "uomId" : 110000
       }
     },
     "invoicedData" : {

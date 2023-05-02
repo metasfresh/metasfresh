@@ -22,6 +22,12 @@ package de.metas.util.lang;
  * #L%
  */
 
+/**
+ * Implementors of this method have to implement following methods:
+ * <ul>
+ *     <li>static ofCode method</li>
+ * </ul>
+ */
 public interface ReferenceListAwareEnum
 {
 	String getCode();

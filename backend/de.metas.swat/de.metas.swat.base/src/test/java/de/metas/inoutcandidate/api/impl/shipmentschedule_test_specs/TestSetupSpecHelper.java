@@ -160,7 +160,7 @@ public class TestSetupSpecHelper
 			final I_M_Product productRecord = setupData.getProductByValue(stock.getProduct());
 
 			final I_MD_Stock stockRecord = newInstance(I_MD_Stock.class);
-			stockRecord.setM_Product(productRecord);
+			stockRecord.setM_Product_ID(productRecord.getM_Product_ID());
 			stockRecord.setM_Warehouse_ID(setupData.warehouseId.getRepoId());
 			stockRecord.setQtyOnHand(stock.getQtyStock());
 			saveRecord(stockRecord);
@@ -251,7 +251,7 @@ public class TestSetupSpecHelper
 
 		public I_C_UOM getUOMByName(final String name)
 		{
-			I_C_UOM uom = uomsByName.get(name);
+			final I_C_UOM uom = uomsByName.get(name);
 			if (uom == null)
 			{
 				throw new AdempiereException("No UOM defined for '" + name + "'");

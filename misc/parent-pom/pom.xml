@@ -46,11 +46,11 @@
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
-        <springfox-swagger.version>2.9.2</springfox-swagger.version>
+        <springfox-swagger.version>3.0.0</springfox-swagger.version>
         <!--        Compatibility with Springfox-->
         <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
         <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>1.3.0</springfox-enum-plugin.version>
+        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
         
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>1.7.25</slf4j-api.version>
@@ -66,7 +66,7 @@
         <mockito.version>2.7.22</mockito.version>
 
         <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.6.2</junit-jupiter.version>
+        <junit-jupiter.version>5.7.0</junit-jupiter.version>
 
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -268,7 +268,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>30.1.1-jre</version>
+                <version>${guava.version}</version>
             </dependency>
 
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
@@ -421,9 +421,13 @@
                                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             </manifest>
                             <manifestEntries>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildTag>${BUILD_TAG}</ciBuildTag>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciJobName>${JOB_NAME}</ciJobName>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildUrl>${BUILD_URL}</ciBuildUrl>
                             </manifestEntries>
                         </archive>
@@ -457,6 +461,7 @@
                         <trimStackTrace>false</trimStackTrace>
 
                         <systemPropertyVariables>
+                            <!--suppress UnresolvedMavenProperty -->
                             <concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
                         </systemPropertyVariables>
                         <includes>
@@ -510,7 +515,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6</version>
+                    <version>0.8.7</version>
                 </plugin>
 
                 <!--This plugin's configuration is used to store Eclipse m2e settings

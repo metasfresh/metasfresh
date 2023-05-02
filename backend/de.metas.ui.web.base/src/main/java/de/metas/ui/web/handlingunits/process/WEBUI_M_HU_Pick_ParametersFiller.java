@@ -1,20 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-import java.util.Set;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HuId;
@@ -22,9 +8,9 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -35,6 +21,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -43,6 +30,17 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -66,7 +64,7 @@ import lombok.NonNull;
  * #L%
  */
 
-final class WEBUI_M_HU_Pick_ParametersFiller
+public final class WEBUI_M_HU_Pick_ParametersFiller
 {
 	public static final String PARAM_M_PickingSlot_ID = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID;
 	public static final String PARAM_M_ShipmentSchedule_ID = I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;

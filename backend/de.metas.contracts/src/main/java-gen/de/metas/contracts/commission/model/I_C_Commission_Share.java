@@ -55,8 +55,8 @@ public interface I_C_Commission_Share
 	/**
 	 * Set Payer.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_Payer_ID (int C_BPartner_Payer_ID);
@@ -64,13 +64,12 @@ public interface I_C_Commission_Share
 	/**
 	 * Get Payer.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_Payer_ID();
 
-	ModelColumn<I_C_Commission_Share, Object> COLUMN_C_BPartner_Payer_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_BPartner_Payer_ID", null);
 	String COLUMNNAME_C_BPartner_Payer_ID = "C_BPartner_Payer_ID";
 
 	/**
@@ -111,11 +110,11 @@ public interface I_C_Commission_Share
 	 */
 	int getC_Commission_Instance_ID();
 
-	I_C_Commission_Instance getC_Commission_Instance();
+	de.metas.contracts.commission.model.I_C_Commission_Instance getC_Commission_Instance();
 
-	void setC_Commission_Instance(I_C_Commission_Instance C_Commission_Instance);
+	void setC_Commission_Instance(de.metas.contracts.commission.model.I_C_Commission_Instance C_Commission_Instance);
 
-	ModelColumn<I_C_Commission_Share, I_C_Commission_Instance> COLUMN_C_Commission_Instance_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_Commission_Instance_ID", I_C_Commission_Instance.class);
+	ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_Commission_Instance> COLUMN_C_Commission_Instance_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_Commission_Instance_ID", de.metas.contracts.commission.model.I_C_Commission_Instance.class);
 	String COLUMNNAME_C_Commission_Instance_ID = "C_Commission_Instance_ID";
 
 	/**
@@ -140,7 +139,7 @@ public interface I_C_Commission_Share
 	String COLUMNNAME_C_Commission_Share_ID = "C_Commission_Share_ID";
 
 	/**
-	 * Set Settings detail.
+	 * Set Sales commission detail.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -149,7 +148,7 @@ public interface I_C_Commission_Share
 	void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID);
 
 	/**
-	 * Get Settings detail.
+	 * Get Sales commission detail.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -157,12 +156,37 @@ public interface I_C_Commission_Share
 	 */
 	int getC_CommissionSettingsLine_ID();
 
-	@Nullable I_C_CommissionSettingsLine getC_CommissionSettingsLine();
+	@Nullable de.metas.contracts.commission.model.I_C_CommissionSettingsLine getC_CommissionSettingsLine();
 
-	void setC_CommissionSettingsLine(@Nullable I_C_CommissionSettingsLine C_CommissionSettingsLine);
+	void setC_CommissionSettingsLine(@Nullable de.metas.contracts.commission.model.I_C_CommissionSettingsLine C_CommissionSettingsLine);
 
-	ModelColumn<I_C_Commission_Share, I_C_CommissionSettingsLine> COLUMN_C_CommissionSettingsLine_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_CommissionSettingsLine_ID", I_C_CommissionSettingsLine.class);
+	ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_CommissionSettingsLine> COLUMN_C_CommissionSettingsLine_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_CommissionSettingsLine_ID", de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class);
 	String COLUMNNAME_C_CommissionSettingsLine_ID = "C_CommissionSettingsLine_ID";
+
+	/**
+	 * Set Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Customer_Trade_Margin_Line_ID (int C_Customer_Trade_Margin_Line_ID);
+
+	/**
+	 * Get Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Customer_Trade_Margin_Line_ID();
+
+	@Nullable de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line getC_Customer_Trade_Margin_Line();
+
+	void setC_Customer_Trade_Margin_Line(@Nullable de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line C_Customer_Trade_Margin_Line);
+
+	ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line> COLUMN_C_Customer_Trade_Margin_Line_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_Customer_Trade_Margin_Line_ID", de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line.class);
+	String COLUMNNAME_C_Customer_Trade_Margin_Line_ID = "C_Customer_Trade_Margin_Line_ID";
 
 	/**
 	 * Set Flatrate Term.
@@ -186,7 +210,32 @@ public interface I_C_Commission_Share
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
-	 * Set C_MediatedCommissionSettingsLine.
+	 * Set License fee detail.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_LicenseFeeSettingsLine_ID (int C_LicenseFeeSettingsLine_ID);
+
+	/**
+	 * Get License fee detail.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_LicenseFeeSettingsLine_ID();
+
+	@Nullable de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine getC_LicenseFeeSettingsLine();
+
+	void setC_LicenseFeeSettingsLine(@Nullable de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine C_LicenseFeeSettingsLine);
+
+	ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine> COLUMN_C_LicenseFeeSettingsLine_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_LicenseFeeSettingsLine_ID", de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine.class);
+	String COLUMNNAME_C_LicenseFeeSettingsLine_ID = "C_LicenseFeeSettingsLine_ID";
+
+	/**
+	 * Set Brokerage commission detail.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -195,7 +244,7 @@ public interface I_C_Commission_Share
 	void setC_MediatedCommissionSettingsLine_ID (int C_MediatedCommissionSettingsLine_ID);
 
 	/**
-	 * Get C_MediatedCommissionSettingsLine.
+	 * Get Brokerage commission detail.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -203,11 +252,11 @@ public interface I_C_Commission_Share
 	 */
 	int getC_MediatedCommissionSettingsLine_ID();
 
-	@Nullable I_C_MediatedCommissionSettingsLine getC_MediatedCommissionSettingsLine();
+	@Nullable de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine getC_MediatedCommissionSettingsLine();
 
-	void setC_MediatedCommissionSettingsLine(@Nullable I_C_MediatedCommissionSettingsLine C_MediatedCommissionSettingsLine);
+	void setC_MediatedCommissionSettingsLine(@Nullable de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine C_MediatedCommissionSettingsLine);
 
-	ModelColumn<I_C_Commission_Share, I_C_MediatedCommissionSettingsLine> COLUMN_C_MediatedCommissionSettingsLine_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_MediatedCommissionSettingsLine_ID", I_C_MediatedCommissionSettingsLine.class);
+	ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine> COLUMN_C_MediatedCommissionSettingsLine_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_MediatedCommissionSettingsLine_ID", de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine.class);
 	String COLUMNNAME_C_MediatedCommissionSettingsLine_ID = "C_MediatedCommissionSettingsLine_ID";
 
 	/**

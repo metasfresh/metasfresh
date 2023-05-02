@@ -23,6 +23,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import de.metas.scheduler.AdSchedulerId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -96,6 +98,7 @@ public class MScheduler extends X_AD_Scheduler
 	 *	@param rs result set
 	 *	@param trxName transaction
 	 */
+	@SuppressWarnings("unused")
 	public MScheduler (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -113,8 +116,13 @@ public class MScheduler extends X_AD_Scheduler
 	@Override
 	public String getServerID ()
 	{
-		return "Scheduler" + get_ID();
+		return computeServerID(AdSchedulerId.ofRepoId(getAD_Scheduler_ID()));
 	}	//	getServerID
+
+	public static String computeServerID(@NonNull final AdSchedulerId adSchedulerId)
+	{
+		return "Scheduler" + adSchedulerId.getRepoId();
+	}
 
 	/**
 	 * 	Get Date Next Run
@@ -138,7 +146,7 @@ public class MScheduler extends X_AD_Scheduler
 	{
 		final String whereClause = MSchedulerLog.COLUMNNAME_AD_Scheduler_ID+"=?";
 		List<MSchedulerLog> list = new Query(getCtx(), MSchedulerLog.Table_Name, whereClause, get_TrxName())
-		.setParameters(new Object[]{getAD_Scheduler_ID()})
+		.setParameters(getAD_Scheduler_ID())
 		.setOrderBy("Created DESC")
 		.list(MSchedulerLog.class);
 		MSchedulerLog[] retValue = new MSchedulerLog[list.size ()];
@@ -160,8 +168,7 @@ public class MScheduler extends X_AD_Scheduler
 		final String sql = "DELETE FROM AD_SchedulerLog "
 			+ "WHERE AD_Scheduler_ID=" + getAD_Scheduler_ID()
 			+ " AND Created > (now() - INTERVAL '" + getKeepLogDays() + " days')";
-		int no = DB.executeUpdateEx(sql, trxName);
-		return no;
+		return DB.executeUpdateEx(sql, trxName);
 	}	//	deleteLog
 
 	/**
@@ -202,7 +209,7 @@ public class MScheduler extends X_AD_Scheduler
 		//
 		String whereClause = I_AD_SchedulerRecipient.COLUMNNAME_AD_Scheduler_ID+"=?";
 		final List<MSchedulerRecipient> list = new Query(getCtx(), MSchedulerRecipient.Table_Name, whereClause, get_TrxName())
-		.setParameters(new Object[]{getAD_Scheduler_ID()})
+		.setParameters(getAD_Scheduler_ID())
 		.setOnlyActiveRecords(true)
 		.list(MSchedulerRecipient.class);
 		m_recipients = new MSchedulerRecipient[list.size()];
@@ -218,16 +225,15 @@ public class MScheduler extends X_AD_Scheduler
 	{
 		TreeSet<UserId> list = new TreeSet<>();
 		MSchedulerRecipient[] recipients = getRecipients(false);
-		for (int i = 0; i < recipients.length; i++)
+		for (MSchedulerRecipient recipient : recipients)
 		{
-			MSchedulerRecipient recipient = recipients[i];
 			if (!recipient.isActive())
 				continue;
 			if (recipient.getAD_User_ID() > 0)
 			{
 				list.add(UserId.ofRepoId(recipient.getAD_User_ID()));
 			}
-			
+
 			final RoleId roleId = RoleId.ofRepoIdOrNull(recipient.getAD_Role_ID());
 			if (roleId != null)
 			{
@@ -277,17 +283,11 @@ public class MScheduler extends X_AD_Scheduler
 		return true;
 	}	//	beforeSave
 
-	/**
-	 * 	String Representation
-	 *	@return info
-	 */
 	@Override
 	public String toString ()
 	{
-		StringBuffer sb = new StringBuffer ("MScheduler[");
-		sb.append (get_ID ()).append ("-").append (getName()).append ("]");
-		return sb.toString ();
-	}	//	toString
+		return "MScheduler[" + get_ID() + "-" + getName() + "]";
+	}
 
 	@Override
 	public boolean saveOutOfTrx()

@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -136,32 +137,45 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
+	int invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
 
 	/**
 	 * Invalidates the invoice candidates identified by given invoice candidate ids.
 	 *
 	 * @param invoiceCandidateIds ids to invalidate
 	 */
-	void invalidateCandsFor(@NonNull final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds);
+	void invalidateCandsFor(@NonNull ImmutableSet<InvoiceCandidateId> invoiceCandidateIds);
+
+	default void invalidateCandFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		invalidateCandsFor(ImmutableSet.of(invoiceCandidateId));
+	};
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
+	int invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
 	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCand(I_C_Invoice_Candidate ic);
+	int invalidateCand(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Invalidates the given collection of invoice candidates.<br>
 	 * Note that for more than one candidate, this method is more efficient than repeated calls of {@link #invalidateCand(I_C_Invoice_Candidate)}
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCands(List<I_C_Invoice_Candidate> ics);
-
+	int invalidateCands(List<I_C_Invoice_Candidate> ics);
+	
 	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
@@ -189,6 +203,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Load the invoice candidates whose <code>AD_Table_ID</code> and <code>Record_ID</code> columns match the given model.
 	 */
 	List<I_C_Invoice_Candidate> retrieveReferencing(TableRecordReference tableRecordReference);
+
+	@NonNull
+	ImmutableSet<InvoiceCandidateId> retrieveReferencingIds(@NonNull TableRecordReference reference);
 
 	/**
 	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
@@ -269,6 +286,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
 	/**
+	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/13376
+	 */
+	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
+
+	/**
 	 *
 	 * @param inOutLine
 	 * @return also returns inactive records (intended use is for deletion)
@@ -299,6 +323,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
 
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(OrderId orderId);
 	/**
 	 * Return the active <code>M_InOutLine</code>s for the given invoice candidate.
 	 * <p>
@@ -390,4 +415,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
 }

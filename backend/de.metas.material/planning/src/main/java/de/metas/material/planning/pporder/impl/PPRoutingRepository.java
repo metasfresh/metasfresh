@@ -14,6 +14,7 @@ import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingChangeRequest;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingProduct;
@@ -146,7 +147,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		return PPRouting.builder()
 				.id(routingId)
 				.valid(routingRecord.isValid())
-				.validDates(TimeUtil.toLocalDateRange(routingRecord.getValidFrom(), routingRecord.getValidTo()))
+				.validDates(TimeUtil.toInstantsRange(routingRecord.getValidFrom(), routingRecord.getValidTo()))
 				.code(routingRecord.getValue())
 				.durationUnit(durationUnit)
 				.duration(duration)
@@ -204,9 +205,10 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 		return PPRoutingActivity.builder()
 				.id(activityId)
+				.type(PPRoutingActivityType.ofNullableCode(activityRecord.getPP_Activity_Type()).orElse(PPRoutingActivityType.WorkReport))
 				.code(activityRecord.getValue())
 				.name(activityRecord.getName())
-				.validDates(TimeUtil.toLocalDateRange(activityRecord.getValidFrom(), activityRecord.getValidTo()))
+				.validDates(TimeUtil.toInstantsRange(activityRecord.getValidFrom(), activityRecord.getValidTo()))
 				//
 				.resourceId(ResourceId.ofRepoId(activityRecord.getS_Resource_ID()))
 				//
@@ -354,6 +356,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.createQueryBuilder(I_AD_WF_Node.class, routingRecord)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, routingId)
+				.addNotNull(I_AD_WF_Node.COLUMN_S_Resource_ID) // in the context of production and product-planning, we can't work with a resource-less AD_WF_Node
 				.orderBy(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID)
 				.create()
 				.list();

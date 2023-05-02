@@ -28,6 +28,7 @@ package de.metas.allocation.api;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
@@ -42,14 +43,13 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 /**
- * @author cg
- *
- *         Interceptor for processing allocation
+ * Interceptor for processing allocation.
+ * Note the package-name: this is only for testing.
  */
 public class C_AllocationHdr_ProcessInterceptor implements IProcessInterceptor
 {
 	@Override
-	public boolean processIt(IDocument doc, String action) throws Exception
+	public boolean processIt(@NonNull final IDocument doc, @NonNull final String action) throws Exception
 	{
 		final POJOWrapper wrapper = POJOWrapper.getWrapper(doc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(doc);

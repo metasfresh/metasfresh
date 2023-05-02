@@ -1,0 +1,65 @@
+{
+  "bpartner": {
+    "metasfreshId": 1,
+    "code": "code",
+    "globalId": null,
+    "active": true,
+    "name": "name",
+    "companyName": "test",
+    "language": "de_DE",
+    "vendor": false,
+    "customer": true,
+    "company": true,
+    "vatId": null,
+    "changeInfo": {
+      "createdMillis": 1436873536000,
+      "createdBy": 100,
+      "lastUpdatedMillis": 1437657997000,
+      "lastUpdatedBy": 100
+    }
+  },
+  "locations": [
+    {
+      "metasfreshId": 1,
+      "name": "shipTo",
+      "bpartnerName": null,
+      "active": true,
+      "address1": "address1",
+      "postal": "12345",
+      "city": "city",
+      "gln": null,
+      "countryCode": "DE",
+      "shipTo": true,
+      "shipToDefault": true,
+      "billTo": false,
+      "billToDefault": false,
+      "changeInfo": {
+        "createdMillis": 1436873644000,
+        "createdBy": 100,
+        "lastUpdatedMillis": 1436963399000,
+        "lastUpdatedBy": 100
+      }
+    },
+    {
+      "metasfreshId": 2,
+      "name": "billTo",
+      "bpartnerName": null,
+      "active": true,
+      "address1": "address1",
+      "postal": "12345",
+      "city": "city",
+      "gln": null,
+      "countryCode": "DE",
+      "shipTo": false,
+      "shipToDefault": false,
+      "billTo": true,
+      "billToDefault": true,
+      "changeInfo": {
+        "createdMillis": 1436873644000,
+        "createdBy": 100,
+        "lastUpdatedMillis": 1436963399000,
+        "lastUpdatedBy": 100
+      }
+    }
+  ]
+}

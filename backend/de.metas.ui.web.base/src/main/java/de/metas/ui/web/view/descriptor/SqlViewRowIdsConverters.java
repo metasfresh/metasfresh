@@ -36,7 +36,7 @@ public final class SqlViewRowIdsConverters
 	public static final transient SqlViewRowIdsConverter TO_INT_STRICT = new StrictToIntConverter();
 	public static final transient SqlViewRowIdsConverter TO_INT_EXCLUDING_STRINGS = new ToIntExcludingStringsConverter();
 
-	private final class StrictToIntConverter implements SqlViewRowIdsConverter
+	private static final class StrictToIntConverter implements SqlViewRowIdsConverter
 	{
 		@Override
 		public Set<Integer> convertToRecordIds(DocumentIdsSelection rowIds)

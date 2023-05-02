@@ -1,11 +1,11 @@
 package de.metas.material.cockpit.view.detailrecord;
 
-import java.math.BigDecimal;
-
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.math.BigDecimal;
 
 /*
  * #%L

@@ -3,6 +3,7 @@ package org.eevolution.api;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -12,12 +13,17 @@ import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface IPPOrderBL extends ISingletonService
 {
 	I_PP_Order getById(@NonNull PPOrderId id);
 
+	void save(I_PP_Order ppOrder);
+
 	I_PP_Order createOrder(PPOrderCreateRequest request);
+
+	Stream<I_PP_Order> streamManufacturingOrders(ManufacturingOrderQuery query);
 
 	void setDefaults(I_PP_Order ppOrder);
 
@@ -94,4 +100,8 @@ public interface IPPOrderBL extends ISingletonService
 	void updateCanBeExportedFrom(@NonNull I_PP_Order ppOrder);
 
 	void updateExportStatus(@NonNull APIExportStatus newExportStatus, @NonNull PInstanceId pinstanceId);
+
+	void setC_OrderLine(@NonNull PPOrderId ppOrderId, @NonNull OrderLineId orderLineId);
+
+	void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrder);
 }

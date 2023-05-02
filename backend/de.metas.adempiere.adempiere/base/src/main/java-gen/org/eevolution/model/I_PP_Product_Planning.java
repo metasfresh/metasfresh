@@ -1,12 +1,14 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Product_Planning
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_PP_Product_Planning 
 {
 
@@ -411,51 +413,6 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Max. quantity per manufactoring order.
-	 * Optional;
- steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMaxManufacturedQtyPerOrder (@Nullable BigDecimal MaxManufacturedQtyPerOrder);
-
-	/**
-	 * Get Max. quantity per manufactoring order.
-	 * Optional;
- steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMaxManufacturedQtyPerOrder();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_MaxManufacturedQtyPerOrder = new ModelColumn<>(I_PP_Product_Planning.class, "MaxManufacturedQtyPerOrder", null);
-	String COLUMNNAME_MaxManufacturedQtyPerOrder = "MaxManufacturedQtyPerOrder";
-
-	/**
-	 * Set Unit of measurement.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMaxManufacturedQtyPerOrder_UOM_ID (int MaxManufacturedQtyPerOrder_UOM_ID);
-
-	/**
-	 * Get Unit of measurement.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMaxManufacturedQtyPerOrder_UOM_ID();
-
-	String COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID = "MaxManufacturedQtyPerOrder_UOM_ID";
-
-	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -521,6 +478,51 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Max. quantity per manufactoring order.
+	 * Optional;
+ steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder (@Nullable BigDecimal MaxManufacturedQtyPerOrder);
+
+	/**
+	 * Get Max. quantity per manufactoring order.
+	 * Optional;
+ steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMaxManufacturedQtyPerOrder();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_MaxManufacturedQtyPerOrder = new ModelColumn<>(I_PP_Product_Planning.class, "MaxManufacturedQtyPerOrder", null);
+	String COLUMNNAME_MaxManufacturedQtyPerOrder = "MaxManufacturedQtyPerOrder";
+
+	/**
+	 * Set Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder_UOM_ID (int MaxManufacturedQtyPerOrder_UOM_ID);
+
+	/**
+	 * Get Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxManufacturedQtyPerOrder_UOM_ID();
+
+	String COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID = "MaxManufacturedQtyPerOrder_UOM_ID";
+
+	/**
 	 * Set OnMaterialReceiptWithDestWarehouse.
 	 *
 	 * <br>Type: List
@@ -562,31 +564,29 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_Planner_ID = "Planner_ID";
 
 	/**
-	 * Set BOM & Formula.
-	 * BOM & Formula
+	 * Set BOMVersions & Formula.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
+	void setPP_Product_BOMVersions_ID (int PP_Product_BOMVersions_ID);
 
 	/**
-	 * Get BOM & Formula.
-	 * BOM & Formula
+	 * Get BOMVersions & Formula.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getPP_Product_BOM_ID();
+	int getPP_Product_BOMVersions_ID();
 
-	@Nullable org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM();
+	@Nullable org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions();
 
-	void setPP_Product_BOM(@Nullable org.eevolution.model.I_PP_Product_BOM PP_Product_BOM);
+	void setPP_Product_BOMVersions(@Nullable org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions);
 
-	ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new ModelColumn<>(I_PP_Product_Planning.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
-	String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
+	ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_PP_Product_BOMVersions> COLUMN_PP_Product_BOMVersions_ID = new ModelColumn<>(I_PP_Product_Planning.class, "PP_Product_BOMVersions_ID", org.eevolution.model.I_PP_Product_BOMVersions.class);
+	String COLUMNNAME_PP_Product_BOMVersions_ID = "PP_Product_BOMVersions_ID";
 
 	/**
 	 * Set Product Planning.
@@ -608,31 +608,6 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_PP_Product_Planning_ID = new ModelColumn<>(I_PP_Product_Planning.class, "PP_Product_Planning_ID", null);
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
-
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo (int SeqNo);
-
-	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Product_Planning.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Ressource.
@@ -660,6 +635,31 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Product_Planning.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Product_Planning.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set StorageAttributesKey (technical).

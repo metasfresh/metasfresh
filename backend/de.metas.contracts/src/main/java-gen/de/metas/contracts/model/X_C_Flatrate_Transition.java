@@ -1,175 +1,118 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_Transition
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_C_Flatrate_Transition, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -455847784L;
+	private static final long serialVersionUID = 1787752213L;
 
     /** Standard Constructor */
-    public X_C_Flatrate_Transition (Properties ctx, int C_Flatrate_Transition_ID, String trxName)
+    public X_C_Flatrate_Transition (final Properties ctx, final int C_Flatrate_Transition_ID, @Nullable final String trxName)
     {
       super (ctx, C_Flatrate_Transition_ID, trxName);
-      /** if (C_Flatrate_Transition_ID == 0)
-        {
-			setC_Calendar_Contract_ID (0);
-			setC_Flatrate_Transition_ID (0);
-			setDocAction (null); // CO
-			setDocStatus (null); // DR
-			setEndsWithCalendarYear (false); // N
-			setIsAutoCompleteNewTerm (false); // N
-			setIsNotifyUserInCharge (false); // N
-			setName (null);
-			setProcessed (false); // N
-			setProcessing (false); // N
-			setTermDuration (0);
-			setTermDurationUnit (null);
-			setTermOfNotice (0);
-			setTermOfNoticeUnit (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Flatrate_Transition (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Flatrate_Transition (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_C_Calendar getC_Calendar_Contract() throws RuntimeException
+	public org.compiere.model.I_C_Calendar getC_Calendar_Contract()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Calendar_Contract_ID, org.compiere.model.I_C_Calendar.class);
 	}
 
 	@Override
-	public void setC_Calendar_Contract(org.compiere.model.I_C_Calendar C_Calendar_Contract)
+	public void setC_Calendar_Contract(final org.compiere.model.I_C_Calendar C_Calendar_Contract)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Calendar_Contract_ID, org.compiere.model.I_C_Calendar.class, C_Calendar_Contract);
 	}
 
-	/** Set Abrechnungs-/Lieferkalender.
-		@param C_Calendar_Contract_ID 
-		Bezeichnung des Kalenders, der die Abrechnungs- bzw. bei Abonnements die Lieferperioden (z.B. Monate) definiert
-	  */
 	@Override
-	public void setC_Calendar_Contract_ID (int C_Calendar_Contract_ID)
+	public void setC_Calendar_Contract_ID (final int C_Calendar_Contract_ID)
 	{
 		if (C_Calendar_Contract_ID < 1) 
 			set_Value (COLUMNNAME_C_Calendar_Contract_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Calendar_Contract_ID, Integer.valueOf(C_Calendar_Contract_ID));
+			set_Value (COLUMNNAME_C_Calendar_Contract_ID, C_Calendar_Contract_ID);
 	}
 
-	/** Get Abrechnungs-/Lieferkalender.
-		@return Bezeichnung des Kalenders, der die Abrechnungs- bzw. bei Abonnements die Lieferperioden (z.B. Monate) definiert
-	  */
 	@Override
-	public int getC_Calendar_Contract_ID () 
+	public int getC_Calendar_Contract_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Calendar_Contract_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Calendar_Contract_ID);
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_Next_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Conditions_Next(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next)
+	public void setC_Flatrate_Conditions_Next(final de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_Next_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class, C_Flatrate_Conditions_Next);
 	}
 
-	/** Set Nächste Vertragsbedingungen.
-		@param C_Flatrate_Conditions_Next_ID 
-		Auswahl der Vertragsbedingungen, die bei einer Vertragsverlängerung in der folgenden Vertragsperide anzuwenden sind
-	  */
 	@Override
-	public void setC_Flatrate_Conditions_Next_ID (int C_Flatrate_Conditions_Next_ID)
+	public void setC_Flatrate_Conditions_Next_ID (final int C_Flatrate_Conditions_Next_ID)
 	{
 		if (C_Flatrate_Conditions_Next_ID < 1) 
 			set_Value (COLUMNNAME_C_Flatrate_Conditions_Next_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Flatrate_Conditions_Next_ID, Integer.valueOf(C_Flatrate_Conditions_Next_ID));
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_Next_ID, C_Flatrate_Conditions_Next_ID);
 	}
 
-	/** Get Nächste Vertragsbedingungen.
-		@return Auswahl der Vertragsbedingungen, die bei einer Vertragsverlängerung in der folgenden Vertragsperide anzuwenden sind
-	  */
 	@Override
-	public int getC_Flatrate_Conditions_Next_ID () 
+	public int getC_Flatrate_Conditions_Next_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_Next_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_Next_ID);
 	}
 
-	/** Set Vertragsverlängerung/-übergang.
-		@param C_Flatrate_Transition_ID 
-		Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
 	@Override
-	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID)
+	public void setC_Flatrate_Transition_ID (final int C_Flatrate_Transition_ID)
 	{
 		if (C_Flatrate_Transition_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Transition_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Transition_ID, Integer.valueOf(C_Flatrate_Transition_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Transition_ID, C_Flatrate_Transition_ID);
 	}
 
-	/** Get Vertragsverlängerung/-übergang.
-		@return Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
 	@Override
-	public int getC_Flatrate_Transition_ID () 
+	public int getC_Flatrate_Transition_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Transition_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Transition_ID);
 	}
 
-	/** Set Lieferintervall.
-		@param DeliveryInterval Lieferintervall	  */
 	@Override
-	public void setDeliveryInterval (int DeliveryInterval)
+	public void setDeliveryInterval (final int DeliveryInterval)
 	{
-		set_Value (COLUMNNAME_DeliveryInterval, Integer.valueOf(DeliveryInterval));
+		set_Value (COLUMNNAME_DeliveryInterval, DeliveryInterval);
 	}
 
-	/** Get Lieferintervall.
-		@return Lieferintervall	  */
 	@Override
-	public int getDeliveryInterval () 
+	public int getDeliveryInterval() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DeliveryInterval);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DeliveryInterval);
 	}
 
 	/** 
@@ -185,37 +128,28 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public static final String DELIVERYINTERVALUNIT_TagE = "day";
 	/** Jahr(e) = year */
 	public static final String DELIVERYINTERVALUNIT_JahrE = "year";
-	/** Set Einheit des Lieferintervalls.
-		@param DeliveryIntervalUnit Einheit des Lieferintervalls	  */
 	@Override
-	public void setDeliveryIntervalUnit (java.lang.String DeliveryIntervalUnit)
+	public void setDeliveryIntervalUnit (final @Nullable java.lang.String DeliveryIntervalUnit)
 	{
-
 		set_Value (COLUMNNAME_DeliveryIntervalUnit, DeliveryIntervalUnit);
 	}
 
-	/** Get Einheit des Lieferintervalls.
-		@return Einheit des Lieferintervalls	  */
 	@Override
-	public java.lang.String getDeliveryIntervalUnit () 
+	public java.lang.String getDeliveryIntervalUnit() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DeliveryIntervalUnit);
+		return get_ValueAsString(COLUMNNAME_DeliveryIntervalUnit);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -253,24 +187,16 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public static final String DOCACTION_WaitComplete = "WC";
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
-	/** Set Belegverarbeitung.
-		@param DocAction 
-		Der zukünftige Status des Belegs
-	  */
 	@Override
-	public void setDocAction (java.lang.String DocAction)
+	public void setDocAction (final java.lang.String DocAction)
 	{
-
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Belegverarbeitung.
-		@return Der zukünftige Status des Belegs
-	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -302,47 +228,28 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final java.lang.String DocStatus)
 	{
-
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Endet mit Kalenderjahr.
-		@param EndsWithCalendarYear Endet mit Kalenderjahr	  */
 	@Override
-	public void setEndsWithCalendarYear (boolean EndsWithCalendarYear)
+	public void setEndsWithCalendarYear (final boolean EndsWithCalendarYear)
 	{
-		set_Value (COLUMNNAME_EndsWithCalendarYear, Boolean.valueOf(EndsWithCalendarYear));
+		set_Value (COLUMNNAME_EndsWithCalendarYear, EndsWithCalendarYear);
 	}
 
-	/** Get Endet mit Kalenderjahr.
-		@return Endet mit Kalenderjahr	  */
 	@Override
-	public boolean isEndsWithCalendarYear () 
+	public boolean isEndsWithCalendarYear() 
 	{
-		Object oo = get_Value(COLUMNNAME_EndsWithCalendarYear);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_EndsWithCalendarYear);
 	}
 
 	/** 
@@ -354,157 +261,88 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public static final String EXTENSIONTYPE_ExtendAll = "EA";
 	/** ExtendOne = EO */
 	public static final String EXTENSIONTYPE_ExtendOne = "EO";
-	/** Set Extension Type.
-		@param ExtensionType Extension Type	  */
 	@Override
-	public void setExtensionType (java.lang.String ExtensionType)
+	public void setExtensionType (final @Nullable java.lang.String ExtensionType)
 	{
-
 		set_Value (COLUMNNAME_ExtensionType, ExtensionType);
 	}
 
-	/** Get Extension Type.
-		@return Extension Type	  */
 	@Override
-	public java.lang.String getExtensionType () 
+	public java.lang.String getExtensionType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExtensionType);
+		return get_ValueAsString(COLUMNNAME_ExtensionType);
 	}
 
-	/** Set Neue Vertragslaufzeit autom. Fertigstellen.
-		@param IsAutoCompleteNewTerm 
-		Legt fest, ob das System die automatisch neu erzeugte Vertragsperiode sofort fertigstellen soll.
-	  */
 	@Override
-	public void setIsAutoCompleteNewTerm (boolean IsAutoCompleteNewTerm)
+	public void setIsAutoCompleteNewTerm (final boolean IsAutoCompleteNewTerm)
 	{
-		set_Value (COLUMNNAME_IsAutoCompleteNewTerm, Boolean.valueOf(IsAutoCompleteNewTerm));
+		set_Value (COLUMNNAME_IsAutoCompleteNewTerm, IsAutoCompleteNewTerm);
 	}
 
-	/** Get Neue Vertragslaufzeit autom. Fertigstellen.
-		@return Legt fest, ob das System die automatisch neu erzeugte Vertragsperiode sofort fertigstellen soll.
-	  */
 	@Override
-	public boolean isAutoCompleteNewTerm () 
+	public boolean isAutoCompleteNewTerm() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAutoCompleteNewTerm);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoCompleteNewTerm);
 	}
 
-	/** Set Betreuer Informieren.
-		@param IsNotifyUserInCharge Betreuer Informieren	  */
 	@Override
-	public void setIsNotifyUserInCharge (boolean IsNotifyUserInCharge)
+	public void setIsNotifyUserInCharge (final boolean IsNotifyUserInCharge)
 	{
-		set_Value (COLUMNNAME_IsNotifyUserInCharge, Boolean.valueOf(IsNotifyUserInCharge));
+		set_Value (COLUMNNAME_IsNotifyUserInCharge, IsNotifyUserInCharge);
 	}
 
-	/** Get Betreuer Informieren.
-		@return Betreuer Informieren	  */
 	@Override
-	public boolean isNotifyUserInCharge () 
+	public boolean isNotifyUserInCharge() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsNotifyUserInCharge);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsNotifyUserInCharge);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Vertragslaufzeit.
-		@param TermDuration Vertragslaufzeit	  */
 	@Override
-	public void setTermDuration (int TermDuration)
+	public void setTermDuration (final int TermDuration)
 	{
-		set_Value (COLUMNNAME_TermDuration, Integer.valueOf(TermDuration));
+		set_Value (COLUMNNAME_TermDuration, TermDuration);
 	}
 
-	/** Get Vertragslaufzeit.
-		@return Vertragslaufzeit	  */
 	@Override
-	public int getTermDuration () 
+	public int getTermDuration() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_TermDuration);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_TermDuration);
 	}
 
 	/** 
@@ -520,43 +358,28 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public static final String TERMDURATIONUNIT_TagE = "day";
 	/** Jahr(e) = year */
 	public static final String TERMDURATIONUNIT_JahrE = "year";
-	/** Set Einheit der Vertragslaufzeit.
-		@param TermDurationUnit Einheit der Vertragslaufzeit	  */
 	@Override
-	public void setTermDurationUnit (java.lang.String TermDurationUnit)
+	public void setTermDurationUnit (final java.lang.String TermDurationUnit)
 	{
-
 		set_Value (COLUMNNAME_TermDurationUnit, TermDurationUnit);
 	}
 
-	/** Get Einheit der Vertragslaufzeit.
-		@return Einheit der Vertragslaufzeit	  */
 	@Override
-	public java.lang.String getTermDurationUnit () 
+	public java.lang.String getTermDurationUnit() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TermDurationUnit);
+		return get_ValueAsString(COLUMNNAME_TermDurationUnit);
 	}
 
-	/** Set Ablauffrist.
-		@param TermOfNotice 
-		Zeit vor Vertragsablauf, zu der bestimmte Aktionen durchgeführt werden sollen.
-	  */
 	@Override
-	public void setTermOfNotice (int TermOfNotice)
+	public void setTermOfNotice (final int TermOfNotice)
 	{
-		set_Value (COLUMNNAME_TermOfNotice, Integer.valueOf(TermOfNotice));
+		set_Value (COLUMNNAME_TermOfNotice, TermOfNotice);
 	}
 
-	/** Get Ablauffrist.
-		@return Zeit vor Vertragsablauf, zu der bestimmte Aktionen durchgeführt werden sollen.
-	  */
 	@Override
-	public int getTermOfNotice () 
+	public int getTermOfNotice() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_TermOfNotice);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_TermOfNotice);
 	}
 
 	/** 
@@ -572,20 +395,15 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public static final String TERMOFNOTICEUNIT_TagE = "day";
 	/** Jahr(e) = year */
 	public static final String TERMOFNOTICEUNIT_JahrE = "year";
-	/** Set Einheit der Kündigungsfrist.
-		@param TermOfNoticeUnit Einheit der Kündigungsfrist	  */
 	@Override
-	public void setTermOfNoticeUnit (java.lang.String TermOfNoticeUnit)
+	public void setTermOfNoticeUnit (final java.lang.String TermOfNoticeUnit)
 	{
-
 		set_Value (COLUMNNAME_TermOfNoticeUnit, TermOfNoticeUnit);
 	}
 
-	/** Get Einheit der Kündigungsfrist.
-		@return Einheit der Kündigungsfrist	  */
 	@Override
-	public java.lang.String getTermOfNoticeUnit () 
+	public java.lang.String getTermOfNoticeUnit() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TermOfNoticeUnit);
+		return get_ValueAsString(COLUMNNAME_TermOfNoticeUnit);
 	}
 }

@@ -59,14 +59,10 @@ public class AD_Table_CreatePK_ForWindow extends JavaProcess
 		return queryBL.createQueryBuilder(I_AD_Tab.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Window_ID, adWindowId)
 				//
-				.andCollect(I_AD_Tab.COLUMN_AD_Table_ID)
+				.andCollect(I_AD_Tab.COLUMNNAME_AD_Table_ID, I_AD_Table.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Table.COLUMN_IsView, false)
-				//
-				.orderBy()
-				.addColumn(I_AD_Table.COLUMN_AD_Table_ID)
-				.endOrderBy()
-				//
+				.addEqualsFilter(I_AD_Table.COLUMNNAME_IsView, false)
+				.orderBy(I_AD_Table.COLUMNNAME_AD_Table_ID)
 				.create()
 				.list(I_AD_Table.class);
 	}

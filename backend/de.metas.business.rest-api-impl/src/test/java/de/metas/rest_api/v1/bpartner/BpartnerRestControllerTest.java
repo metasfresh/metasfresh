@@ -22,35 +22,63 @@
 
 package de.metas.rest_api.v1.bpartner;
 
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_LOCATION_GLN;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_VALUE;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.createBPartnerData;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.io.InputStream;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.v1.request.JsonRequestBankAccountUpsertItem;
+import de.metas.common.bpartner.v1.request.JsonRequestBankAccountsUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestComposite;
+import de.metas.common.bpartner.v1.request.JsonRequestContact;
+import de.metas.common.bpartner.v1.request.JsonRequestContactUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestContactUpsertItem;
+import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
+import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.v1.response.JsonResponseComposite;
+import de.metas.common.bpartner.v1.response.JsonResponseCompositeList;
+import de.metas.common.bpartner.v1.response.JsonResponseContact;
+import de.metas.common.bpartner.v1.response.JsonResponseLocation;
+import de.metas.common.bpartner.v1.response.JsonResponseUpsert;
+import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.SyncAdvise;
+import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
+import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.greeting.GreetingRepository;
+import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil;
+import de.metas.test.SnapshotFunctionFactory;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.util.JSONObjectMapper;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.lang.UIDStringUtil;
+import de.metas.util.web.exception.MissingResourceException;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -73,59 +101,28 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.google.common.collect.ImmutableList;
+import java.io.InputStream;
+import java.util.Optional;
 
-import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.BPartnerBankAccountId;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.composite.BPartnerBankAccount;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.BPartnerContactQuery;
-import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
-import de.metas.greeting.GreetingRepository;
-import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
-import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
-import de.metas.common.bpartner.v1.request.JsonRequestBankAccountUpsertItem;
-import de.metas.common.bpartner.v1.request.JsonRequestBankAccountsUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestComposite;
-import de.metas.common.bpartner.v1.request.JsonRequestContact;
-import de.metas.common.bpartner.v1.request.JsonRequestContactUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestContactUpsertItem;
-import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
-import de.metas.common.bpartner.v1.response.JsonResponseComposite;
-import de.metas.common.bpartner.v1.response.JsonResponseCompositeList;
-import de.metas.common.bpartner.v1.response.JsonResponseContact;
-import de.metas.common.bpartner.v1.response.JsonResponseLocation;
-import de.metas.common.bpartner.v1.response.JsonResponseUpsert;
-import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
-import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
-import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v1.SyncAdvise;
-import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
-import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
-import de.metas.util.web.exception.MissingResourceException;
-import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.rest_api.utils.IdentifierString;
-import de.metas.user.UserId;
-import de.metas.user.UserRepository;
-import de.metas.util.JSONObjectMapper;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
-import de.metas.util.lang.UIDStringUtil;
-import lombok.NonNull;
-import lombok.Value;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_LOCATION_GLN;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_VALUE;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.createBPartnerData;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class BpartnerRestControllerTest
@@ -138,7 +135,7 @@ class BpartnerRestControllerTest
 	@BeforeAll
 	static void beforeAll()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll
@@ -157,7 +154,7 @@ class BpartnerRestControllerTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		currencyRepository = new CurrencyRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(

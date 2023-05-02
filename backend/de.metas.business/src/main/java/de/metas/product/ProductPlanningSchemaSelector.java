@@ -10,6 +10,8 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -41,14 +43,15 @@ public enum ProductPlanningSchemaSelector implements ReferenceListAwareEnum
 	private static final ImmutableMap<String, ProductPlanningSchemaSelector> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	@Getter
-	private String code;
+	private final String code;
 
-	private ProductPlanningSchemaSelector(final String code)
+	ProductPlanningSchemaSelector(final String code)
 	{
 		this.code = code;
 	}
 
-	public static ProductPlanningSchemaSelector ofNullableCode(final String code)
+	@Nullable
+	public static ProductPlanningSchemaSelector ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}

@@ -101,22 +101,22 @@
 						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968
 							declare the the version properties of related artifacts which we can to set in the dist module
 						-->
-						<property>
-							<name>metasfresh-webui-frontend.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
-						<property>
-							<name>metasfresh-procurement-webui.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
-						<property>
-							<!-- metasfresh/metasfresh#1471 -->
-							<name>metasfresh-admin.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
+<!--						<property>-->
+<!--							<name>metasfresh-webui-frontend.version</name>-->
+<!--							<searchReactor>false</searchReactor>-->
+<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
+<!--						</property>-->
+<!--						<property>-->
+<!--							<name>metasfresh-procurement-webui.version</name>-->
+<!--							<searchReactor>false</searchReactor>-->
+<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
+<!--						</property>-->
+<!--						<property>-->
+<!--							&lt;!&ndash; metasfresh/metasfresh#1471 &ndash;&gt;-->
+<!--							<name>metasfresh-admin.version</name>-->
+<!--							<searchReactor>false</searchReactor>-->
+<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
+<!--						</property>-->
 					</properties>
 				</configuration>
 			</plugin>

@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_UI_Element
  *  @author metasfresh (generated) 
@@ -56,6 +57,33 @@ public interface I_AD_UI_Element
 	String COLUMNNAME_AD_Field_ID = "AD_Field_ID";
 
 	/**
+	 * Set AD_Name_ID.
+	 * This is an AD_Element_ID that can does not need to have a ColumnName and can be used to name things
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Name_ID (int AD_Name_ID);
+
+	/**
+	 * Get AD_Name_ID.
+	 * This is an AD_Element_ID that can does not need to have a ColumnName and can be used to name things
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Name_ID();
+
+	@Nullable org.compiere.model.I_AD_Element getAD_Name();
+
+	void setAD_Name(@Nullable org.compiere.model.I_AD_Element AD_Name);
+
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Element> COLUMN_AD_Name_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_Name_ID", org.compiere.model.I_AD_Element.class);
+	String COLUMNNAME_AD_Name_ID = "AD_Name_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -105,27 +133,6 @@ public interface I_AD_UI_Element
 	String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
 
 	/**
-	 * Set UI Element.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_UI_Element_ID (int AD_UI_Element_ID);
-
-	/**
-	 * Get UI Element.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_UI_Element_ID();
-
-	ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_Element_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_UI_Element_ID", null);
-	String COLUMNNAME_AD_UI_Element_ID = "AD_UI_Element_ID";
-
-	/**
 	 * Set UI Element Group.
 	 *
 	 * <br>Type: Search
@@ -149,6 +156,27 @@ public interface I_AD_UI_Element
 
 	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_UI_ElementGroup> COLUMN_AD_UI_ElementGroup_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_UI_ElementGroup_ID", org.compiere.model.I_AD_UI_ElementGroup.class);
 	String COLUMNNAME_AD_UI_ElementGroup_ID = "AD_UI_ElementGroup_ID";
+
+	/**
+	 * Set UI Element.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_UI_Element_ID (int AD_UI_Element_ID);
+
+	/**
+	 * Get UI Element.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_UI_Element_ID();
+
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_Element_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_UI_Element_ID", null);
+	String COLUMNNAME_AD_UI_Element_ID = "AD_UI_Element_ID";
 
 	/**
 	 * Set Element type.
@@ -384,29 +412,6 @@ public interface I_AD_UI_Element
 	String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
-	 * Set Displayed in Side List.
-	 * Determines, if this field is displayed in Side list
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDisplayed_SideList (boolean IsDisplayed_SideList);
-
-	/**
-	 * Get Displayed in Side List.
-	 * Determines, if this field is displayed in Side list
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDisplayed_SideList();
-
-	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayed_SideList = new ModelColumn<>(I_AD_UI_Element.class, "IsDisplayed_SideList", null);
-	String COLUMNNAME_IsDisplayed_SideList = "IsDisplayed_SideList";
-
-	/**
 	 * Set Displayed in Grid.
 	 * Determines, if this field is displayed in grid mode
 	 *
@@ -428,6 +433,29 @@ public interface I_AD_UI_Element
 
 	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayedGrid = new ModelColumn<>(I_AD_UI_Element.class, "IsDisplayedGrid", null);
 	String COLUMNNAME_IsDisplayedGrid = "IsDisplayedGrid";
+
+	/**
+	 * Set Displayed in Side List.
+	 * Determines, if this field is displayed in Side list
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDisplayed_SideList (boolean IsDisplayed_SideList);
+
+	/**
+	 * Get Displayed in Side List.
+	 * Determines, if this field is displayed in Side list
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDisplayed_SideList();
+
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayed_SideList = new ModelColumn<>(I_AD_UI_Element.class, "IsDisplayed_SideList", null);
+	String COLUMNNAME_IsDisplayed_SideList = "IsDisplayed_SideList";
 
 	/**
 	 * Set Multi Line.
@@ -589,27 +617,6 @@ public interface I_AD_UI_Element
 	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set Reihenfolge (Side List).
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo_SideList (int SeqNo_SideList);
-
-	/**
-	 * Get Reihenfolge (Side List).
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo_SideList();
-
-	ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo_SideList = new ModelColumn<>(I_AD_UI_Element.class, "SeqNo_SideList", null);
-	String COLUMNNAME_SeqNo_SideList = "SeqNo_SideList";
-
-	/**
 	 * Set Reihenfolge (grid).
 	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
@@ -633,6 +640,27 @@ public interface I_AD_UI_Element
 
 	ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNoGrid = new ModelColumn<>(I_AD_UI_Element.class, "SeqNoGrid", null);
 	String COLUMNNAME_SeqNoGrid = "SeqNoGrid";
+
+	/**
+	 * Set Reihenfolge (Side List).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo_SideList (int SeqNo_SideList);
+
+	/**
+	 * Get Reihenfolge (Side List).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo_SideList();
+
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo_SideList = new ModelColumn<>(I_AD_UI_Element.class, "SeqNo_SideList", null);
+	String COLUMNNAME_SeqNo_SideList = "SeqNo_SideList";
 
 	/**
 	 * Set UI Style.

@@ -22,15 +22,15 @@ package de.metas.product.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheIgnore;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductPA;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -48,15 +48,14 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheIgnore;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductPA;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public class ProductPA implements IProductPA
 {
@@ -283,5 +282,11 @@ public class ProductPA implements IProductPA
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	@Override
+	public I_M_ProductScalePrice retrieveScalePrices(final int productPriceId, final BigDecimal qty, final String trxName)
+	{
+		return retrieveOrCreateScalePrices(productPriceId, qty, false, trxName);
 	}
 }

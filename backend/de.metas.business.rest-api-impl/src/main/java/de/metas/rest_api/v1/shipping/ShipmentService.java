@@ -43,7 +43,7 @@ import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternal
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -346,6 +346,7 @@ public class ShipmentService
 		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
 				shipmentSchedules,
 				request.getQuantityTypeToUse(),
+				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
 				ImmutableMap.of());
 
 		return huShipmentScheduleBL

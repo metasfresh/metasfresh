@@ -46,7 +46,7 @@ public class RestUtils
 					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
 					.orElseThrow(() -> MissingResourceException.builder()
 							.resourceName("organisation")
-							.resourceIdentifier(orgCode).build());
+							.resourceIdentifier("(val-)" + orgCode).build());
 		}
 		else
 		{

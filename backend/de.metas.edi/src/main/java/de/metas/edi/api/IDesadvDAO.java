@@ -112,7 +112,10 @@ public interface IDesadvDAO extends ISingletonService
 	 */
 	List<I_C_Order> retrieveAllOrders(I_EDI_Desadv desadv);
 
-	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(I_EDI_DesadvLine desadvLine);
+	/**
+	 * @param withInOutLine optional; specifies if only packs with/without an iol shall be selected. If {@code null}, no restriction is added.
+	 */
+	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull I_EDI_DesadvLine desadvLine, @Nullable Boolean withInOutLine);
 
 	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePackRecords(I_M_InOutLine inOutLineRecord);
 

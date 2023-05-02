@@ -22,6 +22,7 @@
 
 package de.metas.banking;
 
+import de.metas.impexp.config.DataImportConfigId;
 import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,6 +44,9 @@ public class Bank
 	String swiftCode;
 	@Nullable
 	String routingNo;
+
+	@Nullable
+	DataImportConfigId dataImportConfigId;
 
 	boolean cashBank;
 

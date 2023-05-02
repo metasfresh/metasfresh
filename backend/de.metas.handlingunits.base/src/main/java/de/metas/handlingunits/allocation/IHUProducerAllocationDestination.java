@@ -22,16 +22,16 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.ClearanceStatusInfo;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.LocatorId;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementations of this interface are {@link IAllocationDestination}s which also produce HUs.
@@ -94,4 +94,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	IHUProducerAllocationDestination setC_BPartner_Location_ID(int bpartnerLocationId);
 
 	IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwsnerPM);
+
+	IHUProducerAllocationDestination setHUClearanceStatusInfo(ClearanceStatusInfo huClearanceStatusInfo);
 }

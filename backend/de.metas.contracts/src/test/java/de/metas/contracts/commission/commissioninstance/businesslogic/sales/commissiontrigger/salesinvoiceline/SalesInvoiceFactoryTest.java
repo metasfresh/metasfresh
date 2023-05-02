@@ -1,15 +1,10 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
+import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.currency.CurrencyRepository;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Currency;
@@ -25,10 +20,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
-import de.metas.currency.CurrencyRepository;
-import io.github.jsonSnapshot.SnapshotMatcher;
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -124,8 +123,6 @@ class SalesInvoiceFactoryTest
 		assertThat(result.get().getInvoiceLines()).hasSize(1);
 
 		final SalesInvoiceLine salesInvoiceLine = result.get().getInvoiceLines().get(0);
-		assertThat(salesInvoiceLine.getForecastCommissionPoints().toBigDecimal()).isEqualByComparingTo("0");
-		assertThat(salesInvoiceLine.getCommissionPointsToInvoice().toBigDecimal()).isEqualByComparingTo("0");
 		assertThat(salesInvoiceLine.getInvoicedCommissionPoints().toBigDecimal()).isEqualByComparingTo("-100"); // LineNetAmt * 1 because it's a credit memo
 
 		SnapshotMatcher.expect(result.get()).toMatchSnapshot();

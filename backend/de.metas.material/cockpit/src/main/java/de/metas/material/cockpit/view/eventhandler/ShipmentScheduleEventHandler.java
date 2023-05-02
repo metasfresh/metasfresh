@@ -1,18 +1,7 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.time.ZoneId;
-import java.util.Collection;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
@@ -33,9 +22,18 @@ import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneId;
+import java.util.Collection;
 
 /*
  * #%L
@@ -79,7 +77,7 @@ public class ShipmentScheduleEventHandler
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractShipmentScheduleEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractShipmentScheduleEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(
 				ShipmentScheduleCreatedEvent.class,
@@ -120,7 +118,7 @@ public class ShipmentScheduleEventHandler
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.orderedSalesQty(shipmentScheduleEvent.getOrderedQuantityDelta())
-				.reservedSalesQty(shipmentScheduleEvent.getReservedQuantityDelta())
+				.qtyDemandSalesOrder(shipmentScheduleEvent.getReservedQuantityDelta())
 				.build();
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
 	}

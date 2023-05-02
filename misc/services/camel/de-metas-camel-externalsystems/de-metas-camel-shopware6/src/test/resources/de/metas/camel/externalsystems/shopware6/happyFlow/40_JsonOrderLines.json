@@ -4,14 +4,15 @@
       "id": "externalLineId",
       "productId": "productId",
       "quantity": 1,
-      "parentId": "parentId",
+      "parentId": "externalLineId2",
       "unitPrice": 14.8,
       "description": "lineDescription",
       "position": 1,
       "createdAt": "2021-02-25T15:27:34.518+00:00",
       "updatedAt": "2021-02-26T15:27:34.518+00:00",
       "payload": {
-        "isBundle": false
+        "isBundle": false,
+        "productNumber": "productNumber"
       }
     },
     {
@@ -25,7 +26,8 @@
       "createdAt": "2021-02-25T15:27:34.518+00:00",
       "updatedAt": "2021-02-27T15:27:34.518+00:00",
       "payload": {
-        "isBundle": true
+        "isBundle": true,
+        "productNumber": "productNumber2"
       }
     }
   ]

@@ -530,4 +530,10 @@ public class ESRImportDAO implements IESRImportDAO
 		save(esrImport);
 	}
 
+	@Override
+	public I_ESR_Import getById(final ESRImportId esrImportId)
+	{
+		return load(esrImportId.getRepoId(), I_ESR_Import.class);
+	}
+
 }

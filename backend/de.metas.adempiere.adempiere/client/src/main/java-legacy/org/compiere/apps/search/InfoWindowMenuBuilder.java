@@ -103,7 +103,8 @@ public final class InfoWindowMenuBuilder
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Account))
 		{
-			AEnv.addMenuItem(InfoBuilder.ACTION_InfoAccount, null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK + Event.CTRL_MASK), menu, standardInfoWindowLauncher);
+			// no longer supported
+			//AEnv.addMenuItem(InfoBuilder.ACTION_InfoAccount, null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK + Event.CTRL_MASK), menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
 		{
@@ -210,10 +211,6 @@ public final class InfoWindowMenuBuilder
 		else if (actionCommand.equals(InfoBuilder.ACTION_InfoAsset) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Asset))
 		{
 			InfoBuilder.showAsset(parentFrame, windowNo);
-		}
-		else if (actionCommand.equals(InfoBuilder.ACTION_InfoAccount) && role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
-		{
-			new org.compiere.acct.AcctViewer();
 		}
 		else if (actionCommand.equals(InfoBuilder.ACTION_InfoSchedule) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
 		{

@@ -462,16 +462,16 @@ public class StockCandidateServiceTests
 		{ // guard
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(records).hasSize(5);
-			assertDateAndQty(records.get(0), t1, "10");
-			assertDateAndQty(records.get(1), t2, "7");
-			assertDateAndQty(records.get(2), t3, "4");
-			assertDateAndQty(records.get(3), t4, "6");
-			assertDateAndQty(records.get(4), t6, "11");
+			assertDateAndQty(records.get(0), t1, "10"); 
+			assertDateAndQty(records.get(1), t2, "7"); // 10 - 3
+			assertDateAndQty(records.get(2), t3, "4"); //  7 - 3
+			assertDateAndQty(records.get(3), t4, "6"); //  4 + 2
+			assertDateAndQty(records.get(4), t6, "11");//  6 + 5
 		}
 
 		// now "move" t2 => t5
 		final Candidate t2ToT5Candidate = t2SaveResult.getCandidate()
-				.withQuantity(new BigDecimal("6"))
+				.withQuantity(new BigDecimal("3"))
 				.withDate(t5);
 		final SaveResult t2ToT5SaveResult = stockCandidateService.updateQtyAndDate(t2ToT5Candidate);
 
@@ -492,10 +492,10 @@ public class StockCandidateServiceTests
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 		assertThat(records).hasSize(5);
 		assertDateAndQty(records.get(0), t1, "10");
-		assertDateAndQty(records.get(1), t3, "7");
-		assertDateAndQty(records.get(2), t4, "9");
-		assertDateAndQty(records.get(3), t5, "6");
-		assertDateAndQty(records.get(4), t6, "11");
+		assertDateAndQty(records.get(1), t3, "7"); // 10 - 3 (the t3's "-3")
+		assertDateAndQty(records.get(2), t4, "9"); //  7 + 2 
+		assertDateAndQty(records.get(3), t5, "6"); //  9 - 3 (the -3 of the previous ts that is now t5)
+		assertDateAndQty(records.get(4), t6, "11"); // 6 + 5 (as before)
 	}
 
 	private void assertDateAndQty(

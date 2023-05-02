@@ -46,8 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.time.Instant;
 
-@RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/manufacturing/orders" })
+@RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/manufacturing/orders")
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ManufacturingOrderRestController

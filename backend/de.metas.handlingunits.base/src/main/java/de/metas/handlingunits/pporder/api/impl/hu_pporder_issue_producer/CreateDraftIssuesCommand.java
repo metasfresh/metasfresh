@@ -13,16 +13,14 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -32,6 +30,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
@@ -92,7 +92,7 @@ public class CreateDraftIssuesCommand
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
 	private final ImmutableList<I_M_HU> issueFromHUs;
 	private final boolean changeHUStatusToIssued;
-	private final PickingCandidateId pickingCandidateId;
+	private final IssueCandidateGeneratedBy generatedBy;
 
 	//
 	// Status
@@ -108,8 +108,10 @@ public class CreateDraftIssuesCommand
 			@NonNull final Collection<I_M_HU> issueFromHUs,
 			@Nullable final Boolean changeHUStatusToIssued,
 			//
-			@Nullable final PickingCandidateId pickingCandidateId)
+			@Nullable final IssueCandidateGeneratedBy generatedBy)
 	{
+		validateSourceHUs(issueFromHUs);
+
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
 		{
@@ -124,7 +126,7 @@ public class CreateDraftIssuesCommand
 
 		remainingQtyToIssue = fixedQtyToIssue;
 
-		this.pickingCandidateId = pickingCandidateId;
+		this.generatedBy = generatedBy;
 	}
 
 	public List<I_PP_Order_Qty> execute()
@@ -168,13 +170,13 @@ public class CreateDraftIssuesCommand
 			return null;
 		}
 
-		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		final String huStatus = hu.getHUStatus();
+		if (!X_M_HU.HUSTATUS_Active.equals(huStatus) && !X_M_HU.HUSTATUS_Issued.equals(huStatus)
+		)
 		{
-			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
+			throw new HUException("HU shall be Active or Issued but it was `" + huStatus + "`")
 					.setParameter("hu", hu);
 		}
-
-		removeHuFromParentIfAny(huContext, hu);
 
 		final IHUProductStorage productStorage = retrieveProductStorage(huContext, hu);
 		if (productStorage == null)
@@ -182,6 +184,7 @@ public class CreateDraftIssuesCommand
 			return null;
 		}
 
+		removeHuFromParentIfAny(huContext, hu);
 		// Actually create and save the candidate
 		final I_PP_Order_Qty candidate = createIssueCandidateOrNull(hu, productStorage);
 		if (candidate == null)
@@ -221,11 +224,7 @@ public class CreateDraftIssuesCommand
 		}
 		else
 		{
-			huTrxBL.setParentHU(huContext //
-					, null // parentHUItem
-					, hu //
-					, true // destroyOldParentIfEmptyStorage
-			);
+			huTrxBL.extractHUFromParentIfNeeded(huContext, hu);
 		}
 	}
 
@@ -273,20 +272,20 @@ public class CreateDraftIssuesCommand
 			}
 
 			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-					//
-					.date(movementDate)
-					//
-					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.productId(productId)
-					//
-					.qtyToIssue(qtyToIssue)
-					//
-					.pickingCandidateId(pickingCandidateId)
-					//
-					.build());
+																		  .orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+																		  .orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+																		  //
+																		  .date(movementDate)
+																		  //
+																		  .locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+																		  .issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+																		  .productId(productId)
+																		  //
+																		  .qtyToIssue(qtyToIssue)
+																		  //
+					.generatedBy(generatedBy)
+																		  //
+																		  .build());
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 
@@ -344,5 +343,18 @@ public class CreateDraftIssuesCommand
 		}
 
 		return from.getQty();
+	}
+
+	private void validateSourceHUs(@NonNull final Collection<I_M_HU> sourceHUs)
+	{
+		for (final I_M_HU hu : sourceHUs)
+		{
+			if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
+			{
+				throw new AdempiereException("Non 'Cleared' HUs cannot be issued!")
+						.appendParametersToMessage()
+						.setParameter("M_HU_ID", hu.getM_HU_ID());
+			}
+		}
 	}
 }

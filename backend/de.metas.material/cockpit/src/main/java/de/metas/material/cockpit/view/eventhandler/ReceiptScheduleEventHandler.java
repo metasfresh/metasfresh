@@ -1,18 +1,7 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.time.ZoneId;
-import java.util.Collection;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
@@ -32,8 +21,17 @@ import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneId;
+import java.util.Collection;
 
 /*
  * #%L
@@ -77,7 +75,7 @@ public class ReceiptScheduleEventHandler
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractReceiptScheduleEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractReceiptScheduleEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(
 				ReceiptScheduleCreatedEvent.class,
@@ -119,7 +117,7 @@ public class ReceiptScheduleEventHandler
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.orderedPurchaseQty(event.getOrderedQuantityDelta())
-				.reservedPurchaseQty(event.getReservedQuantityDelta())
+				.qtySupplyPurchaseOrder(event.getReservedQuantityDelta())
 				.build();
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);

@@ -1,8 +1,11 @@
 package de.metas.ui.web.address;
 
+import de.metas.location.LocationId;
+import de.metas.ui.web.address.json.JSONAddressDocument;
 import de.metas.ui.web.address.json.JSONAddressLayout;
 import de.metas.ui.web.address.json.JSONCreateAddressRequest;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.pattribute.json.JSONCompleteASIRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
@@ -15,12 +18,13 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import io.swagger.annotations.Api;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.NonNull;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,18 +52,26 @@ import java.util.List;
  * #L%
  */
 
+/**
+ * @implNote IMPORTANT: Keep the API endpoints/requests/responses in sync with {@link de.metas.ui.web.pattribute.ASIRestController} because on frontend side they are handled by the same code.
+ */
 @Api
 @RestController
-@RequestMapping(value = AddressRestController.ENDPOINT)
+@RequestMapping(AddressRestController.ENDPOINT)
 public class AddressRestController
 {
-	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/address";
+	static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/address";
 
-	@Autowired
-	private UserSession userSession;
+	private final UserSession userSession;
+	private final AddressRepository addressRepo;
 
-	@Autowired
-	AddressRepository addressRepo;
+	public AddressRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final AddressRepository addressRepo)
+	{
+		this.userSession = userSession;
+		this.addressRepo = addressRepo;
+	}
 
 	private JSONDocumentOptions newJsonDocumentOpts()
 	{
@@ -71,42 +83,39 @@ public class AddressRestController
 		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
-	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
-	public JSONDocument createAddressDocument(@RequestBody final JSONCreateAddressRequest request)
+	@PostMapping({ "", "/" })
+	public JSONAddressDocument createAddressDocument(@RequestBody final JSONCreateAddressRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("createAddressDocument", () -> {
-			final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId());
-			return JSONDocument.ofDocument(addressDoc, newJsonDocumentOpts());
+			final Document addressDoc = addressRepo.createNewFrom(LocationId.ofRepoIdOrNull(request.getTemplateId()));
+			return toJson(addressDoc);
 		});
 	}
 
-	/**
-	 * @param docId_NOTUSED not used but we need this parameter to be consistent with all other APIs that we have.
-	 */
-	@RequestMapping(value = "/{docId}/layout", method = RequestMethod.GET)
-	public JSONAddressLayout getLayout(@SuppressWarnings("unused") @PathVariable("docId") final int docId_NOTUSED)
+	private JSONAddressDocument toJson(final Document addressDoc)
 	{
-		userSession.assertLoggedIn();
-
-		return JSONAddressLayout.of(addressRepo.getLayout(), newJsonDocumentLayoutOpts());
+		return JSONAddressDocument.builder()
+				.id(addressDoc.getDocumentId())
+				.layout(JSONAddressLayout.of(addressRepo.getLayout(), newJsonDocumentLayoutOpts()))
+				.fieldsByName(JSONDocument.ofDocument(addressDoc, newJsonDocumentOpts()).getFieldsByName())
+				.build();
 	}
 
-	@RequestMapping(value = "/{docId}", method = RequestMethod.GET)
-	public JSONDocument getAddressDocument(@PathVariable("docId") final int docId)
+	@GetMapping("/{docId}")
+	public JSONAddressDocument getAddressDocument(@PathVariable("docId") final int docId)
 	{
 		userSession.assertLoggedIn();
 
 		final Document addressDoc = addressRepo.getAddressDocumentForReading(docId);
-		return JSONDocument.ofDocument(addressDoc, newJsonDocumentOpts());
+		return toJson(addressDoc);
 	}
 
-	@RequestMapping(value = "/{docId}", method = RequestMethod.PATCH)
+	@PatchMapping("/{docId}")
 	public List<JSONDocument> processChanges(
-			@PathVariable("docId") final int docId //
-			, @RequestBody final List<JSONDocumentChangedEvent> events //
-	)
+			@PathVariable("docId") final int docId,
+			@RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
 
@@ -117,12 +126,11 @@ public class AddressRestController
 		});
 	}
 
-	@RequestMapping(value = "/{docId}/field/{attributeName}/typeahead", method = RequestMethod.GET)
+	@GetMapping("/{docId}/field/{attributeName}/typeahead")
 	public JSONLookupValuesPage getAttributeTypeahead(
-			@PathVariable("docId") final int docId //
-			, @PathVariable("attributeName") final String attributeName //
-			, @RequestParam(name = "query") final String query //
-	)
+			@PathVariable("docId") final int docId,
+			@PathVariable("attributeName") final String attributeName,
+			@RequestParam(name = "query") final String query)
 	{
 		userSession.assertLoggedIn();
 
@@ -131,11 +139,10 @@ public class AddressRestController
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
-	@RequestMapping(value = "/{docId}/field/{attributeName}/dropdown", method = RequestMethod.GET)
+	@GetMapping("/{docId}/field/{attributeName}/dropdown")
 	public JSONLookupValuesList getAttributeDropdown(
-			@PathVariable("docId") final int docId //
-			, @PathVariable("attributeName") final String attributeName //
-	)
+			@PathVariable("docId") final int docId,
+			@PathVariable("attributeName") final String attributeName)
 	{
 		userSession.assertLoggedIn();
 
@@ -144,13 +151,16 @@ public class AddressRestController
 				.transform(list -> JSONLookupValuesList.ofLookupValuesList(list, userSession.getAD_Language()));
 	}
 
-	@PostMapping(value = "/{docId}/complete")
-	public JSONLookupValue complete(@PathVariable("docId") final int docId)
+	@PostMapping("/{docId}/complete")
+	public JSONLookupValue complete(
+			@PathVariable("docId") final int docId,
+			@RequestBody final JSONCompleteASIRequest request)
 	{
 		userSession.assertLoggedIn();
 
-		return Execution.callInNewExecution("complete", () -> addressRepo
-				.complete(docId)
-				.transform(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language())));
+		return Execution.callInNewExecution(
+				"complete",
+				() -> addressRepo.complete(docId, request.getEvents())
+						.transform(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language())));
 	}
 }

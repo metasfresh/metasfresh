@@ -1,29 +1,12 @@
 package de.metas.material.planning.event;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -38,12 +21,32 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
-import de.metas.material.planning.pporder.PPOrderAdvisedEventCreator;
+import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
+import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -73,23 +76,27 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 {
 	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandler.class);
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
-	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
+	private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
 
 	private final PostMaterialEventService postMaterialEventService;
+	private final MainDataRequestHandler mainDataRequestHandler;
 
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator,
-			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
-			@NonNull final PostMaterialEventService fireMaterialEventService)
+			@NonNull final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator,
+			@NonNull final PostMaterialEventService fireMaterialEventService, final MainDataRequestHandler mainDataRequestHandler)
 	{
 		this.dDOrderAdvisedEventCreator = dDOrderAdvisedEventCreator;
-		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
+		this.ppOrderCandidateAdvisedEventCreator = ppOrderCandidateAdvisedEventCreator;
 		this.postMaterialEventService = fireMaterialEventService;
+		this.mainDataRequestHandler = mainDataRequestHandler;
 	}
 
 	@Override
-	public Collection<Class<? extends SupplyRequiredEvent>> getHandeledEventType()
+	public Collection<Class<? extends SupplyRequiredEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(SupplyRequiredEvent.class);
 	}
@@ -105,6 +112,8 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	 */
 	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
+		updateMainData(descriptor);
+
 		final IMutableMRPContext mrpContext = createMRPContextOrNull(descriptor);
 		if (mrpContext == null)
 		{
@@ -114,9 +123,9 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final List<MaterialEvent> events = new ArrayList<>();
 
 		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
-		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(descriptor, mrpContext));
+		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, mrpContext));
 
-		events.forEach(postMaterialEventService::postEventNow);
+		events.forEach(postMaterialEventService::postEventAsync);
 	}
 
 	private IMutableMRPContext createMRPContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
@@ -168,5 +177,25 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		mrpContext.setAD_Client_ID(org.getAD_Client_ID());
 		mrpContext.setAD_Org(org);
 		return mrpContext;
+	}
+
+	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		if (supplyRequiredDescriptor.isSimulated())
+		{
+			return;
+		}
+
+		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
+				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
+
+		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
+				.identifier(mainDataRecordIdentifier)
+				.qtySupplyRequired(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.build();
+
+		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 }
