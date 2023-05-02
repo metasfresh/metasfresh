@@ -390,6 +390,7 @@ public class WorkOrderProjectObjectUnderTestRestService
 				.woObjectType(objectUnderTest.getWoObjectType())
 				.woObjectName(objectUnderTest.getWoObjectName())
 				.woObjectWhereabouts(objectUnderTest.getWoObjectWhereabouts())
+				.objectDeliveredDate(objectUnderTest.getObjectDeliveredDate())
 				.build();
 	}
 
