@@ -283,7 +283,7 @@ class PlanConstraintProviderTest
 			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.LOW);
 			final Step step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.HIGH);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isTrue();
-			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(1);
+			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(25);
 		}
 
 	}

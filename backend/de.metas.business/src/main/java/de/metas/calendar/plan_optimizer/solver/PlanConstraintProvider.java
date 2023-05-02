@@ -101,7 +101,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getResource),
 						stepsNotRespectingProjectPriority())
-				.penalize(ONE_SOFT_1, PlanConstraintProvider::getOverlappingDuration)
+				.penalize(ONE_SOFT_1, PlanConstraintProvider::computePenaltyWeight_StepsNotRespectingProjectPriority)
 				.asConstraint("Steps not respecting project priority");
 	}
 
@@ -109,19 +109,33 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	static boolean stepsNotRespectingProjectPriority(Step step1, Step step2)
 	{
+		return computePenaltyWeight_StepsNotRespectingProjectPriority(step1, step2) > 0;
+	}
+
+	static int computePenaltyWeight_StepsNotRespectingProjectPriority(Step step1, Step step2)
+	{
 		final InternalPriority prio1 = step1.getProjectPriority();
 		final InternalPriority prio2 = step2.getProjectPriority();
 		if (prio1.equals(prio2))
 		{
-			return false;
+			return 0;
 		}
+		else if (prio1.isHigherThan(prio2))
+		{
+			final LocalDateTime endDate1 = Check.assumeNotNull(step1.getEndDate(), "end date not null: {}", step1);
+			final LocalDateTime startDate2 = Check.assumeNotNull(step2.getStartDate(), "start date not null: {}", step2);
 
-		final LocalDateTime startDate1 = Check.assumeNotNull(step1.getStartDate(), "start date not null: {}", step1);
-		final LocalDateTime startDate2 = Check.assumeNotNull(step2.getStartDate(), "start date not null: {}", step2);
+			final int duration = (int)Plan.PLANNING_TIME_PRECISION.between(endDate1, startDate2);
+			return duration < 0 ? -duration : 0;
+		}
+		else
+		{
+			final LocalDateTime endDate2 = Check.assumeNotNull(step2.getEndDate(), "end date not null: {}", step1);
+			final LocalDateTime startDate1 = Check.assumeNotNull(step1.getStartDate(), "start date not null: {}", step2);
 
-		final int startDatesDirection = Integer.signum(startDate1.compareTo(startDate2));
-		final int priorityDirection = Integer.signum(prio1.getIntValue() - prio2.getIntValue()) * -1;
-		return startDatesDirection != priorityDirection;
+			final int duration = (int)Plan.PLANNING_TIME_PRECISION.between(endDate2, startDate1);
+			return duration < 0 ? -duration : 0;
+		}
 	}
 
 	private static int getOverlappingDuration(final Step step1, final Step step2)
