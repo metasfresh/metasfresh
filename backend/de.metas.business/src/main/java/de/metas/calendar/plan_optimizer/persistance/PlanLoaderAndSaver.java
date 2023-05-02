@@ -1,4 +1,4 @@
-package de.metas.calendar.plan_optimizer;
+package de.metas.calendar.plan_optimizer.persistance;
 
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.simulation.SimulationPlanId;

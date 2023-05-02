@@ -1,6 +1,7 @@
 package de.metas.calendar.plan_optimizer;
 
 import de.metas.calendar.plan_optimizer.domain.Plan;
+import de.metas.calendar.plan_optimizer.persistance.PlanLoaderAndSaver;
 import de.metas.calendar.simulation.SimulationPlanId;
 import lombok.NonNull;
 import lombok.ToString;
