@@ -45,7 +45,7 @@ import lombok.NonNull;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
- * <p>
+ *
  * This iterator works like {@link POBufferedIterator} but in this case the result is guaranteed.
  *
  * @author tsa
@@ -69,7 +69,7 @@ import lombok.NonNull;
 	private final long rowsCount;
 	/**
 	 * How many rows were fetched from our selection until now.
-	 * <p>
+	 *
 	 * It's value means:
 	 * <ul>
 	 * <li>ZERO - no rows were fetched from the buffer (yet)
@@ -83,7 +83,7 @@ import lombok.NonNull;
 
 	/**
 	 * Underlying buffered iterator used to actually load the records page by page.
-	 * <p>
+	 *
 	 * NOTE: never ever use this iterator for navigating but use the {@link #peekingBufferedIterator}. The only reason why we have it as a class field is because we want to set things like BufferSize
 	 * and because we want to include it in toString().
 	 */
@@ -112,7 +112,6 @@ import lombok.NonNull;
 
 		//
 		// Select the records using the original query and INSERT their IDs to our T_Query_Selection
-		// !! ...using the query's ordering, such that for non-UNION'ed-queries, T_Query_Selection.Line reflects this ordering !!
 		final UUISelection uuidSelection = QuerySelectionHelper.createUUIDSelection(query);
 		this.rowsCount = uuidSelection.getSize();
 		this.querySelectionUUID = uuidSelection.getUuid();
@@ -148,18 +147,21 @@ import lombok.NonNull;
 	}
 
 	@Override
-	protected void finalize()
+	protected void finalize() throws Throwable
 	{
 		QuerySelectionToDeleteHelper.scheduleDeleteSelection(querySelectionUUID, trxName);
 	}
 
 	/**
 	 * Checks if given <code>model</code> is a valid model which can be returned by {@link #next()}.
-	 * <p>
+	 *
 	 * A model is considered invalid when
 	 * <ul>
 	 * <li>it's ID is null, which means it was deleted after the selection was build. Those records shall be skipped
 	 * </ul>
+	 *
+	 * @param model
+	 * @return
 	 */
 	private boolean isValidModel(final ET model)
 	{
@@ -281,6 +283,7 @@ import lombok.NonNull;
 	/**
 	 * Sets buffer/page size, i.e. the number of rows to be loaded by this iterator at a time.
 	 *
+	 * @param bufferSize
 	 * @see IQuery#OPTION_IteratorBufferSize
 	 */
 	public void setBufferSize(final int bufferSize)

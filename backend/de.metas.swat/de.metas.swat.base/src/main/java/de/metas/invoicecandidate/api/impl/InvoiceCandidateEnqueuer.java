@@ -29,7 +29,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -38,7 +37,6 @@ import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -132,6 +130,34 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
+		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(pinstanceId);
+
+		//
+		// Create invoice candidates changes checker.
+		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
+		icChangesChecker.setBeforeChanges(invoiceCandidates);
+
+		//
+		// Prepare
+		prepareSelectionForEnqueueing(pinstanceId);
+		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
+		// * the ones which are in our selection, we will updated right now (see below)
+		// * the other ones will be updated later, asynchronously
+
+		//
+		// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
+		// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
+		invoiceCandBL.updateInvalid()
+				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.setLockedBy(icLock)
+				.setTaggedWithAnyTag()
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
+				.update();
+
+		//
+		// Make sure there are no changes in amounts or relevant fields (if that is required)
+		icChangesChecker.assertNoChanges(invoiceCandidates);
+
 		//
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
@@ -156,7 +182,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		while (invoiceCandidates.hasNext())
 		{
-			final I_C_Invoice_Candidate icRecord = invoiceCandidates.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				// Fail if the invoice candidate has issues
@@ -358,10 +383,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	/**
 	 * NOTE: we designed this method for the case of enqueuing a big number of invoice candidates.
 	 */
-	private Iterable<I_C_Invoice_Candidate> retrieveSelection(@NonNull final PInstanceId pinstanceId)
+	private Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
-		return () -> invoiceCandDAO.retrieveIcForSelection(pinstanceId,
-														   PlainContextAware.newWithThreadInheritedTrx(getCtx()));
+		return () -> {
+			final Properties ctx = getCtx();
+			trxManager.assertThreadInheritedTrxExists();
+			return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
+		};
 	}
 
 	@Override
