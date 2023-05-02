@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.GetPurchaseOrderFromFileRouteBuilder.UPSERT_ORDER_ENDPOINT_ID;
 import static org.assertj.core.api.Assertions.*;
 
@@ -31,6 +32,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 
 	private static final String MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT = "mock:externalSystemStatusEndpoint";
 	private static final String MOCK_UPSERT_PURCHASE_ORDER = "mock:UpsertPurchaseOrder";
+	private static final String MOCK_ERROR_CONSUMER = "mock:ErrorConsumer";
 
 	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE = "0_JsonStartExternalSystemRequestPurchaseOrder_LocalFile.json";
 	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE = "0_JsonStopExternalSystemRequestPurchaseOrder_LocalFile.json";
@@ -169,6 +171,16 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 										  .replace()
 										  .to(MOCK_UPSERT_PURCHASE_ORDER)
 										  .process(mockUpsertPurchaseOrderProcessor);
+
+								  advice.interceptSendToEndpoint("direct:" + MF_ERROR_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_ERROR_CONSUMER)
+										  .process(exchange -> {
+											  System.out.println("Mocked Error-Consumer invoked!");
+											  System.out.println("exchange="+exchange);
+											  System.out.println("exchange.exception="+exchange.getException());
+											  
+										  });
 							  });
 	}
 
@@ -191,6 +203,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		@Override
 		public void process(final Exchange exchange)
 		{
+//			throw new RuntimeCamelException("MockUpsertPurchaseOrderProcessor");
 			called++;
 		}
 	}
