@@ -180,6 +180,12 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
+		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+		if (bpartnerLocationId != null && bpartnerLocationId > 0)
+		{
+			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationId);
+		}
+
 		saveRecord(bPartnerLocationRecord);
 
 		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
