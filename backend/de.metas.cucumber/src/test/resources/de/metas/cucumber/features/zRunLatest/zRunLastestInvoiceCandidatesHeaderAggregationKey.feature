@@ -93,7 +93,7 @@ Feature: Invoice candidate separation based on header aggregation key
 
     Then the metasfresh REST-API endpoint path 'api/v2/invoices/enqueueForInvoicing' receives a 'POST' request with the payload from context and responds with '202' status code
 
-    And locate invoice by external id after not more than 600s and validate
+    And locate invoice by external id after not more than 1200s and validate
       | C_Invoice_ID.Identifier | ExternalId                  | OPT.NumberOfCandidates | OPT.DateInvoiced |
       | invoice_1               | externalHeaderId_1_29032023 | 200                    | 2023-03-28       |
       | invoice_2               | externalHeaderId_2_29032023 | 200                    | 2023-03-28       |

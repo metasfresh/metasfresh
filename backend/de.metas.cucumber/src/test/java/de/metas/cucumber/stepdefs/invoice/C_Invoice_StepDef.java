@@ -49,6 +49,7 @@ import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -66,6 +67,7 @@ import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -137,6 +139,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateAcct;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
@@ -459,14 +462,15 @@ public class C_Invoice_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final I_C_Invoice invoice = StepDefUtil.tryAndWaitForItem(timeoutSec,
-																	  5000,
-																	  () -> findInvoiceByExternalId(row));
+																	  10000,
+																	  () -> findInvoiceByExternalIdAndCandidateCount(row));
 
-			final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
+			final LocalDate dateInvoiced = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateInvoiced);
 
 			if (dateInvoiced != null)
 			{
-				softly.assertThat(invoice.getDateInvoiced()).as("DateInvoiced").isEqualTo(dateInvoiced);
+				softly.assertThat(TimeUtil.asLocalDate(invoice.getDateInvoiced(), ZonedDateTime.now().getZone())).as("DateInvoiced")
+						.isEqualTo(dateInvoiced);
 			}
 
 			final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.NumberOfCandidates");
@@ -964,17 +968,41 @@ public class C_Invoice_StepDef
 	}
 
 	@NonNull
-	private ItemProvider.ProviderResult<I_C_Invoice> findInvoiceByExternalId(@NonNull final Map<String, String> row)
+	private ItemProvider.ProviderResult<I_C_Invoice> findInvoiceByExternalIdAndCandidateCount(@NonNull final Map<String, String> row)
 	{
 		final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
+		final int numberOfCandidates = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT.NumberOfCandidates");
 
 		final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addEqualsFilter(COLUMNNAME_ExternalId, externalId)
+				.addEqualsFilter(COLUMNNAME_DocStatus, DocStatus.Completed.getCode())
 				.create()
 				.firstOnlyOrNull(I_C_Invoice.class);
 
 		if (invoice != null)
 		{
+			if (numberOfCandidates >= 0)
+			{
+				final int actualNumberOfCandidates = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+						.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
+						.addOnlyActiveRecordsFilter()
+						.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.count();
+
+				if (numberOfCandidates == actualNumberOfCandidates)
+				{
+					return ItemProvider.ProviderResult.resultWasFound(invoice);
+				}
+				else
+				{
+ 					return ItemProvider.ProviderResult.resultWasNotFound("Not all invoice candidates were linked yet for row=" + row
+																				 + "; currentFoundCount: " + actualNumberOfCandidates);
+				}
+			}
+
 			return ItemProvider.ProviderResult.resultWasFound(invoice);
 		}
 

@@ -29,6 +29,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_List_StepDefData;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -121,9 +122,16 @@ public class C_Invoice_Candidate_List_StepDef
 						}
 
 						InterfaceWrapperHelper.saveRecord(invoiceCandidate);
-					});
 
-			invoiceCandidateListTable.putOrReplace(invoiceCandidateListIdentifier, invoiceCandidates);
+						try
+						{
+							StepDefUtil.tryAndWait(30, 2000, () -> !invoiceCandDAO.isToRecompute(invoiceCandidate));
+						}
+						catch (final InterruptedException e)
+						{
+							throw new RuntimeException(e);
+						}
+					});
 		}
 	}
 
