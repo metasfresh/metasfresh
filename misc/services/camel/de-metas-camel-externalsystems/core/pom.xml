@@ -15,9 +15,9 @@
     <artifactId>de-metas-camel-externalsystems-core</artifactId>
     <version>10.0.0</version>
     <properties>
-        <java.version>14</java.version>
-        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-        <camel.version>3.7.3</camel.version>
+        <java.version>17</java.version>
+        <spring-boot.version>2.7.11</spring-boot.version>
+        <camel.version>3.14.7</camel.version>
         <smooks.version>1.7.1</smooks.version>
         <jackson.version>2.12.1</jackson.version>
         <!--
