@@ -1,6 +1,9 @@
 package de.metas.calendar.plan_optimizer;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Resource;
 import de.metas.calendar.plan_optimizer.domain.Step;
@@ -20,6 +23,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -68,7 +72,7 @@ public class ManualPOCTest
 		final ArrayList<Step> stepsList = new ArrayList<>();
 
 		// Project 1:
-		for (int i = 10; i >= 1; i--)
+		for (int i = 1; i <= 10; i++)
 		{
 			stepsList.add(Step.builder()
 					.id(StepId.builder()
@@ -76,7 +80,6 @@ public class ManualPOCTest
 							.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID1, nextStepRepoId.get()))
 							.build())
 					.projectPriority(InternalPriority.MEDIUM)
-					.projectSeqNo(i * 10)
 					.resource(resource(i))
 					.duration(Duration.ofHours(1))
 					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
@@ -93,7 +96,6 @@ public class ManualPOCTest
 							.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID2, nextStepRepoId.get()))
 							.build())
 					.projectPriority(InternalPriority.MEDIUM)
-					.projectSeqNo(i * 10)
 					.resource(resource(i))
 					.duration(Duration.ofHours(1))
 					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
@@ -111,6 +113,8 @@ public class ManualPOCTest
 		// 			step.setPinned(true);
 		// 		});
 
+		updatePreviousAndNextStep(stepsList);
+
 		final Plan plan = new Plan();
 		plan.setSimulationId(simulationId);
 		plan.setTimeZone(SystemTime.zoneId());
@@ -123,4 +127,21 @@ public class ManualPOCTest
 
 	@NonNull
 	private static ResourceId resourceId(final int index) {return ResourceId.ofRepoId(100 + index);}
+
+	private static void updatePreviousAndNextStep(final List<Step> steps)
+	{
+		ImmutableListMultimap<ProjectId, Step> stepsByProjectId = Multimaps.index(steps, Step::getProjectId);
+
+		for (final ProjectId projectId : stepsByProjectId.keySet())
+		{
+			final ImmutableList<Step> projectSteps = stepsByProjectId.get(projectId);
+
+			for (int i = 0, lastIndex = projectSteps.size() - 1; i <= lastIndex; i++)
+			{
+				final Step step = projectSteps.get(i);
+				step.setPreviousStep(i == 0 ? null : projectSteps.get(i - 1));
+				step.setNextStep(i == lastIndex ? null : projectSteps.get(i + 1));
+			}
+		}
+	}
 }

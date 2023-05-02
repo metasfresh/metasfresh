@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.base.Stopwatch;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.persistance.PlanLoaderAndSaver;
 import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
@@ -13,10 +14,17 @@ import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
 import org.optaplanner.core.api.solver.SolutionManager;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
+import org.optaplanner.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import org.optaplanner.core.config.constructionheuristic.ConstructionHeuristicType;
+import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import org.optaplanner.core.config.heuristic.selector.value.ValueSelectorConfig;
+import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
+import org.optaplanner.core.config.localsearch.LocalSearchType;
 import org.optaplanner.core.config.solver.SolverConfig;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
 class SimulationOptimizerTask implements Runnable
@@ -126,11 +134,27 @@ class SimulationOptimizerTask implements Runnable
 		SolverFactory<Plan> solverFactory = this.solverFactory;
 		if (solverFactory == null)
 		{
-			solverFactory = this.solverFactory = SolverFactory.create(new SolverConfig()
+			final ConstructionHeuristicPhaseConfig constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
+			constructionHeuristicPhaseConfig.setConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT);
+
+			final ChangeMoveSelectorConfig moveSelectorConfig = new ChangeMoveSelectorConfig();
+			final ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig();
+			valueSelectorConfig.setVariableName(Step.FIELD_delay);
+			moveSelectorConfig.setValueSelectorConfig(valueSelectorConfig);
+
+			final LocalSearchPhaseConfig localSearchPhaseConfig = new LocalSearchPhaseConfig();
+			localSearchPhaseConfig.setMoveSelectorConfig(moveSelectorConfig);
+			localSearchPhaseConfig.setLocalSearchType(LocalSearchType.TABU_SEARCH);
+
+			final SolverConfig solverConfig = new SolverConfig()
 					.withSolutionClass(Plan.class)
 					.withEntityClasses(Step.class)
 					.withConstraintProviderClass(PlanConstraintProvider.class)
-					.withTerminationSpentLimit(terminationSpentLimit));
+					.withTerminationSpentLimit(terminationSpentLimit)
+					.withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig);
+
+			solverFactory = this.solverFactory = SolverFactory.create(solverConfig)
+			;
 		}
 		return solverFactory;
 	}
@@ -155,7 +179,10 @@ class SimulationOptimizerTask implements Runnable
 		simulationOptimizerStatusDispatcher.notifyStarted(simulationId);
 
 		final Plan problem = planLoaderAndSaver.getPlan(simulationId);
-		logger.debug("problem: {}", problem);
+		logger.info("problem: {}", problem);
+
+		prepareProblem(problem);
+		logger.info("problem prepared: {}", problem);
 
 		final Solver<Plan> solver = createSolver();
 
@@ -166,6 +193,16 @@ class SimulationOptimizerTask implements Runnable
 		solution.setTimeSpent(stopwatch.elapsed());
 
 		onSolutionFound(solution);
+	}
+
+	private static void prepareProblem(final Plan plan)
+	{
+		final ArrayList<Step> stepsList = plan.getStepsList();
+		for (int i = 0, lastIndex = stepsList.size() - 1; i <= lastIndex; i++)
+		{
+			final Step step = stepsList.get(i);
+			step.checkProblemFactsValid().assertTrue();
+		}
 	}
 
 	private void onSolutionFound(final Plan solution)
