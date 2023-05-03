@@ -12,7 +12,8 @@ public class ExternalProjectRefBeginningSequenceNoProvider extends ExternalProje
 			Evaluatee context,
 			DocumentSequenceInfo documentSequenceInfo)
 	{
-		String documentSeqNo = super.provideSeqNo(incrementalSeqNoSupplier, context, documentSequenceInfo);
-		return documentSeqNo.substring(documentSeqNo.lastIndexOf("-")+1) + "-" + documentSeqNo.substring(0, documentSeqNo.lastIndexOf("-"));
+		String seqNo = super.provideSeqNo(incrementalSeqNoSupplier, context, documentSequenceInfo);
+		return seqNo.substring(0, seqNo.lastIndexOf("-")) + "-" + seqNo.substring(seqNo.lastIndexOf("-")+1);
 	}
+
 }
