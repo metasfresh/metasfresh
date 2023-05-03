@@ -5,7 +5,8 @@ Feature: create invoice candidate via API
   I create multiple Invoice candidates and when processing, multiple workpackages are enqueued for each invoic to be generated
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2023-01-05T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -119,7 +120,7 @@ Feature: create invoice candidate via API
       | invoice_1               | IC_Customer_05012023     | IC_Customer_Location_05012023     | testICByExtRef  | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_05012023        | 2           | true      |
 
 
