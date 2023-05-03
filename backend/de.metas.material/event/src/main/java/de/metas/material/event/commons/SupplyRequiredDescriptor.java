@@ -62,6 +62,10 @@ public class SupplyRequiredDescriptor
 
 	boolean simulated;
 
+	/**
+	 * Used in case LotForLot to override the materialDescriptor Quantity,
+	 * which is initialized with requiredQty based on ATP
+	 */
 	BigDecimal fullDemandQty;
 
 	String isLotForLot;
