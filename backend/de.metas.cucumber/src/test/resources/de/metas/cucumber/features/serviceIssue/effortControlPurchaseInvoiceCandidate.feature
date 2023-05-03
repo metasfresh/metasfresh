@@ -93,7 +93,7 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | customerInvoice100      | customer_SO              | customerLocation_SO               | customerUser          | true      | CO        | Ausgangsrechnung      | costCenter100                | testProject                 |
     And validate invoice lines for customerInvoice100:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | customerInvoiceLine100      | invoiceableProduct      | 16          | true      | 10               | 10              | 160            | costCenter100                | testProject                 | 2410220\nbudgetIssue100_24102022 |
     And after not more than 30s, Fact_Acct are found
       | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
@@ -109,7 +109,7 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | vendorInvoice100        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter100                | testProject                 |
     And validate invoice lines for vendorInvoice100:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine100        | invoiceableProduct      | 8           | true      | 5                | 5               | 40             | costCenter100                | testProject                 | 2410221\neffortIssue100_24102022 |
       | vendorInvoiceLine101        | invoiceableProduct      | 2           | true      | 5                | 5               | 10             | costCenter100                | testProject                 | 2410222\neffortIssue101_24102022 |
     And after not more than 30s, Fact_Acct are found
@@ -224,7 +224,7 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | vendorInvoice300        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter300                | testProject                 |
     And validate invoice lines for vendorInvoice300:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine300        | invoiceableProduct      | 19          | true      | 5                | 5               | 95             | costCenter300                | testProject                 | 2510221\neffortIssue300_24102022 |
     And after not more than 30s, Fact_Acct are found
       | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
@@ -260,7 +260,7 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | vendorInvoice301        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter300                | testProject                 |
     And validate invoice lines for vendorInvoice301:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine301        | invoiceableProduct      | 6           | true      | 5                | 5               | 30             | costCenter300                | testProject                 | 2510221\neffortIssue300_24102022 |
     And after not more than 30s, Fact_Acct are found
       | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
@@ -315,7 +315,7 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | vendorInvoice400        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter400                | testProject                 |
     And validate invoice lines for vendorInvoice400:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine400        | invoiceableProduct      | 22          | true      | 5                | 5               | 110            | costCenter400                | testProject                 | 2510221\neffortIssue400_24102022 |
     And after not more than 30s, Fact_Acct are found
       | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |

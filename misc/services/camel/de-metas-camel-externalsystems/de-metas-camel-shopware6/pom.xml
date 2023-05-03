@@ -38,8 +38,8 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring-boot.version>2.7.7</spring-boot.version>
-        <camel.version>3.7.3</camel.version>
+        <spring-boot.version>2.7.11</spring-boot.version>
+        <camel.version>3.14.7</camel.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -90,6 +90,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-jcache-starter</artifactId>
+            <version>${camel.version}</version>
         </dependency>
 
         <!-- unit test -->
@@ -145,27 +150,14 @@
         </dependency>
 
         <dependency>
+             <groupId>org.apache.geronimo</groupId>
+            <artifactId>geronimo-jcache-simple</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jcache</artifactId>
-            <version>${camel.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>3.9-EA</version>
         </dependency>
 
         <dependency>
