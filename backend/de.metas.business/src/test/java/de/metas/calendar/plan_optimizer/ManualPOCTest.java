@@ -18,6 +18,7 @@ import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
 import lombok.NonNull;
 import org.junit.jupiter.api.Disabled;
+import org.optaplanner.core.api.solver.SolverFactory;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -49,10 +50,10 @@ public class ManualPOCTest
 		do
 		{
 			SimulationOptimizerTask.builder()
+					.solverFactory(createSolverFactory())
 					.simulationOptimizerStatusDispatcher(simulationOptimizerStatusDispatcher)
 					.planLoaderAndSaver(planLoaderAndSaver)
 					.simulationId(simulationId)
-					.terminationSpentLimit(TERMINATION_SPENT_LIMIT)
 					.onTaskComplete(() -> {}) // do nothing
 					.build()
 					.run();
@@ -65,6 +66,11 @@ public class ManualPOCTest
 			}
 		}
 		while (true);
+	}
+
+	private static SolverFactory<Plan> createSolverFactory()
+	{
+		return SolverFactory.create(SimulationOptimizerConfiguration.solverConfig(null, TERMINATION_SPENT_LIMIT));
 	}
 
 	private static Plan generateProblem(SimulationPlanId simulationId)
