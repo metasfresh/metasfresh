@@ -24,12 +24,12 @@ public class ExternalProjectRefSequenceChanger implements CustomSequenceNoProvid
 
 		final String decimalPattern = documentSequenceInfo.getDecimalPattern();
 		if (decimalPattern == null) {
-			return customPart + "-" + incrementalSeqNo;
+			return incrementalSeqNo + "-" + customPart;
 		}
 
 		final int incrementalSeqNoInt = Integer.parseInt(incrementalSeqNo);
 
-		return customPart + "-" + new DecimalFormat(decimalPattern).format(incrementalSeqNoInt);
+		return new DecimalFormat(decimalPattern).format(incrementalSeqNoInt) + "-" + customPart;
 	}
 
 	@NonNull
