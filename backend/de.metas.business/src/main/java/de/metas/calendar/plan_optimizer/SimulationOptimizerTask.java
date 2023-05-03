@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 class SimulationOptimizerTask implements Runnable
 {
@@ -25,6 +26,7 @@ class SimulationOptimizerTask implements Runnable
 
 	//
 	// Params
+	private final ExecutorService executorService;
 	private final SolverFactory<Plan> solverFactory;
 	private final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher;
 	private final PlanLoaderAndSaver planLoaderAndSaver;
@@ -39,12 +41,14 @@ class SimulationOptimizerTask implements Runnable
 
 	@Builder
 	private SimulationOptimizerTask(
+			@NonNull final ExecutorService executorService,
 			@NonNull final SolverFactory<Plan> solverFactory,
 			@NonNull final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher,
 			@NonNull final PlanLoaderAndSaver planLoaderAndSaver,
 			@NonNull final SimulationPlanId simulationId,
 			@NonNull final Runnable onTaskComplete)
 	{
+		this.executorService = executorService;
 		this.solverFactory = solverFactory;
 		this.simulationOptimizerStatusDispatcher = simulationOptimizerStatusDispatcher;
 		this.planLoaderAndSaver = planLoaderAndSaver;
@@ -66,7 +70,7 @@ class SimulationOptimizerTask implements Runnable
 		}
 
 		solver = null; // just to make sure
-		future = CompletableFuture.runAsync(this)
+		future = CompletableFuture.runAsync(this, executorService)
 				.whenComplete((v, ex) -> {
 					if (ex != null)
 					{
