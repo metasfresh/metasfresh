@@ -1,5 +1,5 @@
 @from:cucumber
-Feature: Invoice candidate separation based on header aggregation key
+Feature: ZInvoice candidate separation based on header aggregation key
 
   Background:
     Given infrastructure and metasfresh are running

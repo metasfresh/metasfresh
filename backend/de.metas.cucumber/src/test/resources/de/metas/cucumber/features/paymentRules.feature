@@ -56,8 +56,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
     # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference    | paymentTerm | processed | docStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_DirectDebit | 1000002     | true      | CO        | D               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_DirectDebit  | 1000002     | true      | CO        | D               |
 
 
   @from:cucumber
@@ -89,8 +89,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_OnCredit | 1000002     | true      | CO        | P               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_OnCredit     | 1000002     | true      | CO        | P               |
 
 
   @from:cucumber
@@ -122,8 +122,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_Cash     | 1000002     | true      | CO        | B               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_Cash         | 1000002     | true      | CO        | B               |
 
 
   @from:cucumber
@@ -155,7 +155,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference     | paymentTerm   | processed | docStatus | OPT.PaymentRule |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.PaymentRule |
       | invoice_1               | bpartner_1               | location_1                        | PO_Direct_Debit | 30 Tage netto | true      | CO        | D               |
 
 
@@ -188,8 +188,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | POReference  | paymentTerm   | processed | docStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | PO_On_Credit | 30 Tage netto | true      | CO        | P               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | PO_On_Credit    | 30 Tage netto | true      | CO        | P               |
 
 
   @from:cucumber
