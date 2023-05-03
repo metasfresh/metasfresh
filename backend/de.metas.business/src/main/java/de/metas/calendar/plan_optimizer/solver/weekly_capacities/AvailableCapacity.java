@@ -20,7 +20,7 @@ public class AvailableCapacity
 		this.groupsById = Maps.uniqueIndex(groups, HumanResourceTestGroup::getId);
 	}
 
-	public static AvailableCapacity of(ImmutableList<HumanResourceTestGroup> groups)
+	public static AvailableCapacity of(final ImmutableList<HumanResourceTestGroup> groups)
 	{
 		return new AvailableCapacity(groups);
 	}
@@ -31,18 +31,18 @@ public class AvailableCapacity
 	}
 
 	public void reserveCapacity(
-			@NonNull ResourceGroupYearWeek resourceGroupYearWeek,
+			@NonNull final ResourceGroupYearWeek resourceGroupYearWeek,
 			@NonNull final Duration capacity)
 	{
 		getReservation(resourceGroupYearWeek).reserve(capacity);
 	}
 
-	private Reservation getReservation(@NonNull ResourceGroupYearWeek resourceGroupYearWeek)
+	private Reservation getReservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek)
 	{
 		return reservations.computeIfAbsent(resourceGroupYearWeek, this::createEmptyReservation);
 	}
 
-	private Reservation createEmptyReservation(@NonNull ResourceGroupYearWeek resourceGroupYearWeek)
+	private Reservation createEmptyReservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek)
 	{
 		final HumanResourceTestGroup group = groupsById.get(resourceGroupYearWeek.getGroupId());
 		@NonNull final Duration totalCapacity = group != null ? group.getWeeklyCapacity() : Duration.ZERO;

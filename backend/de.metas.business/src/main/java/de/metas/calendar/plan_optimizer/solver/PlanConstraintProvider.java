@@ -85,7 +85,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						StepRequiredCapacity::add,
 						StepRequiredCapacity::subtract))
 				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
-				.asConstraint("availableCapacity");
+				.asConstraint("Available human resource test group capacity");
 	}
 
 	private int computePenaltyWeight_availableCapacity(StepRequiredCapacity requiredCapacity)

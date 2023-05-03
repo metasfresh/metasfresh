@@ -2,7 +2,6 @@ package de.metas.calendar.plan_optimizer.domain;
 
 import de.metas.calendar.plan_optimizer.solver.DelayStrengthComparator;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.product.ResourceId;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.util.time.DurationUtils;
@@ -57,8 +56,8 @@ public class Step
 	@Builder
 	private Step(
 			@NonNull final StepId id,
-			@Nullable Step previousStep,
-			@Nullable Step nextStep,
+			@Nullable final Step previousStep,
+			@Nullable final Step nextStep,
 			@NonNull final InternalPriority projectPriority,
 			@NonNull final Resource resource,
 			@NonNull final Duration duration,
