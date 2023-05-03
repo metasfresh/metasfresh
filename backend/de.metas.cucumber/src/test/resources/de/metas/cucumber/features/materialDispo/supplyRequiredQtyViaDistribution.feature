@@ -10,6 +10,7 @@ Feature: Stock shortage solved via distribution
 
   @from:cucumber
   @Id:S0229_100
+  @Id:S0264_800
   Scenario:
   Create Sales Order for a product of which a stock shortage is solved via distribution, complete it
   Distribution Order is created, validate DD_Order, DD_OrderLine, MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
@@ -241,6 +242,7 @@ Feature: Stock shortage solved via distribution
 
   @from:cucumber
   @Id:S0229_200
+  @Id:S0264_900
   Scenario:
   Set `DDOrder_isCreateMovementOnComplete` SysConfig to true
   Create Inventory for a product of which a stock shortage is solved via distribution and complete it
@@ -427,6 +429,8 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+  @Id:S0229_300
+  @Id:S0264_1000
   @from:cucumber
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand partial available
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
@@ -611,6 +615,8 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+  @Id:S0229_400
+  @Id:S0264_1100
   @from:cucumber
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand fully available
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
@@ -696,6 +702,8 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+  @Id:S0229_500
+  @Id:S0264_1200
   @from:cucumber
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand partial available Lot for Lot
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
@@ -881,6 +889,8 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+  @Id:S0229_600
+  @Id:S0264_1300
   @from:cucumber
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand fully available Lot for Lot
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete

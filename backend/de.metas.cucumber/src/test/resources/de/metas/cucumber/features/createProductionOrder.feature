@@ -731,6 +731,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
 
+  @Id:S0196_1300
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and other md_candidates already exist
     Given metasfresh contains M_Products:
@@ -1180,6 +1181,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
+  @Id:S0196_1200
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, other md_candidates already exist and the date is changed in the future
     Given metasfresh contains M_Products:
@@ -1276,6 +1278,7 @@ Feature: create production order
       | c_l_3                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-15T21:00:00Z | 100 | 0                      |
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-15T21:00:00Z | 0   | 100                    |
 
+  @Id:S0196_1100
   @from:cucumber
   Scenario: BOM bom_1 is created with two components. Manufacturing order candidate is generated,
   then another BOM (newer than the previous one in terms of validFrom) is created from the API,
@@ -1855,6 +1858,7 @@ Feature: create production order
       | cp_3       | p_1                     | 2021-04-14  | olASI                        | 0                               | 0                       | 10                      | 0                            | 10                            | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
 
+  @Id:S0264_1900
   @from:cucumber
   Scenario:  The manufacturing order is created with Lot for Lot
     Given metasfresh contains M_Products:

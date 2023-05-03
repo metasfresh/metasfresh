@@ -22,6 +22,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | AD_Workflow_ID | Duration |
       | 540075         | 0        |
 
+  @Id:S0264_100
   @from:cucumber
   Scenario: Partial stock available at demand time, supplied via production (S0129.1_110)
     Given metasfresh contains M_Products:
@@ -104,6 +105,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -50 | -50                    |                                 |
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 50  | 0                      |                                 |
 
+
+  @Id:S0264_200
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
   No stock available at demand time, supplied via production
@@ -182,6 +185,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100  | 0                      |                                 |
 
 
+  @Id:S0264_300
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
   Partial stock available at demand time, supplied via production
@@ -265,6 +269,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -50 | -50                    |                                 |
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 50  | 0                      |                                 |
 
+  @Id:S0264_400
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
   Stock available at demand time, no supply needed
@@ -325,6 +330,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
       | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
 
+  @Id:S0264_500
   @Id:S0196_300
   @from:cucumber
   Scenario: Production candidate is created in the past
@@ -417,6 +423,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
+  @Id:S0264_600
   @from:cucumber
   Scenario: Partial stock available at demand time, supplied via production Lot for Lot
     Given metasfresh contains M_Products:
@@ -499,6 +506,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100| -100                   |                                 |
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 0                      |                                 |
 
+  @Id:S0264_700
   @from:cucumber
   Scenario: Full stock available at demand time, supplied via production Lot for Lot
     Given metasfresh contains M_Products:
