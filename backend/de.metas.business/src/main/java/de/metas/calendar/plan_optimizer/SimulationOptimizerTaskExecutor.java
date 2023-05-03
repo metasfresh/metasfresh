@@ -11,9 +11,12 @@ import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.optaplanner.core.api.solver.SolverFactory;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class SimulationOptimizerTaskExecutor
@@ -21,6 +24,7 @@ public class SimulationOptimizerTaskExecutor
 	private final SolverFactory<Plan> solverFactory;
 	private final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher;
 	private final DatabasePlanLoaderAndSaver planLoaderAndSaver;
+	private final ExecutorService executorService;
 
 	private final ConcurrentHashMap<SimulationPlanId, SimulationOptimizerTask> runningTasks = new ConcurrentHashMap<>();
 
@@ -40,6 +44,16 @@ public class SimulationOptimizerTaskExecutor
 				woProjectSimulationService,
 				woProjectConflictService,
 				resourceService);
+
+		executorService = createExecutorService();
+	}
+
+	private static ExecutorService createExecutorService()
+	{
+		final CustomizableThreadFactory threadFactory = new CustomizableThreadFactory("simulation-optimizer-");
+		threadFactory.setDaemon(true);
+
+		return Executors.newFixedThreadPool(10, threadFactory);
 	}
 
 	public void start(@NonNull final SimulationPlanId simulationId)
@@ -54,6 +68,7 @@ public class SimulationOptimizerTaskExecutor
 					else
 					{
 						final SimulationOptimizerTask task = SimulationOptimizerTask.builder()
+								.executorService(executorService)
 								.solverFactory(solverFactory)
 								.simulationOptimizerStatusDispatcher(simulationOptimizerStatusDispatcher)
 								.planLoaderAndSaver(planLoaderAndSaver)
