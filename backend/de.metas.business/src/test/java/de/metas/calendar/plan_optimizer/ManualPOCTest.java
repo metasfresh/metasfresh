@@ -123,7 +123,7 @@ public class ManualPOCTest
 		return plan;
 	}
 
-	private static Resource resource(int index) {return new Resource(resourceId(index), "R" + index);}
+	private static Resource resource(int index) {return new Resource(resourceId(index), "R" + index, null);}
 
 	@NonNull
 	private static ResourceId resourceId(final int index) {return ResourceId.ofRepoId(100 + index);}
