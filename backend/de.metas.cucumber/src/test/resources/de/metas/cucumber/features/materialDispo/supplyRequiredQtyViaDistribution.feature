@@ -475,9 +475,11 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | warehouse_2    | 2022-07-04   |
       | i_2        | warehouseStd   | 2022-07-04   |
+    # HU splitting is currently not supported, so we provide HUs fitting the resulting Quantities of DDOrders
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | il_11      | i_1                       | p_1                     | PCE          | 16       | 0       |
+      | il_11      | i_1                       | p_1                     | PCE          | 8        | 0       |
+      | il_12      | i_1                       | p_1                     | PCE          | 8        | 0       |
       | il_21      | i_2                       | p_1                     | PCE          | 6        | 0       |
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
@@ -485,7 +487,8 @@ Feature: Stock shortage solved via distribution
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_11                         | hu_1               |
-      | il_21                         | hu_2               |
+      | il_12                         | hu_2               |
+      | il_21                         | hu_3               |
 
     And load M_Shipper:
       | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
@@ -525,11 +528,12 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
-      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -8                     |
-      | c_4        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
-      | c_5        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 8   | 8                      |
+      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 8   | 16                     |
+      | c_3        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
+      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | 14  | -8                     |
+      | c_5        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
+      | c_6        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
@@ -547,11 +551,12 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
-      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -8                     |
-      | c_4        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
-      | c_5        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 8   | 8                      |
+      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 8   | 16                     |
+      | c_3        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
+      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | 14  | -8                     |
+      | c_5        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
+      | c_6        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
@@ -579,10 +584,11 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, metasfresh has this M_Transaction data
       | M_Transaction_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID.Identifier | M_InventoryLine_ID.Identifier | OPT.MovementQty | OPT.MovementType |
-      | t_1                         | p_1                     | locator_1               | il_11                         | 16              | I+               |
-      | t_2                         | p_1                     | locatorHauptlager       | il_21                         | 6               | I+               |
-      | t_3                         | p_1                     | locator_1               | null                          | -16             | M-               |
-      | t_4                         | p_1                     | locatorHauptlager       | null                          | 16              | M+               |
+      | t_1                         | p_1                     | locator_1               | il_11                         | 8               | I+               |
+      | t_2                         | p_1                     | locator_1               | il_12                         | 8               | I+               |
+      | t_3                         | p_1                     | locatorHauptlager       | il_21                         | 6               | I+               |
+      | t_4                         | p_1                     | locator_1               | null                          | -8              | M-               |
+      | t_5                         | p_1                     | locatorHauptlager       | null                          | 8               | M+               |
 
     And validate M_HUs:
       | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier |
@@ -590,18 +596,19 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_Warehouse_ID.Identifier |
-      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     | warehouse_2                   |
-      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      | warehouseStd                  |
-      | c_3        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | 14  | -8                     | warehouseStd                  |
-      | c_4        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     | warehouseStd                  |
-      | c_5        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     | warehouse_2                   |
-      | c_6        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 0                      | warehouse_2                   |
-      | c_7        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 8                      | warehouseStd                  |
+      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 8   | 8                      | warehouse_2                   |
+      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 8   | 16                     | warehouse_2                   |
+      | c_3        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      | warehouseStd                  |
+      | c_4        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | 14  | -8                     | warehouseStd                  |
+      | c_5        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     | warehouseStd                  |
+      | c_6        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     | warehouse_2                   |
+      | c_7        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 8   | 8                      | warehouse_2                   |
+      | c_8        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 8   | 0                      | warehouseStd                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
-      | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 8                       | 0                            | -6                            | 0                              | 8                              | 8                          | 8                             | 0                             | warehouseStd                  | 6                            | 22                 |
-      | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 8                       | 0                       | 0                            | -8                            | 0                              | 0                              | 0                          | 0                             | 8                             | warehouse_2                   | 16                           | 0                  |
+      | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 8                       | 0                            | -6                            | 0                              | 0                              | 0                          | 8                             | 0                             | warehouseStd                  | 6                            | 14                 |
+      | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 8                       | 0                       | 0                            | -8                            | 0                              | 8                              | 8                          | 0                             | 8                             | warehouse_2                   | 16                           | 8                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
@@ -748,9 +755,11 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | warehouse_2    | 2022-07-04   |
       | i_2        | warehouseStd   | 2022-07-04   |
+    # HU splitting is currently not supported, so we provide HUs fitting the resulting Quantities of DDOrders
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | il_11      | i_1                       | p_1                     | PCE          | 16       | 0       |
+      | il_11      | i_1                       | p_1                     | PCE          | 14       | 0       |
+      | il_12      | i_1                       | p_1                     | PCE          | 2        | 0       |
       | il_21      | i_2                       | p_1                     | PCE          | 6        | 0       |
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
@@ -758,7 +767,8 @@ Feature: Stock shortage solved via distribution
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_11                         | hu_1               |
-      | il_21                         | hu_2               |
+      | il_12                         | hu_2               |
+      | il_21                         | hu_3               |
 
     And load M_Shipper:
       | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
@@ -798,11 +808,12 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
-      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -8                     |
-      | c_4        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
-      | c_5        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     |
+      | c_3        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
+      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | 14  | -8                     |
+      | c_5        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
+      | c_6        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
@@ -821,11 +832,12 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
-      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -8                     |
-      | c_4        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
-      | c_5        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     |
+      | c_3        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      |
+      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -8                     |
+      | c_5        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     |
+      | c_6        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
@@ -853,10 +865,11 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, metasfresh has this M_Transaction data
       | M_Transaction_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID.Identifier | M_InventoryLine_ID.Identifier | OPT.MovementQty | OPT.MovementType |
-      | t_1                         | p_1                     | locator_1               | il_11                         | 16              | I+               |
-      | t_2                         | p_1                     | locatorHauptlager       | il_21                         | 6               | I+               |
-      | t_3                         | p_1                     | locator_1               | null                          | -16             | M-               |
-      | t_4                         | p_1                     | locatorHauptlager       | null                          | 16              | M+               |
+      | t_1                         | p_1                     | locator_1               | il_11                         | 14              | I+               |
+      | t_2                         | p_1                     | locator_1               | il_12                         | 2               | I+               |
+      | t_3                         | p_1                     | locatorHauptlager       | il_21                         | 6               | I+               |
+      | t_4                         | p_1                     | locator_1               | null                          | -14             | M-               |
+      | t_5                         | p_1                     | locatorHauptlager       | null                          | 14              | M+               |
 
     And validate M_HUs:
       | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier |
@@ -864,18 +877,19 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_Warehouse_ID.Identifier |
-      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     | warehouse_2                   |
-      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      | warehouseStd                  |
-      | c_3        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -8                     | warehouseStd                  |
-      | c_4        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     | warehouseStd                  |
-      | c_5        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     | warehouse_2                   |
-      | c_6        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 0                      | warehouse_2                   |
-      | c_7        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 8                      | warehouseStd                  |
+      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
+      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     | warehouse_2                   |
+      | c_3        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 6   | 6                      | warehouseStd                  |
+      | c_4        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -8                     | warehouseStd                  |
+      | c_5        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | -8                     | warehouseStd                  |
+      | c_6        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     | warehouse_2                   |
+      | c_7        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 2                      | warehouse_2                   |
+      | c_8        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 6                      | warehouseStd                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
-      | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 0                            | 0                             | 0                              | 8                              | 8                          | 14                            | 0                             | warehouseStd                  | 6                            | 22                 |
-      | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 0                            | -14                           | 0                              | 0                              | 0                          | 0                             | 14                            | warehouse_2                   | 16                           | 0                  |
+      | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 0                            | 0                             | 0                              | 6                              | 6                          | 14                            | 0                             | warehouseStd                  | 6                            | 20                 |
+      | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 0                            | -14                           | 0                              | 2                              | 2                          | 0                             | 14                            | warehouse_2                   | 16                           | 2                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
@@ -935,9 +949,11 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | warehouse_2    | 2022-07-04   |
       | i_2        | warehouseStd   | 2022-07-04   |
+    # HU splitting is currently not supported, so we provide HUs fitting the resulting Quantities of DDOrders
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | il_11      | i_1                       | p_1                     | PCE          | 16       | 0       |
+      | il_11      | i_1                       | p_1                     | PCE          | 14       | 0       |
+      | il_12      | i_1                       | p_1                     | PCE          | 2        | 0       |
       | il_21      | i_2                       | p_1                     | PCE          | 14       | 0       |
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
@@ -945,7 +961,8 @@ Feature: Stock shortage solved via distribution
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_11                         | hu_1               |
-      | il_21                         | hu_2               |
+      | il_12                         | hu_2               |
+      | il_21                         | hu_3               |
 
     And load M_Shipper:
       | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
@@ -985,11 +1002,12 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
-      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      |
-      | c_4        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      |
-      | c_5        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     |
+      | c_3        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      |
+      | c_5        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      |
+      | c_6        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
@@ -1007,11 +1025,12 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
-      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      |
-      | c_4        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      |
-      | c_5        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_2        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     |
+      | c_3        | INVENTORY_UP      |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      |
+      | c_5        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      |
+      | c_6        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
@@ -1039,10 +1058,11 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, metasfresh has this M_Transaction data
       | M_Transaction_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID.Identifier | M_InventoryLine_ID.Identifier | OPT.MovementQty | OPT.MovementType |
-      | t_1                         | p_1                     | locator_1               | il_11                         | 16              | I+               |
-      | t_2                         | p_1                     | locatorHauptlager       | il_21                         | 14              | I+               |
-      | t_3                         | p_1                     | locator_1               | null                          | -16             | M-               |
-      | t_4                         | p_1                     | locatorHauptlager       | null                          | 16              | M+               |
+      | t_1                         | p_1                     | locator_1               | il_11                         | 14              | I+               |
+      | t_2                         | p_1                     | locator_1               | il_12                         | 2               | I+               |
+      | t_3                         | p_1                     | locatorHauptlager       | il_21                         | 14              | I+               |
+      | t_4                         | p_1                     | locator_1               | null                          | -14             | M-               |
+      | t_5                         | p_1                     | locatorHauptlager       | null                          | 14              | M+               |
 
     And validate M_HUs:
       | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier |
@@ -1050,18 +1070,19 @@ Feature: Stock shortage solved via distribution
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_Warehouse_ID.Identifier |
-      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 16  | 16                     | warehouse_2                   |
-      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouseStd                  |
-      | c_3        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      | warehouseStd                  |
-      | c_4        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouseStd                  |
-      | c_5        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     | warehouse_2                   |
-      | c_6        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 0                      | warehouse_2                   |
-      | c_7        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 16  | 16                     | warehouseStd                  |
+      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
+      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     | warehouse_2                   |
+      | c_3        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouseStd                  |
+      | c_4        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      | warehouseStd                  |
+      | c_5        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouseStd                  |
+      | c_6        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     | warehouse_2                   |
+      | c_7        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 2                      | warehouse_2                   |
+      | c_8        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 14                     | warehouseStd                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
-      | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 0                            | 0                             | 0                              | 16                             | 16                         | 14                            | 0                             | warehouseStd                  | 14                           | 30                 |
-      | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 0                            | -14                           | 0                              | 0                              | 0                          | 0                             | 14                            | warehouse_2                   | 16                           | 0                  |
+      | cp_1       | p_1                     | 2022-07-04  |                              | 14                              | 14                      | 14                      | 0                            | 0                             | 0                              | 14                             | 14                         | 14                            | 0                             | warehouseStd                  | 14                           | 28                 |
+      | cp_2       | p_1                     | 2022-07-04  |                              | 0                               | 14                      | 0                       | 0                            | -14                           | 0                              | 2                              | 2                          | 0                             | 14                            | warehouse_2                   | 16                           | 2                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
