@@ -1,7 +1,8 @@
 Feature: Budget Project interaction with RabbitMQ after export process was triggered
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: Create Budget Project and send BudgetProjectID to RabbitMQ - export process is triggered on project creation
     Given RabbitMQ MF_TO_ExternalSystem queue is purged
