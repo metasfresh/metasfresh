@@ -184,3 +184,91 @@ INSERT INTO t_alter_column values('c_project_wo_objectundertest','C_OrderLine_Pr
 UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2023-04-28 03:08:57.203','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586486
 ;
 
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:42:41.549218400Z
+UPDATE AD_Element_Trl SET Name='Gegenstand geliefert am', PrintName='Gegenstand geliefert am',Updated=TO_TIMESTAMP('2023-05-03 17:42:41.548','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='de_CH'
+;
+
+-- 2023-05-03T14:42:41.569824900Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'de_CH')
+;
+
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:42:56.173414200Z
+UPDATE AD_Element_Trl SET Name='Gegenstand geliefert am', PrintName='Gegenstand geliefert am',Updated=TO_TIMESTAMP('2023-05-03 17:42:56.173','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='de_DE'
+;
+
+-- 2023-05-03T14:42:56.175472600Z
+UPDATE AD_Element SET Name='Gegenstand geliefert am', PrintName='Gegenstand geliefert am' WHERE AD_Element_ID=582254
+;
+
+-- 2023-05-03T14:42:57.379675600Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582254,'de_DE')
+;
+
+-- 2023-05-03T14:42:57.384671500Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'de_DE')
+;
+
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:43:19.722859700Z
+UPDATE AD_Element_Trl SET Name='Object delivered on', PrintName='Object delivered on',Updated=TO_TIMESTAMP('2023-05-03 17:43:19.721','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='en_US'
+;
+
+-- 2023-05-03T14:43:19.726955700Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'en_US')
+;
+
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:43:28.462277900Z
+UPDATE AD_Element_Trl SET Name='Object delivered on', PrintName='Object delivered on',Updated=TO_TIMESTAMP('2023-05-03 17:43:28.462','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='fr_CH'
+;
+
+-- 2023-05-03T14:43:28.465269800Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'fr_CH')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:44:48.357635400Z
+UPDATE AD_Element_Trl SET Name='Beistellung Position', PrintName='Beistellung Position',Updated=TO_TIMESTAMP('2023-05-03 17:44:48.356','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='de_CH'
+;
+
+-- 2023-05-03T14:44:48.360623900Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'de_CH')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:44:56.399711100Z
+UPDATE AD_Element_Trl SET Name='Beistellung Position', PrintName='Beistellung Position',Updated=TO_TIMESTAMP('2023-05-03 17:44:56.399','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='de_DE'
+;
+
+-- 2023-05-03T14:44:56.401710100Z
+UPDATE AD_Element SET Name='Beistellung Position', PrintName='Beistellung Position' WHERE AD_Element_ID=582259
+;
+
+-- 2023-05-03T14:44:57.601605800Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582259,'de_DE')
+;
+
+-- 2023-05-03T14:44:57.603583600Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'de_DE')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:45:18.852288500Z
+UPDATE AD_Element_Trl SET Name='Provision order line', PrintName='Provision order line',Updated=TO_TIMESTAMP('2023-05-03 17:45:18.852','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='en_US'
+;
+
+-- 2023-05-03T14:45:18.855280300Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'en_US')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:45:28.080158300Z
+UPDATE AD_Element_Trl SET Name='Provision order line', PrintName='Provision order line',Updated=TO_TIMESTAMP('2023-05-03 17:45:28.079','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='fr_CH'
+;
+
+-- 2023-05-03T14:45:28.083166400Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'fr_CH')
+;
+

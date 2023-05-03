@@ -142,3 +142,144 @@ UPDATE AD_Message SET MsgText='Sie können keinen Bereitstellungsauftrag erstell
 UPDATE AD_Message_Trl SET MsgText='You cannot create provision order since this project has Object Under Test records with no product associated.',Updated=TO_TIMESTAMP('2023-05-02 14:30:42.949','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545264
 ;
 
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:42:41.549218400Z
+UPDATE AD_Element_Trl SET Name='Gegenstand geliefert am', PrintName='Gegenstand geliefert am',Updated=TO_TIMESTAMP('2023-05-03 17:42:41.548','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='de_CH'
+;
+
+-- 2023-05-03T14:42:41.569824900Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'de_CH')
+;
+
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:42:56.173414200Z
+UPDATE AD_Element_Trl SET Name='Gegenstand geliefert am', PrintName='Gegenstand geliefert am',Updated=TO_TIMESTAMP('2023-05-03 17:42:56.173','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='de_DE'
+;
+
+-- 2023-05-03T14:42:56.175472600Z
+UPDATE AD_Element SET Name='Gegenstand geliefert am', PrintName='Gegenstand geliefert am' WHERE AD_Element_ID=582254
+;
+
+-- 2023-05-03T14:42:57.379675600Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582254,'de_DE')
+;
+
+-- 2023-05-03T14:42:57.384671500Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'de_DE')
+;
+
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:43:19.722859700Z
+UPDATE AD_Element_Trl SET Name='Object delivered on', PrintName='Object delivered on',Updated=TO_TIMESTAMP('2023-05-03 17:43:19.721','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='en_US'
+;
+
+-- 2023-05-03T14:43:19.726955700Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'en_US')
+;
+
+-- Element: ObjectDeliveredDate
+-- 2023-05-03T14:43:28.462277900Z
+UPDATE AD_Element_Trl SET Name='Object delivered on', PrintName='Object delivered on',Updated=TO_TIMESTAMP('2023-05-03 17:43:28.462','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582254 AND AD_Language='fr_CH'
+;
+
+-- 2023-05-03T14:43:28.465269800Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582254,'fr_CH')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:44:48.357635400Z
+UPDATE AD_Element_Trl SET Name='Beistellung Position', PrintName='Beistellung Position',Updated=TO_TIMESTAMP('2023-05-03 17:44:48.356','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='de_CH'
+;
+
+-- 2023-05-03T14:44:48.360623900Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'de_CH')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:44:56.399711100Z
+UPDATE AD_Element_Trl SET Name='Beistellung Position', PrintName='Beistellung Position',Updated=TO_TIMESTAMP('2023-05-03 17:44:56.399','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='de_DE'
+;
+
+-- 2023-05-03T14:44:56.401710100Z
+UPDATE AD_Element SET Name='Beistellung Position', PrintName='Beistellung Position' WHERE AD_Element_ID=582259
+;
+
+-- 2023-05-03T14:44:57.601605800Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582259,'de_DE')
+;
+
+-- 2023-05-03T14:44:57.603583600Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'de_DE')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:45:18.852288500Z
+UPDATE AD_Element_Trl SET Name='Provision order line', PrintName='Provision order line',Updated=TO_TIMESTAMP('2023-05-03 17:45:18.852','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='en_US'
+;
+
+-- 2023-05-03T14:45:18.855280300Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'en_US')
+;
+
+-- Element: C_OrderLine_Provision_ID
+-- 2023-05-03T14:45:28.080158300Z
+UPDATE AD_Element_Trl SET Name='Provision order line', PrintName='Provision order line',Updated=TO_TIMESTAMP('2023-05-03 17:45:28.079','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582259 AND AD_Language='fr_CH'
+;
+
+-- 2023-05-03T14:45:28.083166400Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582259,'fr_CH')
+;
+
+-- Process: C_Project_Order_Provision(de.metas.project.process.C_WO_Project_ObjectUnderTest_OrderProvision)
+-- 2023-05-03T14:49:39.000654900Z
+UPDATE AD_Process_Trl SET Name='Beistellung anlegen',Updated=TO_TIMESTAMP('2023-05-03 17:49:39.0','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585259
+;
+
+-- 2023-05-03T14:49:39.001747600Z
+UPDATE AD_Process SET Name='Beistellung anlegen' WHERE AD_Process_ID=585259
+;
+
+-- Process: C_Project_Order_Provision(de.metas.project.process.C_WO_Project_ObjectUnderTest_OrderProvision)
+-- 2023-05-03T14:49:45.867032100Z
+UPDATE AD_Process_Trl SET Name='Beistellung anlegen',Updated=TO_TIMESTAMP('2023-05-03 17:49:45.866','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585259
+;
+
+-- Process: C_Project_Order_Provision(de.metas.project.process.C_WO_Project_ObjectUnderTest_OrderProvision)
+-- 2023-05-03T14:50:26.060416300Z
+UPDATE AD_Process_Trl SET Name='Create material provision',Updated=TO_TIMESTAMP('2023-05-03 17:50:26.059','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585259
+;
+
+-- Process: C_Project_Order_Provision(de.metas.project.process.C_WO_Project_ObjectUnderTest_OrderProvision)
+-- 2023-05-03T14:50:30.107193Z
+UPDATE AD_Process_Trl SET Name='Create material provision',Updated=TO_TIMESTAMP('2023-05-03 17:50:30.106','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585259
+;
+
+-- Value: C_Project_WO_ObjectUnderTest
+-- 2023-05-03T14:52:32.199699800Z
+UPDATE AD_Message_Trl SET MsgText='Es kann keine Beistellung angelegt werden, da dieses Projekt Prüfgegenstände enthält, denen keine Produkte zugeordnet sind.',Updated=TO_TIMESTAMP('2023-05-03 17:52:32.198','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545264
+;
+
+-- Value: C_Project_WO_ObjectUnderTest
+-- 2023-05-03T14:52:52.088311800Z
+UPDATE AD_Message_Trl SET MsgText='Es kann keine Beistellung angelegt werden, da dieses Projekt Prüfgegenstände enthält, denen keine Produkte zugeordnet sind.',Updated=TO_TIMESTAMP('2023-05-03 17:52:52.088','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545264
+;
+
+-- 2023-05-03T14:52:52.090392300Z
+UPDATE AD_Message SET MsgText='Es kann keine Beistellung angelegt werden, da dieses Projekt Prüfgegenstände enthält, denen keine Produkte zugeordnet sind.' WHERE AD_Message_ID=545264
+;
+
+-- Value: C_Project_WO_ObjectUnderTest
+-- 2023-05-03T14:53:10.627075800Z
+UPDATE AD_Message_Trl SET MsgText='Cannot create a material provision because this project contains test objects that have no products assigned to them.',Updated=TO_TIMESTAMP('2023-05-03 17:53:10.626','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545264
+;
+
+-- Value: C_Project_WO_ObjectUnderTest
+-- 2023-05-03T14:53:15.610307400Z
+UPDATE AD_Message_Trl SET MsgText='Cannot create a material provision because this project contains test objects that have no products assigned to them.',Updated=TO_TIMESTAMP('2023-05-03 17:53:15.609','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545264
+;
+
+-- Value: C_Project_WO_ObjectUnderTest
+-- 2023-05-03T14:53:19.214252600Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-05-03 17:53:19.214','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545264
+;
+
