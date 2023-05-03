@@ -114,7 +114,8 @@ public class StockCandidateService
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
-				.simulated(candidate.isSimulated());
+				.simulated(candidate.isSimulated())
+				.lotForLot(candidate.getLotForLot());
 
 		if (materialDescriptor.isReservedForCustomer())
 		{

@@ -108,7 +108,8 @@ public class SupplyRequiredEventCreator
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(candidate.getClientAndOrgId(), traceId))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
 				.fullDemandQty(fullDemandQty)
-				.simulated(candidate.isSimulated());
+				.simulated(candidate.isSimulated())
+				.isLotForLot(candidate.getLotForLot());
 	}
 
 }

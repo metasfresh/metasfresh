@@ -86,6 +86,11 @@ public abstract class PPOrderCandidateEventHandler
 				supplyRequiredDescriptor,
 				headerCandidateMaterialDescriptor).ifPresent(builder::additionalDemandDetail);
 
+		if(supplyRequiredDescriptor != null)
+		{
+			builder.lotForLot(supplyRequiredDescriptor.getIsLotForLot());
+		}
+
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
