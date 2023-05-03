@@ -2,8 +2,13 @@ package de.metas.calendar.plan_optimizer.solver;
 
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.AvailableCapacity;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
+import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.util.Check;
+import de.metas.util.time.DurationUtils;
+import org.compiere.SpringContextHolder;
 import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintCollectors;
@@ -17,13 +22,14 @@ import java.time.LocalDateTime;
 
 public class PlanConstraintProvider implements ConstraintProvider
 {
-	public static final int HARD_LEVELS_SIZE = 1;
+	public static final int HARD_LEVELS_SIZE = 2;
 	public static final int SOFT_LEVELS_SIZE = 3;
 
-	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1 }, new int[] { 0, 0, 0 });
-	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0 }, new int[] { 1, 0, 0 });
-	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0 }, new int[] { 0, 1, 0 });
-	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0 }, new int[] { 0, 0, 1 });
+	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1, 0 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_HARD_2 = BendableScore.of(new int[] { 0, 1 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0, 0 }, new int[] { 1, 0, 0 });
+	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 1, 0 });
+	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 0, 1 });
 
 	@Override
 	public Constraint[] defineConstraints(final ConstraintFactory constraintFactory)
@@ -33,6 +39,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				resourceConflict(constraintFactory),
 				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
+				availableCapacity(constraintFactory),
 				// Soft:
 				stepsNotRespectingProjectPriority(constraintFactory),
 				delayIsMinimum(constraintFactory),
@@ -67,6 +74,27 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.filter(Step::isDueDateNotRespected)
 				.penalize(ONE_HARD, Step::getDurationAfterDueAsInt)
 				.asConstraint("DueDate not respected");
+	}
+
+	Constraint availableCapacity(ConstraintFactory constraintFactory)
+	{
+		return constraintFactory.forEach(Step.class)
+				.groupBy(ConstraintCollectors.sum(
+						StepRequiredCapacity::ofStep,
+						StepRequiredCapacity.ZERO,
+						StepRequiredCapacity::add,
+						StepRequiredCapacity::subtract))
+				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
+				.asConstraint("availableCapacity");
+	}
+
+	private int computePenaltyWeight_availableCapacity(StepRequiredCapacity requiredCapacity)
+	{
+		final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
+
+		final AvailableCapacity availableCapacity = AvailableCapacity.of(humanResourceTestGroupService.getAll());
+		availableCapacity.reserveCapacity(requiredCapacity);
+		return DurationUtils.toInt(availableCapacity.getOverReservedCapacity(), Plan.PLANNING_TIME_PRECISION);
 	}
 
 	Constraint delayIsMinimum(ConstraintFactory constraintFactory)

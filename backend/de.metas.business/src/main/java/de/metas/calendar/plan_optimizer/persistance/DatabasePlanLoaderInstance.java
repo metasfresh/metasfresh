@@ -237,7 +237,7 @@ public class DatabasePlanLoaderInstance
 	private de.metas.calendar.plan_optimizer.domain.Resource createOptaPlannerResource(final ResourceId resourceId)
 	{
 		final de.metas.resource.Resource resource = resourceService.getResourceById(resourceId);
-		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue());
+		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue(), resource.getHumanResourceTestGroupId());
 	}
 
 	public static int computeDelay(@NonNull final LocalDateTime lastStepEndDate, @Nullable final LocalDateTime thisStepStartDate)
