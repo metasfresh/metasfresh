@@ -77,6 +77,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
@@ -499,6 +500,13 @@ public class C_BPartner_StepDef
 		{
 			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
 			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
+		}
+
+		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
+		{
+			final I_M_PricingSystem pricingSystem = pricingSystemTable.get(pricingSystemIdentifier);
+			bPartner.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);

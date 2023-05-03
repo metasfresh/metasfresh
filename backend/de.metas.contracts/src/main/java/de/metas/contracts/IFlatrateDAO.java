@@ -158,6 +158,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm);
 
+	I_C_Flatrate_Term retrieveFirstFlatrateTerm(@NonNull I_C_Invoice invoice);
+
 	@Value
 	@Builder
 	class TermsQuery

@@ -74,6 +74,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 
@@ -185,7 +186,12 @@ public class RESTUtil
 			apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 		}
 
-		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
+		assertThat(response.getStatusLine().getStatusCode())
+				.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
+															CoalesceUtil.coalesce(statusCode, 200),
+															response.getStatusLine().getStatusCode(),
+															apiResponseBuilder.build().getContent()))
+				.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
 		return apiResponseBuilder.build();
 	}

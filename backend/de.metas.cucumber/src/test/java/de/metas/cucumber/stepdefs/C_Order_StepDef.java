@@ -408,8 +408,8 @@ public class C_Order_StepDef
 		assertThat(errorThrown).isTrue();
 	}
 
-	@And("^the order identified by (.*) is (completed) and the following exception is thrown: (.*)$")
-	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final String exceptionMessage)
+	@And("^the order identified by (.*) is (completed) and an exception with error-code (.*) is thrown$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final String errorCode)
 	{
 		try
 		{
@@ -418,7 +418,7 @@ public class C_Order_StepDef
 		}
 		catch (final AdempiereException exception)
 		{
-			assertThat(exception.getMessage()).contains(exceptionMessage);
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
 		}
 	}
 
