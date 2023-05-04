@@ -6,10 +6,11 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -101,6 +102,9 @@ public class NewManualInvoiceCandidate
 	@Nullable
 	ActivityId activityId;
 
+	@NonNull
+	PaymentTermId paymentTermId;
+
 	TableRecordReference recordReference;
 
 	List<InvoiceDetailItem> invoiceDetailItems;
@@ -130,6 +134,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final UserId userInChargeId,
 			@Nullable final ProjectId projectId,
 			@Nullable final ActivityId activityId,
+			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -156,6 +161,7 @@ public class NewManualInvoiceCandidate
 		this.descriptionBottom = descriptionBottom;
 		this.userInChargeId = userInChargeId;
 		this.activityId = activityId;
+		this.paymentTermId = paymentTermId;
 		this.recordReference = recordReference;
 		this.invoiceRule = invoiceRule;
 		this.invoiceDetailItems = invoiceDetailItems;
@@ -164,13 +170,13 @@ public class NewManualInvoiceCandidate
 		{
 			if (!priceEnteredOverride.getProductId().equals(productId))
 			{
-				throw new AdempiereException("priceEnteredOverride.productId={} is inconsistant with this instance's productId={}")
+				throw new AdempiereException("priceEnteredOverride.productId={} is inconsistent with this instance's productId={}")
 						.appendParametersToMessage()
 						.setParameter("newManualInvoiceCandidate", this);
 			}
 			if (!priceEnteredOverride.getUomId().equals(invoicingUomId))
 			{
-				throw new AdempiereException("priceEnteredOverride.uomId={} is inconsistant with this instance's invoicingUomId={}")
+				throw new AdempiereException("priceEnteredOverride.uomId={} is inconsistent with this instance's invoicingUomId={}")
 						.appendParametersToMessage()
 						.setParameter("newManualInvoiceCandidate", this);
 			}

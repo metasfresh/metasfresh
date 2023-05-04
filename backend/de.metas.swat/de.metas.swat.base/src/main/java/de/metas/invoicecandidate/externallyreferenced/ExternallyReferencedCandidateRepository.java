@@ -49,8 +49,8 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -133,6 +133,8 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
+
+			icRecord.setC_PaymentTerm_ID(ic.getPaymentTermId().getRepoId());
 		}
 		else
 		{
