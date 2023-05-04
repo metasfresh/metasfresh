@@ -72,15 +72,18 @@ public abstract class PPOrderCandidateEventHandler
 		final PPOrderCandidate ppOrderCandidate = event.getPpOrderCandidate();
 
 		final Candidate existingCandidateOrNull;
+		final boolean attemptUpdate;
 
 		// don't search supplyCandidate we ignored in DemandCandidateHandler#postSupplyRequiredEvent()
 		if(supplyRequiredDescriptor != null && supplyRequiredDescriptor.getIsLotForLot().equals("Y"))
 		{
 			existingCandidateOrNull = null;
+			attemptUpdate = false;
 		}
 		else
 		{
 			existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
+			attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
 		}
 
 
@@ -109,8 +112,6 @@ public abstract class PPOrderCandidateEventHandler
 				.materialDescriptor(headerCandidateMaterialDescriptor)
 				// .groupId(null) // will be set after save
 				.build();
-
-		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
 
 		return candidateChangeService.onCandidateNewOrChange(
 				headerCandidate,
