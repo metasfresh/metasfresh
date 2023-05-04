@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.undertest;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
@@ -29,13 +30,11 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
-import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineId;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -54,8 +53,7 @@ public class WorkOrderProjectObjectUnderTestService
 	private final WorkOrderProjectObjectUnderTestRepository woProjectObjectUnderTestRepository;
 
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public WorkOrderProjectObjectUnderTestService(@NonNull final WorkOrderProjectObjectUnderTestRepository woProjectObjectUnderTestRepository)
 	{
@@ -74,10 +72,9 @@ public class WorkOrderProjectObjectUnderTestService
 		return woProjectObjectUnderTestRepository.updateAll(objectUnderTestList);
 	}
 
-	@NonNull
-	public WOProjectObjectUnderTest update(@NonNull final WOProjectObjectUnderTest objectUnderTest)
+	public void update(@NonNull final List<WOProjectObjectUnderTest> objectUnderTests)
 	{
-		return woProjectObjectUnderTestRepository.update(objectUnderTest);
+		woProjectObjectUnderTestRepository.updateAll(objectUnderTests);
 	}
 
 	public void createOrder(
@@ -85,8 +82,6 @@ public class WorkOrderProjectObjectUnderTestService
 			@NonNull final ZonedDateTime datePromised,
 			@NonNull final List<WOProjectObjectUnderTest> woProjectObjectUnderTestList)
 	{
-		final OrderFactory orderFactory = OrderFactory.newPurchaseOrder();
-
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(DocBaseType.PurchaseOrder, X_C_DocType.DOCSUBTYPE_Provision);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
@@ -95,20 +90,25 @@ public class WorkOrderProjectObjectUnderTestService
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
+
+		final OrderFactory orderFactory = OrderFactory.newPurchaseOrder();
+
 		orderFactory.docType(docTypeId);
-
 		orderFactory.shipBPartner(bPartnerId);
-
 		orderFactory.datePromised(datePromised);
-
-		orderFactory.createDraftOrderHeader();
 
 		woProjectObjectUnderTestList.forEach(woProjectObjectUnderTest -> createOrderLineAndSetOnObjectUnderTest(orderFactory, woProjectObjectUnderTest));
 
 		orderFactory.createAndComplete();
 	}
 
-	public void createOrderLineAndSetOnObjectUnderTest(
+	@NonNull
+	public List<WOProjectObjectUnderTest> getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return woProjectObjectUnderTestRepository.getByOrderLineId(orderLineId);
+	}
+
+	private void createOrderLineAndSetOnObjectUnderTest(
 			@NonNull final OrderFactory orderFactory,
 			@NonNull final WOProjectObjectUnderTest woProjectObjectUnderTest)
 	{
@@ -119,33 +119,20 @@ public class WorkOrderProjectObjectUnderTestService
 			throw new AdempiereException("ProductId cannot be null at this point!");
 		}
 
-		final I_C_UOM uom = uomDAO.getById(productDAO.getById(productId.getRepoId()).getC_UOM_ID());
+		final I_C_UOM uom = productBL.getStockUOM(productId);
 
 		final Quantity qty = Quantity.of(woProjectObjectUnderTest.getNumberOfObjectsUnderTest(), uom);
 
-		final OrderLineBuilder orderLineBuilder = orderFactory.newOrderLine()
+		orderFactory.newOrderLine()
 				.productId(productId)
 				.addQty(qty)
-				.afterSaveHook((createdOrderLine) -> update(WOProjectObjectUnderTest.builder()
-																	.productId(woProjectObjectUnderTest.getProductId())
-																	.projectId(woProjectObjectUnderTest.getProjectId())
+				.afterSaveHook((createdOrderLine) -> update(woProjectObjectUnderTest.toBuilder()
 																	.orderLineProvisionId(OrderLineId.ofRepoId(createdOrderLine.getC_OrderLine_ID()))
-																	.numberOfObjectsUnderTest(woProjectObjectUnderTest.getNumberOfObjectsUnderTest())
-																	.objectUnderTestId(woProjectObjectUnderTest.getObjectUnderTestId())
-																	.externalId(woProjectObjectUnderTest.getExternalId())
-																	.orgId(woProjectObjectUnderTest.getOrgId())
-																	.woObjectType(woProjectObjectUnderTest.getWoObjectType())
-																	.woManufacturer(woProjectObjectUnderTest.getWoManufacturer())
-																	.woObjectName(woProjectObjectUnderTest.getWoObjectName())
-																	.woDeliveryNote(woProjectObjectUnderTest.getWoDeliveryNote())
-																	.woObjectWhereabouts(woProjectObjectUnderTest.getWoObjectWhereabouts())
-																	.objectDeliveredDate(woProjectObjectUnderTest.getObjectDeliveredDate())
 																	.build()));
 	}
 
-	@NonNull
-	public List<WOProjectObjectUnderTest> getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	private void update(@NonNull final WOProjectObjectUnderTest objectUnderTest)
 	{
-		return woProjectObjectUnderTestRepository.getByOrderLineId(orderLineId);
+		update(ImmutableList.of(objectUnderTest));
 	}
 }

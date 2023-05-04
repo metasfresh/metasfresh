@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -42,39 +43,31 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_OrderLine
 {
-	private final WorkOrderProjectObjectUnderTestService workOrderProjectObjectUnderTestService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+	private final WorkOrderProjectObjectUnderTestService workOrderProjectObjectUnderTestService;
 
 	public C_OrderLine(@NonNull final WorkOrderProjectObjectUnderTestService workOrderProjectObjectUnderTestService)
 	{
 		this.workOrderProjectObjectUnderTestService = workOrderProjectObjectUnderTestService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyDelivered )
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyDelivered, I_C_OrderLine.COLUMNNAME_DateDelivered })
 	public void updateWOProjectObjectUnderTestDeliveredDate(final I_C_OrderLine orderLine)
 	{
 		final Quantity qtyToDeliver = orderLineBL.getQtyToDeliver(OrderAndLineId.of(OrderId.ofRepoId(orderLine.getC_Order_ID()), OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID())));
 
-		if (qtyToDeliver.isZero() || orderLine.getDateDelivered() != null)
+		if (qtyToDeliver.isZero() && orderLine.getDateDelivered() != null)
 		{
-			workOrderProjectObjectUnderTestService.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
+			final ImmutableList<WOProjectObjectUnderTest> updatedObjects = workOrderProjectObjectUnderTestService.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 					.stream()
-					.map(oldObjectUnderTest -> WOProjectObjectUnderTest.builder()
-							.productId(oldObjectUnderTest.getProductId())
-							.projectId(oldObjectUnderTest.getProjectId())
-							.orderLineProvisionId(oldObjectUnderTest.getOrderLineProvisionId())
-							.numberOfObjectsUnderTest(oldObjectUnderTest.getNumberOfObjectsUnderTest())
-							.objectUnderTestId(oldObjectUnderTest.getObjectUnderTestId())
-							.externalId(oldObjectUnderTest.getExternalId())
-							.orgId(oldObjectUnderTest.getOrgId())
-							.woObjectType(oldObjectUnderTest.getWoObjectType())
-							.woManufacturer(oldObjectUnderTest.getWoManufacturer())
-							.woObjectName(oldObjectUnderTest.getWoObjectName())
-							.woDeliveryNote(oldObjectUnderTest.getWoDeliveryNote())
-							.woObjectWhereabouts(oldObjectUnderTest.getWoObjectWhereabouts())
+					.map(objectUnderTest -> objectUnderTest.toBuilder()
 							.objectDeliveredDate(TimeUtil.asInstant(orderLine.getDateDelivered()))
 							.build())
-					.forEach(workOrderProjectObjectUnderTestService::update);
+					.collect(ImmutableList.toImmutableList());
+
+			workOrderProjectObjectUnderTestService.update(updatedObjects);
 		}
 	}
 }
