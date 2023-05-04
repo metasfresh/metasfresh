@@ -5,7 +5,7 @@ import io.micrometer.core.lang.NonNull;
 import org.compiere.util.Evaluatee;
 import java.util.function.Supplier;
 
-public class ExternalProjectRefBeginningSequenceNoProvider extends ExternalProjectRefSequenceNoProvider
+public class ExternalProjectRefReversedSequenceNoProvider extends AbstractExternalProjectRefSequenceNoProvider
 {
 	@Override
 	public boolean isApplicable(@lombok.NonNull final Evaluatee context, @lombok.NonNull final DocumentSequenceInfo docSeqInfo)
