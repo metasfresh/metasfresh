@@ -135,7 +135,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
@@ -307,7 +306,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, inOutLineRecord);
 
 		// extractQtyDelivered() depends on the C_PaymentTerm to be set
-		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
+		final PaymentTermId paymentTermIdToUse = CoalesceUtil.coalesceSuppliers(() -> paymentTermId,
+				M_InOutLine_Handler::getDefaultPaymentTermIdOrNull);
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
 
 		TableRecordCacheLocal.setReferencedValue(icRecord, inOutLineRecord);
 		icRecord.setIsPackagingMaterial(inOutLineRecord.isPackagingMaterial());
@@ -465,6 +466,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLineRecord);
 		}
 		return icRecord;
+	}
+
+	private static PaymentTermId getDefaultPaymentTermIdOrNull()
+	{
+		return Services.get(IPaymentTermRepository.class).getDefaultPaymentTermIdOrNull();
 	}
 
 	@Nullable
@@ -813,7 +819,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (paymentTermId == null) // try to fallback to the default one
 		{
-			paymentTermId = Services.get(IPaymentTermRepository.class).getDefaultPaymentTermIdOrNull();
+			paymentTermId = getDefaultPaymentTermIdOrNull();
 		}
 
 		return paymentTermId;
