@@ -24,6 +24,7 @@ package de.metas.handlingunits.inout.returns.customer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -112,7 +113,7 @@ final class CreateReturnedHUsTrxListener implements IHUTrxListener
 
 		final InOutLineId shipmentLineId = InOutLineId.ofRepoId(returnLine.getReturn_Origin_InOutLine_ID());
 
-		final Map<InOutLineId,List<I_M_HU>> shippedHUs = huInOutDAO.retrieveShippedHUsByShipmentLineId(ImmutableSet.of(shipmentLineId));
+		final Map<InOutLineId, List<I_M_HU>> shippedHUs = huInOutDAO.retrieveShippedHUsByShipmentLineId(ImmutableSet.of(shipmentLineId));
 
 		if (Check.isEmpty(shippedHUs.get(shipmentLineId)))
 		{
@@ -131,7 +132,9 @@ final class CreateReturnedHUsTrxListener implements IHUTrxListener
 
 		final HuId topLevelReturnedHUId = HuId.ofRepoId(handlingUnitsBL.getTopLevelParent(returnedVHU).getM_HU_ID());
 
-		final HUTraceForReturnedQtyRequest addTraceRequest =  HUTraceForReturnedQtyRequest.builder()
+		final UomId uomIdToUse = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(trxLine.getC_UOM_ID(),
+																				  returnLine.getC_UOM_ID()));
+		final HUTraceForReturnedQtyRequest addTraceRequest = HUTraceForReturnedQtyRequest.builder()
 				.returnedVirtualHU(returnedVHU)
 				.topLevelReturnedHUId(topLevelReturnedHUId)
 				.sourceShippedVHUIds(shippedVHUIds)
@@ -140,7 +143,7 @@ final class CreateReturnedHUsTrxListener implements IHUTrxListener
 				.eventTime(Instant.now())
 				.orgId(OrgId.ofRepoId(returnLine.getAD_Org_ID()))
 				.productId(productId)
-				.qty(Quantitys.create(trxLine.getQty(), UomId.ofRepoId(trxLine.getC_UOM_ID())))
+				.qty(Quantitys.create(trxLine.getQty(), uomIdToUse))
 				.build();
 
 		return Optional.of(addTraceRequest);

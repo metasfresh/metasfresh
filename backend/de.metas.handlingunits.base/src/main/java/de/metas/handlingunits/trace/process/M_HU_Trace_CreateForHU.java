@@ -1,8 +1,10 @@
 package de.metas.handlingunits.trace.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -23,6 +25,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MovementLine;
 
@@ -57,8 +60,12 @@ import java.util.stream.Collectors;
 public class M_HU_Trace_CreateForHU extends JavaProcess
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
+	private final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
+
+	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -81,8 +88,6 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 	private void writeTraceForHu(final I_M_HU hu)
 	{
 		addLog("Writing trace records hu={}", hu);
-
-		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 
 		// write the HU_Assigment related trace
 		{
@@ -108,7 +113,7 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 				huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
 			}
 
-			final List<I_M_InventoryLine> inventoryLines = retrieveAnyModelForHU(hu, I_M_InventoryLine.class);
+			final List<I_M_InventoryLine> inventoryLines = inventoryRepository.retrieveAllLinesForHU(this, HuId.ofRepoId(hu.getM_HU_ID()));
 			for (final I_M_InventoryLine inventoryLine : inventoryLines)
 			{
 				addLog("Checking for M_Inventory_Line={}", inventoryLine);
@@ -116,7 +121,6 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 			}
 		}
 
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final List<I_M_ShipmentSchedule_QtyPicked> schedsQtyPicked = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
 		for (final I_M_ShipmentSchedule_QtyPicked schedQtyPicked : schedsQtyPicked)
 		{
@@ -124,7 +128,7 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 			huTraceEventsCreateAndAdd.createAndAddFor(schedQtyPicked);
 		}
 
-		final List<I_M_HU_Trx_Line> huTrxLines = Services.get(IHUTrxDAO.class).retrieveReferencingTrxLinesForHU(hu);
+		final List<I_M_HU_Trx_Line> huTrxLines = huTrxDAO.retrieveReferencingTrxLinesForHU(hu);
 		for (final I_M_HU_Trx_Line huTrxLine : huTrxLines)
 		{
 			addLog("Checking for M_HU_Trx_Line={}", huTrxLine);
@@ -137,7 +141,7 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 				{
 					final I_M_HU sourceHU = handlingUnitsDAO.getById(newlyInsertedEvent.getVhuSourceId());
 
-					addLog("Recursing for for source M_HU={}", sourceHU);
+					addLog("Recursing for source M_HU={}", sourceHU);
 					writeTraceForHu(sourceHU);
 				}
 			}
@@ -146,8 +150,6 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 
 	private <T> List<T> retrieveAnyModelForHU(@NonNull final I_M_HU hu, @NonNull final Class<T> clazz)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
 				.setJoinOr()
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())

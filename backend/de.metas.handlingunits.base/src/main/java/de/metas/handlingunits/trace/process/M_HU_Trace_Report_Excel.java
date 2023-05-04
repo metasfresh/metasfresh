@@ -54,6 +54,7 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 {
 	private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
 	private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Param(parameterName = I_M_HU_Trace.COLUMNNAME_M_Product_ID)
 	private ProductId p_M_Product_ID;
@@ -85,35 +86,38 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				.recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
 				.build();
 
-		final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
+		trxManager.runInNewTrx(() -> {
 
-		if (pInstanceId == null)
-		{
-			throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
-		}
+			final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
 
-		Services.get(ITrxManager.class).commit(Trx.TRXNAME_ThreadInherited);
-		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
-				.ctx(getCtx())
-				.columnHeaders(getColumnHeaders())
-				.build();
+			if (pInstanceId == null)
+			{
+				throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
+			}
 
-		jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
+			trxManager.commit(Trx.TRXNAME_ThreadInherited);
+			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
+					.ctx(getCtx())
+					.columnHeaders(getColumnHeaders())
+					.build();
 
-		spreadsheetExporterService.processDataFromSQL(getSql(pInstanceId), jdbcExcelExporter);
+			jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
 
-		final File tempFile = jdbcExcelExporter.getResultFile();
+			spreadsheetExporterService.processDataFromSQL(getSql(pInstanceId), jdbcExcelExporter);
 
-		final boolean backEndOrSwing = Ini.getRunMode() == Adempiere.RunMode.BACKEND || Ini.isSwingClient();
+			final File tempFile = jdbcExcelExporter.getResultFile();
 
-		if (backEndOrSwing)
-		{
-			Env.startBrowser(tempFile.toURI().toString());
-		}
-		else
-		{
-			getResult().setReportData(tempFile);
-		}
+			final boolean backEndOrSwing = Ini.getRunMode() == Adempiere.RunMode.BACKEND || Ini.isSwingClient();
+
+			if (backEndOrSwing)
+			{
+				Env.startBrowser(tempFile.toURI().toString());
+			}
+			else
+			{
+				getResult().setReportData(tempFile);
+			}
+		});
 
 		return MSG_OK;
 	}

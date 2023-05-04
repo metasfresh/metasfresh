@@ -103,7 +103,7 @@ public interface I_M_HU_Trace
 	 * Unit of Measure
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_UOM_ID (int C_UOM_ID);
@@ -113,7 +113,7 @@ public interface I_M_HU_Trace
 	 * Unit of Measure
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_UOM_ID();
