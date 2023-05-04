@@ -71,7 +71,18 @@ public abstract class PPOrderCandidateEventHandler
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 		final PPOrderCandidate ppOrderCandidate = event.getPpOrderCandidate();
 
-		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
+		final Candidate existingCandidateOrNull;
+
+		// don't search supplyCandidate we ignored in DemandCandidateHandler#postSupplyRequiredEvent()
+		if(supplyRequiredDescriptor != null && supplyRequiredDescriptor.getIsLotForLot().equals("Y"))
+		{
+			existingCandidateOrNull = null;
+		}
+		else
+		{
+			existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
+		}
+
 
 		final Candidate.CandidateBuilder builder = existingCandidateOrNull != null
 				? existingCandidateOrNull.toBuilder()
