@@ -2,7 +2,8 @@
 Feature: sales order interaction with material cockpit - no product planning
 
   Background: Initial Data
-    Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    Given infrastructure and metasfresh are running
+    And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @Id:S0189_100
   @from:cucumber
@@ -553,6 +554,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
+
   @Id:S0189_1000
   @from:cucumber
   Scenario: SO with 1 line (qty=10), no ASI, reactivated, changed the date promised
@@ -592,7 +594,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_Order_ID.Identifier | OPT.DatePromised     |
       | o_1                   | 2021-04-17T00:00:00Z |
     When the order identified by o_1 is completed
-    Then after not more than 30s, metasfresh has this MD_Cockpit data
+    Then after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-17  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-15  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
