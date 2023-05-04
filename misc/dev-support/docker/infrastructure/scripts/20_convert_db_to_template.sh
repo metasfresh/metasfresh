@@ -45,5 +45,6 @@ echo "The local database has been converted to a template database."
 echo "You can drop this template database by running "
 echo ""
 echo "./21_drop_template.sh ${BRANCH_NAME}"
+
 echo ""
 echo "You can now proceed with creating the actual database from this template"
