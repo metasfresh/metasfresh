@@ -3,29 +3,23 @@ package de.metas.document.sequenceno;
 import de.metas.document.DocumentSequenceInfo;
 import io.micrometer.core.lang.NonNull;
 import org.compiere.util.Evaluatee;
-
-import java.text.DecimalFormat;
 import java.util.function.Supplier;
 
-public class ExternalProjectRefBeginningSequenceNoProvider extends ExternalProjectRefSequenceNoProvider {
-
+public class ExternalProjectRefBeginningSequenceNoProvider extends ExternalProjectRefSequenceNoProvider
+{
 	@Override
-	public @NonNull String provideSeqNo(
+	public boolean isApplicable(@lombok.NonNull final Evaluatee context, @lombok.NonNull final DocumentSequenceInfo docSeqInfo)
+	{
+		return true;
+	}
+
+	public @NonNull String provideCustomSeqNo(
 			@NonNull final Supplier<String> incrementalSeqNoSupplier,
 			@NonNull final Evaluatee context,
 			@NonNull final DocumentSequenceInfo documentSequenceInfo)
 	{
-		final String incrementalSeqNo = incrementalSeqNoSupplier.get();
-		final String customPart = getCustomPart();
-
-		final String decimalPattern = documentSequenceInfo.getDecimalPattern();
-		if (decimalPattern == null)
-		{
-			return incrementalSeqNo + "-" + customPart;
-		}
-
-		final int incrementalSeqNoInt = Integer.parseInt(incrementalSeqNo);
-
-		return new DecimalFormat(decimalPattern).format(incrementalSeqNoInt) + "-" + customPart;
+		final String parentResult = super.provideSeqNo(incrementalSeqNoSupplier, context, documentSequenceInfo);
+		final String[] parts = parentResult.split("-");
+		return parts[1] + "-" + parts[0];
 	}
 }
