@@ -75,7 +75,7 @@ public abstract class PPOrderCandidateEventHandler
 		final boolean attemptUpdate;
 
 		// don't search supplyCandidate we ignored in DemandCandidateHandler#postSupplyRequiredEvent()
-		if(supplyRequiredDescriptor != null && supplyRequiredDescriptor.getIsLotForLot().equals("Y"))
+		if(supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() <= 0)
 		{
 			existingCandidateOrNull = null;
 			attemptUpdate = false;
