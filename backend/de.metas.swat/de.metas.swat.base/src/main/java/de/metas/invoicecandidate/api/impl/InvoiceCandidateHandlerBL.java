@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -42,10 +43,14 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.OnInvalidateForMod
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -85,6 +90,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	};
 
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
+
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	@Override
 	public List<IInvoiceCandidateHandler> retrieveImplementationsForTable(final Properties ctx, final String tableName)
@@ -315,7 +322,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
+		if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
 		{
 			return ImmutableList.of();
 		}
@@ -404,6 +411,21 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		{
 			final int adUserInChargeId = handler.getAD_User_InCharge_ID(ic);
 			ic.setAD_User_InCharge_ID(adUserInChargeId);
+		}
+
+		// if the handler did not provide us with a payment term, then find it on our own terms :-D
+		if (ic.getC_PaymentTerm_ID() <= 0)
+		{
+			final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
+
+			final PaymentTermId paymentTermIdToUse = paymentTermRepository
+					.retrievePaymentTermId(paymentTermQuery)
+					.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
+							.appendParametersToMessage()
+							.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
+							.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+
+			ic.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
 		}
 
 		// Save it
