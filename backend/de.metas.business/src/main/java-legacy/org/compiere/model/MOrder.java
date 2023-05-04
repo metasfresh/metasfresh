@@ -31,6 +31,7 @@ import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
@@ -46,6 +47,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
@@ -62,6 +64,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -97,6 +100,7 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -987,12 +991,14 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Payment Term
 		if (getC_PaymentTerm_ID() == 0)
 		{
-			final PaymentTermId defaultPaymentTermId = Services.get(IPaymentTermRepository.class)
-					.getDefaultPaymentTermIdOrNull();
-			if (defaultPaymentTermId != null)
-			{
-				setC_PaymentTerm_ID(defaultPaymentTermId.getRepoId());
-			}
+			final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(
+					BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(getBill_BPartner_ID(), getC_BPartner_ID())),
+					SOTrx.ofBoolean(isSOTrx()));
+
+			final Optional<PaymentTermId> paymentTermId = Services.get(IPaymentTermRepository.class)
+					.retrievePaymentTermId(paymentTermQuery);
+
+			paymentTermId.ifPresent(termId -> setC_PaymentTerm_ID(termId.getRepoId()));
 		}
 		return true;
 	}    // beforeSave

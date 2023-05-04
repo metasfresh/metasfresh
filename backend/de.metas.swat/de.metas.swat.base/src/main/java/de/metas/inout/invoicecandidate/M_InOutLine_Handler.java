@@ -48,7 +48,6 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductActivityProvider;
@@ -306,9 +305,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, inOutLineRecord);
 
 		// extractQtyDelivered() depends on the C_PaymentTerm to be set
-		final PaymentTermId paymentTermIdToUse = CoalesceUtil.coalesceSuppliers(() -> paymentTermId,
-				M_InOutLine_Handler::getDefaultPaymentTermIdOrNull);
-		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
 		TableRecordCacheLocal.setReferencedValue(icRecord, inOutLineRecord);
 		icRecord.setIsPackagingMaterial(inOutLineRecord.isPackagingMaterial());
@@ -483,11 +480,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLineRecord);
 		}
 		return icRecord;
-	}
-
-	private static PaymentTermId getDefaultPaymentTermIdOrNull()
-	{
-		return Services.get(IPaymentTermRepository.class).getDefaultPaymentTermIdOrNull();
 	}
 
 	@Nullable
@@ -833,14 +825,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
 
-		PaymentTermId paymentTermId = orderLineBL.getPaymentTermId(ol);
-
-		if (paymentTermId == null) // try to fallback to the default one
-		{
-			paymentTermId = getDefaultPaymentTermIdOrNull();
-		}
-
-		return paymentTermId;
+		return orderLineBL.getPaymentTermId(ol);
 	}
 
 	/**
@@ -991,7 +976,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set C_Tax from Product (07442)
 		final OrgId orgId = OrgId.ofRepoId(inoutLineRecord.getAD_Org_ID());
 		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
-		final Properties ctx = getCtx(inoutLineRecord);
 		final Timestamp shipDate = inOutRecord.getMovementDate();
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(icRecord.getC_VAT_Code_Override_ID(), icRecord.getC_VAT_Code_ID()));
 
