@@ -59,7 +59,7 @@ public class ExternalProjectRefSequenceNoProvider implements CustomSequenceNoPro
 	}
 
 	@NonNull
-	private static String getCustomPart()
+	protected static String getCustomPart()
 	{
 		return String.valueOf(SystemTime.asLocalDate().getYear())
 				.substring(2);
