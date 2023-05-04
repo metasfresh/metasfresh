@@ -1,5 +1,7 @@
 package de.metas.order;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.interfaces.I_C_OrderLine;
@@ -28,6 +30,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -100,6 +103,9 @@ public class OrderLineBuilder
 
 	@Nullable
 	private ActivityId activityId;
+
+	@Nullable
+	private ImmutableList<Consumer<I_C_OrderLine>> afterSaveHooks;
 
 	/* package */ OrderLineBuilder(@NonNull final OrderFactory parent)
 	{
@@ -174,6 +180,8 @@ public class OrderLineBuilder
 		}
 
 		this.createdOrderLine = orderLine;
+
+		getAfterSaveHooks().forEach(hook -> hook.accept(createdOrderLine));
 	}
 
 	private void assertNotBuilt()
@@ -321,5 +329,24 @@ public class OrderLineBuilder
 	{
 		this.activityId = activityId;
 		return this;
+	}
+
+	@NonNull
+	public OrderLineBuilder afterSaveHook(@NonNull final Consumer<I_C_OrderLine> afterSaveHook)
+	{
+		final ImmutableList.Builder<Consumer<I_C_OrderLine>> hooksBuilder = ImmutableList.builder();
+
+		this.afterSaveHooks = hooksBuilder
+				.addAll(getAfterSaveHooks())
+				.add(afterSaveHook)
+				.build();
+
+		return this;
+	}
+
+	@NonNull
+	private ImmutableList<Consumer<I_C_OrderLine>> getAfterSaveHooks()
+	{
+		return CoalesceUtil.coalesceNotNull(afterSaveHooks, ImmutableList.of());
 	}
 }
