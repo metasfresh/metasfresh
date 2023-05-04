@@ -51,7 +51,7 @@ public interface I_C_Project_WO_ObjectUnderTest
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Order Line Provision.
+	 * Set Provision order line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -60,7 +60,7 @@ public interface I_C_Project_WO_ObjectUnderTest
 	void setC_OrderLine_Provision_ID (int C_OrderLine_Provision_ID);
 
 	/**
-	 * Get Order Line Provision.
+	 * Get Provision order line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -191,7 +191,7 @@ public interface I_C_Project_WO_ObjectUnderTest
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -201,7 +201,7 @@ public interface I_C_Project_WO_ObjectUnderTest
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -233,7 +233,7 @@ public interface I_C_Project_WO_ObjectUnderTest
 	String COLUMNNAME_NumberOfObjectsUnderTest = "NumberOfObjectsUnderTest";
 
 	/**
-	 * Set Object Delivered Date.
+	 * Set Object delivered on.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -242,7 +242,7 @@ public interface I_C_Project_WO_ObjectUnderTest
 	void setObjectDeliveredDate (@Nullable java.sql.Timestamp ObjectDeliveredDate);
 
 	/**
-	 * Get Object Delivered Date.
+	 * Get Object delivered on.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
