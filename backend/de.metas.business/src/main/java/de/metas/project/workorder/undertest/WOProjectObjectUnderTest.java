@@ -28,13 +28,13 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 
-@Data
+@Value
 @Builder(toBuilder = true)
 public class WOProjectObjectUnderTest
 {
@@ -75,5 +75,5 @@ public class WOProjectObjectUnderTest
 	ProductId productId;
 
 	@Nullable
-	LocalDate objectDeliveredDate;
+	Instant objectDeliveredDate;
 }

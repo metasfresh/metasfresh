@@ -23,48 +23,27 @@
 package de.metas.project.workorder.undertest;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.lang.SOTrx;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -74,15 +53,9 @@ public class WorkOrderProjectObjectUnderTestService
 {
 	private final WorkOrderProjectObjectUnderTestRepository woProjectObjectUnderTestRepository;
 
-	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	final IOrderBL orderBL = Services.get(IOrderBL.class);
-	final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public WorkOrderProjectObjectUnderTestService(@NonNull final WorkOrderProjectObjectUnderTestRepository woProjectObjectUnderTestRepository)
 	{
@@ -102,6 +75,11 @@ public class WorkOrderProjectObjectUnderTestService
 	}
 
 	@NonNull
+	public WOProjectObjectUnderTest update(@NonNull final WOProjectObjectUnderTest objectUnderTest)
+	{
+		return woProjectObjectUnderTestRepository.update(objectUnderTest);
+	}
+
 	public void createOrder(
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final ZonedDateTime datePromised,
@@ -119,18 +97,7 @@ public class WorkOrderProjectObjectUnderTestService
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
 		orderFactory.docType(docTypeId);
 
-		final BPartnerQuery bPartnerQuery = BPartnerQuery.builder()
-				.bPartnerId(bPartnerId)
-				.onlyOrgId(OrgId.ANY)
-				.onlyOrgId(Env.getOrgId())
-				.failIfNotExists(true)
-				.build();
-
-		final BPartnerId shipBPartnerId = bPartnerDAO
-				.retrieveBPartnerIdBy(bPartnerQuery)
-				.get()/* bc failIfNotExists(true) */;
-
-		orderFactory.shipBPartner(shipBPartnerId);
+		orderFactory.shipBPartner(bPartnerId);
 
 		orderFactory.datePromised(datePromised);
 
@@ -138,7 +105,7 @@ public class WorkOrderProjectObjectUnderTestService
 
 		woProjectObjectUnderTestList.forEach(woProjectObjectUnderTest -> createOrderLineAndSetOnObjectUnderTest(orderFactory, woProjectObjectUnderTest));
 
-		orderFactory.complete();
+		orderFactory.createAndComplete();
 	}
 
 	public void createOrderLineAndSetOnObjectUnderTest(
@@ -159,121 +126,26 @@ public class WorkOrderProjectObjectUnderTestService
 		final OrderLineBuilder orderLineBuilder = orderFactory.newOrderLine()
 				.productId(productId)
 				.addQty(qty)
-				.afterSaveHook((createdOrderLine) -> {
-					//todo mi-ps: logic to set the provision orderLineId to object under test
-				})
-				;
-
-		orderLineBuilder.build();
-
-		final OrderAndLineId orderAndLineId = orderLineBuilder.getCreatedOrderAndLineId();
-
-		woProjectObjectUnderTest.setOrderLineProvisionId(orderAndLineId.getOrderLineId());
-
-		calculatePriceForOrderLine(orderAndLineId);
+				.afterSaveHook((createdOrderLine) -> update(WOProjectObjectUnderTest.builder()
+																	.productId(woProjectObjectUnderTest.getProductId())
+																	.projectId(woProjectObjectUnderTest.getProjectId())
+																	.orderLineProvisionId(OrderLineId.ofRepoId(createdOrderLine.getC_OrderLine_ID()))
+																	.numberOfObjectsUnderTest(woProjectObjectUnderTest.getNumberOfObjectsUnderTest())
+																	.objectUnderTestId(woProjectObjectUnderTest.getObjectUnderTestId())
+																	.externalId(woProjectObjectUnderTest.getExternalId())
+																	.orgId(woProjectObjectUnderTest.getOrgId())
+																	.woObjectType(woProjectObjectUnderTest.getWoObjectType())
+																	.woManufacturer(woProjectObjectUnderTest.getWoManufacturer())
+																	.woObjectName(woProjectObjectUnderTest.getWoObjectName())
+																	.woDeliveryNote(woProjectObjectUnderTest.getWoDeliveryNote())
+																	.woObjectWhereabouts(woProjectObjectUnderTest.getWoObjectWhereabouts())
+																	.objectDeliveredDate(woProjectObjectUnderTest.getObjectDeliveredDate())
+																	.build()));
 	}
 
-	@Nullable
-	public WOProjectObjectUnderTest getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	@NonNull
+	public List<WOProjectObjectUnderTest> getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return woProjectObjectUnderTestRepository.getByOrderLineId(orderLineId);
 	}
-
-	public void updateObjectDeliveredDate(@NonNull final WOProjectObjectUnderTest woProjectObjectUnderTest, @NonNull final I_C_OrderLine orderLine)
-	{
-		woProjectObjectUnderTestRepository.updateObjectDeliveredDate(woProjectObjectUnderTest, orderLine);
-	}
-
-	// public List<WOProjectObjectUnderTest> getWOProjectObjectUnderTestListByOrderLine(@NonNull final OrderLineId orderLineId)
-	// {
-	// 	inOutDAO.retrieveLinesForOrderLine(orderLineBL.getOrderLineById(orderLineId))
-	// 			.stream()
-	// 			.map(iMInOutLine -> )
-	// }
-
-	private void calculatePriceForOrderLine(
-			@NonNull final OrderAndLineId orderAndLineId)
-	{
-		final I_C_Order order = orderBL.getById(orderAndLineId.getOrderId());
-		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderAndLineId.getOrderLineId());
-
-		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
-				OrgId.ofRepoIdOrAny(order.getAD_Org_ID()),
-				ProductId.ofRepoId(orderLine.getM_Product_ID()),
-				BPartnerId.ofRepoId(order.getC_BPartner_ID()),
-				Quantity.of(orderLine.getQtyEntered(), uomDAO.getById(orderLine.getC_UOM_ID())),
-				soTrx);
-
-		final I_M_PricingSystem pricingSystem = getPricingSystemOrNull(order, soTrx);
-
-		if (pricingSystem == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-												 + "\n @C_Order_ID@: " + order.getC_Order_ID()
-												 + "\n @C_BPartner_ID@: " + order.getC_BPartner_ID());
-		}
-
-		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
-		Check.assumeNotNull(pricingSystemId, "No pricing system found for M_Order_ID={}", order);
-
-		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
-				pricingSystemId,
-				BPartnerLocationAndCaptureId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()),
-				soTrx);
-		Check.errorIf(priceListId == null,
-					  "No price list found for C_OrderLine_ID {}; C_Order.M_PricingSystem_ID={}, C_Order.C_BPartner_Location_ID={}, C_Order.SOTrx={}",
-					  orderLine.getC_OrderLine_ID(), pricingSystemId, order.getC_BPartner_Location_ID(), soTrx);
-
-		pricingCtx.setPricingSystemId(pricingSystemId);
-		pricingCtx.setPriceListId(priceListId);
-
-		final LocalDate orderedLocalDate = TimeUtil.asLocalDate(orderLine.getDateOrdered(), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
-		if (orderedLocalDate != null)
-		{
-			pricingCtx.setPriceDate(orderedLocalDate);
-		}
-
-		pricingCtx.setFailIfNotCalculated();
-
-		pricingBL.calculatePrice(pricingCtx);
-	}
-
-	@Nullable
-	private I_M_PricingSystem getPricingSystemOrNull(@NonNull final I_C_Order order, @NonNull final SOTrx soTrx)
-	{
-		if (order.getM_PricingSystem_ID() > 0)
-		{
-			final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(order.getM_PricingSystem_ID());
-			return priceListDAO.getPricingSystemById(pricingSystemId);
-		}
-
-		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(order.getC_BPartner_ID()), soTrx);
-		if (pricingSystemId == null)
-		{
-			return null;
-		}
-
-		return priceListDAO.getPricingSystemById(pricingSystemId);
-	}
-
-	// public void updateObjectDeliveredDate(
-	// 		@NonNull final OrderAndLineId orderAndLineId,
-	// 		@NonNull final WOProjectObjectUnderTest woProjectObjectUnderTest)
-	// {
-	// 	if (woProjectObjectUnderTest.getOrderLineProvisionId() == null)
-	// 	{
-	// 		return;
-	// 	}
-	//
-	// 	final Quantity qtyToDeliver = orderLineBL.getQtyToDeliver(orderAndLineId);
-	//
-	// 	if (qtyToDeliver.isZero())
-	// 	{
-	// 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(orderAndLineId.getOrderLineRepoId()));
-	//
-	//
-	// 	}
-	// }
 }

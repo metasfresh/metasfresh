@@ -121,21 +121,6 @@ public class OrderFactory
 		}
 	}
 
-	public org.compiere.model.I_C_Order complete()
-	{
-		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
-		{
-			if (orderLineBuilders.isEmpty())
-			{
-				throw new AdempiereException("Cannot create an order without lines");
-			}
-
-			documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-
-			return order;
-		}
-	}
-
 	public I_C_Order createDraft()
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))

@@ -37,7 +37,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -46,9 +46,9 @@ public class C_WO_Project_ObjectUnderTest_OrderProvision extends JavaProcess imp
 {
 	private static final String WO_ObjectUnderTest_Without_Product_Message = "C_Project_WO_ObjectUnderTest";
 
-	final WorkOrderProjectObjectUnderTestService woProjectObjectUnderTestService = SpringContextHolder.instance.getBean(WorkOrderProjectObjectUnderTestService.class);
+	private final WorkOrderProjectObjectUnderTestService woProjectObjectUnderTestService = SpringContextHolder.instance.getBean(WorkOrderProjectObjectUnderTestService.class);
 
-	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private static final String PARAM_C_BPARTNER_ID = "C_BPartner_ID";
 	@Param(parameterName = PARAM_C_BPARTNER_ID)
@@ -56,7 +56,7 @@ public class C_WO_Project_ObjectUnderTest_OrderProvision extends JavaProcess imp
 
 	private static final String PARAM_DATE_PROMISED = "DatePromised";
 	@Param(parameterName = PARAM_DATE_PROMISED)
-	private Timestamp datePromised;
+	private LocalDate datePromised;
 
 	@Override
 	protected String doIt() throws Exception
@@ -66,11 +66,9 @@ public class C_WO_Project_ObjectUnderTest_OrderProvision extends JavaProcess imp
 		if (!woProjectObjectUnderTestList.isEmpty())
 		{
 			final ZoneId timeZone = orgDAO.getTimeZone(woProjectObjectUnderTestList.get(0).getOrgId());
-			final ZonedDateTime zonedDatePromised = datePromised.toLocalDateTime().atZone(timeZone);
+			final ZonedDateTime zonedDatePromised = datePromised.atStartOfDay(timeZone);
 
 			woProjectObjectUnderTestService.createOrder(BPartnerId.ofRepoId(bPartnerId), zonedDatePromised, woProjectObjectUnderTestList);
-
-			woProjectObjectUnderTestService.updateAll(woProjectObjectUnderTestList);
 		}
 		return MSG_OK;
 	}
@@ -88,12 +86,13 @@ public class C_WO_Project_ObjectUnderTest_OrderProvision extends JavaProcess imp
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final boolean anyObjectUnderTestWithoutProduct = woProjectObjectUnderTestService
-				.getByProjectId(ProjectId.ofRepoId(context.getSingleSelectedRecordId()))
+		final List<WOProjectObjectUnderTest> objectUnderTestList = woProjectObjectUnderTestService.getByProjectId(ProjectId.ofRepoId(context.getSingleSelectedRecordId()));
+
+		final boolean anyObjectUnderTestWithoutProduct = objectUnderTestList
 				.stream()
 				.anyMatch(woProjectObjectUnderTest -> woProjectObjectUnderTest.getProductId() == null);
 
-		if (anyObjectUnderTestWithoutProduct)
+		if (objectUnderTestList.isEmpty() || anyObjectUnderTestWithoutProduct)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(AdMessageKey.of(WO_ObjectUnderTest_Without_Product_Message)));
 		}

@@ -51,8 +51,10 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.lang3.StringUtils;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -77,11 +79,11 @@ public class WorkOrderProjectObjectUnderTestRestService
 	}
 
 	@NonNull
-	public List<JsonWorkOrderObjectsUnderTestResponse> getByProjectId(@NonNull final ProjectId woProjectId)
+	public List<JsonWorkOrderObjectsUnderTestResponse> getByProjectId(@NonNull final ProjectId woProjectId, @NonNull final ZoneId zoneId)
 	{
 		return workOrderProjectObjectUnderTestRepository.getByProjectId(woProjectId)
 				.stream()
-				.map(WorkOrderProjectObjectUnderTestRestService::toJsonWorkOrderObjectsUnderTestResponse)
+				.map(woProjectObjectUnderTest -> toJsonWorkOrderObjectsUnderTestResponse(woProjectObjectUnderTest, zoneId))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -379,7 +381,7 @@ public class WorkOrderProjectObjectUnderTestRestService
 	}
 
 	@NonNull
-	private static JsonWorkOrderObjectsUnderTestResponse toJsonWorkOrderObjectsUnderTestResponse(@NonNull final WOProjectObjectUnderTest objectUnderTest)
+	private static JsonWorkOrderObjectsUnderTestResponse toJsonWorkOrderObjectsUnderTestResponse(@NonNull final WOProjectObjectUnderTest objectUnderTest, @NonNull final ZoneId zoneId)
 	{
 		return JsonWorkOrderObjectsUnderTestResponse.builder()
 				.objectUnderTestId(JsonMetasfreshId.of(objectUnderTest.getObjectUnderTestId().getRepoId()))
@@ -390,7 +392,7 @@ public class WorkOrderProjectObjectUnderTestRestService
 				.woObjectType(objectUnderTest.getWoObjectType())
 				.woObjectName(objectUnderTest.getWoObjectName())
 				.woObjectWhereabouts(objectUnderTest.getWoObjectWhereabouts())
-				.objectDeliveredDate(objectUnderTest.getObjectDeliveredDate())
+				.objectDeliveredDate(TimeUtil.asLocalDate(objectUnderTest.getObjectDeliveredDate(), zoneId))
 				.build();
 	}
 

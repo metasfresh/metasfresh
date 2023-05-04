@@ -112,7 +112,7 @@ public class OrderLineBuilder
 		this.parent = parent;
 	}
 
-	public void build()
+	/* package */ void build()
 	{
 		assertNotBuilt();
 		built = true;
