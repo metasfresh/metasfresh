@@ -23,18 +23,7 @@ package de.metas.dunning.invoice.api.impl;
  */
 
 import de.metas.adempiere.model.I_C_Invoice;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.compiere.model.IQuery;
-import org.compiere.util.TimeUtil;
-
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
@@ -46,26 +35,26 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoicePaySchedule;
-
-import java.util.Optional;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Properties;
 
 public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-
-	@Override
-	public Timestamp retrieveDueDate(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		return DB.getSQLValueTSEx(trxName, "SELECT paymentTermDueDate(?,?)", invoice.getC_PaymentTerm_ID(), invoice.getDateInvoiced());
-	}
 
 	@Override
 	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)

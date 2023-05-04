@@ -22,15 +22,21 @@
 
 package de.metas.banking.callout;
 
+import de.metas.banking.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 
@@ -38,14 +44,17 @@ import java.math.BigDecimal;
 public class C_BankStatementLine
 {
 	private final IBankStatementBL bankStatementBL;
+	private final ICurrencyBL currencyConversionBL;
 
 	private final BankStatementLineAmountsCallout bankStatementLineAmountsCallout = new BankStatementLineAmountsCallout();
 	private final CashJournalLineAmountsCallout cashJournalLineAmountsCallout = new CashJournalLineAmountsCallout();
 
 	public C_BankStatementLine(
-			@NonNull final IBankStatementBL bankStatementBL)
+			@NonNull final IBankStatementBL bankStatementBL,
+			@NonNull final ICurrencyBL currencyConversionBL)
 	{
 		this.bankStatementBL = bankStatementBL;
+		this.currencyConversionBL = currencyConversionBL;
 	}
 
 	private AmountsCallout getAmountsCallout(@NonNull final I_C_BankStatementLine bsl)

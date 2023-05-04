@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.document.DocTypeId;
@@ -60,5 +61,34 @@ public class SAPGLJournalCreateRequest
 
 	@NonNull ImmutableList<SAPGLJournalLineCreateRequest> lines;
 
-	@Nullable SAPGLJournalId reversalId;
+	@Nullable
+	SAPGLJournalId reversalId;
+
+	@NonNull
+	public static SAPGLJournalCreateRequest of(
+			@NonNull final SAPGLJournal journal,
+			@NonNull final Instant dateDoc,
+			final boolean negateAmounts)
+	{
+		return SAPGLJournalCreateRequest.builder()
+				.docTypeId(journal.getDocTypeId())
+				.conversionCtx(journal.getConversionCtx())
+				.dateDoc(dateDoc)
+				.acctSchemaId(journal.getAcctSchemaId())
+				.postingType(journal.getPostingType())
+				.totalAcctDR(journal.getTotalAcctDR().negateIf(negateAmounts))
+				.totalAcctCR(journal.getTotalAcctCR().negateIf(negateAmounts))
+				.orgId(journal.getOrgId())
+				.dimension(journal.getDimension())
+				.description(journal.getDescription())
+				.glCategoryId(journal.getGlCategoryId())
+				.reversalId(null)
+				//
+				.lines(journal.getLines()
+							   .stream()
+							   .map(line -> SAPGLJournalLineCreateRequest.of(line, negateAmounts))
+							   .collect(ImmutableList.toImmutableList()))
+
+				.build();
+	}
 }

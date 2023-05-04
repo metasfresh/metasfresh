@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class ImpFormatTest
 {
 	@Nested
-	class generateTabularTemplate
+	static class generateTabularTemplate
 	{
 		@Builder(builderMethodName = "impFormat", builderClassName = "$ImpFormatBuilder")
 		private ImpFormat createImpFormat(
