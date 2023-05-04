@@ -28,8 +28,8 @@ Feature: invoice review
       | tax_1               | 1000023      |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.IsDefault |
-      | docType                 | ARI         | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.IsDefault |
+      | docType                 | ARI             | true          |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |

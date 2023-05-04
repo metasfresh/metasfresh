@@ -111,7 +111,7 @@ public class C_DocType_StepDef
 		final IQuery<I_C_DocType> query = queryBuilder.create();
 		final I_C_DocType docType = query.firstOnlyOrNull(I_C_DocType.class);
 
-		assertThat(docType).as("Unable to load a sigenl C_DocType using query %s", query).isNotNull();
+		assertThat(docType).as("Unable to load a single C_DocType using query %s", query).isNotNull();
 
 		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_DocType.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
 		docTypeTable.putOrReplace(docTypeIdentifier, docType);
