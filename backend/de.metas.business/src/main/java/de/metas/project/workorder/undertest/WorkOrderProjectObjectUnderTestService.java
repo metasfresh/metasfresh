@@ -158,7 +158,11 @@ public class WorkOrderProjectObjectUnderTestService
 
 		final OrderLineBuilder orderLineBuilder = orderFactory.newOrderLine()
 				.productId(productId)
-				.addQty(qty);
+				.addQty(qty)
+				.afterSaveHook((createdOrderLine) -> {
+					//todo mi-ps: logic to set the provision orderLineId to object under test
+				})
+				;
 
 		orderLineBuilder.build();
 
