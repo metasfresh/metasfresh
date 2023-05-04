@@ -23,20 +23,4 @@ public class SAPGLJournalLineCreateRequest
 	@Nullable TaxId taxId;
 	@Nullable String description;
 	boolean determineTaxBaseSAP;
-
-	@NonNull
-	public static SAPGLJournalLineCreateRequest of(
-			@NonNull final SAPGLJournalLine line,
-			@NonNull final Boolean negateAmounts)
-	{
-		return SAPGLJournalLineCreateRequest.builder()
-				.postingSign(line.getPostingSign())
-				.account(line.getAccount())
-				.amount(line.getAmount().negateIf(negateAmounts).toBigDecimal())
-				.dimension(line.getDimension())
-				.description(line.getDescription())
-				.taxId(line.getTaxId())
-				.determineTaxBaseSAP(line.isDetermineTaxBaseSAP())
-				.build();
-	}
 }

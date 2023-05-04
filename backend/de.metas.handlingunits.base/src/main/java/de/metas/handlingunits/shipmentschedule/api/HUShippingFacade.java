@@ -236,7 +236,6 @@ public class HUShippingFacade
 
 		final InvoicingParams invoicingParams = InvoicingParams.builder()
 				.ignoreInvoiceSchedule(!adhereToInvoiceSchedule)
-				.supplementMissingPaymentTermIds(true) // e.g. "packaging" ICs from shipments might lack the order's payment term, but we still want them to be in the same invoice, unless they explicitly have a different payment term.
 				.build();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()

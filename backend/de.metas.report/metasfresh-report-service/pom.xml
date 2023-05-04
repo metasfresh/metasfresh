@@ -162,6 +162,11 @@
 			<artifactId>source-code-pro-fonts</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.report.jasper</groupId>
+			<artifactId>dwControl-fonts</artifactId>
+			<version>1.017</version>
+		</dependency>
 
  		<!-- JXls integration -->
 		<dependency>

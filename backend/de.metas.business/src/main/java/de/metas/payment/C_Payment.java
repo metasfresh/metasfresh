@@ -22,8 +22,10 @@
 
 package de.metas.payment;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyRepository;
 import de.metas.order.IOrderDAO;
@@ -47,8 +49,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 @Callout(I_C_Payment.class)
 @Interceptor(I_C_Payment.class)
@@ -102,7 +102,12 @@ public class C_Payment
 		final BigDecimal priceActual = paymentTermDiscountPercent.subtractFromBase(order.getGrandTotal(), currency.getPrecision().toInt());
 		final BigDecimal discountAmount = paymentTermDiscountPercent.computePercentageOf(order.getGrandTotal(), currency.getPrecision().toInt());
 
-		record.setC_BPartner_ID(firstGreaterThanZero(order.getBill_BPartner_ID(), order.getC_BPartner_ID()));
+		final BPartnerLocationId orderBPartnerLocationId = CoalesceUtil.coalesceNotNull(
+				BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID()),
+				BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()));
+
+		record.setC_BPartner_ID(orderBPartnerLocationId.getBpartnerId().getRepoId());
+		record.setC_BPartner_Location_ID(orderBPartnerLocationId.getRepoId());
 		record.setC_Currency_ID(order.getC_Currency_ID());
 
 		record.setC_Invoice(null);

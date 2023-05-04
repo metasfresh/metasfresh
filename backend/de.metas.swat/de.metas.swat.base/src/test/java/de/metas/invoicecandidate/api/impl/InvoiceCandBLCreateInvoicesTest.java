@@ -183,6 +183,7 @@ SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTyp
 	public void test_InvalidInvoiceCandidate_NoUserInCharge_FlagItAsError()
 	{
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+
 		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10/* priceEntered */, 3/* qty */, false/* isManual */, true/* isSOTrx */);
 		InterfaceWrapperHelper.save(ic);
 
@@ -238,6 +239,7 @@ SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTyp
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
+
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2, ic3);
 
 		//
@@ -447,6 +449,7 @@ SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTyp
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+
 		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerId(bpartner.getC_BPartner_ID())
 				.setPriceEntered(10)

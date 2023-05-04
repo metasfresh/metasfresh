@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.CashAccountType;
@@ -24,6 +25,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
@@ -42,7 +44,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
@@ -405,6 +406,18 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getBPartnerId();
 	}
 
+	@Nullable
+	public BPartnerLocationId getInvoiceBPartnerLocationId()
+	{
+		final I_C_Invoice invoice = getC_Invoice();
+		if (invoice != null)
+		{
+			return BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+		}
+
+		return getBPartnerLocationId();
+	}
+
 	@NonNull
 	public Account getPaymentAcct(final AcctSchema as)
 	{
@@ -473,6 +486,11 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 						return doc.getVendorAccount(BPartnerVendorAccountType.V_Prepayment, as);
 					}
 				}
+			}
+
+			if (doc.getBPBankAccountId() != null)
+			{
+				return doc.getBankAccountAccount(BankAccountAcctType.B_UnallocatedCash_Acct, as);
 			}
 
 			//
@@ -607,6 +625,18 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		}
 
 		return getBPartnerId();
+	}
+
+	@Nullable
+	public final BPartnerLocationId getPaymentBPartnerLocationId()
+	{
+		final I_C_Payment payment = getC_Payment();
+		if (payment != null)
+		{
+			return BPartnerLocationId.ofRepoIdOrNull(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
+		}
+
+		return getBPartnerLocationId();
 	}
 
 	public boolean isPaymentReceipt()

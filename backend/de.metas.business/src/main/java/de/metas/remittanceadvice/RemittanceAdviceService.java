@@ -26,7 +26,6 @@ import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
@@ -105,7 +104,6 @@ public class RemittanceAdviceService
 		final Instant conversionDate = SystemTime.asInstant();
 		final CurrencyConversionContext currencyConversionContext =
 				currencyConversionBL.createCurrencyConversionContext(conversionDate,
-						ConversionTypeMethod.Spot,
 						ClientId.ofRepoId(invoice.getAD_Client_ID()),
 						OrgId.ofRepoId(invoice.getAD_Org_ID()));
 
@@ -225,7 +223,6 @@ public class RemittanceAdviceService
 		final Instant conversionDate = SystemTime.asInstant();
 		final CurrencyConversionContext currencyConversionContext =
 				currencyConversionBL.createCurrencyConversionContext(conversionDate,
-						ConversionTypeMethod.Spot,
 						Env.getClientId(),
 						remittanceAdviceLine.getOrgId());
 
