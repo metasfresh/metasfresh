@@ -6,7 +6,6 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -102,9 +101,6 @@ public class NewManualInvoiceCandidate
 	@Nullable
 	ActivityId activityId;
 
-	@NonNull
-	PaymentTermId paymentTermId;
-
 	TableRecordReference recordReference;
 
 	List<InvoiceDetailItem> invoiceDetailItems;
@@ -134,7 +130,6 @@ public class NewManualInvoiceCandidate
 			@Nullable final UserId userInChargeId,
 			@Nullable final ProjectId projectId,
 			@Nullable final ActivityId activityId,
-			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -161,7 +156,6 @@ public class NewManualInvoiceCandidate
 		this.descriptionBottom = descriptionBottom;
 		this.userInChargeId = userInChargeId;
 		this.activityId = activityId;
-		this.paymentTermId = paymentTermId;
 		this.recordReference = recordReference;
 		this.invoiceRule = invoiceRule;
 		this.invoiceDetailItems = invoiceDetailItems;

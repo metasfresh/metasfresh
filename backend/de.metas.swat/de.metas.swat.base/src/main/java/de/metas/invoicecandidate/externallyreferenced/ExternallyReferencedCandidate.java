@@ -58,6 +58,9 @@ import java.util.List;
 @Data
 public class ExternallyReferencedCandidate
 {
+	/**
+	 * Note that {@code newIC} does not contain the paymentTermId. It's later deducted from the billPartnerId and soTrx.
+	 */
 	public static ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		return ExternallyReferencedCandidate
@@ -81,8 +84,7 @@ public class ExternallyReferencedCandidate
 				.soTrx(newIC.getSoTrx())
 				.projectId(newIC.getProjectId())
 				.invoiceDetailItems(newIC.getInvoiceDetailItems())
-				.activityId(newIC.getActivityId())
-				.paymentTermId(newIC.getPaymentTermId());
+				.activityId(newIC.getActivityId());
 	}
 
 	private final OrgId orgId;

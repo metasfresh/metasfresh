@@ -54,9 +54,6 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
@@ -452,19 +449,7 @@ public class CreateInvoiceCandidatesService
 			bpartnerInfo.contactId(contact.getId());
 		}
 
-		final BPartnerInfo build = bpartnerInfo.build();
-		candidate.billPartnerInfo(build);
-
-		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(build.getBpartnerId(),
-																			  SOTrx.ofBoolean(item.getSoTrx().isSales()));
-		final PaymentTermId paymentTermId = Services.get(IPaymentTermRepository.class)
-				.retrievePaymentTermId(paymentTermQuery)
-				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
-						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
-						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
-
-		candidate.paymentTermId(paymentTermId);
+		candidate.billPartnerInfo(bpartnerInfo.build());
 	}
 
 	private void syncDiscountOverrideToCandidate(
