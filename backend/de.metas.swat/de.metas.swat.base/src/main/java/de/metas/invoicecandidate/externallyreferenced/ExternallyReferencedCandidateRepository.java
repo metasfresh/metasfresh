@@ -264,7 +264,8 @@ public class ExternallyReferencedCandidateRepository
 	{
 		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
 
-		candidate.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
+		final OrgId orgId = OrgId.ofRepoId(icRecord.getAD_Org_ID());
+		candidate.orgId(orgId)
 				.id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
 				.externalHeaderId(ExternalId.ofOrNull(icRecord.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(icRecord.getExternalLineId()));
@@ -279,8 +280,9 @@ public class ExternallyReferencedCandidateRepository
 				.build();
 		candidate.billPartnerInfo(bpartnerInfo);
 
-		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
-		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced()));
+		final ZoneId orgTZ = orgDAO.getTimeZone(orgId);
+		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered(), orgTZ));
+		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced(), orgTZ));
 
 		candidate.invoiceRule(InvoiceRule.ofCode(icRecord.getInvoiceRule()))
 				.invoiceRuleOverride(InvoiceRule.ofNullableCode(icRecord.getInvoiceRule_Override()));

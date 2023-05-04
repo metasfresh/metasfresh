@@ -309,21 +309,13 @@ public class CreateInvoiceCandidatesService
 				.orgId(orgId)
 				.includeAnyOrg(true)
 				.outOfTrx(true);
-		final ProductId productId;
-		switch (productIdentifier.getType())
+		final ProductId productId = switch (productIdentifier.getType())
 		{
-			case EXTERNAL_ID:
-				productId = productDAO.retrieveProductIdBy(productQuery.externalId(productIdentifier.asExternalId()).build());
-				break;
-			case METASFRESH_ID:
-				productId = ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue());
-				break;
-			case VALUE:
-				productId = productDAO.retrieveProductIdBy(productQuery.value(productIdentifier.asValue()).build());
-				break;
-			default:
-				throw new AdempiereException("Unexpected type=" + productIdentifier.getType());
-		}
+			case EXTERNAL_ID -> productDAO.retrieveProductIdBy(productQuery.externalId(productIdentifier.asExternalId()).build());
+			case METASFRESH_ID -> ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue());
+			case VALUE -> productDAO.retrieveProductIdBy(productQuery.value(productIdentifier.asValue()).build());
+			default -> throw new AdempiereException("Unexpected type=" + productIdentifier.getType());
+		};
 		if (productId == null)
 		{
 			throw MissingResourceException.builder().resourceName("product").resourceIdentifier(productIdentifier.toJson()).parentResource(item).build();
@@ -475,10 +467,9 @@ public class CreateInvoiceCandidatesService
 
 		final ProductPrice price = createProductPriceOrNull(priceEnteredOverride, productId, item);
 		candidate.priceEnteredOverride(price);
-		return;
-
 	}
 
+	@Nullable
 	private ProductPrice createProductPriceOrNull(
 			@Nullable final JsonPrice jsonPrice,
 			@NonNull final ProductId productId,
@@ -529,7 +520,7 @@ public class CreateInvoiceCandidatesService
 		{
 			priceUomId = uomDAO.getUomIdByX12DE355(uomCode);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier("priceUomCode").parentResource(item).cause(e).build();
 		}
