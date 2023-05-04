@@ -126,6 +126,8 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
+
+			icRecord.setC_PaymentTerm_ID(ic.getPaymentTermId().getRepoId());
 		}
 		else
 		{
