@@ -45,6 +45,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -331,6 +332,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.projectId(ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()));
 
 		candidate.activityId(ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()));
+
+		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 
 		return candidate.build();
 	}
