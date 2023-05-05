@@ -144,35 +144,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- Column: C_Project_WO_ObjectUnderTest.C_OrderLine_Provision_ID
--- 2023-04-24T21:19:11.623348600Z
-UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-04-25 00:19:11.623','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586493
-;
-
-
--- Column: C_Project_WO_ObjectUnderTest.C_OrderLine_Provision_ID
 -- 2023-04-26T10:31:19.047345500Z
 UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=271,Updated=TO_TIMESTAMP('2023-04-26 13:31:19.047','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586493
-;
-
--- 2023-04-26T10:31:22.716323200Z
-INSERT INTO t_alter_column values('c_project_wo_objectundertest','C_OrderLine_Provision_ID','NUMERIC(10)',null,'0')
-;
-
--- 2023-04-26T10:31:22.763697100Z
-UPDATE C_Project_WO_ObjectUnderTest SET C_OrderLine_Provision_ID=0 WHERE C_OrderLine_Provision_ID IS NULL
-;
-
--- 2023-04-26T10:31:22.763697100Z
-INSERT INTO t_alter_column values('c_project_wo_objectundertest','C_OrderLine_Provision_ID',null,'NOT NULL',null)
-;
-
--- Column: C_Project_WO_ObjectUnderTest.C_OrderLine_Provision_ID
--- 2023-04-26T10:32:25.004875300Z
-UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-04-26 13:32:25.004','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586493
-;
-
--- 2023-04-26T10:32:28.861650800Z
-INSERT INTO t_alter_column values('c_project_wo_objectundertest','C_OrderLine_Provision_ID','NUMERIC(10)',null,'0')
 ;
 
 -- 2023-04-26T10:32:28.861650800Z
