@@ -293,7 +293,7 @@ public class WorkOrderProjectRestService
 				.bpartnerTargetDate(TimeUtil.asLocalDate(project.getBpartnerTargetDate(), zoneId))
 				.woProjectCreatedDate(TimeUtil.asLocalDate(project.getWoProjectCreatedDate(), zoneId))
 				.steps(workOrderProjectStepRestService.getByProjectId(project.getProjectId(), project.getOrgId()))
-				.objectsUnderTest(workOrderProjectObjectUnderTestRestService.getByProjectId(project.getProjectId()))
+				.objectsUnderTest(workOrderProjectObjectUnderTestRestService.getByProjectId(project.getProjectId(), zoneId))
 				.build();
 	}
 
