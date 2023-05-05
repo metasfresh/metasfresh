@@ -24,6 +24,8 @@ package de.metas.project.workorder.undertest;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -61,6 +63,7 @@ public class WorkOrderProjectObjectUnderTestService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public WorkOrderProjectObjectUnderTestService(@NonNull final WorkOrderProjectObjectUnderTestRepository woProjectObjectUnderTestRepository)
 	{
@@ -105,13 +108,14 @@ public class WorkOrderProjectObjectUnderTestService
 				.build();
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
 
+		final PricingSystemId provisioningPricingSystemId = getProvisioningPricingSystem(woProjectObjectUnderTestList.get(0).getOrgId());
+
 		final OrderFactory orderFactory = OrderFactory.newPurchaseOrder();
 
+		orderFactory.pricingSystemId(provisioningPricingSystemId);
 		orderFactory.docType(docTypeId);
-		orderFactory.shipBPartner(bPartnerId);
+		orderFactory.shipBPartner(bPartnerId, getShipToBPartnerLocationId(bPartnerId), null);
 		orderFactory.datePromised(datePromised);
-
-		final PricingSystemId provisioningPricingSystemId = getProvisioningPricingSystem(woProjectObjectUnderTestList.get(0).getOrgId());
 
 		woProjectObjectUnderTestList.forEach(woProjectObjectUnderTest -> createOrderLineForObjectUnderTest(orderFactory,
 																										   woProjectObjectUnderTest,
@@ -167,5 +171,16 @@ public class WorkOrderProjectObjectUnderTestService
 		return Optional.of(provisionPricingSystemRepoId)
 				.map(PricingSystemId::ofRepoIdOrNull)
 				.orElseThrow(() -> new AdempiereException(PROVISION_PRICING_SYSTEM_SYSCONFIG + " AD_SysConfig must be set!"));
+	}
+
+	@NonNull
+	private BPartnerLocationId getShipToBPartnerLocationId(@NonNull final BPartnerId bPartnerId)
+	{
+		return Optional.ofNullable(bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder()
+																				.bpartnerId(bPartnerId)
+																				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+																				.build()))
+				.map(location -> BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID()))
+				.orElseThrow(() -> new AdempiereException("No ShipTo address found for BPartnerId=" + bPartnerId.getRepoId()));
 	}
 }
