@@ -31,6 +31,8 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
@@ -38,6 +40,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -46,14 +49,18 @@ import org.springframework.stereotype.Service;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WorkOrderProjectObjectUnderTestService
 {
+	private static final String PROVISION_PRICING_SYSTEM_SYSCONFIG = "de.metas.project.workorder.undertest.ProvisionPricingSystem";
+
 	private final WorkOrderProjectObjectUnderTestRepository woProjectObjectUnderTestRepository;
 
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public WorkOrderProjectObjectUnderTestService(@NonNull final WorkOrderProjectObjectUnderTestRepository woProjectObjectUnderTestRepository)
 	{
@@ -82,6 +89,13 @@ public class WorkOrderProjectObjectUnderTestService
 			@NonNull final ZonedDateTime datePromised,
 			@NonNull final List<WOProjectObjectUnderTest> woProjectObjectUnderTestList)
 	{
+		if (woProjectObjectUnderTestList.isEmpty())
+		{
+			throw new AdempiereException("at least one WOProjectObjectUnderTest is required to create an order!")
+					.appendParametersToMessage()
+					.setParameter("C_BPartner_ID", bPartnerId);
+		}
+
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(DocBaseType.PurchaseOrder, X_C_DocType.DOCSUBTYPE_Provision);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
@@ -97,7 +111,11 @@ public class WorkOrderProjectObjectUnderTestService
 		orderFactory.shipBPartner(bPartnerId);
 		orderFactory.datePromised(datePromised);
 
-		woProjectObjectUnderTestList.forEach(woProjectObjectUnderTest -> createOrderLineAndSetOnObjectUnderTest(orderFactory, woProjectObjectUnderTest));
+		final PricingSystemId provisioningPricingSystemId = getProvisioningPricingSystem(woProjectObjectUnderTestList.get(0).getOrgId());
+
+		woProjectObjectUnderTestList.forEach(woProjectObjectUnderTest -> createOrderLineForObjectUnderTest(orderFactory,
+																										   woProjectObjectUnderTest,
+																										   provisioningPricingSystemId));
 
 		orderFactory.createAndComplete();
 	}
@@ -108,9 +126,10 @@ public class WorkOrderProjectObjectUnderTestService
 		return woProjectObjectUnderTestRepository.getByOrderLineId(orderLineId);
 	}
 
-	private void createOrderLineAndSetOnObjectUnderTest(
+	private void createOrderLineForObjectUnderTest(
 			@NonNull final OrderFactory orderFactory,
-			@NonNull final WOProjectObjectUnderTest woProjectObjectUnderTest)
+			@NonNull final WOProjectObjectUnderTest woProjectObjectUnderTest,
+			@NonNull final PricingSystemId provisioningPricingSystemId)
 	{
 		final ProductId productId = woProjectObjectUnderTest.getProductId();
 
@@ -124,6 +143,7 @@ public class WorkOrderProjectObjectUnderTestService
 		final Quantity qty = Quantity.of(woProjectObjectUnderTest.getNumberOfObjectsUnderTest(), uom);
 
 		orderFactory.newOrderLine()
+				.overridingPricingSystemId(provisioningPricingSystemId)
 				.productId(productId)
 				.addQty(qty)
 				.afterSaveHook((createdOrderLine) -> update(woProjectObjectUnderTest.toBuilder()
@@ -134,5 +154,18 @@ public class WorkOrderProjectObjectUnderTestService
 	private void update(@NonNull final WOProjectObjectUnderTest objectUnderTest)
 	{
 		update(ImmutableList.of(objectUnderTest));
+	}
+
+	@NonNull
+	private PricingSystemId getProvisioningPricingSystem(@NonNull final OrgId orgId)
+	{
+		final int provisionPricingSystemRepoId = sysConfigBL.getIntValue(PROVISION_PRICING_SYSTEM_SYSCONFIG,
+																		 -1,
+																		 Env.getAD_Client_ID(),
+																		 orgId.getRepoId());
+
+		return Optional.of(provisionPricingSystemRepoId)
+				.map(PricingSystemId::ofRepoIdOrNull)
+				.orElseThrow(() -> new AdempiereException(PROVISION_PRICING_SYSTEM_SYSCONFIG + " AD_SysConfig must be set!"));
 	}
 }

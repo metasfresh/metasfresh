@@ -35,6 +35,7 @@ import de.metas.project.workorder.undertest.WOProjectObjectUnderTest;
 import de.metas.project.workorder.undertest.WorkOrderProjectObjectUnderTestService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import java.time.LocalDate;
@@ -63,13 +64,19 @@ public class C_WO_Project_ObjectUnderTest_OrderProvision extends JavaProcess imp
 	{
 		final List<WOProjectObjectUnderTest> woProjectObjectUnderTestList = woProjectObjectUnderTestService.getByProjectId(ProjectId.ofRepoId(getRecord_ID()));
 
-		if (!woProjectObjectUnderTestList.isEmpty())
-		{
-			final ZoneId timeZone = orgDAO.getTimeZone(woProjectObjectUnderTestList.get(0).getOrgId());
-			final ZonedDateTime zonedDatePromised = datePromised.atStartOfDay(timeZone);
+		final ZoneId timeZone = orgDAO.getTimeZone(woProjectObjectUnderTestList.get(0).getOrgId());
+		final ZonedDateTime zonedDatePromised = datePromised.atStartOfDay(timeZone);
 
+		try
+		{
 			woProjectObjectUnderTestService.createOrder(BPartnerId.ofRepoId(bPartnerId), zonedDatePromised, woProjectObjectUnderTestList);
 		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.markAsUserValidationError();
+		}
+
 		return MSG_OK;
 	}
 
