@@ -1,8 +1,8 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.rest_api.common.JsonExternalId;
@@ -35,6 +35,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -131,10 +132,15 @@ class JsonInsertInvoiceCandidateServiceTest
 		bpGroupRecord.setM_PricingSystem_ID(pricingTestHelper.getDefaultPricingSystem().getM_PricingSystem_ID());
 		saveRecord(bpGroupRecord);
 
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setName("SO-paymentTerm");
+		saveRecord(paymentTermRecord);
+
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
 		bpartnerRecord.setValue(BILL_PARTNER_VALUE);
 		bpartnerRecord.setC_BP_Group_ID(bpGroupRecord.getC_BP_Group_ID());
+		bpartnerRecord.setC_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
 		saveRecord(bpartnerRecord);
 
 		final I_C_Location locationRecord = newInstance(I_C_Location.class);
