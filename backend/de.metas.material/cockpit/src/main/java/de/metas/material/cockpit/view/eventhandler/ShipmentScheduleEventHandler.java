@@ -19,6 +19,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
+import de.metas.material.event.shipmentschedule.OldShipmentScheduleData;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
 
@@ -67,7 +69,7 @@ public class ShipmentScheduleEventHandler
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final DetailDataRequestHandler detailRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	
+
 	public ShipmentScheduleEventHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
 			@NonNull final DetailDataRequestHandler detailRequestHandler)
@@ -96,36 +98,38 @@ public class ShipmentScheduleEventHandler
 	{
 		final OrgId orgId = event.getEventDescriptor().getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		
+
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, timeZone);
 
-		createAndHandleMainDataRequest(event, identifier);
-		createAndHandleDetailRequest(event, identifier);
+		createAndHandleMainDataRequest(event, identifier, timeZone);
+		createAndHandleDetailRequest(event, identifier, timeZone);
 	}
 
 	private void createAndHandleMainDataRequest(
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
-			@NonNull final MainDataRecordIdentifier identifier)
+			@NonNull final MainDataRecordIdentifier identifier,
+			@NonNull final ZoneId timeZone)
 	{
-		if (shipmentScheduleEvent.getOrderedQuantityDelta().signum() == 0
-				&& shipmentScheduleEvent.getReservedQuantityDelta().signum() == 0)
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
-			return;
-		}
-
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
-				.orderedSalesQty(shipmentScheduleEvent.getOrderedQuantityDelta())
 				.qtyDemandSalesOrder(shipmentScheduleEvent.getReservedQuantityDelta())
 				.build();
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
+
+		final OldShipmentScheduleData oldShipmentScheduleData = shipmentScheduleEvent.getOldShipmentScheduleData();
+		if (oldShipmentScheduleData != null)
+		{
+			final MainDataRecordIdentifier oldIdentifier = MainDataRecordIdentifier.createForMaterial(oldShipmentScheduleData.getOldMaterialDescriptor(), timeZone);
+
+			createAndHandleMainDataRequestForOldValues(oldShipmentScheduleData, oldIdentifier);
+		}
 	}
 
 	private void createAndHandleDetailRequest(
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
-			@NonNull final MainDataRecordIdentifier identifier)
+			@NonNull final MainDataRecordIdentifier identifier,
+			@NonNull final ZoneId timeZone)
 	{
 		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier.createForShipmentSchedule(
 				identifier,
@@ -133,40 +137,74 @@ public class ShipmentScheduleEventHandler
 
 		if (shipmentScheduleEvent instanceof ShipmentScheduleCreatedEvent)
 		{
-			final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = (ShipmentScheduleCreatedEvent)shipmentScheduleEvent;
-			createAndHandleAddDetailRequest(detailIdentifier, shipmentScheduleCreatedEvent);
+			createAndHandleAddDetailRequest(detailIdentifier, shipmentScheduleEvent);
 		}
 		else if (shipmentScheduleEvent instanceof ShipmentScheduleUpdatedEvent)
 		{
-			detailRequestHandler
-					.handleUpdateDetailRequest(UpdateDetailRequest.builder()
-							.detailDataRecordIdentifier(detailIdentifier)
-							.qtyOrdered(shipmentScheduleEvent.getMaterialDescriptor().getQuantity())
-							.qtyReserved(shipmentScheduleEvent.getReservedQuantity())
-							.build());
+			createAndHandleUpdateDetailRequest(detailIdentifier, shipmentScheduleEvent, timeZone);
 		}
 		else if (shipmentScheduleEvent instanceof ShipmentScheduleDeletedEvent)
 		{
 			final int deletedCount = detailRequestHandler
 					.handleRemoveDetailRequest(RemoveDetailRequest.builder()
-							.detailDataRecordIdentifier(detailIdentifier)
-							.build());
+													   .detailDataRecordIdentifier(detailIdentifier)
+													   .build());
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Deleted {} detail records", deletedCount);
 		}
 	}
 
+	private void createAndHandleUpdateDetailRequest(
+			@NonNull final DetailDataRecordIdentifier detailIdentifier,
+			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
+			@NonNull final ZoneId timeZone)
+	{
+		final OldShipmentScheduleData oldShipmentScheduleData = shipmentScheduleEvent.getOldShipmentScheduleData();
+
+		if (oldShipmentScheduleData != null)
+		{
+			final MainDataRecordIdentifier oldIdentifier = MainDataRecordIdentifier.createForMaterial(oldShipmentScheduleData.getOldMaterialDescriptor(), timeZone);
+
+			createAndHandleRemoveDetailRequest(oldIdentifier, shipmentScheduleEvent);
+			createAndHandleAddDetailRequest(detailIdentifier, shipmentScheduleEvent);
+		}
+		else
+		{
+			detailRequestHandler
+					.handleUpdateDetailRequest(UpdateDetailRequest.builder()
+													   .detailDataRecordIdentifier(detailIdentifier)
+													   .qtyOrdered(shipmentScheduleEvent.getOrderedQuantity())
+													   .qtyReserved(shipmentScheduleEvent.getReservedQuantity())
+													   .build());
+		}
+	}
+
+	private void createAndHandleRemoveDetailRequest(
+			@NonNull final MainDataRecordIdentifier oldIdentifier,
+			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent)
+	{
+		final DetailDataRecordIdentifier oldDetailIdentifier = DetailDataRecordIdentifier.createForShipmentSchedule(
+				oldIdentifier,
+				shipmentScheduleEvent.getShipmentScheduleId());
+
+		final int deletedCount = detailRequestHandler
+				.handleRemoveDetailRequest(RemoveDetailRequest.builder()
+												   .detailDataRecordIdentifier(oldDetailIdentifier)
+												   .build());
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Deleted {} detail records", deletedCount);
+	}
+
 	private void createAndHandleAddDetailRequest(
 			@NonNull final DetailDataRecordIdentifier identifier,
-			@NonNull final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent)
+			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent)
 	{
 		final DocumentLineDescriptor documentLineDescriptor = //
-				shipmentScheduleCreatedEvent
+				shipmentScheduleEvent
 						.getDocumentLineDescriptor();
 
 		final InsertDetailRequestBuilder addDetailsRequest = InsertDetailRequest.builder()
 				.detailDataRecordIdentifier(identifier)
-				.qtyOrdered(shipmentScheduleCreatedEvent.getMaterialDescriptor().getQuantity())
-				.qtyReserved(shipmentScheduleCreatedEvent.getReservedQuantity());
+				.qtyOrdered(shipmentScheduleEvent.getOrderedQuantity())
+				.qtyReserved(shipmentScheduleEvent.getReservedQuantity());
 
 		if (documentLineDescriptor instanceof OrderLineDescriptor)
 		{
@@ -190,9 +228,29 @@ public class ShipmentScheduleEventHandler
 		else
 		{
 			Check.errorIf(true,
-					"The DocumentLineDescriptor has an unexpected type; documentLineDescriptor={}", documentLineDescriptor);
+						  "The DocumentLineDescriptor has an unexpected type; documentLineDescriptor={}", documentLineDescriptor);
 		}
 
 		detailRequestHandler.handleInsertDetailRequest(addDetailsRequest.build());
+	}
+
+	private void createAndHandleMainDataRequestForOldValues(
+			@NonNull final OldShipmentScheduleData oldShipmentScheduleData,
+			@NonNull final MainDataRecordIdentifier identifier)
+	{
+		final BigDecimal oldReservedQuantity = oldShipmentScheduleData.getOldReservedQuantity();
+
+		if (oldReservedQuantity.signum() == 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because it has oldReservedQuantity = zero");
+			return;
+		}
+
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+				.identifier(identifier)
+				.qtyDemandSalesOrder(oldReservedQuantity.negate())
+				.build();
+
+		dataUpdateRequestHandler.handleDataUpdateRequest(request);
 	}
 }

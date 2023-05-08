@@ -69,8 +69,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product      | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00     | KRT               |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00         | KRT                   |
 
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType |
@@ -204,7 +204,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | call_order_product      | 2           | true      |
 
     And validate updated C_CallOrderSummary:
@@ -253,7 +253,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
       | invoice_3               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_3_1             | invoice_3               | call_order_product      | 4           | true      |
 
     And validate updated C_CallOrderSummary:
@@ -349,8 +349,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product_PO   | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00     | KRT               |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00         | KRT                   |
 
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.POReference |
@@ -481,7 +481,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.POReference |
       | invoice_1               | bp_callOrderPO           | bp_callOrderPO_Location           | 1000002     | true      | CO        | poCallOrder_ref |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1               | invoice_1               | call_order_product_PO   | 6           | true      |
 
     And validate updated C_CallOrderSummary:
@@ -530,7 +530,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.POReference |
       | invoice_3               | bp_callOrderPO           | bp_callOrderPO_Location           | 1000002     | true      | CO        | poCallOrder_ref |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_3               | invoice_3               | call_order_product_PO   | 8           | true      |
 
     And validate updated C_CallOrderSummary:

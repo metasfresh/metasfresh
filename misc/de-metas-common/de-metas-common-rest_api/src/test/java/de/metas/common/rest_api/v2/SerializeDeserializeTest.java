@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.tablerecordref.JsonTableRecordReference;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockNoticeRequest;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
@@ -101,6 +102,17 @@ public class SerializeDeserializeTest
 				.build();
 
 		testSerializeDeserialize(jsonOutOfStockResponse, JsonOutOfStockResponse.class);
+	}
+
+	@Test
+	public void jsonPInstanceLog() throws Exception
+	{
+		final JsonPInstanceLog jsonPInstanceLog = JsonPInstanceLog.builder()
+				.tableRecordRef(JsonTableRecordReference.builder().tableName("tableName").recordId(JsonMetasfreshId.of(1)).build())
+				.message("msg")
+				.build();
+
+		testSerializeDeserialize(jsonPInstanceLog, JsonPInstanceLog.class);
 	}
 
 	private <T> void testSerializeDeserialize(@NonNull final T json, final Class<T> clazz) throws IOException

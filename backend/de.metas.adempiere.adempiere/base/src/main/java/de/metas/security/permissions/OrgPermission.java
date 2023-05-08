@@ -22,19 +22,16 @@ package de.metas.security.permissions;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.Set;
-
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
+import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
+import java.util.Set;
 
 /**
  * Organization permissions.

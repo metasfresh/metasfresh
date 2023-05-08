@@ -6,14 +6,18 @@ build all docker images on a local windows machine by executing ```build.cmd``` 
 docker images will not get pushed to any regsitry and just sit on your local system with _:local_ tags<br>
 
 ### CICD (github actions)
-pipeline is located under _.github\workflows\cicd.yaml_ and gets executed on push<br>
-executions can be followed under: https://github.com/metasfresh/metasfresh/actions<br>
-junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
-images will get pushed to our docker hub registries with _{branch-name}.{build-number}_ tags<br>
+
+- pipeline is located under _.github\workflows\cicd.yaml_ and gets executed on push<br>
+- executions can be followed under: https://github.com/metasfresh/metasfresh/actions<br>
+- junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
+- images will get pushed to our docker hub registries with _{branch-name}.{build-number}_ tags<br>
 
 ### (DB) Version
 to be somewhat compatible with our current versioning _\docker-builds\version.info_ holds information on what _dbversion_ this build will produce/expect<br>
 
+### Further reading about github actions
+
+- https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry
 
 ## Run
 

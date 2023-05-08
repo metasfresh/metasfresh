@@ -15,9 +15,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.logging.TableRecordMDC;
@@ -68,7 +68,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private Boolean _failOnChanges = null;
 	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
-	private IInvoicingParams _invoicingParams;
+	private InvoicingParams _invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
 	private IWorkpackagePrioStrategy _priority = null;
 
@@ -211,7 +211,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// If no workpackages were created, display error message that no selection was made (07666)
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
+			throw new AdempiereException(MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P);
 		}
 
 		//
@@ -319,7 +319,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
 		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
 		// This is critical because we assume that dateInvoiced is *implicitly* part of the aggregation key, so different values would fail the invoicing
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		final LocalDate paramDateInvoiced = invoicingParams.getDateInvoiced();
 		if (paramDateInvoiced != null)
 		{
@@ -337,7 +337,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		//
 		// Update POReference (task 07978)
-		final String poReference = invoicingParams.getPOReference();
+		final String poReference = invoicingParams.getPoReference();
 		if (Check.isNotBlank(poReference))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
@@ -397,13 +397,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setInvoicingParams(final IInvoicingParams invoicingParams)
+	public IInvoiceCandidateEnqueuer setInvoicingParams(final InvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
 		Check.assumeNotNull(_invoicingParams, "invoicingParams not null");
 		return _invoicingParams;

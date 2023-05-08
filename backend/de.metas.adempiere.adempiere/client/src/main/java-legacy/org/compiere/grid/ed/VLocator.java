@@ -671,7 +671,7 @@ public class VLocator extends JComponent
 			return;
 		}
 
-		final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		final LocatorId locatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 		if (locatorId == null)
 		{
 			return;

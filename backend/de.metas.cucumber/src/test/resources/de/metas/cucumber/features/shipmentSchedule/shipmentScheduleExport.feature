@@ -12,21 +12,21 @@ Feature: Shipment schedule export rest-api
     And set sys config int value 0 for sys config de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds
 
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | Name | OPT.InternalName     |
-      | shipper_test            | Siro | shipper_internalName |
+      | M_Shipper_ID.Identifier | OPT.Name | OPT.InternalName     |
+      | shipper_test            | Siro     | shipper_internalName |
 
     And metasfresh contains M_Products:
       | Identifier    | Name          | OPT.Description   |
       | product_25_02 | product_25_02 | dummy description |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name           | Value          |
-      | ps_1       | pricing_system | pricing_system |
+      | Identifier | Name                      | Value                     |
+      | ps_1       | pricing_system_16112022_4 | pricing_system_16112022_4 |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so_16112022_4 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_so     | pl_so                     | plv_so | 2022-02-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
+      | plv_so     | pl_so                     | plv_so_16112022_4 | 2022-02-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
       | pp_product | plv_so                            | product_25_02           | 10.0     | Normal                        | PCE               |
@@ -114,8 +114,8 @@ Feature: Shipment schedule export rest-api
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
       | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_45201 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    | Shopware                               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -207,8 +207,8 @@ Feature: Shipment schedule export rest-api
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
       | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_96411 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    | Shopware                               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |

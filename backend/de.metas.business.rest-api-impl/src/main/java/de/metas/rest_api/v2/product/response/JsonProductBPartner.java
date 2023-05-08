@@ -25,7 +25,7 @@ package de.metas.rest_api.v2.product.response;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.bpartner.BPartnerId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,10 +35,8 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonProductBPartner
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_BPartner_ID`.")
+	@Schema(type = "java.lang.Integer",
+			description = "This translates to `C_BPartner_ID`.")
 	@NonNull
 	BPartnerId bpartnerId;
 

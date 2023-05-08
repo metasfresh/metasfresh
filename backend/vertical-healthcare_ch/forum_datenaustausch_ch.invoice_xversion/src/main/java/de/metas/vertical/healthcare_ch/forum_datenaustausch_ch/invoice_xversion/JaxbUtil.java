@@ -8,6 +8,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.FactoryConfigurationError;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -88,11 +89,11 @@ public class JaxbUtil
 			// background: some systems that shall be able to work with our XML have issues with the single quote in the XML header
 			// https://stackoverflow.com/questions/18451870/altering-the-xml-header-produced-by-the-jaxb-marshaller/32892565
 			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true); // let the marshaler *not* provide stupid single-quote header
-			marshaller.setProperty("com.sun.xml.internal.bind.xmlHeaders", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // let the marshaller provide our header
-
+			//marshaller.setProperty("com.sun.xml.internal.bind.xmlHeaders", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // let the marshaller provide our header
+			outputStream.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".getBytes(StandardCharsets.UTF_8));
 			marshaller.marshal(jaxbElement, outputStream);
 		}
-		catch (final JAXBException | FactoryConfigurationError e)
+		catch (final JAXBException | FactoryConfigurationError | IOException e)
 		{
 			throw new RuntimeException(e);
 		}

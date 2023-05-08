@@ -70,7 +70,7 @@ public class PaymentTermService
 			@NonNull final Percent discount)
 	{
 		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getById(basePaymentTermId);
+		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getRecordById(basePaymentTermId);
 
 		// see if the designed payment term already exists
 		final I_C_PaymentTerm existingDerivedPaymentTermRecord = Services.get(IQueryBL.class)

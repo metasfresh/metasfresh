@@ -1,50 +1,40 @@
 de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.getByConfigIdAndRequest=[
   [
     {
-      "runtimeParameterId" : 100001,
-      "externalSystemParentConfigId" : 1,
-      "request" : "request",
-      "name" : "name1",
-      "value" : "value1"
+      "externalSystemParentConfigId": 1,
+      "name": "name1",
+      "request": "request",
+      "runtimeParameterId": 100001,
+      "value": "value1"
     },
     {
-      "runtimeParameterId" : 100002,
-      "externalSystemParentConfigId" : 1,
-      "request" : "request",
-      "name" : "name2",
-      "value" : "value2"
+      "externalSystemParentConfigId": 1,
+      "name": "name2",
+      "request": "request",
+      "runtimeParameterId": 100002,
+      "value": "value2"
     }
   ]
 ]
 
-de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.upsertRuntimeParameter_new=[
-  {
-    "runtimeParameterId" : 100001,
-    "externalSystemParentConfigId" : 1,
-    "request" : "request",
-    "name" : "name",
-    "value" : "value"
-  }
-]
-
 
 de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.upsertRuntimeParameter_new=[
   {
-    "runtimeParameterId" : 100001,
-    "externalSystemParentConfigId" : 1,
-    "request" : "request",
-    "name" : "name",
-    "value" : "value"
+    "externalSystemParentConfigId": 1,
+    "name": "name",
+    "request": "request",
+    "runtimeParameterId": 100001,
+    "value": "value"
   }
 ]
 
 
 de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepositoryTest.upsertRuntimeParameter_update=[
   {
-    "runtimeParameterId" : 100001,
-    "externalSystemParentConfigId" : 1,
-    "request" : "request",
-    "name" : "name",
-    "value" : "value_updated"
+    "externalSystemParentConfigId": 1,
+    "name": "name",
+    "request": "request",
+    "runtimeParameterId": 100001,
+    "value": "value_updated"
   }
 ]

@@ -24,7 +24,7 @@ package de.metas.edi.model.validator;
 
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;

@@ -1,17 +1,8 @@
 package de.metas.order;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.time.ZonedDateTime;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -22,8 +13,18 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.ZonedDateTime;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -56,13 +57,13 @@ public class OrderLineRepository
 		return ofRecord(orderLineRecord);
 	}
 
-	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
+	public static OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final int warehouseRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
+		final int warehouseRepoId = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> orderLineRecord.getM_Warehouse_ID(),
 				() -> orderLineRecord.getC_Order().getM_Warehouse_ID());
 
-		final int bPartnerRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
+		final int bPartnerRepoId = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> orderLineRecord.getC_BPartner_ID(),
 				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
 
@@ -72,6 +73,8 @@ public class OrderLineRepository
 				date -> date != null,
 				() -> TimeUtil.asZonedDateTime(orderLineRecord.getDatePromised()),
 				() -> TimeUtil.asZonedDateTime(orderLineRecord.getC_Order().getDatePromised()));
+
+		final de.metas.interfaces.I_C_OrderLine orderLineWithPackingMaterial = InterfaceWrapperHelper.create(orderLineRecord, de.metas.interfaces.I_C_OrderLine.class);
 
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
@@ -87,10 +90,11 @@ public class OrderLineRepository
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
 				.paymentTermId(paymentTermId)
 				.soTrx(SOTrx.ofBoolean(orderLineRecord.getC_Order().isSOTrx()))
+				.huPIItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineWithPackingMaterial.getM_HU_PI_Item_Product_ID()))
 				.build();
 	}
 
-	private ProductPrice extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
+	private static ProductPrice extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// note that C_OrderLine C_Currency_ID and M_Product_ID are mandatory, so there won't be an NPE
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
@@ -105,7 +109,7 @@ public class OrderLineRepository
 				.build();
 	}
 
-	private Quantity extractQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
+	private static Quantity extractQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		return Services.get(IOrderLineBL.class).getQtyEntered(orderLineRecord);
 	}

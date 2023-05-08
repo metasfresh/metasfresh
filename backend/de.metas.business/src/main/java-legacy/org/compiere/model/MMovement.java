@@ -1,10 +1,13 @@
 package org.compiere.model;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
@@ -18,28 +21,26 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 /**
  * Inventory Movement Model
  *
- * @author Jorg Janke
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- * <li>FR [ 1948157  ]  Is necessary the reference for document reverse
- * <li> FR [ 2520591 ] Support multiples calendar for Org
- * @author Armen Rizal, Goodwill Consulting
- * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
- * @author Teo Sarca, www.arhipac.ro
- * <li>FR [ 2214883 ] Remove SQL code and Replace for Query
- * @version $Id: MMovement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+ *  @author Jorg Janke
+ *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ * 			<li>FR [ 1948157  ]  Is necessary the reference for document reverse
+ * 			<li> FR [ 2520591 ] Support multiples calendar for Org
+ *  @author Armen Rizal, Goodwill Consulting
+ * 			<li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ *  @author Teo Sarca, www.arhipac.ro
+ *  		<li>FR [ 2214883 ] Remove SQL code and Replace for Query
+ *  @version $Id: MMovement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MMovement extends X_M_Movement implements IDocument
 {
@@ -65,7 +66,7 @@ public class MMovement extends X_M_Movement implements IDocument
 	}
 
 	@SuppressWarnings("unused")
-	public MMovement(Properties ctx, ResultSet rs, String trxName)
+	public MMovement (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -145,9 +146,9 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		if (getC_DocType_ID() == 0)
+		if (getC_DocType_ID() <= 0)
 		{
-			MDocType[] types = MDocType.getOfDocBaseType(getCtx(), MDocType.DOCBASETYPE_MaterialMovement);
+			MDocType[] types = MDocType.getOfDocBaseType(getCtx(), DocBaseType.MaterialMovement);
 			if (types.length > 0)
 			{
 				setC_DocType_ID(types[0].getC_DocType_ID());
@@ -175,7 +176,7 @@ public class MMovement extends X_M_Movement implements IDocument
 			return;
 		}
 		final String sql = "UPDATE M_MovementLine SET Processed=? WHERE M_Movement_ID=?";
-		int noLine = DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		int noLine = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[]{processed, get_ID()}, get_TrxName());
 		m_lines = null;
 		log.debug("Processed={} - Lines={}", processed, noLine);
 	}    //	setProcessed
@@ -242,7 +243,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getMovementDate(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getMovementDate(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -377,14 +378,14 @@ public class MMovement extends X_M_Movement implements IDocument
 							line.getM_AttributeSetInstance_ID(), 0,
 							line.getMovementQty().negate(), BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName());
 
-					//Update Storage
-					final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
-					storageBL.add(getCtx(),
-							warehouseToId.getRepoId(),
-							line.getM_LocatorTo_ID(),
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstanceTo_ID(), 0,
-							line.getMovementQty(), BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName());
+				//Update Storage
+				final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
+				storageBL.add(getCtx(),
+						warehouseToId.getRepoId(),
+						line.getM_LocatorTo_ID(),
+						line.getM_Product_ID(),
+						line.getM_AttributeSetInstanceTo_ID(), 0,
+						line.getMovementQty(), BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName());
 
 				//
 				final MTransaction trxFrom = new MTransaction (getCtx(),
@@ -555,7 +556,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		}
 
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		if (!MPeriod.isOpen(getCtx(), getMovementDate(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getMovementDate(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return false;
@@ -697,9 +698,9 @@ public class MMovement extends X_M_Movement implements IDocument
 	}    //	getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

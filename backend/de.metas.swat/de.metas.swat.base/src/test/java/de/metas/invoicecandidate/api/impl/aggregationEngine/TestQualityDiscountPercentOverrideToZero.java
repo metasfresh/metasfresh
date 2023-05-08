@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.material.MovementType;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inout.model.I_M_InOutLine;
@@ -59,7 +60,7 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(TEN, productId, HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "1";
-			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
+			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment); // DocumentNo
 			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_90, inOutDocumentNo + "_90"); // inOutLineDescription
 
 			iol12_twenty_disp = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_10, inOutDocumentNo + "_10_disp");

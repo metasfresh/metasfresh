@@ -45,10 +45,10 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
+import de.metas.util.async.DebouncerSysConfig;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -56,7 +56,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-@Service
 public abstract class ExportHUToExternalSystemService extends ExportToExternalSystemService
 {
 	private static final Logger logger = LogManager.getLogger(ExportHUToExternalSystemService.class);
@@ -79,8 +78,8 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 		this.syncHuDebouncer = Debouncer.<ExportHUCandidate>builder()
 				.name("syncHuDebouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
-				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.delayInMillis", 5000))
+				.bufferMaxSize(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getSysConfigName(), DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getDefaultValue()))
+				.delayInMillis(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getSysConfigName(), DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getDefaultValue()))
 				.distinct(true)
 				.consumer(this::exportCollectedHUsIfRequired)
 				.build();
@@ -133,6 +132,13 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 								   .build());
+	}
+
+	@VisibleForTesting
+	@Override
+	public int getCurrentPendingItems()
+	{
+		return this.syncHuDebouncer.getCurrentBufferSize();
 	}
 
 	private void exportCollectedHUsIfRequired(@NonNull final Collection<ExportHUCandidate> huCandidates)

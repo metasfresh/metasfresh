@@ -27,18 +27,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceQuery;
+import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
+import de.metas.issue.tracking.everhour.api.model.Task;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.externalreference.ExternalId;
+import de.metas.serviceprovider.everhour.task.TimeBookingTask;
+import de.metas.serviceprovider.everhour.user.EverhourUserId;
+import de.metas.serviceprovider.everhour.user.UserImporterService;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
+import de.metas.serviceprovider.github.service.GithubIssueService;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
@@ -60,13 +64,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
 
-import static de.metas.issue.tracking.everhour.api.EverhourConstants.TaskIdSource.GITHUB_ID;
 import static de.metas.serviceprovider.everhour.EverhourImportConstants.PROCESSING_DATE_INTERVAL_SIZE;
 import static de.metas.serviceprovider.timebooking.importer.ImportConstants.IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX;
-
 
 @Service
 public class EverhourImporterService implements TimeBookingsImporter
@@ -81,6 +83,8 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private final FailedTimeBookingRepository failedTimeBookingRepository;
 	private final ObjectMapper objectMapper;
 	private final ITrxManager trxManager;
+	private final UserImporterService userImporterService;
+	private final GithubIssueService githubIssueService;
 
 	public EverhourImporterService(
 			@NonNull final EverhourClient everhourClient,
@@ -88,7 +92,9 @@ public class EverhourImporterService implements TimeBookingsImporter
 			@NonNull final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue,
 			@NonNull final FailedTimeBookingRepository failedTimeBookingRepository,
 			@NonNull final ObjectMapper objectMapper,
-			@NonNull final ITrxManager trxManager)
+			@NonNull final ITrxManager trxManager,
+			@NonNull final UserImporterService userImporterService,
+			@NonNull final GithubIssueService githubIssueService)
 	{
 		this.everhourClient = everhourClient;
 		this.externalReferenceRepository = externalReferenceRepository;
@@ -96,6 +102,8 @@ public class EverhourImporterService implements TimeBookingsImporter
 		this.failedTimeBookingRepository = failedTimeBookingRepository;
 		this.objectMapper = objectMapper;
 		this.trxManager = trxManager;
+		this.userImporterService = userImporterService;
+		this.githubIssueService = githubIssueService;
 	}
 
 	public void importTimeBookings(@NonNull final ImportTimeBookingsRequest request)
@@ -114,8 +122,8 @@ public class EverhourImporterService implements TimeBookingsImporter
 					.map(interval -> buildGetTeamTimeRecordsRequest(request.getAuthToken(), interval))
 					.map(everhourClient::getTeamTimeRecords)
 					.flatMap(List::stream)
-					.filter(timeRecord -> timeRecord.getTask() != null && isGithubID(timeRecord.getTask().getId()))
-					.forEach(timeBooking-> importTimeBooking(timeBooking, request.getOrgId()));
+					.filter(timeBooking -> timeBooking.getTask() != null && TimeBookingTask.TimeBookingTaskId.of(timeBooking.getTask().getId()).isGithubTask())
+					.forEach(timeBooking -> importTimeBooking(timeBooking, request.getOrgId()));
 		}
 		catch (final Exception e)
 		{
@@ -137,23 +145,16 @@ public class EverhourImporterService implements TimeBookingsImporter
 	{
 		try
 		{
-			final UserId userId = UserId.ofRepoId(
-					externalReferenceRepository.getReferencedRecordIdBy(
-							ExternalReferenceQuery.builder()
-									.orgId(orgId)
-									.externalSystem(ExternalSystem.EVERHOUR)
-									.externalReference(String.valueOf(timeRecord.getUserId()))
-									.externalReferenceType(ExternalUserReferenceType.USER_ID)
-									.build()));
+			final TimeBookingTask timeBookingTask = buildTimeBookingTask(timeRecord.getTask());
 
-			final IssueId issueId = IssueId.ofRepoId(
-					externalReferenceRepository.getReferencedRecordIdBy(
-							ExternalReferenceQuery.builder()
-									.orgId(orgId)
-									.externalSystem(ExternalSystem.GITHUB)
-									.externalReference(extractGithubIssueId(timeRecord.getTask().getId()))
-									.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
-									.build()));
+			final IssueId issueId = resolveIssue(orgId, timeBookingTask)
+					.orElseThrow(() -> new AdempiereException("Fail to import Everhour task")
+							.appendParametersToMessage()
+							.setParameter("taskId", timeBookingTask.getId())
+							.setParameter("taskUrl", timeBookingTask.getUrl()));
+
+			final EverhourUserId everhourUserId = EverhourUserId.ofId(timeRecord.getUserId());
+			final UserId userId = userImporterService.resolveUser(orgId, everhourUserId);
 
 			final TimeBookingId timeBookingId = TimeBookingId.ofRepoIdOrNull(
 					externalReferenceRepository.getReferencedRecordIdOrNullBy(
@@ -188,26 +189,9 @@ public class EverhourImporterService implements TimeBookingsImporter
 		}
 	}
 
-	private String extractGithubIssueId(@NonNull final String taskId)
-	{
-		final Matcher matcher = GITHUB_ID.getPattern().matcher(taskId);
-
-		if (!matcher.matches())
-		{
-			throw new AdempiereException("GitHub issue ID couldn't be extracted from given taskId!")
-					.appendParametersToMessage()
-					.setParameter("taskID", taskId);
-		}
-
-		return matcher.group(1);
-	}
-
-	private boolean isGithubID(@NonNull final String taskId)
-	{
-		return GITHUB_ID.getPattern().matcher(taskId).matches();
-	}
-
-	private GetTeamTimeRecordsRequest buildGetTeamTimeRecordsRequest(@NonNull final String apiKey,
+	@NonNull
+	private GetTeamTimeRecordsRequest buildGetTeamTimeRecordsRequest(
+			@NonNull final String apiKey,
 			@NonNull final LocalDateInterval interval)
 	{
 		return GetTeamTimeRecordsRequest.builder()
@@ -249,14 +233,14 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private void importFailedTimeBookings()
 	{
 		Loggables.withLogger(log, Level.DEBUG).addLog(" {} start importing failed time bookings",
-				IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
+													  IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
 
 		final Stopwatch stopWatch = Stopwatch.createStarted();
 
 		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(ExternalSystem.EVERHOUR);
-		for(FailedTimeBooking failedTimeBooking:failedTimeBookings)
+		for (FailedTimeBooking failedTimeBooking : failedTimeBookings)
 		{
-			if(Check.isBlank(failedTimeBooking.getJsonValue()))
+			if (Check.isBlank(failedTimeBooking.getJsonValue()))
 			{
 				continue;
 			}
@@ -264,7 +248,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 		}
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" {} finished importing failed time bookings! elapsed time: {}",
-				IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX, stopWatch);
+													  IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX, stopWatch);
 	}
 
 	private TimeRecord getTimeRecordFromFailed(@NonNull final FailedTimeBooking failedTimeBooking)
@@ -298,5 +282,66 @@ public class EverhourImporterService implements TimeBookingsImporter
 		lock.unlock();
 
 		log.debug(" {} EverhourImporterService: lock released!", IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
+	}
+
+	@NonNull
+	private Optional<IssueId> resolveIssue(
+			@NonNull final OrgId orgId,
+			@NonNull final TimeBookingTask timeBookingTask)
+	{
+		if (timeBookingTask.isSourceUnknown())
+		{
+			return Optional.empty();
+		}
+
+		final Optional<IssueId> existingIssueId = resolveTaskExternalReference(orgId, timeBookingTask.getId());
+
+		if (existingIssueId.isPresent())
+		{
+			return existingIssueId;
+		}
+
+		switch (timeBookingTask.getId().getSource())
+		{
+			case GITHUB:
+				return githubIssueService.importByURL(orgId, timeBookingTask.getUrl());
+			default:
+				throw new AdempiereException("Unsupported task source!")
+						.appendParametersToMessage()
+						.setParameter("source", timeBookingTask.getId().getSource())
+						.setParameter("rawIdentifier", timeBookingTask.getId().getRawId());
+		}
+	}
+
+	@NonNull
+	private Optional<IssueId> resolveTaskExternalReference(
+			@NonNull final OrgId orgId,
+			@NonNull final TimeBookingTask.TimeBookingTaskId id)
+	{
+		if (id.getSource().isUnknown())
+		{
+			throw new AdempiereException("Cannot resolve a task identifier from unknown source!")
+					.appendParametersToMessage()
+					.setParameter("rawIdentifier", id.getRawId());
+		}
+
+		final ExternalReferenceQuery query = ExternalReferenceQuery.builder()
+				.orgId(orgId)
+				.externalSystem(id.getSource().getExternalSystem())
+				.externalReference(id.getExtractedId())
+				.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
+				.build();
+
+		final IssueId existingIssueId = IssueId.ofRepoIdOrNull(externalReferenceRepository.getReferencedRecordIdOrNullBy(query));
+
+		return Optional.ofNullable(existingIssueId);
+	}
+
+	@NonNull
+	private static TimeBookingTask buildTimeBookingTask(@NonNull final Task everhourTask)
+	{
+		final TimeBookingTask.TimeBookingTaskId timeBookingTaskId = TimeBookingTask.TimeBookingTaskId.of(everhourTask.getId());
+
+		return TimeBookingTask.of(timeBookingTaskId, everhourTask.getUrl());
 	}
 }

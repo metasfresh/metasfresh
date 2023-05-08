@@ -37,30 +37,32 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-@Service
 public abstract class ExportToExternalSystemService
 {
 	private static final Logger logger = LogManager.getLogger(ExportToExternalSystemService.class);
 
 	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	protected final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	protected final ExternalSystemConfigRepo externalSystemConfigRepo;
-
 	private final DataExportAuditRepository dataExportAuditRepository;
 	private final DataExportAuditLogRepository dataExportAuditLogRepository;
 	private final ExternalSystemMessageSender externalSystemMessageSender;
@@ -87,7 +89,10 @@ public abstract class ExportToExternalSystemService
 	{
 		runPreExportHook(recordReference);
 
-		getExportExternalSystemRequest(externalSystemChildConfigId, recordReference, pInstanceId)
+		final PInstanceId pInstanceIdWithFallback = Optional.ofNullable(pInstanceId)
+				.orElseGet(this::createPInstanceId);
+
+		getExportExternalSystemRequest(externalSystemChildConfigId, recordReference, pInstanceIdWithFallback)
 				.ifPresent(externalSystemMessageSender::send);
 	}
 
@@ -141,6 +146,23 @@ public abstract class ExportToExternalSystemService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Nullable
+	private PInstanceId createPInstanceId()
+	{
+		return Optional.ofNullable(getExportADProcessClassname())
+				.map(adProcessDAO::retrieveProcessIdByClassIfUnique)
+				.map(adPInstanceDAO::createAD_PInstance)
+				.map(I_AD_PInstance::getAD_PInstance_ID)
+				.map(PInstanceId::ofRepoId)
+				.orElse(null);
+	}
+
+	@Nullable
+	protected String getExportADProcessClassname()
+	{
+		return null;
+	}
+
 	protected abstract ExternalSystemType getExternalSystemType();
 
 	protected abstract Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(
@@ -150,4 +172,5 @@ public abstract class ExportToExternalSystemService
 
 	protected abstract void runPreExportHook(TableRecordReference recordReferenceToExport);
 
+	public abstract int getCurrentPendingItems();
 }

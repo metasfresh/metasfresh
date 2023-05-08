@@ -74,6 +74,52 @@ public interface I_M_Product
 	String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
 
 	/**
+	 * Set Alternative Products.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAlternativeProducts (@Nullable java.lang.String AlternativeProducts);
+
+	/**
+	 * Get Alternative Products.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getAlternativeProducts();
+
+	ModelColumn<I_M_Product, Object> COLUMN_AlternativeProducts = new ModelColumn<>(I_M_Product.class, "AlternativeProducts", null);
+	String COLUMNNAME_AlternativeProducts = "AlternativeProducts";
+
+	/**
+	 * Set BioControlNumber.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBioControlNumber (@Nullable java.lang.String BioControlNumber);
+
+	/**
+	 * Get BioControlNumber.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBioControlNumber();
+
+	ModelColumn<I_M_Product, Object> COLUMN_BioControlNumber = new ModelColumn<>(I_M_Product.class, "BioControlNumber", null);
+	String COLUMNNAME_BioControlNumber = "BioControlNumber";
+
+	/**
 	 * Set CompensationGroup Schema Category.
 	 *
 	 * <br>Type: TableDir
@@ -124,7 +170,7 @@ public interface I_M_Product
 	String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
 
 	/**
-	 * Set Umsatzrealisierung.
+	 * Set Revenue Recognition.
 	 * Method for recording revenue
 	 *
 	 * <br>Type: TableDir
@@ -134,7 +180,7 @@ public interface I_M_Product
 	void setC_RevenueRecognition_ID (int C_RevenueRecognition_ID);
 
 	/**
-	 * Get Umsatzrealisierung.
+	 * Get Revenue Recognition.
 	 * Method for recording revenue
 	 *
 	 * <br>Type: TableDir
@@ -196,6 +242,48 @@ public interface I_M_Product
 	String COLUMNNAME_Classification = "Classification";
 
 	/**
+	 * Set Consumption Recommentation.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setConsumption_Recommentation (@Nullable java.lang.String Consumption_Recommentation);
+
+	/**
+	 * Get Consumption Recommentation.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getConsumption_Recommentation();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Consumption_Recommentation = new ModelColumn<>(I_M_Product.class, "Consumption_Recommentation", null);
+	String COLUMNNAME_Consumption_Recommentation = "Consumption_Recommentation";
+
+	/**
+	 * Set Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setContent (@Nullable java.lang.String Content);
+
+	/**
+	 * Get Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getContent();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Content = new ModelColumn<>(I_M_Product.class, "Content", null);
+	String COLUMNNAME_Content = "Content";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -221,7 +309,7 @@ public interface I_M_Product
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Customer Label Name.
+	 * Set Customer Labelname.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -230,7 +318,7 @@ public interface I_M_Product
 	void setCustomerLabelName (@Nullable java.lang.String CustomerLabelName);
 
 	/**
-	 * Get Customer Label Name.
+	 * Get Customer Labelname.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -263,7 +351,7 @@ public interface I_M_Product
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Beschreibungs-URL.
+	 * Set Description URL.
 	 * URL for the description
 	 *
 	 * <br>Type: URL
@@ -273,7 +361,7 @@ public interface I_M_Product
 	void setDescriptionURL (@Nullable java.lang.String DescriptionURL);
 
 	/**
-	 * Get Beschreibungs-URL.
+	 * Get Description URL.
 	 * URL for the description
 	 *
 	 * <br>Type: URL
@@ -309,7 +397,7 @@ public interface I_M_Product
 	String COLUMNNAME_DietType = "DietType";
 
 	/**
-	 * Set Eingestellt.
+	 * Set Discontinued.
 	 * This product is no longer available
 	 *
 	 * <br>Type: YesNo
@@ -319,7 +407,7 @@ public interface I_M_Product
 	void setDiscontinued (boolean Discontinued);
 
 	/**
-	 * Get Eingestellt.
+	 * Get Discontinued.
 	 * This product is no longer available
 	 *
 	 * <br>Type: YesNo
@@ -332,7 +420,7 @@ public interface I_M_Product
 	String COLUMNNAME_Discontinued = "Discontinued";
 
 	/**
-	 * Set Eingestellt durch.
+	 * Set Discontinued by.
 	 * Discontinued By
 	 *
 	 * <br>Type: Date
@@ -342,7 +430,7 @@ public interface I_M_Product
 	void setDiscontinuedBy (@Nullable java.sql.Timestamp DiscontinuedBy);
 
 	/**
-	 * Get Eingestellt durch.
+	 * Get Discontinued by.
 	 * Discontinued By
 	 *
 	 * <br>Type: Date
@@ -378,8 +466,7 @@ public interface I_M_Product
 	String COLUMNNAME_DiscontinuedFrom = "DiscontinuedFrom";
 
 	/**
-	 * Set Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Set Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -388,8 +475,7 @@ public interface I_M_Product
 	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
 	/**
-	 * Get Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Get Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -399,6 +485,68 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_DocumentNote = new ModelColumn<>(I_M_Product.class, "DocumentNote", null);
 	String COLUMNNAME_DocumentNote = "DocumentNote";
+
+	/**
+	 * Set Menge-Darreichung .
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDosageQty (@Nullable BigDecimal DosageQty);
+
+	/**
+	 * Get Menge-Darreichung .
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDosageQty();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DosageQty = new ModelColumn<>(I_M_Product.class, "DosageQty", null);
+	String COLUMNNAME_DosageQty = "DosageQty";
+
+	/**
+	 * Set Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDosageUOM_ID (int DosageUOM_ID);
+
+	/**
+	 * Get Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDosageUOM_ID();
+
+	String COLUMNNAME_DosageUOM_ID = "DosageUOM_ID";
+
+	/**
+	 * Set Drying Methods.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDryingMethods (@Nullable java.lang.String DryingMethods);
+
+	/**
+	 * Get Drying Methods.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDryingMethods();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DryingMethods = new ModelColumn<>(I_M_Product.class, "DryingMethods", null);
+	String COLUMNNAME_DryingMethods = "DryingMethods";
 
 	/**
 	 * Set External ID.
@@ -420,6 +568,50 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_ExternalId = new ModelColumn<>(I_M_Product.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
+	 * Set FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFLO_Identifier (@Nullable java.lang.String FLO_Identifier);
+
+	/**
+	 * Get FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFLO_Identifier();
+
+	ModelColumn<I_M_Product, Object> COLUMN_FLO_Identifier = new ModelColumn<>(I_M_Product.class, "FLO_Identifier", null);
+	String COLUMNNAME_FLO_Identifier = "FLO_Identifier";
+
+	/**
+	 * Set Grade.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGrade (@Nullable java.lang.String Grade);
+
+	/**
+	 * Get Grade.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGrade();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Grade = new ModelColumn<>(I_M_Product.class, "Grade", null);
+	String COLUMNNAME_Grade = "Grade";
 
 	/**
 	 * Set Group1.
@@ -527,8 +719,8 @@ public interface I_M_Product
 	String COLUMNNAME_GTIN = "GTIN";
 
 	/**
-	 * Set Min. Garantie-Tage.
-	 * Minumum number of guarantee days
+	 * Set Min Guarantee Days.
+	 * Minimum number of guarantee days
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -537,8 +729,8 @@ public interface I_M_Product
 	void setGuaranteeDaysMin (int GuaranteeDaysMin);
 
 	/**
-	 * Get Min. Garantie-Tage.
-	 * Minumum number of guarantee days
+	 * Get Min Guarantee Days.
+	 * Minimum number of guarantee days
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -548,6 +740,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_GuaranteeDaysMin = new ModelColumn<>(I_M_Product.class, "GuaranteeDaysMin", null);
 	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
+
+	/**
+	 * Set BBD opened.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGuaranteeDaysMin_opened (int GuaranteeDaysMin_opened);
+
+	/**
+	 * Get BBD opened.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getGuaranteeDaysMin_opened();
+
+	ModelColumn<I_M_Product, Object> COLUMN_GuaranteeDaysMin_opened = new ModelColumn<>(I_M_Product.class, "GuaranteeDaysMin_opened", null);
+	String COLUMNNAME_GuaranteeDaysMin_opened = "GuaranteeDaysMin_opened";
 
 	/**
 	 * Set GuaranteeMonths.
@@ -617,7 +830,30 @@ public interface I_M_Product
 	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Bild-URL.
+	 * Set HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHUClearanceStatus (@Nullable java.lang.String HUClearanceStatus);
+
+	/**
+	 * Get HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHUClearanceStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_HUClearanceStatus = new ModelColumn<>(I_M_Product.class, "HUClearanceStatus", null);
+	String COLUMNNAME_HUClearanceStatus = "HUClearanceStatus";
+
+	/**
+	 * Set Image URL.
 	 * URL of  image
 	 *
 	 * <br>Type: URL
@@ -627,7 +863,7 @@ public interface I_M_Product
 	void setImageURL (@Nullable java.lang.String ImageURL);
 
 	/**
-	 * Get Bild-URL.
+	 * Get Image URL.
 	 * URL of  image
 	 *
 	 * <br>Type: URL
@@ -684,7 +920,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Stückliste.
+	 * Set Bill of Materials.
 	 * Bill of Materials
 	 *
 	 * <br>Type: YesNo
@@ -694,7 +930,7 @@ public interface I_M_Product
 	void setIsBOM (boolean IsBOM);
 
 	/**
-	 * Get Stückliste.
+	 * Get Bill of Materials.
 	 * Bill of Materials
 	 *
 	 * <br>Type: YesNo
@@ -728,7 +964,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsCommissioned = "IsCommissioned";
 
 	/**
-	 * Set Streckengeschäft.
+	 * Set Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -738,7 +974,7 @@ public interface I_M_Product
 	void setIsDropShip (boolean IsDropShip);
 
 	/**
-	 * Get Streckengeschäft.
+	 * Get Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -751,7 +987,28 @@ public interface I_M_Product
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Ausnehmen von Automatischer Lieferung.
+	 * Set Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEnforceIssuingTolerance (boolean IsEnforceIssuingTolerance);
+
+	/**
+	 * Get Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEnforceIssuingTolerance();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsEnforceIssuingTolerance = new ModelColumn<>(I_M_Product.class, "IsEnforceIssuingTolerance", null);
+	String COLUMNNAME_IsEnforceIssuingTolerance = "IsEnforceIssuingTolerance";
+
+	/**
+	 * Set Exclude Auto Delivery.
 	 * Exclude from automatic Delivery
 	 *
 	 * <br>Type: YesNo
@@ -761,7 +1018,7 @@ public interface I_M_Product
 	void setIsExcludeAutoDelivery (boolean IsExcludeAutoDelivery);
 
 	/**
-	 * Get Ausnehmen von Automatischer Lieferung.
+	 * Get Exclude Auto Delivery.
 	 * Exclude from automatic Delivery
 	 *
 	 * <br>Type: YesNo
@@ -797,7 +1054,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsInvoicePrintDetails = "IsInvoicePrintDetails";
 
 	/**
-	 * Set Wird produziert.
+	 * Set Manufactured.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -808,7 +1065,7 @@ public interface I_M_Product
 	void setIsManufactured (boolean IsManufactured);
 
 	/**
-	 * Get Wird produziert.
+	 * Get Manufactured.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -820,7 +1077,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsManufactured = "IsManufactured";
 
 	/**
-	 * Set Detaileinträge auf Kommissionierschein drucken.
+	 * Set Print detail records on pick list.
 	 * Print detail BOM elements on the pick list
 	 *
 	 * <br>Type: YesNo
@@ -830,7 +1087,7 @@ public interface I_M_Product
 	void setIsPickListPrintDetails (boolean IsPickListPrintDetails);
 
 	/**
-	 * Get Detaileinträge auf Kommissionierschein drucken.
+	 * Get Print detail records on pick list.
 	 * Print detail BOM elements on the pick list
 	 *
 	 * <br>Type: YesNo
@@ -843,7 +1100,31 @@ public interface I_M_Product
 	String COLUMNNAME_IsPickListPrintDetails = "IsPickListPrintDetails";
 
 	/**
-	 * Set Eingekauft.
+	 * Set Print as packing material.
+	 * When activated, packing material products will be printed on documents only when also used as packing materials in the order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintWhenPackingMaterial (boolean IsPrintWhenPackingMaterial);
+
+	/**
+	 * Get Print as packing material.
+	 * When activated, packing material products will be printed on documents only when also used as packing materials in the order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPrintWhenPackingMaterial();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsPrintWhenPackingMaterial = new ModelColumn<>(I_M_Product.class, "IsPrintWhenPackingMaterial", null);
+	String COLUMNNAME_IsPrintWhenPackingMaterial = "IsPrintWhenPackingMaterial";
+
+	/**
+	 * Set Purchased.
+	 * Organization purchases this product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -852,7 +1133,8 @@ public interface I_M_Product
 	void setIsPurchased (boolean IsPurchased);
 
 	/**
-	 * Get Eingekauft.
+	 * Get Purchased.
+	 * Organization purchases this product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -864,7 +1146,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsPurchased = "IsPurchased";
 
 	/**
-	 * Set Ist Angebotsgruppe.
+	 * Set Quotation Groupping Product.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -873,7 +1155,7 @@ public interface I_M_Product
 	void setIsQuotationGroupping (boolean IsQuotationGroupping);
 
 	/**
-	 * Get Ist Angebotsgruppe.
+	 * Get Quotation Groupping Product.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -885,7 +1167,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsQuotationGroupping = "IsQuotationGroupping";
 
 	/**
-	 * Set Selbstbedienung.
+	 * Set Self-Service.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -895,7 +1177,7 @@ public interface I_M_Product
 	void setIsSelfService (boolean IsSelfService);
 
 	/**
-	 * Get Selbstbedienung.
+	 * Get Self-Service.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -908,7 +1190,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
-	 * Set Verkauft.
+	 * Set Sold.
 	 * Organization sells this product
 	 *
 	 * <br>Type: YesNo
@@ -918,7 +1200,7 @@ public interface I_M_Product
 	void setIsSold (boolean IsSold);
 
 	/**
-	 * Get Verkauft.
+	 * Get Sold.
 	 * Organization sells this product
 	 *
 	 * <br>Type: YesNo
@@ -931,7 +1213,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsSold = "IsSold";
 
 	/**
-	 * Set Lagerhaltig.
+	 * Set Stocked.
 	 * Organization stocks this product
 	 *
 	 * <br>Type: YesNo
@@ -941,7 +1223,7 @@ public interface I_M_Product
 	void setIsStocked (boolean IsStocked);
 
 	/**
-	 * Get Lagerhaltig.
+	 * Get Stocked.
 	 * Organization stocks this product
 	 *
 	 * <br>Type: YesNo
@@ -952,6 +1234,89 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_IsStocked = new ModelColumn<>(I_M_Product.class, "IsStocked", null);
 	String COLUMNNAME_IsStocked = "IsStocked";
+
+	/**
+	 * Set Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Perc (@Nullable BigDecimal IssuingTolerance_Perc);
+
+	/**
+	 * Get Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Perc();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_Perc = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_Perc", null);
+	String COLUMNNAME_IssuingTolerance_Perc = "IssuingTolerance_Perc";
+
+	/**
+	 * Set Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Qty (@Nullable BigDecimal IssuingTolerance_Qty);
+
+	/**
+	 * Get Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Qty();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_Qty = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_Qty", null);
+	String COLUMNNAME_IssuingTolerance_Qty = "IssuingTolerance_Qty";
+
+	/**
+	 * Set Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_UOM_ID (int IssuingTolerance_UOM_ID);
+
+	/**
+	 * Get Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getIssuingTolerance_UOM_ID();
+
+	String COLUMNNAME_IssuingTolerance_UOM_ID = "IssuingTolerance_UOM_ID";
+
+	/**
+	 * Set Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_ValueType (@Nullable java.lang.String IssuingTolerance_ValueType);
+
+	/**
+	 * Get Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIssuingTolerance_ValueType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_ValueType = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_ValueType", null);
+	String COLUMNNAME_IssuingTolerance_ValueType = "IssuingTolerance_ValueType";
 
 	/**
 	 * Set Summary Level.
@@ -1000,8 +1365,8 @@ public interface I_M_Product
 	String COLUMNNAME_IsVerified = "IsVerified";
 
 	/**
-	 * Set Beworben im Web-Shop.
-	 * If selected, the product is displayed in the inital or any empy search
+	 * Set Featured in Web Store.
+	 * If selected, the product is displayed in the initial or any empty search
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1010,8 +1375,8 @@ public interface I_M_Product
 	void setIsWebStoreFeatured (boolean IsWebStoreFeatured);
 
 	/**
-	 * Get Beworben im Web-Shop.
-	 * If selected, the product is displayed in the inital or any empy search
+	 * Get Featured in Web Store.
+	 * If selected, the product is displayed in the initial or any empty search
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1023,7 +1388,50 @@ public interface I_M_Product
 	String COLUMNNAME_IsWebStoreFeatured = "IsWebStoreFeatured";
 
 	/**
+	 * Set Legal Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLegalName (@Nullable java.lang.String LegalName);
+
+	/**
+	 * Get Legal Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLegalName();
+
+	ModelColumn<I_M_Product, Object> COLUMN_LegalName = new ModelColumn<>(I_M_Product.class, "LegalName", null);
+	String COLUMNNAME_LegalName = "LegalName";
+
+	/**
+	 * Set Long text description.
+	 *
+	 * <br>Type: Memo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLongTextDescription (@Nullable java.lang.String LongTextDescription);
+
+	/**
+	 * Get Long text description.
+	 *
+	 * <br>Type: Memo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLongTextDescription();
+
+	ModelColumn<I_M_Product, Object> COLUMN_LongTextDescription = new ModelColumn<>(I_M_Product.class, "LongTextDescription", null);
+	String COLUMNNAME_LongTextDescription = "LongTextDescription";
+
+	/**
 	 * Set Low Level.
+	 * The Low Level is used to calculate the material plan and determines if a net requirement should be exploited
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -1033,6 +1441,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Low Level.
+	 * The Low Level is used to calculate the material plan and determines if a net requirement should be exploited
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -1044,7 +1453,7 @@ public interface I_M_Product
 	String COLUMNNAME_LowLevel = "LowLevel";
 
 	/**
-	 * Set Merkmals-Satz.
+	 * Set Attribute Set.
 	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir
@@ -1054,7 +1463,7 @@ public interface I_M_Product
 	void setM_AttributeSet_ID (int M_AttributeSet_ID);
 
 	/**
-	 * Get Merkmals-Satz.
+	 * Get Attribute Set.
 	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir
@@ -1144,7 +1553,7 @@ public interface I_M_Product
 	String COLUMNNAME_M_CustomsTariff_ID = "M_CustomsTariff_ID";
 
 	/**
-	 * Set Fracht-Kategorie.
+	 * Set Freight Category.
 	 * Category of the Freight
 	 *
 	 * <br>Type: TableDir
@@ -1154,7 +1563,7 @@ public interface I_M_Product
 	void setM_FreightCategory_ID (int M_FreightCategory_ID);
 
 	/**
-	 * Get Fracht-Kategorie.
+	 * Get Freight Category.
 	 * Category of the Freight
 	 *
 	 * <br>Type: TableDir
@@ -1238,7 +1647,7 @@ public interface I_M_Product
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set M_ProductPlanningSchema_Selector.
+	 * Set Product Planning Schema.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1247,7 +1656,7 @@ public interface I_M_Product
 	void setM_ProductPlanningSchema_Selector (@Nullable java.lang.String M_ProductPlanningSchema_Selector);
 
 	/**
-	 * Get M_ProductPlanningSchema_Selector.
+	 * Get Product Planning Schema.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1259,10 +1668,35 @@ public interface I_M_Product
 	String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
 
 	/**
-	 * Set Manufacturer.
-	 * Hersteller des Produktes
+	 * Set Section Code.
 	 *
 	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_Product.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
+	 * Set Manufacturer.
+	 * Manufacturer of the Product
+	 *
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1270,9 +1704,9 @@ public interface I_M_Product
 
 	/**
 	 * Get Manufacturer.
-	 * Hersteller des Produktes
+	 * Manufacturer of the Product
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1323,7 +1757,29 @@ public interface I_M_Product
 	String COLUMNNAME_ManufacturerProductDescription = "ManufacturerProductDescription";
 
 	/**
+	 * Set Manufacturing Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturingMethod (@Nullable java.lang.String ManufacturingMethod);
+
+	/**
+	 * Get Manufacturing Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManufacturingMethod();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ManufacturingMethod = new ModelColumn<>(I_M_Product.class, "ManufacturingMethod", null);
+	String COLUMNNAME_ManufacturingMethod = "ManufacturingMethod";
+
+	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1333,6 +1789,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1386,6 +1843,26 @@ public interface I_M_Product
 	String COLUMNNAME_NetWeight = "NetWeight";
 
 	/**
+	 * Set Netto-Verkaufsmengeneinheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNetWeight_UOM_ID (int NetWeight_UOM_ID);
+
+	/**
+	 * Get Netto-Verkaufsmengeneinheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getNetWeight_UOM_ID();
+
+	String COLUMNNAME_NetWeight_UOM_ID = "NetWeight_UOM_ID";
+
+	/**
 	 * Set Package UOM.
 	 * UOM of the package
 	 *
@@ -1429,6 +1906,115 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_PackageSize = new ModelColumn<>(I_M_Product.class, "PackageSize", null);
 	String COLUMNNAME_PackageSize = "PackageSize";
+
+	/**
+	 * Set Per 100g.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPer100g (@Nullable BigDecimal Per100g);
+
+	/**
+	 * Get Per 100g.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPer100g();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Per100g = new ModelColumn<>(I_M_Product.class, "Per100g", null);
+	String COLUMNNAME_Per100g = "Per100g";
+
+	/**
+	 * Set Maturity tolerance for picking (months after).
+	 * Number of months that a pickable handling unit may be older  than specified in the shipment disposition.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPicking_AgeTolerance_AfterMonths (int Picking_AgeTolerance_AfterMonths);
+
+	/**
+	 * Get Maturity tolerance for picking (months after).
+	 * Number of months that a pickable handling unit may be older  than specified in the shipment disposition.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPicking_AgeTolerance_AfterMonths();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Picking_AgeTolerance_AfterMonths = new ModelColumn<>(I_M_Product.class, "Picking_AgeTolerance_AfterMonths", null);
+	String COLUMNNAME_Picking_AgeTolerance_AfterMonths = "Picking_AgeTolerance_AfterMonths";
+
+	/**
+	 * Set Maturity tolerance for picking (months before).
+	 * Number of months that a pickable handling unit may be younger than specified in the shipment disposition.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPicking_AgeTolerance_BeforeMonths (int Picking_AgeTolerance_BeforeMonths);
+
+	/**
+	 * Get Maturity tolerance for picking (months before).
+	 * Number of months that a pickable handling unit may be younger than specified in the shipment disposition.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPicking_AgeTolerance_BeforeMonths();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Picking_AgeTolerance_BeforeMonths = new ModelColumn<>(I_M_Product.class, "Picking_AgeTolerance_BeforeMonths", null);
+	String COLUMNNAME_Picking_AgeTolerance_BeforeMonths = "Picking_AgeTolerance_BeforeMonths";
+
+	/**
+	 * Set PostControl.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPostControl (@Nullable java.lang.String PostControl);
+
+	/**
+	 * Get PostControl.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPostControl();
+
+	ModelColumn<I_M_Product, Object> COLUMN_PostControl = new ModelColumn<>(I_M_Product.class, "PostControl", null);
+	String COLUMNNAME_PostControl = "PostControl";
+
+	/**
+	 * Set Preparation.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreparation (@Nullable java.lang.String Preparation);
+
+	/**
+	 * Get Preparation.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPreparation();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Preparation = new ModelColumn<>(I_M_Product.class, "Preparation", null);
+	String COLUMNNAME_Preparation = "Preparation";
 
 	/**
 	 * Set Process Now.
@@ -1475,33 +2061,6 @@ public interface I_M_Product
 	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
-	 * Set EMail-Vorlage.
-	 * Text templates for mailings
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setR_MailText_ID (int R_MailText_ID);
-
-	/**
-	 * Get EMail-Vorlage.
-	 * Text templates for mailings
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getR_MailText_ID();
-
-	@Nullable org.compiere.model.I_R_MailText getR_MailText();
-
-	void setR_MailText(@Nullable org.compiere.model.I_R_MailText R_MailText);
-
-	ModelColumn<I_M_Product, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new ModelColumn<>(I_M_Product.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
-	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
-
-	/**
 	 * Set PZN.
 	 *
 	 * <br>Type: String
@@ -1521,6 +2080,33 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_PZN = new ModelColumn<>(I_M_Product.class, "PZN", null);
 	String COLUMNNAME_PZN = "PZN";
+
+	/**
+	 * Set Mail Template.
+	 * Text templates for mailings
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setR_MailText_ID (int R_MailText_ID);
+
+	/**
+	 * Get Mail Template.
+	 * Text templates for mailings
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getR_MailText_ID();
+
+	@Nullable org.compiere.model.I_R_MailText getR_MailText();
+
+	void setR_MailText(@Nullable org.compiere.model.I_R_MailText R_MailText);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new ModelColumn<>(I_M_Product.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
+	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
 	 * Set Ursprungsland.
@@ -1548,6 +2134,27 @@ public interface I_M_Product
 	String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
 
 	/**
+	 * Set Reference Text.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReferenceText (@Nullable java.lang.String ReferenceText);
+
+	/**
+	 * Get Reference Text.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReferenceText();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ReferenceText = new ModelColumn<>(I_M_Product.class, "ReferenceText", null);
+	String COLUMNNAME_ReferenceText = "ReferenceText";
+
+	/**
 	 * Set Requires Supplier Approval.
 	 *
 	 * <br>Type: YesNo
@@ -1569,7 +2176,7 @@ public interface I_M_Product
 	String COLUMNNAME_RequiresSupplierApproval = "RequiresSupplierApproval";
 
 	/**
-	 * Set Aufwandsart.
+	 * Set Expense Type.
 	 * Expense report type
 	 *
 	 * <br>Type: TableDir
@@ -1579,7 +2186,7 @@ public interface I_M_Product
 	void setS_ExpenseType_ID (int S_ExpenseType_ID);
 
 	/**
-	 * Get Aufwandsart.
+	 * Get Expense Type.
 	 * Expense report type
 	 *
 	 * <br>Type: TableDir
@@ -1596,30 +2203,45 @@ public interface I_M_Product
 	String COLUMNNAME_S_ExpenseType_ID = "S_ExpenseType_ID";
 
 	/**
-	 * Set Ressource.
+	 * Set Resource Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_Group_ID (int S_Resource_Group_ID);
+
+	/**
+	 * Get Resource Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_Group_ID();
+
+	String COLUMNNAME_S_Resource_Group_ID = "S_Resource_Group_ID";
+
+	/**
+	 * Set Resource.
 	 * Resource
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
+	 * Get Resource.
 	 * Resource
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getS_Resource_ID();
 
-	@Nullable org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
@@ -1666,7 +2288,28 @@ public interface I_M_Product
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
-	 * Set Regaltiefe.
+	 * Set SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_ProductHierarchy (@Nullable java.lang.String SAP_ProductHierarchy);
+
+	/**
+	 * Get SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_ProductHierarchy();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SAP_ProductHierarchy = new ModelColumn<>(I_M_Product.class, "SAP_ProductHierarchy", null);
+	String COLUMNNAME_SAP_ProductHierarchy = "SAP_ProductHierarchy";
+
+	/**
+	 * Set Shelf Depth.
 	 * Shelf depth required
 	 *
 	 * <br>Type: Integer
@@ -1676,7 +2319,7 @@ public interface I_M_Product
 	void setShelfDepth (int ShelfDepth);
 
 	/**
-	 * Get Regaltiefe.
+	 * Get Shelf Depth.
 	 * Shelf depth required
 	 *
 	 * <br>Type: Integer
@@ -1689,7 +2332,7 @@ public interface I_M_Product
 	String COLUMNNAME_ShelfDepth = "ShelfDepth";
 
 	/**
-	 * Set Regalhöhe.
+	 * Set Shelf Height.
 	 * Shelf height required
 	 *
 	 * <br>Type: Amount
@@ -1699,7 +2342,7 @@ public interface I_M_Product
 	void setShelfHeight (@Nullable BigDecimal ShelfHeight);
 
 	/**
-	 * Get Regalhöhe.
+	 * Get Shelf Height.
 	 * Shelf height required
 	 *
 	 * <br>Type: Amount
@@ -1712,7 +2355,7 @@ public interface I_M_Product
 	String COLUMNNAME_ShelfHeight = "ShelfHeight";
 
 	/**
-	 * Set Regalbreite.
+	 * Set Shelf Width.
 	 * Shelf width required
 	 *
 	 * <br>Type: Integer
@@ -1722,7 +2365,7 @@ public interface I_M_Product
 	void setShelfWidth (int ShelfWidth);
 
 	/**
-	 * Get Regalbreite.
+	 * Get Shelf Width.
 	 * Shelf width required
 	 *
 	 * <br>Type: Integer
@@ -1846,7 +2489,7 @@ public interface I_M_Product
 	String COLUMNNAME_UnitsPerPack = "UnitsPerPack";
 
 	/**
-	 * Set Einheiten pro Palette.
+	 * Set Units Per Pallet.
 	 * Units Per Pallet
 	 *
 	 * <br>Type: CostPrice
@@ -1856,7 +2499,7 @@ public interface I_M_Product
 	void setUnitsPerPallet (@Nullable BigDecimal UnitsPerPallet);
 
 	/**
-	 * Get Einheiten pro Palette.
+	 * Get Units Per Pallet.
 	 * Units Per Pallet
 	 *
 	 * <br>Type: CostPrice
@@ -1940,7 +2583,7 @@ public interface I_M_Product
 	String COLUMNNAME_Value = "Value";
 
 	/**
-	 * Set Versions-Nr..
+	 * Set Version No.
 	 * Version Number
 	 *
 	 * <br>Type: String
@@ -1950,7 +2593,7 @@ public interface I_M_Product
 	void setVersionNo (@Nullable java.lang.String VersionNo);
 
 	/**
-	 * Get Versions-Nr..
+	 * Get Version No.
 	 * Version Number
 	 *
 	 * <br>Type: String
@@ -2028,56 +2671,4 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Weight = new ModelColumn<>(I_M_Product.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-
-	/**
-	 * Set Picking_AgeTolerance_AfterMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPicking_AgeTolerance_AfterMonths (int Picking_AgeTolerance_AfterMonths);
-
-	/**
-	 * Get Picking_AgeTolerance_AfterMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getPicking_AgeTolerance_AfterMonths();
-
-	ModelColumn<I_M_Product, Object> COLUMN_Picking_AgeTolerance_AfterMonths = new ModelColumn<>(I_M_Product.class, "Picking_AgeTolerance_AfterMonths", null);
-	String COLUMNNAME_Picking_AgeTolerance_AfterMonths = "Picking_AgeTolerance_AfterMonths";
-
-	/**
-	 * Set Picking_AgeTolerance_BeforeMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPicking_AgeTolerance_BeforeMonths (int Picking_AgeTolerance_BeforeMonths);
-
-	/**
-	 * Get Picking_AgeTolerance_BeforeMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getPicking_AgeTolerance_BeforeMonths();
-
-	ModelColumn<I_M_Product, Object> COLUMN_Picking_AgeTolerance_BeforeMonths = new ModelColumn<>(I_M_Product.class, "Picking_AgeTolerance_BeforeMonths", null);
-	String COLUMNNAME_Picking_AgeTolerance_BeforeMonths = "Picking_AgeTolerance_BeforeMonths";
-
-	/**
-	 * Set Primärverpackung.
-	 * Beschreibung der Primärverpackung
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
 }

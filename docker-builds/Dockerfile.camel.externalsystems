@@ -1,7 +1,7 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
-FROM adoptopenjdk:14.0.2_8-jdk-hotspot
+FROM eclipse-temurin:17.0.5_8-jdk
 
 WORKDIR /app
 

@@ -1,53 +1,38 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Menu
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -736337435L;
+	private static final long serialVersionUID = -789007860L;
 
     /** Standard Constructor */
-    public X_AD_Menu (Properties ctx, int AD_Menu_ID, String trxName)
+    public X_AD_Menu (final Properties ctx, final int AD_Menu_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Menu_ID, trxName);
-      /** if (AD_Menu_ID == 0)
-        {
-			setAD_Element_ID (0);
-			setAD_Menu_ID (0);
-			setEntityType (null); // U
-			setInternalName (null);
-			setIsCreateNew (false); // N
-			setIsReadOnly (false); // N
-			setIsSOTrx (false);
-			setIsSummary (false);
-			setName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Menu (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Menu (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	/** 
 	 * Action AD_Reference_ID=104
@@ -70,324 +55,222 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	public static final String ACTION_Workbench = "B";
 	/** Board = K */
 	public static final String ACTION_Board = "K";
-	/** Set Aktion.
-		@param Action 
-		Indicates the Action to be performed
-	  */
+	/** Calendar = C */
+	public static final String ACTION_Calendar = "C";
 	@Override
-	public void setAction (java.lang.String Action)
+	public void setAction (final @Nullable java.lang.String Action)
 	{
-
 		set_Value (COLUMNNAME_Action, Action);
 	}
 
-	/** Get Aktion.
-		@return Indicates the Action to be performed
-	  */
 	@Override
-	public java.lang.String getAction () 
+	public java.lang.String getAction() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Action);
+		return get_ValueAsString(COLUMNNAME_Action);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	public org.compiere.model.I_AD_Element getAD_Element()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
 	}
 
 	@Override
-	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	public void setAD_Element(final org.compiere.model.I_AD_Element AD_Element)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
 	}
 
-	/** Set System-Element.
-		@param AD_Element_ID 
-		Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
-	  */
 	@Override
-	public void setAD_Element_ID (int AD_Element_ID)
+	public void setAD_Element_ID (final int AD_Element_ID)
 	{
 		if (AD_Element_ID < 1) 
 			set_Value (COLUMNNAME_AD_Element_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+			set_Value (COLUMNNAME_AD_Element_ID, AD_Element_ID);
 	}
 
-	/** Get System-Element.
-		@return Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
-	  */
 	@Override
-	public int getAD_Element_ID () 
+	public int getAD_Element_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Element_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Form getAD_Form() throws RuntimeException
+	public org.compiere.model.I_AD_Form getAD_Form()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Form_ID, org.compiere.model.I_AD_Form.class);
 	}
 
 	@Override
-	public void setAD_Form(org.compiere.model.I_AD_Form AD_Form)
+	public void setAD_Form(final org.compiere.model.I_AD_Form AD_Form)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Form_ID, org.compiere.model.I_AD_Form.class, AD_Form);
 	}
 
-	/** Set Special Form.
-		@param AD_Form_ID 
-		Special Form
-	  */
 	@Override
-	public void setAD_Form_ID (int AD_Form_ID)
+	public void setAD_Form_ID (final int AD_Form_ID)
 	{
 		if (AD_Form_ID < 1) 
 			set_Value (COLUMNNAME_AD_Form_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Form_ID, Integer.valueOf(AD_Form_ID));
+			set_Value (COLUMNNAME_AD_Form_ID, AD_Form_ID);
 	}
 
-	/** Get Special Form.
-		@return Special Form
-	  */
 	@Override
-	public int getAD_Form_ID () 
+	public int getAD_Form_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Form_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Form_ID);
 	}
 
-	/** Set Menü.
-		@param AD_Menu_ID 
-		Identifies a Menu
-	  */
 	@Override
-	public void setAD_Menu_ID (int AD_Menu_ID)
+	public void setAD_Menu_ID (final int AD_Menu_ID)
 	{
 		if (AD_Menu_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Menu_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Menu_ID, Integer.valueOf(AD_Menu_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Menu_ID, AD_Menu_ID);
 	}
 
-	/** Get Menü.
-		@return Identifies a Menu
-	  */
 	@Override
-	public int getAD_Menu_ID () 
+	public int getAD_Menu_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Menu_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Menu_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
 
 	@Override
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
-	/** Set Prozess.
-		@param AD_Process_ID 
-		Process or Report
-	  */
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_Value (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
-	/** Get Prozess.
-		@return Process or Report
-	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Task getAD_Task() throws RuntimeException
+	public org.compiere.model.I_AD_Task getAD_Task()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Task_ID, org.compiere.model.I_AD_Task.class);
 	}
 
 	@Override
-	public void setAD_Task(org.compiere.model.I_AD_Task AD_Task)
+	public void setAD_Task(final org.compiere.model.I_AD_Task AD_Task)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Task_ID, org.compiere.model.I_AD_Task.class, AD_Task);
 	}
 
-	/** Set Externer Prozess.
-		@param AD_Task_ID 
-		Operation System Task
-	  */
 	@Override
-	public void setAD_Task_ID (int AD_Task_ID)
+	public void setAD_Task_ID (final int AD_Task_ID)
 	{
 		if (AD_Task_ID < 1) 
 			set_Value (COLUMNNAME_AD_Task_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Task_ID, Integer.valueOf(AD_Task_ID));
+			set_Value (COLUMNNAME_AD_Task_ID, AD_Task_ID);
 	}
 
-	/** Get Externer Prozess.
-		@return Operation System Task
-	  */
 	@Override
-	public int getAD_Task_ID () 
+	public int getAD_Task_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Task_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Task_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	public org.compiere.model.I_AD_Window getAD_Window()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
 	}
 
 	@Override
-	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window)
+	public void setAD_Window(final org.compiere.model.I_AD_Window AD_Window)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
 	}
 
-	/** Set Fenster.
-		@param AD_Window_ID 
-		Data entry or display window
-	  */
 	@Override
-	public void setAD_Window_ID (int AD_Window_ID)
+	public void setAD_Window_ID (final int AD_Window_ID)
 	{
 		if (AD_Window_ID < 1) 
 			set_Value (COLUMNNAME_AD_Window_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
+			set_Value (COLUMNNAME_AD_Window_ID, AD_Window_ID);
 	}
 
-	/** Get Fenster.
-		@return Data entry or display window
-	  */
 	@Override
-	public int getAD_Window_ID () 
+	public int getAD_Window_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Window_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workbench getAD_Workbench() throws RuntimeException
+	public org.compiere.model.I_AD_Workbench getAD_Workbench()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Workbench_ID, org.compiere.model.I_AD_Workbench.class);
 	}
 
 	@Override
-	public void setAD_Workbench(org.compiere.model.I_AD_Workbench AD_Workbench)
+	public void setAD_Workbench(final org.compiere.model.I_AD_Workbench AD_Workbench)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Workbench_ID, org.compiere.model.I_AD_Workbench.class, AD_Workbench);
 	}
 
-	/** Set Workbench.
-		@param AD_Workbench_ID 
-		Collection of windows, reports
-	  */
 	@Override
-	public void setAD_Workbench_ID (int AD_Workbench_ID)
+	public void setAD_Workbench_ID (final int AD_Workbench_ID)
 	{
 		if (AD_Workbench_ID < 1) 
 			set_Value (COLUMNNAME_AD_Workbench_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Workbench_ID, Integer.valueOf(AD_Workbench_ID));
+			set_Value (COLUMNNAME_AD_Workbench_ID, AD_Workbench_ID);
 	}
 
-	/** Get Workbench.
-		@return Collection of windows, reports
-	  */
 	@Override
-	public int getAD_Workbench_ID () 
+	public int getAD_Workbench_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workbench_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Workbench_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
-	}
-
-	@Override
-	public void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class, AD_Workflow);
-	}
-
-	/** Set Workflow.
-		@param AD_Workflow_ID 
-		Workflow or combination of tasks
-	  */
-	@Override
-	public void setAD_Workflow_ID (int AD_Workflow_ID)
+	public void setAD_Workflow_ID (final int AD_Workflow_ID)
 	{
 		if (AD_Workflow_ID < 1) 
 			set_Value (COLUMNNAME_AD_Workflow_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Workflow_ID, Integer.valueOf(AD_Workflow_ID));
+			set_Value (COLUMNNAME_AD_Workflow_ID, AD_Workflow_ID);
 	}
 
-	/** Get Workflow.
-		@return Workflow or combination of tasks
-	  */
 	@Override
-	public int getAD_Workflow_ID () 
+	public int getAD_Workflow_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workflow_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Workflow_ID);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -395,232 +278,138 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Interner Name.
-		@param InternalName 
-		Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public void setInternalName (java.lang.String InternalName)
+	public void setInternalName (final java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
 	}
 
-	/** Get Interner Name.
-		@return Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public java.lang.String getInternalName () 
+	public java.lang.String getInternalName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
-	/** Set Create new.
-		@param IsCreateNew Create new	  */
 	@Override
-	public void setIsCreateNew (boolean IsCreateNew)
+	public void setIsCreateNew (final boolean IsCreateNew)
 	{
-		set_Value (COLUMNNAME_IsCreateNew, Boolean.valueOf(IsCreateNew));
+		set_Value (COLUMNNAME_IsCreateNew, IsCreateNew);
 	}
 
-	/** Get Create new.
-		@return Create new	  */
 	@Override
-	public boolean isCreateNew () 
+	public boolean isCreateNew() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCreateNew);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateNew);
 	}
 
-	/** Set Schreibgeschützt.
-		@param IsReadOnly 
-		Field is read only
-	  */
 	@Override
-	public void setIsReadOnly (boolean IsReadOnly)
+	public void setIsReadOnly (final boolean IsReadOnly)
 	{
-		set_Value (COLUMNNAME_IsReadOnly, Boolean.valueOf(IsReadOnly));
+		set_Value (COLUMNNAME_IsReadOnly, IsReadOnly);
 	}
 
-	/** Get Schreibgeschützt.
-		@return Field is read only
-	  */
 	@Override
-	public boolean isReadOnly () 
+	public boolean isReadOnly() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsReadOnly);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsReadOnly);
 	}
 
-	/** Set Verkaufs-Transaktion.
-		@param IsSOTrx 
-		This is a Sales Transaction
-	  */
 	@Override
-	public void setIsSOTrx (boolean IsSOTrx)
+	public void setIsSOTrx (final boolean IsSOTrx)
 	{
-		set_Value (COLUMNNAME_IsSOTrx, Boolean.valueOf(IsSOTrx));
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
-	/** Get Verkaufs-Transaktion.
-		@return This is a Sales Transaction
-	  */
 	@Override
-	public boolean isSOTrx () 
+	public boolean isSOTrx() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSOTrx);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
-	/** Set Zusammenfassungseintrag.
-		@param IsSummary 
-		This is a summary entity
-	  */
 	@Override
-	public void setIsSummary (boolean IsSummary)
+	public void setIsSummary (final boolean IsSummary)
 	{
-		set_Value (COLUMNNAME_IsSummary, Boolean.valueOf(IsSummary));
+		set_Value (COLUMNNAME_IsSummary, IsSummary);
 	}
 
-	/** Get Zusammenfassungseintrag.
-		@return This is a summary entity
-	  */
 	@Override
-	public boolean isSummary () 
+	public boolean isSummary() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSummary);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSummary);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Board.
-		@param WEBUI_Board_ID Board	  */
 	@Override
-	public void setWEBUI_Board_ID (int WEBUI_Board_ID)
+	public void setWEBUI_Board_ID (final int WEBUI_Board_ID)
 	{
 		if (WEBUI_Board_ID < 1) 
 			set_Value (COLUMNNAME_WEBUI_Board_ID, null);
 		else 
-			set_Value (COLUMNNAME_WEBUI_Board_ID, Integer.valueOf(WEBUI_Board_ID));
+			set_Value (COLUMNNAME_WEBUI_Board_ID, WEBUI_Board_ID);
 	}
 
-	/** Get Board.
-		@return Board	  */
 	@Override
-	public int getWEBUI_Board_ID () 
+	public int getWEBUI_Board_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_Board_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WEBUI_Board_ID);
 	}
 
-	/** Set Browse name.
-		@param WEBUI_NameBrowse Browse name	  */
 	@Override
-	public void setWEBUI_NameBrowse (java.lang.String WEBUI_NameBrowse)
+	public void setWEBUI_NameBrowse (final @Nullable java.lang.String WEBUI_NameBrowse)
 	{
 		set_Value (COLUMNNAME_WEBUI_NameBrowse, WEBUI_NameBrowse);
 	}
 
-	/** Get Browse name.
-		@return Browse name	  */
 	@Override
-	public java.lang.String getWEBUI_NameBrowse () 
+	public java.lang.String getWEBUI_NameBrowse() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameBrowse);
+		return get_ValueAsString(COLUMNNAME_WEBUI_NameBrowse);
 	}
 
-	/** Set New record name.
-		@param WEBUI_NameNew New record name	  */
 	@Override
-	public void setWEBUI_NameNew (java.lang.String WEBUI_NameNew)
+	public void setWEBUI_NameNew (final @Nullable java.lang.String WEBUI_NameNew)
 	{
 		set_Value (COLUMNNAME_WEBUI_NameNew, WEBUI_NameNew);
 	}
 
-	/** Get New record name.
-		@return New record name	  */
 	@Override
-	public java.lang.String getWEBUI_NameNew () 
+	public java.lang.String getWEBUI_NameNew() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameNew);
+		return get_ValueAsString(COLUMNNAME_WEBUI_NameNew);
 	}
 
-	/** Set New record name (breadcrumb).
-		@param WEBUI_NameNewBreadcrumb New record name (breadcrumb)	  */
 	@Override
-	public void setWEBUI_NameNewBreadcrumb (java.lang.String WEBUI_NameNewBreadcrumb)
+	public void setWEBUI_NameNewBreadcrumb (final @Nullable java.lang.String WEBUI_NameNewBreadcrumb)
 	{
 		set_Value (COLUMNNAME_WEBUI_NameNewBreadcrumb, WEBUI_NameNewBreadcrumb);
 	}
 
-	/** Get New record name (breadcrumb).
-		@return New record name (breadcrumb)	  */
 	@Override
-	public java.lang.String getWEBUI_NameNewBreadcrumb () 
+	public java.lang.String getWEBUI_NameNewBreadcrumb() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameNewBreadcrumb);
+		return get_ValueAsString(COLUMNNAME_WEBUI_NameNewBreadcrumb);
 	}
 }

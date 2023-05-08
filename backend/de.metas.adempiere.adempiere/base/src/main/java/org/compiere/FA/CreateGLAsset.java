@@ -35,11 +35,8 @@ package org.compiere.FA;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import org.compiere.model.MAssetAcct;
 import org.compiere.model.MAssetChange;
 import org.compiere.model.MRefList;
@@ -50,8 +47,9 @@ import org.compiere.model.X_A_Depreciation_Workfile;
 import org.compiere.model.X_GL_JournalLine;
 import org.compiere.util.DB;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  *	Create Asset from FA GL Process
@@ -248,8 +246,6 @@ public class CreateGLAsset extends JavaProcess
 										change.setIsDisposed(asset.isDisposed());
 										change.setIsDepreciated(asset.isDepreciated());
 										change.setIsFullyDepreciated(asset.isFullyDepreciated());
-										change.setLot(asset.getLot());
-										change.setSerNo(asset.getSerNo());
 										change.setVersionNo(asset.getVersionNo());
 									    change.setUseLifeMonths(asset.getUseLifeMonths());
 									    change.setUseLifeYears(asset.getUseLifeYears());

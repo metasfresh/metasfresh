@@ -24,7 +24,8 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -32,10 +33,10 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.calendar.ICalendarBL;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.ICalendarBL;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
@@ -63,6 +64,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -82,9 +84,11 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -93,6 +97,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -104,7 +109,6 @@ import de.metas.util.time.InstantInterval;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -125,8 +129,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.Lookup;
-import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -174,8 +176,6 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -187,7 +187,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
-	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -231,7 +231,8 @@ public class FlatrateBL implements IFlatrateBL
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
 
-					final ITranslatableString competed = Services.get(IADReferenceDAO.class)
+					final ADReferenceService adReferenceService = ADReferenceService.get();
+					final ITranslatableString competed = adReferenceService
 							.retrieveListNameTranslatableString(
 									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
 									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
@@ -482,6 +483,7 @@ public class FlatrateBL implements IFlatrateBL
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> ContractLocationHelper.extractDropshipLocationId(term),
 				() -> ContractLocationHelper.extractBillToLocationId(term));
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
@@ -491,7 +493,8 @@ public class FlatrateBL implements IFlatrateBL
 				orgId,
 				null,
 				shipToLocationId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		newCand.setC_Tax_ID(taxId.getRepoId());
 
@@ -504,7 +507,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private ActivityId findActivityIdOrNull(final I_C_Flatrate_Term term, final int productId)
 	{
-		return Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+		return Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(term.getAD_Client_ID()),
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				ProductId.ofRepoId(productId));
@@ -615,6 +618,7 @@ public class FlatrateBL implements IFlatrateBL
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> ContractLocationHelper.extractDropshipLocationId(term),
 				() -> ContractLocationHelper.extractBillToLocationId(term));
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
@@ -624,7 +628,8 @@ public class FlatrateBL implements IFlatrateBL
 				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 				null,
 				shipToLocationId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		newCand.setC_Tax_ID(TaxId.toRepoId(taxId)); // guard against NPEs in unit tests
 
@@ -709,8 +714,8 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public List<I_C_Flatrate_DataEntry> retrieveAndCheckInvoicingEntries(
 			final I_C_Flatrate_Term flatrateTerm,
-			final Timestamp startDate,
-			final Timestamp endDate,
+			final LocalDateAndOrgId startDate,
+			final LocalDateAndOrgId endDate,
 			final I_C_UOM uom,
 			final List<String> errors)
 	{
@@ -809,7 +814,6 @@ public class FlatrateBL implements IFlatrateBL
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final IUOMDAO uomDAO = this.uomDAO;
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -817,8 +821,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 
-		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
-				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
+		final List<I_C_Period> periods = getPeriodList(ctx, flatrateTerm, trxName, calendarDAO);
 		for (final I_C_Period period : periods)
 		{
 			for (final I_M_Product product : products)
@@ -854,6 +857,17 @@ public class FlatrateBL implements IFlatrateBL
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
+	private List<I_C_Period> getPeriodList(final Properties ctx, final I_C_Flatrate_Term flatrateTerm, final String trxName, final ICalendarDAO calendarDAO)
+	{
+		final OrgId orgId = OrgId.ofRepoId(flatrateTerm.getAD_Org_ID());
+		final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(flatrateTerm.getStartDate(), orgId, orgDAO::getTimeZone);
+		final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(flatrateTerm.getEndDate(), orgId, orgDAO::getTimeZone);
+
+		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
+				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), startDate, endDate, trxName);
+		return periods;
+	}
+
 	private void createEntriesForFlatFee(
 			final Properties ctx,
 			final I_C_Flatrate_Term flatrateTerm,
@@ -866,8 +880,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final List<I_C_UOM> uoms = flatrateDB.retrieveUOMs(ctx, flatrateTerm, trxName);
 
-		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
-				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
+		final List<I_C_Period> periods = getPeriodList(ctx, flatrateTerm, trxName, calendarDAO);
 		for (final I_C_Period period : periods)
 		{
 			for (final I_C_UOM uom : uoms)
@@ -892,15 +905,15 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
-		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final String uomTypeTrl = adReferenceService.retrieveListNameTrl(ctx, ReferenceId.ofRepoId(X_C_Flatrate_Term.UOMTYPE_AD_Reference_ID), flatrateTerm.getUOMType());
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,
 										new Object[] {
 												counter,
 												flatrateTerm.getStartDate(),
 												flatrateTerm.getEndDate(),
-												columnLookup.getDisplay(flatrateTerm.getUOMType()) });
+												uomTypeTrl });
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
@@ -1433,8 +1446,9 @@ public class FlatrateBL implements IFlatrateBL
 			}
 
 			final I_C_Calendar calendar = transition.getC_Calendar_Contract();
+			final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
 
-			Timestamp currentFirstDay = firstDayOfTerm; // first day of term or first day of new year
+			LocalDateAndOrgId currentFirstDay = LocalDateAndOrgId.ofTimestamp(firstDayOfTerm, orgId, orgDAO::getTimeZone); // first day of term or first day of new year, not including hours
 			for (int i = 0; i < termDuration; i++)
 			{
 				final List<I_C_Period> periodsContainingDay = Services.get(ICalendarDAO.class).retrievePeriods(
@@ -1448,7 +1462,7 @@ public class FlatrateBL implements IFlatrateBL
 
 				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);
 
-				currentFirstDay = TimeUtil.addDays(lastDayOfTerm, 1);
+				currentFirstDay = LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(lastDayOfTerm, 1), orgId, orgDAO::getTimeZone);
 			}
 		}
 		// Case: If TermDuration is ZERO, we shall not calculate the EndDate automatically,
@@ -1548,7 +1562,7 @@ public class FlatrateBL implements IFlatrateBL
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.adClientId(term.getAD_Client_ID())
 				.adOrgId(term.getAD_Org_ID())
-				.docBaseType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract)
+				.docBaseType(DocBaseType.CustomerContract)
 				.docSubType(subType)
 				.build();
 
@@ -1680,6 +1694,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
 		newTerm.setC_Flatrate_Conditions(conditions);
 		newTerm.setC_UOM_ID(conditions.getC_UOM_ID());
+		newTerm.setM_PricingSystem_ID(conditions.getM_PricingSystem_ID());
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
@@ -2106,13 +2121,13 @@ public class FlatrateBL implements IFlatrateBL
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId),
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, newFlatrateDataId),
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, newFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 
 	}
 
@@ -2181,4 +2196,5 @@ public class FlatrateBL implements IFlatrateBL
 				.create()
 				.anyMatch();
 	}
+
 }

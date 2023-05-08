@@ -39,6 +39,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
@@ -56,7 +58,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -80,6 +82,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
@@ -114,7 +117,8 @@ class WorkpackageProcessorTask implements Runnable
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final transient QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+
+	private final transient QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	private final IWorkpackageLogsRepository logsRepository;
 
@@ -133,16 +137,24 @@ class WorkpackageProcessorTask implements Runnable
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
 	private final boolean retryOnDeadLock = true;
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final PerformanceMonitoringService perfMonService;
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.asyncWorkpackage.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+
 	public WorkpackageProcessorTask(
 			final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
 			@NonNull final I_C_Queue_WorkPackage workPackage,
-			@NonNull final IWorkpackageLogsRepository logsRepository)
+			@NonNull final IWorkpackageLogsRepository logsRepository,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.logsRepository = logsRepository;
 
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
+
+		this.perfMonService = perfMonService;
 
 		workPackageProcessorOriginal = workPackageProcessor;
 		workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workPackageProcessor);
@@ -163,18 +175,22 @@ class WorkpackageProcessorTask implements Runnable
 	@Override
 	public void run()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-
-		service.monitorTransaction(
-				this::run0,
-				TransactionMetadata.builder()
-						.type(Type.ASYNC_WORKPACKAGE)
-						.name("Workpackage-Processor - " + queueProcessor.getName())
-						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
-						.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
-						.build());
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive){
+			run0();
+		}
+		else
+		{
+			perfMonService.monitor(
+					this::run0,
+					Metadata.builder()
+							.type(Type.ASYNC_WORKPACKAGE)
+							.className("WorkpackageProcessorTask")
+							.functionName("run")
+							.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+							.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+							.build());
+		}
 	}
 
 	private void run0()
@@ -565,7 +581,8 @@ class WorkpackageProcessorTask implements Runnable
 		}
 		else
 		{
-			final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(packageProcessorId);
+			final QueuePackageProcessor packageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(packageProcessorId);
+
 			processorName = CoalesceUtil.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
 		}
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
@@ -578,7 +595,15 @@ class WorkpackageProcessorTask implements Runnable
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+		final AdIssueId issueId;
+		if(ex instanceof WorkpackageSkipRequestException)
+		{ // don't clutter the database with AD_Issue records for this type of exception
+			issueId = null;
+		}
+		else
+		{ // ordinary issue => create AD_Issue record
+			issueId = Services.get(IErrorManager.class).createIssue(ex);
+		}
 
 		//
 		// Allow retry processing this workpackage?
@@ -597,7 +622,7 @@ class WorkpackageProcessorTask implements Runnable
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue_ID(issueId.getRepoId());
+		workPackage.setAD_Issue_ID(AdIssueId.toRepoId(issueId));
 
 		setLastEndTime(workPackage); // update statistics
 
@@ -628,7 +653,7 @@ class WorkpackageProcessorTask implements Runnable
 				.workPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))
 				.status(status)
 				.build();
-		eventBusFactory.getEventBus(Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC).postObject(processingDoneEvent);
+		eventBusFactory.getEventBus(Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC).enqueueObject(processingDoneEvent);
 	}
 
 	private void notifyErrorAfterCommit(final I_C_Queue_WorkPackage workpackage, final AdempiereException ex)

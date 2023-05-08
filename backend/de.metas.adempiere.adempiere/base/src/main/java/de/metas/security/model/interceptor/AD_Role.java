@@ -89,8 +89,9 @@ public class AD_Role
 
 		//
 		// Update role access records
-		if ((changeType.isNew() || InterfaceWrapperHelper.isValueChanged(role, I_AD_Role.COLUMNNAME_UserLevel))
-				&& !role.isManual())
+		final boolean userLevelChange = InterfaceWrapperHelper.isValueChanged(role, I_AD_Role.COLUMNNAME_UserLevel);
+		final boolean notManual = !role.isManual();
+		if ((changeType.isNew() || userLevelChange)	&& notManual)
 		{
 			final UserId userId = UserId.ofRepoId(role.getUpdatedBy());
 			Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(roleId, userId);

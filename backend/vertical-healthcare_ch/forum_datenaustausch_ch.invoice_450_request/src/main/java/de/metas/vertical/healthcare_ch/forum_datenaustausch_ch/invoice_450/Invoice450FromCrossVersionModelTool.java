@@ -191,6 +191,7 @@ import static de.metas.util.Check.isBlank;
 public class Invoice450FromCrossVersionModelTool
 {
 	public static final Invoice450FromCrossVersionModelTool INSTANCE = new Invoice450FromCrossVersionModelTool();
+	public static final String TITLE_DEFAULT_VALUE = "Title";
 
 	private final ObjectFactory jaxbRequestObjectFactory = new ObjectFactory();
 
@@ -199,7 +200,9 @@ public class Invoice450FromCrossVersionModelTool
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final LocationRepository locationRepository = SpringContextHolder.instance.getBean(LocationRepository.class);
 	private final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-	private final static transient Logger logger = LogManager.getLogger(Invoice450FromCrossVersionModelTool.class);
+	private final static Logger logger = LogManager.getLogger(Invoice450FromCrossVersionModelTool.class);
+
+	private final static Collection<String> supportedMimeTypes = ImmutableList.of("application/pdf", "image/jpeg", "image/png");
 
 	private static final long VALIDATION_STATUS_OK = 0L;
 
@@ -1522,11 +1525,15 @@ public class Invoice450FromCrossVersionModelTool
 		final DocumentType documentType = jaxbRequestObjectFactory.createDocumentType();
 
 		documentType.setFilename(document.getFilename());
+		if (!supportedMimeTypes.contains(document.getMimeType()))
+		{
+			throw Check.fail("Unsupported MIME type: " + document.getMimeType()+". Only " + supportedMimeTypes + " are supported.");
+		}
 		documentType.setMimeType(document.getMimeType());
 		documentType.setTitle(document.getTitle());
 
 		documentType.setBase64(document.getBase64());
-		documentType.setUrl(document.getUrl());
+		documentType.setTitle(CoalesceUtil.coalesce(document.getTitle(), document.getFilename(), TITLE_DEFAULT_VALUE));
 
 		return documentType;
 	}

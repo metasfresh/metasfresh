@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
-	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+	private final static Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";

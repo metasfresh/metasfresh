@@ -1,7 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
@@ -53,7 +53,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
 
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 		final SysConfigBL sysConfigBL = new SysConfigBL();
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 	}
@@ -93,17 +93,17 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		// Check Schedule's Warehouses
 		Assertions.assertEquals(
 				order1.getM_Warehouse_ID(),
-							schedule.getM_Warehouse_ID(), "Invalid M_ReceiptSchedule.M_Warehouse_ID");
+				schedule.getM_Warehouse_ID(), "Invalid M_ReceiptSchedule.M_Warehouse_ID");
 		Assertions.assertEquals(
 				order1_line1_product1_wh1.getC_BPartner_ID(),
-							schedule.getC_BPartner_ID(), "Invalid M_ReceiptSchedule.C_BPartner");
+				schedule.getC_BPartner_ID(), "Invalid M_ReceiptSchedule.C_BPartner");
 		Assertions.assertEquals(
 				0, // shall not be set
-							schedule.getM_Warehouse_Override_ID(), "Invalid M_ReceiptSchedule.M_Warehouse_Override_ID");
+				schedule.getM_Warehouse_Override_ID(), "Invalid M_ReceiptSchedule.M_Warehouse_Override_ID");
 
 		Assertions.assertEquals(
 				extractProductWarehouseId(order1_line1_product1_wh1),
-							WarehouseId.ofRepoIdOrNull(schedule.getM_Warehouse_Dest_ID()), "Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID");
+				WarehouseId.ofRepoIdOrNull(schedule.getM_Warehouse_Dest_ID()), "Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID");
 		// Guard agaist testing error
 		Assertions.assertNotEquals(schedule.getM_Warehouse_ID(), schedule.getM_Warehouse_Dest_ID(), "M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule);
 
@@ -123,7 +123,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		// Check receipt's warehouse
 		Assertions.assertEquals(
 				order1.getM_Warehouse_ID(),
-							receipt.getM_Warehouse_ID(), "Invalid M_InOut.M_Warehouse_ID");
+				receipt.getM_Warehouse_ID(), "Invalid M_InOut.M_Warehouse_ID");
 
 		//
 		// Generate Movement from receipt
@@ -140,17 +140,17 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		// Check Movement Line warehouses
 		Assertions.assertEquals(
 				receipt.getM_Warehouse_ID(),
-							movementLine.getM_Locator().getM_Warehouse_ID(), "Invalid movement line Locator (from)");
+				movementLine.getM_Locator().getM_Warehouse_ID(), "Invalid movement line Locator (from)");
 		Assertions.assertEquals(
 				schedule.getM_Warehouse_Dest_ID(),
-							movementLine.getM_LocatorTo().getM_Warehouse_ID(), "Invalid movement line Locator (to)");
+				movementLine.getM_LocatorTo().getM_Warehouse_ID(), "Invalid movement line Locator (to)");
 		// Check Movement Line product & qty
 		Assertions.assertEquals(
 				order1_line1_product1_wh1.getM_Product_ID(),
-							movementLine.getM_Product_ID(), "Invalid movement line product (compared with order line's product)");
+				movementLine.getM_Product_ID(), "Invalid movement line product (compared with order line's product)");
 		MatcherAssert.assertThat("Invalid movement line Qty (compared with order line's qty)",
-						  movementLine.getMovementQty(), // actual
-						  Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));
+				movementLine.getMovementQty(), // actual
+				Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));
 	}
 
 	private WarehouseId extractProductWarehouseId(final I_C_OrderLine orderLine)

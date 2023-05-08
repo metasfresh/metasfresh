@@ -35,11 +35,7 @@ package org.compiere.FA;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
+import de.metas.process.JavaProcess;
 import org.compiere.model.MAssetChange;
 import org.compiere.model.MRefList;
 import org.compiere.model.X_A_Asset;
@@ -50,7 +46,9 @@ import org.compiere.model.X_A_Depreciation_Exp;
 import org.compiere.model.X_A_Depreciation_Workfile;
 import org.compiere.util.DB;
 
-import de.metas.process.JavaProcess;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 
 /**
@@ -168,10 +166,7 @@ public class AssetSplit extends JavaProcess
 				AssetNew.setHelp(Asset.getHelp());
 				AssetNew.setA_Asset_Group_ID(Asset.getA_Asset_Group_ID());
 				AssetNew.setM_Product_ID(Asset.getM_Product_ID());
-				AssetNew.setSerNo(Asset.getSerNo());
-				AssetNew.setLot(Asset.getLot());
 				AssetNew.setVersionNo(Asset.getVersionNo());
-				AssetNew.setGuaranteeDate(Asset.getGuaranteeDate());
 				AssetNew.setAssetServiceDate(Asset.getAssetServiceDate());
 				AssetNew.setUseLifeMonths(Asset.getUseLifeMonths());
 				AssetNew.setUseLifeYears(Asset.getUseLifeYears());
@@ -312,8 +307,6 @@ public class AssetSplit extends JavaProcess
 			    change.setChangeType("SPL");
 			    MRefList RefList = new MRefList (getCtx(), 0, null);	
 				change.setTextDetails(RefList.getListDescription (getCtx(),"A_Update_Type" , "SPL"));   
-			    change.setLot(AssetNew.getLot());
-				change.setSerNo(AssetNew.getSerNo());
 				change.setVersionNo(AssetNew.getVersionNo());
 			    change.setUseLifeMonths(AssetNew.getUseLifeMonths());
 			    change.setUseLifeYears(AssetNew.getUseLifeYears());
@@ -436,8 +429,6 @@ public class AssetSplit extends JavaProcess
 			    change.setChangeType("SPL");
 			    MRefList RefList = new MRefList (getCtx(), 0, null);	
 				change.setTextDetails(RefList.getListDescription (getCtx(),"A_Update_Type" , "SPL"));   
-			    change.setLot(AssetNew.getLot());
-				change.setSerNo(AssetNew.getSerNo());
 				change.setVersionNo(AssetNew.getVersionNo());
 			    change.setUseLifeMonths(AssetNew.getUseLifeMonths());
 			    change.setUseLifeYears(AssetNew.getUseLifeYears());

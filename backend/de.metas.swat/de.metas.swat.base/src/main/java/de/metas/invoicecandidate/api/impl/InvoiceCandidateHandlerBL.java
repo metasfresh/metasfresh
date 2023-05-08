@@ -46,8 +46,6 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -84,7 +82,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		}
 	};
 
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
 
 	@Override
 	public List<IInvoiceCandidateHandler> retrieveImplementationsForTable(final Properties ctx, final String tableName)
@@ -301,20 +299,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
-		final SpanMetadata request = SpanMetadata.builder()
-				.type("createMissingInvoiceCandidates")
-				.name("createMissingInvoiceCandidatesForModel")
-				.build();
-		return performanceMonitoringService.monitorSpan(() -> createForModel0(model, lockOwner, invoiceCandiateHandler), request);
-
-	}
-
-	private ImmutableList<I_C_Invoice_Candidate> createForModel0(
-			final Object model,
-			final LockOwner lockOwner,
-			final IInvoiceCandidateHandler invoiceCandiateHandler)
-	{
 			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
 		{
 			return ImmutableList.of();
@@ -348,6 +332,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 				// Update generated invoice candidates
 				updateDefaultsAndSave(result);
+
+				handler.postSave(result);
 
 				// Collect candidates (we will invalidate them all together)
 				invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
@@ -388,8 +374,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			@NonNull final IInvoiceCandidateHandler handler,
 			@NonNull final I_C_Invoice_Candidate ic)
 	{
-		Check.assumeNotNull(handler, "handler not null");
-
 		//
 		// Make sure there is a link to creator/handler.
 		// We are setting the handler only if it was not set because it might be that the handler was set by a delegated handler which is not this one.
@@ -577,5 +561,19 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		ic.setQtyPicked(qtysPicked.getStockQty().toBigDecimal());
 		ic.setQtyPickedInUOM(qtysPicked.getUOMQtyNotNull().toBigDecimal());
+	}
+
+	@Override
+	public void setIsInEffect(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setIsInEffect(ic);
+	}
+
+	@Override
+	public void postUpdate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.postUpdate(ic);
 	}
 }

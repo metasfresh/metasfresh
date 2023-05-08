@@ -3,6 +3,7 @@ package de.metas.invoice.service;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -13,11 +14,13 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -25,7 +28,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -34,9 +37,12 @@ import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface IInvoiceBL extends ISingletonService
 {
@@ -51,6 +57,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param setOrderRef if true, then the copy shall reference the same C_Order that <code>from</code> references
 	 * @param isSetLineInvoiceRef if true, then the copy shall reference the <code>from</code> C_Invoice
 	 * @param isCopyLines if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
+	 * @param isFixedInvoice if true, this means that this invoice can't be reversed, reactivated or voided after creation. In this case the invoice should also be completed.
 	 */
 	org.compiere.model.I_C_Invoice copyFrom(
 			org.compiere.model.I_C_Invoice from,
@@ -60,7 +67,8 @@ public interface IInvoiceBL extends ISingletonService
 			boolean isCounterpart,
 			boolean setOrderRef,
 			boolean isSetLineInvoiceRef,
-			boolean isCopyLines);
+			boolean isCopyLines,
+			boolean isFixedInvoice);
 
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef);
 
@@ -81,7 +89,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param setInvoiceRef if <code>true</code>, then set <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> as described for the counter parameter (do this independent of the counter parameter's value).
 	 * @param docLineCopyHandler allows copying of fields to be customized per implementation. This is e.g. used by {@link #creditInvoice(de.metas.adempiere.model.I_C_Invoice, InvoiceCreditContext)}.
 	 *            May be <code>null</code>.
-	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)
+	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean, boolean)
 	 */
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef,
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> docLineCopyHandler);
@@ -93,7 +101,6 @@ public interface IInvoiceBL extends ISingletonService
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
 				|| X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
 	}
-
 	/**
 	 * @param invoice the invoice to check
 	 * @return true if the given invoice is an Invoice (API or ARI)
@@ -126,6 +133,10 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
+
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 
 	/**
 	 * Create a credit memo for the given invoice.
@@ -373,4 +384,12 @@ public interface IInvoiceBL extends ISingletonService
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	String getLocationEmail(InvoiceId invoiceId);
+
+	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+
+	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	Instant getDateAcct(InvoiceId invoiceId);
+
+	Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
 }

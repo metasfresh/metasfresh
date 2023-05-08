@@ -24,10 +24,11 @@ package de.metas.invoice.service.impl;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
+import de.metas.money.CurrencyId;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
@@ -40,11 +41,12 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
@@ -127,5 +129,39 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		// NOTE: make sure we are returning a read-write list because some API rely on this (doing sorting)
 
 		return result;
+	}
+
+	@Nullable
+	public static ForexContractRef extractForeignContractRef(@NonNull final org.compiere.model.I_C_Invoice record)
+	{
+		if(!record.isFEC())
+		{
+			return null;
+		}
+
+		return ForexContractRef.builder()
+				.forexContractId(ForexContractId.ofRepoIdOrNull(record.getC_ForeignExchangeContract_ID()))
+				.orderCurrencyId(CurrencyId.ofRepoId(record.getFEC_Order_Currency_ID()))
+				.fromCurrencyId(CurrencyId.ofRepoId(record.getFEC_From_Currency_ID()))
+				.toCurrencyId(CurrencyId.ofRepoId(record.getFEC_To_Currency_ID()))
+				.currencyRate(record.getFEC_CurrencyRate())
+				.build();
+	}
+
+	public static void updateRecordFromForexContractRef(@NonNull final org.compiere.model.I_C_Invoice record, @Nullable final ForexContractRef from)
+	{
+		final boolean isFEC = from != null;
+		final ForexContractId forexContractId = isFEC ? from.getForexContractId() : null;
+		final BigDecimal currencyRate = isFEC ? from.getCurrencyRate() : null;
+		final CurrencyId orderCurrencyId = isFEC ? from.getOrderCurrencyId() : null;
+		final CurrencyId fromCurrencyId = isFEC ? from.getFromCurrencyId() : null;
+		final CurrencyId toCurrencyId = isFEC ? from.getToCurrencyId() : null;
+
+		record.setIsFEC(isFEC);
+		record.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		record.setFEC_Order_Currency_ID(CurrencyId.toRepoId(orderCurrencyId));
+		record.setFEC_From_Currency_ID(CurrencyId.toRepoId(fromCurrencyId));
+		record.setFEC_To_Currency_ID(CurrencyId.toRepoId(toCurrencyId));
+		record.setFEC_CurrencyRate(currencyRate);
 	}
 }

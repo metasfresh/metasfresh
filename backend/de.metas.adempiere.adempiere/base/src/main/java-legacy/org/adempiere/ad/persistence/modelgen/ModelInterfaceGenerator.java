@@ -85,6 +85,10 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_M_Product")
 			.add("org.compiere.model.I_M_Product_Category")
 			//
+			.add("org.compiere.model.I_S_ResourceType")
+			.add("org.compiere.model.I_S_Resource")
+			.add("org.compiere.model.I_S_Resource_Group")
+			//
 			.add("org.compiere.model.I_M_PricingSystem")
 			.add("org.compiere.model.I_M_PriceList")
 			.add("org.compiere.model.I_M_PriceList_Version")
@@ -138,6 +142,7 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_AD_WF_Responsible")
 			//
 			.add("org.compiere.model.I_C_Element")
+			.add("org.compiere.model.I_C_ElementValue")
 			//
 			.build();
 
@@ -719,6 +724,8 @@ public class ModelInterfaceGenerator
 		{
 			reflections = new Reflections(new ConfigurationBuilder()
 					.setScanners(new ClassnameScanner())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
 					.addUrls(ClasspathHelper.forClassLoader()));
 		}
 		return reflections;

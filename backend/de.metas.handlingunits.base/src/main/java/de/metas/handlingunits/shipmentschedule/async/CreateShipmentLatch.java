@@ -25,10 +25,10 @@ package de.metas.handlingunits.shipmentschedule.async;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.QueuePackageProcessorId;
-import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -57,7 +57,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 
 	private static final transient Logger logger = LogManager.getLogger(CreateShipmentLatch.class);
 
-	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	private CreateShipmentLatch()
 	{
@@ -139,7 +139,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 				break;
 			}
 
-			final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(QueuePackageProcessorId.ofRepoId(lockedWP.getC_Queue_PackageProcessor_ID()));
+			final QueuePackageProcessor packageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(QueuePackageProcessorId.ofRepoId(lockedWP.getC_Queue_PackageProcessor_ID()));
 
 			final String lockedWpClassname = packageProcessor.getClassname();
 			if (!CLASSNAMES.contains(lockedWpClassname))

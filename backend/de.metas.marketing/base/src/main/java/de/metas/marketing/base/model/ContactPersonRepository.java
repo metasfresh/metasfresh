@@ -11,6 +11,7 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.LocationId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -18,13 +19,17 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -110,6 +115,7 @@ public class ContactPersonRepository
 
 		contactPersonRecord.setEMail(contactPerson.getEmailAddressStringOrNull());
 		contactPersonRecord.setDeactivatedOnRemotePlatform(contactPerson.getDeactivatedOnRemotePlatform().getCode());
+		contactPersonRecord.setAD_Org_ID(contactPerson.getOrgId().getRepoId());
 
 		return contactPersonRecord;
 	}
@@ -222,7 +228,7 @@ public class ContactPersonRepository
 		return queryBL
 				.createQueryBuilder(I_MKTG_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE ,email)
+				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE, email)
 				.create()
 				.anyMatch();
 	}
@@ -279,7 +285,7 @@ public class ContactPersonRepository
 		}
 
 		return builder
-				.userId(UserId.ofRepoId(contactPersonRecord.getAD_User_ID()))
+				.userId(UserId.ofRepoIdOrNull(contactPersonRecord.getAD_User_ID()))
 				.bPartnerId(bpartnerId)
 				.name(contactPersonRecord.getName())
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
@@ -288,6 +294,7 @@ public class ContactPersonRepository
 				.bpLocationId(bpartnerlocationId)
 				.locationId(locationId)
 				.language(Language.getLanguage(contactPersonRecord.getAD_Language()))
+				.orgId(OrgId.ofRepoId(contactPersonRecord.getAD_Org_ID()))
 				.build();
 	}
 
@@ -365,4 +372,59 @@ public class ContactPersonRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	public Stream<ContactPerson> streamActiveContacts(@NonNull final CampaignId campaignId, final boolean onlyWithRemoteId)
+	{
+		//dev-note: exclude contacts which were deleted on remote platform
+		final IQueryFilter<I_MKTG_ContactPerson> deletedOnRemoteFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
+				.addStringNotLikeFilter(I_MKTG_ContactPerson.COLUMN_LastSyncStatus, RemoteToLocalSyncResult.RemoteToLocalStatus.DELETED_ON_REMOTE_PLATFORM.name(), true);
+
+		final ICompositeQueryFilter<I_MKTG_ContactPerson> statusFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
+				.setJoinOr()
+				.addFilter(deletedOnRemoteFilter)
+				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_LastSyncStatus, null);
+
+		final IQueryBuilder<I_MKTG_ContactPerson> queryBuilder = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_Campaign_ID, campaignId.getRepoId())
+				.andCollect(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_ContactPerson_ID, I_MKTG_ContactPerson.class)
+				.filter(statusFilter);
+
+		if(onlyWithRemoteId)
+		{
+			queryBuilder.addNotNull(I_MKTG_ContactPerson.COLUMNNAME_RemoteRecordId);
+		}
+
+		return queryBuilder.create()
+				.iterateAndStream()
+				.map(ContactPersonRepository::toContactPerson);
+	}
+
+	@NonNull
+	public List<ContactPerson> retrieveByCampaignAndRemoteIds(@NonNull final CampaignId campaignId, @NonNull final Set<String> remoteIds)
+	{
+		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_Campaign_ID, campaignId.getRepoId())
+				.andCollect(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_ContactPerson_ID, I_MKTG_ContactPerson.class)
+				.addInArrayFilter(I_MKTG_ContactPerson.COLUMNNAME_RemoteRecordId, remoteIds)
+				.create()
+				.stream()
+				.map(ContactPersonRepository::toContactPerson)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final Collection<String> emails)
+	{
+		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_MKTG_ContactPerson.COLUMNNAME_EMail, emails)
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_Campaign_ID, campaignId.getRepoId())
+				.andCollect(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_ContactPerson_ID, I_MKTG_ContactPerson.class)
+				.create()
+				.stream()
+				.map(ContactPersonRepository::toContactPerson)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

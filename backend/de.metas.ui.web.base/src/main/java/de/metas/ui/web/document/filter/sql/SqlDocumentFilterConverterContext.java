@@ -42,16 +42,19 @@ public class SqlDocumentFilterConverterContext
 	@Nullable ViewId viewId;
 	@Nullable UserRolePermissionsKey userRolePermissionsKey;
 	@NonNull ImmutableMap<String, Object> parameters;
+	boolean queryIfNoFilters;
 
 	@Builder
 	private SqlDocumentFilterConverterContext(
 			@Nullable final ViewId viewId,
 			@Nullable final UserRolePermissionsKey userRolePermissionsKey,
-			@NonNull @Singular final Map<String, Object> parameters)
+			@NonNull @Singular final Map<String, Object> parameters,
+			@Nullable final Boolean queryIfNoFilters)
 	{
 		this.viewId = viewId;
 		this.userRolePermissionsKey = userRolePermissionsKey;
 		this.parameters = toImmutableMap(parameters);
+		this.queryIfNoFilters = queryIfNoFilters != null ? queryIfNoFilters : true;
 	}
 
 	private static ImmutableMap<String, Object> toImmutableMap(final Map<String, Object> map)
@@ -72,14 +75,14 @@ public class SqlDocumentFilterConverterContext
 	public SqlDocumentFilterConverterContext withViewId(@Nullable final ViewId viewId)
 	{
 		return !ViewId.equals(this.viewId, viewId)
-				? new SqlDocumentFilterConverterContext(viewId, this.userRolePermissionsKey, this.parameters)
+				? new SqlDocumentFilterConverterContext(viewId, this.userRolePermissionsKey, this.parameters, this.queryIfNoFilters)
 				: this;
 	}
 
 	public SqlDocumentFilterConverterContext withUserRolePermissionsKey(final UserRolePermissionsKey userRolePermissionsKey)
 	{
 		return !Objects.equals(this.userRolePermissionsKey, userRolePermissionsKey)
-				? new SqlDocumentFilterConverterContext(this.viewId, userRolePermissionsKey, this.parameters)
+				? new SqlDocumentFilterConverterContext(this.viewId, userRolePermissionsKey, this.parameters, this.queryIfNoFilters)
 				: this;
 	}
 

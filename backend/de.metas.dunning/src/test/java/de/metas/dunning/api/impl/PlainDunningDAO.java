@@ -22,15 +22,6 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_Dunning;
@@ -39,6 +30,14 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public class PlainDunningDAO extends AbstractDunningDAO
 {
@@ -81,36 +80,6 @@ public class PlainDunningDAO extends AbstractDunningDAO
 	}
 
 	// private static final String FLAG_CandidateStaled = PlainDunningDAO.class.getName() + "#Staled";
-
-	/**
-	 * In Plain mode, staled (virtual column) is not supported. Always returning false.
-	 *
-	 * @return false
-	 */
-	@Override
-	public boolean isStaled(final I_C_Dunning_Candidate candidate)
-	{
-		// final Boolean value = (Boolean)POJOWrapper.getWrapper(candidate).getValuesMap().get(FLAG_CandidateStaled);
-		// return value != null && value.booleanValue();
-		InterfaceWrapperHelper.refresh(candidate);
-		return candidate.isStaled();
-	}
-
-	/**
-	 * This method is <b>not</b> defined in the service interface. It is intended to be used by testing code only.
-	 *
-	 * @param candidate
-	 * @param staled
-	 */
-	public void setStaled(final I_C_Dunning_Candidate candidate, boolean staled)
-	{
-		InterfaceWrapperHelper.save(candidate);
-		InterfaceWrapperHelper.refresh(candidate);
-
-		candidate.setIsStaled(staled);
-		InterfaceWrapperHelper.save(candidate);
-		// POJOWrapper.getWrapper(candidate).getValuesMap().put(FLAG_CandidateStaled, staled);
-	}
 
 	@Override
 	protected List<I_C_Dunning_Candidate> retrieveDunningCandidates(final IDunningContext context, final IDunningCandidateQuery query)
@@ -175,4 +144,11 @@ public class PlainDunningDAO extends AbstractDunningDAO
 		throw new AdempiereException("Operation not supported");
 	}
 
+	@Override
+	public int deleteTargetObsoleteCandidates(
+			@NonNull final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery,
+			@NonNull final I_C_DunningLevel dunningLevel)
+	{
+		throw new AdempiereException("Operation not supported");
+	}
 }

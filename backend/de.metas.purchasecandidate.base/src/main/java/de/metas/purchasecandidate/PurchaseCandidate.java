@@ -9,15 +9,15 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -114,6 +114,10 @@ public class PurchaseCandidate
 	private BigDecimal priceActual;
 	@Nullable
 	private BigDecimal priceEnteredEff;
+
+	@Nullable
+	private UomId priceUomId;
+
 	@Nullable
 	private Percent discount;
 	@Nullable
@@ -129,6 +133,11 @@ public class PurchaseCandidate
 	private CurrencyId currencyId;
 
 	private boolean simulated;
+
+	@Nullable
+	private String productDescription;
+	@Nullable
+	private ActivityId activityId;
 
 	@Builder
 	private PurchaseCandidate(
@@ -168,6 +177,7 @@ public class PurchaseCandidate
 			@Nullable final BigDecimal priceInternal,
 			@Nullable final BigDecimal priceActual,
 			@Nullable final BigDecimal priceEnteredEff,
+			@Nullable final UomId priceUomId,
 			@Nullable final Percent discount,
 			@Nullable final Percent discountInternal,
 			@Nullable final Percent discountEff,
@@ -176,11 +186,14 @@ public class PurchaseCandidate
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final CurrencyId currencyId,
-			final boolean simulated)
+			final boolean simulated,
+			@Nullable final String productDescription,
+			@Nullable final ActivityId activityId)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
 		this.priceEnteredEff = priceEnteredEff;
+		this.priceUomId = priceUomId;
 		this.discountInternal = discountInternal;
 		this.discountEff = discountEff;
 		this.isTaxIncluded = isTaxIncluded;
@@ -238,6 +251,10 @@ public class PurchaseCandidate
 				.filter(purchaseItem -> purchaseItem instanceof PurchaseErrorItem)
 				.map(PurchaseErrorItem::cast)
 				.collect(toCollection(ArrayList::new));
+
+		this.productDescription = productDescription;
+
+		this.activityId = activityId;
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
@@ -286,11 +303,13 @@ public class PurchaseCandidate
 		return getImmutableFields().getOrgId();
 	}
 
+	@NonNull
 	public ProductId getProductId()
 	{
 		return getImmutableFields().getProductId();
 	}
 
+	@NonNull
 	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
 		return getImmutableFields().getAttributeSetInstanceId();
@@ -407,9 +426,8 @@ public class PurchaseCandidate
 		return getImmutableFields().getPoReference();
 	}
 
-
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	
+	String getExternalPurchaseOrderUrl()
 	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
 	}
@@ -435,7 +453,7 @@ public class PurchaseCandidate
 	public static final class ErrorItemBuilder
 	{
 		private final PurchaseCandidate parent;
-		private final PurchaseErrorItemBuilder innerBuilder;
+		private final PurchaseErrorItem.PurchaseErrorItemBuilder innerBuilder;
 
 		private ErrorItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
@@ -485,7 +503,7 @@ public class PurchaseCandidate
 	public static final class OrderItemBuilder
 	{
 		private final PurchaseCandidate parent;
-		private final PurchaseOrderItemBuilder innerBuilder;
+		private final PurchaseOrderItem.PurchaseOrderItemBuilder innerBuilder;
 
 		private OrderItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
