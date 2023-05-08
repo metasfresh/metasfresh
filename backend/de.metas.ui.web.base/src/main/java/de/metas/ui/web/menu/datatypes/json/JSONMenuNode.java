@@ -7,12 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.MutableInt;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.MutableInt;
@@ -131,7 +125,6 @@ public class JSONMenuNode
 			maxLeafNodes.decrementAndGet();
 		}
 
-
 		return jsonNode;
 	}
 
@@ -235,65 +228,13 @@ public class JSONMenuNode
 		this.favorite = favorite;
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("nodeId", nodeId)
-				.add("parentId", parentId)
-				.add("caption", caption)
-				.add("captionBreadcrumb", captionBreadcrumb)
-				.add("type", type)
-				.add("elementId", elementId)
-				.add("matchedByFilter", matched)
-				.toString();
-	}
-
-	public String getNodeId()
-	{
-		return nodeId;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getCaptionBreadcrumb()
-	{
-		return captionBreadcrumb;
-	}
-
-	public JSONMenuNodeType getType()
-	{
-		return type;
-	}
-
-	public String getElementId()
-	{
-		return elementId;
-	}
-
-	public List<JSONMenuNode> getChildren()
-	{
-		return children;
-	}
-
-	@JsonIgnore
-	public boolean isLeaf()
-	{
-		return children == null || children.isEmpty();
-	}
-
-	public Boolean getMatched()
-	{
-		return matched;
-	}
+	//
+	// -----------------
+	//
 
 	public boolean isEmptyGroup()
 	{
-		return JSONMenuNodeType.group.equals(type) && isLeaf();
+		return JSONMenuNodeType.group.equals(type) && (children == null || children.isEmpty());
 	}
 
 	public static final class Builder

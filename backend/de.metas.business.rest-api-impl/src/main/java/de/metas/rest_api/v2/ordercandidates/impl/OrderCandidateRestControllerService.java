@@ -200,33 +200,7 @@ public class OrderCandidateRestControllerService
 		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(olCandIds);
 
 		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder()
-				.orderResponse(jsonOLCandProcessResponseBuilder.build());
-
-		if (!clearingResponse.isSuccessfullyCleared())
-		{
-			return responseBuilder.build();
-		}
-
-		final Set<OLCandId> validOlCandIds = clearingResponse.getOlCandIdToValidationStatus().keySet().stream()
-				.map(OLCandId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		//
-		// to the actual order/shipment/invoice creation
-		processValidOlCands(request, validOlCandIds);
-
-		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(validOlCandIds);
-
-		if (orderIds.isEmpty())
-		{
-			return responseBuilder.build();
-		}
-
-		jsonOLCandProcessResponseBuilder
-				.jsonGenerateOrdersResponse(buildGenerateOrdersResponse(orderIds))
-				.build();
-
-		responseBuilder.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build());
+				.orderResponse(buildGenerateOrdersResponse(orderIds));
 
 		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
 		{
@@ -269,29 +243,6 @@ public class OrderCandidateRestControllerService
 	{
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
-	}
-
-	@NonNull
-	private JsonOLCandClearingResponse clearOLCandidates(
-			@NonNull final String inputDataSource,
-			@NonNull final String externalHeaderId,
-			@Nullable final AsyncBatchId asyncBatchId)
-	{
-		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(inputDataSource);
-
-		final List<I_C_OLCand> olCands = getOLCands(inputDataSourceIdentifier, externalHeaderId);
-
-		final List<OLCandValidationResult> olCandValidationResults = olCandValidatorService.clearOLCandidates(olCands, asyncBatchId);
-
-		final boolean successfullyCleared = olCandValidationResults.stream().allMatch(OLCandValidationResult::isOk);
-
-		final Map<Integer, Boolean> olCandId2ValidationStatus = olCandValidationResults.stream()
-				.collect(ImmutableMap.toImmutableMap(result -> result.getOlCandId().getRepoId(), OLCandValidationResult::isOk));
-
-		return JsonOLCandClearingResponse.builder()
-				.olCandIdToValidationStatus(olCandId2ValidationStatus)
-				.successfullyCleared(successfullyCleared)
-				.build();
 	}
 
 	@NonNull
