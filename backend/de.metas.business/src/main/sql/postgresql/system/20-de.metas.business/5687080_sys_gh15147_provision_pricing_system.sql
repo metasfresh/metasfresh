@@ -21,7 +21,7 @@
  */
 
 -- 2023-05-04T15:48:26.182981Z
-INSERT INTO M_PricingSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsSubscriptionOnly,M_PricingSystem_ID,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2023-05-04 18:48:26.169','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N',540092,'Testpreisliste Beistellung',TO_TIMESTAMP('2023-05-04 18:48:26.169','YYYY-MM-DD HH24:MI:SS.US'),100,'1000008')
+INSERT INTO M_PricingSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsSubscriptionOnly,M_PricingSystem_ID,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2023-05-04 18:48:26.169','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N',540092,'Testpreisliste Beistellung',TO_TIMESTAMP('2023-05-04 18:48:26.169','YYYY-MM-DD HH24:MI:SS.US'),100,'Testpreise Beistellung')
 ;
 
 -- 2023-05-04T15:48:38.910225300Z
