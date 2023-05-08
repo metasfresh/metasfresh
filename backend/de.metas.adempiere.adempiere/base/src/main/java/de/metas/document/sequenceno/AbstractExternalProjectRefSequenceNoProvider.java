@@ -26,7 +26,6 @@ import de.metas.document.DocumentSequenceInfo;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
-import java.text.DecimalFormat;
 import java.util.function.Supplier;
 
 public abstract class AbstractExternalProjectRefSequenceNoProvider implements CustomSequenceNoProvider
@@ -54,7 +53,7 @@ public abstract class AbstractExternalProjectRefSequenceNoProvider implements Cu
 
 		final int incrementalSeqNoInt = Integer.parseInt(incrementalSeqNo);
 
-		return customPart + "-" + new DecimalFormat(decimalPattern).format(incrementalSeqNoInt);
+		return formatSeqNo(decimalPattern, incrementalSeqNoInt);
 	}
 
 	@NonNull
@@ -63,4 +62,6 @@ public abstract class AbstractExternalProjectRefSequenceNoProvider implements Cu
 		return String.valueOf(SystemTime.asLocalDate().getYear())
 				.substring(2);
 	}
+
+	protected abstract String formatSeqNo(@NonNull String decimalPattern, int incrementalSeqNoInt);
 }

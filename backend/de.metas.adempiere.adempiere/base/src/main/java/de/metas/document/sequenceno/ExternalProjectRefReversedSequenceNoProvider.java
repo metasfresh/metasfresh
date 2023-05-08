@@ -1,25 +1,16 @@
 package de.metas.document.sequenceno;
 
-import de.metas.document.DocumentSequenceInfo;
-import io.micrometer.core.lang.NonNull;
-import org.compiere.util.Evaluatee;
-import java.util.function.Supplier;
+import lombok.NonNull;
+
+import java.text.DecimalFormat;
 
 public class ExternalProjectRefReversedSequenceNoProvider extends AbstractExternalProjectRefSequenceNoProvider
 {
+	@NonNull
 	@Override
-	public boolean isApplicable(@lombok.NonNull final Evaluatee context, @lombok.NonNull final DocumentSequenceInfo docSeqInfo)
+	protected String formatSeqNo(@NonNull final String decimalPattern, final int incrementalSeqNoInt)
 	{
-		return true;
-	}
-
-	public @NonNull String provideCustomSeqNo(
-			@NonNull final Supplier<String> incrementalSeqNoSupplier,
-			@NonNull final Evaluatee context,
-			@NonNull final DocumentSequenceInfo documentSequenceInfo)
-	{
-		final String parentResult = super.provideSeqNo(incrementalSeqNoSupplier, context, documentSequenceInfo);
-		final String[] parts = parentResult.split("-");
-		return parts[1] + "-" + parts[0];
+		final String customPart = getCustomPart();
+		return new DecimalFormat(decimalPattern).format(incrementalSeqNoInt) + "-" + customPart;
 	}
 }
