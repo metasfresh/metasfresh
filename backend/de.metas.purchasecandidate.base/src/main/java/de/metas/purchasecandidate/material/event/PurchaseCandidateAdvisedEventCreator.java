@@ -102,11 +102,6 @@ public class PurchaseCandidateAdvisedEventCreator
 			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
 		}
 
-		if(requiredQty.signum() == 0)
-		{
-			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
-		}
-
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
 		return Optional.of(event.build());
 	}
