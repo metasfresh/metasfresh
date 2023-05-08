@@ -421,6 +421,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Save the Invoice Candidate, so that we can use its ID further down
+		invoiceCandBL.setPaymentTermIfMissing(icRecord);
 		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
