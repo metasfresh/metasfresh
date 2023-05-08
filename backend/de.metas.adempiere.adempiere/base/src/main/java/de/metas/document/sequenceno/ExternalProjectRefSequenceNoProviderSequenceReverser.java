@@ -5,7 +5,7 @@ import io.micrometer.core.lang.NonNull;
 import org.compiere.util.Evaluatee;
 import java.util.function.Supplier;
 
-public class ExternalProjectRefReversedSequenceNoProvider extends AbstractExternalProjectRefSequenceNoProvider
+public class ExternalProjectRefSequenceNoProviderSequenceReverser extends ExternalProjectRefSequenceNoProviderReturnResults
 {
 	@Override
 	public boolean isApplicable(@lombok.NonNull final Evaluatee context, @lombok.NonNull final DocumentSequenceInfo docSeqInfo)
@@ -13,12 +13,12 @@ public class ExternalProjectRefReversedSequenceNoProvider extends AbstractExtern
 		return true;
 	}
 
-	public @NonNull String provideCustomSeqNo(
+	public @NonNull String ReverseSeqNo(
 			@NonNull final Supplier<String> incrementalSeqNoSupplier,
 			@NonNull final Evaluatee context,
 			@NonNull final DocumentSequenceInfo documentSequenceInfo)
 	{
-		final String parentResult = super.provideSeqNo(incrementalSeqNoSupplier, context, documentSequenceInfo);
+		final String parentResult = super.getSeqNo(incrementalSeqNoSupplier, context, documentSequenceInfo);
 		final String[] parts = parentResult.split("-");
 		return parts[1] + "-" + parts[0];
 	}
