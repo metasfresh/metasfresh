@@ -17,6 +17,7 @@ import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.impl.OrderLineBL;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
@@ -89,13 +90,12 @@ public class PurchaseOrderFromItemsAggregatorTest
 		private int updatePricesCallCount;
 
 		@Override
-		public void updatePrices(org.compiere.model.@NonNull I_C_OrderLine orderLine)
+		public void updatePrices(@NonNull OrderLinePriceUpdateRequest request)
 		{
 			// mock IOrderLineBL.updatePrices() because
 			// setting up the required masterdata and testing the pricing engine is out of scope.
 
 			updatePricesCallCount++;
-
 		}
 	}
 
