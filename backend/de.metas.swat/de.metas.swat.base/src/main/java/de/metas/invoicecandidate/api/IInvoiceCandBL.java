@@ -136,6 +136,8 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
+	void setPaymentTermIfMissing(@NonNull I_C_Invoice_Candidate icRecord);
+
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 
 	/**
@@ -324,7 +326,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
-	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">...</a>).
 	 * <p>
 	 * Candidate will not be saved.
 	 */

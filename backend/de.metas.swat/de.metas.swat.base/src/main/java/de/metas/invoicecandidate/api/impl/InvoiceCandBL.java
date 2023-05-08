@@ -48,6 +48,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
@@ -112,6 +114,7 @@ import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTerm;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -163,8 +166,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -232,8 +233,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
-
-	final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 
 	/**
 	 * Blueprint for a cache that is used by {@link #isAllOtherICsInHeaderAggregationGroupDelivered(I_C_Invoice_Candidate)}.
@@ -659,6 +658,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	@Nullable
 	private Quantity extractQtyInvoiced(@NonNull final I_C_Invoice_Line_Alloc ila)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(ila.getC_UOM_ID());
@@ -750,6 +750,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.setContext(ctx, trxName)
 				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
 				.generateInvoices(candidates);
+	}
+
+
+	@Override
+	public void setPaymentTermIfMissing(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getC_PaymentTerm_ID() > 0)
+		{
+			return;
+		}
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
+
+		final PaymentTermId paymentTermIdToUse = paymentTermRepository
+				.retrievePaymentTermId(paymentTermQuery)
+				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
+						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
 	}
 
 	@Override
@@ -1079,6 +1100,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return result;
 	}
 
+	@Nullable
 	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);

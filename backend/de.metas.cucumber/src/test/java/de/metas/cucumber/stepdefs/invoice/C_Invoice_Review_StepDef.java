@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_Review_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_ExternalId;
@@ -104,7 +104,7 @@ public class C_Invoice_Review_StepDef
 			throw new AdempiereException("Don't know how to identify invoice to review");
 		}
 
-		final JsonInvoiceReviewUpsertItem payload = JsonInvoiceReviewUpsertItem.builder()
+		final JsonInvoiceReviewUpsertItem payload = payloadBuilder
 				.orgCode(orgCode)
 				.extendedProps(Collections.singletonMap("customColumn", customColumn))
 				.build();
