@@ -725,23 +725,34 @@ public class InventoryRepository
 
 	public List<I_M_InventoryLine> retrieveAllLinesForHU(final @NonNull IContextAware ctxAware, @NonNull final HuId huId)
 	{
+		final List<I_M_HU> includedHUs = huDAO.retrieveIncludedHUs(huDAO.getById(huId));
+
+		final ImmutableSet<HuId> includedHUIds = includedHUs.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<HuId> huIds = ImmutableSet.<HuId>builder()
+				.addAll(includedHUIds)
+				.add(huId)
+				.build();
+
 		final List<I_M_InventoryLine> linesViaHUId = queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huId)
+				.addInArrayFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huIds)
 				.create()
 				.list();
 
 		final List<I_M_InventoryLine> linesViaHUInventoryLine = queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
-				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_HU_ID, huId)
+				.addInArrayFilter(I_M_InventoryLine_HU.COLUMNNAME_M_HU_ID, huIds)
 				.andCollect(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, I_M_InventoryLine.class)
 				.create()
 				.list();
 
 		final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
 				.setJoinOr()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huId.getRepoId())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, huId.getRepoId())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, huId.getRepoId())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, huId.getRepoId());
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, huIds)
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, huIds)
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, huIds);
 
 		final List<I_M_InventoryLine> linesViaHUAssignment = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
 				.addOnlyActiveRecordsFilter()

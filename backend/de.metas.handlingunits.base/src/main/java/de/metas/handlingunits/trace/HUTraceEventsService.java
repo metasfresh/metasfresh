@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -614,10 +615,7 @@ public class HUTraceEventsService
 				final HuId huId = inventoryLineHU.getHuId();
 				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
-				if (huStatusBL.isStatusDestroyed(huRecord))
-				{
-					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
-				}
+
 
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
 				Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; inventoryLineHU={}", topLevelHuId, inventoryLineHU);
@@ -630,8 +628,15 @@ public class HUTraceEventsService
 
 				for (final I_M_HU vhu : vhus)
 				{
-					builderSetVhuProductAndQty(builder, vhu)
+					final HUTraceEventBuilder huTraceEventBuilder = builderSetVhuProductAndQty(builder, vhu)
 							.vhuStatus(vhu.getHUStatus());
+
+					final BigDecimal qtyCountMinusBooked = inventoryLineRecord.getQtyCount().subtract(inventoryLineRecord.getQtyBook());
+					if (!(qtyCountMinusBooked.signum() == 0))
+					{
+
+						huTraceEventBuilder.qty(Quantitys.create(qtyCountMinusBooked, UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID())));
+					}
 
 					huTraceRepository.addEvent(builder.build());
 				}

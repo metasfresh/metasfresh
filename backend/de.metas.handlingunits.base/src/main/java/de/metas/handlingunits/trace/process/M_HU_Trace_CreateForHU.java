@@ -30,7 +30,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MovementLine;
 
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -71,13 +70,13 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_M_HU> selectedHUsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
-
-		final Iterator<I_M_HU> hus = queryBL.createQueryBuilder(I_M_HU.class)
+		final List<I_M_HU> hus = queryBL.createQueryBuilder(I_M_HU.class)
 				.filter(selectedHUsFilter)
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
 				.create()
-				.iterate(I_M_HU.class);
+				.list();
 
-		for (final I_M_HU hu : IteratorUtils.asIterable(hus))
+		for (final I_M_HU hu : hus)
 		{
 			writeTraceForHu(hu);
 		}
