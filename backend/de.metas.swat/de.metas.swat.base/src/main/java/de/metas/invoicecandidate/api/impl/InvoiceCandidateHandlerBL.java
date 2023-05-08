@@ -409,7 +409,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			ic.setAD_User_InCharge_ID(adUserInChargeId);
 		}
 
-		final InvoiceCandBL invoiceCandBL = Services.get(InvoiceCandBL.class); // not having this as field bc there might be problems with circular dependencies
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class); // not having this as field bc there might be problems with circular dependencies
 		invoiceCandBL.setPaymentTermIfMissing(ic);
 
 		// Save it
