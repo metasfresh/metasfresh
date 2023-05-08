@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Disabled
@@ -50,6 +51,7 @@ public class ManualPOCTest
 		do
 		{
 			SimulationOptimizerTask.builder()
+					.executorService(Executors.newSingleThreadExecutor())
 					.solverFactory(createSolverFactory())
 					.simulationOptimizerStatusDispatcher(simulationOptimizerStatusDispatcher)
 					.planLoaderAndSaver(planLoaderAndSaver)
