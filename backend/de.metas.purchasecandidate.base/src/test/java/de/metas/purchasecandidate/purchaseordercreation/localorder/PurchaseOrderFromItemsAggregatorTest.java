@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
@@ -8,6 +9,9 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.impl.OrderLineBL;
@@ -108,8 +112,8 @@ public class PurchaseOrderFromItemsAggregatorTest
 		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
 		dimensionFactories.add(new OrderLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(AttachmentEntryService.createInstanceForUnitTesting(), NullCustomizedWindowInfoMapRepository.instance));
 
 		dimension = createDimension();
 
