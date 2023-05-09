@@ -155,6 +155,11 @@ public class OrderFactory
 				orderBL.setBillLocation(order);
 			}
 
+			if (order.getM_PricingSystem_ID() > 0 && order.getC_BPartner_Location_ID() > 0)
+			{
+				orderBL.setPriceList(order);
+			}
+
 			saveRecord(order);
 
 			return order;

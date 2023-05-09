@@ -1,5 +1,6 @@
 package de.metas.calendar.plan_optimizer;
 
+import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.persistance.DatabasePlanLoaderAndSaver;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.organization.IOrgDAO;
@@ -9,31 +10,33 @@ import de.metas.project.workorder.project.WOProjectService;
 import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
+import org.optaplanner.core.api.solver.SolverFactory;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class SimulationOptimizerTaskExecutor
 {
-	private final ISysConfigBL sysconfigBL = Services.get(ISysConfigBL.class);
+	private final SolverFactory<Plan> solverFactory;
 	private final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher;
 	private final DatabasePlanLoaderAndSaver planLoaderAndSaver;
-
-	private static final String SYSCONFIG_TerminationSpentLimit = "de.metas.calendar.plan_optimizer.TerminationSpentLimitMillis";
-	private static final Duration DEFAULT_TerminationSpentLimit = Duration.ofMinutes(5);
+	private final ExecutorService executorService;
 
 	private final ConcurrentHashMap<SimulationPlanId, SimulationOptimizerTask> runningTasks = new ConcurrentHashMap<>();
 
 	public SimulationOptimizerTaskExecutor(
+			@NonNull final SolverFactory<Plan> solverFactory,
 			@NonNull final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher,
 			@NonNull final WOProjectService woProjectService,
 			@NonNull final WOProjectSimulationService woProjectSimulationService,
 			@NonNull final WOProjectConflictService woProjectConflictService,
 			@NonNull final ResourceService resourceService)
 	{
+		this.solverFactory = solverFactory;
 		this.simulationOptimizerStatusDispatcher = simulationOptimizerStatusDispatcher;
 		this.planLoaderAndSaver = new DatabasePlanLoaderAndSaver(
 				Services.get(IOrgDAO.class),
@@ -41,12 +44,16 @@ public class SimulationOptimizerTaskExecutor
 				woProjectSimulationService,
 				woProjectConflictService,
 				resourceService);
+
+		executorService = createExecutorService();
 	}
 
-	private Duration getTerminationSpentLimit()
+	private static ExecutorService createExecutorService()
 	{
-		final int millis = sysconfigBL.getIntValue(SYSCONFIG_TerminationSpentLimit, 0);
-		return millis > 0 ? Duration.ofMillis(millis) : DEFAULT_TerminationSpentLimit;
+		final CustomizableThreadFactory threadFactory = new CustomizableThreadFactory("simulation-optimizer-");
+		threadFactory.setDaemon(true);
+
+		return Executors.newFixedThreadPool(10, threadFactory);
 	}
 
 	public void start(@NonNull final SimulationPlanId simulationId)
@@ -61,10 +68,11 @@ public class SimulationOptimizerTaskExecutor
 					else
 					{
 						final SimulationOptimizerTask task = SimulationOptimizerTask.builder()
+								.executorService(executorService)
+								.solverFactory(solverFactory)
 								.simulationOptimizerStatusDispatcher(simulationOptimizerStatusDispatcher)
 								.planLoaderAndSaver(planLoaderAndSaver)
 								.simulationId(simulationId)
-								.terminationSpentLimit(getTerminationSpentLimit())
 								.onTaskComplete(() -> runningTasks.remove(simulationId))
 								.build();
 						task.start();

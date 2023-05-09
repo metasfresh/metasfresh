@@ -5,7 +5,6 @@ import com.google.common.base.Stopwatch;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.persistance.PlanLoaderAndSaver;
-import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
@@ -14,18 +13,12 @@ import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
 import org.optaplanner.core.api.solver.SolutionManager;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
-import org.optaplanner.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import org.optaplanner.core.config.constructionheuristic.ConstructionHeuristicType;
-import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
-import org.optaplanner.core.config.heuristic.selector.value.ValueSelectorConfig;
-import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
-import org.optaplanner.core.config.localsearch.LocalSearchType;
-import org.optaplanner.core.config.solver.SolverConfig;
 import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 class SimulationOptimizerTask implements Runnable
 {
@@ -33,31 +26,33 @@ class SimulationOptimizerTask implements Runnable
 
 	//
 	// Params
+	private final ExecutorService executorService;
+	private final SolverFactory<Plan> solverFactory;
 	private final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher;
 	private final PlanLoaderAndSaver planLoaderAndSaver;
 	private final SimulationPlanId simulationId;
-	private final Duration terminationSpentLimit;
 	private final Runnable onTaskComplete;
 
 	//
 	// State
-	private SolverFactory<Plan> solverFactory;
 	private Solver<Plan> solver;
 	private SolutionManager<Plan, BendableScore> _solutionManager;
 	private CompletableFuture<?> future;
 
 	@Builder
 	private SimulationOptimizerTask(
+			@NonNull final ExecutorService executorService,
+			@NonNull final SolverFactory<Plan> solverFactory,
 			@NonNull final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher,
 			@NonNull final PlanLoaderAndSaver planLoaderAndSaver,
 			@NonNull final SimulationPlanId simulationId,
-			@NonNull final Duration terminationSpentLimit,
 			@NonNull final Runnable onTaskComplete)
 	{
+		this.executorService = executorService;
+		this.solverFactory = solverFactory;
 		this.simulationOptimizerStatusDispatcher = simulationOptimizerStatusDispatcher;
 		this.planLoaderAndSaver = planLoaderAndSaver;
 		this.simulationId = simulationId;
-		this.terminationSpentLimit = terminationSpentLimit;
 		this.onTaskComplete = onTaskComplete;
 	}
 
@@ -75,7 +70,7 @@ class SimulationOptimizerTask implements Runnable
 		}
 
 		solver = null; // just to make sure
-		future = CompletableFuture.runAsync(this)
+		future = CompletableFuture.runAsync(this, executorService)
 				.whenComplete((v, ex) -> {
 					if (ex != null)
 					{
@@ -118,7 +113,6 @@ class SimulationOptimizerTask implements Runnable
 			this.solver = null;
 		}
 
-		final SolverFactory<Plan> solverFactory = getSolverFactory();
 		final Solver<Plan> solver = this.solver = solverFactory.buildSolver();
 		solver.addEventListener(event -> {
 			final Plan solution = event.getNewBestSolution();
@@ -129,42 +123,12 @@ class SimulationOptimizerTask implements Runnable
 		return solver;
 	}
 
-	private SolverFactory<Plan> getSolverFactory()
-	{
-		SolverFactory<Plan> solverFactory = this.solverFactory;
-		if (solverFactory == null)
-		{
-			final ConstructionHeuristicPhaseConfig constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
-			constructionHeuristicPhaseConfig.setConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT);
-
-			final ChangeMoveSelectorConfig moveSelectorConfig = new ChangeMoveSelectorConfig();
-			final ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig();
-			valueSelectorConfig.setVariableName(Step.FIELD_delay);
-			moveSelectorConfig.setValueSelectorConfig(valueSelectorConfig);
-
-			final LocalSearchPhaseConfig localSearchPhaseConfig = new LocalSearchPhaseConfig();
-			localSearchPhaseConfig.setMoveSelectorConfig(moveSelectorConfig);
-			localSearchPhaseConfig.setLocalSearchType(LocalSearchType.TABU_SEARCH);
-
-			final SolverConfig solverConfig = new SolverConfig()
-					.withSolutionClass(Plan.class)
-					.withEntityClasses(Step.class)
-					.withConstraintProviderClass(PlanConstraintProvider.class)
-					.withTerminationSpentLimit(terminationSpentLimit)
-					.withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig);
-
-			solverFactory = this.solverFactory = SolverFactory.create(solverConfig)
-			;
-		}
-		return solverFactory;
-	}
-
 	private SolutionManager<Plan, BendableScore> getSolutionManager()
 	{
 		SolutionManager<Plan, BendableScore> solutionManager = this._solutionManager;
 		if (solutionManager == null)
 		{
-			solutionManager = this._solutionManager = SolutionManager.create(getSolverFactory());
+			solutionManager = this._solutionManager = SolutionManager.create(solverFactory);
 		}
 		return solutionManager;
 	}

@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
@@ -8,8 +9,15 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.impl.OrderLineBL;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
@@ -23,6 +31,7 @@ import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionF
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
+import de.metas.user.UserGroupRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -81,13 +90,12 @@ public class PurchaseOrderFromItemsAggregatorTest
 		private int updatePricesCallCount;
 
 		@Override
-		public void updatePrices(org.compiere.model.@NonNull I_C_OrderLine orderLine)
+		public void updatePrices(@NonNull OrderLinePriceUpdateRequest request)
 		{
 			// mock IOrderLineBL.updatePrices() because
 			// setting up the required masterdata and testing the pricing engine is out of scope.
 
 			updatePricesCallCount++;
-
 		}
 	}
 
@@ -108,8 +116,10 @@ public class PurchaseOrderFromItemsAggregatorTest
 		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
 		dimensionFactories.add(new OrderLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(AttachmentEntryService.createInstanceForUnitTesting(), NullCustomizedWindowInfoMapRepository.instance));
+		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
+		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 
 		dimension = createDimension();
 
