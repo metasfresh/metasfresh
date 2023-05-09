@@ -58,17 +58,14 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -108,7 +105,6 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -152,8 +148,6 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
 
 public class C_Invoice_StepDef
 {
-	private static final Logger logger = LogManager.getLogger(C_Invoice_StepDef.class);
-
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -164,8 +158,6 @@ public class C_Invoice_StepDef
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
@@ -832,7 +824,7 @@ public class C_Invoice_StepDef
 		message.append("Looking for invoice candidate with:").append("\n")
 				.append(COLUMNNAME_C_Order_ID).append(" : ").append(targetOrderId).append("\n")
 				.append(COLUMNNAME_QtyToInvoice).append(" > 0").append("\n")
-				.append("OR ").append(COLUMNNAME_QtyToInvoice_Override).append(" > 0");
+				.append("OR ").append(COLUMNNAME_QtyToInvoice_Override).append(" > 0").append("\n");
 
 		message.append("C_Invoice_Candidate record:").append("\n");
 
