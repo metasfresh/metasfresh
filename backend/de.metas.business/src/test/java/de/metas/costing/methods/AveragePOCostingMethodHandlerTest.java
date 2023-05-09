@@ -399,8 +399,10 @@ public class AveragePOCostingMethodHandlerTest
 
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-			// The cost price was not changed because of the existing qty
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+
+			// The cost price is changed even if existing qty
+			// because we decided that the responsibility of whom is setting the explicit cost price.
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
 		}
 	}
 
@@ -444,8 +446,10 @@ public class AveragePOCostingMethodHandlerTest
 
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
-			// The cost price was not changed because of the existing qty
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5");
+
+			// The cost price is changed even if existing qty
+			// because we decided that the responsibility of whom is setting the explicit cost price.
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
 		}
 	}
 
