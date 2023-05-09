@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace.repository;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
@@ -15,6 +16,7 @@ import de.metas.uom.UomId;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -30,12 +32,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,7 +84,7 @@ public class HuTraceEventToDbRecordUtil
 
 		return builder.build();
 	}
-	
+
 	public static void copyToDbRecord(
 			@NonNull final HUTraceEvent huTraceRecord,
 			@NonNull final I_M_HU_Trace dbRecord)
@@ -91,16 +93,20 @@ public class HuTraceEventToDbRecordUtil
 		{
 			dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId().get().getRepoId()); // note that zero means "new", and not "nothing" or null
 		}
-		// HU_TraceEvent_ID is not copied to the dbRecord! because the dbREcord is where it always comes from
+		final String huStatus = huTraceRecord.getVhuStatus();
+		final BigDecimal absoluteQuantity = huTraceRecord.getQty().toBigDecimal();
+		final BigDecimal quantityToSet = X_M_HU.HUSTATUS_Destroyed.equals(huStatus) ? absoluteQuantity.negate() : absoluteQuantity;
+
+		// HU_TraceEvent_ID is not copied to the dbRecord! because the dbRecord is where it always comes from
 		dbRecord.setAD_Org_ID(OrgId.toRepoIdOrAny(huTraceRecord.getOrgId()));
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
 		dbRecord.setVHU_ID(huTraceRecord.getVhuId().getRepoId());
 		dbRecord.setM_Product_ID(huTraceRecord.getProductId().getRepoId());
-		dbRecord.setQty(huTraceRecord.getQty().toBigDecimal());
+		dbRecord.setQty(quantityToSet);
 		dbRecord.setC_UOM_ID(UomId.toRepoId(huTraceRecord.getQty().getUomId()));
-		dbRecord.setVHUStatus(huTraceRecord.getVhuStatus());
+		dbRecord.setVHUStatus(huStatus);
 		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());
 		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId().getRepoId());
 		dbRecord.setVHU_Source_ID(HuId.toRepoId(huTraceRecord.getVhuSourceId()));

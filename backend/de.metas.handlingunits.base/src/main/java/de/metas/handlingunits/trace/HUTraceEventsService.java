@@ -629,20 +629,20 @@ public class HUTraceEventsService
 				else
 				{
 					builder.topLevelHuId(huId);
-					createTraceForInventoryLineHU(builder, inventoryLineRecord, huRecord);
+					createTraceForInventoryLine(builder, inventoryLineRecord, huRecord);
 				}
 
 				final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
 
 				for (final I_M_HU vhu : vhus)
 				{
-					createTraceForInventoryLineHU(builder, inventoryLineRecord, vhu);
+					createTraceForInventoryLine(builder, inventoryLineRecord, vhu);
 				}
 			}
 		}
 	}
 
-	private void createTraceForInventoryLineHU(final @NonNull HUTraceEventBuilder builder, @NonNull final I_M_InventoryLine inventoryLineRecord, @NonNull final I_M_HU vhu)
+	private void createTraceForInventoryLine(final @NonNull HUTraceEventBuilder builder, @NonNull final I_M_InventoryLine inventoryLineRecord, @NonNull final I_M_HU vhu)
 	{
 		final HUTraceEventBuilder huTraceEventBuilder = builderSetVhuProductAndQty(builder, vhu)
 				.vhuStatus(vhu.getHUStatus());
@@ -675,12 +675,21 @@ public class HUTraceEventsService
 			final HuId huId = HuId.ofRepoId(huAssignment.getM_HU_ID());
 			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
-			final HuId topLevelHuId = huId;
-			Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
 
 			builder.orgId(OrgId.ofRepoIdOrNull(ppCostCollector.getAD_Org_ID()))
-					.eventTime(ppCostCollector.getUpdated().toInstant())
-					.topLevelHuId(huId);
+					.eventTime(ppCostCollector.getUpdated().toInstant());
+
+			final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
+			if (topLevelHuId != null)
+			{
+				builder.topLevelHuId(topLevelHuId);
+			}
+			else
+			{
+				builder.topLevelHuId(huId);
+				createTraceForProductionIssueHU(builder, ppOrderId, huRecord);
+			}
+
 
 			// createTraceForProductionIssueHU(builder, ppOrderId, huRecord); the traces are already created for the vhus which  includes the huRecord. Making this call would result in duplicates.
 			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);

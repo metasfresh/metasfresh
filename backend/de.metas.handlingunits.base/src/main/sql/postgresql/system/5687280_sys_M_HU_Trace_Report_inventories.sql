@@ -89,7 +89,7 @@ UNION ALL
                                              po.documentno                                                               AS PPOrder,
                                              i.documentno                                                                AS Inventory,
                                              COALESCE(io.movementdate, cc.movementdate, po.datepromised, i.movementdate) AS DocumentDate,
-                                             (CASE WHEN t.hutracetype = 'PRODUCTION_ISSUE' THEN -1 ELSE 1 END) * t.qty   AS Qty,
+                                             t.qty                                                                       AS Qty,
                                              u.uomsymbol                                                                 AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
