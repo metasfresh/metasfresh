@@ -161,6 +161,11 @@ public class JsonWorkOrderProjectUpsertRequest
 
 	@Schema(hidden = true)
 	private boolean dateOfProvisionByBPartnerSet;
+	
+	private String specialistConsultantValue;
+
+	@Schema(hidden = true)
+	private boolean specialistConsultantValueSet;
 
 	private List<JsonWorkOrderStepUpsertItemRequest> steps = ImmutableList.of();
 
@@ -289,6 +294,12 @@ public class JsonWorkOrderProjectUpsertRequest
 	{
 		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
 		this.dateOfProvisionByBPartnerSet = true;
+	}
+
+	public void setSpecialistConsultantValue(final String specialistConsultantValue)
+	{
+		this.specialistConsultantValue = specialistConsultantValue;
+		this.specialistConsultantValueSet = true;
 	}
 
 	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest)
