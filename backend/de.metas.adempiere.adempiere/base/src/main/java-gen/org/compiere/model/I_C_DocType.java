@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
@@ -124,8 +123,9 @@ public interface I_C_DocType
 
 	/**
 	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -133,8 +133,9 @@ public interface I_C_DocType
 
 	/**
 	 * Get Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -861,7 +862,7 @@ public interface I_C_DocType
 	String COLUMNNAME_IsSplitWhenDifference = "IsSplitWhenDifference";
 
 	/**
-	 * Set Serial No. Sequence.
+	 * Set Lot No. Sequence.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -870,7 +871,7 @@ public interface I_C_DocType
 	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
 
 	/**
-	 * Get Serial No. Sequence.
+	 * Get Lot No. Sequence.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
