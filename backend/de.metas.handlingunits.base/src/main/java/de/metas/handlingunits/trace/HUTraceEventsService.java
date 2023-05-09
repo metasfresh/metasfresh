@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -104,6 +105,8 @@ public class HUTraceEventsService
 	private final transient HUAccessService huAccessService;
 
 	private final transient InventoryRepository inventoryRepository;
+
+	private final transient IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
@@ -621,11 +624,11 @@ public class HUTraceEventsService
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
 				if (topLevelHuId != null)
 				{
-
 					builder.topLevelHuId(topLevelHuId);
 				}
 				else
 				{
+					builder.topLevelHuId(huId);
 					createTraceForInventoryLineHU(builder, inventoryLineRecord, huRecord);
 				}
 
@@ -647,8 +650,11 @@ public class HUTraceEventsService
 		final BigDecimal qtyCountMinusBooked = inventoryLineRecord.getQtyCount().subtract(inventoryLineRecord.getQtyBook());
 		if (!(qtyCountMinusBooked.signum() == 0))
 		{
-
 			huTraceEventBuilder.qty(Quantitys.create(qtyCountMinusBooked, UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID())));
+		}
+		else if (inventoryBL.isInternalUseInventory(inventoryLineRecord))
+		{
+			huTraceEventBuilder.qty(Quantitys.create(inventoryLineRecord.getQtyInternalUse(), UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID())));
 		}
 
 		huTraceRepository.addEvent(builder.build());
