@@ -23,10 +23,8 @@
 package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.JsonObjectMapperHolder;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -43,10 +41,8 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
-import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
-import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_List_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -54,7 +50,6 @@ import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.serviceIssue.S_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
-import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
 import de.metas.document.DocTypeId;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -68,12 +63,11 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Loggables;
@@ -121,6 +115,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -182,10 +178,6 @@ public class C_Invoice_Candidate_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
@@ -199,17 +191,13 @@ public class C_Invoice_Candidate_StepDef
 	private final M_InOutLine_StepDefData inoutLineTable;
 	private final I_Invoice_Candidate_StepDefData iInvoiceCandidatetable;
 	private final AD_User_StepDefData contactTable;
-	private final C_UOM_StepDefData uomTable;
 	private final AD_Org_StepDefData orgTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil;
 	private final S_Issue_StepDefData issueTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
-	private final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable;
 	private final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable;
-
-	private final TestContext testContext;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -225,16 +213,13 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
 			@NonNull final I_Invoice_Candidate_StepDefData iInvoiceCandidateTable,
 			@NonNull final AD_User_StepDefData contactTable,
-			@NonNull final C_UOM_StepDefData uomTable,
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil,
 			@NonNull final S_Issue_StepDefData issueTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Activity_StepDefData activityTable,
-			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable,
-			@NonNull final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable,
-			@NonNull final TestContext testContext)
+			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -248,7 +233,6 @@ public class C_Invoice_Candidate_StepDef
 		this.iInvoiceCandidatetable = iInvoiceCandidateTable;
 		this.contactTable = contactTable;
 		this.docTypeTable = docTypeTable;
-		this.uomTable = uomTable;
 		this.orgTable = orgTable;
 		this.contractTable = contractTable;
 		this.tableRecordReferenceStepDefUtil = tableRecordReferenceStepDefUtil;
@@ -257,8 +241,6 @@ public class C_Invoice_Candidate_StepDef
 		this.activityTable = activityTable;
 		this.shipmentTable = shipmentTable;
 		this.invoiceCandidateListTable = invoiceCandidateListTable;
-		this.iInvoiceCandidateListTable = iInvoiceCandidateListTable;
-		this.testContext = testContext;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -1140,7 +1122,7 @@ public class C_Invoice_Candidate_StepDef
 														   row, candidatesQuery,
 														   candidatesQuery.list(),
 														   Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery), logContext);
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(candidatesQuery), logContext);
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
@@ -1229,7 +1211,6 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> retrieveInvoiceCandidate(
-			final @NonNull Map<String, String> row,
 			final @NonNull IQuery<I_C_Invoice_Candidate> candidateIQuery)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = candidateIQuery.firstOnlyOrNull(I_C_Invoice_Candidate.class);
@@ -1906,11 +1887,9 @@ public class C_Invoice_Candidate_StepDef
 					.setParameter("InvoiceCandidateId", invoiceCandidate.get().getC_Invoice_Candidate_ID());
 		}
 
-		final Supplier<Boolean> isInvoiceCandidateValidated = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.get().getC_Invoice_Candidate_ID())
-				.create()
-				.count() == 0;
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.get().getC_Invoice_Candidate_ID());
 
+		final Supplier<Boolean> isInvoiceCandidateValidated = () -> !invoiceCandDAO.hasInvalidInvoiceCandidates(ImmutableList.of(invoiceCandidateId));
 		StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
 	}
 
@@ -1928,5 +1907,43 @@ public class C_Invoice_Candidate_StepDef
 			default:
 				throw new AdempiereException("Table not supported! TableName:" + tableName);
 		}
+	}
+
+	@And("after not more than {int}s, the orders' C_Invoice_Candidates are updated")
+	public void afterNotMoreThanSTheOrdersC_Invoice_CandidatesAreUpdated(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateIds = ImmutableSet.builder();
+		final Map<String, Integer> orderIDs = new HashMap<>();
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+
+			final String orderIdentifierCandidate = DataTableUtil.extractStringForColumnName(tableRow, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Order orderRecord = orderTable.get(orderIdentifierCandidate);
+			orderIDs.put(orderIdentifierCandidate, orderRecord.getC_Order_ID());
+
+			final List<InvoiceCandidateId> invoiceCandidateIdsForOrder = invoiceCandDAO
+					.retrieveInvoiceCandidatesForOrderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
+					.stream()
+					.map(icRecord -> InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
+					.collect(ImmutableList.toImmutableList());
+
+			invoiceCandidateIds.addAll(invoiceCandidateIdsForOrder);
+
+		}
+
+		assertICsAreValidated(timeoutSec, invoiceCandidateIds.build(), orderIDs);
+	}
+
+	private void assertICsAreValidated(
+			final int timeoutSec,
+			final Collection<InvoiceCandidateId> invoiceCandidateIds,
+			final Map<String, Integer> orderIDs) throws InterruptedException
+	{
+		final Supplier<Boolean> isInvoiceCandidatesValidated = () -> !invoiceCandDAO.hasInvalidInvoiceCandidates(invoiceCandidateIds);
+		final Runnable logContext = () -> Assertions.fail("Not all ICs for are up do date for C_Order_IDs=%s", orderIDs);
+		StepDefUtil.tryAndWait(timeoutSec,
+							   500,
+							   isInvoiceCandidatesValidated,
+							   logContext);
 	}
 }

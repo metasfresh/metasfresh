@@ -70,9 +70,13 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+    And after not more than 60s, the orders' C_Invoice_Candidates are updated
+      | C_Order_ID.Identifier |
+      | o_1                   |
+      | o_2                   |
+
+    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
@@ -144,9 +148,14 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s, the orders' C_Invoice_Candidates are updated
+      | C_Order_ID.Identifier |
+      | o_1                   |
+      | o_2                   |
+
+    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
@@ -218,9 +227,14 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s, the orders' C_Invoice_Candidates are updated
+      | C_Order_ID.Identifier |
+      | o_1                   |
+      | o_2                   |
+
+    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
@@ -292,9 +306,14 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1,invoice_2     |
+
+    And after not more than 60s, the orders' C_Invoice_Candidates are updated
+      | C_Order_ID.Identifier |
+      | o_1                   |
+      | o_2                   |
+
+    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1,invoice_2.
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
@@ -370,9 +389,14 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s, the orders' C_Invoice_Candidates are updated
+      | C_Order_ID.Identifier |
+      | o_1                   |
+      | o_2                   |
+
+    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
