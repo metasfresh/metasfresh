@@ -73,6 +73,8 @@ public class WOProjectSteps
 		}
 	}
 
+	public ImmutableList<WOProjectStep> toOrderedList() {return stepsInOrder;}
+
 	public Stream<WOProjectStep> stream() {return stepsInOrder.stream();}
 
 	public WOProjectStep getById(@NonNull WOProjectStepId stepId)
