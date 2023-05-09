@@ -63,7 +63,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 
 		//
 		// try to set the C_BPartner_ID for our queueItem
-		if (archive.getC_BPartner_ID() > 0)
+		if (archive.getC_BPartner_ID() > 0 && queueItem.getC_BPartner_ID()<=0)
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from AD_Archive {}: [C_BPartner_ID={}]",
 					new Object[] { queueItem, archive, archive.getC_BPartner_ID() });
@@ -78,7 +78,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			return;
 		}
 
-		if (archive.getC_BPartner_ID() < 0 && InterfaceWrapperHelper.hasModelColumnName(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID))
+		if (queueItem.getC_BPartner_ID()<=0 && archive.getC_BPartner_ID() < 0 && InterfaceWrapperHelper.hasModelColumnName(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID))
 		{
 			// the archive itself did not reference a C_BPartner_ID, so we try the object that is referenced by the archive
 			final Optional<Integer> bpartnerID = InterfaceWrapperHelper.getValue(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID);
