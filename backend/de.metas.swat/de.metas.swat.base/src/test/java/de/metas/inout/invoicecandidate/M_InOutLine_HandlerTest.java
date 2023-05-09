@@ -47,7 +47,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -141,7 +141,7 @@ public class M_InOutLine_HandlerTest
 		save(packagingInOutLine);
 
 		orderPaymentTermId = createPaymentTerm("orderPaymentTerm");
-		paymentTermA = createPaymentTerm("paymentTermA");
+		paymentTermA = createPaymentTerm("paymentTermA", true);
 		paymentTermB = createPaymentTerm("paymentTermB");
 
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
@@ -153,8 +153,14 @@ public class M_InOutLine_HandlerTest
 
 	private PaymentTermId createPaymentTerm(final String name)
 	{
+		return createPaymentTerm(name, false);
+	}
+
+	private PaymentTermId createPaymentTerm(final String name, final boolean isDefault)
+	{
 		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
 		paymentTerm.setName(name);
+		paymentTerm.setIsDefault(isDefault);
 		save(paymentTerm);
 		POJOWrapper.setInstanceName(paymentTerm, name);
 		return PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
