@@ -1,10 +1,13 @@
 package de.metas.calendar.plan_optimizer.solver;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.AvailableCapacity;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.ResourceGroupYearWeek;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
+import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.util.Check;
 import de.metas.util.time.DurationUtils;
@@ -19,14 +22,15 @@ import org.optaplanner.core.api.score.stream.bi.BiJoiner;
 import org.optaplanner.core.impl.score.stream.JoinerSupport;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public class PlanConstraintProvider implements ConstraintProvider
 {
 	public static final int HARD_LEVELS_SIZE = 2;
 	public static final int SOFT_LEVELS_SIZE = 3;
 
-	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1, 0 }, new int[] { 0, 0, 0 });
-	private static final BendableScore ONE_HARD_2 = BendableScore.of(new int[] { 0, 1 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 0, 1 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_HARD_2 = BendableScore.of(new int[] { 1, 0 }, new int[] { 0, 0, 0 });
 	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0, 0 }, new int[] { 1, 0, 0 });
 	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 1, 0 });
 	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 0, 1 });
@@ -79,6 +83,8 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint availableCapacity(ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
+				.filter(step -> step.getResource().getHumanResourceTestGroupId() != null)
+				.filter(step -> !step.getHumanResourceTestGroupDuration().isZero())
 				.groupBy(ConstraintCollectors.sum(
 						StepRequiredCapacity::ofStep,
 						StepRequiredCapacity.ZERO,
@@ -92,7 +98,12 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
 
-		final AvailableCapacity availableCapacity = AvailableCapacity.of(humanResourceTestGroupService.getAll());
+		final Set<HumanResourceTestGroupId> ids = requiredCapacity.getMap().keySet()
+				.stream()
+				.map(ResourceGroupYearWeek::getGroupId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final AvailableCapacity availableCapacity = AvailableCapacity.of(humanResourceTestGroupService.getByIds(ids));
 		availableCapacity.reserveCapacity(requiredCapacity);
 		return DurationUtils.toInt(availableCapacity.getOverReservedCapacity(), Plan.PLANNING_TIME_PRECISION);
 	}

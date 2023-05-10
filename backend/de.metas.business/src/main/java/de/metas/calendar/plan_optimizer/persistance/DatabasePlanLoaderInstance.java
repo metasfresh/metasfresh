@@ -169,7 +169,7 @@ public class DatabasePlanLoaderInstance
 			final WOProject woProject,
 			final WOProjectStep woStep,
 			final WOProjectResource woStepResourceOrig,
-			Step prevStep,
+			final Step prevStep,
 			final LocalDateTime startDateMin,
 			final LocalDateTime dueDate)
 	{
@@ -189,14 +189,18 @@ public class DatabasePlanLoaderInstance
 				.map(this::toLocalDateTime)
 				.orElse(null);
 
-		boolean manuallyLocked = woStep.isManuallyLocked();
-		if (manuallyLocked && (startDate == null || endDate == null))
+		boolean pinned = woStep.isManuallyLocked() || woStep.inTesting();
+		if (pinned && (startDate == null || endDate == null))
 		{
 			logger.info("Cannot consider resource as locked because it has no start/end date: {}", woStepResource);
-			manuallyLocked = false;
+			pinned = false;
 		}
 
 		final int delay = prevStep == null ? computeDelay(startDateMin, startDate) : computeDelay(prevStep.getEndDate(), startDate);
+
+		final Duration humanResourceTestGroupDuration = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours())
+				.map(Duration::ofHours)
+				.orElse(Duration.ZERO);
 
 		final Step step = Step.builder()
 				.id(StepId.builder()
@@ -209,7 +213,8 @@ public class DatabasePlanLoaderInstance
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
 				.delay(delay)
-				.pinned(manuallyLocked)
+				.pinned(pinned)
+				.humanResourceTestGroupDuration(humanResourceTestGroupDuration)
 				.build();
 
 		final BooleanWithReason valid = step.checkProblemFactsValid();

@@ -3,6 +3,7 @@ package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 import com.google.common.collect.ImmutableMap;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.resource.HumanResourceTestGroupId;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -20,16 +21,11 @@ public class StepRequiredCapacity
 
 	public static StepRequiredCapacity ofStep(final Step step)
 	{
-		final HumanResourceTestGroupId humanResourceTestGroupId = step.getResource().getHumanResourceTestGroupId();
-		if (humanResourceTestGroupId == null)
-		{
-			// TODO: shall we return Optional or something which says "infinite capacity"
-			return null;
-		}
+		final HumanResourceTestGroupId humanResourceTestGroupId = Check.assumeNotNull(step.getResource().getHumanResourceTestGroupId(), "humanResourceTestGroupId should not be null at this stage!");
 
-		// TODO: make sure the duration is in one week
-		// TODO compute and return the required capacity
-		return null;
+		final ResourceGroupYearWeek resourceGroupYearWeek = ResourceGroupYearWeek.of(humanResourceTestGroupId, YearWeek.from(step.getStartDate()));
+
+		return new StepRequiredCapacity(resourceGroupYearWeek, step.getHumanResourceTestGroupDuration());
 	}
 
 	private StepRequiredCapacity(@NonNull final Map<ResourceGroupYearWeek, Duration> map)

@@ -49,9 +49,16 @@ public class HumanResourceTestGroupRepository
 			.tableName(I_S_HumanResourceTestGroup.Table_Name)
 			.build();
 
+	@NonNull
 	public ImmutableList<HumanResourceTestGroup> getAll()
 	{
 		return getMap().getAllActive();
+	}
+
+	@NonNull
+	public ImmutableList<HumanResourceTestGroup> getByIds(@NonNull final Set<HumanResourceTestGroupId> ids)
+	{
+		return (ImmutableList<HumanResourceTestGroup>)getMap().getByIds(ids);
 	}
 
 	@NonNull
@@ -64,7 +71,6 @@ public class HumanResourceTestGroupRepository
 	private HumanResourceTestGroupMap retrieveMap()
 	{
 		final ImmutableList<HumanResourceTestGroup> humanResourceTestGroups = queryBL.createQueryBuilder(I_S_HumanResourceTestGroup.class)
-				//.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.map(HumanResourceTestGroupRepository::fromRecord)
