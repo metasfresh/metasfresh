@@ -93,9 +93,13 @@ public class ExternallyReferencedCandidate
 	// may be null if this instance was not loaded by the repo
 	private final InvoiceCandidateId id;
 
+	@Nullable
 	private ExternalId externalHeaderId;
+
+	@Nullable
 	private ExternalId externalLineId;
 
+	@Nullable
 	private String poReference;
 
 	private final BPartnerInfo billPartnerInfo;
@@ -104,12 +108,14 @@ public class ExternallyReferencedCandidate
 
 	private final InvoiceRule invoiceRule;
 
+	@Nullable
 	private InvoiceRule invoiceRuleOverride;
 
 	private final SOTrx soTrx;
 
 	private LocalDate dateOrdered;
 
+	@Nullable
 	private LocalDate presetDateInvoiced;
 
 	private StockQtyAndUOMQty qtyOrdered;
@@ -126,6 +132,7 @@ public class ExternallyReferencedCandidate
 	private final ProductPrice priceEntered;
 
 	/** If given, then productId and currencyId have to match! */
+	@Nullable
 	private ProductPrice priceEnteredOverride;
 
 	private final ProductPrice priceActual;
@@ -134,16 +141,22 @@ public class ExternallyReferencedCandidate
 
 	private final TaxId taxId;
 
+	@Nullable
 	private Percent discountOverride;
 
+	@Nullable
 	private DocTypeId invoiceDocTypeId;
 
+	@Nullable
 	private String lineDescription;
 
+	@Nullable
 	private String descriptionBottom;
 
+	@Nullable
 	private UserId userInChargeId;
 
+	@Nullable
 	private ProjectId projectId;
 
 	@Nullable

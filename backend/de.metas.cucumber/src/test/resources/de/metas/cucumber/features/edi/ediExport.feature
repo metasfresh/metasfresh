@@ -87,12 +87,20 @@ Feature: EDI_cctop_invoic_v export format
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | o_1                   |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+    And validate C_Invoice_Candidate:
+#      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule |
+#      | invoice_candidate_1               | order_1                   | ol_1                          | 10           | 10             | 0                | I               |
 
     # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
-    Then enqueue candidate of C_OrderLine_ID.Identifiers ol_1 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |

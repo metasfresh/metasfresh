@@ -50,11 +50,16 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_DirectDebit  | true      | CO        | D               |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | order_1               |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
 
-    And enqueue candidate of C_Order_ID.Identifiers order_1 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
     # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
@@ -85,11 +90,18 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_OnCredit     | true      | CO        | P               |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | order_1               |
-
-    Then enqueue candidate of C_Order_ID.Identifiers order_1 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule |
+      | invoice_candidate_1               | order_1                   | ol_1                          | 10           | 10             | 0                | I               |
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
@@ -120,11 +132,16 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_Cash         | true      | CO        | B               |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | order_1               |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
 
-    Then enqueue candidate of C_Order_ID.Identifiers order_1 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
@@ -155,11 +172,16 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_Direct_Debit | true      | CO        | D               |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | order_1               |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
 
-    Then enqueue candidate of C_Order_ID.Identifiers order_1 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
@@ -190,11 +212,16 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_On_Credit    | true      | CO        | P               |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | order_1               |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
 
-    Then enqueue candidate of C_Order_ID.Identifiers order_1 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices

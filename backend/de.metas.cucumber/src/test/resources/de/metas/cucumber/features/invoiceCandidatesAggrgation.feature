@@ -70,12 +70,20 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | o_1                   |
-      | o_2                   |
 
-    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
@@ -149,12 +157,20 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | o_1                   |
-      | o_2                   |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
 
-    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
@@ -228,12 +244,19 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | o_1                   |
-      | o_2                   |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
 
-    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
@@ -307,12 +330,21 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | o_1                   |
-      | o_2                   |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
 
-    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1,invoice_2.
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in their own respective invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
+      | invoice_2               | invoice_candidate_2               |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
@@ -390,12 +422,21 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s, the orders' C_Invoice_Candidates are updated
-      | C_Order_ID.Identifier |
-      | o_1                   |
-      | o_2                   |
+    And after not more than 60s locate invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
 
-    Then enqueue candidate of C_Order_ID.Identifiers o_1,o_2 for invoicing and load the generated invoice as C_Invoice_ID.Identifiers invoice_1.
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
