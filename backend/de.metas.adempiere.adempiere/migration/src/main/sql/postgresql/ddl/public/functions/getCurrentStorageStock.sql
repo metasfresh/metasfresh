@@ -15,7 +15,7 @@ AS
 
 $$
 
-SELECT SUM(COALESCE(s.qty, 0))
+SELECT (COALESCE(SUM(s.qty), 0))
 
 FROM m_hu_storage s
  JOIN M_HU hu on s.m_hu_id = hu.m_hu_id

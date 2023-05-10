@@ -90,7 +90,7 @@ UNION ALL
         NULL                     AS Inventory,
         io.movementdate          AS DocumentDate,
 
-        -1 * t.qty               AS Qty,
+        -1 *  ROUND(t.qty, u.stdprecision)                 AS Qty,
         u.uomsymbol              AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
@@ -114,7 +114,7 @@ UNION ALL
                                              po.documentno                                                               AS PPOrder,
                                              i.documentno                                                                AS Inventory,
                                              COALESCE(io.movementdate, cc.movementdate, po.datepromised, i.movementdate) AS DocumentDate,
-                                             t.qty                                                                       AS Qty,
+                                             ROUND(t.qty, u.stdprecision)                                                AS Qty,
                                              u.uomsymbol                                                                 AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
@@ -139,7 +139,7 @@ UNION ALL
         po.documentno                                                               AS PPOrder,
         i.documentno                                                                AS Inventory,
         COALESCE(io.movementdate, cc.movementdate, po.datepromised, i.movementdate) AS DocumentDate,
-        t.qty                                                                       AS Qty,
+        ROUND(t.qty, u.stdprecision)                                                                              AS Qty,
         u.uomsymbol                                                                 AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
