@@ -2,9 +2,9 @@
 
 #
 # %L
-# de.metas.cucumber
+# metasfresh
 # %%
-# Copyright (C) 2022 metas GmbH
+# Copyright (C) 2023 metas GmbH
 # %%
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -23,10 +23,18 @@
 #
 
 set -e
-set -u # this will fail this script if no branch name is given as parameter
 
 # We assume that the stuff was started with 10_reset_db_to_seed_dump.sh
-BRANCH_NAME=$1
+# We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
+if ! [ -z "$1" ]; then
+    BRANCH_NAME=$1
+else
+    echo "!! The first parameter needs do correspond to an env-File !!"
+    echo "!! E.g. to use the env-file env-files/release.env, run 30_reset_db_to_template.sh release !!" 
+    exit
+fi
+
+set -u
 
 # the winpty is needed to avoid an error when running the script in git bash on windows
 

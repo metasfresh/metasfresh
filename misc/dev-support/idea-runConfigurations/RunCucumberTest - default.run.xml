@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="RunCucumberTest - release-DB" type="JUnit" factoryName="JUnit">
+  <configuration default="false" name="RunCucumberTest - default" type="JUnit" factoryName="JUnit">
     <module name="de.metas.cucumber" />
     <shortenClasspath name="MANIFEST" />
     <extension name="coverage">
@@ -16,7 +16,7 @@
       <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
       <ENTRIES>
         <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
-        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="metasfresh/misc/dev-support/docker/infrastructure/env-files/release.env" />
+        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="metasfresh/misc/dev-support/docker/infrastructure/env-files/default.env" />
       </ENTRIES>
     </extension>
     <option name="PACKAGE_NAME" value="de.metas.cucumber" />

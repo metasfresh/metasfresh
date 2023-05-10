@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run SQL Migrations  - release-DB" type="Application" factoryName="Application">
+  <configuration default="false" name="Run SQL Migrations - hard_encoded_uat" type="Application" factoryName="Application">
     <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
     <option name="MAIN_CLASS_NAME" value="de.metas.migration.cli.workspace_migrate.Main" />
     <module name="de.metas.migration.cli" />
@@ -12,7 +12,7 @@
       <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
       <ENTRIES>
         <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
-        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="metasfresh/misc/dev-support/docker/infrastructure/env-files/release.env" />
+        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="metasfresh/misc/dev-support/docker/infrastructure/env-files/hard_encoded_uat.env" />
       </ENTRIES>
     </extension>
     <method v="2">
