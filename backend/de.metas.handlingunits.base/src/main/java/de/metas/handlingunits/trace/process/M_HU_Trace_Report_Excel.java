@@ -42,7 +42,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.apache.poi.ss.usermodel.Font;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Trx;
 
 import java.io.File;
 import java.util.List;
@@ -83,34 +82,30 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				.recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
 				.build();
 
-		trxManager.runInNewTrx(() -> {
+		final PInstanceId pInstanceId = trxManager.callInNewTrx(() -> huTraceRepository.queryToSelection(huTraceEventQuery));
 
-			final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
+		if (pInstanceId == null)
+		{
+			throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
+		}
 
-			if (pInstanceId == null)
-			{
-				throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
-			}
+		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
+				.ctx(getCtx())
+				.columnHeaders(getColumnHeaders())
+				.build();
 
-			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
-					.ctx(getCtx())
-					.columnHeaders(getColumnHeaders())
-					.build();
+		jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
 
-			jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
+		spreadsheetExporterService.processDataFromSQL(getSql(pInstanceId), jdbcExcelExporter);
 
-			spreadsheetExporterService.processDataFromSQL(getSql(pInstanceId), jdbcExcelExporter);
+		final File tempFile = jdbcExcelExporter.getResultFile();
 
-			final File tempFile = jdbcExcelExporter.getResultFile();
-
-			getResult().setReportData(tempFile);
-
-		});
+		getResult().setReportData(tempFile);
 
 		return MSG_OK;
 	}
 
-	private String getSql(@NonNull final PInstanceId pinstanceId)
+	private static String getSql(@NonNull final PInstanceId pinstanceId)
 	{
 
 		final StringBuilder sqlBuilder = new StringBuilder().append(" SELECT  * FROM M_HU_Trace_Report(")
