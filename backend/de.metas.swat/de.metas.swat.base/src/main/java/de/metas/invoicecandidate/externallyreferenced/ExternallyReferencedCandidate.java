@@ -84,7 +84,8 @@ public class ExternallyReferencedCandidate
 				.soTrx(newIC.getSoTrx())
 				.projectId(newIC.getProjectId())
 				.invoiceDetailItems(newIC.getInvoiceDetailItems())
-				.activityId(newIC.getActivityId());
+				.activityId(newIC.getActivityId())
+				.paymentTermId(newIC.getPaymentTermId());
 	}
 
 	private final OrgId orgId;

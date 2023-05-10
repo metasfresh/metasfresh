@@ -6,6 +6,7 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -103,6 +104,9 @@ public class NewManualInvoiceCandidate
 
 	TableRecordReference recordReference;
 
+	@NonNull
+	PaymentTermId paymentTermId;
+
 	List<InvoiceDetailItem> invoiceDetailItems;
 
 	private NewManualInvoiceCandidate(
@@ -131,6 +135,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final ProjectId projectId,
 			@Nullable final ActivityId activityId,
 			@Nullable final TableRecordReference recordReference,
+			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -158,6 +163,7 @@ public class NewManualInvoiceCandidate
 		this.activityId = activityId;
 		this.recordReference = recordReference;
 		this.invoiceRule = invoiceRule;
+		this.paymentTermId = paymentTermId;
 		this.invoiceDetailItems = invoiceDetailItems;
 
 		if (priceEnteredOverride != null)
