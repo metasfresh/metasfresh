@@ -84,5 +84,6 @@ public interface IUserBL extends ISingletonService
 
 	void deleteUserDependency(I_AD_User userRecord);
 
+	@NonNull
 	ImmutableSet<UserId> retrieveUserIdsByValue(@NonNull String value, @NonNull OrgId orgId);
 }
