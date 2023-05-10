@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.trace.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -39,15 +40,11 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.poi.ss.usermodel.Font;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.Trx;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 public class M_HU_Trace_Report_Excel extends JavaProcess
@@ -95,7 +92,6 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
 			}
 
-			trxManager.commit(Trx.TRXNAME_ThreadInherited);
 			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
 					.ctx(getCtx())
 					.columnHeaders(getColumnHeaders())
@@ -107,16 +103,8 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 
 			final File tempFile = jdbcExcelExporter.getResultFile();
 
-			final boolean backEndOrSwing = Ini.getRunMode() == Adempiere.RunMode.BACKEND || Ini.isSwingClient();
+			getResult().setReportData(tempFile);
 
-			if (backEndOrSwing)
-			{
-				Env.startBrowser(tempFile.toURI().toString());
-			}
-			else
-			{
-				getResult().setReportData(tempFile);
-			}
 		});
 
 		return MSG_OK;
@@ -132,20 +120,17 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 		return sqlBuilder.toString();
 	}
 
-	private List<String> getColumnHeaders()
+	private static List<String> getColumnHeaders()
 	{
-		final List<String> columnHeaders = new ArrayList<>();
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_LotNumber);
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_HUTraceType);
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_Product_ID);
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_InOut_ID);
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_PP_Order_ID);
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_Inventory_ID);
-		columnHeaders.add(I_M_InOut.COLUMNNAME_MovementDate);
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_Qty);
-		columnHeaders.add(I_M_Product.COLUMNNAME_C_UOM_ID);
-
-		return columnHeaders;
+		return ImmutableList.of(
+				I_M_HU_Trace.COLUMNNAME_LotNumber,
+				I_M_HU_Trace.COLUMNNAME_HUTraceType,
+				I_M_HU_Trace.COLUMNNAME_M_Product_ID,
+				I_M_HU_Trace.COLUMNNAME_M_InOut_ID,
+				I_M_HU_Trace.COLUMNNAME_PP_Order_ID,
+				I_M_HU_Trace.COLUMNNAME_M_Inventory_ID,
+				I_M_InOut.COLUMNNAME_MovementDate,
+				I_M_HU_Trace.COLUMNNAME_Qty,
+				I_M_Product.COLUMNNAME_C_UOM_ID);
 	}
-
 }
