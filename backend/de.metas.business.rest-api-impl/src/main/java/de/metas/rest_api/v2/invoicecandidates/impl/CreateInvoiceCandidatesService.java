@@ -55,6 +55,9 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -111,6 +114,7 @@ public class CreateInvoiceCandidatesService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
@@ -434,7 +438,12 @@ public class CreateInvoiceCandidatesService
 			bpartnerInfo.contactId(billContactId);
 		}
 
-		candidate.billPartnerInfo(bpartnerInfo.build());
+		final BPartnerInfo build = bpartnerInfo.build();
+		candidate.billPartnerInfo(build);
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(build.getBpartnerId(), SOTrx.ofBoolean(item.getSoTrx().isSales()));
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(paymentTermQuery);
+		candidate.paymentTermId(paymentTermId);
 	}
 
 	private void syncDiscountOverrideToCandidate(

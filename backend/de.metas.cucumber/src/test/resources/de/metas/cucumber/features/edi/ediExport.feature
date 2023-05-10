@@ -87,12 +87,9 @@ Feature: EDI_cctop_invoic_v export format
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And validate C_Invoice_Candidate:
-#      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule |
-#      | invoice_candidate_1               | order_1                   | ol_1                          | 10           | 10             | 0                | I               |
 
     # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
     And process invoice candidates

@@ -71,7 +71,7 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
       | invoice_candidate_2               | ol_2                      |
@@ -157,7 +157,7 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
       | invoice_candidate_2               | ol_2                      |
@@ -244,7 +244,7 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
       | invoice_candidate_2               | ol_2                      |
@@ -330,7 +330,7 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
       | invoice_candidate_2               | ol_2                      |
@@ -422,7 +422,7 @@ Feature: invoice generation and invoice candidates aggregation
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
       | invoice_candidate_2               | ol_2                      |

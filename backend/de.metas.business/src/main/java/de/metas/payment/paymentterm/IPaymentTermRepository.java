@@ -45,6 +45,12 @@ public interface IPaymentTermRepository extends ISingletonService
 	@NonNull
 	Optional<PaymentTermId> retrievePaymentTermId(@NonNull PaymentTermQuery build);
 
+	/**
+	 * Convenience method that thorws an exception if no term is found.
+	 */
+	@NonNull
+	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
+
 	boolean isAllowOverrideDueDate(@NonNull PaymentTermId paymentTermId);
 
 	@Deprecated

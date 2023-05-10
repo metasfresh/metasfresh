@@ -50,7 +50,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_DirectDebit  | true      | CO        | D               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
 
@@ -90,7 +90,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_OnCredit     | true      | CO        | P               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And validate C_Invoice_Candidate:
@@ -132,7 +132,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_Cash         | true      | CO        | B               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
 
@@ -172,7 +172,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_Direct_Debit | true      | CO        | D               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
 
@@ -212,7 +212,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_On_Credit    | true      | CO        | P               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
 

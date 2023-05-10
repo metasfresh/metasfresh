@@ -118,6 +118,7 @@ public class CreateInvoiceCandidatesService
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
@@ -191,7 +192,7 @@ public class CreateInvoiceCandidatesService
 		final OrgId orgId = syncOrgIdToCandidate(candidate, item);
 		final ProductId productId = syncProductToCandidate(candidate, orgId, item);
 
-		syncBPartnerToCandidate(candidate, orgId, item);
+		syncBPartnerToCandidate(candidate, orgId, item); // here we also add the payment-term!
 
 		syncTargetDocTypeToCandidate(candidate, orgId, item.getInvoiceDocType());
 
@@ -447,14 +448,9 @@ public class CreateInvoiceCandidatesService
 		final BPartnerInfo build = bpartnerInfo.build();
 		candidate.billPartnerInfo(build);
 
-		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(build.getBpartnerId(),
-																			  SOTrx.ofBoolean(item.getSoTrx().isSales()));
-		final PaymentTermId paymentTermId = Services.get(IPaymentTermRepository.class)
-				.retrievePaymentTermId(paymentTermQuery)
-				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
-						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
-						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(build.getBpartnerId(), SOTrx.ofBoolean(item.getSoTrx().isSales()));
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(paymentTermQuery);
+		candidate.paymentTermId(paymentTermId);
 
 		candidate.paymentTermId(paymentTermId);
 	}

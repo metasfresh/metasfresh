@@ -121,6 +121,15 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	}
 
 	@NonNull
+	public PaymentTermId retrievePaymentTermIdNotNull(@NonNull final PaymentTermQuery query)
+	{
+		return retrievePaymentTermId(query)
+				.orElseThrow(() -> new AdempiereException("Could not find a payment term for the given query")
+						.appendParametersToMessage()
+						.setParameter("PaymentTermQuery", query));
+	}
+
+	@NonNull
 	@Override
 	public Optional<PaymentTermId> retrievePaymentTermId(@NonNull final PaymentTermQuery query)
 	{
