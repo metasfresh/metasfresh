@@ -6,13 +6,18 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.impl.PlainPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -25,10 +30,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Campaign_Price;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
+
+import java.time.ZoneId;
+
+import static java.math.BigDecimal.ONE;
 
 /*
  * #%L
@@ -57,6 +65,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Campaign_Price
 {
+	private static final IBPartnerDAO bpartnerRepo = Services.get(IBPartnerDAO.class);
+	private static final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 	@Init
 	public void init()
 	{
@@ -84,11 +94,8 @@ public class C_Campaign_Price
 	private static void updatePricingInfo(final I_C_Campaign_Price record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
-		if (bpartnerId == null)
-		{
-			return;
-		}
-		final IBPartnerDAO bpartnerRepo = Services.get(IBPartnerDAO.class);
+		final OrgId orgId = OrgId.ofRepoIdOrNull(record.getAD_Org_ID());
+
 		final CountryId countryId = bpartnerRepo.getDefaultShipToLocationCountryIdOrNull(bpartnerId);
 		if (countryId != null)
 		{
@@ -103,14 +110,22 @@ public class C_Campaign_Price
 			final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, SOTrx.SALES);
 			if (priceListId != null)
 			{
-				final I_M_PriceList_Version newestPriceListVersion = priceListDAO.retrieveNewestPriceListVersion(priceListId);
 				final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
-				final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(newestPriceListVersion, productId);
-				if (productPrice != null)
-				{
-					record.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
-					record.setInvoicableQtyBasedOn(productPrice.getInvoicableQtyBasedOn());
-				}
+				final IPricingBL pricingBL = Services.get(IPricingBL.class);
+				final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
+				final IEditablePricingContext pricingContext = pricingBL
+						.createInitialContext(
+								orgId,
+								productId,
+								bpartnerId,
+								Quantitys.create(ONE, productId),
+								SOTrx.SALES)
+						.setCountryId(countryId)
+						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(),timeZone))
+						.setFailIfNotCalculated();
+				final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+				record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
+				record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getRecordString());
 			}
 		}
 		else {
@@ -148,7 +163,6 @@ public class C_Campaign_Price
 
 	private static void updateCurrency(final I_C_Campaign_Price record, final CountryId countryId)
 	{
-		final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 		countriesRepo.getCountryCurrencyId(countryId).ifPresent(currencyId -> record.setC_Currency_ID(currencyId.getRepoId()));
 	}
 
@@ -163,7 +177,11 @@ public class C_Campaign_Price
 
 		final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 		record.setC_UOM_ID(stockUomId.getRepoId());
-		updatePricingInfo(record);
+
+		if(record.getC_BPartner_ID() > 0)
+		{
+			updatePricingInfo(record);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID })
