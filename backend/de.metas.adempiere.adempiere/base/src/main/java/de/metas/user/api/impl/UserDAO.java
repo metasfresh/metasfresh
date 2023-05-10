@@ -326,11 +326,11 @@ public class UserDAO implements IUserDAO
 	}
 
 	@NonNull
-	public ImmutableSet<UserId> retrieveUserIdsByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	public ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull final String externalId, @NonNull final OrgId orgId)
 	{
 		return queryBL.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_ExternalId, externalId)
 				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.create()
 				.listIds(UserId::ofRepoId);

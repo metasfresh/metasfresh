@@ -162,10 +162,10 @@ public class JsonWorkOrderProjectUpsertRequest
 	@Schema(hidden = true)
 	private boolean dateOfProvisionByBPartnerSet;
 	
-	private String specialistConsultantValue;
+	private String specialistConsultantExternalId;
 
 	@Schema(hidden = true)
-	private boolean specialistConsultantValueSet;
+	private boolean specialistConsultantExternalIdSet;
 
 	private List<JsonWorkOrderStepUpsertItemRequest> steps = ImmutableList.of();
 
@@ -296,10 +296,10 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.dateOfProvisionByBPartnerSet = true;
 	}
 
-	public void setSpecialistConsultantValue(final String specialistConsultantValue)
+	public void setSpecialistConsultantExternalId(final String specialistConsultantExternalId)
 	{
-		this.specialistConsultantValue = specialistConsultantValue;
-		this.specialistConsultantValueSet = true;
+		this.specialistConsultantExternalId = specialistConsultantExternalId;
+		this.specialistConsultantExternalIdSet = true;
 	}
 
 	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest)

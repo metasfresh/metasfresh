@@ -176,9 +176,9 @@ public class WorkOrderMapper
 			woProjectBuilder.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId));
 		}
 
-		if (request.isSpecialistConsultantValueSet())
+		if (request.isSpecialistConsultantExternalIdSet())
 		{
-			woProjectBuilder.specialistConsultantID(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantValue(), orgId));
+			woProjectBuilder.specialistConsultantID(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantExternalId(), orgId));
 		}
 
 		return woProjectBuilder.build();
@@ -227,7 +227,7 @@ public class WorkOrderMapper
 				.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId))
 				.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBpartnerId(), BPartnerId::ofRepoId))
 				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId))
-				.specialistConsultantId(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantValue(), orgId));
+				.specialistConsultantId(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantExternalId(), orgId));
 
 		if (request.getExternalId() == null) // if no externalId was given for the new project, then see if it was implied by the identifier
 		{
@@ -292,24 +292,24 @@ public class WorkOrderMapper
 
 	@Nullable
 	private UserId getSpecialistConsultantIdOrNull(
-			@Nullable final String specialistConsultantValue,
+			@Nullable final String specialistConsultantExternalId,
 			@NonNull final OrgId orgId)
 	{
-		if (Check.isBlank(specialistConsultantValue))
+		if (Check.isBlank(specialistConsultantExternalId))
 		{
 			return null;
 		}
 
-		final ImmutableSet<UserId> userIds = userBL.retrieveUserIdsByValue(specialistConsultantValue, orgId);
+		final ImmutableSet<UserId> userIds = userBL.retrieveUserIdsByExternalId(specialistConsultantExternalId, orgId);
 		if (userIds.size() > 1)
 		{
-			Loggables.get().addLog("Multiple Users found for SpecialistConsultantValue={}", specialistConsultantValue);
+			Loggables.get().addLog("Multiple Users found for SpecialistConsultantExternalId={}", specialistConsultantExternalId);
 			return null;
 		}
 
 		if (userIds.isEmpty())
 		{
-			Loggables.get().addLog("No User found for SpecialistConsultantValue={}", specialistConsultantValue);
+			Loggables.get().addLog("No User found for SpecialistConsultantExternalId={}", specialistConsultantExternalId);
 			return null;
 		}
 
