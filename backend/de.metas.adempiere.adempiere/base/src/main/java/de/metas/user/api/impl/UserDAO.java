@@ -317,7 +317,7 @@ public class UserDAO implements IUserDAO
 	@Override
 	public ImmutableSet<UserId> retrieveUsersByJobId(@NonNull final JobId jobId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_Job_ID, jobId)
@@ -325,6 +325,17 @@ public class UserDAO implements IUserDAO
 				.listIds(UserId::ofRepoId);
 	}
 
+	@NonNull
+	public ImmutableSet<UserId> retrieveUserIdsByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_Value, value)
+				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.listIds(UserId::ofRepoId);
+	}
+	
 	private Optional<OrgMappingId> getOrgMappingId(@NonNull final UserId sourceUserId)
 	{
 		final I_AD_User sourceUserRecord = getById(sourceUserId);

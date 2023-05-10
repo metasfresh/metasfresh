@@ -1,8 +1,10 @@
 package de.metas.user.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ISingletonService;
@@ -81,4 +83,7 @@ public interface IUserBL extends ISingletonService
 	UserEMailConfig getEmailConfigById(UserId userId);
 
 	void deleteUserDependency(I_AD_User userRecord);
+
+	@NonNull
+	ImmutableSet<UserId> retrieveUserIdsByValue(@NonNull String value, @NonNull OrgId orgId);
 }

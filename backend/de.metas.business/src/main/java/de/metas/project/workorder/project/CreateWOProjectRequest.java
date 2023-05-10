@@ -102,6 +102,9 @@ public class CreateWOProjectRequest
 	@Nullable
 	Instant woProjectCreatedDate;
 
+	@Nullable
+	UserId specialistConsultantId;
+
 	@Builder
 	public CreateWOProjectRequest(
 			@NonNull final OrgId orgId,
@@ -124,7 +127,8 @@ public class CreateWOProjectRequest
 			@Nullable final String woOwner,
 			@Nullable final String poReference,
 			@Nullable final Instant bpartnerTargetDate,
-			@Nullable final Instant woProjectCreatedDate)
+			@Nullable final Instant woProjectCreatedDate,
+			@Nullable final UserId specialistConsultantId)
 	{
 		this.orgId = orgId;
 		this.currencyId = currencyId;
@@ -146,6 +150,7 @@ public class CreateWOProjectRequest
 		this.poReference = poReference;
 		this.bpartnerTargetDate = bpartnerTargetDate;
 		this.woProjectCreatedDate = woProjectCreatedDate;
+		this.specialistConsultantId = specialistConsultantId;
 		this.isActive = isActive == null || isActive;
 	}
 }
