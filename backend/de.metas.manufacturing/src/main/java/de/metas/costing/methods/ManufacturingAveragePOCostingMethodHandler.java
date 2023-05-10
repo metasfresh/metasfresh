@@ -122,6 +122,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if(actualResourceId.isNoResource())
+			{
+				return Optional.empty();
+			}
+
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
