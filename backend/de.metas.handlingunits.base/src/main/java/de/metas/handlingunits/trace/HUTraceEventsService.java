@@ -695,7 +695,7 @@ public class HUTraceEventsService
 					if (!productAndQty.isPresent())
 					{
 						// skip such cases for now. To be handled in a followup
-						return;
+						continue;
 					}
 
 					builderSetVhuProductAndQty(builder, vhu)
