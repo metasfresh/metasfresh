@@ -262,6 +262,12 @@ public class HUTraceEventsService
 			@NonNull final I_M_InventoryLine inventoryLineRecord,
 			@NonNull final I_M_HU hu)
 	{
+		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
+		if (!productAndQty.isPresent())
+		{
+			// skip such cases for now. To be handled in a followup
+			return;
+		}
 		builderSetVhuProductAndQty(builder, hu)
 				.vhuStatus(hu.getHUStatus());
 		builder.eventTime(inventoryLineRecord.getUpdated().toInstant());
@@ -352,6 +358,13 @@ public class HUTraceEventsService
 
 		for (final I_M_HU vhu : vhus)
 		{
+			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+			if (!productAndQty.isPresent())
+			{
+				// skip such cases for now. To be handled in a followup
+				continue;
+			}
+
 			builderSetVhuProductAndQty(builder, vhu)
 					.vhuStatus(vhu.getHUStatus());
 
@@ -600,6 +613,7 @@ public class HUTraceEventsService
 		for (final I_M_HU vhu : vhus)
 		{
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+
 			if (!productAndQty.isPresent())
 			{
 				logger.info("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
@@ -677,6 +691,13 @@ public class HUTraceEventsService
 
 				for (final I_M_HU vhu : vhus)
 				{
+					final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+					if (!productAndQty.isPresent())
+					{
+						// skip such cases for now. To be handled in a followup
+						return;
+					}
+
 					builderSetVhuProductAndQty(builder, vhu)
 							.vhuStatus(vhu.getHUStatus());
 
@@ -737,6 +758,13 @@ public class HUTraceEventsService
 
 		final BigDecimal multiplier = huStatusBL.isStatusDestroyed(hu) ? BigDecimal.valueOf(-1) : BigDecimal.ONE;
 		final Quantity qtyToSet = Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())).multiply(multiplier);
+
+		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
+		if (!productAndQty.isPresent())
+		{
+			// skip such cases for now. To be handled in a followup
+			return;
+		}
 
 		builderSetVhuProductAndQty(builder, hu)
 				.vhuStatus(hu.getHUStatus())
