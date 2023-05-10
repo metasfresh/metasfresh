@@ -106,9 +106,17 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	{
 		validateEvent(event);
 
+		// check if SupplyCandidate didn't get created in DemandCandidateHandler#postSupplyRequiredEvent() if required Qty was 0
+		boolean supplyCandidateExists = false;
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
+		if(supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
+		{
+			supplyCandidateExists = true;
+		}
+
 		final PPOrderCandidateAdvisedEvent eventWithRecomputedQty = getEventWithRecomputedQtyAndDate(event);
 
-		final MaterialDispoGroupId groupId = handlePPOrderCandidateAdvisedEvent(eventWithRecomputedQty);
+		final MaterialDispoGroupId groupId = handlePPOrderCandidateAdvisedEvent(eventWithRecomputedQty, supplyCandidateExists);
 
 		if (eventWithRecomputedQty.getPpOrderCandidate().getPpOrderData().getQtyRequired().signum() == 0)
 		{
@@ -136,17 +144,19 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 		materialEventService.postEventAsync(ppOrderRequestEvent);
 	}
 
-	private MaterialDispoGroupId handlePPOrderCandidateAdvisedEvent(@NonNull final PPOrderCandidateAdvisedEvent ppOrderCandidateAdvisedEvent)
+	private MaterialDispoGroupId handlePPOrderCandidateAdvisedEvent(
+			@NonNull final PPOrderCandidateAdvisedEvent ppOrderCandidateAdvisedEvent,
+			final boolean supplyCandidateExists)
 	{
-		final Candidate headerCandidate = createHeaderCandidate(ppOrderCandidateAdvisedEvent);
+		final Candidate headerCandidate = createHeaderCandidate(ppOrderCandidateAdvisedEvent, supplyCandidateExists);
 
 		return headerCandidate.getGroupId();
 	}
 
 	@NonNull
-	private Candidate createHeaderCandidate(@NonNull final PPOrderCandidateAdvisedEvent event)
+	private Candidate createHeaderCandidate(@NonNull final PPOrderCandidateAdvisedEvent event, final boolean supplyCandidateExists)
 	{
-		final CandidatesQuery preExistingSupplyQuery = createPreExistingSupplyCandidateQuery(event);
+		final CandidatesQuery preExistingSupplyQuery = supplyCandidateExists ? createPreExistingSupplyCandidateQuery(event) : CandidatesQuery.FALSE;
 
 		return createHeaderCandidate(event, preExistingSupplyQuery);
 	}

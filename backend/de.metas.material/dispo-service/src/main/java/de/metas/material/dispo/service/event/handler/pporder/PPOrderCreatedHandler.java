@@ -58,18 +58,13 @@ public final class PPOrderCreatedHandler
 		implements MaterialEventHandler<PPOrderCreatedEvent>
 {
 	private final CandidateChangeService candidateChangeService;
-	private final MainDataRequestHandler mainDataRequestHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
-			@NonNull final MainDataRequestHandler mainDataRequestHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		this.candidateChangeService = candidateChangeService;
-		this.mainDataRequestHandler = mainDataRequestHandler;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
@@ -91,7 +86,7 @@ public final class PPOrderCreatedHandler
 		handlePPOrderCreatedEvent(event);
 	}
 
-	private MaterialDispoGroupId handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private void handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
 
@@ -108,8 +103,6 @@ public final class PPOrderCreatedHandler
 				.advised(headerProductionDetail.getAdvised())
 				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there we might know the shipment schedule ID
 				.create();
-
-		return headerCandidate.getGroupId();
 	}
 
 	@NonNull
@@ -132,7 +125,7 @@ public final class PPOrderCreatedHandler
 
 		return candidateChangeService.onCandidateNewOrChange(
 				headerCandidate,
-				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(false));
+				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(true));
 	}
 
 	@NonNull
