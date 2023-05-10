@@ -161,6 +161,14 @@ public class JsonWorkOrderProjectUpsertRequest
 
 	@Schema(hidden = true)
 	private boolean dateOfProvisionByBPartnerSet;
+<<<<<<< HEAD
+=======
+	
+	private String specialistConsultantExternalId;
+
+	@Schema(hidden = true)
+	private boolean specialistConsultantExternalIdSet;
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 
 	private List<JsonWorkOrderStepUpsertItemRequest> steps = ImmutableList.of();
 
@@ -291,6 +299,15 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.dateOfProvisionByBPartnerSet = true;
 	}
 
+<<<<<<< HEAD
+=======
+	public void setSpecialistConsultantExternalId(final String specialistConsultantExternalId)
+	{
+		this.specialistConsultantExternalId = specialistConsultantExternalId;
+		this.specialistConsultantExternalIdSet = true;
+	}
+
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest)
 	{
 		this.objectsUnderTest = CoalesceUtil.coalesceNotNull(objectsUnderTest, ImmutableList.of());

@@ -488,4 +488,12 @@ public class UserBL implements IUserBL
 
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull final String externalId, @NonNull final OrgId orgId)
+	{
+		return userDAO.retrieveUserIdsByExternalId(externalId, orgId);
+	}
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 }

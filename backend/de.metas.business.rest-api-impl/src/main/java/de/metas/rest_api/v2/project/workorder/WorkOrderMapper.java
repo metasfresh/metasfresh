@@ -172,6 +172,14 @@ public class WorkOrderMapper
 			woProjectBuilder.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId));
 		}
 
+<<<<<<< HEAD
+=======
+		if (request.isSpecialistConsultantExternalIdSet())
+		{
+			woProjectBuilder.specialistConsultantID(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantExternalId(), orgId));
+		}
+
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 		return woProjectBuilder.build();
 	}
 
@@ -217,7 +225,12 @@ public class WorkOrderMapper
 				.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId))
 				.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId))
 				.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBpartnerId(), BPartnerId::ofRepoId))
+<<<<<<< HEAD
 				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId));
+=======
+				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId))
+				.specialistConsultantId(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantExternalId(), orgId));
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 
 		if (request.getExternalId() == null) // if no externalId was given for the new project, then see if it was implied by the identifier
 		{
@@ -280,6 +293,35 @@ public class WorkOrderMapper
 	}
 
 	@Nullable
+<<<<<<< HEAD
+=======
+	private UserId getSpecialistConsultantIdOrNull(
+			@Nullable final String specialistConsultantExternalId,
+			@NonNull final OrgId orgId)
+	{
+		if (Check.isBlank(specialistConsultantExternalId))
+		{
+			return null;
+		}
+
+		final ImmutableSet<UserId> userIds = userBL.retrieveUserIdsByExternalId(specialistConsultantExternalId, orgId);
+		if (userIds.size() > 1)
+		{
+			Loggables.get().addLog("Multiple Users found for SpecialistConsultantExternalId={}", specialistConsultantExternalId);
+			return null;
+		}
+
+		if (userIds.isEmpty())
+		{
+			Loggables.get().addLog("No User found for SpecialistConsultantExternalId={}", specialistConsultantExternalId);
+			return null;
+		}
+
+		return userIds.iterator().next();
+	}
+
+	@Nullable
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 	private static PriceListVersionId getPriceListVersionId(
 			@NonNull final JsonWorkOrderProjectUpsertRequest request,
 			@NonNull final WOProject existingWOProject)

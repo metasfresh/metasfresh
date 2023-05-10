@@ -325,6 +325,20 @@ public class UserDAO implements IUserDAO
 				.listIds(UserId::ofRepoId);
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull final String externalId, @NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_ExternalId, externalId)
+				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.listIds(UserId::ofRepoId);
+	}
+	
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 	private Optional<OrgMappingId> getOrgMappingId(@NonNull final UserId sourceUserId)
 	{
 		final I_AD_User sourceUserRecord = getById(sourceUserId);

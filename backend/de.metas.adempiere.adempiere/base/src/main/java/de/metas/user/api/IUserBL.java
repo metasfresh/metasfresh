@@ -81,4 +81,10 @@ public interface IUserBL extends ISingletonService
 	UserEMailConfig getEmailConfigById(UserId userId);
 
 	void deleteUserDependency(I_AD_User userRecord);
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull String externalId, @NonNull OrgId orgId);
+>>>>>>> 5850228bab6 (use ExternalId (#15286))
 }
