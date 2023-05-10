@@ -25,7 +25,10 @@ public final class Fact_Acct_OpenLinkedFacts_ProcessHelper
 	{
 		final I_Fact_Acct factAcct = factAcctDAO.getById(factAcctRecordId);
 
+<<<<<<< HEAD
 		// Fact_Acct_Transactions_View is actually wanted (so it's the right class - not I_Fact_Acct.class)
+=======
+>>>>>>> 986a251e4d4 (hotfix Open Linked Accounting transactions not working (#14893) (#15263))
 		final int factAcctTableId = getTableId(I_Fact_Acct_Transactions_View.class);
 
 		final TableRecordReference documentReference = TableRecordReference.of(factAcct.getAD_Table_ID(), factAcct.getRecord_ID());
