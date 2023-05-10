@@ -123,6 +123,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if(actualResourceId.isNoResource())
+			{
+				return Optional.empty();
+			}
+
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
@@ -138,6 +143,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			else
 			{
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+				if(actualResourceId.isNoResource())
+				{
+					return Optional.empty();
+				}
+
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
