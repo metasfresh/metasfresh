@@ -46,7 +46,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.X_C_Project;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -153,6 +152,7 @@ public class WOProjectRepository
 
 		projectRecord.setBPartnerDepartment(createWOProjectRequest.getBpartnerDepartment());
 		projectRecord.setWOOwner(createWOProjectRequest.getWoOwner());
+		projectRecord.setSpecialist_Consultant_ID(UserId.toRepoId(createWOProjectRequest.getSpecialistConsultantId()));
 
 		projectRecord.setIsActive(createWOProjectRequest.isActive());
 
