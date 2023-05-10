@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Project_WO_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1348106134L;
+	private static final long serialVersionUID = 305709531L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Step (final Properties ctx, final int C_Project_WO_Step_ID, @Nullable final String trxName)
@@ -113,6 +113,18 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
+	public void setIsManuallyLocked (final boolean IsManuallyLocked)
+	{
+		set_Value (COLUMNNAME_IsManuallyLocked, IsManuallyLocked);
+	}
+
+	@Override
+	public boolean isManuallyLocked() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManuallyLocked);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -170,6 +182,18 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	public java.sql.Timestamp getWODeliveryDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WODeliveryDate);
+	}
+
+	@Override
+	public void setWODueDate (final @Nullable java.sql.Timestamp WODueDate)
+	{
+		set_Value (COLUMNNAME_WODueDate, WODueDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getWODueDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_WODueDate);
 	}
 
 	@Override

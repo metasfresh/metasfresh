@@ -78,7 +78,7 @@ public class CalendarQuery
 
 	public boolean isMatchingDateRange(@NonNull final CalendarDateRange dateRange)
 	{
-		return dateRange.isConnectedTo(this.startDate, this.endDate);
+		return dateRange.isOverlappingWith(this.startDate, this.endDate);
 	}
 
 	public boolean isMatchingEntry(@NonNull final CalendarEntry entry)
