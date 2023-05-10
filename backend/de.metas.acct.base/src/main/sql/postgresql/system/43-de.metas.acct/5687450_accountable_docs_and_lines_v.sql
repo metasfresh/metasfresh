@@ -53,11 +53,7 @@ UNION ALL
           INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id)
 UNION ALL
 (SELECT 'M_InOut'                                                                    AS TableName,
-<<<<<<< HEAD
-        30::integer                                                                  AS tablename_prio,
-=======
         (CASE WHEN io.isSOTrx = 'N' THEN 30 ELSE 100 END)::integer                   AS tablename_prio,
->>>>>>> 7f3ffd1e18f (recompute product costs helpers improvements (copied from intensive_care_hotfix))
         io.m_inout_id                                                                AS Record_ID,
         io.reversal_id                                                               AS reversal_id,
         iol.m_inoutline_id                                                           AS Line_ID,
@@ -132,9 +128,6 @@ UNION ALL
           INNER JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id)
 UNION ALL
 (SELECT 'M_Inventory'                                                                 AS TableName,
-<<<<<<< HEAD
-        60::integer                                                                   AS tablename_prio,
-=======
         -- if the inventory is on first day of month, then process it before everything (we usually use that to create stock at the beginning of the month)
         (CASE
              WHEN documentno = 'init'                                                                   THEN -1000
@@ -142,7 +135,6 @@ UNION ALL
              WHEN EXTRACT(DAY FROM inv.movementdate) = 31 AND EXTRACT(MONTH FROM inv.movementdate) = 12 THEN 110
                                                                                                         ELSE 110
          END)::integer                                                                AS tablename_prio,
->>>>>>> 7f3ffd1e18f (recompute product costs helpers improvements (copied from intensive_care_hotfix))
         inv.m_inventory_id                                                            AS Record_ID,
         inv.reversal_id                                                               AS reversal_id,
         invl.m_inventoryline_id                                                       AS Line_ID,
@@ -242,34 +234,6 @@ UNION ALL
         cc.movementqty          AS qty
  FROM pp_cost_collector cc
           INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id)
-<<<<<<< HEAD
-UNION ALL
-(SELECT 'M_CostRevaluation'          AS TableName,
-        990::integer                 AS tablename_prio,
-        cr.m_costrevaluation_id      AS Record_ID,
-        NULL                         AS reversal_id,
-        crl.m_costrevaluationline_id AS Line_ID,
-        NULL                         AS reversalline_id,
-        NULL                         AS issotrx,
-        cr.docstatus,
-        cr.posted,
-        cr.dateacct                  AS dateacct,
-        cr.ad_client_id              AS ad_client_id,
-        cr.ad_org_id                 AS ad_org_id,
-        --
-        dt.c_doctype_id              AS c_doctype_id,
-        dt.docbasetype               AS docbasetype,
-        --
-        crl.m_product_id,
-        crl.c_currency_id            AS c_currency_id,
-        crl.deltaamt                 AS price,
-        crl.c_uom_id                 AS c_uom_id,
-        0                            AS qty
- FROM m_costrevaluationline crl
-          INNER JOIN m_costrevaluation cr ON crl.m_costrevaluation_id = cr.m_costrevaluation_id
-          INNER JOIN c_doctype dt ON dt.c_doctype_id = cr.c_doctype_id)
-=======
->>>>>>> 7f3ffd1e18f (recompute product costs helpers improvements (copied from intensive_care_hotfix))
 ;
 
 /*
