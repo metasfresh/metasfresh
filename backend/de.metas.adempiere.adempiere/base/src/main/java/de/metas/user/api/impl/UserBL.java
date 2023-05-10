@@ -491,8 +491,8 @@ public class UserBL implements IUserBL
 	}
 
 	@NonNull
-	public ImmutableSet<UserId> retrieveUserIdsByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	public ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull final String externalId, @NonNull final OrgId orgId)
 	{
-		return userDAO.retrieveUserIdsByValue(value, orgId);
+		return userDAO.retrieveUserIdsByExternalId(externalId, orgId);
 	}
 }
