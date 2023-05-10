@@ -78,9 +78,11 @@ class WOProjectCalendarServiceTest
 				woProjectResourceRepository,
 				new CalendarConflictEventsDispatcher()
 		);
+		final SimulationPlanService simulationPlanService = new SimulationPlanService(simulationPlanRepository, Optional.empty());
+
 		this.woProjectCalendarService = new WOProjectCalendarService(
 				resourceService,
-				new SimulationPlanService(simulationPlanRepository, Optional.empty()),
+				simulationPlanService,
 				new PlainProjectRepository(),
 				woProjectService,
 				budgetProjectService,

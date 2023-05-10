@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -228,6 +229,27 @@ public interface I_C_Project_WO_Step
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Manually locked.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManuallyLocked (boolean IsManuallyLocked);
+
+	/**
+	 * Get Manually locked.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManuallyLocked();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_IsManuallyLocked = new ModelColumn<>(I_C_Project_WO_Step.class, "IsManuallyLocked", null);
+	String COLUMNNAME_IsManuallyLocked = "IsManuallyLocked";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -362,6 +384,27 @@ public interface I_C_Project_WO_Step
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WODeliveryDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WODeliveryDate", null);
 	String COLUMNNAME_WODeliveryDate = "WODeliveryDate";
+
+	/**
+	 * Set Due date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWODueDate (@Nullable java.sql.Timestamp WODueDate);
+
+	/**
+	 * Get Due date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWODueDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WODueDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WODueDate", null);
+	String COLUMNNAME_WODueDate = "WODueDate";
 
 	/**
 	 * Set Findings created.
