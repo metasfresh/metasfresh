@@ -149,13 +149,13 @@ public class HUTraceEventsService
 		{
 			builder.type(HUTraceType.PRODUCTION_ISSUE);
 
-			createAndAddEventsForManufacturingIssue(builder, costCollector);
+			createAndAddEventsForPOIssueOrReceipt(builder, costCollector);
 		}
 		else
 		{
 			builder.type(HUTraceType.PRODUCTION_RECEIPT);
 
-			createAndAddEventsForManufacturingIssue(builder, costCollector);
+			createAndAddEventsForPOIssueOrReceipt(builder, costCollector);
 		}
 	}
 
@@ -654,17 +654,18 @@ public class HUTraceEventsService
 
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
-				if (huStatusBL.isStatusDestroyed(huAssignment.getM_HU()))
-				{
-					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
-				}
-
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU()));
-				Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
-
+				if (topLevelHuId != null)
+				{
+					builder.topLevelHuId(topLevelHuId);
+				}
+				else
+				{
+					builder.topLevelHuId(HuId.ofRepoId(huAssignment.getM_HU_ID()));
+				}
 				builder.orgId(OrgId.ofRepoIdOrNull(huAssignment.getAD_Org_ID()))
-						.eventTime(huAssignment.getUpdated().toInstant())
-						.topLevelHuId(topLevelHuId);
+						.eventTime(huAssignment.getUpdated().toInstant());
+
 
 				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)
@@ -708,7 +709,7 @@ public class HUTraceEventsService
 	}
 
 	@VisibleForTesting
-	void createAndAddEventsForManufacturingIssue(
+	void createAndAddEventsForPOIssueOrReceipt(
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
