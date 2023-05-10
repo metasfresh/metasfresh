@@ -2,14 +2,20 @@ package de.metas.product;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
+=======
+>>>>>>> add0327a5f9 (handle NO RESOURCE)
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.util.Collection;
+=======
+>>>>>>> add0327a5f9 (handle NO RESOURCE)
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,16 +47,29 @@ import java.util.Optional;
 @Value
 public class ResourceId implements RepoIdAware
 {
+	public static final ResourceId NO_RESOURCE = new ResourceId(540011);
+
 	@JsonCreator
 	public static ResourceId ofRepoId(final int repoId)
 	{
-		return new ResourceId(repoId);
+		if (repoId == NO_RESOURCE.repoId)
+		{
+			return NO_RESOURCE;
+		}
+		else
+		{
+			return new ResourceId(repoId);
+		}
 	}
 
 	@Nullable
 	public static ResourceId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
+<<<<<<< HEAD
 		return repoId != null && repoId > 0 ? new ResourceId(repoId) : null;
+=======
+		return repoId > 0 ? ofRepoId(repoId) : null;
+>>>>>>> add0327a5f9 (handle NO RESOURCE)
 	}
 
 	public static Optional<ResourceId> optionalOfRepoId(final int repoId)
@@ -90,4 +109,6 @@ public class ResourceId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public boolean isNoResource() {return this.repoId == NO_RESOURCE.repoId;}
 }
