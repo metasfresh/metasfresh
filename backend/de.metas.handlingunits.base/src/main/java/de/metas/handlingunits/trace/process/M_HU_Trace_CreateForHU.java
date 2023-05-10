@@ -32,6 +32,7 @@ import org.compiere.model.I_M_MovementLine;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /*
@@ -112,7 +113,7 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 				huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
 			}
 
-			final List<I_M_InventoryLine> inventoryLines = inventoryRepository.retrieveAllLinesForHU(this, HuId.ofRepoId(hu.getM_HU_ID()));
+			final Set<I_M_InventoryLine> inventoryLines = inventoryRepository.retrieveAllLinesForHU(this, HuId.ofRepoId(hu.getM_HU_ID()));
 			for (final I_M_InventoryLine inventoryLine : inventoryLines)
 			{
 				addLog("Checking for M_Inventory_Line={}", inventoryLine);

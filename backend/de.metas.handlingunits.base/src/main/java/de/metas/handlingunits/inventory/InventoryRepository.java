@@ -723,7 +723,7 @@ public class InventoryRepository
 		return toInventory(inventory);
 	}
 
-	public List<I_M_InventoryLine> retrieveAllLinesForHU(final @NonNull IContextAware ctxAware, @NonNull final HuId huId)
+	public Set<I_M_InventoryLine> retrieveAllLinesForHU(final @NonNull IContextAware ctxAware, @NonNull final HuId huId)
 	{
 		final List<I_M_HU> includedHUs = huDAO.retrieveIncludedHUs(huDAO.getById(huId));
 
@@ -766,7 +766,7 @@ public class InventoryRepository
 				.map(ref -> ref.getModel(ctxAware, I_M_InventoryLine.class))
 				.collect(Collectors.toList());
 
-		return ImmutableList.<I_M_InventoryLine>builder()
+		return ImmutableSet.<I_M_InventoryLine>builder()
 				.addAll(linesViaHUId)
 				.addAll(linesViaHUInventoryLine)
 				.addAll(linesViaHUAssignment)
