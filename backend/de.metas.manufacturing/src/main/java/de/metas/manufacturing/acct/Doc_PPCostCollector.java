@@ -179,6 +179,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			@NonNull final CostAmount cost,
 			@NonNull final Quantity qty)
 	{
+		if (cost.signum() == 0)
+		{
+			return null;
+		}
+
 		final DocLine_CostCollector docLine = getLine();
 		final String description = costElement.getName();
 		final Fact fact = new Fact(this, as, PostingType.Actual);
@@ -192,7 +197,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		dr.setM_Locator_ID(docLine.getM_Locator_ID());
 
 		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
-		cr.setQty(qty.negate());
+		cr.setQty(qty);
 		cr.addDescription(description);
 		cr.setC_Project_ID(docLine.getC_Project_ID());
 		cr.setC_Activity_ID(docLine.getActivityId());
@@ -274,17 +279,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
-
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow().retainOnlyAccountable(as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
-
-
-
 			if (fact != null)
 			{
 				facts.add(fact);
