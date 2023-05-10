@@ -41,6 +41,12 @@ import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
+<<<<<<< HEAD
+=======
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.ICurrencyBL;
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
@@ -326,6 +332,15 @@ public class CostingService implements ICostingService
 				: costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
 	}
 
+<<<<<<< HEAD
+=======
+	private List<CostElement> getAllCostElements(@NonNull final ClientId clientId)
+	{
+		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
+		return costElementsRepo.getMaterialCostingMethods(clientId);
+	}
+
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 	private Set<CostingMethodHandler> getCostingMethodHandlers(@NonNull final CostingMethod costingMethod)
 	{
 		final Set<CostingMethodHandler> costingMethodHandlers = this.costingMethodHandlers.get(costingMethod);

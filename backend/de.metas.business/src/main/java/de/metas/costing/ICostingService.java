@@ -1,6 +1,10 @@
 package de.metas.costing;
 
 import de.metas.i18n.ExplainedOptional;
+<<<<<<< HEAD
+=======
+import de.metas.order.OrderLineId;
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 import lombok.NonNull;
 
 import java.util.Optional;

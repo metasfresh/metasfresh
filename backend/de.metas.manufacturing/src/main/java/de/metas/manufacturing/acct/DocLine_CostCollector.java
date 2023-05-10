@@ -8,6 +8,10 @@ import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+<<<<<<< HEAD
+=======
+import de.metas.acct.api.ProductAcctType;
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;

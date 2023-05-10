@@ -227,7 +227,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+=======
+		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
@@ -277,8 +281,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final DocLine_CostCollector docLine = getLine();
 		final Quantity qtyIssued = getMovementQty();
 
+<<<<<<< HEAD
 		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 		final Account credit = docLine.getAccount(isFloorStock ? ProductAcctType.P_FloorStock_Acct : ProductAcctType.P_Asset_Acct, as);
+=======
+		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
@@ -315,7 +324,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		final Quantity qtyMoved = getMovementQty();
+<<<<<<< HEAD
 		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+=======
+		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
@@ -352,8 +365,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		final Account debit = docLine.getAccount(varianceAcctType, as);
 		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+=======
+		final MAccount debit = docLine.getAccount(varianceAcctType, as);
+		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+>>>>>>> 8b5f4be90ee (don't fail in case of PP_Cost_Collector without costs (fix copied from master))
 		final Quantity qty = getMovementQty();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
