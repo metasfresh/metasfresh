@@ -113,6 +113,7 @@ import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTerm;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -647,6 +648,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	@Nullable
 	private Quantity extractQtyInvoiced(@NonNull final I_C_Invoice_Line_Alloc ila)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(ila.getC_UOM_ID());
@@ -737,6 +739,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.setContext(ctx, trxName)
 				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
 				.generateInvoices(candidates);
+	}
+
+
+	@Override
+	public void setPaymentTermIfMissing(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getC_PaymentTerm_ID() > 0)
+		{
+			return;
+		}
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
+
+		final PaymentTermId paymentTermIdToUse = paymentTermRepository
+				.retrievePaymentTermId(paymentTermQuery)
+				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
+						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
 	}
 
 	@Override
@@ -1058,6 +1081,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return result;
 	}
 
+	@Nullable
 	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -1270,12 +1294,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			translateAndPrependNote(existingIla, note);
 			existingIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
-			// 2022-10-27 metas-ts: 
+			// 2022-10-27 metas-ts:
 			// We ignore requests with existing ila with and requested qtysInvoiced:=zero for a long time and IDK why exactly,
 			// though it's very probably related to issue "#5664 Rest endpoint which allows the client to create invoices"
 			// I'm going to leave it like that for now, *unless* we are voiding the invoice in question.
 			final boolean invoiceVoided = InvoiceLineAllocType.InvoiceVoided.equals(request.getInvoiceLineAllocType());
-			
+
 			//
 			// FIXME in follow-up task! (06162)
 			if (qtysInvoiced.signum() == 0 && !invoiceVoided)
@@ -2647,7 +2671,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("DocStatus for M_InOutLine_ID={} is {}", inOutLine.getM_InOutLine_ID(), docStatus.getCode());
-		
+
 		if (docStatus.equals(DocStatus.Completed) || docStatus.equals(DocStatus.Closed))
 		{
 			return inOutLine.getMovementQty();

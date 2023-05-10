@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_Review_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_ExternalId;
