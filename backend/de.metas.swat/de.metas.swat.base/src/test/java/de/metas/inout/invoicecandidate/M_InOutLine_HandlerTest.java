@@ -48,7 +48,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -794,7 +794,7 @@ public class M_InOutLine_HandlerTest
 	{
 		final String description = termId == null ? "C_PaymentTerm_ID=0" : termId.toString();
 
-		return new Condition<I_C_Invoice_Candidate>(description)
+		return new Condition<>(description)
 		{
 			@Override
 			public boolean matches(final I_C_Invoice_Candidate ic)

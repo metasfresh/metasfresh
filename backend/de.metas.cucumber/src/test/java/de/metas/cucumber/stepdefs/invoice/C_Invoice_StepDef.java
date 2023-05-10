@@ -381,7 +381,7 @@ public class C_Invoice_StepDef
 		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
 
 		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifier);
-		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
+		assertThat(invoices.size()).as("number of created invoices; (processed ICs: %s)", invoiceCandidateIds.size()).isEqualTo(invoiceIdentifiers.size());
 
 		// dev-note: map either multiple orders (aggregated) to the same invoice or multiple orders to multiple invoices (each order with its invoice)
 		if (invoiceIdentifiers.size() == 1)
