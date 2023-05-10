@@ -1,8 +1,10 @@
 package de.metas.material.planning.pporder.impl;
 
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.ProductId;
 import de.metas.uom.impl.UOMTestHelper;
+import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -71,6 +73,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 
 		// NOTE: after this, model validators will be also registered
 		helper = new UOMTestHelper(Env.getCtx());
+		ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
 
 		createMasterData();
 	}

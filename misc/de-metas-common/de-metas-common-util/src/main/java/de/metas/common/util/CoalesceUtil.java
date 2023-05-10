@@ -65,7 +65,7 @@ public class CoalesceUtil
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final Supplier<T> value2Supplier)
 	{
-		if(value1 != null)
+		if (value1 != null)
 		{
 			return value1;
 		}
@@ -156,6 +156,7 @@ public class CoalesceUtil
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
 
+	@SuppressWarnings("unused")
 	@SafeVarargs
 	@NonNull
 	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
@@ -163,7 +164,26 @@ public class CoalesceUtil
 		return Optional.ofNullable(coalesceSuppliers(values));
 	}
 
-	
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T value1, @Nullable final T value2)
+	{
+		return Optional.ofNullable(coalesce(value1, value2));
+	}
+
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
+	{
+		return Optional.ofNullable(coalesce(value1, value2, value3));
+	}
+
+	@SuppressWarnings("unused")
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T... values)
+	{
+		return Optional.ofNullable(coalesce(values));
+	}
+
 	@SafeVarargs
 	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
@@ -278,7 +298,7 @@ public class CoalesceUtil
 	@Nullable
 	public String firstNotBlank(@Nullable final String... values)
 	{
-		if(values == null || values.length == 0)
+		if (values == null || values.length == 0)
 		{
 			return null;
 		}
@@ -298,14 +318,14 @@ public class CoalesceUtil
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
-		if(valueSuppliers == null || valueSuppliers.length == 0)
+		if (valueSuppliers == null || valueSuppliers.length == 0)
 		{
 			return null;
 		}
 
 		for (final Supplier<String> valueSupplier : valueSuppliers)
 		{
-			if(valueSupplier == null)
+			if (valueSupplier == null)
 			{
 				continue;
 			}
@@ -319,8 +339,6 @@ public class CoalesceUtil
 
 		return null;
 	}
-
-
 
 	public int countNotNulls(@Nullable final Object... values)
 	{

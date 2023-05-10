@@ -72,6 +72,11 @@ public class WOProjectResources
 		}
 	}
 
+	public int size()
+	{
+		return resourcesById.size();
+	}
+
 	public WOProjectResource getById(@NonNull final WOProjectResourceId projectResourceId)
 	{
 		final WOProjectResource projectResource = resourcesById.get(projectResourceId);
@@ -80,11 +85,6 @@ public class WOProjectResources
 			throw new AdempiereException("No project resource found for " + projectResourceId + " in " + this);
 		}
 		return projectResource;
-	}
-
-	public Stream<WOProjectResourceId> streamIds()
-	{
-		return resourcesById.keySet().stream();
 	}
 
 	public Stream<WOProjectResource> stream()

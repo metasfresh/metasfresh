@@ -28,6 +28,8 @@ import {
   getEventClassNames,
   renderEventContent,
 } from './components/CalendarEvent';
+import SimulationOptimizerButton from './components/SimulationOptimizerButton';
+import { useSimulationOptimizerStatus } from './hooks/useSimulationOptimizerStatus';
 
 const Calendar = ({
   view,
@@ -64,11 +66,18 @@ const Calendar = ({
     fetchConflictsFromAPI: api.fetchConflicts,
   });
 
+  const simulationOptimizerStatus = useSimulationOptimizerStatus({
+    simulationId,
+  });
+
   useCalendarWebsocketEvents({
     simulationId,
     onlyResourceIds,
     onlyProjectId,
-    onWSEvents: calendarData.applyWSEvents,
+    onWSEvents: (wsEvents) => {
+      calendarData.applyWSEvents(wsEvents);
+      simulationOptimizerStatus.setStatusFromWSEvents(wsEvents);
+    },
   });
 
   const fetchCalendarEntries = (fetchInfo, successCallback) => {
@@ -111,6 +120,10 @@ const Calendar = ({
       });
   };
 
+  //
+  //
+  //
+
   // Calendar Key:
   // * view - it's important to be part of the key, else the Calendar component when we do browser back/forward between different view types
   // noinspection UnnecessaryLocalVariableJS
@@ -128,6 +141,21 @@ const Calendar = ({
           <CalendarFilters resolvedQuery={calendarData.getResolvedQuery()} />
         </div>
         <div className="calendar-top-right">
+          <SimulationOptimizerButton
+            simulationId={simulationOptimizerStatus.simulationId}
+            status={simulationOptimizerStatus.status}
+            onStart={({ simulationId }) =>
+              api
+                .startSimulationOptimizer({ simulationId })
+                .then(simulationOptimizerStatus.setStatusFromAPIResponse)
+            }
+            onStop={({ simulationId }) =>
+              api
+                .stopSimulationOptimizer({ simulationId })
+                .then(simulationOptimizerStatus.setStatusFromAPIResponse)
+            }
+            hidden={calendarData.isLoading}
+          />
           <SimulationsDropDown
             simulations={calendarData.getSimulationsArray()}
             selectedSimulationId={simulationId}
