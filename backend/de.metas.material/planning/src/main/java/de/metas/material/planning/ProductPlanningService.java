@@ -42,6 +42,7 @@ import java.util.Optional;
 public class ProductPlanningService
 {
 	private final IPPRoutingRepository routingRepository = Services.get(IPPRoutingRepository.class);
+
 	/**
 	 * Duration to have this Qty available (i.e. Lead Time + Transfer Time)
 	 *

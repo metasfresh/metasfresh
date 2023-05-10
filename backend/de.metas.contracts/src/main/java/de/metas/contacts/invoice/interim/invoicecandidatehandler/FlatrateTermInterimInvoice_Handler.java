@@ -32,7 +32,6 @@ import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermDAO;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceSettingsDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractsDAO;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -48,8 +47,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -72,8 +69,7 @@ import java.util.stream.Collectors;
 
 public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+
 	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -152,17 +148,9 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	@NonNull
 	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
-		final boolean anyMissing = contractsDAO.createInterimInvoiceSearchCriteria(flatrateTerm)
-				.anyMatch();
-
-		if (!anyMissing)
-		{
-			return IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT;
-		}
-
-		return isEligibleForInvoiceAutoCreation(flatrateTerm)
-				? IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES
-				: IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
+		return contractsDAO.createInterimInvoiceSearchCriteria(flatrateTerm).anyMatch()
+				? IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES
+				: IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
@@ -207,21 +195,6 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		return invoiceCandidate;
 	}
 
-	private boolean isEligibleForInvoiceAutoCreation(@NonNull final I_C_Flatrate_Term flatrateTerm)
-	{
-		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()));
-		if (!autoInvoiceFlatrateTerm)
-		{
-			return false; // nothing to do
-		}
-
-		if (flatrateDAO.bpartnerHasExistingRunningTerms(flatrateTerm))
-		{
-			return false; // there are already running terms for this partner. Nothing to do
-		}
-		return true;
-	}
-	
 	private I_C_Invoice_Candidate createBaseIC(final @NonNull I_C_Flatrate_Term term)
 	{
 		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = getInterimInvoiceFlatrateTermForTerm(term, null);

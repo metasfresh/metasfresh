@@ -49,6 +49,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -171,6 +172,7 @@ public class ExternallyReferencedCandidateRepository
 
 		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
+		icRecord.setC_Project_ID(ProjectId.toRepoId(ic.getProjectId()));
 
 		icRecord.setDescriptionBottom(ic.getDescriptionBottom());
 		icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
@@ -321,6 +323,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
+
+		candidate.projectId(ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()));
 
 		candidate.activityId(ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()));
 

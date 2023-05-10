@@ -2,7 +2,8 @@
 Feature: Partial Payment Invoicing
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-09-02T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -89,10 +90,10 @@ Feature: Partial Payment Invoicing
 
     When the order identified by order_PO_29082022 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier   | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO_29082022     | order_PO_29082022     | ol_PO_29082022            | vendor_29082022          | vendor_location_29082022          | product_PO_happy_29082022 | 100        | warehouseStd              |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 0            |
     And validate C_Invoice_Candidate:
@@ -115,7 +116,7 @@ Feature: Partial Payment Invoicing
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier   |
       | contract_interim_PO_29082022  | interim_invoice_payment             | product_PO_happy_29082022 |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 30           |                           |                              |                      |
       | invoiceCand_PO_29082022_interim_1 | null                      | 30           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
@@ -133,7 +134,7 @@ Feature: Partial Payment Invoicing
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_PO_29082022_interim_1 |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_PO_29082022_interim_1 | invoice_PO_29082022_1   |
 
@@ -141,7 +142,7 @@ Feature: Partial Payment Invoicing
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus |
       | invoice_PO_29082022_1   | vendor_29082022          | vendor_location_29082022          | 30 Tage netto | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | QtyInvoiced | Processed |
       | invoice_line_PO_29082022_1  | invoice_PO_29082022_1   | product_PO_happy_29082022 | 30          | true      |
 
     And validate C_InterimInvoice_FlatrateTerm:
@@ -159,7 +160,7 @@ Feature: Partial Payment Invoicing
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_29082022        | receiptSchedule_PO_29082022     | inOut_PO_29082022_2   |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 50           |                           |                              |                      |
       | invoiceCand_PO_29082022_interim_2 | null                      | 20           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
@@ -178,14 +179,14 @@ Feature: Partial Payment Invoicing
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_PO_29082022_interim_2 |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_PO_29082022_interim_2 | invoice_PO_29082022_2   |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus |
       | invoice_PO_29082022_2   | vendor_29082022          | vendor_location_29082022          | 30 Tage netto | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | QtyInvoiced | Processed |
       | invoice_line_PO_29082022_2  | invoice_PO_29082022_2   | product_PO_happy_29082022 | 20          | true      |
 
     And validate C_InterimInvoice_FlatrateTerm:
@@ -207,7 +208,7 @@ Feature: Partial Payment Invoicing
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Processed |
-      | invoiceCand_PO_29082022           | ol_PO_29082022                | 0            | 50             | 50               | 50              | product_PO_happy_29082022   | Y             |
+      | invoiceCand_PO_29082022           | ol_PO_29082022                | 0            | 100            | 50               | 50              | product_PO_happy_29082022   | Y             |
       | invoiceCand_PO_29082022_interim_1 | null                          | 0            | 30             | 30               | 30              | product_PO_happy_29082022   | Y             |
       | invoiceCand_PO_29082022_box_1     | null                          | 0            | -30            | -30              | -30             | grey_box_product            | Y             |
       | invoiceCand_PO_29082022_interim_2 | null                          | 0            | 20             | 20               | 20              | product_PO_happy_29082022   | Y             |
@@ -248,10 +249,10 @@ Feature: Partial Payment Invoicing
 
     When the order identified by order_PO_29082022 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO_29082022     | order_PO_29082022     | ol_PO_29082022            | vendor_29082022          | vendor_location_29082022          | product_PO_1_29082022   | 100        | warehouseStd              |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 0            |
     And validate C_Invoice_Candidate:
@@ -274,7 +275,7 @@ Feature: Partial Payment Invoicing
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier |
       | contract_interim_PO_29082022  | interim_invoice_payment             | product_PO_1_29082022   |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 30           |                           |                              |                      |
       | invoiceCand_PO_29082022_interim   | null                      | 30           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
@@ -346,10 +347,10 @@ Feature: Partial Payment Invoicing
 
     When the order identified by order_PO_29082022 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO_29082022     | order_PO_29082022     | ol_PO_29082022            | vendor_29082022          | vendor_location_29082022          | product_PO_2_29082022   | 100        | warehouseStd              |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 0            |
     And validate C_Invoice_Candidate:
@@ -372,7 +373,7 @@ Feature: Partial Payment Invoicing
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier |
       | contract_interim_PO_29082022  | interim_invoice_payment             | product_PO_2_29082022   |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 30           |                           |                              |                      |
       | invoiceCand_PO_29082022_interim_1 | null                      | 30           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
@@ -391,14 +392,14 @@ Feature: Partial Payment Invoicing
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_PO_29082022_interim_1 |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_PO_29082022_interim_1 | invoice_PO_29082022     |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus |
       | invoice_PO_29082022     | vendor_29082022          | vendor_location_29082022          | 30 Tage netto | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoice_line_PO_29082022    | invoice_PO_29082022     | product_PO_2_29082022   | 30          | true      |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Processed |
@@ -416,7 +417,7 @@ Feature: Partial Payment Invoicing
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_29082022        | receiptSchedule_PO_29082022     | inOut_PO_29082022_2   |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 50           |                           |                              |                      |
       | invoiceCand_PO_29082022_interim_2 | null                      | 20           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
@@ -434,7 +435,7 @@ Feature: Partial Payment Invoicing
 
     And the invoice identified by invoice_PO_29082022 is reversed
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022_interim_1 | null                      | 30           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
 

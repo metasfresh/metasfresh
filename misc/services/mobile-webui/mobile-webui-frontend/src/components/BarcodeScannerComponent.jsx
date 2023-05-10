@@ -1,9 +1,11 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useRef } from 'react';
-import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
-import { toastError } from '../utils/toast';
+import { toastError, toastErrorFromObj } from '../utils/toast';
 import { trl } from '../utils/translations';
+import { useBooleanSetting, usePositiveNumberSetting } from '../reducers/settings';
+import { debounce } from 'lodash';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -17,47 +19,50 @@ const READER_OPTIONS = {
 };
 
 const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) => {
-  const video = useRef();
+  const videoRef = useRef();
+  const inputTextRef = useRef();
+  const scanningStatusRef = useRef({ running: false, done: false });
+
+  const validateScannedBarcodeAndForward = async ({ scannedBarcode, controls = null }) => {
+    inputTextRef?.current?.select();
+
+    const scanningStatus = scanningStatusRef.current;
+    if (scanningStatus.running || scanningStatus.done) {
+      console.log('Ignore scanned barcode because we are already running or done', { scannedBarcode, scanningStatus });
+      return;
+    }
+    scanningStatus.running = true;
+
+    try {
+      let resolvedResult;
+      if (resolveScannedBarcode) {
+        resolvedResult = await resolveScannedBarcode({ scannedBarcode });
+      } else {
+        resolvedResult = { scannedBarcode, error: null };
+      }
+
+      if (resolvedResult.error) {
+        toastError({ plainMessage: resolvedResult.error });
+        scanningStatus.done = false; // not done yet
+      } else {
+        await onResolvedResult(resolvedResult);
+
+        scanningStatus.done = true;
+        controls?.stop();
+      }
+    } catch (error) {
+      toastErrorFromObj(error);
+    } finally {
+      scanningStatus.running = false;
+    }
+  };
+
   const mountedRef = useRef(true);
-
-  const validateScannedBarcodeAndForward = ({ scannedBarcode, controls }) => {
-    //console.log('Resolving scanned barcode', { scannedBarcode, resolveScannedBarcode });
-    if (resolveScannedBarcode) {
-      let resolvedResultPromise;
-      try {
-        resolvedResultPromise = resolveScannedBarcode({ scannedBarcode });
-        //console.log('Got resolvedResultPromise', resolvedResultPromise);
-      } catch (error) {
-        console.error('Got unhandled error while trying to resolve the scanned barcode', error);
-        handleResolvedResult({ error: trl('error.PleaseTryAgain') }, controls);
-        return;
-      }
-
-      if (resolvedResultPromise) {
-        Promise.resolve(resolvedResultPromise)
-          .then((result) => handleResolvedResult(result, controls))
-          .catch((axiosError) => toastError({ axiosError }));
-      }
-    } else {
-      handleResolvedResult({ scannedBarcode, error: null }, controls);
-    }
-  };
-
-  const handleResolvedResult = (resolvedResult, controls) => {
-    // console.log('Got resolvedResult', resolvedResult);
-    if (resolvedResult.error) {
-      toastError({ plainMessage: resolvedResult.error });
-    } else {
-      controls.stop();
-      onResolvedResult(resolvedResult);
-    }
-  };
-
   useEffect(() => {
     mountedRef.current = true;
 
     const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, video.current, (result, error, controls) => {
+    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
       if (mountedRef.current === false) {
         controls.stop();
       } else if (typeof result !== 'undefined') {
@@ -70,7 +75,72 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     };
   });
 
-  return <video ref={video} width="100%" height="100%" />;
+  const triggerOnChangeIfLengthGreaterThan = usePositiveNumberSetting(
+    'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
+    0
+  );
+  const handleInputTextChanged = (e) => {
+    const scannedBarcode = e.target.value;
+
+    if (
+      scannedBarcode &&
+      triggerOnChangeIfLengthGreaterThan &&
+      triggerOnChangeIfLengthGreaterThan > 0 &&
+      scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
+    ) {
+      validateScannedBarcodeAndForward({ scannedBarcode });
+    }
+  };
+
+  const textChangedDebounceMillis = usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300);
+  const handleInputTextChangedDebounced = useMemo(() => {
+    return debounce(handleInputTextChanged, textChangedDebounceMillis);
+  }, [textChangedDebounceMillis]);
+  useEffect(() => {
+    return () => handleInputTextChangedDebounced.cancel();
+  });
+
+  const handleInputTextKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      const scannedBarcode = e.target.value;
+
+      validateScannedBarcodeAndForward({ scannedBarcode });
+    }
+  };
+
+  const handleInputTextFocus = () => {
+    inputTextRef?.current?.select();
+  };
+
+  const handleInputTextBlur = () => {
+    setTimeout(() => {
+      inputTextRef?.current?.focus();
+    }, 2000);
+  };
+
+  useEffect(() => {
+    inputTextRef?.current?.focus();
+  });
+
+  const isShowInputText = useBooleanSetting('barcodeScanner.showInputText');
+  return (
+    <div className="barcode-scanner">
+      <video key="video" ref={videoRef} width="100%" height="100%" />
+      {isShowInputText && (
+        <input
+          key="input-text"
+          ref={inputTextRef}
+          className="input-text"
+          type="text"
+          placeholder={trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
+          onFocus={handleInputTextFocus}
+          onBlur={handleInputTextBlur}
+          onChange={handleInputTextChangedDebounced}
+          onKeyUp={handleInputTextKeyPress}
+        />
+      )}
+    </div>
+  );
 };
 
 BarcodeScannerComponent.propTypes = {

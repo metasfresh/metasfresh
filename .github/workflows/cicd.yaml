@@ -153,7 +153,7 @@ jobs:
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          
+
   test-frontend:
     name: test (frontend)
     runs-on: ubuntu-latest
@@ -454,7 +454,7 @@ jobs:
           path: cucumber.log
       - name: produce-summary
         run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/' >> $GITHUB_STEP_SUMMARY
+          echo 'test results can be found at http://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   redeploy:
     runs-on: ubuntu-latest

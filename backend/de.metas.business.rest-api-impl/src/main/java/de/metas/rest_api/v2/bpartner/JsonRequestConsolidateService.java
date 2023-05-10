@@ -59,7 +59,7 @@ public class JsonRequestConsolidateService
 
 		consolidateWithIdentifier(bpartnerComposite.getLocationsNotNull());
 
-		// note that bank-accounts don't need this treatment yet because they don't have the identifier stuff etc
+		// note that bank-accounts and creditLimits don't need this treatment yet because they don't have the identifier stuff etc
 	}
 
 	public void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsert contacts)

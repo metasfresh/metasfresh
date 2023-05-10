@@ -15,6 +15,5 @@ UPDATE AD_Val_Rule SET Code='(''@DocBaseType@''=''ARI'' AND AD_Ref_List.ValueNam
 
 -- 2022-08-25T20:16:56.508Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE C_DocType SET DocSubType='II',AD_Org_ID=0,Updated=TO_TIMESTAMP('2022-08-25 23:16:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=1000046
+UPDATE C_DocType SET DocSubType='II',AD_Org_ID=0,Updated=TO_TIMESTAMP('2022-08-25 23:16:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541061
 ;
-

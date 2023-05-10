@@ -1,9 +1,9 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.issue.json;
 
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
-import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
-import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
+import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -23,12 +23,14 @@ public class JsonRawMaterialsIssueLineStep
 	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String locatorName;
-	@NonNull JsonRenderedHUQRCode huQRCode;
+	@NonNull JsonDisplayableQRCode huQRCode;
 	@NonNull String uom;
+	@NonNull BigDecimal qtyHUCapacity;
 	@NonNull BigDecimal qtyToIssue;
 	@Nullable BigDecimal qtyIssued;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
+	@Nullable JsonScaleTolerance scaleTolerance;
 
 	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, JsonOpts jsonOpts)
 	{
@@ -40,6 +42,7 @@ public class JsonRawMaterialsIssueLineStep
 				.locatorName(step.getIssueFromLocator().getCaption())
 				.huQRCode(step.getIssueFromHU().getBarcode().toRenderedJson())
 				.uom(step.getQtyToIssue().getUOMSymbol())
+				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())
 				.qtyToIssue(step.getQtyToIssue().toBigDecimal());
 
 		final PPOrderIssueSchedule.Issued issued = step.getIssued();
@@ -55,6 +58,26 @@ public class JsonRawMaterialsIssueLineStep
 			}
 		}
 
+		if (step.getScaleTolerance() != null)
+		{
+			final JsonScaleTolerance jsonScaleTolerance = JsonScaleTolerance.builder()
+					.negativeTolerance(step.getScaleTolerance().getNegativeTolerance().toBigDecimal())
+					.positiveTolerance(step.getScaleTolerance().getPositiveTolerance().toBigDecimal())
+					.build();
+
+			builder.scaleTolerance(jsonScaleTolerance);
+		}
+
 		return builder.build();
+	}
+
+	@Value
+	@Builder
+	public static class JsonScaleTolerance
+	{
+		@NonNull
+		BigDecimal positiveTolerance;
+		@NonNull
+		BigDecimal negativeTolerance;
 	}
 }

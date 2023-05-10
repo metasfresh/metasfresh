@@ -3,7 +3,7 @@ package org.adempiere.ad.column.callout;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -99,6 +99,7 @@ public class AD_Column
 	{
 		if (column.getAD_Element_ID() <= 0)
 		{
+			//noinspection ConstantConditions
 			column.setColumnName(null);
 			column.setName(null);
 			return;
@@ -371,7 +372,7 @@ public class AD_Column
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnSQL })
-	public void upadteIsLazyLoading(final I_AD_Column column)
+	public void updateIsLazyLoading(final I_AD_Column column)
 	{
 		column.setIsLazyLoading(adTableDAO.isVirtualColumn(column));
 	}

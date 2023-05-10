@@ -2,7 +2,10 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -98,6 +101,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final InOutLineDimensionFactory inOutLineDimensionFactory = new InOutLineDimensionFactory();
 
 	/**
 	 * Shipment on which the new shipment line will be created
@@ -402,7 +406,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		shipmentLine.setAD_Org_ID(currentShipment.getAD_Org_ID());
 		shipmentLine.setM_InOut(currentShipment);
 
-		//
+		shipmentLine.setM_SectionCode_ID(currentShipment.getM_SectionCode_ID());
+
 		// Line Warehouse & Locator (retrieved from current Shipment)
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(currentShipment.getM_Warehouse_ID());
@@ -435,6 +440,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 		//
 		// Order Line Link (retrieved from current Shipment)
+		shipmentLine.setC_Order_ID(OrderAndLineId.toOrderRepoId(orderLineId));
 		shipmentLine.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(orderLineId));
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId.getOrderLineId());
 		if (orderLine != null)
@@ -514,10 +520,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 				.map(FlatrateTermId::getRepoId)
 				.ifPresent(shipmentLine::setC_Flatrate_Term_ID);
 
+		updateDimensionFromCandidates(shipmentLine);
+
 		// Save Shipment Line
 		save(shipmentLine);
 
-		try (final MDCCloseable shipmentLineMDC = TableRecordMDC.putTableRecordReference(shipmentLine))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(shipmentLine))
 		{
 			shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), shipmentLine.getLine());
 
@@ -531,6 +539,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 			//
 			// Create HU Assignments
 			createShipmentLineHUAssignments(shipmentLine);
+
 			return shipmentLine;
 		}
 	}
@@ -591,7 +600,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	{
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
-		executor.run((IHUContextProcessor)huContext -> {
+		executor.run(huContext -> {
 
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
@@ -619,6 +628,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 			return IHUContextProcessor.NULL_RESULT;
 		});
+	}
+
+	private void updateDimensionFromCandidates(final I_M_InOutLine shipmentLine)
+	{
+		final ImmutableSet<Dimension> candidatesDimensions = candidates.stream()
+				.map(ShipmentScheduleWithHU::getDimension)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Dimension dimension = Dimension.extractCommonDimension(candidatesDimensions);
+
+		inOutLineDimensionFactory.updateRecord(shipmentLine, dimension);
 	}
 
 	public List<ShipmentScheduleWithHU> getCandidates()

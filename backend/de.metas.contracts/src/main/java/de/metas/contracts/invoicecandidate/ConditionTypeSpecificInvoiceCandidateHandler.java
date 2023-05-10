@@ -8,7 +8,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
@@ -16,16 +15,15 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
@@ -130,6 +128,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
@@ -141,7 +140,8 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 				CoalesceUtil.coalesceSuppliersNotNull(
 						() -> ContractLocationHelper.extractDropshipLocationId(term),
 						() -> ContractLocationHelper.extractBillToLocationId(term)),
-				SOTrx.ofBoolean(ic.isSOTrx()));
+				SOTrx.ofBoolean(ic.isSOTrx()),
+				vatCodeId);
 
 		return PriceAndTax.builder()
 				.pricingSystemId(PricingSystemId.ofRepoId(term.getM_PricingSystem_ID()))
@@ -161,7 +161,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	}
 
 	@NonNull CandidatesAutoCreateMode isMissingInvoiceCandidate(@NonNull I_C_Flatrate_Term flatrateTerm);
-	
+
 	default List<I_C_Invoice_Candidate> createInvoiceCandidates(@NonNull final I_C_Flatrate_Term term)
 	{
 		return Collections.singletonList(HandlerTools.createIcAndSetCommonFields(term));

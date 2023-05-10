@@ -1,12 +1,14 @@
 package de.metas.document.impl;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -18,13 +20,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_GL_Category;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
@@ -64,21 +65,52 @@ public class DocTypeDAO implements IDocTypeDAO
 			.tableName(I_C_DocType.Table_Name)
 			.build();
 
+	private final CCache<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>> docTypeIdsByInvoicingPoolId = CCache.<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>>builder()
+			.tableName(I_C_DocType.Table_Name)
+			.build();
+
 	private final CCache<Integer, DocBaseTypeCountersMap> docBaseTypeCountersMapCache = CCache.<Integer, DocBaseTypeCountersMap>builder()
 			.tableName(I_C_DocBaseType_Counter.Table_Name)
 			.build();
 
 	@Override
+	@NonNull
 	public I_C_DocType getById(final int docTypeId)
 	{
 		return getById(DocTypeId.ofRepoId(docTypeId));
 	}
 
 	@Override
+	@NonNull
 	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
-		return InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
+		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
+
+		if (docTypeRecord == null)
+		{
+			throw new AdempiereException("No C_DocType record found for ID!")
+					.appendParametersToMessage()
+					.setParameter("DocTypeId", docTypeId);
+		}
+
+		return docTypeRecord;
+	}
+
+	@Override
+	@NonNull
+	public I_C_DocType getByIdInTrx(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+
+		if (docTypeRecord == null)
+		{
+			throw new AdempiereException("No C_DocType record found for ID!")
+					.appendParametersToMessage()
+					.setParameter("DocTypeId", docTypeId);
+		}
+
+		return docTypeRecord;
 	}
 
 	@Override
@@ -86,6 +118,13 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		return docTypeIdsByQuery.getOrLoad(query, this::retrieveDocTypeIdByQuery)
 				.orElse(null);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		return docTypeIdsByInvoicingPoolId.getOrLoad(docTypeInvoicingPoolId, this::retrieveDocTypeIdsByInvoicingPoolId);
 	}
 
 	private Optional<DocTypeId> retrieveDocTypeIdByQuery(@NonNull final DocTypeQuery query)
@@ -236,7 +275,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		dt.setDocBaseType(request.getDocBaseType().getCode());
 		dt.setName(name);
 		dt.setPrintName(name);
-		dt.setGL_Category_ID(retrieveDefaultGL_Category_ID());
+		dt.setGL_Category_ID(request.getGlCategoryId().getRepoId());
 
 		//		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
 		dt.setEntityType(request.getEntityType());
@@ -259,10 +298,6 @@ public class DocTypeDAO implements IDocTypeDAO
 		if (request.getDocTypeInvoiceId() > 0)
 		{
 			dt.setC_DocTypeInvoice_ID(request.getDocTypeInvoiceId());
-		}
-		if (request.getGlCategoryId() > 0)
-		{
-			dt.setGL_Category_ID(request.getGlCategoryId());
 		}
 
 		if (docNoSequenceId <= 0)
@@ -293,19 +328,10 @@ public class DocTypeDAO implements IDocTypeDAO
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
 	}
 
-	/**
-	 * Set Default GL Category
-	 */
-	private int retrieveDefaultGL_Category_ID()
+	@Override
+	public void save(@NonNull final I_C_DocType docTypeRecord)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_GL_Category.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_GL_Category.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId())
-				.orderByDescending(I_GL_Category.COLUMNNAME_IsDefault)
-				.orderBy(I_GL_Category.COLUMNNAME_GL_Category_ID)
-				.create()
-				.firstId();
+		InterfaceWrapperHelper.saveRecord(docTypeRecord);
 	}
 
 	@Override
@@ -339,5 +365,15 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			return Optional.ofNullable(counterDocBaseTypeByDocBaseType.get(docBaseType));
 		}
+	}
+
+	@NonNull
+	private ImmutableSet<DocTypeId> retrieveDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		return queryBL.createQueryBuilder(I_C_DocType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_C_DocType_Invoicing_Pool_ID, docTypeInvoicingPoolId)
+				.create()
+				.listIds(DocTypeId::ofRepoId);
 	}
 }

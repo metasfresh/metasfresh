@@ -96,14 +96,22 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Shopware6 = "S6";
 	/** Other = Other */
 	public static final String TYPE_Other = "Other";
+	/** Ebay = Ebay */
+	public static final String TYPE_Ebay = "Ebay";
 	/** WooCommerce = WOO */
 	public static final String TYPE_WooCommerce = "WOO";
 	/** RabbitMQ REST API = RabbitMQ */
 	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	/** GRSSignum = GRS */
 	public static final String TYPE_GRSSignum = "GRS";
+	/** Leich & Mehl = LM */
+	public static final String TYPE_LeichMehl = "LM";
+	/** SAP = SAP */
+	public static final String TYPE_SAP = "SAP";
 	/** Metasfresh = metasfresh */
 	public static final String TYPE_Metasfresh = "metasfresh";
+	/** Amazon = AMZ */
+	public static final String TYPE_Amazon = "AMZ";
 	@Override
 	public void setType (final String Type)
 	{

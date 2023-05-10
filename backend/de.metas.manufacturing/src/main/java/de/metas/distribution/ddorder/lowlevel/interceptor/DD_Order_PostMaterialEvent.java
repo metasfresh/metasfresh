@@ -24,6 +24,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
@@ -49,6 +50,7 @@ import java.util.List;
 public class DD_Order_PostMaterialEvent
 {
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final DDOrderLowLevelService ddOrderLowLevelService;
 	private final ReplenishInfoRepository replenishInfoRepository;
 
@@ -67,10 +69,18 @@ public class DD_Order_PostMaterialEvent
 		// also, it might still be rolled back
 		// those aren't show-stoppers, but we therefore rather work with @ModelChange
 
-		final List<DDOrderCreatedEvent> events = createEvents(ddOrder);
+		if (ddOrder.isSimulated())
+		{
+			return;
+		}
+		
+		// dev-note: running after commit to make sure the DD_OrderLines are created
+		trxManager.runAfterCommit(() -> {
+			final List<DDOrderCreatedEvent> events = createEvents(ddOrder);
 
-		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		events.forEach(materialEventService::postEventAfterNextCommit);
+			final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+			events.forEach(materialEventService::enqueueEventAfterNextCommit);
+		});
 	}
 
 	@NonNull
@@ -160,7 +170,7 @@ public class DD_Order_PostMaterialEvent
 				.build();
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	@NonNull

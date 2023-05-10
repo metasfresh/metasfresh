@@ -5,13 +5,17 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -46,7 +50,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -93,19 +96,34 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutAndLineId inoutLineId)
+	{
+		return load(inoutLineId.getInOutLineId(), I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
 	public <T extends I_M_InOutLine> List<T> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds, final Class<T> returnType)
 	{
-		final Set<Integer> ids = inoutLineIds.stream().map(InOutLineId::getRepoId).collect(Collectors.toSet());
+		if (inoutLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
 		return queryBL.createQueryBuilder(returnType)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, ids)
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inoutLineIds)
 				.create()
 				.list(returnType);
 	}
@@ -121,13 +139,6 @@ public class InOutDAO implements IInOutDAO
 				.create()
 				.listIds(InOutId::ofRepoId)
 				.asList();
-	}
-
-	@Override
-	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
-	{
-		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
-		return inoutLine;
 	}
 
 	@Override
@@ -149,6 +160,22 @@ public class InOutDAO implements IInOutDAO
 	{
 		final boolean retrieveAll = false;
 		return retrieveLines(inOut, retrieveAll, inoutLineClass);
+	}
+
+	@Override
+	public ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(final Set<InOutId> inoutIds)
+	{
+		if (inoutIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutIds)
+				.create()
+				.listIds(InOutLineId::ofRepoId);
+
 	}
 
 	private <T extends I_M_InOutLine> List<T> retrieveLines(
@@ -206,6 +233,21 @@ public class InOutDAO implements IInOutDAO
 		return retrieveLinesForOrderLine(orderLine, I_M_InOutLine.class);
 	}
 
+	@Override
+	public <T extends I_M_InOutLine> List<T> retrieveCompleteOrClosedLinesForOrderLine(@NonNull final OrderLineId orderLineId, final Class<T> clazz)
+	{
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
+				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineId)
+				// .filterByClientId()
+				.addOnlyActiveRecordsFilter();
+		queryBuilder.orderBy()
+				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
+
+		return queryBuilder.create()
+				.list(clazz);
+	}
 	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(final I_C_OrderLine orderLine, final Class<T> clazz)
 	{
@@ -337,6 +379,12 @@ public class InOutDAO implements IInOutDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
 	{
 		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
@@ -460,6 +508,25 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	@NonNull
+	public Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		final I_M_InOutLine inOutLine = load(inoutLineId, I_M_InOutLine.class);
+
+		if (inOutLine == null)
+		{
+			return Optional.empty();
+		}
+
+		if (inOutLine.getReversalLine_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
+	}
+
+	@Override
 	public Collection<InOutAndLineId> retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(@NonNull final OrderLineId orderLine)
 	{
 		final IQuery<I_C_InterimInvoice_FlatrateTerm_Line> inOutsUsedForInterimInvoice = queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
@@ -478,28 +545,38 @@ public class InOutDAO implements IInOutDAO
 
 	}
 
-	@Override
-	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
+	@Nullable
+	public static ForexContractRef extractForeignContractRef(final I_M_InOut record)
 	{
-		return load(inoutLineId.getRepoId(), modelClass);
-	}
-
-	@Override
-	@NonNull
-	public Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId)
-	{
-		final I_M_InOutLine inOutLine = load(inoutLineId, I_M_InOutLine.class);
-
-		if (inOutLine == null)
+		if (!record.isFEC())
 		{
-			return Optional.empty();
+			return null;
 		}
 
-		if (inOutLine.getReversalLine_ID() <= 0)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
+		return ForexContractRef.builder()
+				.forexContractId(ForexContractId.ofRepoIdOrNull(record.getC_ForeignExchangeContract_ID()))
+				.orderCurrencyId(CurrencyId.ofRepoId(record.getFEC_Order_Currency_ID()))
+				.fromCurrencyId(CurrencyId.ofRepoId(record.getFEC_From_Currency_ID()))
+				.toCurrencyId(CurrencyId.ofRepoId(record.getFEC_To_Currency_ID()))
+				.currencyRate(record.getFEC_CurrencyRate())
+				.build();
 	}
+
+	public static void updateRecordFromForeignContractRef(@NonNull I_M_InOut record, @Nullable ForexContractRef from)
+	{
+		final boolean isFEC = from != null;
+		final ForexContractId forexContractId = isFEC ? from.getForexContractId() : null;
+		final BigDecimal currencyRate = isFEC ? from.getCurrencyRate() : null;
+		final CurrencyId orderCurrencyId = isFEC ? from.getOrderCurrencyId() : null;
+		final CurrencyId fromCurrencyId = isFEC ? from.getFromCurrencyId() : null;
+		final CurrencyId toCurrencyId = isFEC ? from.getToCurrencyId() : null;
+
+		record.setIsFEC(isFEC);
+		record.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		record.setFEC_Order_Currency_ID(CurrencyId.toRepoId(orderCurrencyId));
+		record.setFEC_From_Currency_ID(CurrencyId.toRepoId(fromCurrencyId));
+		record.setFEC_To_Currency_ID(CurrencyId.toRepoId(toCurrencyId));
+		record.setFEC_CurrencyRate(currencyRate);
+	}
+
 }

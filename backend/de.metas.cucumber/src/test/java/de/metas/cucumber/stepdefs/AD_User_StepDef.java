@@ -124,6 +124,13 @@ public class AD_User_StepDef
 				user.setPhone(phone);
 			}
 
+			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bpartnerIdentifier))
+			{
+				final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+				user.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+			}
+
 			InterfaceWrapperHelper.saveRecord(user);
 			userTable.putOrReplace(userIdentifier, user);
 		}
@@ -197,6 +204,12 @@ public class AD_User_StepDef
 		if (Check.isNotBlank(notificationType))
 		{
 			userRecord.setNotificationType(notificationType);
+		}
+
+		final Integer userId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_User_ID);
+		if (userId != null)
+		{
+			userRecord.setAD_User_ID(userId);
 		}
 
 		InterfaceWrapperHelper.saveRecord(userRecord);

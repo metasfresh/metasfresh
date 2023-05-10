@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -68,18 +68,24 @@ public class JsonResponseLocation
 	public static final String REMIT_TO = "remitTo";
 	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 
-	public static final String EPHEMERAL = "ephemeral";
+	public static final String VAT_ID = "vatId";
 
-	@ApiModelProperty(dataType = "java.lang.Integer")
+	public static final String EPHEMERAL = "ephemeral";
+	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+
+	public static final String COUNTRY_NAME = "countryName";
+
+	@Schema
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty()
+	@Schema
 	boolean active;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
+	@Schema(description = "This translates to `C_BPartner_Location.Name`")
 	String name;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
+	@Schema(description = "This translates to `C_BPartner_Location.BPartnerName`")
 	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -115,19 +121,21 @@ public class JsonResponseLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String email;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
+	@Schema(nullable = true, description = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
-	@ApiModelProperty()
+	String countryName;
+
+	@Schema()
 	boolean shipTo;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean shipToDefault;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean billTo;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean billToDefault;
 
 	boolean ephemeral;
@@ -135,20 +143,29 @@ public class JsonResponseLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String setupPlaceNo;
 
-	@ApiModelProperty
+	@Schema
 	boolean remitTo;
 
-	@ApiModelProperty
+	@Schema
 	boolean visitorsAddress;
 
-	@ApiModelProperty
+	@Schema
 	boolean handoverLocation;
 
-	@ApiModelProperty
+	@Schema
 	boolean replicationLookupDefault;
 
+	@Schema
+	String vatId;
+
+	@Schema
+	String sapPaymentMethod;
+
+	@Schema
+	String sapBPartnerCode;
+
 	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(position = 20) // shall be last
+	@Schema // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)
@@ -171,6 +188,7 @@ public class JsonResponseLocation
 			@JsonProperty(COUNTRY_CODE) @Nullable final String countryCode,
 			@JsonProperty(PHONE) @Nullable final String phone,
 			@JsonProperty(EMAIL) @Nullable final String email,
+			@JsonProperty(COUNTRY_NAME) @Nullable final String countryName,
 			@JsonProperty(SHIP_TO) final boolean shipTo,
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
@@ -183,6 +201,9 @@ public class JsonResponseLocation
 			@JsonProperty(REMIT_TO)  final boolean remitTo,
 			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
 
+			@JsonProperty(VAT_ID) @Nullable final String vatId,
+			@JsonProperty(SAP_PAYMENT_METHOD) @Nullable final String sapPaymentMethod,
+			@JsonProperty(SAP_BPARTNER_CODE) @Nullable final String sapBPartnerCode,
 			@JsonProperty("changeInfo") @Nullable final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
@@ -207,6 +228,7 @@ public class JsonResponseLocation
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
 		this.phone = phone;
 		this.email = email;
+		this.countryName = countryName;
 
 		this.billToDefault = billToDefault;
 		this.billTo = billTo;
@@ -219,8 +241,12 @@ public class JsonResponseLocation
 		this.handoverLocation = handoverLocation;
 		this.replicationLookupDefault = replicationLookupDefault;
 
+		this.vatId = vatId;
+
 		this.ephemeral = ephemeral;
-		
+		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapBPartnerCode = sapBPartnerCode;
+
 		this.changeInfo = changeInfo;
 	}
 }

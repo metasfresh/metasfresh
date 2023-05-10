@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -61,6 +62,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -113,6 +115,7 @@ public class PaymentBL implements IPaymentBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -402,13 +405,17 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public boolean isMatchInvoice(final I_C_Payment payment, final I_C_Invoice invoice)
+	public boolean isMatchInvoice(@NonNull final I_C_Payment payment, @NonNull final I_C_Invoice invoice)
 	{
 		final List<I_C_AllocationLine> allocations = paymentDAO.retrieveAllocationLines(payment);
 		final List<I_C_Invoice> invoices = new ArrayList<>();
 		for (final I_C_AllocationLine alloc : allocations)
 		{
-			invoices.add(alloc.getC_Invoice());
+			if(alloc.getC_Invoice_ID() > 0)
+			{
+				final I_C_Invoice allocatedInvoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(alloc.getC_Invoice_ID()));
+				invoices.add(allocatedInvoice);
+			}
 		}
 
 		for (final I_C_Invoice inv : invoices)
@@ -616,7 +623,7 @@ public class PaymentBL implements IPaymentBL
 			@NonNull final I_C_Payment payment,
 			@NonNull final Money writeOffAmt,
 			@NonNull final Instant writeOffDate,
-			@Nullable String description)
+			@Nullable final String description)
 	{
 		Check.assume(writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 
@@ -902,5 +909,39 @@ public class PaymentBL implements IPaymentBL
 		{
 			throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
 		}
+	}
+
+	@Override
+	@NonNull
+	public Optional<SectionCodeId> determineSectionCodeId(@NonNull final I_C_Payment payment)
+	{
+		final Set<InvoiceId> invoiceIdsFromAllocationLines = allocationDAO.retrieveAllPaymentAllocationLines(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+				.stream()
+				//note: excluding deallocated lines
+				.filter(allocationLine -> allocationLine.getReversalLine_ID() <= 0)
+				.map(I_C_AllocationLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Set<Integer> sectionCodeIds = invoiceDAO.getByIdsInTrx(invoiceIdsFromAllocationLines)
+				.stream()
+				.map(I_C_Invoice::getM_SectionCode_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (sectionCodeIds.size() != 1)
+		{
+			return Optional.empty();
+		}
+
+		final SectionCodeId singleSectionCodeId = SectionCodeId.ofRepoIdOrNull(sectionCodeIds.iterator().next());
+
+		return Optional.ofNullable(singleSectionCodeId);
+	}
+
+	@NonNull
+	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
+	{
+		return paymentDAO.getCurrencyConversionTypeId(paymentId);
 	}
 }

@@ -17,27 +17,34 @@
 package org.compiere.acct;
 
 import com.google.common.base.MoreObjects;
+import de.metas.acct.Account;
+import de.metas.acct.accounts.AccountProvider;
+import de.metas.acct.accounts.AccountProviderExtension;
+import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
-import de.metas.acct.tax.TaxAcctType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ChargeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
@@ -50,8 +57,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAccount;
-import org.compiere.model.MCharge;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -61,6 +66,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
@@ -137,6 +143,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private boolean _taxIncluded = false;
 
 	private int m_ReversalLine_ID = 0;
+
+	private AccountProvider _accountProvider; // lazy
 
 	public DocLine(
 			@NonNull final PO linePO,
@@ -352,6 +360,35 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		logger.warn("Diff={} - LineNetAmt={} -> {} - {}", diff, lineNetAmtOld, m_LineNetAmt, this);
 	}
 
+	protected final AccountProvider getAccountProvider()
+	{
+		AccountProvider accountProvider = this._accountProvider;
+		if (accountProvider == null)
+		{
+			accountProvider = this._accountProvider = createAccountProvider();
+		}
+		return accountProvider;
+	}
+
+	protected final AccountProvider createAccountProvider()
+	{
+		AccountProvider accountProvider = getDoc().getAccountProvider();
+
+		AccountProviderExtension extension = createAccountProviderExtension();
+		if (extension != null)
+		{
+			accountProvider = accountProvider.toBuilder().extension(extension).build();
+		}
+
+		return accountProvider;
+	}
+
+	@Nullable
+	protected AccountProviderExtension createAccountProviderExtension()
+	{
+		return null;
+	}
+
 	/**
 	 * Line Account from Product (or Charge).
 	 *
@@ -361,32 +398,34 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	@NonNull
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
+	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
 	{
+		final ProductId productId = getProductId();
+
 		//
 		// Charge account
-		if (getProductId() == null && getC_Charge_ID() > 0)
+		if (productId == null)
 		{
-			final MAccount acct;
+			final ChargeId chargeId = getC_Charge_ID()
+					.orElseThrow(() -> newPostingException().setAcctSchema(as).setDetailMessage("No Charge defined"));
+
 			if (!m_doc.isSOTrx())
 			{
-				acct = getChargeAccount(as, BigDecimal.ONE); // Expense (+)
+				// Expense (+)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE);
 			}
 			else
 			{
-				acct = getChargeAccount(as, BigDecimal.ONE.negate()); // Revenue (-)
+				// Revenue (-)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE.negate());
 			}
-			if (acct == null)
-			{
-				throw newPostingException().setAcctSchema(as).setDetailMessage("No Charge Account for account type: " + acctType);
-			}
-			return acct;
 		}
 		//
 		// Product Account
 		else
 		{
-			return getProductAccount(acctType, as);
+			final TaxId taxId = getTaxId().orElse(null);
+			return getAccountProvider().getProductAccount(as.getId(), productId, taxId, acctType);
 		}
 	}
 
@@ -438,85 +477,28 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getDateDoc().toTimestamp(services::getTimeZone);
 	}
 
-	@NonNull
-	private MAccount getProductAccount(final ProductAcctType acctType, final AcctSchema as)
+	protected final Optional<ChargeId> getC_Charge_ID()
 	{
-		//
-		// Product Revenue: check/use the override defined on tax level
-		if (acctType == ProductAcctType.Revenue)
-		{
-			final MAccount productRevenueAcct = getTaxAccount(TaxAcctType.ProductRevenue_Override, as.getId()).orElse(null);
-			if (productRevenueAcct != null)
-			{
-				return productRevenueAcct;
-			}
-		}
-
-		// No Product - get Default from Product Category
-		final ProductId productId = getProductId();
-		if (productId == null)
-		{
-			return getAccountDefault(acctType, as);
-		}
-
-		final AccountId accountId = services.getProductAcct(as.getId(), productId, acctType).orElse(null);
-		if (accountId == null)
-		{
-			final String productName = services.getProductName(productId);
-			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
-		}
-
-		return services.getAccountById(accountId);
-	}
-
-	/**
-	 * Account from Default Product Category
-	 *
-	 * @param as accounting schema
-	 * @return Requested Product Account
-	 */
-	private MAccount getAccountDefault(final ProductAcctType acctType, final AcctSchema as)
-	{
-		final AccountId accountId = services.getProductDefaultAcct(as.getId(), acctType).orElse(null);
-		if (accountId == null)
-		{
-			throw newPostingException().setAcctSchema(as).setDetailMessage("No Default Account for account type: " + acctType);
-		}
-
-		return services.getAccountById(accountId);
-	}
-
-	private Optional<MAccount> getTaxAccount(@NonNull final TaxAcctType taxAcctType, final AcctSchemaId acctSchemaId)
-	{
-		final TaxId taxId = getTaxId().orElse(null);
-		return services.getTaxAccount(acctSchemaId, taxId, taxAcctType);
-	}
-
-	/**
-	 * Get Charge
-	 *
-	 * @return C_Charge_ID
-	 */
-	protected final int getC_Charge_ID()
-	{
-		return getValue("C_Charge_ID");
+		return getValueAsOptionalId("C_Charge_ID", ChargeId::ofRepoIdOrNull);
 	}
 
 	/**
 	 * Get Charge Account
 	 *
-	 * @param as     account schema
-	 * @param amount amount for expense(+)/revenue(-)
+	 * @param as        account schema
+	 * @param chargeAmt amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
 	 */
-	protected final MAccount getChargeAccount(final AcctSchema as, final BigDecimal amount)
+	@Nullable
+	protected final Account getChargeAccount(@NonNull final AcctSchema as, final BigDecimal chargeAmt)
 	{
-		final int C_Charge_ID = getC_Charge_ID();
-		if (C_Charge_ID <= 0)
+		final ChargeId chargeId = getC_Charge_ID().orElse(null);
+		if (chargeId == null)
 		{
 			return null;
 		}
-		return MCharge.getAccount(C_Charge_ID, as.getId(), amount);
+
+		return getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt);
 	}
 
 	protected final int getC_Period_ID()
@@ -547,7 +529,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
-	public final ProductId getProductId()
+	public ProductId getProductId()
 	{
 		return ProductId.ofRepoIdOrNull(getValue("M_Product_ID"));
 	}
@@ -758,7 +740,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private int getC_BPartner_Location_ID()
 	{
-		return CoalesceUtil.firstGreaterThanZeroSupplier(
+		return CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> getValue("C_BPartner_Location_ID"),
 				m_doc::getC_BPartner_Location_ID);
 	}
@@ -817,6 +799,19 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
 	}
+
+	@Nullable
+	protected OrderId getSalesOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(getValue("C_OrderSO_ID"));
+	}
+
+	public SectionCodeId getSectionCodeId()
+	{
+		return SectionCodeId.ofRepoIdOrNull(getValue("M_SectionCode_ID"));
+	}
+
+	public BPartnerId getBPartnerId2() {return BPartnerId.ofRepoIdOrNull(getValue("C_BPartner2_ID"));}
 
 	public final int getUser1_ID()
 	{
@@ -934,7 +929,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * Set ReversalLine_ID
 	 * store original (voided/reversed) document line
-	 *
 	 */
 	public final void setReversalLine_ID(final int ReversalLine_ID)
 	{
@@ -1003,7 +997,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @return document currency precision
 	 * @see Doc#getStdPrecision()
 	 */
-	protected final int getStdPrecision()
+	protected final CurrencyPrecision getStdPrecision()
 	{
 		return m_doc.getStdPrecision();
 	}

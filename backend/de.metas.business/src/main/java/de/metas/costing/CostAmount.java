@@ -8,15 +8,15 @@ import de.metas.money.Money;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -40,14 +40,24 @@ import java.math.RoundingMode;
  * #L%
  */
 
-@Value
-public class CostAmount
+@EqualsAndHashCode
+@ToString
+public final class CostAmount
 {
 	public static CostAmount of(
 			@NonNull final BigDecimal value,
-			final CurrencyId currencyId)
+			@NonNull final CurrencyId currencyId)
 	{
-		return new CostAmount(value, currencyId);
+		return new CostAmount(Money.of(value, currencyId), null);
+	}
+
+	public static CostAmount of(
+			@NonNull final BigDecimal value,
+			@NonNull final CurrencyId currencyId,
+			@Nullable final BigDecimal sourceValue,
+			@Nullable final CurrencyId sourceCurrencyId)
+	{
+		return new CostAmount(Money.of(value, currencyId), Money.ofOrNull(sourceValue, sourceCurrencyId));
 	}
 
 	public static CostAmount of(
@@ -66,12 +76,12 @@ public class CostAmount
 
 	public static CostAmount ofMoney(@NonNull final Money money)
 	{
-		return new CostAmount(money.toBigDecimal(), money.getCurrencyId());
+		return new CostAmount(money, null);
 	}
 
 	public static CostAmount zero(final CurrencyId currencyId)
 	{
-		return new CostAmount(BigDecimal.ZERO, currencyId);
+		return new CostAmount(Money.zero(currencyId), null);
 	}
 
 	public static CostAmount ofProductPrice(@NonNull final ProductPrice price)
@@ -91,22 +101,24 @@ public class CostAmount
 		return ofMoney(price.toMoney().multiply(qty.toBigDecimal()));
 	}
 
-	BigDecimal value;
-	CurrencyId currencyId;
+	@NonNull private final Money value;
+	@Nullable private final Money sourceValue;
 
 	private CostAmount(
-			@NonNull final BigDecimal value,
-			@NonNull final CurrencyId currencyId)
+			@NonNull final Money value,
+			@Nullable final Money sourceValue)
 	{
-		this.value = NumberUtils.stripTrailingDecimalZeros(value);
-		this.currencyId = currencyId;
+		this.value = value;
+		this.sourceValue = sourceValue;
 	}
+
+	public CurrencyId getCurrencyId() {return value.getCurrencyId();}
 
 	private void assertCurrencyMatching(@NonNull final CostAmount amt)
 	{
-		if (!currencyId.equals(amt.currencyId))
+		if (!CurrencyId.equals(getCurrencyId(), amt.getCurrencyId()))
 		{
-			throw new AdempiereException("Amount has invalid currency: " + amt + ". Expected: " + currencyId);
+			throw new AdempiereException("Amount has invalid currency: " + amt + ". Expected: " + getCurrencyId());
 		}
 	}
 
@@ -133,7 +145,7 @@ public class CostAmount
 		}
 		else
 		{
-			return new CostAmount(value.negate(), currencyId);
+			return new CostAmount(value.negate(), sourceValue != null ? sourceValue.negate() : null);
 		}
 	}
 
@@ -155,7 +167,9 @@ public class CostAmount
 		}
 		else
 		{
-			return new CostAmount(value.multiply(multiplicand), currencyId);
+			return new CostAmount(
+					value.multiply(multiplicand),
+					sourceValue != null ? sourceValue.multiply(multiplicand) : null);
 		}
 	}
 
@@ -170,7 +184,7 @@ public class CostAmount
 	{
 		if (percent.isZero())
 		{
-			return zero(currencyId);
+			return toZero();
 		}
 		else if (percent.isOneHundred())
 		{
@@ -178,7 +192,9 @@ public class CostAmount
 		}
 		else
 		{
-			return new CostAmount(percent.computePercentageOf(value, precision.toInt()), currencyId);
+			return new CostAmount(
+					value.multiply(percent, precision),
+					sourceValue != null ? sourceValue.multiply(percent, precision) : null);
 		}
 	}
 
@@ -195,7 +211,11 @@ public class CostAmount
 			return amtToAdd;
 		}
 
-		return new CostAmount(value.add(amtToAdd.value), currencyId);
+		final Money sourceValueNew = sourceValue != null && amtToAdd.sourceValue != null && Money.isSameCurrency(sourceValue, amtToAdd.sourceValue)
+				? sourceValue.add(amtToAdd.sourceValue)
+				: null;
+
+		return new CostAmount(value.add(amtToAdd.value), sourceValueNew);
 	}
 
 	public CostAmount divide(
@@ -207,8 +227,11 @@ public class CostAmount
 			throw new AdempiereException("Diving " + this + " by ZERO is not allowed");
 		}
 
-		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), RoundingMode.HALF_UP);
-		return new CostAmount(valueNew, currencyId);
+		final Money valueNew = value.divide(divisor, precision);
+		final Money sourceValueNew = sourceValue != null
+				? sourceValue.divide(divisor, precision)
+				: null;
+		return new CostAmount(valueNew, sourceValueNew);
 	}
 
 	public CostAmount divide(
@@ -218,16 +241,31 @@ public class CostAmount
 		return divide(divisor.toBigDecimal(), precision);
 	}
 
-	public CostAmount roundToPrecisionIfNeeded(final CurrencyPrecision precision)
+	public CostAmount round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)
 	{
-		final BigDecimal valueRounded = precision.roundIfNeeded(value);
-		if (value.equals(valueRounded))
+		final Money valueNew = value.round(precisionProvider);
+		final Money sourceValueNew = sourceValue != null ? sourceValue.round(precisionProvider) : null;
+		if (Money.equals(value, valueNew)
+				&& Money.equals(sourceValue, sourceValueNew))
 		{
 			return this;
 		}
 		else
 		{
-			return new CostAmount(valueRounded, currencyId);
+			return new CostAmount(valueNew, sourceValueNew);
+		}
+	}
+
+	public CostAmount roundToPrecisionIfNeeded(final CurrencyPrecision precision)
+	{
+		final Money valueRounded = value.roundIfNeeded(precision);
+		if (Money.equals(value, valueRounded))
+		{
+			return this;
+		}
+		else
+		{
+			return new CostAmount(valueRounded, sourceValue);
 		}
 	}
 
@@ -247,17 +285,8 @@ public class CostAmount
 		{
 			return this;
 		}
-		return new CostAmount(value.subtract(amtToSubtract.value), currencyId);
-	}
 
-	public CostAmount subtract(@NonNull final BigDecimal amtToSubtract)
-	{
-		if (amtToSubtract.signum() == 0)
-		{
-			return this;
-		}
-
-		return new CostAmount(value.subtract(amtToSubtract), currencyId);
+		return add(amtToSubtract.negate());
 	}
 
 	public CostAmount toZero()
@@ -268,20 +297,25 @@ public class CostAmount
 		}
 		else
 		{
-			return zero(currencyId);
+			return new CostAmount(value.toZero(), sourceValue != null ? sourceValue.toZero() : null);
 		}
 	}
 
 	public Money toMoney()
 	{
-		return Money.of(value, currencyId);
+		return value;
 	}
 
-	public BigDecimal toBigDecimal() {return value;}
+	@Nullable
+	public Money toSourceMoney()
+	{
+		return sourceValue;
+	}
+
+	public BigDecimal toBigDecimal() {return value.toBigDecimal();}
 
 	public boolean compareToEquals(@NonNull final CostAmount other)
 	{
-		assertCurrencyMatching(other);
 		return this.value.compareTo(other.value) == 0;
 	}
 

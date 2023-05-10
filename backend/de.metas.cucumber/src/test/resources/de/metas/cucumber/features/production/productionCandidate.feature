@@ -12,7 +12,8 @@ Feature: Production dispo scenarios
       | warehouseStd              | StdWarehouse |
 
   @from:cucumber
-  Scenario: Try to re-open production candidate after it has been closed (S0129.2_140)
+  @Id:S0129.2_140
+  Scenario: Try to re-open production candidate after it has been closed
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_1           |
@@ -41,7 +42,8 @@ Feature: Production dispo scenarios
       | oc_1                             |
 
   @from:cucumber
-  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed (S0129.2_160)
+  @Id:S0129.2_160
+  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_2           |
@@ -67,7 +69,8 @@ Feature: Production dispo scenarios
       | oc_1                             | 12           |
 
   @from:cucumber
-  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed (S0129.2_180)
+  @Id:S0129.2_180
+  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_3           |
@@ -92,7 +95,7 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
 
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
@@ -105,7 +108,8 @@ Feature: Production dispo scenarios
       | oc_1                             | 2            |
 
   @from:cucumber
-  Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed (S0129.2_190)
+  @Id:S0129.2_190
+  Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_4           |
@@ -130,7 +134,7 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
 
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 

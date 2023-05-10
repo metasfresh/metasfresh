@@ -1,5 +1,6 @@
 package de.metas.inventory.impexp;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
@@ -262,6 +263,7 @@ public class InventoryImportProcessTest
 					.docBaseType(DocBaseType.MaterialPhysicalInventory)
 					.docSubType(InventoryDocSubType.AggregatedHUInventory.getCode())
 					.adOrgId(orgId.getRepoId())
+					.glCategoryId(GLCategoryId.ofRepoId(123))
 					.build());
 		}
 

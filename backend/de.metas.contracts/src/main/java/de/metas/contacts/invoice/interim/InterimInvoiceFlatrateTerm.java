@@ -22,7 +22,7 @@
 
 package de.metas.contacts.invoice.interim;
 
-import de.metas.calendar.CalendarId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;

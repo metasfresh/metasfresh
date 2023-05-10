@@ -39,11 +39,13 @@ package org.eevolution.model.reasoner;
  * #L%
  */
 
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
 import de.metas.product.ResourceId;
+import de.metas.resource.Resource;
+import de.metas.resource.ResourceService;
+import de.metas.resource.ResourceType;
 import de.metas.util.Services;
-import org.compiere.model.I_S_Resource;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_S_ResourceUnAvailable;
 import org.compiere.model.MResourceUnAvailable;
 import org.compiere.model.PO;
@@ -62,16 +64,14 @@ import java.util.stream.Stream;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
- * @version 1.0, October 14th 2005
- *
  * @author Teo Sarca, <a href="http://www.arhipac.ro">...</a>
  * @author Cristi Pup, http://www.arhipac.ro
  *         <li>BF [ 2854937 ] CRP calculate wrong DateFinishSchedule
  */
 public class CRPReasoner
 {
-	protected final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
-	protected final IPPOrderDAO ordersRepo = Services.get(IPPOrderDAO.class);
+	private final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+	private final IPPOrderDAO ordersRepo = Services.get(IPPOrderDAO.class);
 
 	public Properties getCtx()
 	{
@@ -95,37 +95,19 @@ public class CRPReasoner
 		return ordersRepo.streamOpenPPOrderIdsOrderedByDatePromised(plantId);
 	}
 
-	protected final ResourceType getResourceType(final I_S_Resource r)
+	private ResourceType getResourceType(final Resource r)
 	{
-		final ResourceId resourceId = ResourceId.ofRepoId(r.getS_Resource_ID());
-		return getResourceType(resourceId);
+		return resourceService.getResourceTypeById(r.getResourceTypeId());
 	}
 
-	protected final ResourceType getResourceType(final ResourceId resourceId)
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public final boolean isAvailable(final Resource resource)
 	{
-		return resourcesRepo.getResourceTypeByResourceId(resourceId);
+		return resourceService.getResourceTypeByResourceId(resource.getResourceId()).isAvailable();
 	}
-
-	protected final boolean isAvailable(final ResourceId resourceId, final Instant dateTime)
-	{
-		final ResourceType resourceType = getResourceType(resourceId);
-		return resourceType.isDayAvailable(dateTime) && !MResourceUnAvailable.isUnAvailable(resourceId.getRepoId(), dateTime);
-	}
-
-	protected final boolean isAvailable(final I_S_Resource resource, final Instant dateTime)
-	{
-		final ResourceType resourceType = getResourceType(resource);
-		return resourceType.isDayAvailable(dateTime) && !MResourceUnAvailable.isUnAvailable(resource.getS_Resource_ID(), dateTime);
-	}
-
-	public final boolean isAvailable(final I_S_Resource resource)
-	{
-		return getResourceType(resource).isAvailable();
-	}
-
+	
 	/**
 	 * Get Next/Previous Available Date
-	 *
 	 */
 	private Instant getAvailableDate(final ResourceType resourceType, final Instant dateTime, final boolean isScheduleBackward)
 	{
@@ -151,15 +133,15 @@ public class CRPReasoner
 	 * @param r resource
 	 * @return next available date
 	 */
-	public Instant getAvailableDate(final I_S_Resource r, final Instant dateTime, final boolean isScheduleBackward)
+	public Instant getAvailableDate(final Resource r, final Instant dateTime, final boolean isScheduleBackward)
 	{
 		final ResourceType resourceType = getResourceType(r);
 
 		Instant date = dateTime;
 		final ArrayList<Object> params = new ArrayList<>();
 		String whereClause;
-		String orderByClause;
-		int direction;
+		final String orderByClause;
+		final int direction;
 		if (isScheduleBackward)
 		{
 			whereClause = I_S_ResourceUnAvailable.COLUMNNAME_DateFrom + " <= ?";
@@ -176,8 +158,8 @@ public class CRPReasoner
 		}
 
 		whereClause += " AND " + I_S_ResourceUnAvailable.COLUMNNAME_S_Resource_ID + "=? AND AD_Client_ID=?";
-		params.add(r.getS_Resource_ID());
-		params.add(r.getAD_Client_ID());
+		params.add(r.getResourceId());
+		params.add(ClientId.METASFRESH);
 
 		final POResultSet<MResourceUnAvailable> rs = new Query(getCtx(r), I_S_ResourceUnAvailable.Table_Name, whereClause, null)
 				.setOrderBy(orderByClause)

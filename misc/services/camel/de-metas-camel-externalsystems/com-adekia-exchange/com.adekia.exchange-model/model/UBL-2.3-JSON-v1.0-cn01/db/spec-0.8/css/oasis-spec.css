@@ -1,0 +1,195 @@
+/*
+  OASIS Specification CSS stylesheet
+
+  This forms part of the package of the DocBook XML publishing environment
+  and methodology found linked from http://docs.oasis-open.org/templates/
+
+  Derived from http://www.oasis-open.org/spectools/css/ with changes for
+  the colour of titles and headings.
+
+  One stylesheet is used for all phases of the document development.
+  
+     Yellow: A09A4F
+     Purple: 3B006F
+     Aqua:   7DCAD6
+     Navy:   446CAA
+
+  $Id: oasis-spec.css,v 1.4 2019/01/04 19:29:26 admin Exp $
+*/
+
+body     {
+           margin-left: 3pc;
+           font-family: arial, helvetica, sans-serif;
+           font-size: 90%;
+         }
+
+h1       {
+	   font-size: 250%;
+           padding-top: 0in;
+           color: #446CAA;
+         }
+
+h2       {
+	   font-size: 170%;
+           color: #446CAA;
+         }
+
+h3       {
+	   font-size: 120%;
+           color: #446CAA;
+         }
+
+h4       {
+           color: #446CAA;
+         }
+
+h5       {
+	   font-style: italic;
+           color: #446CAA;
+         }
+
+h6       {
+	   font-variant: small-caps;
+           color: #446CAA;
+         }
+
+.docid-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.uri-heading {
+           font-size: 12pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.loc-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.abstract-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.status-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.thisver-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.prevver-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.editor-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.author-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.contrib-heading {
+           font-size: 10pt;
+           font-weight: bold;
+           color: #446CAA;
+         }
+
+.notices-heading {
+  font-size: 18pt;
+  font-weight: bold;
+  color: #446CAA;
+}
+
+div.section h1.title {
+           padding-top: 0in;
+           color: #446CAA;
+         }
+
+div.article h1.title { 
+           color: #446CAA;
+         }
+
+pre.programlisting {
+           background-color: #E7DEEF;
+         }
+
+div.informalexample pre {
+           margin-top: 0px;
+           padding-top: 0px;
+           margin-bottom: 0px;
+           padding-bottom: 0px;
+           background-color: #E7DEEF;
+         }
+
+div.informalexample {
+           margin-left: 2em;
+	   padding-top: 4px;
+	   padding-bottom: 4px;
+           border-top-width: 1px;
+           border-top-style: solid;
+           border-bottom-width: 1px;
+           border-bottom-style: solid;
+         }
+
+span.underline { text-decoration: underline; }
+
+span.term {
+           font-weight: bold;
+          }
+
+tr       { border-color: #AFAFAF;
+         }
+
+td       { border-color: #AFAFAF;
+           text-align: left;
+         }
+
+th       { border-color: #AFAFAF;
+           text-align: left;
+         }
+
+col      { border-color: #AFAFAF;
+         }
+
+colgroup { border-color: #AFAFAF;
+         }
+
+table    { border-color: #AFAFAF;
+         }
+
+tbody    { border-color: #AFAFAF;
+         }
+
+thead    { border-color: #AFAFAF;
+         }
+
+tfoot    { border-color: #AFAFAF;
+         }
+
+img      { max-width: 100%;
+         }
+
+@media screen {  /* hide from IE3 */
+a[href]:hover { background: #ffa }
+}
+
+/* end of file */

@@ -327,7 +327,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		final String sql = "UPDATE C_AllocationHdr SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_AllocationHdr_ID=" + getC_AllocationHdr_ID();
-		final int no = DB.executeUpdate(sql, get_TrxName());
+		final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 
 		log.debug(processed + " - #" + no);
 	}	// setProcessed

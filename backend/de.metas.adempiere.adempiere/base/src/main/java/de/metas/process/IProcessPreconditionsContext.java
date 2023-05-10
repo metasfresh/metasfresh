@@ -1,6 +1,8 @@
 package de.metas.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
@@ -71,6 +73,11 @@ public interface IProcessPreconditionsContext
 	 */
 	int getSingleSelectedRecordId();
 
+	default <T extends RepoIdAware> T getSingleSelectedRecordId(final Class<T> type)
+	{
+		return RepoIdAwares.ofRepoId(getSingleSelectedRecordId(), type);
+	}
+
 	/**
 	 * Gets how many rows were selected.
 	 * In case the size is not determined, an exception is thrown.
@@ -100,6 +107,11 @@ public interface IProcessPreconditionsContext
 	default Set<TableRecordReference> getSelectedIncludedRecords()
 	{
 		return ImmutableSet.of();
+	}
+
+	default boolean isSingleIncludedRecordSelected()
+	{
+		return getSelectedIncludedRecords().size() == 1;
 	}
 
 	<T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass);

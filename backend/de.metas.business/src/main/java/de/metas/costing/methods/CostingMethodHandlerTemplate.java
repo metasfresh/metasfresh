@@ -7,6 +7,7 @@ import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
@@ -15,6 +16,7 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -69,13 +71,69 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
-		if (existingCostDetail != null)
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
 		{
+			CostDetail mainCostDetail = null;
+			CostDetail costAdjustmentDetail = null;
+			CostDetail alreadyShippedDetail = null;
+			for (final CostDetail existingCostDetail : existingCostDetails)
+			{
+				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
+				switch (amtType)
+				{
+					case MAIN:
+						if (mainCostDetail != null)
+						{
+							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
+						}
+						mainCostDetail = existingCostDetail;
+						break;
+					case ADJUSTMENT:
+						if (costAdjustmentDetail != null)
+						{
+							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
+						}
+						costAdjustmentDetail = existingCostDetail;
+						break;
+					case ALREADY_SHIPPED:
+						if (alreadyShippedDetail != null)
+						{
+							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
+						}
+						alreadyShippedDetail = existingCostDetail;
+						break;
+					default:
+						throw new AdempiereException("Unknown type: " + amtType);
+				}
+			}
+
+			if (mainCostDetail == null)
+			{
+				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
+			}
+
 			// make sure DateAcct is up-to-date
-			existingCostDetail = utils.updateDateAcct(existingCostDetail, request.getDate());
-			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+			utils.updateDateAcct(mainCostDetail, request.getDate());
+			if (costAdjustmentDetail != null)
+			{
+				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
+			}
+			if (alreadyShippedDetail != null)
+			{
+				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
+			}
+
+			return Optional.of(
+					utils.toCostDetailCreateResult(mainCostDetail)
+							.withAmt(CostAmountDetailed.builder()
+									.mainAmt(mainCostDetail.getAmt())
+									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
+									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
+									.build())
+			);
 		}
+
 		else
 		{
 			return Optional.ofNullable(createCostOrNull(request));
@@ -93,7 +151,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchInv))
 		{
-			return createCostForMatchInvoice(request);
+			final CostElement costElement = request.getCostElement();
+			if (costElement == null || costElement.isMaterialElement())
+			{
+				return createCostForMatchInvoice_MaterialCosts(request);
+			}
+			else
+			{
+				return createCostForMatchInvoice_NonMaterialCosts(request);
+			}
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InOutLine))
 		{
@@ -104,7 +170,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			}
 			else
 			{
-				return createCostForMaterialReceipt(request);
+				final CostElement costElement = request.getCostElement();
+				if (costElement == null || costElement.isMaterialElement())
+				{
+					return createCostForMaterialReceipt(request);
+				}
+				else
+				{
+					return createCostForMaterialReceipt_NonMaterialCosts(request);
+				}
 			}
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MovementLine))
@@ -135,7 +209,13 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
@@ -162,12 +242,14 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected CostDetailCreateResult createCostForProjectIssue(@SuppressWarnings("unused") final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProjectIssue(
+			@SuppressWarnings("unused") final CostDetailCreateRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	protected CostDetailCreateResult createCostRevaluationLine(@NonNull final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostRevaluationLine(
+			@NonNull final CostDetailCreateRequest request)
 	{
 		if (!request.getQty().isZero())
 		{
@@ -193,6 +275,13 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		utils.saveCurrentCost(currentCosts);
 
 		return result;
+	}
+
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(CostDetailCreateRequest request)
+	{
+		throw new AdempiereException("Costing method " + getCostingMethod() + " does not support non material costs receipt")
+				.setParameter("request", request)
+				.appendParametersToMessage();
 	}
 
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);

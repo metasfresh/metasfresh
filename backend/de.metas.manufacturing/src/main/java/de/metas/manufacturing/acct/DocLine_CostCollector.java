@@ -3,10 +3,11 @@
  */
 package de.metas.manufacturing.acct;
 
+import de.metas.acct.Account;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -14,6 +15,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -21,14 +23,12 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
-import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 /**
  * @author Teo Sarca, www.arhipac.ro
- *
  */
 public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 {
@@ -45,7 +45,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		setReversalLine_ID(cc.getReversal_ID());
 	}
 
-	public MAccount getAccountForCostElement(
+	public Account getAccountForCostElement(
 			final AcctSchema as,
 			final CostElement costElement)
 	{
@@ -58,23 +58,23 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		final CostElementType costElementType = costElement.getCostElementType();
 		if (CostElementType.Material.equals(costElementType))
 		{
-			return ProductAcctType.Asset;
+			return ProductAcctType.P_Asset_Acct;
 		}
 		else if (CostElementType.Resource.equals(costElementType))
 		{
-			return ProductAcctType.Labor;
+			return ProductAcctType.P_Labor_Acct;
 		}
 		else if (CostElementType.BurdenMOverhead.equals(costElementType))
 		{
-			return ProductAcctType.Burden;
+			return ProductAcctType.P_Burden_Acct;
 		}
 		else if (CostElementType.Overhead.equals(costElementType))
 		{
-			return ProductAcctType.Overhead;
+			return ProductAcctType.P_Overhead_Acct;
 		}
 		else if (CostElementType.OutsideProcessing.equals(costElementType))
 		{
-			return ProductAcctType.OutsideProcessing;
+			return ProductAcctType.P_OutsideProcessing_Acct;
 		}
 		else
 		{
@@ -84,7 +84,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 	@Override
 	@NonNull
-	public MAccount getAccount(
+	public Account getAccount(
 			@NonNull final ProductAcctType acctType,
 			@NonNull final AcctSchema as)
 	{
@@ -109,17 +109,17 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 				throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + ", product " + productId + " and " + as);
 			}
 
-			return services.getAccountById(accountId);
+			return Account.of(accountId, acctType.getColumnName());
 		}
 	}
 
-	public AggregatedCostAmount getCreateCosts(final AcctSchema as)
+	public ExplainedOptional<AggregatedCostAmount> getCreateCosts(final AcctSchema as)
 	{
 		final AcctSchemaId acctSchemaId = as.getId();
 
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetailsOrEmpty(CostDetailReverseRequest.builder()
 					.acctSchemaId(acctSchemaId)
 					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
@@ -128,7 +128,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		}
 		else
 		{
-			return services.createCostDetail(
+			return services.createCostDetailOrEmpty(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(acctSchemaId)
 							.clientId(getClientId())

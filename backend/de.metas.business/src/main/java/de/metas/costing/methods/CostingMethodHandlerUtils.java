@@ -8,7 +8,6 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
-import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
@@ -19,6 +18,7 @@ import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -32,7 +32,8 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Optional;
+import java.util.List;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -139,9 +140,9 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.toCostDetailCreateResult(costDetail);
 	}
 
-	protected final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
+	public List<CostDetail> getExistingCostDetails(final CostDetailCreateRequest request)
 	{
-		return costDetailsService.getExistingCostDetail(request);
+		return costDetailsService.getExistingCostDetails(request);
 	}
 
 	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
@@ -166,11 +167,6 @@ public class CostingMethodHandlerUtils
 		return currentCostsRepo.getOrCreate(costSegmentAndElement);
 	}
 
-	public final CostPrice getCurrentCostPrice(final CostDetailCreateRequest request)
-	{
-		return getCurrentCost(request).getCostPrice();
-	}
-
 	public final void saveCurrentCost(final CurrentCost currentCost)
 	{
 		currentCostsRepo.save(currentCost);
@@ -180,14 +176,27 @@ public class CostingMethodHandlerUtils
 			final CostAmount amt,
 			final CostDetailCreateRequest request)
 	{
-		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
+		final AcctSchemaId acctSchemaId = request.getAcctSchemaId();
+
+		return convertToAcctSchemaCurrency(
+				amt,
+				() -> getCurrencyConversionContext(request),
+				acctSchemaId);
+	}
+
+	public CostAmount convertToAcctSchemaCurrency(
+			@NonNull final CostAmount amt,
+			@NonNull final Supplier<CurrencyConversionContext> conversionCtxSupplier,
+			@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchema acctSchema = getAcctSchemaById(acctSchemaId);
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		if (CurrencyId.equals(amt.getCurrencyId(), acctCurrencyId))
 		{
 			return amt;
 		}
 
-		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request)
+		final CurrencyConversionContext conversionCtx = conversionCtxSupplier.get()
 				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
 		final CurrencyConversionResult result = convert(
@@ -195,7 +204,7 @@ public class CostingMethodHandlerUtils
 				amt.toMoney(),
 				acctCurrencyId);
 
-		return CostAmount.of(result.getAmount(), acctCurrencyId);
+		return CostAmount.of(result.getAmount(), acctCurrencyId, result.getSourceAmount(), result.getSourceCurrencyId());
 	}
 
 	@NonNull
@@ -207,12 +216,20 @@ public class CostingMethodHandlerUtils
 		return currencyBL.convert(conversionCtx, price, acctCurrencyId);
 	}
 
-	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
+	private CurrencyConversionContext getCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
-		return currencyBL.createCurrencyConversionContext(
-				request.getDate(),
-				request.getCurrencyConversionTypeId(),
-				request.getClientId(),
-				request.getOrgId());
+		final CurrencyConversionContext currencyConversionContext = request.getCurrencyConversionContext();
+		if (currencyConversionContext != null)
+		{
+			return currencyConversionContext;
+		}
+		else
+		{
+			return currencyBL.createCurrencyConversionContext(
+					request.getDate(),
+					(CurrencyConversionTypeId)null,
+					request.getClientId(),
+					request.getOrgId());
+		}
 	}
 }

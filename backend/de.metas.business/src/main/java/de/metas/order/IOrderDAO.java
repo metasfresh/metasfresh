@@ -116,7 +116,13 @@ public interface IOrderDAO extends ISingletonService
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
+	List<I_C_Order> getOrdersByQuery(GetOrdersQuery query);
+
+	Optional<I_C_Order> retrieveFirstByQuery(GetOrdersQuery query);
+
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
+
+	void deleteByLineId(OrderAndLineId orderAndLineId);
 
 	void save(org.compiere.model.I_C_Order order);
 
@@ -130,7 +136,11 @@ public interface IOrderDAO extends ISingletonService
 
 	Set<OrderId> getSalesOrderIdsViaPOAllocation(OrderId purchaseOrderId);
 
-	void allocatePOLineToSOLine(OrderLineId purchaseOrderLineId, OrderLineId salesOrderLineId);
+	void allocatePOLineToSOLine(OrderAndLineId purchaseOrderLineId, OrderAndLineId salesOrderLineId);
 
 	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
+
+	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
+
+	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
 }

@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -37,12 +36,15 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -53,6 +55,7 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -68,16 +71,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  *
  * @author tsa
  */
-@Validator(I_M_ShipmentSchedule.class)
+@Interceptor(I_M_ShipmentSchedule.class)
+@Component
 public class M_ShipmentSchedule
 {
+	private final IShipmentScheduleInvalidateBL invalidSchedulesService;
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater;
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
-	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
-	
+
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+	public M_ShipmentSchedule(
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
+	{
+		this.invalidSchedulesService = shipmentScheduleInvalidateBL;
+		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
+	}
+
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
 	 */
@@ -89,10 +104,10 @@ public class M_ShipmentSchedule
 
 		// task 07355: we allow QtyOrdered == 0, because an order could be closed before a delivery was made
 		Check.errorIf(qtyOrderedEffective.signum() < 0,
-					  "M_ShipmentSchedule {} has QtyOrderedEffective {} (less than 0!)", schedule, qtyOrderedEffective);
+				"M_ShipmentSchedule {} has QtyOrderedEffective {} (less than 0!)", schedule, qtyOrderedEffective);
 
 		Check.errorIf(schedule.getQtyReserved().signum() < 0,
-					  "M_ShipmentSchedule {} has QtyReserved {} (less than 0!)", schedule, schedule.getQtyReserved());
+				"M_ShipmentSchedule {} has QtyReserved {} (less than 0!)", schedule, schedule.getQtyReserved());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -110,7 +125,7 @@ public class M_ShipmentSchedule
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
 	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
-	 *
+	 * <p>
 	 * Task 08288
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -199,7 +214,7 @@ public class M_ShipmentSchedule
 	}
 
 	/**
-	 * Note: it's important the schedule is only invalidated on certain value changes.
+	 * Note: it's important the the schedule is only invalidated on certain value changes.
 	 * For example, a change of lock status or valid status may not cause an invalidation
 	 */
 	@ModelChange( //
@@ -252,6 +267,29 @@ public class M_ShipmentSchedule
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesInvalidator.flagHeaderAggregationKeysForRecompute(headerAggregationKeys);
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_CHANGE},
+			ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_IsClosed})
+	public void updateIsDeliveryClosed(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final I_C_OrderLine orderLine = shipmentSchedule.getC_OrderLine();
+		if (orderLine == null)
+		{
+			return;
+		}
+
+		if (shipmentSchedule.isClosed())
+		{
+			orderBL.closeLine(orderLine);
+			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		}
+		else
+		{
+			orderBL.reopenLine(orderLine);
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		}
 	}
 
 	/**

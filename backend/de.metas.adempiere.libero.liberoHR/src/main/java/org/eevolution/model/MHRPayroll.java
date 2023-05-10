@@ -15,23 +15,21 @@
  *****************************************************************************/
 package org.eevolution.model;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import org.compiere.model.MCalendar;
+import de.metas.cache.CCache;
+import de.metas.util.Check;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
-import de.metas.cache.CCache;
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
- *	Payroll for HRayroll Module
+ * Payroll for HRayroll Module
  *
- *  @author Oscar Gómez Islas
- *  @version $Id: HRPayroll.java,v 1.0 2005/10/05 ogomezi
- *
- *  @author Cristina Ghita, www.arhipac.ro
+ * @author Oscar Gómez Islas
+ * @author Cristina Ghita, www.arhipac.ro
+ * @version $Id: HRPayroll.java,v 1.0 2005/10/05 ogomezi
  */
 public class MHRPayroll extends X_HR_Payroll
 {
@@ -39,38 +37,37 @@ public class MHRPayroll extends X_HR_Payroll
 	 *
 	 */
 	private static final long serialVersionUID = -1407037967021019961L;
-	/** Cache */
-	private static CCache<Integer, MHRPayroll> s_cache = new CCache<Integer, MHRPayroll>(Table_Name, 10);
-	/** Cache */
-	private static CCache<String, MHRPayroll> s_cacheValue = new CCache<String, MHRPayroll>(Table_Name+"_Value", 10);
-
 	/**
-	 * Get Payroll by Value
-	 * @param ctx
-	 * @param value
-	 * @return payroll
+	 * Cache
 	 */
-	public static MHRPayroll forValue(Properties ctx, String value)
+	private static final CCache<Integer, MHRPayroll> s_cache = new CCache<>(Table_Name, 10);
+	/**
+	 * Cache
+	 */
+	private static final CCache<String, MHRPayroll> s_cacheValue = new CCache<>(Table_Name + "_Value", 10);
+
+	@Nullable
+	public static MHRPayroll forValue(final Properties ctx, final String value)
 	{
 		if (Check.isEmpty(value, true))
 		{
 			return null;
 		}
 
-		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		final String key = AD_Client_ID+"#"+value;
+		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		final String key = AD_Client_ID + "#" + value;
 		MHRPayroll payroll = s_cacheValue.get(key);
 		if (payroll != null)
 		{
 			return payroll;
 		}
 
-		final String whereClause = COLUMNNAME_Value+"=? AND AD_Client_ID IN (?,?)";
+		final String whereClause = COLUMNNAME_Value + "=? AND AD_Client_ID IN (?,?)";
 		payroll = new Query(ctx, Table_Name, whereClause, null)
-							.setParameters(new Object[]{value, 0, AD_Client_ID})
-							.setOnlyActiveRecords(true)
-							.setOrderBy("AD_Client_ID DESC")
-							.first();
+				.setParameters(value, 0, AD_Client_ID)
+				.setOnlyActiveRecords(true)
+				.setOrderBy("AD_Client_ID DESC")
+				.first();
 		if (payroll != null)
 		{
 			s_cacheValue.put(key, payroll);
@@ -79,13 +76,8 @@ public class MHRPayroll extends X_HR_Payroll
 		return payroll;
 	}
 
-	/**
-	 * Get Payroll by ID
-	 * @param ctx
-	 * @param HR_Payroll_ID
-	 * @return payroll
-	 */
-	public static MHRPayroll get(Properties ctx, int HR_Payroll_ID)
+	@Nullable
+	public static MHRPayroll get(final Properties ctx, final int HR_Payroll_ID)
 	{
 		if (HR_Payroll_ID <= 0)
 			return null;
@@ -107,37 +99,28 @@ public class MHRPayroll extends X_HR_Payroll
 	}
 
 	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param HR_Payroll_ID id
+	 * Standard Constructor
+	 *
+	 * @param ctx           context
+	 * @param HR_Payroll_ID id
 	 */
-	public MHRPayroll (Properties ctx, int HR_Payroll_ID, String trxName)
+	public MHRPayroll(final Properties ctx, final int HR_Payroll_ID, final String trxName)
 	{
-		super (ctx, HR_Payroll_ID, trxName);
+		super(ctx, HR_Payroll_ID, trxName);
 		if (HR_Payroll_ID == 0)
 		{
-			setProcessing (false);	// N
+			setProcessing(false);    // N
 		}
-	}	//	HRPayroll
+	}    //	HRPayroll
 
 	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
+	 * Load Constructor
+	 *
+	 * @param ctx context
+	 * @param rs  result set
 	 */
-	public MHRPayroll (Properties ctx, ResultSet rs, String trxName)
+	public MHRPayroll(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
-
-	/**
-	 * 	Parent Constructor
-	 *	@param parent parent
-	 */
-	public MHRPayroll (MCalendar calendar)
-	{
-		this (calendar.getCtx(), 0, calendar.get_TrxName());
-		setClientOrg(calendar);
-		//setC_Calendar_ID(calendar.getC_Calendar_ID());
-	}	//	HRPayroll
-}	//	MPayroll
+}    //	MPayroll

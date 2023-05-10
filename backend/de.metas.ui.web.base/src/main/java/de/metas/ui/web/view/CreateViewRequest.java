@@ -5,9 +5,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -223,6 +225,11 @@ public class CreateViewRequest
 	public DocumentFilterList getFiltersUnwrapped(final DocumentFilterDescriptorsProvider descriptors)
 	{
 		return getFilters().unwrap(descriptors);
+	}
+
+	public DocumentFilterList getFiltersUnwrapped(@NonNull final DocumentFilterDescriptor descriptor)
+	{
+		return getFiltersUnwrapped(ImmutableDocumentFilterDescriptorsProvider.of(descriptor));
 	}
 
 	public void assertNoParentViewOrRow()

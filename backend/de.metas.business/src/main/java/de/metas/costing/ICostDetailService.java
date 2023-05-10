@@ -7,7 +7,6 @@ import lombok.NonNull;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -38,7 +37,7 @@ public interface ICostDetailService
 
 	boolean hasCostDetailsForProductId(ProductId productId);
 
-	Optional<CostDetail> getExistingCostDetail(CostDetailCreateRequest request);
+	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
 
 	Stream<CostDetail> streamAllCostDetailsAfter(CostDetail costDetail);
 

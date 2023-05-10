@@ -1,6 +1,6 @@
 package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
-import de.metas.reflist.RefListId;
+import de.metas.ad_reference.ADRefListId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.migration.validator.sql_migration_context_info.names.Names;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -21,7 +21,7 @@ public class AD_Ref_List_Trl
 			return;
 		}
 
-		final RefListId refListId = RefListId.ofRepoId(record.getAD_Ref_List_ID());
+		final ADRefListId refListId = ADRefListId.ofRepoId(record.getAD_Ref_List_ID());
 		final String referenceItemName = Names.ADRefListName_Loader.retrieve(refListId);
 		MigrationScriptFileLoggerHolder.logComment("Reference Item: " + referenceItemName);
 	}

@@ -22,29 +22,25 @@
 
 package de.metas.common.bpartner.v2.response;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 class JsonResponseBPartnerCompositeUpsertTest
 {
 	ObjectMapper objectMapper = new ObjectMapper();
-	
-	@BeforeAll
-	public static void beforeAll()
-	{
-		start();
-	}
+	private Expect expect;
 
 	@Test
 	public void serializeDeserializeTest() throws IOException
@@ -79,7 +75,7 @@ class JsonResponseBPartnerCompositeUpsertTest
 		final JsonResponseBPartnerCompositeUpsert result = objectMapper.readValue(str,JsonResponseBPartnerCompositeUpsert.class);
 		assertThat(result).isEqualTo(item);
 
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 }

@@ -22,159 +22,142 @@
 
 package de.metas.common.bpartner.v1.request;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
-
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
+@Schema(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonRequestBPartner
 {
-	@ApiModelProperty(position = 10,  //
-			dataType = "java.lang.String", //
-			value = "This translates to `C_BPartner.ExternalId`. This is deprecated and will no longer be available with v2.")
+	@Schema(description = "This translates to `C_BPartner.ExternalId`. This is deprecated and will no longer be available with v2.")
 	private JsonExternalId externalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean externalIdSet;
 
-	@ApiModelProperty(position = 20,  //
-			value = "This translates to `C_BPartner.Value`.")
+	@Schema(description = "This translates to `C_BPartner.Value`.")
 	private String code;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean codeSet;
 
-	@ApiModelProperty(position = 25,  //
-			value = "If not specified but required (e.g. because a new partner is created), then `true` is assumed.")
+	@Schema(description = "If not specified but required (e.g. because a new partner is created), then `true` is assumed.")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 30,  //
-			value = "This translates to `C_BPartner.Name`.\n"
+	@Schema(description = "This translates to `C_BPartner.Name`.\n"
 					+ "If this is empty, and a BPartner with the given `name` does not yet exist, then the request will fail.")
 	private String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 40,  //
-			value = "This translates to `C_BPartner.Name2`.")
+	@Schema(description = "This translates to `C_BPartner.Name2`.")
 	private String name2;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean name2Set;
 
-	@ApiModelProperty(position = 50,  //
-			value = "This translates to `C_BPartner.Name3`.")
+	@Schema(description = "This translates to `C_BPartner.Name3`.")
 	private String name3;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean name3Set;
 
-	@ApiModelProperty(position = 60, //
-			value = "This translates to `C_BPartner.CompanyName`.\n"
+	@Schema(description = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	private String companyName;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean companyNameSet;
 
 	private Boolean vendor;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean vendorSet;
 
 	private Boolean customer;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean customerSet;
 
-	@ApiModelProperty(position = 70, //
-			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
-			dataType = "java.lang.Integer")
+	@Schema(description = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company")
 	private JsonMetasfreshId parentId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean parentIdSet;
 
-	@ApiModelProperty(position = 80, //
-			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
+	@Schema(description = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	private String phone;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean phoneSet;
 
-	@ApiModelProperty(position = 90)
+	@Schema
 	private String language;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean languageSet;
 
-	@ApiModelProperty(position = 100, //
-			value = "Optional; if specified, it will be used, e.g. when an order is created for this business partner.")
+	@Schema(description = "Optional; if specified, it will be used, e.g. when an order is created for this business partner.")
 	private JsonInvoiceRule invoiceRule;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean invoiceRuleSet;
 
-	@ApiModelProperty(position = 110)
+	@Schema
 	private String url;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean urlSet;
 
-	@ApiModelProperty(position = 120)
+	@Schema
 	private String url2;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean url2Set;
 
-	@ApiModelProperty(position = 130)
+	@Schema
 	private String url3;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean url3Set;
 
-	@ApiModelProperty(position = 140, //
-			value = "Name of the business partner's group")
+	@Schema(description = "Name of the business partner's group")
 	private String group;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean groupSet;
 
-	@ApiModelProperty(position = 150, //
-			value = "Translates to `C_BPartner.GlobalId`")
+	@Schema(description = "Translates to `C_BPartner.GlobalId`")
 	private String globalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean globalIdset;
 
-	@ApiModelProperty(position = 160, //
-			value = "Translates to `C_BPartner.VATaxId`")
+	@Schema(description = "Translates to `C_BPartner.VATaxId`")
 	private String vatId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean vatIdSet;
 
-	@ApiModelProperty(position = 170, // shall be last
-			value = "Sync advise about this bPartner's individual properties.\n"
+	@Schema(description = "Sync advise about this bPartner's individual properties.\n"
 			+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean syncAdviseSet;
 
 	public void setExternalId(final JsonExternalId externalId)

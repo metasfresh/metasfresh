@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.ToInvoiceExclOverride.InvoicedQtys;
-import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData.ToInvoiceDataBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.InvoiceRule;
@@ -23,6 +22,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -96,6 +96,7 @@ public class InvoiceCandidate
 
 	@Builder(toBuilder = true)
 	@JsonCreator
+	@Jacksonized
 	private InvoiceCandidate(
 			@JsonProperty("id") @NonNull final InvoiceCandidateId id,
 			@JsonProperty("soTrx") @NonNull final SOTrx soTrx,

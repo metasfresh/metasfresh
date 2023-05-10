@@ -22,19 +22,28 @@
 
 package de.metas.cucumber.stepdefs.apiauditfilter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonErrorItem;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.web.audit.ApiRequestReplayService;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -42,7 +51,6 @@ public class ApiAuditFilter_StepDef
 {
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
-
 	private final TestContext testContext;
 
 	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
@@ -53,10 +61,10 @@ public class ApiAuditFilter_StepDef
 	@And("all the API audit data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
 	}
 
 	@When("invoke replay audit")
@@ -68,5 +76,28 @@ public class ApiAuditFilter_StepDef
 		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue())));
 
 		apiRequestReplayService.replayApiRequests(responseAuditRecords);
+	}
+
+	@Then("validate api response error message")
+	public void validate_api_response_error_message(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
+			final JsonErrorItem jsonErrorItem;
+			final String responseContent = testContext.getApiResponse().getContent();
+			try
+			{
+				jsonErrorItem = objectMapper.readValue(responseContent, JsonErrorItem.class);
+			}
+			catch (final RuntimeException rte)
+			{
+				fail("Error parsing string into class " + JsonErrorItem.class + "; string=" + responseContent);
+				throw rte;
+			}
+			assertThat(jsonErrorItem.getMessage()).isEqualTo(message);
+		}
 	}
 }

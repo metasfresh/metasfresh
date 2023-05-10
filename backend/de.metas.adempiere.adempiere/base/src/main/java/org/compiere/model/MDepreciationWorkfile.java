@@ -90,7 +90,7 @@ public class MDepreciationWorkfile extends X_A_Depreciation_Workfile
 				+ "SET Processing = 'Y'"
 				+ " WHERE A_Depreciation_Workfile_ID = " + p_wkasset_ID	);
 		
-		int no = DB.executeUpdate (sqlB.toString(),null);
+		int no = DB.executeUpdateAndSaveErrorOnFail(sqlB.toString(), null);
 		if (no == -1)
 			log.info("Update to Deprecaition Workfile failed");
 		return true;

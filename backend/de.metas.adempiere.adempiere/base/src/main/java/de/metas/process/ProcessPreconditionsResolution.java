@@ -13,6 +13,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 /*
@@ -37,6 +38,7 @@ import java.util.function.Supplier;
  * #L%
  */
 
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public final class ProcessPreconditionsResolution
 {
 	/**
@@ -67,8 +69,9 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final boolean internal = false;
 		final ProcessCaptionMapper captionMapper = null;
+		final OptionalInt sortNo = OptionalInt.empty();
 		//noinspection ConstantConditions
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
 	}
 
 	/**
@@ -112,8 +115,9 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final boolean internal = true;
 		final ProcessCaptionMapper captionMapper = null;
+		final OptionalInt sortNo = OptionalInt.empty();
 		//noinspection ConstantConditions
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
 	}
 
 	public static ProcessPreconditionsResolution rejectBecauseNoSelection()
@@ -122,8 +126,9 @@ public final class ProcessPreconditionsResolution
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_ROWS_SELECTED);
 		final boolean internal = false;
 		final ProcessCaptionMapper captionMapper = null;
+		final OptionalInt sortNo = OptionalInt.empty();
 		//noinspection ConstantConditions
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
 	}
 
 	public static ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
@@ -132,8 +137,9 @@ public final class ProcessPreconditionsResolution
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED);
 		final boolean internal = false;
 		final ProcessCaptionMapper captionMapper = null;
+		final OptionalInt sortNo = OptionalInt.empty();
 		//noinspection ConstantConditions
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
 	}
 
 	/**
@@ -161,8 +167,8 @@ public final class ProcessPreconditionsResolution
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private static final ProcessPreconditionsResolution ACCEPTED = new ProcessPreconditionsResolution(true, null, false, null);
-	private static final ProcessPreconditionsResolution REJECTED_UnknownReason = new ProcessPreconditionsResolution(false, null, true, null);
+	private static final ProcessPreconditionsResolution ACCEPTED = new ProcessPreconditionsResolution(true, null, false, null, OptionalInt.empty());
+	private static final ProcessPreconditionsResolution REJECTED_UnknownReason = new ProcessPreconditionsResolution(false, null, true, null, OptionalInt.empty());
 
 	private final boolean accepted;
 	private final ITranslatableString reason;
@@ -175,17 +181,21 @@ public final class ProcessPreconditionsResolution
 
 	private final ProcessCaptionMapper captionMapper;
 
+	@NonNull private final OptionalInt sortNo;
+
 	@Builder(toBuilder = true)
 	private ProcessPreconditionsResolution(
 			@NonNull final Boolean accepted,
 			@Nullable final ITranslatableString reason,
 			@NonNull final Boolean internal,
-			@Nullable final ProcessCaptionMapper captionMapper)
+			@Nullable final ProcessCaptionMapper captionMapper,
+			@Nullable final OptionalInt sortNo)
 	{
 		this.accepted = accepted;
 		this.reason = reason;
 		this.internal = internal;
 		this.captionMapper = captionMapper;
+		this.sortNo = sortNo != null ? sortNo : OptionalInt.empty();
 	}
 
 	@Override
@@ -266,7 +276,7 @@ public final class ProcessPreconditionsResolution
 	@Value
 	private static class ProcessCaptionOverrideMapper implements ProcessCaptionMapper
 	{
-		ITranslatableString captionOverride;
+		@NonNull ITranslatableString captionOverride;
 
 		public ProcessCaptionOverrideMapper(@NonNull final ITranslatableString captionOverride)
 		{
@@ -289,6 +299,18 @@ public final class ProcessPreconditionsResolution
 	{
 		return toBuilder().captionMapper(captionMapper).build();
 	}
+
+	/**
+	 * Override default SortNo used with ordering related processes
+	 */
+	public ProcessPreconditionsResolution withSortNo(final int sortNo)
+	{
+		return !this.sortNo.isPresent() || this.sortNo.getAsInt() != sortNo
+				? toBuilder().sortNo(OptionalInt.of(sortNo)).build()
+				: this;
+	}
+
+	public @NonNull OptionalInt getSortNo() {return this.sortNo;}
 
 	public ProcessPreconditionsResolution and(final Supplier<ProcessPreconditionsResolution> resolutionSupplier)
 	{

@@ -1,8 +1,11 @@
 package org.compiere.process;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -14,15 +17,9 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MField;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Create Field from Table Column. (which do not exist in the Tab yet)
@@ -35,7 +32,7 @@ import javax.annotation.Nullable;
  */
 public class AD_Tab_CreateFields extends JavaProcess
 {
-	private static final transient Logger log = LogManager.getLogger(AD_Tab_CreateFields.class);
+	private static final Logger log = LogManager.getLogger(AD_Tab_CreateFields.class);
 
 	private static final Set<String> COLUMNNAMES_Standard = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 

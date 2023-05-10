@@ -1,9 +1,12 @@
 package org.adempiere.ad.dao;
 
 import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
 import org.compiere.model.IQuery;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public interface IQueryBuilderExecutors<T>
@@ -12,6 +15,7 @@ public interface IQueryBuilderExecutors<T>
 
 	default ImmutableList<T> list() {return create().listImmutable();}
 
+	@Nullable
 	default T first() {return create().first();}
 
 	default Optional<T> firstOptional() {return create().firstOptional();}
@@ -25,4 +29,6 @@ public interface IQueryBuilderExecutors<T>
 	default Stream<T> iterateAndStream() {return create().iterateAndStream();}
 
 	default Stream<T> stream() {return create().stream();}
+
+	default void forEach(@NonNull final Consumer<T> action) {create().forEach(action);}
 }

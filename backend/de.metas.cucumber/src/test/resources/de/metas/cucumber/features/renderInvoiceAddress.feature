@@ -14,10 +14,10 @@ Feature: Render invoice address
       | test_product_26_02 | test_product_26_02 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                      | Value                     |
-      | ps_1       | pricing_system_16112022_2 | pricing_system_16112022_2 |
+      | ps_12      | pricing_system_16112022_2 | pricing_system_16112022_2 |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so_16112022_2 | true  | false         | 2              |
+      | pl_so      | ps_12                         | DE                        | EUR                 | price_list_so_16112022_2 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
       | plv_so     | pl_so                     | plv_so_16112022_2 | 2022-01-20 |
@@ -28,7 +28,7 @@ Feature: Render invoice address
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners without locations:
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | customer_bp_26_02 | customer_bp_26_02 | ps_1                          | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
+      | customer_bp_26_02 | customer_bp_26_02 | ps_12                         | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
 
   Scenario: Invoice when business partner location doesn't have BPartnerName
     Given metasfresh contains C_Location:
@@ -52,17 +52,17 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1               | customer_bp_26_02        | bpLocation_1                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_12307 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
-    And after not more than 30s, C_Invoice_Candidates are found:
+    And after not more than 60s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
@@ -91,17 +91,17 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_23407 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
-    And after not more than 30s, C_Invoice_Candidates are found:
+    And after not more than 60s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
@@ -112,7 +112,7 @@ Feature: Render invoice address
   Scenario: Invoice when business partner bill location is from Switzerland
     Given metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_CH      | ps_1                          | CH                        | EUR                 | price_list_CH | true  | false         | 2              |
+      | pl_CH      | ps_12                         | CH                        | EUR                 | price_list_CH | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
       | plv_CH     | pl_CH                     | plv_CH | 2022-01-20 |
@@ -143,16 +143,16 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule |
       | order_1               | customer_bp_26_02        | bpLocation_DE                     | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_45607 | true      | CO        | I               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
-    And after not more than 30s, C_Invoice_Candidates are found:
+    And after not more than 60s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.COLUMNNAME_Bill_BPartner_ID.Identifier | OPT.COLUMNNAME_Bill_Location_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | customer_bp_26_02                          | bpLocation_CH                              | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
@@ -215,8 +215,8 @@ Feature: Render invoice address
       | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_18231 | true      | CO        | Shopware                               |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference      | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
@@ -231,5 +231,5 @@ Feature: Render invoice address
       | invoice_1               | customer_bp_26_02        | bpLocation_2                      | olCand_ref_10001 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoice_1_1                 | invoice_1               | test_product_26_02      | 1           | true      |

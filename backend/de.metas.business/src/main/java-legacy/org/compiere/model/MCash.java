@@ -882,7 +882,7 @@ public class MCash extends X_C_Cash implements IDocument
 		String sql = "UPDATE C_CashLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Cash_ID=" + getC_Cash_ID();
-		int noLine = DB.executeUpdate(sql, get_TrxName());
+		int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}    // setProcessed

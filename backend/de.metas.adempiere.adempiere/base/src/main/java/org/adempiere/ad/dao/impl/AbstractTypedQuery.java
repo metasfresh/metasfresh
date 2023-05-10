@@ -36,6 +36,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -46,12 +47,12 @@ import java.util.function.IntFunction;
 /**
  * Contains common methods to be used in {@link IQuery} implementations.
  *
- * @author tsa
- *
  * @param <T> model type
+ * @author tsa
  */
 public abstract class AbstractTypedQuery<T> implements IQuery<T>
 {
+	@Nullable
 	@Override
 	public T firstOnly() throws DBException
 	{
@@ -83,7 +84,6 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 			throw new DBException("@NotFound@ @" + getTableName() + "@"
 					+ "\n\n@Query@: " + this);
 		}
-
 		return model;
 	}
 
@@ -95,14 +95,14 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		if (model == null)
 		{
 			throw new DBException("@NotFound@ @" + getTableName() + "@"
-										  + "\n\n@Query@: " + this);
+					+ "\n\n@Query@: " + this);
 		}
 
 		return model;
 	}
-	
+
 	/**
-	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
+	 * @param throwExIfMoreThenOneFound if true and there more than one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
 	 */
 	protected abstract <ET extends T> ET firstOnly(final Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException;
@@ -134,7 +134,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	@Override
-	public final List<Map<String, Object>> listColumns(String... columnNames)
+	public final List<Map<String, Object>> listColumns(final String... columnNames)
 	{
 		final boolean distinct = false;
 		return listColumns(distinct, columnNames);
@@ -156,9 +156,15 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	protected abstract List<Map<String, Object>> listColumns(final boolean distinct, final String... columnNames);
 
 	@Override
-	public <K, ET extends T> Map<K, ET> map(final Class<ET> modelClass, final Function<ET, K> keyFunction)
+	public <K, ET extends T> ImmutableMap<K, ET> map(final Class<ET> modelClass, final Function<ET, K> keyFunction)
 	{
 		final List<ET> list = list(modelClass);
+		return Maps.uniqueIndex(list, keyFunction::apply);
+	}
+	@Override
+	public <K> ImmutableMap<K, T> map(@NonNull final Function<T, K> keyFunction)
+	{
+		final List<T> list = list();
 		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
 
@@ -194,7 +200,9 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return new QueryInsertExecutor<>(toModelClass, this);
 	}
 
-	/** Convenience method that evaluates {@link IQuery#OPTION_ReturnReadOnlyRecords}. */
+	/**
+	 * Convenience method that evaluates {@link IQuery#OPTION_ReturnReadOnlyRecords}.
+	 */
 	protected boolean isReadOnlyRecords()
 	{
 		return Boolean.TRUE.equals(getOption(OPTION_ReturnReadOnlyRecords));

@@ -114,7 +114,7 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setC_Activities(final I_M_MovementLine movementLine)
 	{
-		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).retrieveActivityForAcct(
+		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(movementLine.getAD_Client_ID()),
 				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
 				ProductId.ofRepoId(movementLine.getM_Product_ID()));

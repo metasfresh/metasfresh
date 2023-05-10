@@ -22,7 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -97,6 +96,7 @@ import java.util.Properties;
 		this.orderByBuilder = from.orderByBuilder == null ? null : from.orderByBuilder.copy();
 		this.onlySelectionId = from.onlySelectionId;
 		this.limit = from.limit;
+		this.contextClientQueryFilter = from.contextClientQueryFilter != null ? from.contextClientQueryFilter.copy() : null;
 
 		this.options = from.options == null ? null : new HashMap<>(from.options);
 
@@ -114,9 +114,7 @@ import java.util.Properties;
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(create().toString()) // shows the generated SQL
-				.toString();
+		return create().toString(); // shows the generated SQL
 	}
 
 	@Override

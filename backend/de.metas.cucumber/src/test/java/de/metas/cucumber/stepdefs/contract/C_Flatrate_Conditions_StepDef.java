@@ -68,7 +68,7 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Flatrate_Conditions_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
 	private final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
 	private final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable;
@@ -76,7 +76,7 @@ public class C_Flatrate_Conditions_StepDef
 	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 	private final M_PricingSystem_StepDefData pricingSysTable;
 	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
-	
+
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
 			@NonNull final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable,
@@ -144,10 +144,6 @@ public class C_Flatrate_Conditions_StepDef
 						.setC_Customer_Trade_Margin_ID(customerTradeMargin.getC_Customer_Trade_Margin_ID());
 			}
 
-			final InvoiceRule invoiceRule = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule))
-					.map(InvoiceRule::ofCode)
-					.orElse(InvoiceRule.AfterDelivery);
-
 			final String mediatedCommissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_MediatedCommissionSettings_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(mediatedCommissionSettingsIdentifier))
 			{
@@ -158,8 +154,11 @@ public class C_Flatrate_Conditions_StepDef
 						.setC_MediatedCommissionSettings_ID(mediatedCommissionSettings.getC_MediatedCommissionSettings_ID());
 			}
 
+			final InvoiceRule invoiceRule = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule))
+					.map(InvoiceRule::ofCode)
+					.orElse(InvoiceRule.AfterDelivery);
+
 			flatrateConditions.setName(name + UUID.randomUUID().toString()); //dev-note: random UUID for constraint "name_unique"
-			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			flatrateConditions.setType_Conditions(type);
 			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			flatrateConditions.setC_Flatrate_Transition_ID(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
@@ -167,7 +166,6 @@ public class C_Flatrate_Conditions_StepDef
 			flatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 			flatrateConditions.setProcessed(true);
 			flatrateConditions.setIsActive(true);
-			
 
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(pricingSystemIdentifier))

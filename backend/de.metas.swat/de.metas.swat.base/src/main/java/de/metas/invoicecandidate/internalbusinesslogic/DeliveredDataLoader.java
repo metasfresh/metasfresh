@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import de.metas.document.engine.DocStatus;
@@ -12,6 +13,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -19,11 +21,13 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_M_InOut;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -31,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
@@ -58,10 +63,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 @Value
 public class DeliveredDataLoader
 {
+	private static final Logger logger = LogManager.getLogger(DeliveredDataLoader.class);
+
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 	UomId stockUomId;
 
 	UomId icUomId;
@@ -88,6 +93,7 @@ public class DeliveredDataLoader
 	 * <li>in these cases, {@link IInvoiceCandidateHandler#setDeliveredData(de.metas.invoicecandidate.model.I_C_Invoice_Candidate)} might delivered quantities that are not related to inout lines.
 	 * <li>these quantities need to end up in the IC's "deliveredData".
 	 */
+	@NonNull
 	StockQtyAndUOMQty defaultQtyDelivered;
 
 	@lombok.Builder
@@ -108,7 +114,7 @@ public class DeliveredDataLoader
 		this.soTrx = soTrx;
 		this.negateQtys = negateQtys;
 		this.deliveryQualityDiscount = deliveryQualityDiscount;
-		this.defaultQtyDelivered = coalesce(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
+		this.defaultQtyDelivered = coalesceNotNull(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
 	}
 
 	public DeliveredData loadDeliveredQtys()
@@ -179,14 +185,13 @@ public class DeliveredDataLoader
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
-
 			qtyInStockUom = Quantitys.add(conversionCtx,
-					qtyInStockUom,
-					deliveredQtyItem.getQtyInStockUom());
+										  qtyInStockUom,
+										  deliveredQtyItem.getQtyInStockUom());
 
 			qtyNominal = Quantitys.add(conversionCtx,
-					qtyNominal,
-					coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal()));
+									   qtyNominal,
+									   coalesceNotNull(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal()));
 
 			final Quantity qtyCatchEffective = coalesce(
 					deliveredQtyItem.getQtyOverride(),
@@ -199,8 +204,8 @@ public class DeliveredDataLoader
 			{
 				deliveredQtyItemsWithCatch.add(deliveredQtyItem);
 				qtyCatch = Quantitys.add(conversionCtx,
-						qtyCatch,
-						qtyCatchEffective);
+										 qtyCatch,
+										 qtyCatchEffective);
 			}
 		}
 
@@ -306,7 +311,7 @@ public class DeliveredDataLoader
 			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
 
 			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
-			
+
 			final DeliveredQtyItem.DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
 					.inDispute(inoutLine.isInDispute())
 					.completedOrClosed(inoutCompletedOrClosed);
@@ -357,6 +362,9 @@ public class DeliveredDataLoader
 
 		if (hasInOutLineAllocations)
 		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns StockQtyAndUOMQty with 0 qty! Invoice_Candidate_ID={}", invoiceCandidateId);
+
 			return StockQtyAndUOMQty.builder()
 					.productId(productId)
 					.uomQty(Quantitys.createZero(icUomId))
@@ -365,6 +373,10 @@ public class DeliveredDataLoader
 		}
 		else
 		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns default StockQtyAndUOMQty={}! Invoice_Candidate_ID={}",
+							defaultQtyDelivered, invoiceCandidateId);
+
 			return defaultQtyDelivered;
 		}
 	}

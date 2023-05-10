@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -60,6 +61,8 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
+	BPartnerLocationId getBPartnerLocationId(@NonNull WarehouseId warehouseId);
+
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
 
@@ -80,10 +83,19 @@ public interface IWarehouseBL extends ISingletonService
 
 	Optional<ResourceId> getPlantId(WarehouseId warehouseId);
 
+	/**
+	 * Loads all warehouses that have the old location and updates them to the new location.
+	 */
 	void updateWarehouseLocation(@NonNull LocationId oldLocationId, @NonNull LocationId newLocationId);
-
-	DocumentLocation getBPartnerBillingLocationDocument(@NonNull WarehouseId warehouseId);
 
 	@NonNull
 	WarehouseId getIdByLocatorRepoId(int locatorId);
+
+	DocumentLocation getBPartnerBillingLocationDocument(@NonNull WarehouseId warehouseId);
+
+	boolean isDropShipWarehouse(@NonNull WarehouseId warehouseId,@NonNull OrgId adOrgId);
+
+	Optional<LocationId> getLocationIdByLocatorRepoId(int locatorRepoId);
+
+	OrgId getOrgIdByLocatorRepoId(int locatorId);
 }

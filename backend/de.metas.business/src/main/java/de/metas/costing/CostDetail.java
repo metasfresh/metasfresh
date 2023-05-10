@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -52,10 +53,11 @@ public class CostDetail
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
+	@NonNull CostAmountType amtType;
 	CostAmount amt;
-	Quantity qty;
+	@With Quantity qty;
 
-	boolean changingCosts;
+	@With boolean changingCosts;
 
 	CostDetailPreviousAmounts previousAmounts;
 
@@ -63,8 +65,7 @@ public class CostDetail
 
 	String description;
 
-	@With
-	Instant dateAcct;
+	@With Instant dateAcct;
 
 	@Builder
 	private CostDetail(
@@ -75,6 +76,7 @@ public class CostDetail
 			@NonNull final CostElementId costElementId,
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final CostAmountType amtType,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			final boolean changingCosts,
@@ -90,6 +92,7 @@ public class CostDetail
 		this.costElementId = costElementId;
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
+		this.amtType = amtType;
 		this.amt = amt;
 		this.qty = qty;
 		this.changingCosts = changingCosts;

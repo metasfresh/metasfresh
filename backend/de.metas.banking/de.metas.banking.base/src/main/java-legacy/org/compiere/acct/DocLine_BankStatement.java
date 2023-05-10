@@ -1,21 +1,22 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.FixedConversionRate;
 import de.metas.document.DocBaseType;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -30,8 +31,9 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 {
 	// services
 	private final IBankStatementBL bankStatementBL = SpringContextHolder.instance.getBean(IBankStatementBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
-	private final List<BankStatementLineReference> _bankStatementLineReferences;
+	private final ImmutableList<BankStatementLineReferenceAcctInfo> _lineRefs;
 	@Getter
 	private final boolean reversal;
 	private final I_C_Payment _payment;
@@ -50,14 +52,19 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	@Getter
 	private final BigDecimal fixedCurrencyRate;
 
-	public DocLine_BankStatement(final I_C_BankStatementLine line, final Doc_BankStatement doc)
+	private CurrencyConversionContext _currencyConversionContextForBankAsset; // lazy
+	private CurrencyConversionContext _currencyConversionContextForBankInTransit; // lazy
+
+	public DocLine_BankStatement(
+			@NonNull final I_C_BankStatementLine line,
+			@NonNull final Doc_BankStatement doc,
+			@NonNull final ImmutableList<BankStatementLineReferenceAcctInfo> lineRefs)
 	{
 		super(InterfaceWrapperHelper.getPO(line), doc);
+		this._lineRefs = lineRefs;
 
 		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-		this._payment = paymentId != null
-				? Services.get(IPaymentBL.class).getById(paymentId)
-				: null;
+		this._payment = paymentId != null ? paymentBL.getById(paymentId) : null;
 		this.reversal = line.isReversal();
 
 		//
@@ -77,10 +84,6 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 				services::getTimeZone));
 		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
 
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.getLineReferences(bankStatementLineId));
-
 		//
 		// Period
 		final MPeriod period = MPeriod.get(Env.getCtx(), line.getDateAcct(), line.getAD_Org_ID());
@@ -91,9 +94,9 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	}   // DocLine_Bank
 
-	public final List<BankStatementLineReference> getReferences()
+	public final List<BankStatementLineReferenceAcctInfo> getReferences()
 	{
-		return _bankStatementLineReferences;
+		return _lineRefs;
 	}
 
 	private I_C_Payment getC_Payment()
@@ -120,15 +123,6 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 				: super.getOrgId();
 	}
 
-	public final OrgId getPaymentOrgId(@Nullable final PaymentId paymentId)
-	{
-		final I_C_Payment payment = paymentId != null
-				? Services.get(IPaymentBL.class).getById(paymentId)
-				: null;
-
-		return getPaymentOrgId(payment);
-	}
-
 	/**
 	 * @return <ul>
 	 * <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
@@ -145,15 +139,69 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		return getModel(I_C_BankStatementLine.class);
 	}
 
-	public CurrencyConversionContext getCurrencyConversionCtx()
+	CurrencyConversionContext getCurrencyConversionCtxForBankAsset()
 	{
-		final I_C_BankStatementLine line = getC_BankStatementLine();
-		return bankStatementBL.getCurrencyConversionCtx(line);
+		CurrencyConversionContext currencyConversionContext = this._currencyConversionContextForBankAsset;
+		if (currencyConversionContext == null)
+		{
+			currencyConversionContext = this._currencyConversionContextForBankAsset = createCurrencyConversionCtxForBankAsset();
+		}
+		return currencyConversionContext;
 	}
 
-	public boolean isBankTransfer()
+	private CurrencyConversionContext createCurrencyConversionCtxForBankAsset()
 	{
-		final I_C_BankStatementLine bsl = getC_BankStatementLine();
-		return bsl.getC_BP_BankAccountTo_ID() > 0 || bsl.getLink_BankStatementLine_ID() > 0;
+		final I_C_BankStatementLine line = getC_BankStatementLine();
+
+		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
+
+		// IMPORTANT for Bank Asset Account booking,
+		// * we shall NOT consider the fixed Currency Rate because we want to compute currency gain/loss
+		// * use default conversion types
+
+		return services.createCurrencyConversionContext(
+				LocalDateAndOrgId.ofTimestamp(line.getDateAcct(), orgId, services::getTimeZone),
+				null,
+				ClientId.ofRepoId(line.getAD_Client_ID()));
+	}
+
+	CurrencyConversionContext getCurrencyConversionCtxForBankInTransit()
+	{
+		CurrencyConversionContext currencyConversionContext = this._currencyConversionContextForBankInTransit;
+		if (currencyConversionContext == null)
+		{
+			currencyConversionContext = this._currencyConversionContextForBankInTransit = createCurrencyConversionCtxForBankInTransit();
+		}
+		return currencyConversionContext;
+	}
+
+	private CurrencyConversionContext createCurrencyConversionCtxForBankInTransit()
+	{
+		final I_C_Payment payment = getC_Payment();
+		if (payment != null)
+		{
+			return paymentBL.extractCurrencyConversionContext(payment);
+		}
+		else
+		{
+			final I_C_BankStatementLine line = getC_BankStatementLine();
+
+			final PaymentCurrencyContext paymentCurrencyContext = bankStatementBL.getPaymentCurrencyContext(line);
+
+			final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
+
+			CurrencyConversionContext conversionCtx = services.createCurrencyConversionContext(
+					LocalDateAndOrgId.ofTimestamp(line.getDateAcct(), orgId, services::getTimeZone),
+					paymentCurrencyContext.getCurrencyConversionTypeId(),
+					ClientId.ofRepoId(line.getAD_Client_ID()));
+
+			final FixedConversionRate fixedCurrencyRate = paymentCurrencyContext.toFixedConversionRateOrNull();
+			if (fixedCurrencyRate != null)
+			{
+				conversionCtx = conversionCtx.withFixedConversionRate(fixedCurrencyRate);
+			}
+
+			return conversionCtx;
+		}
 	}
 }

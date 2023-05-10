@@ -11,6 +11,7 @@ import java.util.Properties;
  * @param <T> model type
  * @author tsa
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IQueryBuilder<T>
 		extends
 		IQueryBuilderExecutors<T>,

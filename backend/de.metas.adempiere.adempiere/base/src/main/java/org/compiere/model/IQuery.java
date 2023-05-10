@@ -23,6 +23,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -54,6 +55,7 @@ import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
@@ -218,7 +220,7 @@ public interface IQuery<T>
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
 	@NonNull <ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
-	
+
 	/**
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
 	 */
@@ -406,7 +408,7 @@ public interface IQuery<T>
 	/**
 	 * Directly execute DELETE FROM database.
 	 * <p>
-	 * Models, won't be loaded so no model interceptor will be triggered.
+	 * WARNING: Models, won't be loaded so no model interceptor will be triggered!
 	 * <p>
 	 * Also, models will be deleted even if they were marked as Processed=Y.
 	 * <p>
@@ -434,7 +436,25 @@ public interface IQuery<T>
 	 * @param failIfProcessed fail if any of those records are Processed.
 	 * @return how many records were deleted
 	 */
-	int delete(boolean failIfProcessed);
+	default int delete(final boolean failIfProcessed)
+	{
+		final List<T> records = list();
+		if (records.isEmpty())
+		{
+			return 0;
+		}
+
+		int countDeleted = 0;
+		for (final Object record : records)
+		{
+			InterfaceWrapperHelper.delete(record, failIfProcessed);
+			countDeleted++;
+		}
+
+		return countDeleted;
+	}
+
+	default void forEach(@NonNull final Consumer<T> action) {stream().forEach(action);}
 
 	/**
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query
@@ -496,7 +516,7 @@ public interface IQuery<T>
 	 * @param valueType value type
 	 * @see #listColumns(String...)
 	 */
-	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
+	<AT> ImmutableList<AT> listDistinct(String columnName, Class<AT> valueType);
 
 	/**
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
@@ -511,8 +531,9 @@ public interface IQuery<T>
 	 * @return key to model map
 	 * @see #list(Class)
 	 */
-	<K, ET extends T> Map<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
+	<K, ET extends T> ImmutableMap<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
 
+	<K> ImmutableMap<K, T> map(Function<T, K> keyFunction);
 	/**
 	 * Retrieves the records as {@link ListMultimap}.
 	 *

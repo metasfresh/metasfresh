@@ -75,7 +75,7 @@ public interface IWorkPackageBuilder
 	 */
 	IWorkPackageParamsBuilder parameters();
 
-	default IWorkPackageBuilder parameters(final Map<String, ? extends Object> parameters)
+	default IWorkPackageBuilder parameters(final Map<String, ?> parameters)
 	{
 		parameters().setParameters(parameters);
 		return this;
@@ -117,7 +117,7 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If the async batch it's not set, it will be inherited.
 	 */
-	IWorkPackageBuilder setC_Async_Batch(I_C_Async_Batch asyncBatch);
+	IWorkPackageBuilder setC_Async_Batch(@Nullable I_C_Async_Batch asyncBatch);
 
 	/**
 	 * Sets workpackage's user in charge.
@@ -160,13 +160,14 @@ public interface IWorkPackageBuilder
 	}
 
 	/**
-	 * Sets locker to be used to lock enqueued elements
+	 * Sets locker to be used to lock enqueued elements.
+	 * The elements are unlocked right after the WP was processed.
 	 */
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);
 
 	/**
-	 * @return Lock aquired when enqueued elements were locked (on {@link #buildAndEnqueue()}).
-	 * Could be null if no lock was aquired.
+	 * @return Lock acquired when enqueued elements were locked (on {@link #buildAndEnqueue()}).
+	 * Could be null if no lock was acquired.
 	 */
 	Future<ILock> getElementsLock();
 

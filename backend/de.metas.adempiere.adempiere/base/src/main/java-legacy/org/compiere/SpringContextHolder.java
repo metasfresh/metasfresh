@@ -133,6 +133,32 @@ public final class SpringContextHolder
 		return springApplicationContext.getBean(requiredType);
 	}
 
+	public <T> T getBean(@NonNull final Class<T> requiredType, @NonNull final String name)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
+			if (beanImpl != null)
+			{
+				return beanImpl;
+			}
+		}
+
+		final ApplicationContext springApplicationContext = getApplicationContext();
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType)
+					.setParameter("name", name);
+		}
+		// noinspection ConstantConditions
+		return springApplicationContext.getBean(name, requiredType);
+	}
+
 	/**
 	 * can be used if a service might be retrieved before the spring application context is up
 	 */

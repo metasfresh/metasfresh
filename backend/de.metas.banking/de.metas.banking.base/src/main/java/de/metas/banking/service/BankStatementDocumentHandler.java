@@ -29,6 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -214,8 +215,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
-		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, OrgId.ANY.getRepoId());
-		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, OrgId.ANY.getRepoId());
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
 		return IDocument.STATUS_InProgress;
@@ -238,32 +239,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final HashSet<PaymentId> consideredPaymentIds = extractCurrentPaymentIds(lines);
 		for (final I_C_BankStatementLine line : lines)
 		{
-			//
-			// Cash/bank transfer
-			if (line.getC_BP_BankAccountTo_ID() > 0)
-			{
-				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
-				if (linkedBankStatementLineId != null)
-				{
-					final I_C_BankStatementLine lineFrom = services.getBankStatementLineById(linkedBankStatementLineId);
-					if (lineFrom.getLink_BankStatementLine_ID() > 0
-							&& lineFrom.getLink_BankStatementLine_ID() != line.getC_BankStatementLine_ID())
-					{
-						throw new AdempiereException("Bank Statement Line is allocated to another line"); // TODO: translate
-					}
-
-					final boolean sameCurrency = lineFrom.getC_Currency_ID() == line.getC_Currency_ID();
-					if (sameCurrency && lineFrom.getTrxAmt().negate().compareTo(line.getTrxAmt()) != 0)
-					{
-						throw new AdempiereException("Transfer amount differs"); // TODO: translate
-					}
-
-					lineFrom.setC_BP_BankAccountTo_ID(bankStatement.getC_BP_BankAccount_ID());
-					lineFrom.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
-					services.save(lineFrom);
-				}
-			}
-
 			services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, consideredPaymentIds);
 
 			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
@@ -394,7 +369,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 
-		services.unlinkPaymentsAndDeleteReferences(lines);
+		services.unreconcile(lines);
 
 		//
 		// Set lines to 0
@@ -410,19 +385,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				line.setBankFeeAmt(BigDecimal.ZERO);
 				line.setChargeAmt(BigDecimal.ZERO);
 				line.setInterestAmt(BigDecimal.ZERO);
-
-				//
-				// Cash/bank transfer
-				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
-				if (linkedBankStatementLineId != null)
-				{
-					final I_C_BankStatementLine lineFrom = services.getBankStatementLineById(linkedBankStatementLineId);
-					if (lineFrom.getLink_BankStatementLine_ID() == line.getC_BankStatementLine_ID())
-					{
-						lineFrom.setLink_BankStatementLine_ID(-1);
-						services.save(lineFrom);
-					}
-				}
 
 				services.save(line);
 			}

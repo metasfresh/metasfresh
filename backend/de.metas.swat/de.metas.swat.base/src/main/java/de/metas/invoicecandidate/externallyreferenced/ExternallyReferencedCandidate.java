@@ -35,6 +35,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
@@ -77,6 +78,7 @@ public class ExternallyReferencedCandidate
 				.qtyDelivered(newIC.getQtyDelivered())
 				.qtyOrdered(newIC.getQtyOrdered())
 				.soTrx(newIC.getSoTrx())
+				.projectId(newIC.getProjectId())
 				.invoiceDetailItems(newIC.getInvoiceDetailItems())
 				.activityId(newIC.getActivityId());
 	}
@@ -137,16 +139,18 @@ public class ExternallyReferencedCandidate
 
 	private UserId userInChargeId;
 
+	private ProjectId projectId;
+
 	@Nullable
 	private ActivityId activityId;
-
-	private List<InvoiceDetailItem> invoiceDetailItems;
 
 	/**
 	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
 	 */
 	@Nullable
 	private final TableRecordReference recordReference;
+
+	private List<InvoiceDetailItem> invoiceDetailItems;
 
 	@Builder
 	private ExternallyReferencedCandidate(
@@ -177,6 +181,7 @@ public class ExternallyReferencedCandidate
 			@Nullable final UserId userInChargeId,
 			@Nullable final ActivityId activityId,
 			@Nullable final String lineDescription,
+			@Nullable final ProjectId projectId,
 			@Nullable final String descriptionBottom,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
@@ -206,6 +211,7 @@ public class ExternallyReferencedCandidate
 		this.taxId = taxId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.projectId = projectId;
 		this.descriptionBottom = descriptionBottom;
 		this.userInChargeId = userInChargeId;
 		this.activityId = activityId;

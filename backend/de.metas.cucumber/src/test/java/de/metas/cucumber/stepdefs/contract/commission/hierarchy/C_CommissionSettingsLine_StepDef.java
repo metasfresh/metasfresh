@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,8 +33,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_PercentOfBasePoints;
-import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_SeqNo;
 import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_C_CommissionSettingsLine_ID;
 import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_PercentOfBasePoints;
 import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_SeqNo;

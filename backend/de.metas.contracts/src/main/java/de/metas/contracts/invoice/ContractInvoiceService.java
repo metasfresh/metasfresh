@@ -1,6 +1,23 @@
 package de.metas.contracts.invoice;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -9,25 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /*
  * #%L

@@ -174,12 +174,8 @@ public final class CurrentCost
 			@NonNull final Quantity qty,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
-		assertCostCurrency(amt);
 
-		if (qty.signum() == 0 && amt.signum() != 0)
-		{
-			throw new AdempiereException("Qty shall not be zero when amount is non zero: " + amt);
-		}
+		assertCostCurrency(amt);
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);

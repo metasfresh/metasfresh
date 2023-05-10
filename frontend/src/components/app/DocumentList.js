@@ -5,10 +5,10 @@ import PropTypes from 'prop-types';
 
 import { PROCESS_NAME } from '../../constants/Constants';
 import {
+  DLpropTypes,
+  GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-  GEO_PANEL_STATES,
-  DLpropTypes,
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
@@ -19,13 +19,30 @@ import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import GeoMap from '../maps/GeoMap';
+import {
+  INVOICE_TO_ALLOCATE_WINDOW_ID,
+  InvoiceToAllocateViewHeader,
+} from '../paymentAllocation/InvoiceToAllocateViewHeader';
+import {
+  PP_ORDER_CANDIDATE_WINDOW_ID,
+  PPOrderCandidateViewHeader,
+} from '../ppOrderCandidate/PPOrderCandidateViewHeader';
+import { connect } from 'react-redux';
+import {
+  getSettingFromStateAsBoolean,
+  getSettingFromStateAsPositiveInt,
+} from '../../utils/settings';
+import {
+  DeliveryPlanningViewHeader,
+  getDeliveryPlanningViewHeaderWindowId,
+} from '../deliveryPlanning/DeliveryPlanningViewHeader';
 
 /**
  * @file Class based component.
  * @module DocumentList
  * @extends Component
  */
-export default class DocumentList extends Component {
+class DocumentList extends Component {
   constructor(props) {
     super(props);
 
@@ -121,6 +138,9 @@ export default class DocumentList extends Component {
       parentSelected,
       filterId,
       featureType,
+      isPPOrderCandidateViewHeaderEnabled,
+      deliveryPlanningViewHeaderWindowId,
+      defaultQtyPrecision,
     } = this.props;
     const {
       staticFilters,
@@ -180,6 +200,29 @@ export default class DocumentList extends Component {
           </div>
         )}
 
+        {isPPOrderCandidateViewHeaderEnabled &&
+          String(windowId) === PP_ORDER_CANDIDATE_WINDOW_ID &&
+          viewId && (
+            <PPOrderCandidateViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+            />
+          )}
+
+        {deliveryPlanningViewHeaderWindowId &&
+          String(windowId) === deliveryPlanningViewHeaderWindowId &&
+          viewId && (
+            <DeliveryPlanningViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+              precision={defaultQtyPrecision}
+            />
+          )}
+
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
             <button
@@ -217,6 +260,15 @@ export default class DocumentList extends Component {
                 </button>
               )}
 
+              {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
+                <InvoiceToAllocateViewHeader
+                  windowId={windowId}
+                  viewId={viewId}
+                  selectedRowIds={selected}
+                  pageLength={pageLength}
+                />
+              )}
+
               {layout.filters && (
                 <Filters
                   {...{
@@ -227,7 +279,6 @@ export default class DocumentList extends Component {
                   updateDocList={onFilterChange}
                 />
               )}
-
               {staticFilters && (
                 <FiltersStatic
                   {...{
@@ -392,3 +443,22 @@ DocumentList.propTypes = {
   onUpdateQuickActions: PropTypes.func,
   setQuickActionsComponentRef: PropTypes.func,
 };
+
+const mapStateToProps = (state) => {
+  return {
+    isPPOrderCandidateViewHeaderEnabled: getSettingFromStateAsBoolean(
+      state,
+      'PPOrderCandidateViewHeader.enabled',
+      true
+    ),
+    defaultQtyPrecision: getSettingFromStateAsPositiveInt(
+      state,
+      'widget.Quantity.defaultPrecision',
+      2
+    ),
+    deliveryPlanningViewHeaderWindowId:
+      getDeliveryPlanningViewHeaderWindowId(state),
+  };
+};
+
+export default connect(mapStateToProps, null)(DocumentList);

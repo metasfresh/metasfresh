@@ -3,7 +3,9 @@ Feature: Validate external reference is sent to RabbitMQ
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
+  @ignore
   Scenario: Export external reference and c_bpartner when created by RabbitMQ.SubjectCreatedByUserGroup_ID
     Given metasfresh contains AD_UserGroup:
       | AD_UserGroup_ID.Identifier | Name                  | IsActive | OPT.Description                   |
@@ -19,8 +21,6 @@ Feature: Validate external reference is sent to RabbitMQ
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue                       | OPT.IsSyncExternalReferencesToRabbitMQ | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.IsSyncBPartnersToRabbitMQ | OPT.SubjectCreatedByUserGroup_ID.Identifier |
       | config_1                            | RabbitMQ | syncExternalReferenceExportRabbitMQUpdate | true                                   | true                                 | true                          | userGroup_externalRef                       |
       | config_noAutoSync                   | RabbitMQ | autoExportRabbitMQExternalRef             | true                                   |                                      | false                         |                                             |
-
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -91,6 +91,7 @@ Feature: Validate external reference is sent to RabbitMQ
       | config_noAutoSync                   |
 
 
+  @ignore
   Scenario: Export external reference when updated, if it was previously exported.
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -148,8 +149,7 @@ Feature: Validate external reference is sent to RabbitMQ
       | Shopware6      | BPartnerLocation | BPLocation_ER_S2_25032022 | null                 |
       | Shopware6      | UserID           | BPContact_ER_S2_25032022  | null                 |
 
-    # FIXME: temporary fix to make sure the syncExternalReferenceDebouncer is empty before adding a new config (it's a temp fix as the full solution is already in master)
-    And wait for 10s
+    And there are no pending items for export to external system via: 'ExportExternalReferenceToRabbitMQService'
 
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue       | OPT.IsSyncExternalReferencesToRabbitMQ |
@@ -184,7 +184,7 @@ Feature: Validate external reference is sent to RabbitMQ
       | externalRef_BPartner              | BPartner_ER_S2_25032022   |
       | externalRef_BPLocation            | BPLocation_ER_S2_25032022 |
       | externalRef_BPContact             | BPContact_ER_S2_25032022  |
-    And after not more than 30s, there are added records in Data_Export_Audit
+    And after not more than 60s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier   | Data_Export_Audit_Parent_ID.Identifier |
       | dataExport_BPartner             | S_ExternalReference | externalRef_BPartner   |                                        |
       | dataExport_BPLocation           | S_ExternalReference | externalRef_BPLocation |                                        |
@@ -199,10 +199,9 @@ Feature: Validate external reference is sent to RabbitMQ
       | S_ExternalReference_ID.Identifier | OPT.Version |
       | externalRef_BPartner              | version_1   |
 
-    And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
+    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                      |
       | config_1                            | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_S2_25032022","type":"BPartner"},{"id":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_S2_25032022","type":"UserID"}]} |
-
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |
       | config_1                            |

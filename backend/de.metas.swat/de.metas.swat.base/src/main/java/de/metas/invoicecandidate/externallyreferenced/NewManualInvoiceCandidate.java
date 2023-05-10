@@ -8,6 +8,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
@@ -80,7 +81,9 @@ public class NewManualInvoiceCandidate
 
 	UomId invoicingUomId;
 
-	/** If given, then productId and currencyId have to match! */
+	/**
+	 * If given, then productId and currencyId have to match!
+	 */
 	ProductPrice priceEnteredOverride;
 
 	Percent discountOverride;
@@ -92,6 +95,8 @@ public class NewManualInvoiceCandidate
 	String descriptionBottom;
 
 	UserId userInChargeId;
+
+	ProjectId projectId;
 
 	@Nullable
 	ActivityId activityId;
@@ -123,6 +128,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final String lineDescription,
 			@Nullable final String descriptionBottom,
 			@Nullable final UserId userInChargeId,
+			@Nullable final ProjectId projectId,
 			@Nullable final ActivityId activityId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
@@ -146,6 +152,7 @@ public class NewManualInvoiceCandidate
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.projectId = projectId;
 		this.descriptionBottom = descriptionBottom;
 		this.userInChargeId = userInChargeId;
 		this.activityId = activityId;

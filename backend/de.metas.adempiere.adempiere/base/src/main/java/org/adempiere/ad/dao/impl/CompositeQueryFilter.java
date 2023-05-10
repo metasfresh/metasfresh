@@ -448,12 +448,10 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 	@Override
 	public ICompositeQueryFilter<T> removeFilter(@NonNull final IQueryFilter<T> filter)
 	{
-		if (filters.isEmpty())
+		if (!filters.isEmpty())
 		{
-			return this;
+			filters.remove(filter);
 		}
-
-		filters.remove(filter);
 
 		return this;
 	}
@@ -512,6 +510,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 			}
 		}
 
+		//noinspection RedundantIfStatement
 		if (and)
 		{
 			return true;

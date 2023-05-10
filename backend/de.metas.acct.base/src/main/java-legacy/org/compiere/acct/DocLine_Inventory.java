@@ -86,7 +86,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 															  .initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
 															  .date(getDateAcctAsInstant())
 															  .build())
-					.getTotalAmountToPost(as);
+					.getTotalAmountToPost(as).getMainAmt();
 		}
 		else
 		{
@@ -103,7 +103,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 									.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
 									.date(getDateAcctAsInstant())
 									.build())
-					.getTotalAmountToPost(as);
+					.getTotalAmountToPost(as).getMainAmt();
 		}
 	}
 

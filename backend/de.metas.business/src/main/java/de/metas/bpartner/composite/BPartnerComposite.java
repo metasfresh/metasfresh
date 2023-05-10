@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
@@ -28,7 +29,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static de.metas.util.Check.assume;
 
@@ -72,6 +73,9 @@ public final class BPartnerComposite
 	@NonNull
 	private final List<BPartnerBankAccount> bankAccounts;
 
+	@NonNull
+	private final List<BPartnerCreditLimit> creditLimits;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private BPartnerComposite(
@@ -79,7 +83,8 @@ public final class BPartnerComposite
 			@JsonProperty("bpartner") @Nullable final BPartner bpartner,
 			@JsonProperty("locations") @Singular final List<BPartnerLocation> locations,
 			@JsonProperty("contacts") @Singular final List<BPartnerContact> contacts,
-			@JsonProperty("bankAccounts") @Singular final List<BPartnerBankAccount> bankAccounts)
+			@JsonProperty("bankAccounts") @Singular final List<BPartnerBankAccount> bankAccounts,
+			@JsonProperty("creditLimits") @Singular final List<BPartnerCreditLimit> creditLimits)
 	{
 		this.orgId = orgId;
 
@@ -87,9 +92,10 @@ public final class BPartnerComposite
 				() -> bpartner,
 				() -> BPartner.builder().build());
 
-		this.locations = new ArrayList<>(coalesce(locations, ImmutableList.of()));
-		this.contacts = new ArrayList<>(coalesce(contacts, ImmutableList.of()));
-		this.bankAccounts = new ArrayList<>(coalesce(bankAccounts, ImmutableList.of()));
+		this.locations = new ArrayList<>(coalesceNotNull(locations, ImmutableList.of()));
+		this.contacts = new ArrayList<>(coalesceNotNull(contacts, ImmutableList.of()));
+		this.bankAccounts = new ArrayList<>(coalesceNotNull(bankAccounts, ImmutableList.of()));
+		this.creditLimits = new ArrayList<>(coalesceNotNull(creditLimits, ImmutableList.of()));
 	}
 
 	public ImmutableSet<GLN> extractLocationGlns()

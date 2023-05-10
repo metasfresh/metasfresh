@@ -58,7 +58,7 @@ public class InvoiceUserNotificationsProducer
 
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.invoicecandidate.UserNotifications")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	private static final transient Logger logger = LogManager.getLogger(InvoiceUserNotificationsProducer.class);

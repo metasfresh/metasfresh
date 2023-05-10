@@ -27,6 +27,32 @@ CREATE OR REPLACE VIEW rv_unposted AS
 --
 UNION ALL
 --
+(SELECT j.ad_client_id,
+           j.ad_org_id,
+           j.created,
+           j.createdby,
+           j.updated,
+           j.updatedby,
+           j.isactive,
+           j.documentno,
+           j.datedoc,
+           j.dateacct,
+           542275             AS ad_table_id,
+           j.sap_gljournal_id AS record_id,
+           'N'::char(1)    AS issotrx,
+           j.posted,
+           j.PostingError_Issue_ID,
+           j.processing,
+           j.processed,
+           j.docstatus
+    FROM sap_gljournal j
+    WHERE j.posted <> 'Y'
+      AND j.docstatus <> 'VO'
+      AND j.processed = 'Y'
+)
+--
+UNION ALL
+--
 (SELECT pi.ad_client_id,
         pi.ad_org_id,
         pi.created,
@@ -261,7 +287,7 @@ UNION ALL
         m_matchinv.isactive,
         m_matchinv.documentno,
         m_matchinv.datetrx       AS datedoc,
-        m_matchinv.datetrx       AS dateacct,
+        m_matchinv.dateacct      AS dateacct,
         472                      AS ad_table_id,
         m_matchinv.m_matchinv_id AS record_id,
         'N'::char(1)             AS issotrx,
@@ -285,7 +311,7 @@ UNION ALL
         m_matchpo.isactive,
         m_matchpo.documentno,
         m_matchpo.datetrx      AS datedoc,
-        m_matchpo.datetrx      AS dateacct,
+        m_matchpo.dateacct     AS dateacct,
         473                    AS ad_table_id,
         m_matchpo.m_matchpo_id AS record_id,
         'N'::char(1)           AS issotrx,
@@ -400,26 +426,26 @@ UNION ALL
 --
 UNION ALL
 --
-SELECT cr.ad_client_id,
-       cr.ad_org_id,
-       cr.created,
-       cr.createdby,
-       cr.updated,
-       cr.updatedby,
-       cr.isactive,
-       cr.documentno,
-       cr.dateacct             AS datedoc,
-       cr.dateacct,
-       542190                  AS ad_table_id,
-       cr.m_costrevaluation_id AS record_id,
-       'N'::char(1)            AS issotrx,
-       cr.posted,
-       cr.PostingError_Issue_ID,
-       cr.processing,
-       cr.processed,
-       cr.docstatus
-FROM m_costrevaluation cr
-WHERE cr.posted <> 'Y'
-  AND cr.docstatus IN ('CO', 'CL', 'RE')
-  AND cr.processed = 'Y'
+(SELECT cr.ad_client_id,
+        cr.ad_org_id,
+        cr.created,
+        cr.createdby,
+        cr.updated,
+        cr.updatedby,
+        cr.isactive,
+        cr.documentno,
+        cr.dateacct             AS datedoc,
+        cr.dateacct,
+        542190                  AS ad_table_id,
+        cr.m_costrevaluation_id AS record_id,
+        'N'::char(1)            AS issotrx,
+        cr.posted,
+        cr.PostingError_Issue_ID,
+        cr.processing,
+        cr.processed,
+        cr.docstatus
+ FROM m_costrevaluation cr
+ WHERE cr.posted <> 'Y'
+   AND cr.docstatus IN ('CO', 'CL', 'RE')
+   AND cr.processed = 'Y')
 ;

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +22,8 @@
 
 package de.metas.camel.externalsystems.core;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.jackson.JacksonDataFormat;
@@ -37,12 +35,8 @@ public class CamelRouteHelper
 			@NonNull final CamelContext context,
 			@NonNull final Class<?> unmarshalType)
 	{
-		final ObjectMapper objectMapper = (new ObjectMapper())
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
-
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		
 		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
 		jacksonDataFormat.setCamelContext(context);
 		jacksonDataFormat.setObjectMapper(objectMapper);

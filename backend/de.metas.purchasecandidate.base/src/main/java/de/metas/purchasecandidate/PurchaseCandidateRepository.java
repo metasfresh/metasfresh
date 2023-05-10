@@ -6,8 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.CalendarId;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -23,6 +23,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
@@ -30,6 +31,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -424,6 +426,17 @@ public class PurchaseCandidateRepository
 			record.setProcessed(true);
 		}
 
+		record.setIsManualPrice(purchaseCandidate.isManualPrice());
+		if (purchaseCandidate.isManualPrice())
+		{
+			record.setC_Currency_ID(CurrencyId.toRepoId(purchaseCandidate.getCurrencyId()));
+			record.setPrice_UOM_ID(UomId.toRepoId(purchaseCandidate.getPriceUomId()));
+		}
+
+		record.setProductDescription(purchaseCandidate.getProductDescription());
+
+		record.setC_Activity_ID(ActivityId.toRepoId(purchaseCandidate.getActivityId()));
+
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
@@ -537,11 +550,14 @@ public class PurchaseCandidateRepository
 				.priceActual(record.getPurchasePriceActual())
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.isTaxIncluded(record.isTaxIncluded())
 				.prepared(record.isPrepared())
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()))
 				.externalPurchaseOrderUrl(record.getExternalPurchaseOrderURL())
+				.productDescription(record.getProductDescription())
+				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				//
 				.build();
 
@@ -728,5 +744,29 @@ public class PurchaseCandidateRepository
 				.map(PurchaseCandidateId::ofRepoId)
 				.map(this::getById)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> deleteQuery = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class);
+
+		if (deletePurchaseCandidateQuery.isOnlySimulated())
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, deletePurchaseCandidateQuery.isOnlySimulated());
+		}
+
+		if (deletePurchaseCandidateQuery.getSalesOrderLineId() != null)
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, deletePurchaseCandidateQuery.getSalesOrderLineId());
+		}
+
+		if (deleteQuery.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all I_C_PurchaseCandidate records is not allowed!");
+		}
+
+		deleteQuery
+				.create()
+				.deleteDirectly();
 	}
 }

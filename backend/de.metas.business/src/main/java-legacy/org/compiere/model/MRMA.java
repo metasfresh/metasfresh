@@ -761,9 +761,9 @@ public class MRMA extends X_M_RMA implements IDocument
         super.setProcessed (processed);
         if (get_ID() <= 0)
             return;
-        int noLine = DB.executeUpdateEx("UPDATE M_RMALine SET Processed=? WHERE M_RMA_ID=?",
-        		new Object[]{processed, get_ID()},
-        		get_TrxName());
+        int noLine = DB.executeUpdateAndThrowExceptionOnFail("UPDATE M_RMALine SET Processed=? WHERE M_RMA_ID=?",
+															 new Object[]{processed, get_ID()},
+															 get_TrxName());
         m_lines = null;
         log.debug("setProcessed - " + processed + " - Lines=" + noLine);
     }   //  setProcessed

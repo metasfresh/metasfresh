@@ -3,6 +3,8 @@ package de.metas.document.engine.impl;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -22,14 +24,13 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
@@ -57,6 +58,10 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.docAction.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 
 	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);
 
@@ -105,10 +110,17 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			final boolean throwExIfNotSuccess)
 	{
 		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(perfMonIsActive){
+			return perfMonServicew.monitor(
+					() -> processIt0(document, action, throwExIfNotSuccess),
+					DocactionPerformanceMonitoringHelper.createMetadataFor(document, action));
+		}
+		else
+		{
+			return processIt0(document, action, throwExIfNotSuccess);
+		}
 
-		return perfMonServicew.monitorSpan(
-				() -> processIt0(document, action, throwExIfNotSuccess),
-				DocactionAPMHelper.createMetadataFor(document, action));
 	}
 
 	private boolean processIt0(@NonNull final IDocument document,
@@ -477,16 +489,15 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public final Map<String, IDocActionItem> retrieveDocActionItemsIndexedByValue()
 	{
-		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 		final Properties ctx = Env.getCtx();
 		final String adLanguage = Env.getAD_Language(ctx);
 
-		final Map<String, IDocActionItem> docActionItemsByValue = referenceDAO.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
+		return adReferenceService.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
 				.stream()
 				.map(adRefListItem -> new DocActionItem(adRefListItem, adLanguage))
 				.sorted(Comparator.comparing(DocActionItem::toString))
 				.collect(GuavaCollectors.toImmutableMapByKey(IDocActionItem::getValue));
-		return docActionItemsByValue;
 	}
 
 	private static final class DocActionItem implements IDocActionItem

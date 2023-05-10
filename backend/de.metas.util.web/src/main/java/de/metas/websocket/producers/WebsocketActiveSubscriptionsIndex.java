@@ -8,7 +8,6 @@ import de.metas.websocket.WebsocketSessionId;
 import de.metas.websocket.WebsocketSubscriptionId;
 import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

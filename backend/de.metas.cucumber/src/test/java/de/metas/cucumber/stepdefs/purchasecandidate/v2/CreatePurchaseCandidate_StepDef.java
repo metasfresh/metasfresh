@@ -42,8 +42,12 @@ import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
@@ -54,6 +58,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Activity;
 import org.compiere.util.TimeUtil;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,20 +71,30 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class CreatePurchaseCandidate_StepDef
 {
+	private final C_Activity_StepDefData activityTable;
+
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final TestContext testContext;
 	private JsonPurchaseCandidateCreateItem.JsonPurchaseCandidateCreateItemBuilder jsonPurchaseCandidateCreateItem;
 	private final JsonPurchaseCandidateRequest.JsonPurchaseCandidateRequestBuilder jsonPurchaseCandidateRequest = JsonPurchaseCandidateRequest.builder();
 
-	public CreatePurchaseCandidate_StepDef(final TestContext testContext)
+	private final C_OrderLine_StepDefData orderLineTable;
+
+	public CreatePurchaseCandidate_StepDef(
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final TestContext testContext,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
+		this.activityTable = activityTable;
 		this.testContext = testContext;
+		this.orderLineTable = orderLineTable;
 		this.purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	}
 
@@ -214,6 +229,15 @@ public class CreatePurchaseCandidate_StepDef
 		final String priceUom = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.priceUom");
 		final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableEntries, "OPT.discount");
 		final String externalPurchaseOrderUrl = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.ExternalPurchaseOrderURL");
+		final String productDescription = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT." + I_C_OLCand.COLUMNNAME_ProductDescription);
+
+		final String activityIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT." + I_C_Activity.COLUMNNAME_C_Activity_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final String activityId = Optional.ofNullable(activityIdentifier)
+				.map(activityTable::get)
+				.map(I_C_Activity::getC_Activity_ID)
+				.map(String::valueOf)
+				.orElse(null);
 
 		final JsonQuantity quantity = JsonQuantity.builder()
 				.qty(qty)
@@ -240,7 +264,9 @@ public class CreatePurchaseCandidate_StepDef
 				.isManualDiscount(isManualDiscount)
 				.price(price)
 				.discount(discount)
-				.externalPurchaseOrderUrl(externalPurchaseOrderUrl);
+				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
+				.productDescription(productDescription)
+				.activityIdentifier(activityId);
 	}
 
 	private void validatePurchaseCandidate(@NonNull final PurchaseCandidate persistedResult, @NonNull final JsonPurchaseCandidate candidate)

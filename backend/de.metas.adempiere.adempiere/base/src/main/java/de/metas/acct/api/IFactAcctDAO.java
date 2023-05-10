@@ -25,7 +25,9 @@ package de.metas.acct.api;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 
 import de.metas.document.engine.IDocument;
@@ -44,17 +46,17 @@ public interface IFactAcctDAO extends ISingletonService
 	 * 
 	 * NOTE: this method is NOT checking if the accounting period of given document is open!
 	 *
-	 * @param document
 	 * @return how many {@link I_Fact_Acct} were deleted
 	 */
 	int deleteForDocument(IDocument document);
 
 	int deleteForDocumentModel(final Object documentObj);
 
+	int deleteForRecordRef(@NonNull TableRecordReference recordRef);
+
 	/**
 	 * Retries all accounting records for given document.
 	 * 
-	 * @param document
 	 * @return query
 	 */
 	IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(IDocument document);
@@ -62,25 +64,19 @@ public interface IFactAcctDAO extends ISingletonService
 	/**
 	 * Retries all accounting records for given document line.
 	 *
-	 * @param tableName
-	 * @param recordId
-	 * @param documentLine
-	 * @return
 	 */
 	List<I_Fact_Acct> retrieveForDocumentLine(String tableName, int recordId, Object documentLine);
 
 	/**
 	 * Update directly all the fact accounts of the given document by setting their docStatus from document.
-	 * 
-	 * @param document
-	 * @task http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29">task</a>
 	 */
 	void updateDocStatusForDocument(IDocument document);
 
 	/**
 	 * Update directly all {@link I_Fact_Acct} records for given document line and sets the given activity.
 	 * 
-	 * @param ctx
 	 * @param adTableId document header's AD_Table_ID
 	 * @param recordId document header's ID
 	 * @param lineId document line's ID

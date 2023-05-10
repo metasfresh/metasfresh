@@ -196,9 +196,26 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
+	public boolean isUOMEach(@NonNull final UomId uomId)
+	{
+		final X12DE355 x12de355 = getX12DE355ById(uomId);
+		return X12DE355.EACH.equals(x12de355);
+	}
+
+	@Override
 	public @NonNull UOMType getUOMTypeById(@NonNull final UomId uomId)
 	{
 		final I_C_UOM uom = getById(uomId);
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
+	}
+
+	@Override
+	public @NonNull Optional<I_C_UOM> getBySymbol(@NonNull final String uomSymbol)
+	{
+		return Optional.ofNullable(queryBL.createQueryBuilder(I_C_UOM.class)
+										   .addOnlyActiveRecordsFilter()
+										   .addEqualsFilter(I_C_UOM.COLUMNNAME_UOMSymbol, uomSymbol)
+										   .create()
+										   .firstOnlyOrNull(I_C_UOM.class));
 	}
 }

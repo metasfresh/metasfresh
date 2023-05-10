@@ -84,6 +84,11 @@ public class MoneyService
 		return currencyRepository.getStdPrecision(currencyCode);
 	}
 
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return currencyRepository.getStdPrecision(currencyId);
+	}
+
 	@NonNull
 	public CurrencyConversionContext createConversionContext(
 			@NonNull final LocalDateAndOrgId convDate,
@@ -114,6 +119,17 @@ public class MoneyService
 				Env.getOrgId());
 
 		return convertMoneyToCurrency(money, targetCurrencyId, currencyConversionContext);
+	}
+
+	@NonNull
+	public Money convertMoneyToCurrency(
+			@NonNull final Money money,
+			@NonNull final CurrencyCode currencyCode,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+
+		return convertMoneyToCurrency(money, currencyId, context);
 	}
 
 	@NonNull

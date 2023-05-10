@@ -1,14 +1,18 @@
 package de.metas.contracts.subscription.invoicecandidatehandler;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.location.ContractLocationHelper;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
@@ -23,14 +27,19 @@ import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
@@ -102,7 +111,8 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
+
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
 				taxCategoryId,
@@ -113,8 +123,9 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				CoalesceUtil.coalesceSuppliersNotNull(
 						() -> ContractLocationHelper.extractDropshipLocationId(term),
 						() -> ContractLocationHelper.extractBillToLocationId(term)),
-				SOTrx.ofBoolean(ic.isSOTrx()));
-		
+				SOTrx.ofBoolean(ic.isSOTrx()),
+				vatCodeId);
+
 		return PriceAndTax.builder()
 				.pricingSystemId(PricingSystemId.ofRepoId(term.getM_PricingSystem_ID()))
 				.priceActual(term.getPriceActual())
@@ -145,4 +156,38 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		return Quantitys.create(term.getPlannedQtyPerUnit(), uomId);
 	}
 
+	/**
+	 * For the given <code>term</code> and its <code>C_Flatrate_Transition</code> record, this method returns the term's start date minus the period specified by <code>TermOfNoticeDuration</code> and
+	 * <code>TermOfNoticeUnit</code>.
+	 */
+	private static Timestamp getGetExtentionDateOfNewTerm(@NonNull final I_C_Flatrate_Term term)
+	{
+		final Timestamp startDateOfTerm = term.getStartDate();
+
+		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
+		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
+		final String termOfNoticeUnit = transition.getTermOfNoticeUnit();
+		final int termOfNotice = transition.getTermOfNotice();
+
+		final Timestamp minimumDateToStart;
+		if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE.equals(termOfNoticeUnit))
+		{
+			minimumDateToStart = TimeUtil.addMonths(startDateOfTerm, termOfNotice * -1);
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_WocheN.equals(termOfNoticeUnit))
+		{
+			minimumDateToStart = TimeUtil.addWeeks(startDateOfTerm, termOfNotice * -1);
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_TagE.equals(termOfNoticeUnit))
+		{
+			minimumDateToStart = TimeUtil.addDays(startDateOfTerm, termOfNotice * -1);
+		}
+		else
+		{
+			Check.assume(false, "TermOfNoticeDuration " + transition.getTermOfNoticeUnit() + " doesn't exist");
+			minimumDateToStart = null; // code won't be reached
+		}
+
+		return minimumDateToStart;
+	}
 }

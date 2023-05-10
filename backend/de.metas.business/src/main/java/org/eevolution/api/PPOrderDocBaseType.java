@@ -28,6 +28,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 {
@@ -50,10 +51,14 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 
 	public static PPOrderDocBaseType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
+	@NonNull
+	public static Optional<PPOrderDocBaseType> optionalOfNullable(@Nullable final String code) {return Optional.ofNullable(ofNullableCode(code));}
+
 	public static PPOrderDocBaseType ofDocBaseType(@NonNull final DocBaseType docBaseType) {return ofCode(docBaseType.getCode());}
 
 	public DocBaseType toDocBaseType() {return docBaseType;}
 
+	@Override
 	public String getCode() {return docBaseType.getCode();}
 
 	public boolean isManufacturingOrder() {return MANUFACTURING_ORDER.equals(this);}

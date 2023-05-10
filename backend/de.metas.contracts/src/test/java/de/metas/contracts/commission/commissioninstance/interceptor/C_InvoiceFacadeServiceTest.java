@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.interceptor;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.GLCategoryId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.business.TestInvoice;
@@ -39,6 +40,8 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -108,6 +111,7 @@ class C_InvoiceFacadeServiceTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		final HierarchyCommissionConfigFactory hierarchyCommissionConfigFactory =
 				new HierarchyCommissionConfigFactory(new CommissionConfigStagingDataService(), new CommissionProductService());
@@ -171,10 +175,11 @@ class C_InvoiceFacadeServiceTest
 
 		creditMemoDocTypeId = Services.get(IDocTypeDAO.class)
 				.createDocType(DocTypeCreateRequest.builder()
-									   .ctx(Env.getCtx())
-									   .name("creditmemo")
-									   .docBaseType(DocBaseType.ARCreditMemo)
-									   .build());
+						.ctx(Env.getCtx())
+						.name("creditmemo")
+						.docBaseType(DocBaseType.ARCreditMemo)
+						.glCategoryId(GLCategoryId.ofRepoId(123))
+						.build());
 
 		HierarchyCommissionConfigFactoryTest.flatrateConditionsBuilder()
 				.name("Default for `Missing commission contract`")
@@ -211,9 +216,9 @@ class C_InvoiceFacadeServiceTest
 				.currencyId(currencyId)
 				.soTrx(SOTrx.SALES)
 				.testInvoiceLine(TestInvoiceLine.builder()
-										 .productId(salesProductId)
-										 .uomId(UomId.ofRepoId(commissionUOMRecord.getC_UOM_ID()))
-										 .build())
+						.productId(salesProductId)
+						.uomId(UomId.ofRepoId(commissionUOMRecord.getC_UOM_ID()))
+						.build())
 				.build()
 				.createInvoiceRecord();
 		final I_C_Invoice invoiceRecord = testInvoice.getInvoiceRecord();
@@ -229,11 +234,11 @@ class C_InvoiceFacadeServiceTest
 		assertThat(commissionShare)
 				.hasSize(1)
 				.extracting(I_C_Commission_Share.COLUMNNAME_C_Commission_Instance_ID,
-							I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
-							I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
+						I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
+						I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
 				.contains(tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
-								commissionProductId.getRepoId(),
-								salesRepPartnerId.getRepoId()));
+						commissionProductId.getRepoId(),
+						salesRepPartnerId.getRepoId()));
 
 		return testInvoice;
 	}
@@ -276,15 +281,15 @@ class C_InvoiceFacadeServiceTest
 		assertThat(commissionShares)
 				.hasSize(2)
 				.extracting(I_C_Commission_Share.COLUMNNAME_C_Commission_Instance_ID,
-							I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
-							I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
+						I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
+						I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
 				.contains(
 						tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
-							  commissionProductId.getRepoId(),
-							  salesRepPartnerId.getRepoId()),
+								commissionProductId.getRepoId(),
+								salesRepPartnerId.getRepoId()),
 						tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
-							  commissionProduct2Id.getRepoId(),
-							  salesRepPartnerId.getRepoId()));
+								commissionProduct2Id.getRepoId(),
+								salesRepPartnerId.getRepoId()));
 	}
 
 	private void assertInstanceOK(
@@ -294,14 +299,14 @@ class C_InvoiceFacadeServiceTest
 		assertThat(commissionInstances)
 				.hasSize(1)
 				.extracting(COLUMNNAME_C_Invoice_ID,
-							COLUMNNAME_C_InvoiceLine_ID,
-							COLUMNNAME_Bill_BPartner_ID,
-							COLUMNNAME_M_Product_Order_ID,
-							COLUMNNAME_CommissionTrigger_Type)
+						COLUMNNAME_C_InvoiceLine_ID,
+						COLUMNNAME_Bill_BPartner_ID,
+						COLUMNNAME_M_Product_Order_ID,
+						COLUMNNAME_CommissionTrigger_Type)
 				.contains(tuple(testInvoice.getRepoId(),
-								testInvoice.getLineRepoId(0),
-								customerId.getRepoId(),
-								salesProductId.getRepoId(),
-								X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_CustomerCreditmemo));
+						testInvoice.getLineRepoId(0),
+						customerId.getRepoId(),
+						salesProductId.getRepoId(),
+						X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_CustomerCreditmemo));
 	}
 }

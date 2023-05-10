@@ -915,7 +915,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				continue;
 			}
 
-			final int deleteCount = DB.executeUpdateEx("DELETE FROM " + accessTableName + " WHERE AD_Role_ID=" + roleId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+			final int deleteCount = DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM " + accessTableName + " WHERE AD_Role_ID=" + roleId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 			logger.info("deleteAccessRecords({}): deleted {} rows from {}", roleId, deleteCount, accessTableName);
 		}
 

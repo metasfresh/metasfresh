@@ -58,8 +58,8 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission),
 	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee),
 	CALL_ORDER(TYPE_CONDITIONS_CallOrder),
-	INTERIM_INVOICE(TYPE_CONDITIONS_InterimInvoice)
-	;
+
+	INTERIM_INVOICE(TYPE_CONDITIONS_InterimInvoice);
 
 	@Getter
 	private final String code;

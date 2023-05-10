@@ -58,8 +58,8 @@ public class PP_Product_BOM_DocHandler implements DocumentHandler
 	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
 		final I_PP_Product_BOM productBom = extractProductBom(docFields);
-
-		return InstantAndOrgId.ofTimestamp(productBom.getDateDoc(), OrgId.ofRepoId(productBom.getAD_Org_ID()));
+		final OrgId orgId = OrgId.ofRepoId(productBom.getAD_Org_ID());
+		return InstantAndOrgId.ofTimestamp(productBom.getDateDoc(), orgId);
 	}
 
 	@Override

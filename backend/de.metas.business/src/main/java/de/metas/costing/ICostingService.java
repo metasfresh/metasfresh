@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import de.metas.i18n.ExplainedOptional;
 import lombok.NonNull;
 
 import java.util.Optional;
@@ -28,9 +29,15 @@ import java.util.Optional;
 
 public interface ICostingService
 {
+	CostElement getCostElementById(@NonNull CostElementId costElementId);
+
 	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
 
+	ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
+
 	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
+
+	ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(CostDetailReverseRequest request);
 
 	MoveCostsResult moveCosts(MoveCostsRequest request);
 

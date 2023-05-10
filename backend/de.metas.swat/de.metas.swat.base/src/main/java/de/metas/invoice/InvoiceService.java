@@ -34,15 +34,16 @@ import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
@@ -64,11 +65,12 @@ import static org.compiere.util.Env.getCtx;
 @Service
 public class InvoiceService
 {
-	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
+	private final static Logger logger = LogManager.getLogger(InvoiceService.class);
 
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final AsyncBatchService asyncBatchService;
 
@@ -82,10 +84,10 @@ public class InvoiceService
 	{
 		if (shipmentLines.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines lit is empty; -> nothing to do");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines list is empty; -> nothing to do");
 			return ImmutableSet.of();
 		}
-		
+
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
@@ -110,7 +112,7 @@ public class InvoiceService
 
 	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
+		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = trxManager.callInNewTrx(() -> getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds));
 
 		for (final Map.Entry<AsyncBatchId, List<InvoiceCandidateId>> entry : asyncBatchId2InvoiceCandIds.entrySet())
 		{
@@ -166,28 +168,30 @@ public class InvoiceService
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
-		final Supplier<IEnqueueResult> enqueueInvoiceCandidates = () -> {
-			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, Trx.TRXNAME_None);
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, Trx.TRXNAME_None);
 
-			return invoiceCandBL.enqueueForInvoicing()
-					.setContext(getCtx())
-					.setC_Async_Batch(asyncBatch)
-					.setInvoicingParams(createDefaultIInvoicingParams())
-					.setFailIfNothingEnqueued(true)
+		final IInvoiceCandidateEnqueuer enqueuer = invoiceCandBL.enqueueForInvoicing()
+				.setContext(getCtx())
+				.setC_Async_Batch(asyncBatch)
+				.setInvoicingParams(createDefaultIInvoicingParams())
+				.setFailIfNothingEnqueued(true);
+
+		// this creates workpackages
+		enqueuer.prepareSelection(invoiceCandidatesSelectionId);
+
+		final Supplier<IEnqueueResult> enqueueInvoiceCandidates = () -> enqueuer
 					.enqueueSelection(invoiceCandidatesSelectionId);
-		};
 
 		asyncBatchService.executeBatch(enqueueInvoiceCandidates, asyncBatchId);
 	}
 
 	@NonNull
-	private IInvoicingParams createDefaultIInvoicingParams()
+	private InvoicingParams createDefaultIInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-		invoicingParams.setDateInvoiced(LocalDate.now());
-
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.ignoreInvoiceSchedule(false)
+				.supplementMissingPaymentTermIds(true)
+				.dateInvoiced(LocalDate.now())
+				.build();
 	}
 }

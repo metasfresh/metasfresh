@@ -79,7 +79,7 @@ public class DocumentLocation
 		this.bpartnerAddress = bpartnerAddress;
 	}
 
-	public static DocumentLocation ofBPartnerLocationId(@NonNull BPartnerLocationId bpartnerLocationId)
+	public static DocumentLocation ofBPartnerLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return builder()
 				.bpartnerId(bpartnerLocationId.getBpartnerId())
@@ -89,6 +89,18 @@ public class DocumentLocation
 				.bpartnerAddress(null)
 				.build();
 	}
+
+	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
+	{
+		return builder()
+				.bpartnerId(bPartnerLocationAndCaptureId.getBpartnerId())
+				.bpartnerLocationId(bPartnerLocationAndCaptureId.getBpartnerLocationId())
+				.contactId(null)
+				.locationId(bPartnerLocationAndCaptureId.getLocationCaptureId())
+				.bpartnerAddress(null)
+				.build();
+	}
+
 
 	public DocumentLocation withLocationId(@Nullable final LocationId locationId)
 	{
@@ -116,5 +128,12 @@ public class DocumentLocation
 			throw new AdempiereException("Cannot convert " + this + " to " + BPartnerLocationAndCaptureId.class.getSimpleName() + " because bpartnerLocationId is null");
 		}
 		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationId);
+	}
+
+	public DocumentLocation withContactId(@Nullable final BPartnerContactId contactId)
+	{
+		return !Objects.equals(this.contactId, contactId)
+				? toBuilder().contactId(contactId).build()
+				: this;
 	}
 }

@@ -179,15 +179,6 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 	}	//	addDescription
 
 	/**
-	 * 	Get Name of ConfirmType
-	 *	@return confirm type
-	 */
-	public String getConfirmTypeName ()
-	{
-		return MRefList.getListName (getCtx(), CONFIRMTYPE_AD_Reference_ID, getConfirmType());
-	}	//	getConfirmTypeName
-
-	/**
 	 * 	String Representation
 	 *	@return info
 	 */
@@ -507,6 +498,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			}
 			//
 			MInOutLine splitLine = new MInOutLine (split);
+			splitLine.setC_Order_ID(oldLine.getC_Order_ID());
 			splitLine.setC_OrderLine_ID(oldLine.getC_OrderLine_ID());
 			splitLine.setC_UOM_ID(oldLine.getC_UOM_ID());
 			splitLine.setDescription(oldLine.getDescription());

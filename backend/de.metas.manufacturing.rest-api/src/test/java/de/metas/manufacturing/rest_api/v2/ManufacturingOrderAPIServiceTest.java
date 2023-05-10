@@ -38,9 +38,9 @@ import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.v2.JsonResponseReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.v2.Outcome;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -78,6 +78,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -93,11 +94,11 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -239,6 +240,7 @@ public class ManufacturingOrderAPIServiceTest
 			{
 				order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
 				order.setDateStartSchedule(TimeUtil.asTimestamp(dateOrdered));
+				order.setDatePromised(TimeUtil.asTimestamp(dateOrdered));
 			}
 
 			if (salesOrderLineId != null)
@@ -535,10 +537,46 @@ public class ManufacturingOrderAPIServiceTest
 		}
 	}
 
+	private HUTestHelper huTestHelper;
+
+	@Builder(builderMethodName = "vhu", builderClassName = "VHUBuilder")
+	private HuId createVHU(
+			@NonNull final ProductId productId,
+			@NonNull final String qty,
+			@Nullable final String lotNumber,
+			@Nullable final String bestBeforeDate)
+	{
+		final I_C_UOM uom = productBL.getStockUOM(productId);
+
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setHUStatus(X_M_HU.HUSTATUS_Active);
+		huTestHelper.load(TestHelperLoadRequest.builder()
+				.producer(producer)
+				.cuProductId(productId)
+				.loadCuQty(new BigDecimal(qty))
+				.loadCuUOM(uom)
+				.build());
+
+		final I_M_HU vhu = producer.getSingleCreatedHU().get();
+
+		if (lotNumber != null
+				|| bestBeforeDate != null)
+		{
+			final IMutableHUContext huContext = huTestHelper.getHUContext();
+			final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory()
+					.getAttributeStorage(vhu);
+			huAttributes.setSaveOnChange(true);
+
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, LocalDate.parse(bestBeforeDate));
+		}
+
+		return HuId.ofRepoId(vhu.getM_HU_ID());
+	}
+
 	@Nested
 	public class report
 	{
-		private HUTestHelper huTestHelper;
 		private I_C_UOM uomEach;
 		private LocatorId locatorId;
 		private ResourceId plantId;
@@ -563,7 +601,7 @@ public class ManufacturingOrderAPIServiceTest
 		{
 			final I_S_Resource plant = newInstance(I_S_Resource.class);
 			plant.setIsManufacturingResource(true);
-			plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
+			plant.setManufacturingResourceType(ManufacturingResourceType.Plant.getCode());
 			plant.setValue(name);
 			plant.setName(name);
 			saveRecord(plant);
@@ -576,41 +614,6 @@ public class ManufacturingOrderAPIServiceTest
 			docType.setName(docBaseType);
 			docType.setDocBaseType(docBaseType);
 			saveRecord(docType);
-		}
-
-		@Builder(builderMethodName = "vhu", builderClassName = "VHUBuilder")
-		private HuId createVHU(
-				@NonNull final ProductId productId,
-				@NonNull final String qty,
-				@Nullable final String lotNumber,
-				@Nullable final String bestBeforeDate)
-		{
-			final I_C_UOM uom = productBL.getStockUOM(productId);
-
-			final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
-					.setHUStatus(X_M_HU.HUSTATUS_Active);
-			huTestHelper.load(TestHelperLoadRequest.builder()
-					.producer(producer)
-					.cuProductId(productId)
-					.loadCuQty(new BigDecimal(qty))
-					.loadCuUOM(uom)
-					.build());
-
-			final I_M_HU vhu = producer.getSingleCreatedHU().get();
-
-			if (lotNumber != null
-					|| bestBeforeDate != null)
-			{
-				final IMutableHUContext huContext = huTestHelper.getHUContext();
-				final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory()
-						.getAttributeStorage(vhu);
-				huAttributes.setSaveOnChange(true);
-
-				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, LocalDate.parse(bestBeforeDate));
-			}
-
-			return HuId.ofRepoId(vhu.getM_HU_ID());
 		}
 
 		@Test

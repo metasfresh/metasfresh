@@ -76,7 +76,10 @@ public interface IViewDataRepository
 
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, DocumentFilterList filters, boolean applySecurityRestrictions, SqlDocumentFilterConverterContext context);
 
-	ViewRowIdsOrderedSelection removeRowIdsNotMatchingFilters(ViewRowIdsOrderedSelection selection, DocumentFilterList filters, Set<DocumentId> rowIds);
+	ViewRowIdsOrderedSelection addRemoveChangedRows(
+			ViewRowIdsOrderedSelection selection,
+			DocumentFilterList filters, Set<DocumentId> rowIds,
+			AddRemoveChangedRowIdsCollector changesCollector);
 
 	List<Object> retrieveFieldValues(ViewEvaluationCtx viewEvalCtx, String selectionId, String fieldName, int limit);
 }

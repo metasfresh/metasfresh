@@ -3,7 +3,7 @@ package de.metas.costing;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.invoice.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.MatchPOId;
 import de.metas.project.ProjectIssueId;
 import de.metas.util.lang.RepoIdAware;
@@ -165,6 +165,11 @@ public class CostingDocumentRef
 	public boolean isInventoryLine() {return isTableName(TABLE_NAME_M_InventoryLine);}
 
 	public boolean isCostRevaluationLine() {return isTableName(TABLE_NAME_M_CostRevaluationLine);}
+
+	public boolean isMatchInv()
+	{
+		return isTableName(TABLE_NAME_M_MatchInv);
+	}
 
 	public PPCostCollectorId getCostCollectorId()
 	{

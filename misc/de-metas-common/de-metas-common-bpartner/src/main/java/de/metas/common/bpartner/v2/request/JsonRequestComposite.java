@@ -28,9 +28,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,46 +43,50 @@ import javax.annotation.Nullable;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
-@ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")
+@Schema(description = "A BPartner with `n` contacts and `n` locations.\n")
 @Value
 public class JsonRequestComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
-	@ApiModelProperty(position = 10)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	@Setter
 	@NonFinal
 	String orgCode;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	JsonRequestBPartner bpartner;
 
-	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used", //
-			position = 30)
+	@Schema(description = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("locations")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestLocationUpsert locations;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("contacts")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestContactUpsert contacts;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("bankAccounts")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestBankAccountsUpsert bankAccounts;
 
-	@ApiModelProperty(position = 60)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("compositeAlbertaBPartner")
 	JsonCompositeAlbertaBPartner compositeAlbertaBPartner;
 
-	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
-			+ READ_ONLY_SYNC_ADVISE_DOC, position = 70)
+	@Schema
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonProperty("creditLimits")
+	JsonRequestCreditLimitUpsert creditLimits;
+
+	@Schema(description = "The advise is applied to this composite's bpartner or any of its complementary data present\n"
+			+ READ_ONLY_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -95,6 +99,7 @@ public class JsonRequestComposite
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
 			@JsonProperty("bankAccounts") @Nullable final JsonRequestBankAccountsUpsert bankAccounts,
 			@JsonProperty("compositeAlbertaBPartner") @Nullable final JsonCompositeAlbertaBPartner compositeAlbertaBPartner,
+			@JsonProperty("creditLimits") @Nullable final JsonRequestCreditLimitUpsert creditLimits,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;
@@ -103,6 +108,7 @@ public class JsonRequestComposite
 		this.contacts = contacts;
 		this.bankAccounts = bankAccounts;
 		this.compositeAlbertaBPartner = compositeAlbertaBPartner;
+		this.creditLimits = creditLimits;
 		this.syncAdvise = syncAdvise;
 	}
 
@@ -122,5 +128,11 @@ public class JsonRequestComposite
 	public JsonRequestBankAccountsUpsert getBankAccountsNotNull()
 	{
 		return coalesceNotNull(bankAccounts, JsonRequestBankAccountsUpsert.NONE);
+	}
+
+	@JsonIgnore
+	public JsonRequestCreditLimitUpsert getCreditLimitsNotNull()
+	{
+		return coalesceNotNull(creditLimits, JsonRequestCreditLimitUpsert.NONE);
 	}
 }

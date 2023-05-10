@@ -26,11 +26,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.common.rest_api.v1.JsonSOTrx;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,99 +42,90 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 @Value
 public class JsonCreateInvoiceCandidatesRequestItem
 {
-	@ApiModelProperty(position = 10, required = false, //
-			value = "Optional, to specify the `AD_Org_ID` for a new invoice candidate.\n"
+	@Schema(description = "Optional, to specify the `AD_Org_ID` for a new invoice candidate.\n"
 					+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 					+ "or the invoking user needs to belong to an organisation, which is then used.")
 	String orgCode;
 
-	@ApiModelProperty(position = 20, dataType = "java.lang.String", required = true, //
-			value = "Needs to be set if the invoice candidate shall be created.")
+	@Schema(required = true,
+			description = "Needs to be set if the invoice candidate shall be created.")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 30, dataType = "java.lang.String", required = true, //
-			value = "Needs to be set if the invoice candidate shall be created.")
+	@Schema(required = true, //
+			description = "Needs to be set if the invoice candidate shall be created.")
 	JsonExternalId externalLineId;
 
-	@ApiModelProperty(position = 40, required = false, //
-			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
+	@Schema(description = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	String poReference;
 
-	@ApiModelProperty(position = 50, required = true, //
-			value = BPARTNER_IDENTIFIER_DOC)
+	@Schema(required = true, //
+			description = BPARTNER_IDENTIFIER_DOC)
 	String billPartnerIdentifier;
 
-	@ApiModelProperty(position = 60, required = true, //
-			value = LOCATION_IDENTIFIER_DOC)
+	@Schema(required = true, //
+			description = LOCATION_IDENTIFIER_DOC)
 	String billLocationIdentifier;
 
-	@ApiModelProperty(position = 70, required = false, //
-			value = CONTACT_IDENTIFIER_DOC)
+	@Schema(description = CONTACT_IDENTIFIER_DOC)
 	String billContactIdentifier;
 
-	@ApiModelProperty(position = 80, required = true, //
-			value = PRODUCT_IDENTIFIER_DOC)
+	@Schema(required = true,
+			description = PRODUCT_IDENTIFIER_DOC)
 	String productIdentifier;
 
-	@ApiModelProperty(position = 130, required = false, //
-			value = "Optional, if not specified, then the respective current date is used", example = "2019-11-08")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate dateOrdered;
-
-	@ApiModelProperty(position = 140, required = true)
-	BigDecimal qtyOrdered;
-
-	@ApiModelProperty(position = 150, required = false, //
-			value = "Optional, if not specified, zero is assumed")
-	BigDecimal qtyDelivered;
-
-	@ApiModelProperty(position = 90, required = false, //
-			value = "Unit of measurement for the ordered, delivered and invoiced quantites\n"
+	@Schema(description = "Unit of measurement for the ordered, delivered and invoiced quantites\n"
 					+ "This translates to `C_UOM.X12DE355`.\n"
 					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_Invoice_candidate.C_UOM_ID`.\n"
 					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM")
 	String uomCode;
 
-	@ApiModelProperty(position = 100, required = true, //
-			value = "Specifies if this invoice candidate is about a sales- or purchase-transaction.")
+	@Schema(required = true,
+			description = "Specifies if this invoice candidate is about a sales- or purchase-transaction.")
 	JsonSOTrx soTrx;
 
-	@ApiModelProperty(position = 110, required = false,//
-			value = "Can be set if the invoice's target document type is already known from the external system.\n"
+	@Schema(description = "Can be set if the invoice's target document type is already known from the external system.\n"
 					+ "If specified, the respective doctype needs to be consistent with this instance's `soTrx` value.")
 	JsonDocTypeInfo invoiceDocType;
 
-	@ApiModelProperty(position = 120, required = false)
+	@Schema
 	JsonInvoiceRule invoiceRuleOverride;
 
-	@ApiModelProperty(position = 150, required = false, //
-			value = "Can be set if the invoice's document date is already known from the external system.", example = "2019-11-08")
+	@Schema(description = "Optional, if not specified, then the respective current date is used", example = "2019-11-08")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateOrdered;
+
+	@Schema(required = true)
+	BigDecimal qtyOrdered;
+
+	@Schema(description = "Optional, if not specified, zero is assumed")
+	BigDecimal qtyDelivered;
+
+	@Schema(description = "Can be set if the invoice's document date is already known from the external system.", example = "2019-11-08")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate presetDateInvoiced;
 
-	@ApiModelProperty(position = 160, required = false, //
-			value = "Optional, to override the price-entered (price per unit before discount) as computed by metasfresh's own pricing engine for the respective invoice candidate.\n"
+	@Schema(description = "Optional, to override the price-entered (price per unit before discount) as computed by metasfresh's own pricing engine for the respective invoice candidate.\n"
 					+ "Note that if this is set, then the currency needs to match currency derived by metasfresh's pricing engine.")
 	JsonPrice priceEnteredOverride;
 
-	@ApiModelProperty(position = 170, required = false, //
-			value = "Optional, to override the discount as computed by metasfresh's own pricing engine for the respective invoice candidate")
+	@Schema(description = "Optional, to override the discount as computed by metasfresh's own pricing engine for the respective invoice candidate")
 	BigDecimal discountOverride;
 
-	@ApiModelProperty(position = 180, required = false, //
-			value = "optional invoice line description")
+	@Schema(description = "Optional invoice line description")
 	String lineDescription;
 
-	@ApiModelProperty(position = 190, required = false, //
-			value = "Optional invoice detail items. Will be persisted as `C_Invoice_Detail` records together with the new invoice candidate.")
+	@Schema(description = "Optional invoice line C_Project_ID")
+	JsonMetasfreshId projectId;
+
+	@Schema(description = "Optional invoice detail items. Will be persisted as `C_Invoice_Detail` records together with the new invoice candidate.")
 	List<JSONInvoiceDetailItem> invoiceDetailItems;
 
 	@JsonCreator
@@ -158,6 +150,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("priceEnteredOverride") @Nullable final JsonPrice priceEnteredOverride,
 			@JsonProperty("discountOverride") @Nullable final BigDecimal discountOverride,
 			@JsonProperty("lineDescription") @Nullable final String lineDescription,
+			@JsonProperty("projectId") @Nullable final JsonMetasfreshId projectId,
 			@JsonProperty("invoiceDetailItems") @Nullable @Singular final List<JSONInvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgCode = orgCode;
@@ -179,6 +172,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
 		this.lineDescription = lineDescription;
+		this.projectId = projectId;
 		this.invoiceDetailItems = invoiceDetailItems;
 	}
 }

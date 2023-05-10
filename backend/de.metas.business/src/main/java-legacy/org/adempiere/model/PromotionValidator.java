@@ -78,7 +78,7 @@ public class PromotionValidator implements ModelValidator {
 							order, promotionCode, promotionID);
 					if (M_PromotionPreCondition_ID > 0) {
 						String update = "UPDATE M_PromotionPreCondition SET PromotionCounter = PromotionCounter + 1 WHERE M_PromotionPreCondition_ID = ?";
-						DB.executeUpdate(update, M_PromotionPreCondition_ID, order.get_TrxName());
+						DB.executeUpdateAndSaveErrorOnFail(update, M_PromotionPreCondition_ID, order.get_TrxName());
 					}
 				}
 			}
@@ -97,7 +97,7 @@ public class PromotionValidator implements ModelValidator {
 							order, promotionCode, promotionID);
 					if (M_PromotionPreCondition_ID > 0) {
 						String update = "UPDATE M_PromotionPreCondition SET PromotionCounter = PromotionCounter - 1 WHERE M_PromotionPreCondition_ID = ?";
-						DB.executeUpdate(update, M_PromotionPreCondition_ID, order.get_TrxName());
+						DB.executeUpdateAndSaveErrorOnFail(update, M_PromotionPreCondition_ID, order.get_TrxName());
 					}
 				}
 			}
@@ -180,7 +180,7 @@ public class PromotionValidator implements ModelValidator {
 								order, promotionCode, promotionID);
 						if (M_PromotionPreCondition_ID > 0) {
 							String update = "UPDATE M_PromotionPreCondition SET PromotionCounter = PromotionCounter - 1 WHERE M_PromotionPreCondition_ID = ?";
-							DB.executeUpdate(update, M_PromotionPreCondition_ID, order.get_TrxName());
+							DB.executeUpdateAndSaveErrorOnFail(update, M_PromotionPreCondition_ID, order.get_TrxName());
 						}
 					}
 				}

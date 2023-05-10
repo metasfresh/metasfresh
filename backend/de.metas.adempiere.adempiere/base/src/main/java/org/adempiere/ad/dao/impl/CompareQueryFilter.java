@@ -22,20 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryFilterModifier;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.compiere.Adempiere;
-import org.compiere.util.TimeUtil;
-
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -43,6 +29,19 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryFilterModifier;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 @EqualsAndHashCode(doNotUseGetters = true, exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -107,7 +106,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	}
 
-	public CompareQueryFilter(final String columnName, final Operator operator, final Object value)
+	public CompareQueryFilter(final String columnName, final Operator operator, @Nullable final Object value)
 	{
 		this(columnName, operator, value, NullQueryFilterModifier.instance);
 	}
@@ -209,12 +208,12 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	protected final Object getModelValue(T model, final Object operand)
+	@Nullable
+	protected final Object getModelValue(final T model, final Object operand)
 	{
 		if (operand instanceof ModelColumnNameValue<?>)
 		{
-			@SuppressWarnings("unchecked")
-			final ModelColumnNameValue<T> modelValue = (ModelColumnNameValue<T>)operand;
+			@SuppressWarnings("unchecked") final ModelColumnNameValue<T> modelValue = (ModelColumnNameValue<T>)operand;
 
 			return modelValue.getValue(model);
 		}
@@ -224,7 +223,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	private static int compareValues(final Object value1, final Object value2)
+	private static int compareValues(@Nullable final Object value1, @Nullable final Object value2)
 	{
 		if (Objects.equals(value1, value2))
 		{
@@ -252,8 +251,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final Object value2Norm = normalizeValue(value2);
 		try
 		{
-			@SuppressWarnings("unchecked")
-			final Comparable<Object> value1Cmp = (Comparable<Object>)value1Norm;
+			@SuppressWarnings("unchecked") final Comparable<Object> value1Cmp = (Comparable<Object>)value1Norm;
 			return value1Cmp.compareTo(value2Norm);
 		}
 		catch (final Exception ex)
@@ -286,7 +284,16 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
+			assertValueIsSQLConvertibleIfJUnitMode(value);
 			return value;
+		}
+	}
+
+	private static void assertValueIsSQLConvertibleIfJUnitMode(@Nullable final Object value)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			DB.TO_SQL(value); // expect to throw exception if not convertible
 		}
 	}
 

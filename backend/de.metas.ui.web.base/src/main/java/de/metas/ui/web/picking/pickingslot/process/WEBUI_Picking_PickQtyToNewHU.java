@@ -11,8 +11,10 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.process.IProcessDefaultParameter;
@@ -34,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
@@ -67,24 +70,24 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
  */
 
 /**
- *
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WEBUI_Picking_PickQtyToNewHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
 
-	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	protected static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	protected I_M_HU_PI_Item_Product huPIItemProduct;
 
-	private static final String PARAM_QTY_CU = "QtyCU";
+	protected static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	protected BigDecimal qtyCU;
 
@@ -119,7 +122,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 
 		if (getSelectedRowIds().isMoreThanOneDocumentId()
-	        ||  getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId() )
+				|| getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId())
 		{
 			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNotSingleSelection());
 		}
@@ -148,12 +151,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 			throw new AdempiereException("@QtyCU@ > 0");
 		}
 
-		final HuId packToHuId = createNewHuId();
-		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
-
-		pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);
-
-		printPickingLabel(packToHuId);
+		pickQtyToNewHU(qtyToPack);
 
 		invalidatePackablesView(); // left side view
 		invalidatePickingSlotsView(); // right side view
@@ -161,15 +159,24 @@ public class WEBUI_Picking_PickQtyToNewHU
 		return MSG_OK;
 	}
 
-	protected void printPickingLabel(@NonNull final HuId huId)
+	protected void pickQtyToNewHU(@NonNull final Quantity qtyToPack)
 	{
-		final HUReportService huReportService = HUReportService.get();
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		final HuId packToHuId = createNewHuId();
+		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
 
-		final I_M_HU hu = handlingUnitsRepo.getById(huId);
-		final HUToReportWrapper huToReport = HUToReportWrapper.of(hu);
-		final boolean onlyIfAutoPrintIsEnabled = true;
-		huReportService.printPickingLabel(huToReport, onlyIfAutoPrintIsEnabled);
+		pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);
+
+		printPickingLabelIfAutoPrint(packToHuId);
+	}
+
+	protected final void printPickingLabelIfAutoPrint(@NonNull final HuId huId)
+	{
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.Picking)
+				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
+				.onlyIfAutoPrint(true)
+				.failOnMissingLabelConfig(false)
+				.build());
 	}
 
 	@NonNull
@@ -185,10 +192,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 	}
 
 	/**
-	 *
 	 * @return a list of PI item products that match the selected shipment schedule's product and partner, sorted by name.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
 	private LookupValuesList getM_HU_PI_Item_Products()
 	{
 		final Properties ctx = getCtx();
@@ -230,29 +236,10 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 	}
 
-	private final LocatorId getPickingSlotLocatorId(final PickingSlotRow pickingSlotRow)
-	{
-		if (pickingSlotRow.getPickingSlotLocatorId() != null)
-		{
-			return pickingSlotRow.getPickingSlotLocatorId();
-		}
-
-		final WarehouseId pickingSlotWarehouseId = pickingSlotRow.getPickingSlotWarehouseId();
-		if (pickingSlotWarehouseId == null)
-		{
-			throw new AdempiereException("Picking slot with M_PickingSlot_ID=" + pickingSlotRow.getPickingSlotId() + " has no warehouse configured");
-		}
-		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(pickingSlotWarehouseId);
-	}
-
 	/**
 	 * Creates a new M_HU within the processe's interited trx.
-	 *
-	 * @param itemProduct
-	 * @param locatorId
-	 * @return
 	 */
-	private static final I_M_HU createTU(
+	private static I_M_HU createTU(
 			@NonNull final I_M_HU_PI_Item_Product itemProduct,
 			@NonNull final LocatorId locatorId)
 	{

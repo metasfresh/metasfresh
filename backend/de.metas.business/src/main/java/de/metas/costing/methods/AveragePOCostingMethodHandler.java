@@ -1,5 +1,7 @@
 package de.metas.costing.methods;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -13,24 +15,29 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
-import de.metas.inout.IInOutDAO;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.MatchInvId;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.costs.OrderCostService;
+import de.metas.order.costs.inout.InOutCost;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -57,13 +64,19 @@ import java.util.Optional;
 @Component
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	private final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService;
+	private final OrderCostService orderCostService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
-	public AveragePOCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
+	public AveragePOCostingMethodHandler(
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final OrderCostService orderCostService)
 	{
 		super(utils);
+		this.matchInvoiceService = matchInvoiceService;
+		this.orderCostService = orderCostService;
 	}
 
 	@Override
@@ -79,20 +92,83 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	private CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final Quantity qty = request.getQty();
-		final UomId qtyUOMId = qty.getUomId();
-
-		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
-		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
-				.map(price -> utils.convertToUOM(price, qtyUOMId))
-				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request))
-				.transform(CostAmount::ofProductPrice);
-		final CostAmount amt = costPrice.multiply(qty);
-		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
-
+		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
 		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
+
+		return utils.createCostDetailRecordNoCostsChanged(
+				request.withAmount(amtConv),
+				CostDetailPreviousAmounts.of(currentCost));
+	}
+
+	private CostAmount getReceiptAmount(
+			@NonNull final MatchInv matchInv,
+			@NonNull final Quantity receiptQty,
+			@NonNull final CostElement costElement,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
+
+		final MatchInvType type = matchInv.getType();
+		if (type.isMaterial())
+		{
+			Check.assume(costElement.isMaterialElement(), "Cost Element shall be material: {}", costElement);
+
+			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
+					.map(orderLineBL::getOrderLineById)
+					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+
+			return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+		}
+		else if (type.isCost())
+		{
+			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
+			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
+
+			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, precision);
+
+			return utils.convertToAcctSchemaCurrency(
+					CostAmount.ofMoney(receiptAmount),
+					() -> currencyConversionContext,
+					acctSchemaId);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
+		}
+	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		final InOutLineId receipLineId = request.getDocumentRef().getId(InOutLineId.class);
+		final I_M_InOutLine receiptLine = inoutBL.getLineByIdInTrx(receipLineId);
+		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
+		final CostAmount amtConv;
+		if (orderLine != null)
+		{
+			final InOutId receiptId = InOutId.ofRepoId(receiptLine.getM_InOut_ID());
+			final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
+			amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
+		}
+		else
+		{
+			final CostAmount currentCostPrice = currentCost.getCostPrice().toCostAmount();
+			final CostAmount amt = currentCostPrice.multiply(request.getQty());
+			// NOTE: expect conversion to do nothing because the current cost price shall already be in accounting currency
+			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
+		}
 
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
@@ -100,24 +176,19 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(final CostDetailCreateRequest request)
 	{
-		final Quantity qty = request.getQty();
-		final UomId qtyUOMId = qty.getUomId();
-
-		final InOutLineId receiptInOutLineId = request.getDocumentRef().getId(InOutLineId.class);
-		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
-				.map(price -> utils.convertToUOM(price, qtyUOMId))
-				.map(CostAmount::ofProductPrice)
-				.orElseGet(() -> utils.getCurrentCostPrice(request).toCostAmount());
-		final CostAmount amt = costPrice.multiply(qty);
-		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
-
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
+		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
 				CostDetailPreviousAmounts.of(currentCost));
+
+		utils.saveCurrentCost(currentCost);
+
+		return result;
 	}
 
 	@Override
@@ -147,7 +218,6 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			final CostAmount requestAmt = request.getAmt();
 
 			if (request.getDocumentRef().isInventoryLine())
 			{
@@ -173,6 +243,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			else
 			{
+				final CostAmount requestAmt = request.getAmt();
 				if (requestAmt.isZero() && !request.isReversal())
 				{
 					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
@@ -293,13 +364,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return MoveCostsResult.builder()
 				.outboundCosts(AggregatedCostAmount.builder()
-									   .costSegment(outboundSegmentAndElement.toCostSegment())
-									   .amount(costElement, outboundResult.getAmt())
-									   .build())
+						.costSegment(outboundSegmentAndElement.toCostSegment())
+						.amount(costElement, outboundResult.getAmt())
+						.build())
 				.inboundCosts(AggregatedCostAmount.builder()
-									  .costSegment(inboundSegmentAndElement.toCostSegment())
-									  .amount(costElement, inboundResult.getAmt())
-									  .build())
+						.costSegment(inboundSegmentAndElement.toCostSegment())
+						.amount(costElement, inboundResult.getAmt())
+						.build())
 				.build();
 	}
 
@@ -321,20 +392,28 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		utils.saveCurrentCost(currentCosts);
 	}
 
-	private Optional<ProductPrice> getPOCostPriceForMatchInv(@NonNull final MatchInvId matchInvId)
+	@NonNull
+	private CostAmount getCostAmountInAcctCurrency(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final Quantity qty,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CurrencyConversionContext currencyConversionContext)
 	{
-		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
-		return Optional.of(matchInv)
-				.map(I_M_MatchInv::getC_InvoiceLine)
-				.map(I_C_InvoiceLine::getC_OrderLine)
-				.map(orderLineBL::getCostPrice);
+		final CostAmount amt = getCostAmountInSourceCurrency(orderLine, qty);
+
+		return utils.convertToAcctSchemaCurrency(
+				amt,
+				() -> currencyConversionContext,
+				acctSchemaId);
 	}
 
-	private Optional<ProductPrice> getPOCostPriceForReceiptInOutLine(final InOutLineId receiptInOutLineId)
+	@NonNull
+	private CostAmount getCostAmountInSourceCurrency(@NonNull final I_C_OrderLine orderLine, @NonNull final Quantity qty)
 	{
-		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(receiptInOutLineId);
-		return Optional.of(receiptLine)
-				.map(I_M_InOutLine::getC_OrderLine)
-				.map(orderLineBL::getCostPrice);
+		final ProductPrice costPriceConv = utils.convertToUOM(
+				orderLineBL.getCostPrice(orderLine),
+				qty.getUomId());
+
+		return CostAmount.ofProductPrice(costPriceConv).multiply(qty);
 	}
 }

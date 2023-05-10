@@ -100,7 +100,28 @@ public interface I_M_HU_Attribute
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Merkmal.
+	 * Set Unique.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUnique (boolean IsUnique);
+
+	/**
+	 * Get Unique.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUnique();
+
+	ModelColumn<I_M_HU_Attribute, Object> COLUMN_IsUnique = new ModelColumn<>(I_M_HU_Attribute.class, "IsUnique", null);
+	String COLUMNNAME_IsUnique = "IsUnique";
+
+	/**
+	 * Set Attribute.
 	 * Produkt-Merkmal
 	 *
 	 * <br>Type: TableDir
@@ -110,7 +131,7 @@ public interface I_M_HU_Attribute
 	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
-	 * Get Merkmal.
+	 * Get Attribute.
 	 * Produkt-Merkmal
 	 *
 	 * <br>Type: TableDir
@@ -168,7 +189,7 @@ public interface I_M_HU_Attribute
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Handling Units Packing Instructions Attribute.
+	 * Set Packing Instruction.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -177,7 +198,7 @@ public interface I_M_HU_Attribute
 	void setM_HU_PI_Attribute_ID (int M_HU_PI_Attribute_ID);
 
 	/**
-	 * Get Handling Units Packing Instructions Attribute.
+	 * Get Packing Instruction.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false

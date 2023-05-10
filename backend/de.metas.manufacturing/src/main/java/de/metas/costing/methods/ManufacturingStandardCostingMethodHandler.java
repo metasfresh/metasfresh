@@ -176,6 +176,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(true)
@@ -209,6 +210,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -231,6 +233,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -481,5 +484,4 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	{
 		return standardCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
-
 }

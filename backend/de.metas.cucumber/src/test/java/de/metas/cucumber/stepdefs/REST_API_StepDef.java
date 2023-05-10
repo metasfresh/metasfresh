@@ -75,6 +75,7 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(statusCode))
 				.authToken(userAuthToken)
 				.payload(payload)
+				.additionalHeaders(testContext.getHttpHeaders())
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -173,6 +174,27 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
+	@When("a {string} request is sent to metasfresh REST-API with endpointPath and payload from context and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_endpointPath_and_request_from_context_responds_with_code_for_payload(
+			@NonNull final String verb,
+			@NonNull final String statusCode) throws IOException
+	{
+		final String endpointPath = testContext.getEndpointPath();
+		final String payload = testContext.getRequestPayload();
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.additionalHeaders(testContext.getHttpHeaders())
+				.payload(payload)
+				.authToken(userAuthToken)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
 	@When("a {string} request with the below payload and headers from context is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers_and_below_payload(
 			@NonNull final String verb,
@@ -189,27 +211,6 @@ public class REST_API_StepDef
 				.authToken(userAuthToken)
 				.additionalHeaders(testContext.getHttpHeaders())
 				.payload(payload)
-				.build();
-
-		apiResponse = RESTUtil.performHTTPRequest(request);
-		testContext.setApiResponse(apiResponse);
-	}
-
-	@When("a {string} request is sent to metasfresh REST-API with endpointPath and payload from context and fulfills with {string} status code")
-	public void metasfresh_rest_api_endpoint_receives_endpointPath_and_request_from_context_responds_with_code_for_payload(
-			@NonNull final String verb,
-			@NonNull final String statusCode) throws IOException
-	{
-		final String endpointPath = testContext.getEndpointPath();
-		final String payload = testContext.getRequestPayload();
-
-		final APIRequest request = APIRequest.builder()
-				.endpointPath(endpointPath)
-				.verb(verb)
-				.statusCode(Integer.parseInt(statusCode))
-				.additionalHeaders(testContext.getHttpHeaders())
-				.payload(payload)
-				.authToken(userAuthToken)
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);

@@ -22,20 +22,18 @@
 
 package de.metas.inoutcandidate.invalidation;
 
-import java.util.Collection;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.inout.ShipmentScheduleId;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.IQuery;
-
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.IQuery;
+
+import java.util.Collection;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 {

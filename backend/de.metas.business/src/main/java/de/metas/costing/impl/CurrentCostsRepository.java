@@ -21,6 +21,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -204,7 +205,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
@@ -231,7 +232,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
@@ -300,7 +301,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		currentCost.setId(CurrentCostId.ofRepoId(costRecord.getM_Cost_ID()));
 	}
 
-	private void updateCostRecord(
+	private static void updateCostRecord(
 			final I_M_Cost cost,
 			final CurrentCost from)
 	{
@@ -315,10 +316,10 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		cost.setC_Currency_ID(from.getCurrencyId().getRepoId());
 		cost.setC_UOM_ID(from.getUomId().getRepoId());
 
-		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().getValue());
-		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().getValue());
+		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().toBigDecimal());
+		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().toBigDecimal());
 		cost.setCurrentQty(from.getCurrentQty().toBigDecimal());
-		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
+		cost.setCumulatedAmt(from.getCumulatedAmt().toBigDecimal());
 		cost.setCumulatedQty(from.getCumulatedQty().toBigDecimal());
 	}
 
@@ -344,7 +345,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final OrgId productOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(clientId);
+		final List<CostElement> costElements = costElementRepo.getByClientId(clientId);
 
 		for (final AcctSchema as : acctSchemasRepo.getAllByClient(clientId))
 		{
@@ -410,5 +411,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		updater.accept(costRecord);
 		saveRecord(costRecord);
+	}
+
+	public boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId)
+	{
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_Currency_ID, currencyId)
+				.create()
+				.anyMatch();
 	}
 }

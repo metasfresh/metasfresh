@@ -1327,7 +1327,7 @@ public class TimeUtil
 		}
 		else
 		{
-			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId,SystemTime.zoneId());
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
 			return Timestamp.from(asInstant(obj, zoneIdNonNull));
 		}
 	}
@@ -1382,7 +1382,13 @@ public class TimeUtil
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
-		return instant != null ? Timestamp.from(instant) : null;
+		return instant != null ? asTimestampNotNull(instant) : null;
+	}
+
+	@NonNull
+	public static Timestamp asTimestampNotNull(@NonNull final Instant instant)
+	{
+		return Timestamp.from(instant);
 	}
 
 	/**
@@ -1679,6 +1685,13 @@ public class TimeUtil
 	}
 
 	@Deprecated
+	@NonNull
+	public static LocalDate asLocalDateNonNull(@NonNull final Timestamp ts)
+	{
+		return ts.toLocalDateTime().toLocalDate();
+	}
+
+	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final java.util.Date date)
 	{
@@ -1730,7 +1743,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj,zoneId).toLocalDate();
+			return asLocalDateTime(obj, zoneId).toLocalDate();
 		}
 	}
 
@@ -1747,6 +1760,14 @@ public class TimeUtil
 	{
 		return zonedDateTime != null
 				? convertToTimeZone(zonedDateTime, zoneId).toLocalDate()
+				: null;
+	}
+
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		return instant != null
+				? instant.atZone(zoneId).toLocalDate()
 				: null;
 	}
 
@@ -1984,6 +2005,18 @@ public class TimeUtil
 
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toEndOfDayInstant(orgDAO::getTimeZone);
+	}
+
+	@Nullable
+	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
+	{
+		if (localDate == null)
+		{
+			return null;
+		}
+		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
+
+		return asInstant(endOfDay, zoneId);
 	}
 
 	/**
@@ -2257,5 +2290,41 @@ public class TimeUtil
 	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
 	{
 		return timestamp2.getTime() - timestamp1.getTime();
+	}
+
+	@Nullable
+	public static Instant asStartOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
+	{
+		if (localDate == null)
+		{
+			return null;
+		}
+		final LocalDateTime startOfDay = localDate.atTime(LocalTime.MIN);
+
+		return asInstant(startOfDay, zoneId);
+	}
+
+	@Nullable
+	public static Instant asStartOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		if (instant == null)
+		{
+			return null;
+		}
+
+		final LocalDate localDate = asLocalDate(instant, zoneId);
+		return asStartOfDayInstant(localDate, zoneId);
+	}
+
+	@Nullable
+	public static Instant asEndOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		if (instant == null)
+		{
+			return null;
+		}
+
+		final LocalDate localDate = asLocalDate(instant, zoneId);
+		return asEndOfDayInstant(localDate, zoneId);
 	}
 }    // TimeUtil

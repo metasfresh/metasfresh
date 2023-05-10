@@ -22,11 +22,10 @@ import de.metas.util.Services;
 import de.metas.util.Services.IServiceImplProvider;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
-import io.github.jsonSnapshot.SnapshotConfig;
-import io.github.jsonSnapshot.SnapshotMatcher;
-import io.github.jsonSnapshot.SnapshotMatchingStrategy;
-import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -54,6 +53,8 @@ import org.compiere.util.Ini;
 import org.compiere.util.Util;
 
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
@@ -96,30 +97,17 @@ public class AdempiereTestHelper
 
 	public static final String AD_LANGUAGE = "de_DE";
 
-	/**
-	 * This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars
-	 */
-	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
-	{
-		@Override
-		public String getFilePath()
-		{
-			return "src/test/resources/";
-		}
-
-		@Override
-		public SnapshotMatchingStrategy getSnapshotMatchingStrategy()
-		{
-			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
-		}
-	};
-
 	public static AdempiereTestHelper get()
 	{
 		return instance;
 	}
 
 	private boolean staticInitialized = false;
+
+	/**
+	 * One time only cleanup tasks
+	 */
+	private final ArrayList<CleanupTask> cleanupTasks = new ArrayList<>();
 
 	public void staticInit()
 	{
@@ -147,6 +135,9 @@ public class AdempiereTestHelper
 	public void init()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		// First, run previously scheduled cleanup tasks
+		runCleanupTasks();
 
 		// Make sure context is clear before starting a new test
 		final Properties ctx = setupContext();
@@ -319,28 +310,34 @@ public class AdempiereTestHelper
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
-	/**
-	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 * <p>
-	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
-	 *
-	 * @deprecated  Consider using de.metas.test.SnapshotFunctionFactory
-	 */
-	@Deprecated
-	public static Function<Object, String> createSnapshotJsonFunction()
+	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
 	{
-		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		final ObjectWriter writerWithDefaultPrettyPrinter = jsonObjectMapper.writerWithDefaultPrettyPrinter();
-		return object -> {
-			try
-			{
-				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
-			}
-			catch (final JsonProcessingException e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
-		};
+		final CleanupTask task = new CleanupTask(name, runnable);
+		cleanupTasks.add(task);
+		log("onCleanup", "Scheduled task: " + task.getName());
+	}
+
+	private void runCleanupTasks()
+	{
+		for (final Iterator<CleanupTask> it = cleanupTasks.iterator(); it.hasNext(); )
+		{
+			final CleanupTask task = it.next();
+
+			task.run();
+			log("runCleanupTasks", "Executed task: " + task.getName());
+
+			it.remove();
+		}
+	}
+
+	@AllArgsConstructor
+	@ToString(of = "name")
+	private static class CleanupTask
+	{
+		@Getter @NonNull private final String name;
+		@NonNull private final Runnable runnable;
+
+		public void run() {runnable.run();}
 	}
 
 	private void staticInit0()

@@ -4,7 +4,7 @@
   "private": true,
   "license": "GPL 2",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.4",
+    "@fortawesome/fontawesome-free": "^6.2.0",
     "@redux-offline/redux-offline": "^2.6.0",
     "@reduxjs/toolkit": "^1.6.1",
     "@stomp/stompjs": "^6.1.2",

@@ -33,6 +33,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
@@ -59,6 +60,7 @@ import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.IProductDAO.ProductQuery.ProductQueryBuilder;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -264,6 +266,8 @@ public class CreateInvoiceCandidatesService
 		{
 			candidate.lineDescription(item.getLineDescription().trim());
 		}
+
+		candidate.projectId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(item.getProjectId())));
 
 		// invoice detail items
 		if (CollectionUtils.isNotEmpty(item.getInvoiceDetailItems()))

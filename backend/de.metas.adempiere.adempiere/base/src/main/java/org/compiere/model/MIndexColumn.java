@@ -26,6 +26,8 @@ package org.compiere.model;
  */
 
 import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
 
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -66,8 +68,7 @@ public class MIndexColumn extends X_AD_Index_Column
 		{
 			return sql;
 		}
-		int AD_Column_ID = getAD_Column_ID();
-		return MColumn.getColumnName(getCtx(), AD_Column_ID);
+		return Services.get(IADTableDAO.class).retrieveColumnName(getAD_Column_ID());
 	}
 
 	@Override
@@ -77,4 +78,5 @@ public class MIndexColumn extends X_AD_Index_Column
 				+ ", AD_Column_ID=" + getAD_Column_ID()
 				+ "]";
 	}
+
 }

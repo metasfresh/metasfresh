@@ -52,7 +52,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	CustomsInvoice(X_C_DocType.DOCBASETYPE_CustomsInvoice),
 	ServiceRepairOrder(X_C_DocType.DOCBASETYPE_ServiceRepairOrder),
 	RemittanceAdvice(X_C_DocType.DOCBASETYPE_RemittanceAdvice),
-	BOMFormula(X_C_DocType.DOCBASETYPE_BOMFormula),
+	BillOfMaterialVersion(X_C_DocType.DOCBASETYPE_BOMFormula),
 	CostRevaluation(X_C_DocType.DOCBASETYPE_CostRevaluation),
 	;
 

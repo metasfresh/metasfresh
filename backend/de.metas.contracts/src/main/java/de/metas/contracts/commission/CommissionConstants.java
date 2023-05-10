@@ -8,9 +8,6 @@ import lombok.experimental.UtilityClass;
 
 import java.time.Duration;
 
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
-
 /*
  * #%L
  * de.metas.contracts

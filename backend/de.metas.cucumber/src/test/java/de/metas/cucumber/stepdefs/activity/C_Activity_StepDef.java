@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.activity;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -34,14 +35,13 @@ import org.compiere.model.I_C_Activity;
 
 import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_Activity_StepDef
 {
-	private final C_Activity_StepDefData activityTable;
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final C_Activity_StepDefData activityTable;
 
 	public C_Activity_StepDef(@NonNull final C_Activity_StepDefData activityTable)
 	{
@@ -49,28 +49,47 @@ public class C_Activity_StepDef
 	}
 
 	@And("metasfresh contains C_Activity:")
-	public void metasfresh_contains_C_Activity(@NonNull final DataTable dataTable)
+	public void add_C_Activity(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_Value);
+
+			final I_C_Activity activity = CoalesceUtil.coalesceSuppliers(
+					() -> queryBL.createQueryBuilder(I_C_Activity.class)
+							.addOnlyActiveRecordsFilter()
+							.addEqualsFilter(I_C_Activity.COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyOrNull(I_C_Activity.class),
+					() -> InterfaceWrapperHelper.newInstance(I_C_Activity.class));
+
+			assertThat(activity).isNotNull();
+
+			final String name = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_Name);
+
+			activity.setName(name);
+			activity.setValue(value);
+
+			InterfaceWrapperHelper.saveRecord(activity);
+
+			final String activityIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_C_Activity_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			activityTable.putOrReplace(activityIdentifier, activity);
+		}
+	}
+
+	@And("validate C_Activity:$")
+	public void retrieve_C_Activity(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String value = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_Value);
 			final String name = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_Name);
 
-			final I_C_Activity activity = CoalesceUtil.coalesceSuppliersNotNull(
-					() -> queryBL.createQueryBuilder(I_C_Activity.class)
-							.addEqualsFilter(I_C_Activity.COLUMNNAME_Name, name)
-							.addEqualsFilter(I_C_Activity.COLUMNNAME_Value, value)
-							.create()
-							.firstOnly(I_C_Activity.class),
-					() -> InterfaceWrapperHelper.newInstance(I_C_Activity.class));
+			final String activityIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_C_Activity_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Activity activity = activityTable.get(activityIdentifier);
 
-			activity.setName(name);
-			activity.setValue(value);
-
-			saveRecord(activity);
-
-			final String activityIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Activity.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
-			activityTable.putOrReplace(activityIdentifier, activity);
+			assertThat(activity.getName()).isEqualTo(name);
+			assertThat(activity.getValue()).isEqualTo(value);
 		}
 	}
 }

@@ -5,13 +5,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
+import de.metas.resource.ResourceGroupId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -115,9 +116,12 @@ public interface IProductDAO extends ISingletonService
 			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
+	@Nullable
+	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
-	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
 
 	@Value
 	class ProductQuery
@@ -192,13 +196,15 @@ public interface IProductDAO extends ISingletonService
 
 	void deleteProductByResourceId(ResourceId resourceId);
 
+	void updateProductByResourceGroupId(@NonNull ResourceGroupId resourceGroupId, @NonNull Consumer<I_M_Product> productUpdater);
+
+	void deleteProductByResourceGroupId(@NonNull ResourceGroupId resourceGroupId);
+
 	I_M_Product createProduct(CreateProductRequest request);
 
 	void updateProduct(UpdateProductRequest request);
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
-
-	int getGuaranteeMonthsInDays(ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

@@ -59,7 +59,7 @@ import static java.math.BigDecimal.ZERO;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class Money
+public class Money implements Comparable<Money>
 {
 	public static Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
 	{
@@ -142,6 +142,11 @@ public class Money
 		return signum() == 0;
 	}
 
+	public boolean isNegative()
+	{
+		return signum() < 0;
+	}
+
 	public Money negate()
 	{
 		if (value.signum() == 0)
@@ -166,6 +171,19 @@ public class Money
 		return Money.zero(currencyId);
 	}
 
+	public Money toZeroIfNegative()
+	{
+		return signum() >= 0 ? this : zero(currencyId);
+	}
+
+	public Money abs() {return withValue(value.abs());}
+
+	public static void assertSameCurrency(final Money... moneys)
+	{
+		getCommonCurrencyIdOfAll(moneys);
+	}
+
+	@NonNull
 	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
 	{
 		return CurrencyId.getCommonCurrencyIdOfAll(Money::getCurrencyId, "Money", moneys);
@@ -241,6 +259,18 @@ public class Money
 				: this;
 	}
 
+	public Money divide(@NonNull final Money divisor, @NonNull final CurrencyPrecision precision)
+	{
+		assertCurrencyIdMatching(divisor);
+		return divide(divisor.value, precision);
+	}
+
+	public Money divide(@NonNull final BigDecimal divisor, @NonNull final CurrencyPrecision precision)
+	{
+		final BigDecimal resultingValue = this.value.divide(divisor, precision.toInt(), precision.getRoundingMode());
+		return of(resultingValue, this.currencyId);
+	}
+
 	public Money min(@NonNull final Money other)
 	{
 		assertCurrencyIdMatching(other);
@@ -261,11 +291,26 @@ public class Money
 		}
 	}
 
-	public boolean isLessThanOrEqualTo(@NonNull final Money other)
+	public void assertCurrencyId(@NonNull final CurrencyId expectedCurrencyId)
+	{
+		if (!Objects.equals(currencyId, expectedCurrencyId))
+		{
+			throw new AdempiereException("Amount has invalid currencyId: " + this + ". Expected: " + expectedCurrencyId);
+		}
+	}
+
+	@Override
+	public int compareTo(@NonNull final Money other)
 	{
 		assertCurrencyIdMatching(other);
-		return this.value.compareTo(other.value) <= 0;
+		return this.value.compareTo(other.value);
 	}
+
+	public boolean isLessThanOrEqualTo(@NonNull final Money other) {return compareTo(other) <= 0;}
+
+	public boolean isGreaterThanOrEqualTo(@NonNull final Money other) {return compareTo(other) >= 0;}
+
+	public boolean isGreaterThan(@NonNull final Money other) {return compareTo(other) > 0;}
 
 	public boolean isEqualByComparingTo(@Nullable final Money other)
 	{
@@ -308,6 +353,21 @@ public class Money
 		return withValue(precision.round(this.value));
 	}
 
+	public Money roundIfNeeded(@NonNull final CurrencyPrecision precision)
+	{
+		return withValue(precision.roundIfNeeded(this.value));
+	}
+
+	public Money round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)
+	{
+		final CurrencyPrecision precision = precisionProvider.apply(currencyId);
+		if (precision == null)
+		{
+			throw new AdempiereException("No precision was returned by " + precisionProvider + " for " + currencyId);
+		}
+		return round(precision);
+	}
+
 	private Money withValue(@NonNull final BigDecimal newValue)
 	{
 		return value.compareTo(newValue) != 0 ? of(newValue, currencyId) : this;
@@ -330,5 +390,13 @@ public class Money
 		}
 
 		return count;
+	}
+
+	public static boolean equals(@Nullable Money money1, @Nullable Money money2) {return Objects.equals(money1, money2);}
+
+	public Percent percentageOf(@NonNull final Money whole)
+	{
+		assertCurrencyIdMatching(whole);
+		return Percent.of(toBigDecimal(), whole.toBigDecimal());
 	}
 }

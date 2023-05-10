@@ -22,6 +22,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -40,7 +41,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 {
 	public final static String SYS_Config_AUTO_INVOICE = "de.metas.contracts.invoicecandidate.ALLOW_AUTO_INVOICE";
-	
+
 	private final Map<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -67,7 +68,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final boolean allowAutoInvoice = sysConfigBL.getBooleanValue(SYS_Config_AUTO_INVOICE, false);
 		return allowAutoInvoice ? CREATE_CANDIDATES_AND_INVOICES : CREATE_CANDIDATES;
 	}
-	
+
 	@Override
 	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object flatrateTermObj)
 	{
@@ -84,7 +85,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		}
 		return CandidatesAutoCreateMode.DONT;
 	}
-	
+
 	/**
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have an invoice candidate referencing them.
 	 */
@@ -145,7 +146,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		return false;
 	}
 
-	@NonNull
+	@Nullable
 	private List<I_C_Invoice_Candidate> createCandidatesForTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (HandlerTools.isCancelledContract(term))

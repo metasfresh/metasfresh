@@ -1,6 +1,6 @@
 package de.metas.inout.api.impl;
 
-import de.metas.calendar.CalendarId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceConfigDAO;
 import de.metas.inout.api.MaterialBalanceConfig;

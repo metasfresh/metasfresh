@@ -1,30 +1,27 @@
 package de.metas.attachments;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.ZoneId;
-
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import de.metas.CreatedUpdatedInfo;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.X_AD_AttachmentEntry;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.ZoneId;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

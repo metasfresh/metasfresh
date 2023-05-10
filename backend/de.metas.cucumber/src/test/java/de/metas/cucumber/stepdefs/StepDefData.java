@@ -28,7 +28,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.codehaus.commons.nullanalysis.NotNull;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
 
@@ -142,8 +141,8 @@ public abstract class StepDefData<T>
 	 * @param productRecord the item to store.
 	 *                      In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
 	 */
-	@NotNull
-	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
+	@NonNull
+	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NonNull T productRecord)
 	{
 		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()) && clazz != null)
 		{

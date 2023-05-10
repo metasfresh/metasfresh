@@ -6,6 +6,8 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.money.CurrencyConversionTypeId;
@@ -15,11 +17,13 @@ import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_GL_Journal;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 
 /*
  * #%L
@@ -46,12 +50,14 @@ import java.time.Instant;
 @Callout(I_GL_Journal.class)
 public class GL_Journal
 {
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	@CalloutMethod(columnNames = I_GL_Journal.COLUMNNAME_C_DocType_ID)
 	public void onC_DocType_ID(final I_GL_Journal glJournal)
 	{
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(glJournal.getC_DocType())
+				.setNewDocType(getDocType(glJournal).orElse(null))
 				.setOldDocumentNo(glJournal.getDocumentNo())
 				.setDocumentModel(glJournal)
 				.buildOrNull();
@@ -59,6 +65,12 @@ public class GL_Journal
 		{
 			glJournal.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
+	}
+
+	private Optional<I_C_DocType> getDocType(final I_GL_Journal glJournal)
+	{
+		return DocTypeId.optionalOfRepoId(glJournal.getC_DocType_ID())
+				.map(docTypeBL::getById);
 	}
 
 	@CalloutMethod(columnNames = I_GL_Journal.COLUMNNAME_DateDoc)

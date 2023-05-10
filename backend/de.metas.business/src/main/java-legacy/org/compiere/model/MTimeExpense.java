@@ -224,7 +224,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		String sql = "UPDATE S_TimeExpenseLine SET Processed='"
 			+ (processed ? "Y" : "N")
 			+ "' WHERE S_TimeExpense_ID=" + getS_TimeExpense_ID();
-		int noLine = DB.executeUpdate(sql, get_TrxName());
+		int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed

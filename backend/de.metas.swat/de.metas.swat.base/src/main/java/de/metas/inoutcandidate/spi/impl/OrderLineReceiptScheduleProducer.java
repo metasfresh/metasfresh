@@ -6,11 +6,6 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import com.google.common.base.MoreObjects;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -25,6 +20,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -45,14 +41,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 
 /*
  * #%L
@@ -101,7 +96,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		createOrReceiptScheduleFromOrderLine(orderLine, createReceiptScheduleIfNotExists);
 	}
 
-	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(final I_C_OrderLine line, final boolean createReceiptScheduleIfNotExists)
+	@Nullable
+	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(
+			@NonNull final I_C_OrderLine line,
+			final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
@@ -128,7 +126,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		receiptSchedule.setAD_Org_ID(line.getAD_Org_ID());
 		receiptSchedule.setIsActive(true); // make sure it's active
-
+		receiptSchedule.setM_SectionCode_ID(line.getM_SectionCode_ID());
 		//
 		// Source Document Line link
 		{
@@ -165,8 +163,11 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// BPartner & Location
 		receiptSchedule.setC_BPartner_ID(line.getC_BPartner_ID());
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
+
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
+
+		receiptSchedule.setC_Project_ID(line.getC_Project_ID()); // C_OrderLine.C_Project_ID is set from order via model interceptor
 
 		//
 		// Delivery rule, Priority rule
@@ -404,7 +405,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			return;
 		}
 		receiptSchedule.setIsActive(false);
-		InterfaceWrapperHelper.delete(receiptSchedule);
+		deleteRecord(receiptSchedule);
 	}
 
 	/**

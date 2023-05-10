@@ -6,6 +6,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /*
@@ -39,6 +40,7 @@ public class AdElementId implements RepoIdAware
 		return new AdElementId(repoId);
 	}
 
+	@Nullable
 	public static AdElementId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AdElementId(repoId) : null;

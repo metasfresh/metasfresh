@@ -10,12 +10,12 @@ package de.metas.acct.callout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package de.metas.acct.callout;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.gljournal.IGLJournalBL;
 import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.common.util.time.SystemTime;
@@ -60,6 +61,17 @@ public class GL_JournalLine
 	private static final boolean ACCTSIGN_Credit = false;
 
 	private final TaxAccountableCallout taxAccountableCallout = new TaxAccountableCallout();
+	private final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
+
+	@CalloutMethod(columnNames = { I_GL_JournalLine.COLUMNNAME_DateAcct})
+	public void assertDateAcctInPeriod(final I_GL_JournalLine glJournalLine)
+	{
+		if(glJournalLine.getDateAcct() != null)
+		{
+			glJournalBL.assertSamePeriod(glJournalLine.getGL_Journal(), glJournalLine);
+		}
+	}
+
 
 	@CalloutMethod(columnNames = {
 			I_GL_JournalLine.COLUMNNAME_DateAcct,
@@ -148,10 +160,10 @@ public class GL_JournalLine
 
 	/**
 	 * Copy AmtSourceDr/Cr to AmtSourceCr/Dr based on which is the source column.
-	 * <p>
+	 *<p>
 	 * If the given GL Journal Line has "Split accounting transaction" enabled this method will do nothing
 	 * because in that case the amounts does not have to be synchronized.
-	 * 
+	 *
 	 * @param fromAmtSourceColumnName source column from where we shall copy the amount. It can be:
 	 *            <ul>
 	 *            <li>{@link I_GL_JournalLine#COLUMNNAME_AmtSourceDr} to copy from AmtSourceDr to AmtSourceCr

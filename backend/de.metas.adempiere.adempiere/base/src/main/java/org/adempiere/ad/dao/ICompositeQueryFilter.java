@@ -40,7 +40,6 @@ public interface ICompositeQueryFilter<T>
 
 	/**
 	 * Set default behavior in case this composite is empty.
-	 *
 	 */
 	ICompositeQueryFilter<T> setDefaultAccept(boolean defaultAccept);
 
@@ -90,13 +89,11 @@ public interface ICompositeQueryFilter<T>
 
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by OR.
-	 *
 	 */
 	ICompositeQueryFilter<T> setJoinOr();
 
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by AND.
-	 *
 	 */
 	ICompositeQueryFilter<T> setJoinAnd();
 
@@ -154,7 +151,6 @@ public interface ICompositeQueryFilter<T>
 
 	/**
 	 * Gets an query filter which behaves like {@link #getSqlFilters()} list.
-	 *
 	 */
 	ISqlQueryFilter asPartialSqlQueryFilter();
 

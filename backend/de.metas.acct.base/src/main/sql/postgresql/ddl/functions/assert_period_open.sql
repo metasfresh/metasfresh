@@ -16,7 +16,6 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".assert_period_open(
 AS
 $BODY$
 DECLARE
-    v_C_Calendar_ID        numeric;
     v_C_Period_ID          numeric;
     v_C_AcctSchema_ID      numeric;
     v_acctSchema           c_acctschema%rowtype;
@@ -27,44 +26,12 @@ DECLARE
 BEGIN
     -- RAISE NOTICE 'assert_period_open: checking for p_DateAcct=%, p_DocBaseType=%, p_AD_Client_ID=%, p_AD_Org_ID=%', p_DateAcct, p_DocBaseType, p_AD_Client_ID, p_AD_Org_ID;
 
-
-    --
-    -- Find the C_Calendar_ID
-    --
-    IF (p_AD_Org_ID IS NOT NULL OR p_AD_Org_ID > 0) THEN
-        SELECT oi.c_calendar_id
-        INTO v_C_Calendar_ID
-        FROM ad_orginfo oi
-        WHERE oi.ad_org_id = p_AD_Org_ID;
-    END IF;
-
-    IF (v_C_Calendar_ID IS NULL OR v_C_Calendar_ID <= 0) THEN
-        SELECT ci.c_calendar_id
-        INTO v_C_Calendar_ID
-        FROM ad_clientinfo ci
-        WHERE ci.ad_client_id = p_AD_Client_ID;
-    END IF;
-    IF (v_C_Calendar_ID IS NULL OR v_C_Calendar_ID <= 0) THEN
-        RAISE EXCEPTION 'No calendar found for AD_Org_ID=%, AD_Client_ID=%', p_AD_Org_ID, p_AD_Client_ID;
-    END IF;
-
     --
     -- Find C_Period_ID
     --
-    SELECT p.c_period_id
-    INTO v_C_Period_ID
-    FROM c_year y
-             INNER JOIN c_period p ON p.c_year_id = y.c_year_id
-    WHERE y.c_calendar_id = v_C_Calendar_ID
-      AND p.periodtype = 'S'
-      AND p.ad_client_id = p_AD_Client_ID
-      AND p.startdate::date <= p_DateAcct::date
-      AND p.enddate::date >= p_DateAcct::date
-    ORDER BY p.startdate
-    -- limit 1 -- shall not be needed
-    ;
+    v_C_Period_ID := getC_Period_ID_by_Date(p_DateAcct, p_AD_Client_ID, p_AD_Org_ID);
     IF (v_C_Period_ID IS NULL OR v_C_Period_ID <= 0) THEN
-        RAISE EXCEPTION 'No standard C_Period_ID found for p_DateAcct=%, C_Calendar_ID=%, AD_Client_ID=%', p_DateAcct, v_C_Calendar_ID, p_AD_Client_ID;
+        RAISE EXCEPTION 'No standard C_Period_ID found for p_DateAcct=%, AD_Client_ID=%', p_DateAcct, p_AD_Client_ID;
     END IF;
 
     --

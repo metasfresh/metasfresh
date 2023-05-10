@@ -8,17 +8,16 @@
 
 package at.erpel.schemas._1p0.documents;
 
-import at.erpel.schemas._1p0.documents.ext.DeliveryDetailsExtensionType;
-
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import at.erpel.schemas._1p0.documents.ext.DeliveryDetailsExtensionType;
 
 
 /**

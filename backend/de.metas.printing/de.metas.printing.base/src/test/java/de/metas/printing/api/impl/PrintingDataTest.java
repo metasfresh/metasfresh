@@ -44,7 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class PrintingDataTest
@@ -54,16 +54,16 @@ class PrintingDataTest
 	@BeforeEach
 	final void beforeEach(TestInfo testInfo)
 	{
-		AdempiereTestHelper.get().init(); // this also sets Adempiere.isUnitTestMode() to true, which we need when setting up the BLs below
+		AdempiereTestHelper.get().init();
+		
+		helper = new Helper(testInfo);
+		helper.setup(); // this also sets Adempiere.isUnitTestMode() to true, which we need when setting up the BLs below
 
-    final PrintPackageBL printPackageBL = new PrintPackageBL(
+		final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
 						new HardwarePrinterRepository(),
 		 				new ArchiveFileNameService()));
 		Services.registerService(IPrintPackageBL.class, printPackageBL);
-
-		helper = new Helper(testInfo);
-		helper.setup();
 	}
 
 	@Test

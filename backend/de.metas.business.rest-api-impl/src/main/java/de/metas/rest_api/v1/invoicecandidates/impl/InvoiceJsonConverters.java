@@ -23,7 +23,7 @@
 package de.metas.rest_api.v1.invoicecandidates.impl;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.v1.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.v1.request.JsonInvoiceCandidateReference;
@@ -41,14 +41,13 @@ final class InvoiceJsonConverters
 {
 	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		final JsonEnqueueForInvoicingResponse invoiceCandidateResult = JsonEnqueueForInvoicingResponse.builder()
+		return JsonEnqueueForInvoicingResponse.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return invoiceCandidateResult;
 	}
 
 	public static List<ExternalHeaderIdWithExternalLineIds> fromJson(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
@@ -65,16 +64,17 @@ final class InvoiceJsonConverters
 		return headerAndLineIds;
 	}
 
-	public static PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
+	public static InvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setDateAcct(request.getDateAcct());
-		invoicingParams.setDateInvoiced(request.getDateInvoiced());
-		invoicingParams.setIgnoreInvoiceSchedule(request.getIgnoreInvoiceSchedule());
-		invoicingParams.setPOReference(request.getPoReference());
-		invoicingParams.setSupplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds());
-		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.dateAcct(request.getDateAcct())
+				.dateInvoiced(request.getDateInvoiced())
+				.ignoreInvoiceSchedule(request.getIgnoreInvoiceSchedule())
+				.poReference(request.getPoReference())
+				.supplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds())
+				.updateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice())
+				.completeInvoices(request.getCompleteInvoices())
+				.build();
 	}
 
 }

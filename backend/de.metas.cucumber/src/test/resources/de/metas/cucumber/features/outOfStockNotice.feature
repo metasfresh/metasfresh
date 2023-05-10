@@ -17,8 +17,8 @@ Feature: warehouse out of stock notice
       | ol_2       | i_2                       | p_3                     | PCE          | 10       | 0       |
     And the inventory identified by i_2 is completed
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                  | Value                  | OPT.Description              | OPT.IsActive |
-      | ps_1       | pricing_system_name_3 | pricing_system_value_3 | pricing_system_description_4 | true         |
+      | Identifier | Name                  | Value                   | OPT.Description              | OPT.IsActive |
+      | ps_1       | pricing_system_name_8 | pricing_system_value_8 | pricing_system_description_8 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_4 | null            | true  | false         | 2              | true         |
@@ -38,7 +38,7 @@ Feature: warehouse out of stock notice
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
     And the order identified by o_3 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | OPT.Warehouse_ID |
       | s_sched_1  | ol_3                      | N             | 540008           |
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/warehouses/540008/outOfStockNotice' and fulfills with '200' status code

@@ -69,8 +69,6 @@ class DeliveredQtysLoaderTest
 	private I_C_InvoiceCandidate_InOutLine icIol1;
 	private I_C_InvoiceCandidate_InOutLine icIol2;
 
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 	@BeforeEach
 	void beforeEach()
 	{

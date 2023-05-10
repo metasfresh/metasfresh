@@ -39,7 +39,6 @@ import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
@@ -50,10 +49,12 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.CountryId;
+import de.metas.material.MovementType;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -490,10 +491,10 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-			final int priceEntered,
-			final int qty,
-			final boolean isManual,
-			final boolean isSOTrx)
+															  final int priceEntered,
+															  final int qty,
+															  final boolean isManual,
+															  final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -510,11 +511,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-			final int priceEntered,
-			final int qty,
-			final int discount,
-			final boolean isManual,
-			final boolean isSOTrx)
+															  final int priceEntered,
+															  final int qty,
+															  final int discount,
+															  final boolean isManual,
+															  final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -526,9 +527,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.build();
 	}
 
-	public final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo)
+	public final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo, MovementType movementType)
 	{
 		final I_M_InOut inOut = inOut(documentNo, I_M_InOut.class);
+		inOut.setMovementType(movementType.getCode());
+		inOut.setIsSOTrx(movementType.isOutboundTransaction());
 		inOut.setC_BPartner_ID(bpartnerId);
 		inOut.setC_Order_ID(orderId);
 
@@ -554,6 +557,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		{
 			inOutLine.setM_Product_ID(assumeGreaterThanZero(icRecord.getM_Product_ID(), "icRecord.getM_Product_ID()"));
 			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
+			inOutLine.setC_Order_ID(icRecord.getC_Order_ID());
 			inOutLine.setC_OrderLine_ID(icRecord.getC_OrderLine_ID());
 			inOutLine.setQtyEntered(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
 			inOutLine.setC_UOM_ID(qtysDelivered.getUOMQtyNotNull().getUomId().getRepoId());
@@ -738,11 +742,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		return InvoiceCandidateExpectation.newExpectation();
 	}
 
-	protected PlainInvoicingParams createDefaultInvoicingParams()
+	protected InvoicingParams createDefaultInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(true);
-		invoicingParams.setConsolidateApprovedICs(false);
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.ignoreInvoiceSchedule(true)
+				.consolidateApprovedICs(false)
+				.build();
 	}
 }
