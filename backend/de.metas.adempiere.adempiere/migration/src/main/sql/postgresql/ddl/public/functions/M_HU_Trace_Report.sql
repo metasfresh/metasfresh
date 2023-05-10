@@ -74,7 +74,32 @@ UNION
           LEFT JOIN M_InOut io ON t.m_inout_id = io.m_inout_id
           LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
           LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
- WHERE t.hutracetype IN ('MATERIAL_RECEIPT', 'MATERIAL_SHIPMENT')
+ WHERE t.hutracetype IN ('MATERIAL_RECEIPT')
+   AND EXISTS (SELECT 1
+               FROM T_Selection s
+               WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
+                 AND s.T_Selection_ID = t.m_hu_trace_id))
+
+
+UNION ALL
+(SELECT t.LotNumber              AS LotNumber,
+        t.hutracetype            AS HUTraceType,
+        p.value || '_' || p.name AS Product,
+        io.documentno            AS InOut,
+        NULL                     AS PPOrder,
+        NULL                     AS Inventory,
+        io.movementdate          AS DocumentDate,
+
+        -1 * t.qty               AS Qty,
+        u.uomsymbol              AS UOM
+ FROM M_HU_Trace t
+          JOIN M_Product p
+               ON t.m_product_id = p.m_product_id
+          JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
+          LEFT JOIN M_InOut io ON t.m_inout_id = io.m_inout_id
+          LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
+          LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
+ WHERE t.hutracetype IN ('MATERIAL_SHIPMENT')
    AND EXISTS (SELECT 1
                FROM T_Selection s
                WHERE s.AD_PInstance_ID = p_AD_PInstance_ID

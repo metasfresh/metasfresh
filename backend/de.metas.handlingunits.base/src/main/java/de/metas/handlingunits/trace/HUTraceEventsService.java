@@ -155,7 +155,7 @@ public class HUTraceEventsService
 		{
 			builder.type(HUTraceType.PRODUCTION_RECEIPT);
 
-			createAndAddEvents(builder, ImmutableList.of(costCollector));
+			createAndAddEventsForManufacturingIssue(builder, costCollector);
 		}
 	}
 
