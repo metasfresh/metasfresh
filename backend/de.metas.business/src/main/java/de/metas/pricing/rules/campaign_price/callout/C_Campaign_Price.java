@@ -84,6 +84,10 @@ public class C_Campaign_Price
 	private static void updatePricingInfo(final I_C_Campaign_Price record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
 		final IBPartnerDAO bpartnerRepo = Services.get(IBPartnerDAO.class);
 		final CountryId countryId = bpartnerRepo.getDefaultShipToLocationCountryIdOrNull(bpartnerId);
 		if (countryId != null)
