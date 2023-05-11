@@ -1,5 +1,5 @@
 name: cicd
-on: [push]
+on: [push, workflow_dispatch]
 jobs:
 
   init:
@@ -29,11 +29,10 @@ jobs:
         id: git-properties
         env:
           GIT_URL: ${{ github.repositoryUrl }}
-          GIT_REF: ${{ github.event.ref }}
-          GIT_ID: ${{ github.event.head_commit.id }}
-          GIT_MSG: ${{ github.event.head_commit.message }}
+          GIT_REF: ${{ github.ref }}
+          GIT_ID: ${{ github.sha }}
         run: |
-          echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$GIT_MSG" >> $GITHUB_OUTPUT
+          echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$(git show -s --format=%s $GIT_ID)" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
       - name: print-info
