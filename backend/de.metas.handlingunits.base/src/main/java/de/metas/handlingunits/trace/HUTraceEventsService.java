@@ -729,19 +729,19 @@ public class HUTraceEventsService
 			else
 			{
 				builder.topLevelHuId(huId);
-				createTraceForProductionIssueHU(builder, ppOrderId, huRecord);
+				createTraceForPOIssueOrReceiptHU(builder, ppOrderId, huRecord);
 			}
 
 			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
 
 			for (final I_M_HU vhu : vhus)
 			{
-				createTraceForProductionIssueHU(builder, ppOrderId, vhu);
+				createTraceForPOIssueOrReceiptHU(builder, ppOrderId, vhu);
 			}
 		}
 	}
 
-	private void createTraceForProductionIssueHU(final @NonNull HUTraceEventBuilder builder, final @NonNull PPOrderId ppOrderId,
+	private void createTraceForPOIssueOrReceiptHU(final @NonNull HUTraceEventBuilder builder, final @NonNull PPOrderId ppOrderId,
 			@NonNull final I_M_HU hu)
 	{
 		final Optional<I_PP_Order_Qty> ppOrderQty = huPPOrderQtyDAO.retrieveOrderQtyForHu(
