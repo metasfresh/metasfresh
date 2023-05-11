@@ -1,8 +1,7 @@
 package org.adempiere.ad.wrapper;
 
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -10,9 +9,10 @@ import org.compiere.model.PO;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-
 import javax.annotation.Nullable;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -228,6 +228,11 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
 		return POWrapper.setDynAttribute(model, attributeName, value);
+	}
+
+	public <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return POWrapper.computeDynAttributeIfAbsent(model, attributeName, supplier);
 	}
 
 	@Override

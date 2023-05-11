@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.invalidation.segments;
-
 /*
  * #%L
- * de.metas.storage
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +20,20 @@ package de.metas.inoutcandidate.invalidation.segments;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+package de.metas.inoutcandidate.invalidation.segments;
 
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class ShipmentScheduleSegmentBuilder
 {

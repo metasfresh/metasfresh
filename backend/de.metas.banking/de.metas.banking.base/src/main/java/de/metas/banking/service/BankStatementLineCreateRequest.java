@@ -1,19 +1,19 @@
 package de.metas.banking.service;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import de.metas.banking.BankStatementId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -56,6 +56,8 @@ public class BankStatementLineCreateRequest
 	String lineDescription;
 	String memo;
 
+	boolean updateAmountsFromInvoice;
+	
 	@NonNull
 	LocalDate statementLineDate;
 	@NonNull
@@ -76,8 +78,13 @@ public class BankStatementLineCreateRequest
 
 	ChargeId chargeId;
 
+	int debtorOrCreditorId;
+	
 	@Nullable
-	int debitorOrCreditorId;
+	BigDecimal currencyRate;
+	
+	@Nullable 
+	InvoiceId invoiceId;
 
 	@Builder
 	private BankStatementLineCreateRequest(
@@ -103,8 +110,11 @@ public class BankStatementLineCreateRequest
 			@Nullable final Money chargeAmt,
 			@Nullable final Money interestAmt,
 			@Nullable final ChargeId chargeId,
-			final int debitorOrCreditorId,
-			//
+			final int debtorOrCreditorId,
+			@Nullable final BigDecimal currencyRate,
+			@Nullable final InvoiceId invoiceId,
+			@Nullable final Boolean updateAmountsFromInvoice,
+
 			@Nullable final ElectronicFundsTransfer eft)
 	{
 		this.bankStatementId = bankStatementId;
@@ -120,8 +130,8 @@ public class BankStatementLineCreateRequest
 		this.memo = memo;
 		//
 		this.statementLineDate = statementLineDate;
-		this.dateAcct = CoalesceUtil.coalesce(dateAcct, statementLineDate);
-		this.valutaDate = CoalesceUtil.coalesce(valutaDate, statementLineDate);
+		this.dateAcct = CoalesceUtil.coalesceNotNull(dateAcct, statementLineDate);
+		this.valutaDate = CoalesceUtil.coalesceNotNull(valutaDate, statementLineDate);
 		//
 		this.statementAmt = statementAmt;
 		this.trxAmt = trxAmt != null ? trxAmt : statementAmt.toZero();
@@ -129,9 +139,13 @@ public class BankStatementLineCreateRequest
 		this.chargeAmt = chargeAmt != null ? chargeAmt : statementAmt.toZero();
 		this.interestAmt = interestAmt != null ? interestAmt : statementAmt.toZero();
 		this.chargeId = chargeId;
-		this.debitorOrCreditorId = debitorOrCreditorId;
+		this.debtorOrCreditorId = debtorOrCreditorId;
 		Money.getCommonCurrencyIdOfAll(this.statementAmt, this.trxAmt, this.chargeAmt, this.interestAmt);
-		//
+		this.currencyRate = currencyRate;
+		this.invoiceId = invoiceId;
+		
+		this.updateAmountsFromInvoice = CoalesceUtil.coalesceNotNull(updateAmountsFromInvoice, true); // true for backwards compatibility
+		
 		this.eft = eft;
 	}
 

@@ -17,7 +17,6 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.Packageable.PackageableBuilder;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -211,7 +210,7 @@ public class PackagingDAO implements IPackagingDAO
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
-		final PackageableBuilder packageable = Packageable.builder();
+		final Packageable.PackageableBuilder packageable = Packageable.builder();
 		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		packageable.orgId(orgId);
 		packageable.customerId(bpartnerId);

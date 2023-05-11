@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -95,7 +95,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 	public void observeOn(@NonNull final AsyncBatchId id)
 	{
-		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId());
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId()
+																+ " date: " + Instant.now() + " ; "
+																+ " threadId: " + Thread.currentThread().getId());
 
 		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
@@ -155,12 +157,18 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				return;
 			}
 
-			throw AdempiereException.wrapIfNeeded(timeoutException);
+			throw AdempiereException.wrapIfNeeded(timeoutException)
+					.appendParametersToMessage()
+					.setParameter("Date:", Instant.now())
+					.setParameter("ThreadID", Thread.currentThread().getId())
+					.setParameter("AsyncBatchId", id);
 		}
 		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
+					.setParameter("Date:", Instant.now())
+					.setParameter("ThreadID", Thread.currentThread().getId())
 					.setParameter("AsyncBatchId", id);
 		}
 		finally

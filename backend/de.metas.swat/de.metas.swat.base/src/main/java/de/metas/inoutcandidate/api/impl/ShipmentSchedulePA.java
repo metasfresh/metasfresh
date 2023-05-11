@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -6,8 +28,8 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -95,7 +117,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Reservation 1 - look at scheds for which there is a reservation
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM M_HU_Reservation res"
-			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"			
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"
 			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
 			+ "\n                        AND res.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
@@ -631,5 +653,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
 				.create()
 				.mapByRepoIdAware(ShipmentScheduleId::ofRepoId, clazz);
+	}
+
+	@Override
+	public ImmutableSet<OrderId> getOrderIds(@NonNull final IQueryFilter<? extends I_M_ShipmentSchedule> filter)
+	{
+		//noinspection unchecked
+		final ImmutableList<OrderId> orderIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.filter((IQueryFilter<I_M_ShipmentSchedule>)filter)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
+		return ImmutableSet.copyOf(orderIds);
 	}
 }

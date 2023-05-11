@@ -1,6 +1,5 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
@@ -65,5 +64,12 @@ public interface IOrderLineQuickInput
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 	void setC_Flatrate_Conditions_ID(int C_Flatrate_Conditions_ID);
 	int getC_Flatrate_Conditions_ID();
+	//@formatter:on
+
+
+	//@formatter:off
+	String COLUMNNAME_C_VAT_Code_ID = "C_VAT_Code_ID";
+	void setC_VAT_Code_ID(int C_VAT_Code_ID);
+	int getC_VAT_Code_ID();
 	//@formatter:on
 }

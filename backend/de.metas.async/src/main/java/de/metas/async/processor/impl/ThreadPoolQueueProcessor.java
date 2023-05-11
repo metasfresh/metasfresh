@@ -3,7 +3,7 @@ package de.metas.async.processor.impl;
 import com.google.common.base.MoreObjects;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageLogsRepository;
-import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.util.concurrent.BlockingExecutorWrapper;
@@ -27,7 +27,7 @@ public class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 	private final ReentrantLock shutdownLock = new ReentrantLock();
 
 	public ThreadPoolQueueProcessor(
-			final I_C_Queue_Processor config,
+			@NonNull final QueueProcessorDescriptor config,
 			final IWorkPackageQueue queue,
 			final IWorkpackageLogsRepository logsRepository)
 	{

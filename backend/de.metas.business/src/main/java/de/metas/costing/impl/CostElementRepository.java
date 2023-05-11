@@ -1,34 +1,34 @@
 package de.metas.costing.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_M_CostElement;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
+import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_CostElement;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -56,12 +56,14 @@ import lombok.NonNull;
 public class CostElementRepository implements ICostElementRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
-	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements> builder()
+	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements>builder()
 			.tableName(I_M_CostElement.Table_Name)
 			.initialCapacity(1)
 			.build();
+
+	public CostElementRepository(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
 
 	private IndexedCostElements getIndexedCostElements()
 	{
@@ -76,7 +78,7 @@ public class CostElementRepository implements ICostElementRepository
 				.orderBy(I_M_CostElement.COLUMN_M_CostElement_ID)
 				.create()
 				.stream(I_M_CostElement.class)
-				.map(CostElementRepository::toCostElement)
+				.map(CostElementRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 		return new IndexedCostElements(costElements);
 	}
@@ -96,117 +98,110 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
-	public CostElement getOrCreateMaterialCostElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
+	@NonNull
+	public CostElement getOrCreateMaterialCostElement(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
-		final List<CostElement> costElements = getIndexedCostElements()
-				.streamForClientId(clientId)
-				.filter(ce -> ce.getCostingMethod() == costingMethod)
-				.filter(ce -> ce.getCostElementType() == CostElementType.Material)
+		final List<CostElement> materialCostElements = getIndexedCostElements()
+				.streamByClientIdAndCostingMethod(clientId, costingMethod)
+				.filter(CostElement::isMaterialElement)
 				.collect(ImmutableList.toImmutableList());
-		if (costElements.isEmpty())
+		if (materialCostElements.isEmpty())
 		{
-			return createNewDefaultCostingElement(clientId, costingMethod);
+			return createDefaultMaterialCostingElement(clientId, costingMethod);
 		}
-		else if (costElements.size() == 1)
+		else if (materialCostElements.size() == 1)
 		{
-			return costElements.get(0);
+			return materialCostElements.get(0);
 		}
 		else
 		{
-			throw new AdempiereException("Only one cost element was expected but got " + costElements);
+			throw new AdempiereException("Only one cost element was expected but got " + materialCostElements);
 		}
 	}
 
-	private CostElement createNewDefaultCostingElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
+	private CostElement createDefaultMaterialCostingElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
-		final I_M_CostElement newCostElementPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
-		InterfaceWrapperHelper.setValue(newCostElementPO, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
-		newCostElementPO.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-		String name = adReferenceDAO.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
-		if (Check.isEmpty(name, true))
+		String name = adReferenceService.retrieveListNameTranslatableString(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode())
+				.translate(Language.getBaseAD_Language());
+		if (Check.isBlank(name))
 		{
 			name = costingMethod.name();
 		}
-		newCostElementPO.setName(name);
-		newCostElementPO.setCostElementType(CostElementType.Material.getCode());
-		newCostElementPO.setCostingMethod(costingMethod.getCode());
-		newCostElementPO.setIsCalculated(false);
-		InterfaceWrapperHelper.save(newCostElementPO);
+
+		final I_M_CostElement record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		InterfaceWrapperHelper.setValue(record, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setName(name);
+		record.setCostElementType(CostElementType.Material.getCode());
+		record.setCostingMethod(costingMethod.getCode());
+		record.setIsCalculated(false);
+		InterfaceWrapperHelper.save(record);
 		// assume cache will be automatically reset after save/trx commit
 
 		//
-		return toCostElement(newCostElementPO);
+		return fromRecord(record);
 	}
 
-	private static CostElement toCostElement(final I_M_CostElement costElement)
+	private static CostElement fromRecord(@NonNull final I_M_CostElement record)
 	{
 		return CostElement.builder()
-				.id(CostElementId.ofRepoId(costElement.getM_CostElement_ID()))
-				.name(costElement.getName())
-				.costingMethod(CostingMethod.ofNullableCode(costElement.getCostingMethod()))
-				.costElementType(CostElementType.ofCode(costElement.getCostElementType()))
-				.allowUserChangingCurrentCosts(!costElement.isCalculated())
-				.clientId(ClientId.ofRepoId(costElement.getAD_Client_ID()))
+				.id(CostElementId.ofRepoId(record.getM_CostElement_ID()))
+				.name(record.getName())
+				.costingMethod(CostingMethod.ofCode(record.getCostingMethod()))
+				.costElementType(CostElementType.ofCode(record.getCostElementType()))
+				.allowUserChangingCurrentCosts(!record.isCalculated())
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.build();
 	}
 
 	@Override
-	public List<CostElement> getCostElementsWithCostingMethods(final ClientId clientId)
+	public List<CostElement> getByTypes(@NonNull final ClientId clientId, @NonNull final CostElementType... types)
 	{
+		if (types.length == 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final List<CostElementType> typesList = Arrays.asList(types);
+
 		return getIndexedCostElements()
-				.streamForClientId(clientId)
-				.filter(ce -> ce.getCostingMethod() != null)
+				.streamByClientId(clientId)
+				.filter(costElement -> typesList.contains(costElement.getCostElementType()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
-	public List<CostElement> getMaterialCostingMethods(final ClientId clientId)
+	public List<CostElement> getByCostingMethod(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
 		return getIndexedCostElements()
-				.streamForClientId(clientId)
-				.filter(ce -> ce.isMaterialCostingMethod())
+				.streamByClientIdAndCostingMethod(clientId, costingMethod)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
-	public List<CostElement> getNonCostingMethods(final ClientId clientId)
+	public List<CostElement> getByClientId(@NonNull final ClientId clientId)
 	{
 		return getIndexedCostElements()
-				.streamForClientId(clientId)
-				.filter(ce -> ce.getCostingMethod() == null)
+				.streamByClientId(clientId)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
-	public List<CostElement> getByCostingMethod(@NonNull final CostingMethod costingMethod)
-	{
-		return streamByCostingMethod(costingMethod)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public Set<CostElementId> getActiveCostElementIds()
+	public Set<CostElementId> getIdsByClientId(@NonNull final ClientId clientId)
 	{
 		return getIndexedCostElements()
-				.stream()
+				.streamByClientId(clientId)
 				.map(CostElement::getId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
-	public Set<CostElementId> getIdsByCostingMethod(@NonNull final CostingMethod costingMethod)
+	public Set<CostElementId> getIdsByCostingMethod(@NonNull ClientId adClientId, @NonNull final CostingMethod costingMethod)
 	{
-		return streamByCostingMethod(costingMethod)
+		return getIndexedCostElements()
+				.streamByClientIdAndCostingMethod(adClientId, costingMethod)
 				.map(CostElement::getId)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	private Stream<CostElement> streamByCostingMethod(@NonNull final CostingMethod costingMethod)
-	{
-		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
-		return getIndexedCostElements()
-				.streamForClientId(clientId)
-				.filter(ce -> ce.getCostingMethod() == costingMethod);
 	}
 
 	private static class IndexedCostElements
@@ -223,9 +218,14 @@ public class CostElementRepository implements ICostElementRepository
 			return Optional.ofNullable(costElementsById.get(id));
 		}
 
-		public Stream<CostElement> streamForClientId(@NonNull final ClientId clientId)
+		public Stream<CostElement> streamByClientId(@NonNull final ClientId clientId)
 		{
 			return stream().filter(ce -> ClientId.equals(ce.getClientId(), clientId));
+		}
+
+		public Stream<CostElement> streamByClientIdAndCostingMethod(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
+		{
+			return streamByClientId(clientId).filter(ce -> costingMethod.equals(ce.getCostingMethod()));
 		}
 
 		public Stream<CostElement> stream()

@@ -25,12 +25,12 @@ package de.metas.async.processor.impl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.jmx.JMXQueueProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.QueueProcessorId;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.async.processor.impl.planner.AsyncProcessorPlanner;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -71,13 +71,12 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 	}
 
 	@Override
-	public void addQueueProcessor(@NonNull final I_C_Queue_Processor processorDef)
+	public void addQueueProcessor(@NonNull final QueueProcessorDescriptor processorDef)
 	{
 		mainLock.lock();
 		try
 		{
-			final int queueProcessorId = processorDef.getC_Queue_Processor_ID();
-			removeQueueProcessor0(queueProcessorId);
+			removeQueueProcessor0(processorDef.getQueueProcessorId());
 
 			final IQueueProcessor processor = createProcessor(processorDef);
 			Check.assumeNotNull(processor, "processor not null"); // shall not happen
@@ -97,7 +96,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 	}
 
 	@Override
-	public void removeQueueProcessor(final int queueProcessorId)
+	public void removeQueueProcessor(@NonNull final QueueProcessorId queueProcessorId)
 	{
 		mainLock.lock();
 		try
@@ -110,9 +109,9 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		}
 	}
 
-	private void removeQueueProcessor0(final int queueProcessorId)
+	private void removeQueueProcessor0(final QueueProcessorId queueProcessorId)
 	{
-		final Optional<IQueueProcessor> queueProcessor = asyncProcessorPlanner.getQueueProcessor(QueueProcessorId.ofRepoId(queueProcessorId));
+		final Optional<IQueueProcessor> queueProcessor = asyncProcessorPlanner.getQueueProcessor(queueProcessorId);
 		if (!queueProcessor.isPresent())
 		{
 			return;
@@ -151,7 +150,6 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			asyncProcessorPlanner.getRegisteredQueueProcessors()
 					.stream()
 					.map(IQueueProcessor::getQueueProcessorId)
-					.map(QueueProcessorId::getRepoId)
 					.forEach(this::removeQueueProcessor0);
 
 			this.asyncProcessorPlanner.shutdown();
@@ -205,7 +203,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		}
 	}
 
-	private IQueueProcessor createProcessor(@NonNull final I_C_Queue_Processor processorDef)
+	private IQueueProcessor createProcessor(@NonNull final QueueProcessorDescriptor processorDef)
 	{
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForPackageProcessing(processorDef);
 		return queueProcessorFactory.createAsynchronousQueueProcessor(processorDef, queue);

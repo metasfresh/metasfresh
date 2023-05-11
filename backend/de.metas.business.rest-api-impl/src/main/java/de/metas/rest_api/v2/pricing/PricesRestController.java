@@ -24,21 +24,27 @@ package de.metas.rest_api.v2.pricing;
 
 import de.metas.Profiles;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
+import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
 
 import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRICE_LIST_IDENTIFIER;
 import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRICE_LIST_VERSION_IDENTIFIER;
@@ -57,12 +63,12 @@ public class PricesRestController
 		this.productPriceRestService = productPriceRestService;
 	}
 
-	@ApiOperation("Create or update price list versions")
+	@Operation(summary = "Create or update price list versions")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully processed the request"),
-			@ApiResponse(code = 401, message = "You are not authorized to consume this resource"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully processed the request"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to consume this resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PutMapping(path = "/priceListVersions", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonResponseUpsert> putPriceListVersions(@RequestBody @NonNull final JsonRequestPriceListVersionUpsert request)
@@ -72,16 +78,16 @@ public class PricesRestController
 		return ResponseEntity.ok(responseUpsert);
 	}
 
-	@ApiOperation("Create or update product price by price list version identifier")
+	@Operation(summary = "Create or update product price by price list version identifier")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully processed the request"),
-			@ApiResponse(code = 401, message = "You are not authorized to consume this resource"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully processed the request"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to consume this resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PutMapping("/priceListVersions/{priceListVersionIdentifier}/productPrices")
 	public ResponseEntity<JsonResponseUpsert> putProductPriceByPriceListVersionIdentifier(
-			@ApiParam(required = true, value = PRICE_LIST_VERSION_IDENTIFIER)
+			@Parameter(required = true, description = PRICE_LIST_VERSION_IDENTIFIER)
 			@PathVariable("priceListVersionIdentifier") //
 			@NonNull final String priceListVersionIdentifier,
 
@@ -92,16 +98,16 @@ public class PricesRestController
 		return ResponseEntity.ok().body(responseUpsert);
 	}
 
-	@ApiOperation("Create or update product price to the latest price list version of the given price list identifier")
+	@Operation(summary = "Create or update product price to the latest price list version of the given price list identifier")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully processed the request"),
-			@ApiResponse(code = 401, message = "You are not authorized to consume this resource"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully processed the request"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to consume this resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PutMapping("/priceList/{priceListIdentifier}/productPrices")
 	public ResponseEntity<JsonResponseUpsert> putProductPriceByPriceListIdentifier(
-			@ApiParam(required = true, value = PRICE_LIST_IDENTIFIER)
+			@Parameter(required = true, description = PRICE_LIST_IDENTIFIER)
 			@PathVariable("priceListIdentifier")
 			@NonNull final String priceListIdentifier,
 
@@ -110,6 +116,32 @@ public class PricesRestController
 		final JsonResponseUpsert responseUpsert = productPriceRestService.upsertProductPricesForPriceList(priceListIdentifier, request);
 
 		return ResponseEntity.ok().body(responseUpsert);
+	}
+
+	@Operation(summary = "Search product prices by a given `JsonProductPriceSearchRequest`")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully processed the request"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to consume this resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
+	})
+	@PostMapping("{orgCode}/product/search")
+	public ResponseEntity<?> productPriceSearch(
+			@PathVariable("orgCode") @Nullable final String orgCode,
+			@RequestBody @NonNull final JsonRequestProductPriceQuery request)
+	{
+		try
+		{
+			final JsonResponseProductPriceQuery result = productPriceRestService.productPriceSearch(request, orgCode);
+
+			return ResponseEntity.ok(result);
+		}
+		catch (final Exception ex)
+		{
+			return ResponseEntity
+					.status(HttpStatus.UNPROCESSABLE_ENTITY)
+					.body(ex.getMessage());
+		}
 	}
 }
 

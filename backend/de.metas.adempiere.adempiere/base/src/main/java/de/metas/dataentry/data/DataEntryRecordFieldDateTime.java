@@ -1,15 +1,14 @@
 package de.metas.dataentry.data;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
 import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L

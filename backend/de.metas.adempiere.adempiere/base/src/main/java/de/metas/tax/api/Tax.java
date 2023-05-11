@@ -38,6 +38,7 @@ import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 
 @Value
@@ -71,13 +72,14 @@ public class Tax
 	@NonNull Integer seqNo;
 
 	@Builder
-	public Tax(final @NonNull TaxId taxId,
-			final @NonNull OrgId orgId,
-			final @NonNull Timestamp validFrom,
-			final @Nullable CountryId countryId,
-			final @Nullable CountryId toCountryId,
-			final @Nullable TypeOfDestCountry typeOfDestCountry,
-			final @NonNull TaxCategoryId taxCategoryId,
+	public Tax(
+			@NonNull final TaxId taxId,
+			@NonNull final OrgId orgId,
+			@NonNull final Timestamp validFrom,
+			@Nullable final CountryId countryId,
+			@Nullable final CountryId toCountryId,
+			@Nullable final TypeOfDestCountry typeOfDestCountry,
+			@NonNull final TaxCategoryId taxCategoryId,
 			@Nullable final Boolean requiresTaxCertificate,
 			final SOPOType sopoType,
 			final boolean isTaxExempt,
@@ -85,15 +87,14 @@ public class Tax
 			@Nullable final Boolean isSmallBusiness,
 			final boolean isWholeTax,
 			final boolean isDocumentLevel,
-			final BigDecimal rate,
-			final BoilerPlateId boilerPlateId,
-			final @NonNull Integer seqNo)
+			@NonNull final BigDecimal rate,
+			@Nullable final BoilerPlateId boilerPlateId,
+			@NonNull final Integer seqNo)
 	{
 		this.taxId = taxId;
 		this.orgId = orgId;
 		this.validFrom = validFrom;
 		this.countryId = countryId;
-
 		this.toCountryId = toCountryId;
 		this.typeOfDestCountry = typeOfDestCountry;
 		this.taxCategoryId = taxCategoryId;
@@ -113,6 +114,8 @@ public class Tax
 	{
 		return C_TAX_ID_NO_TAX_FOUND == taxId.getRepoId();
 	}
+
+	public boolean isZeroTax() {return this.rate.signum() == 0;}
 
 	/**
 	 * Calculate base amount, excluding tax
@@ -138,8 +141,6 @@ public class Tax
 	}
 
 	/**
-	 * Calculate Tax - no rounding
-	 *
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net
 	 * @return tax amount
 	 */
@@ -151,7 +152,7 @@ public class Tax
 			return BigDecimal.ZERO;
 		}
 
-		BigDecimal multiplier = rate.divide(Env.ONEHUNDRED, 12, BigDecimal.ROUND_HALF_UP);
+		BigDecimal multiplier = rate.divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
 
 		final BigDecimal taxAmt;
 		if (isWholeTax)
@@ -167,11 +168,11 @@ public class Tax
 		// $106 - ($106 / (100+6)/100) == $6 == $106 - ($106/1.06)
 		{
 			multiplier = multiplier.add(BigDecimal.ONE);
-			final BigDecimal base = amount.divide(multiplier, 12, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal base = amount.divide(multiplier, 12, RoundingMode.HALF_UP);
 			taxAmt = amount.subtract(base);
 		}
 
-		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, BigDecimal.ROUND_HALF_UP);
+		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, RoundingMode.HALF_UP);
 
 		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}]", amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt);
 

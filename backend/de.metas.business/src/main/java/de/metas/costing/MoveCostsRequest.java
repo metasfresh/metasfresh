@@ -1,14 +1,5 @@
 package de.metas.costing;
 
-import java.time.LocalDate;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -16,6 +7,13 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Objects;
 
 /*
  * #%L
@@ -52,7 +50,7 @@ public class MoveCostsRequest
 	CostElement costElement;
 
 	@NonNull
-	LocalDate date;
+	Instant date;
 
 	@NonNull
 	ProductId productId;
@@ -72,9 +70,9 @@ public class MoveCostsRequest
 	@NonNull
 	CostingDocumentRef inboundDocumentRef;
 
-	public boolean isAllCostElements()
+	public boolean isExplicitCostElement()
 	{
-		return costElement == null;
+		return costElement != null;
 	}
 
 	public CostElementId getCostElementId()

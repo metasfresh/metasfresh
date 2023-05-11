@@ -27,6 +27,8 @@ package de.metas.util.lang;
  * <ul>
  *     <li>static ofCode method</li>
  * </ul>
+ * Note that instances of ReferenceListAwareEnum can be used in query-filters, instead of strings.
+ * metasfresh will unbox them by calling {@link #getCode()}.
  */
 public interface ReferenceListAwareEnum
 {

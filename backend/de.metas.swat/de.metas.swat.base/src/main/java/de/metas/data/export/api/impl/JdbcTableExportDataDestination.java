@@ -141,7 +141,7 @@ public class JdbcTableExportDataDestination implements IExportDataDestination
 		sqlParams.addAll(source.getSqlParams());
 
 		final String trxName = Trx.TRXNAME_None;
-		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
 		logger.info("Inserted {} records into {} from {}", new Object[] { count, tableName, source });
 	}
 

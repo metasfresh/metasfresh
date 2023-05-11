@@ -13,8 +13,8 @@ Feature: Packing material invoice candidates: shipments
       | salesProduct   | salesProduct_S0160_26072022   |
       | packingProduct | packingProduct_S0160_26072022 |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value          |
-      | ps_1       | pricing_system_name | S0160_26072022 |
+      | Identifier | Name                               | Value          |
+      | ps_1       | pricing_system_name_S0160_26072022 | S0160_26072022 |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | SOTrx | IsTaxIncluded | PricePrecision |
       | pl_SO      | ps_1                          | DE                        | EUR                 | price_list_name_SO | true  | false         | 2              |
@@ -58,7 +58,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -109,7 +109,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -166,7 +166,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -222,7 +222,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -290,7 +290,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -361,7 +361,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -432,7 +432,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -515,7 +515,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -601,7 +601,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -649,6 +649,7 @@ Feature: Packing material invoice candidates: shipments
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | IP        |
+    # note that the nexts step *first* waits for the ICs to be updated
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
       | invoiceCand_1                     | o_1                       | ol_1                          | 0                | 0            | salesProduct                |
@@ -687,7 +688,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -781,7 +782,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -867,7 +868,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -953,7 +954,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1036,7 +1037,7 @@ Feature: Packing material invoice candidates: shipments
 
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1121,7 +1122,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1207,7 +1208,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1275,7 +1276,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1346,7 +1347,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1417,7 +1418,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1485,7 +1486,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1556,7 +1557,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:

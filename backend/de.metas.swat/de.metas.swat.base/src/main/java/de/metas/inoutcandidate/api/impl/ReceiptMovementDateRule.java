@@ -22,9 +22,68 @@
 
 package de.metas.inoutcandidate.api.impl;
 
-public enum ReceiptMovementDateRule
+import de.metas.common.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+
+@EqualsAndHashCode
+@ToString
+public final class ReceiptMovementDateRule
 {
-	ORDER_DATE_PROMISED,
-	EXTERNAL_DATE_IF_AVAIL,
-	CURRENT_DATE
+	public static final ReceiptMovementDateRule ORDER_DATE_PROMISED = new ReceiptMovementDateRule(Type.ORDER_DATE_PROMISED, null);
+	public static final ReceiptMovementDateRule EXTERNAL_DATE_IF_AVAIL = new ReceiptMovementDateRule(Type.EXTERNAL_DATE_IF_AVAIL, null);
+	public static final ReceiptMovementDateRule CURRENT_DATE = new ReceiptMovementDateRule(Type.CURRENT_DATE, null);
+
+	public static ReceiptMovementDateRule fixedDate(@NonNull Instant fixedDate) {return new ReceiptMovementDateRule(Type.FIXED_DATE, fixedDate);}
+
+	private enum Type
+	{
+		ORDER_DATE_PROMISED,
+		EXTERNAL_DATE_IF_AVAIL,
+		CURRENT_DATE,
+		FIXED_DATE,
+	}
+
+	@NonNull private final Type type;
+	@Nullable private final Instant fixedDate;
+
+	private ReceiptMovementDateRule(@NonNull final Type type, @Nullable final Instant fixedDate)
+	{
+		this.type = type;
+		this.fixedDate = fixedDate;
+	}
+
+	public interface CaseMapper<T>
+	{
+		T orderDatePromised();
+
+		T externalDateIfAvailable();
+
+		T currentDate();
+
+		T fixedDate(@NonNull Instant fixedDate);
+	}
+
+	public <T> T map(@NonNull final CaseMapper<T> mapper)
+	{
+		switch (type)
+		{
+			case ORDER_DATE_PROMISED:
+				return mapper.orderDatePromised();
+			case EXTERNAL_DATE_IF_AVAIL:
+				return mapper.externalDateIfAvailable();
+			case CURRENT_DATE:
+				return mapper.currentDate();
+			case FIXED_DATE:
+				final Instant fixedDate = Check.assumeNotNull(this.fixedDate, "Fixed date is set");
+				return mapper.fixedDate(fixedDate);
+			default:
+				throw new AdempiereException("Type not handled: " + type);
+		}
+	}
 }

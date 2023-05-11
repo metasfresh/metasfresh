@@ -1,0 +1,52 @@
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimulation_Test.conflictInActualAllocs_changedButStillConflictInSimulation=[
+  {
+    "byIds": {
+      "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))": {
+        "approved": null,
+        "projectResourceIdsPair": {
+          "projectResourceId1": 1,
+          "projectResourceId2": 2
+        },
+        "simulationId": 1,
+        "status": "CONFLICT"
+      }
+    },
+    "simulationId": 1
+  }
+]
+
+
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimulation_Test.conflictInActualAllocs_fixedInSimulation=[
+  {
+    "byIds": {
+      "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))": {
+        "approved": null,
+        "projectResourceIdsPair": {
+          "projectResourceId1": 1,
+          "projectResourceId2": 2
+        },
+        "simulationId": 1,
+        "status": "RESOLVED"
+      }
+    },
+    "simulationId": 1
+  }
+]
+
+
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimulation_Test.okInActualAllocs_conflictInSimulation=[
+  {
+    "byIds": {
+      "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))": {
+        "approved": null,
+        "projectResourceIdsPair": {
+          "projectResourceId1": 1,
+          "projectResourceId2": 2
+        },
+        "simulationId": 1,
+        "status": "CONFLICT"
+      }
+    },
+    "simulationId": 1
+  }
+]

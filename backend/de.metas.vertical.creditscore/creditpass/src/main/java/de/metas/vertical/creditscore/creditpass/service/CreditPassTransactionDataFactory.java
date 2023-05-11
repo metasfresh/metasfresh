@@ -80,6 +80,7 @@ public class CreditPassTransactionDataFactory
 				.bankRoutingCode(optionalBankAccount.map(this::getRoutingNo).orElse(null))
 				.accountNr(optionalBankAccount.map(I_C_BP_BankAccount::getAccountNo).orElse(null))
 				.iban(optionalBankAccount.map(I_C_BP_BankAccount::getIBAN).orElse(null))
+				.swiftCode(optionalBankAccount.map(I_C_BP_BankAccount::getSwiftCode).orElse(null))
 				.creditCardNr(optionalBankAccount.map(I_C_BP_BankAccount::getCreditCardNumber).orElse(null))
 				.creditCardType(optionalBankAccount.map(I_C_BP_BankAccount::getCreditCardType).orElse(null))
 				.companyName(optionalBankAccount.map(I_C_BP_BankAccount::getA_Name).orElse(null))

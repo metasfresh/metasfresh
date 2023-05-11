@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
@@ -173,6 +174,7 @@ public interface IBPartnerDAO extends ISingletonService
 	I_AD_User getContactById(@NonNull BPartnerContactId contactId);
 
 	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
+
 	@Nullable
 	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
 
@@ -270,7 +272,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	CountryId getCountryId(BPartnerLocationId bpLocationId);
+	@NonNull
+	CountryId getCountryId(@NonNull BPartnerLocationId bpLocationId);
 	/**
 	 * Retrieve default/first bill to location.
 	 *
@@ -327,6 +330,11 @@ public interface IBPartnerDAO extends ISingletonService
 	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
 
 	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
+
+
+	List<I_C_BPartner> retrieveBusinessPartners();
+
+	Set<Integer> retrieveForSectionGroupPartner(BPartnerId sectionGroupPartnerId);
 
 	@Value
 	@Builder
@@ -394,4 +402,7 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 
 	BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId);
+
+	@NonNull
+	ImmutableList<I_C_BPartner> getBySAPBpartnerCode(@NonNull String sapBPartnerCode);
 }

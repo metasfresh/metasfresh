@@ -3,6 +3,7 @@ package de.metas.manufacturing.issue.plan;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -14,25 +15,33 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PPOrderIssuePlanCreateCommand
 {
 	//
 	// Services
+	private final PPOrderSourceHUService ppOrderSourceHUService;
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("PPOrderIssuePlanCreateCommand.CannotFullyAllocated");
+	private static final String SYS_CONFIG_CONSIDER_HUs_FROM_THE_WHOLE_WAREHOUSE = "de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand.considerHUsFromTheWholeWarehouse";
 
 	//
 	// Params
@@ -44,10 +53,12 @@ public class PPOrderIssuePlanCreateCommand
 
 	@Builder
 	private PPOrderIssuePlanCreateCommand(
+			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
 			final @NonNull HUReservationService huReservationService,
 			//
 			final @NonNull PPOrderId ppOrderId)
 	{
+		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.ppOrderId = ppOrderId;
 
 		this.allocableHUsMap = AllocableHUsMap.builder()
@@ -61,6 +72,8 @@ public class PPOrderIssuePlanCreateCommand
 
 	public PPOrderIssuePlan execute()
 	{
+		allocableHUsMap.addSourceHUs(ppOrderSourceHUService.getSourceHUIds(ppOrderId));
+
 		final ImmutableList<PPOrderIssuePlanStep> steps = ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.flatMap(this::createSteps)
@@ -85,8 +98,62 @@ public class PPOrderIssuePlanCreateCommand
 		final LocatorId pickFromLocatorId = getPickFromLocatorId(orderBOMLine);
 
 		final Quantity targetQty = ppOrderBOMBL.getQuantities(orderBOMLine).getRemainingQtyToIssue();
-		Quantity allocatedQty = targetQty.toZero();
 		final ArrayList<PPOrderIssuePlanStep> planSteps = new ArrayList<>();
+
+		final Quantity allocatedQty = createAndCollectSteps(orderBOMLineId,
+															productId,
+															targetQty,
+															pickFromLocatorId,
+															planSteps);
+
+		Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
+
+		if (qtyToAllocate.signum() > 0 && shouldConsiderHUsFromTheWholeWarehouse())
+		{
+			final Set<LocatorId> theOtherLocatorsInWarehouse = warehouseDAO.getLocatorIds(pickFromLocatorId.getWarehouseId())
+					.stream()
+					.filter(locId -> !locId.equals(pickFromLocatorId))
+					.collect(Collectors.toSet());
+
+			for (final LocatorId locatorId : theOtherLocatorsInWarehouse)
+			{
+				final Quantity additionalAllocatedQty = createAndCollectSteps(orderBOMLineId,
+																			  productId,
+																			  qtyToAllocate,
+																			  locatorId,
+																			  planSteps);
+
+				qtyToAllocate = qtyToAllocate.subtract(additionalAllocatedQty);
+
+				if (qtyToAllocate.signum() <= 0)
+				{
+					break;
+				}
+			}
+		}
+
+		if (qtyToAllocate.signum() > 0)
+		{
+			throw new AdempiereException(MSG_CannotFullAllocate,
+					productBL.getProductName(productId),
+					warehouseBL.getLocatorNameById(pickFromLocatorId),
+					qtyToAllocate,
+					targetQty)
+					.markAsUserValidationError();
+		}
+
+		return planSteps.stream();
+	}
+
+	@NonNull
+	private Quantity createAndCollectSteps(
+			@NonNull final PPOrderBOMLineId orderBOMLineId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity targetQty,
+			@NonNull final LocatorId pickFromLocatorId,
+			@NonNull final ArrayList<PPOrderIssuePlanStep> planSteps)
+	{
+		Quantity allocatedQty = targetQty.toZero();
 		final AllocableHUsList availableHUs = allocableHUsMap.getAllocableHUs(AllocableHUsGroupingKey.of(productId, pickFromLocatorId));
 		for (final AllocableHU allocableHU : availableHUs)
 		{
@@ -98,13 +165,13 @@ public class PPOrderIssuePlanCreateCommand
 			if (remainingQtyToAllocate.signum() <= 0)
 			{
 				planSteps.add(PPOrderIssuePlanStep.builder()
-						.orderBOMLineId(orderBOMLineId)
-						.productId(productId)
-						.qtyToIssue(targetQty.toZero())
-						.pickFromLocatorId(allocableHU.getLocatorId())
-						.pickFromTopLevelHU(allocableHU.getTopLevelHU())
-						.isAlternative(true)
-						.build());
+									  .orderBOMLineId(orderBOMLineId)
+									  .productId(productId)
+									  .qtyToIssue(targetQty.toZero())
+									  .pickFromLocatorId(allocableHU.getLocatorId())
+									  .pickFromTopLevelHU(allocableHU.getTopLevelHU())
+									  .isAlternative(true)
+									  .build());
 			}
 			else // if (remainingQtyToAllocate.signum() > 0)
 			{
@@ -149,18 +216,12 @@ public class PPOrderIssuePlanCreateCommand
 			}
 		}
 
-		final Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
-		if (qtyToAllocate.signum() != 0)
-		{
-			throw new AdempiereException(MSG_CannotFullAllocate,
-					productBL.getProductName(productId),
-					warehouseBL.getLocatorNameById(pickFromLocatorId),
-					qtyToAllocate,
-					targetQty)
-					.markAsUserValidationError();
-		}
+		return allocatedQty;
+	}
 
-		return planSteps.stream();
+	private boolean shouldConsiderHUsFromTheWholeWarehouse()
+	{
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_CONSIDER_HUs_FROM_THE_WHOLE_WAREHOUSE, false);
 	}
 
 	private static LocatorId getPickFromLocatorId(@NonNull final I_PP_Order_BOMLine orderBOMLine)

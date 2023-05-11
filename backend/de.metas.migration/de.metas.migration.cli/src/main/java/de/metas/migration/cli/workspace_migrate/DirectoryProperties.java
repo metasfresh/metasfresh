@@ -1,16 +1,15 @@
 package de.metas.migration.cli.workspace_migrate;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Collection;
-import java.util.Properties;
-
 import com.google.common.collect.ImmutableSet;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Collection;
+import java.util.Properties;
 
 /*
  * #%L
@@ -36,8 +35,11 @@ import lombok.Value;
 
 @Value
 @Builder
-final class DirectoryProperties
+public class DirectoryProperties
 {
+
+	public static final String PROPERTIES_FILENAME = ".workspace-sql-scripts.properties";
+
 	public static DirectoryProperties ofDirectory(final File directory)
 	{
 		if (!directory.isDirectory())
@@ -45,7 +47,7 @@ final class DirectoryProperties
 			return NONE;
 		}
 
-		final File propertiesFile = new File(directory, ".workspace-sql-scripts.properties");
+		final File propertiesFile = new File(directory, PROPERTIES_FILENAME);
 		if (!propertiesFile.exists())
 		{
 			return NONE;
@@ -68,9 +70,7 @@ final class DirectoryProperties
 
 	public static final DirectoryProperties NONE = DirectoryProperties.builder().build();
 
-	@NonNull
-	@Singular
-	private final ImmutableSet<Label> labels;
+	@NonNull @Singular ImmutableSet<Label> labels;
 
 	public DirectoryProperties mergeFromParent(@NonNull final DirectoryProperties parent)
 	{

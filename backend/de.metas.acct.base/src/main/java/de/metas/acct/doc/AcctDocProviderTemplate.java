@@ -99,7 +99,7 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 				ITrx.TRXNAME_ThreadInherited);
 		if (documentModel == null)
 		{
-			throw new AdempiereException("No ducument found for " + documentRef);
+			throw new AdempiereException("No document found for " + documentRef);
 		}
 		return documentModel;
 	}

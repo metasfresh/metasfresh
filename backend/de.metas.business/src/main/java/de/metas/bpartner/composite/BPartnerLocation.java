@@ -70,6 +70,14 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String HANDOVER_LOCATION = "handoverLocation";
+	public static final String REMIT_TO = "remitTo";
+	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
+	public static final String VAT_TAX_ID = "vatTaxId";
+	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+	public static final String COUNTRY_NAME = "countryName";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -142,10 +150,22 @@ public class BPartnerLocation
 	@Nullable
 	final String setupPlaceNo;
 
-	final boolean remitTo;
-	final boolean handOverLocation;
-	final boolean replicationLookupDefault;
-	final boolean visitorsAddress;
+	@Nullable
+	private String vatTaxId;
+
+	private boolean remitTo;
+	private boolean handOverLocation;
+	private boolean replicationLookupDefault;
+	private boolean visitorsAddress;
+
+	@Nullable
+	private String sapPaymentMethod;
+
+	@Nullable
+	private String sapBPartnerCode;
+
+	@Nullable
+	private String countryName;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -185,10 +205,14 @@ public class BPartnerLocation
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
+			@Nullable final String vatTaxId,
+			@Nullable final String countryName,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
-			@Nullable final Boolean visitorsAddress)
+			@Nullable final Boolean visitorsAddress,
+			@Nullable final String sapPaymentMethod,
+			@Nullable final String sapBPartnerCode)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -228,6 +252,9 @@ public class BPartnerLocation
 		this.email = email;
 
 		this.setupPlaceNo = setupPlaceNo;
+		this.vatTaxId = vatTaxId;
+
+		this.countryName = countryName;
 
 		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 
@@ -236,6 +263,9 @@ public class BPartnerLocation
 		this.remitTo = remitTo != null ? remitTo : false;
 
 		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
+
+		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapBPartnerCode = sapBPartnerCode;
 	}
 
 	public BPartnerLocation deepCopy()
@@ -308,6 +338,7 @@ public class BPartnerLocation
 				.region(getRegion())
 				.district(getDistrict())
 				.countryCode(getCountryCode())
+				.countryName(getCountryName())
 				.build();
 	}
 
@@ -324,6 +355,7 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+		setCountryName(address.getCountryName());
 	}
 
 	/**

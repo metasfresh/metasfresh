@@ -48,6 +48,8 @@ public interface IHUAttributesBL extends ISingletonService
 			@Nullable Object attributeValue,
 			@Nullable String onlyHUStatus);
 
+	void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
+
 	/**
 	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
 	 * <p>
@@ -73,6 +75,8 @@ public interface IHUAttributesBL extends ISingletonService
 	void validateMandatoryShipmentAttributes(HuId huId, ProductId productId);
 
 	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
+
+	void validateMandatoryManufacturingAttributes(@NonNull HuId huId, @NonNull ProductId productId);
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 			@NonNull ProductId productId);

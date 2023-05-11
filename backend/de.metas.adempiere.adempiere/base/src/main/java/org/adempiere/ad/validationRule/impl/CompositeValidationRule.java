@@ -22,10 +22,11 @@ package org.adempiere.ad.validationRule.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
@@ -33,49 +34,79 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.NamePairPredicates;
 import org.compiere.util.ValueNamePair;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Immutable composite validation rule consist of a collection of child validation rules.
  *
  * @author tsa
- *
  */
 public final class CompositeValidationRule implements IValidationRule
 {
-	public static final IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
+	public static IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
 	{
-		return builder()
-				.add(rule1)
-				.add(rule2)
-				.build();
+		return builder().add(rule1).add(rule2).build();
 	}
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	private final List<IValidationRule> rules;
-	private final boolean immutable;
-	private final IStringExpression prefilterWhereClause;
-	private final INamePairPredicate postQueryPredicates;
-	private final ImmutableSet<String> dependsOnTableNames;
+	private final ImmutableList<IValidationRule> rules;
+	@Getter private final boolean immutable;
+	@Getter @NonNull private final IStringExpression prefilterWhereClause;
+	@Getter @NonNull private final INamePairPredicate postQueryPredicates;
+	@Getter @NonNull private final ImmutableSet<String> dependsOnTableNames;
 
-	private Set<String> _allParameters; // lazy
+	@Getter @NonNull private final ImmutableSet<String> allParameters;
 
 	private CompositeValidationRule(final Builder builder)
 	{
-		super();
-		rules = ImmutableList.copyOf(builder.rules); // at this point, we assume that we have more than one rule
-		immutable = builder.immutable;
-		prefilterWhereClause = builder.buildPrefilterWhereClause();
-		postQueryPredicates = builder.postQueryPredicates.build();
-		dependsOnTableNames = rules.stream()
+		this.rules = ImmutableList.copyOf(builder.rules); // at this point, we assume that we have more than one rule
+
+		this.immutable = this.rules.stream().allMatch(IValidationRule::isImmutable);
+		this.prefilterWhereClause = buildPrefilterWhereClause(this.rules);
+		this.postQueryPredicates = buildPostQueryPredicates(this.rules);
+		this.dependsOnTableNames = this.rules.stream()
 				.flatMap(rule -> rule.getDependsOnTableNames().stream())
 				.collect(ImmutableSet.toImmutableSet());
+		this.allParameters = ImmutableSet.<String>builder()
+				.addAll(this.prefilterWhereClause.getParameterNames())
+				.addAll(this.postQueryPredicates.getParameters(null))
+				.build();
+	}
+
+	private static IStringExpression buildPrefilterWhereClause(@NonNull final ImmutableList<IValidationRule> rules)
+	{
+		final CompositeStringExpression.Builder builder = CompositeStringExpression.builder();
+		for (final IValidationRule rule : rules)
+		{
+			final IStringExpression ruleWhereClause = rule.getPrefilterWhereClause();
+			if (ruleWhereClause == null || ruleWhereClause == IStringExpression.NULL)
+			{
+				continue;
+			}
+
+			builder.appendIfNotEmpty(" AND ");
+			builder.append("(").append(ruleWhereClause).append(")");
+		}
+
+		return builder.build();
+	}
+
+	private static INamePairPredicate buildPostQueryPredicates(@NonNull final ImmutableList<IValidationRule> rules)
+	{
+		final NamePairPredicates.Composer builder = NamePairPredicates.compose();
+		for (final IValidationRule rule : rules)
+		{
+			builder.add(rule.getPostQueryFilter());
+		}
+
+		return builder.build();
 	}
 
 	private List<IValidationRule> getValidationRules()
@@ -86,40 +117,6 @@ public final class CompositeValidationRule implements IValidationRule
 	public boolean isEmpty()
 	{
 		return rules.isEmpty();
-	}
-
-	/**
-	 * @return true if all child validation rules are immutable
-	 */
-	@Override
-	public boolean isImmutable()
-	{
-		return immutable;
-	}
-
-	@Override
-	public Set<String> getAllParameters()
-	{
-		if (_allParameters == null)
-		{
-			_allParameters = ImmutableSet.<String> builder()
-					.addAll(prefilterWhereClause.getParameterNames())
-					.addAll(postQueryPredicates.getParameters())
-					.build();
-		}
-		return _allParameters;
-	}
-
-	@Override
-	public IStringExpression getPrefilterWhereClause()
-	{
-		return prefilterWhereClause;
-	}
-
-	@Override
-	public INamePairPredicate getPostQueryFilter()
-	{
-		return postQueryPredicates;
 	}
 
 	@Override
@@ -143,22 +140,57 @@ public final class CompositeValidationRule implements IValidationRule
 				.toString();
 	}
 
-	@Override
-	public Set<String> getDependsOnTableNames()
+	public static List<IValidationRule> unbox(@Nullable final IValidationRule rule)
 	{
-		return dependsOnTableNames;
+		if (rule == null || NullValidationRule.isNull(rule))
+		{
+			return ImmutableList.of();
+		}
+
+		final ArrayList<IValidationRule> result = new ArrayList<>();
+		unboxAndAppendToList(rule, result);
+
+		return result;
 	}
 
+	public static List<IValidationRule> unbox(@Nullable final Collection<IValidationRule> rules)
+	{
+		if (rules == null || rules.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ArrayList<IValidationRule> result = new ArrayList<>();
+		for (final IValidationRule rule : rules)
+		{
+			unboxAndAppendToList(rule, result);
+		}
+
+		return result;
+	}
+
+	private static void unboxAndAppendToList(@Nullable final IValidationRule rule, @NonNull final ArrayList<IValidationRule> list)
+	{
+		if (rule instanceof CompositeValidationRule)
+		{
+			final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
+			for (final IValidationRule childRule : compositeRule.rules)
+			{
+				unboxAndAppendToList(childRule, list);
+			}
+		}
+		else if (rule != null && !NullValidationRule.isNull(rule))
+		{
+			list.add(rule);
+		}
+	}
+
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private final List<IValidationRule> rules = new ArrayList<>();
-		private final NamePairPredicates.Composer postQueryPredicates = NamePairPredicates.compose();
-		private boolean immutable = true;
 
-		private Builder()
-		{
-			super();
-		}
+		private Builder() {}
 
 		public IValidationRule build()
 		{
@@ -176,35 +208,21 @@ public final class CompositeValidationRule implements IValidationRule
 			}
 		}
 
-		private IStringExpression buildPrefilterWhereClause()
+		public Builder addAll(@NonNull final Collection<IValidationRule> rules)
 		{
-			final CompositeStringExpression.Builder builder = CompositeStringExpression.builder();
-			for (final IValidationRule rule : rules)
-			{
-				final IStringExpression ruleWhereClause = rule.getPrefilterWhereClause();
-				if (ruleWhereClause == null || ruleWhereClause == IStringExpression.NULL)
-				{
-					continue;
-				}
-
-				builder.appendIfNotEmpty(" AND ");
-				builder.append("(").append(ruleWhereClause).append(")");
-			}
-
-			return builder.build();
+			rules.forEach(this::add);
+			return this;
 		}
 
 		public Builder add(final IValidationRule rule)
 		{
-			final boolean explodeComposite = false;
-			add(rule, explodeComposite);
+			add(rule, false);
 			return this;
 		}
 
 		public Builder addExploded(final IValidationRule rule)
 		{
-			final boolean explodeComposite = true;
-			add(rule, explodeComposite);
+			add(rule, true);
 			return this;
 		}
 
@@ -230,8 +248,6 @@ public final class CompositeValidationRule implements IValidationRule
 			else
 			{
 				rules.add(rule);
-				immutable = immutable && rule.isImmutable();
-				postQueryPredicates.add(rule.getPostQueryFilter());
 			}
 
 			return this;

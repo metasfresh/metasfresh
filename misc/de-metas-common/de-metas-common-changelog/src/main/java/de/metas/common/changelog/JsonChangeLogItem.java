@@ -22,33 +22,32 @@
 
 package de.metas.common.changelog;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class JsonChangeLogItem
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	String fieldName;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	Long updatedMillis;
 
-	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated", //
-			dataType = "java.lang.Integer", position = 30)
+	@Schema(description = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated")
 	JsonMetasfreshId updatedBy;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	String oldValue;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	String newValue;
 
 	@Builder

@@ -32,12 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;

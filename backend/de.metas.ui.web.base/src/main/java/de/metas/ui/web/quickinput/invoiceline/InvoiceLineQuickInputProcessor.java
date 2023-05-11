@@ -84,6 +84,8 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 				.copyTo(InvoiceLineHUPackingAware.of(invoiceLine));
 
 		invoiceLineBL.updatePrices(invoiceLine);
+
+		invoiceLine.setC_VAT_Code_ID(invoiceLineQuickInput.getC_VAT_Code_ID());
 		// invoiceBL.setLineNetAmt(invoiceLine); // not needed; will be called on save
 		// invoiceBL.setTaxAmt(invoiceLine);// not needed; will be called on save
 

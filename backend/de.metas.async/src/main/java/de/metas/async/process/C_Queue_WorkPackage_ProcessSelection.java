@@ -1,11 +1,11 @@
 package de.metas.async.process;
 
 import de.metas.async.api.IWorkpackageParamDAO;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.processor.QueuePackageProcessorId;
-import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.async.processor.impl.WorkpackageProcessor2Wrapper;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor2;
@@ -60,7 +60,8 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
-	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+
+	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	@Override
 	protected String doIt() throws Exception
@@ -117,7 +118,7 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 					}
 
 					final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
-					final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(packageProcessorId);
+					final QueuePackageProcessor packageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(packageProcessorId);
 
 					final IWorkpackageProcessor workpackageProcessor = workpackageProcessorFactory.getWorkpackageProcessor(packageProcessor);
 					final IWorkpackageProcessor2 workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workpackageProcessor);

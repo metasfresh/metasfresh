@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.currency.Amount;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +42,7 @@ import java.util.List;
  * #L%
  */
 
+@SuppressWarnings("UnusedReturnValue")
 public final class TranslatableStringBuilder
 {
 	static TranslatableStringBuilder newInstance()
@@ -181,9 +184,17 @@ public final class TranslatableStringBuilder
 
 	public TranslatableStringBuilder appendQty(@NonNull final BigDecimal qty, @NonNull final String uom)
 	{
-		return append(NumberTranslatableString.of(qty, DisplayType.Quantity))
-				.append(" ")
-				.append(uom);
+		return append(NumberTranslatableString.of(qty, DisplayType.Quantity)).append(" ").append(uom);
+	}
+
+	public TranslatableStringBuilder appendQty(final long qty, @NonNull final String uom)
+	{
+		return append(NumberTranslatableString.of(qty)).append(" ").append(uom);
+	}
+
+	public TranslatableStringBuilder appendPercent(@NonNull final Percent percent)
+	{
+		return append(NumberTranslatableString.of(percent.toBigDecimal(), DisplayType.Number)).append("%");
 	}
 
 	public TranslatableStringBuilder append(@NonNull final Amount amount)
@@ -213,6 +224,13 @@ public final class TranslatableStringBuilder
 			@Nullable final String defaultValueIfNull)
 	{
 		return value != null ? appendDate(value) : append(defaultValueIfNull);
+	}
+
+	public TranslatableStringBuilder appendTemporal(
+			@Nullable final Temporal value,
+			@Nullable final String defaultValueIfNull)
+	{
+		return value != null ? append(TranslatableStrings.temporal(value)) : append(defaultValueIfNull);
 	}
 
 	public TranslatableStringBuilder appendDateTime(@NonNull final Date value)
@@ -259,7 +277,7 @@ public final class TranslatableStringBuilder
 
 	@Deprecated
 	public TranslatableStringBuilder appendADMessage(
-			final String adMessage,
+			@NonNull final String adMessage,
 			final Object... msgParameters)
 	{
 		return appendADMessage(AdMessageKey.of(adMessage), msgParameters);

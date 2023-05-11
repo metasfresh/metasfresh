@@ -1,33 +1,29 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.xmlunit.assertj.XmlAssert.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-
-import javax.xml.transform.stream.StreamSource;
-
-import org.adempiere.test.SnapshotHelper;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.xmlunit.validation.Languages;
-import org.xmlunit.validation.ValidationResult;
-import org.xmlunit.validation.Validator;
-
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.xmlunit.validation.Languages;
+import org.xmlunit.validation.ValidationResult;
+import org.xmlunit.validation.Validator;
+
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
+import static org.xmlunit.assertj.XmlAssert.assertThat;
 
 /*
  * #%L
@@ -51,25 +47,15 @@ import lombok.NonNull;
  * #L%
  */
 
+@ExtendWith(SnapshotExtension.class)
 public class Invoice440RequestConversionServiceTest
 {
 
-	private Invoice440RequestConversionService invoice440RequestConversionService;
+	private static Invoice440RequestConversionService invoice440RequestConversionService;
+	private Expect expect;
 
-	@BeforeClass
-	public static void initStatic()
-	{
-		start(SnapshotHelper.SNAPSHOT_CONFIG, SnapshotHelper::toArrayAwareString);
-	}
-
-	@AfterClass
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
-
-	@Before
-	public void init()
+	@BeforeAll
+	public static void init()
 	{
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
 		invoice440RequestConversionService.setUsePrettyPrint(true);
@@ -77,7 +63,6 @@ public class Invoice440RequestConversionServiceTest
 
 	/** Ignored; un-ignore if you have a local (private) file you want to run a quick test with. */
 	@Test
-	@Ignore
 	public void localFile()
 	{
 		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
@@ -172,14 +157,16 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
-		assertExportMatchesSnapshot(outputStream);
+
+		final String exportXmlString = new String(outputStream.toByteArray());
+		expect.serializer("orderedJson").toMatchSnapshot(exportXmlString);
 	}
 
 	private void assertExportMatchesSnapshot(final ByteArrayOutputStream outputStream)
 	{
 		final String exportXmlString = new String(outputStream.toByteArray());
 
-		expect(exportXmlString).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(exportXmlString);
 	}
 
 	@Test
@@ -231,6 +218,6 @@ public class Invoice440RequestConversionServiceTest
 
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
-		Assert.assertTrue(r.isValid());
+		Assertions.assertTrue(r.isValid());
 	}
 }

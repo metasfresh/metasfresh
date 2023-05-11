@@ -25,7 +25,7 @@ package de.metas.handlingunits.allocation;
 
 import java.util.List;
 
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 
 import de.metas.handlingunits.IHUContext;
 

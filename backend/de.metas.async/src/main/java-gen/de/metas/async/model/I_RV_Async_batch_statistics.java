@@ -1,7 +1,8 @@
 package de.metas.async.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for RV_Async_batch_statistics
  *  @author metasfresh (generated) 

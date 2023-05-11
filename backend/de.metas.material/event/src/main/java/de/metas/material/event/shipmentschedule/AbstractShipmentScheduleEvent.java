@@ -2,12 +2,14 @@ package de.metas.material.event.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -51,28 +53,49 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 	@JsonInclude(NON_NULL)
 	private final MinMaxDescriptor minMaxDescriptor;
 
-	private final BigDecimal reservedQuantity;
+	private final ShipmentScheduleDetail shipmentScheduleDetail;
 
 	private final int shipmentScheduleId;
+
+	private final DocumentLineDescriptor documentLineDescriptor;
 
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
-			final BigDecimal reservedQuantity,
-			final int shipmentScheduleId)
+			@NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
+			final int shipmentScheduleId,
+			@Nullable final DocumentLineDescriptor documentLineDescriptor)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
 		this.minMaxDescriptor = minMaxDescriptor;
-		this.reservedQuantity = reservedQuantity;
+		this.shipmentScheduleDetail = shipmentScheduleDetail;
+		this.documentLineDescriptor = documentLineDescriptor;
 	}
 
-	public abstract BigDecimal getOrderedQuantityDelta();
-
+	@NonNull
 	public abstract BigDecimal getReservedQuantityDelta();
 
+	@NonNull
+	public BigDecimal getOrderedQuantity()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantity();
+	}
+	
+	@NonNull
+	public BigDecimal getReservedQuantity()
+	{
+		return getShipmentScheduleDetail().getReservedQuantity();
+	}
+	
+	@Nullable
+	public OldShipmentScheduleData getOldShipmentScheduleData()
+	{
+		return getShipmentScheduleDetail().getOldShipmentScheduleData();
+	}
+	
 	@OverridingMethodsMustInvokeSuper
 	public void validate()
 	{
@@ -80,6 +103,5 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
-		Check.errorIf(reservedQuantity == null, "reservedQuantity may not be null");
 	}
 }

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -72,20 +72,20 @@ public class JsonResponseContact
 	public static final String TITLE = "title";
 	public static final String POSITION = "position";
 
-	@ApiModelProperty(dataType = "java.lang.Long")
+	@Schema
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(dataType = "java.lang.Integer")
+	@Schema
 	JsonMetasfreshId metasfreshBPartnerId;
 
-	@ApiModelProperty("translated to `AD_User.Value`")
+	@Schema(description = "translated to `AD_User.Value`")
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean active;
 
-	@ApiModelProperty()
+	@Schema()
 	String name;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -124,45 +124,41 @@ public class JsonResponseContact
 	@JsonInclude(Include.NON_EMPTY)
 	JsonResponseContactPosition position;
 
-	@ApiModelProperty()
+	@Schema
 	boolean newsletter;
 
-	@ApiModelProperty()
+	@Schema
 	Boolean invoiceEmailEnabled;
 
-	@ApiModelProperty()
+	@Schema
 	boolean shipToDefault;
 
-	@ApiModelProperty()
+	@Schema
 	boolean billToDefault;
 
-	@ApiModelProperty()
+	@Schema
 	boolean defaultContact;
 
-	@ApiModelProperty()
+	@Schema
 	boolean sales;
 
-	@ApiModelProperty()
+	@Schema
 	boolean salesDefault;
 
-	@ApiModelProperty()
+	@Schema
 	boolean purchase;
 
-	@ApiModelProperty()
+	@Schema
 	boolean purchaseDefault;
 
-	@ApiModelProperty()
+	@Schema
 	boolean subjectMatter;
 
-	@ApiModelProperty()
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseContactRole> roles;
 
-	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(position = 20) // shall be last
-	JsonChangeInfo changeInfo;
-
-	@ApiModelProperty(dataType = "java.lang.Integer")
+	@Schema
 	JsonMetasfreshId metasfreshLocationId;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -170,6 +166,10 @@ public class JsonResponseContact
 
 	@JsonInclude(Include.NON_EMPTY)
 	String email3;
+
+	@JsonInclude(Include.NON_NULL)
+	@Schema // shall be last
+	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)
 	@JsonCreator

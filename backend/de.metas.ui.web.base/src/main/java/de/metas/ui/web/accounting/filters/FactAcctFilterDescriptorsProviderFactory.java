@@ -35,7 +35,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.compiere.model.I_Fact_Acct;
 import org.springframework.stereotype.Component;
 
@@ -72,16 +71,16 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 						.setDisplayName(msgBL.translatable("AccountNumber"))
 						//
 						.addParameter(DocumentFilterParamDescriptor.builder()
-								.setMandatory(true)
-								.setFieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM)
-								.setDisplayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM))
-								.setWidgetType(DocumentFieldWidgetType.Text)
+								.mandatory(true)
+								.fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM)
+								.displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM))
+								.widgetType(DocumentFieldWidgetType.Text)
 						)
 						.addParameter(DocumentFilterParamDescriptor.builder()
-								.setMandatory(true)
-								.setFieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO)
-								.setDisplayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO))
-								.setWidgetType(DocumentFieldWidgetType.Text)
+								.mandatory(true)
+								.fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO)
+								.displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO))
+								.widgetType(DocumentFieldWidgetType.Text)
 						)
 						//
 						.build()

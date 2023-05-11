@@ -1,0 +1,69 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:ProofOfReexportation-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "_E":"urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
+ "ProofOfReexportation":[{
+ "ID":[{"_":"23424244"}],
+ "IssueDate":[{"_":"2019-05-08"}],
+ "ImportingGuarantorParty":[{
+  "PartyName":[{
+   "Name":[{"_":"Deutscher Industrie- und Handelskammertag e.V."}]
+  }],
+  "PostalAddress":[{
+   "StreetName":[{"_":"Breite Straße"}],
+   "BuildingNumber":[{"_":"29"}],
+   "CityName":[{"_":"Berlin"}],
+   "PostalZone":[{"_":"10178"}],
+   "Country":[{
+    "IdentificationCode":[{"_":"DE"}]
+   }]
+  }],
+  "PartyLegalEntity":[{
+   "CompanyID":[{"_":"DE122125278"}]
+  }]
+ }],
+ "ExportingGuarantorParty":[{
+  "PartyName":[{
+   "Name":[{"_":"Dansk Erhverv"}]
+  }],
+  "PostalAddress":[{
+   "StreetName":[{"_":"Slotsholmsgade"}],
+   "BuildingNumber":[{"_":"1"}],
+   "CityName":[{"_":"København K"}],
+   "PostalZone":[{"_":"1216"}],
+   "Country":[{
+    "IdentificationCode":[{"_":"DK"}]
+   }]
+  }],
+  "PartyLegalEntity":[{
+   "CompanyID":[{"_":"DK43232010"}]
+  }]
+ }],
+ "GoodsItemPassportCounterfoil":[{
+  "ID":[{"_":"645634567"}],
+  "GoodsItemPassportID":[{"_":"ata01661"}],
+  "CustomsOfficeLocation":[{
+   "Name":[{"_":"Heiligenhafen"}]
+  }],
+  "VoucherDocumentReference":[{
+   "ID":[{"_":"5234533222"}]
+  }]
+ },{
+  "ID":[{"_":"634563324"}],
+  "GoodsItemPassportID":[{"_":"ata01661"}],
+  "CustomsOfficeLocation":[{
+   "Name":[{"_":"Bietingen"}]
+  }],
+  "VoucherDocumentReference":[{
+   "ID":[{"_":"52345423423"}]
+  }]
+ }],
+ "ReexportationEvidence":[{
+  "EvidenceTypeCode":[{"_":"mail"}],
+  "Description":[{"_":"Received mail from Frau Gerlung"}],
+  "DocumentReference":[{
+   "ID":[{"_":"34563456"}],
+   "DocumentType":[{"_":"ATA carnet, paper"}]
+  }]
+ }]
+}]}

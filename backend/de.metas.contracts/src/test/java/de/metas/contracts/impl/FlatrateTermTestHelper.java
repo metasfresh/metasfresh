@@ -1,5 +1,7 @@
 package de.metas.contracts.impl;
 
+import de.metas.acct.GLCategoryRepository;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
@@ -25,9 +27,9 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
-import de.metas.pricing.rules.PriceListVersion;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
+import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.user.UserRepository;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -51,7 +53,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * This class sets up basic master data like partners, addresses, users, flatrate conditions, flarate transitions that can be used in testing.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class FlatrateTermTestHelper
 {
@@ -63,7 +64,6 @@ public class FlatrateTermTestHelper
 	//
 	// Initialization flags
 	private boolean initialized = false;
-	private boolean initAdempiere = true;
 
 	public I_AD_Client adClient;
 	public I_AD_Org adOrg;
@@ -120,8 +120,7 @@ public class FlatrateTermTestHelper
 	}
 
 	/**
-	 *
-	 * @param init if <code>true</code>, the the constructor directly calls {@link #init()}.
+	 * @param init if <code>true</code>, the constructor directly calls {@link #init()}.
 	 */
 	public FlatrateTermTestHelper(final boolean init)
 	{
@@ -131,14 +130,8 @@ public class FlatrateTermTestHelper
 		}
 	}
 
-	public void setInitAdempiere(final boolean initAdempiere)
-	{
-		Check.assume(!initialized, "helper not initialized");
-		this.initAdempiere = initAdempiere;
-	}
-
 	/**
-	 * Final, because its called by a constructor.
+	 * Final, because it's called by a constructor.
 	 */
 	public final void init()
 	{
@@ -147,10 +140,7 @@ public class FlatrateTermTestHelper
 			return;
 		}
 
-		if (initAdempiere)
-		{
-			AdempiereTestHelper.get().init();
-		}
+		AdempiereTestHelper.get().init();
 
 		ctx = Env.getCtx();
 
@@ -179,9 +169,8 @@ public class FlatrateTermTestHelper
 
 	private void addPricingRules()
 	{
-		pricingRules.put("PriceListVersion", PriceListVersion.class.getName());
+		pricingRules.put("PriceListVersion", PriceListVersionPricingRule.class.getName());
 		pricingRules.put("Discount", Discount.class.getName());
-		pricingRules.put("Attribute pricing rule", AttributePricing.class.getName());
 		pricingRules.put("de.metas.contracts Discount", ContractDiscount.class.getName());
 		pricingRules.put("de.metas.contracts Subscription", SubscriptionPricingRule.class.getName());
 	}
@@ -226,7 +215,9 @@ public class FlatrateTermTestHelper
 				documentLocationBL,
 				groupChangesHandler,
 				inoutLinesWithMissingInvoiceCandidateRepo,
-				new CallOrderContractService());
+				new CallOrderContractService(),
+				ADReferenceService.newMocked(),
+				new GLCategoryRepository());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

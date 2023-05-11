@@ -263,7 +263,7 @@ public class CustomsInvoiceService
 
 		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
 
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inOutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inOutLineId);
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inoutLineRecord.getC_OrderLine_ID());
 
@@ -283,7 +283,7 @@ public class CustomsInvoiceService
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutAndLineId.getInOutLineId());
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutAndLineId.getInOutLineId());
 
 		final ProductId productId = ProductId.ofRepoId(inoutLineRecord.getM_Product_ID());
 
@@ -409,7 +409,7 @@ public class CustomsInvoiceService
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 		final InOutLineId shipmentLineId = inoutAndLineId.getInOutLineId();
-		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(shipmentLineId, I_M_InOutLine.class);
+		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineByIdOutOfTrx(shipmentLineId, I_M_InOutLine.class);
 
 		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 	}

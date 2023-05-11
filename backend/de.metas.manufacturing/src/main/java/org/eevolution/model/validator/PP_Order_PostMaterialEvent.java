@@ -1,6 +1,7 @@
 package org.eevolution.model.validator;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
@@ -9,6 +10,7 @@ import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -72,24 +74,30 @@ public class PP_Order_PostMaterialEvent
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.build();
 
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
 			// Note: close is currently handled in MPPOrder.closeIt()
 			// for the other timings, we shall first figure out what we actually want
-			//ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_REACTIVATE,
 			//ModelValidator.TIMING_AFTER_UNCLOSE,
 			//ModelValidator.TIMING_AFTER_VOID
 	})
-	public void postMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrderRecord)
+	public void postMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrderRecord, @NonNull final DocTimingType docTimingType)
 	{
-		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
+		PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
 				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
 				.inspectPPOrderAfterChange();
 
-		materialEventService.postEventAfterNextCommit(changeEvent);
+		// dev-note: after reactivate, by the time this model interceptor is hit, the status on the document is not set as InProgress yet, so we need to explicitly set that status in the event that we are going to fire after the commit
+		if (docTimingType == DocTimingType.AFTER_REACTIVATE)
+		{
+			changeEvent = changeEvent.withNewDocStatus(DocStatus.InProgress);
+		}
+
+		materialEventService.enqueueEventAfterNextCommit(changeEvent);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyDelivered)
@@ -99,7 +107,7 @@ public class PP_Order_PostMaterialEvent
 				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
 				.inspectPPOrderAfterChange();
 
-		materialEventService.postEventAfterNextCommit(changeEvent);
+		materialEventService.enqueueEventAfterNextCommit(changeEvent);
 	}
 
 	private void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrderRecord, @NonNull final ModelChangeType type)
@@ -112,7 +120,7 @@ public class PP_Order_PostMaterialEvent
 
 		if (isPPOrderCreatedFromCandidate(ppOrderRecord))
 		{
-			// dev-note: see org.eevolution.productioncandidate.service.PPOrderProducerFromCandidate#postPPOrderCreatedEvent(I_PP_Order)
+			// dev-note: see org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate#postPPOrderCreatedEvent(I_PP_Order)
 			return;
 		}
 

@@ -6,6 +6,9 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
+import de.metas.event.log.EventLogService;
+import de.metas.event.log.EventLogsRepository;
+import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.compiere.Adempiere;
 
@@ -70,9 +73,10 @@ public class PlainEventBusFactory implements IEventBusFactory
 	private EventBus createEventBus(final Topic topic)
 	{
 		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
+		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(new SimpleMeterRegistry()));
 
 		final ExecutorService executor = null;
-		return new EventBus(topic.getName(), executor, micrometerEventBusStatsCollector);
+		return new EventBus(topic, executor, micrometerEventBusStatsCollector, new PlainEventEnqueuer(), eventBusMonitoringService, new EventLogService(new EventLogsRepository()));
 	}
 
 	@Override

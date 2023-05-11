@@ -47,7 +47,7 @@ public class PaymentService
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	@NonNull
-	public Optional<BankAccountId> determineInboundBankAccountId(
+	public Optional<BankAccountId> determineOrgBPartnerBankAccountId(
 			@NonNull final OrgId orgId,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final String iban)
@@ -72,5 +72,11 @@ public class PaymentService
 	public DefaultPaymentBuilder newInboundReceiptBuilder()
 	{
 		return paymentBL.newInboundReceiptBuilder();
+	}
+
+	@NonNull
+	public DefaultPaymentBuilder newOutboundPaymentBuilder()
+	{
+		return paymentBL.newOutboundPaymentBuilder();
 	}
 }

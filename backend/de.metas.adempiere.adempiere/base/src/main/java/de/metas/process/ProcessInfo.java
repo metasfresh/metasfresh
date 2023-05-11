@@ -6,8 +6,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -22,6 +24,7 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.WorkflowId;
@@ -82,6 +85,8 @@ public final class ProcessInfo implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
 
+	private static final AdMessageKey MSG_NO_TABLE_RECORD_REFERENCE_FOUND = AdMessageKey.of("de.metas.process.NoTableRecordReferenceFound");
+
 	public static ProcessInfoBuilder builder()
 	{
 		return new ProcessInfoBuilder();
@@ -114,6 +119,7 @@ public final class ProcessInfo implements Serializable
 		adWorkflowId = builder.getWorkflowId();
 		invokedBySchedulerId = builder.getInvokedBySchedulerId();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
+		logWarning = builder.isLogWarning();
 
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -208,6 +214,9 @@ public final class ProcessInfo implements Serializable
 	 */
 	@Getter
 	private final boolean notifyUserAfterExecution;
+
+	@Getter
+	private final boolean logWarning;
 
 	/**
 	 * Process Instance ID
@@ -407,6 +416,13 @@ public final class ProcessInfo implements Serializable
 		return TableRecordReference.of(adTableId, recordId);
 	}
 
+	@NonNull
+	public TableRecordReference getRecordRefNotNull()
+	{
+		return Optional.ofNullable(getRecordRefOrNull())
+				.orElseThrow(() -> new AdempiereException(MSG_NO_TABLE_RECORD_REFERENCE_FOUND, getPinstanceId()));
+	}
+
 	public boolean isRecordSet()
 	{
 		return getTable_ID() > 0 && getRecord_ID() > 0;
@@ -524,7 +540,10 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
-	public boolean isInvokedByScheduler() { return invokedBySchedulerId != null; }
+	public boolean isInvokedByScheduler()
+	{
+		return invokedBySchedulerId != null;
+	}
 
 	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
@@ -622,7 +641,7 @@ public final class ProcessInfo implements Serializable
 	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
 	 * <p>
 	 * task 03685
-	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
+	 * @see JavaProcess#retrieveActiveSelectedRecordsQueryBuilder(Class)
 	 */
 	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
@@ -765,7 +784,7 @@ public final class ProcessInfo implements Serializable
 		private int tabNo = Env.TAB_None;
 
 		private Language reportLanguage;
-		private Boolean printPreview;
+		@NonNull private OptionalBoolean printPreview = OptionalBoolean.UNKNOWN;
 		private Boolean archiveReportData;
 
 		private OutputType jrDesiredOutputType = null;
@@ -776,6 +795,8 @@ public final class ProcessInfo implements Serializable
 		private AdSchedulerId invokedBySchedulerId;
 
 		private Boolean notifyUserAfterExecution;
+
+		private Boolean logWarning;
 
 		private ProcessInfoBuilder()
 		{
@@ -815,7 +836,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		private Properties createTemporaryCtx(final Properties ctx)
+		private Properties createTemporaryCtx(@NonNull final Properties ctx)
 		{
 			final Properties processCtx = Env.newTemporaryCtx();
 
@@ -878,6 +899,16 @@ public final class ProcessInfo implements Serializable
 			final Timestamp date = SystemTime.asDayTimestamp();
 			Env.setContext(processCtx, Env.CTXNAME_Date, date);
 
+			//
+			// Allow using the where clause in expressions.
+			// For example, in a report that exports data, the SQL-Expression could be 
+			// "SELECT DocumentNo, DateOrdered FROM C_Order WHERE @SELECTION_WHERECLAUSE/false@;"
+			final String whereClause = getWhereClause();
+			if (EmptyUtil.isNotBlank(whereClause))
+			{
+				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause);
+			}
+			
 			//
 			// Copy relevant properties from window context
 			final int windowNo = getWindowNo();
@@ -1060,7 +1091,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setAD_PInstance(final I_AD_PInstance adPInstance)
+		public ProcessInfoBuilder setAD_PInstance(@NonNull final I_AD_PInstance adPInstance)
 		{
 			this._adPInstance = adPInstance;
 			setPInstanceId(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
@@ -1091,6 +1122,7 @@ public final class ProcessInfo implements Serializable
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
+			setLogWarning(adProcess.isLogWarning());
 			return this;
 		}
 
@@ -1452,12 +1484,12 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		/**
-		 * Only really matters when forking with the swing client.
-		 * {@code true} means that the system shall just if the report data shall just be returned.
-		 * If not set, then the system will look at {@link Ini#P_PRINTPREVIEW} and {@code AD_Process.IsDirectPrint}.
-		 */
 		public ProcessInfoBuilder setPrintPreview(final Boolean printPreview)
+		{
+			return setPrintPreview(OptionalBoolean.ofNullableBoolean(printPreview));
+		}
+
+		public ProcessInfoBuilder setPrintPreview(@NonNull final OptionalBoolean printPreview)
 		{
 			this.printPreview = printPreview;
 			return this;
@@ -1469,9 +1501,9 @@ public final class ProcessInfo implements Serializable
 		 */
 		private boolean isPrintPreview()
 		{
-			if (this.printPreview != null)
+			if (this.printPreview.isPresent())
 			{
-				return this.printPreview;
+				return this.printPreview.isTrue();
 			}
 
 			if (Ini.isSwingClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
@@ -1480,12 +1512,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			if (adProcess != null && !adProcess.isDirectPrint())
-			{
-				return true;
-			}
-
-			return false;
+			return adProcess != null && !adProcess.isDirectPrint();
 		}
 
 		/**
@@ -1545,7 +1572,7 @@ public final class ProcessInfo implements Serializable
 
 		public AdSchedulerId getInvokedBySchedulerId()
 		{
-			if(invokedBySchedulerId != null)
+			if (invokedBySchedulerId != null)
 			{
 				return invokedBySchedulerId;
 			}
@@ -1599,6 +1626,34 @@ public final class ProcessInfo implements Serializable
 				}
 			}
 			return notifyUserAfterExecution;
+		}
+
+		public ProcessInfoBuilder setLogWarning(final boolean logWarning)
+		{
+			this.logWarning = logWarning;
+
+			return this;
+		}
+
+		public boolean isLogWarning()
+		{
+			if (logWarning == null)
+			{
+
+					final I_AD_Process processRecord = getAD_ProcessOrNull();
+					if (processRecord != null)
+					{
+						this.logWarning = processRecord.isLogWarning();
+						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
+					}
+					else
+					{
+						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+						this.logWarning = false;
+					}
+				}
+
+			return logWarning;
 		}
 
 		private String getWhereClause()

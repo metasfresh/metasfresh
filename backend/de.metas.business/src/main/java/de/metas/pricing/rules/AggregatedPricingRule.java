@@ -1,20 +1,21 @@
 package de.metas.pricing.rules;
 
-import java.util.List;
-
-import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.util.Loggables;
+import lombok.NonNull;
 import lombok.ToString;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Helper class which aggregates multiple {@link IPricingRule}s.
@@ -25,12 +26,25 @@ import lombok.ToString;
 @ToString
 public final class AggregatedPricingRule implements IPricingRule
 {
-	public static AggregatedPricingRule of(final List<IPricingRule> rules)
+	public static AggregatedPricingRule of(@NonNull final List<IPricingRule> rules)
 	{
-		return new AggregatedPricingRule(rules);
+		return !rules.isEmpty() ? new AggregatedPricingRule(rules) : EMPTY;
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(AggregatedPricingRule.class);
+	public static AggregatedPricingRule ofNullables(@Nullable IPricingRule... rulesArray)
+	{
+		if (rulesArray == null || rulesArray.length == 0)
+		{
+			return EMPTY;
+		}
+
+		final ImmutableList<IPricingRule> list = Stream.of(rulesArray).filter(Objects::nonNull).collect(ImmutableList.toImmutableList());
+		return of(list);
+	}
+
+	private static final Logger logger = LogManager.getLogger(AggregatedPricingRule.class);
+
+	private static final AggregatedPricingRule EMPTY = new AggregatedPricingRule(ImmutableList.of());
 
 	private final ImmutableList<IPricingRule> rules;
 
@@ -41,7 +55,7 @@ public final class AggregatedPricingRule implements IPricingRule
 
 	/**
 	 * For optimization reasons, this method always returns true.
-	 *
+	 * <p>
 	 * In {@link #calculate(IPricingContext, IPricingResult)}, each child {@link IPricingRule} is evaluated and executed if applies.
 	 *
 	 * @return always returns true
@@ -55,7 +69,7 @@ public final class AggregatedPricingRule implements IPricingRule
 
 	/**
 	 * Executes all rules that can be applied.
-	 *
+	 * <p>
 	 * Please note that calculation won't stop after first rule that matched.
 	 */
 	@Override
@@ -65,7 +79,7 @@ public final class AggregatedPricingRule implements IPricingRule
 
 		for (final IPricingRule rule : rules)
 		{
-			try (final MDCCloseable pricingRuleMDC = MDC.putCloseable("PricingRule", rule.getClass().getSimpleName()))
+			try (final MDCCloseable ignored = MDC.putCloseable("PricingRule", rule.getClass().getSimpleName()))
 			{
 				// NOTE: we are NOT checking if the pricing result was already calculated, on purpose, because:
 				// * we want to give flexiblity to pricing rules to override the pricing
