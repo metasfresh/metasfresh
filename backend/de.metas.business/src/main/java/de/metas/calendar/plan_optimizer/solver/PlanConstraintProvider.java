@@ -3,7 +3,7 @@ package de.metas.calendar.plan_optimizer.solver;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
-import de.metas.calendar.plan_optimizer.solver.weekly_capacities.AvailableCapacity;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.HumanResourceAvailableCapacity;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.ResourceGroupYearWeek;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
@@ -43,7 +43,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				resourceConflict(constraintFactory),
 				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
-				availableCapacity(constraintFactory),
+				humanResourceAvailableCapacity(constraintFactory),
 				// Soft:
 				stepsNotRespectingProjectPriority(constraintFactory),
 				delayIsMinimum(constraintFactory),
@@ -52,7 +52,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 		};
 	}
 
-	Constraint resourceConflict(ConstraintFactory constraintFactory)
+	Constraint resourceConflict(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEachUniquePair(
 						Step.class,
@@ -64,7 +64,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	private static BiJoiner<Step, Step> stepsOverlapping() {return Joiners.overlapping(Step::getStartDate, Step::getEndDate);}
 
-	Constraint startDateMin(ConstraintFactory constraintFactory)
+	Constraint startDateMin(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> !step.isStartDateMinRespected())
@@ -72,7 +72,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("StartDateMin not respected");
 	}
 
-	Constraint dueDate(ConstraintFactory constraintFactory)
+	Constraint dueDate(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(Step::isDueDateNotRespected)
@@ -80,7 +80,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("DueDate not respected");
 	}
 
-	Constraint availableCapacity(ConstraintFactory constraintFactory)
+	Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> step.getResource().getHumanResourceTestGroupId() != null)
@@ -94,7 +94,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("Available human resource test group capacity");
 	}
 
-	private int computePenaltyWeight_availableCapacity(StepRequiredCapacity requiredCapacity)
+	private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
 	{
 		final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
 
@@ -103,12 +103,12 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.map(ResourceGroupYearWeek::getGroupId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final AvailableCapacity availableCapacity = AvailableCapacity.of(humanResourceTestGroupService.getByIds(ids));
-		availableCapacity.reserveCapacity(requiredCapacity);
-		return DurationUtils.toInt(availableCapacity.getOverReservedCapacity(), Plan.PLANNING_TIME_PRECISION);
+		final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(humanResourceTestGroupService.getByIds(ids));
+		humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
+		return DurationUtils.toInt(humanResourceAvailableCapacity.getOverReservedCapacity(), Plan.PLANNING_TIME_PRECISION);
 	}
 
-	Constraint delayIsMinimum(ConstraintFactory constraintFactory)
+	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> step.getDelay() > 0)
@@ -146,12 +146,12 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	private static BiJoiner<Step, Step> stepsNotRespectingProjectPriority() {return JoinerSupport.getJoinerService().newBiJoiner(PlanConstraintProvider::stepsNotRespectingProjectPriority);}
 
-	static boolean stepsNotRespectingProjectPriority(Step step1, Step step2)
+	static boolean stepsNotRespectingProjectPriority(final Step step1, final Step step2)
 	{
 		return computePenaltyWeight_StepsNotRespectingProjectPriority(step1, step2) > 0;
 	}
 
-	static int computePenaltyWeight_StepsNotRespectingProjectPriority(Step step1, Step step2)
+	static int computePenaltyWeight_StepsNotRespectingProjectPriority(final Step step1, final Step step2)
 	{
 		final InternalPriority prio1 = step1.getProjectPriority();
 		final InternalPriority prio2 = step2.getProjectPriority();

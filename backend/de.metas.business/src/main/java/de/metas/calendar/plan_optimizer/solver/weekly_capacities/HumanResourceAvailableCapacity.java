@@ -9,20 +9,21 @@ import lombok.NonNull;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Optional;
 
-public class AvailableCapacity
+public class HumanResourceAvailableCapacity
 {
 	private final ImmutableMap<HumanResourceTestGroupId, HumanResourceTestGroup> groupsById;
 	private final HashMap<ResourceGroupYearWeek, Reservation> reservations = new HashMap<>();
 
-	private AvailableCapacity(final ImmutableList<HumanResourceTestGroup> groups)
+	private HumanResourceAvailableCapacity(final ImmutableList<HumanResourceTestGroup> groups)
 	{
 		this.groupsById = Maps.uniqueIndex(groups, HumanResourceTestGroup::getId);
 	}
 
-	public static AvailableCapacity of(final ImmutableList<HumanResourceTestGroup> groups)
+	public static HumanResourceAvailableCapacity of(final ImmutableList<HumanResourceTestGroup> groups)
 	{
-		return new AvailableCapacity(groups);
+		return new HumanResourceAvailableCapacity(groups);
 	}
 
 	public void reserveCapacity(final StepRequiredCapacity requiredCapacity)
@@ -30,26 +31,7 @@ public class AvailableCapacity
 		requiredCapacity.forEach(this::reserveCapacity);
 	}
 
-	public void reserveCapacity(
-			@NonNull final ResourceGroupYearWeek resourceGroupYearWeek,
-			@NonNull final Duration capacity)
-	{
-		getReservation(resourceGroupYearWeek).reserve(capacity);
-	}
-
-	private Reservation getReservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek)
-	{
-		return reservations.computeIfAbsent(resourceGroupYearWeek, this::createEmptyReservation);
-	}
-
-	private Reservation createEmptyReservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek)
-	{
-		final HumanResourceTestGroup group = groupsById.get(resourceGroupYearWeek.getGroupId());
-		@NonNull final Duration totalCapacity = group != null ? group.getWeeklyCapacity() : Duration.ZERO;
-
-		return new Reservation(resourceGroupYearWeek, totalCapacity);
-	}
-
+	@NonNull
 	public Duration getOverReservedCapacity()
 	{
 		return reservations.values()
@@ -57,6 +39,30 @@ public class AvailableCapacity
 				.map(Reservation::getOverReservedCapacity)
 				.reduce(Duration::plus)
 				.orElse(Duration.ZERO);
+	}
+
+	private void reserveCapacity(
+			@NonNull final ResourceGroupYearWeek resourceGroupYearWeek,
+			@NonNull final Duration capacity)
+	{
+		getReservation(resourceGroupYearWeek).reserve(capacity);
+	}
+
+	@NonNull
+	private Reservation getReservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek)
+	{
+		return reservations.computeIfAbsent(resourceGroupYearWeek, this::createEmptyReservation);
+	}
+
+	@NonNull
+	private Reservation createEmptyReservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek)
+	{
+		final HumanResourceTestGroup group = groupsById.get(resourceGroupYearWeek.getGroupId());
+		final Duration groupWeeklyCapacity = Optional.ofNullable(group)
+				.map(HumanResourceTestGroup::getWeeklyCapacity)
+				.orElse(Duration.ZERO);
+
+		return new Reservation(resourceGroupYearWeek, groupWeeklyCapacity);
 	}
 
 	//
@@ -82,6 +88,7 @@ public class AvailableCapacity
 			this.reservedCapacity = this.reservedCapacity.plus(capacityToReserve);
 		}
 
+		@NonNull
 		public Duration getOverReservedCapacity()
 		{
 			final Duration freeCapacity = totalCapacity.minus(reservedCapacity);
