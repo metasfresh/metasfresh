@@ -23,8 +23,8 @@
 package de.metas.rest_api.v1.invoicecandidates.impl;
 
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.rest_api.common.JsonExternalId;
@@ -34,10 +34,10 @@ import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.v1.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.v1.request.JsonCreateInvoiceCandidatesRequestItem;
@@ -60,6 +60,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -76,9 +77,7 @@ import java.util.List;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class JsonInsertInvoiceCandidateServiceTest
@@ -136,10 +135,15 @@ class JsonInsertInvoiceCandidateServiceTest
 		bpGroupRecord.setM_PricingSystem_ID(pricingTestHelper.getDefaultPricingSystem().getM_PricingSystem_ID());
 		saveRecord(bpGroupRecord);
 
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setName("SO-paymentTerm");
+		saveRecord(paymentTermRecord);
+
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
 		bpartnerRecord.setValue(BILL_PARTNER_VALUE);
 		bpartnerRecord.setC_BP_Group_ID(bpGroupRecord.getC_BP_Group_ID());
+		bpartnerRecord.setC_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
 		saveRecord(bpartnerRecord);
 
 		final I_C_Location locationRecord = newInstance(I_C_Location.class);

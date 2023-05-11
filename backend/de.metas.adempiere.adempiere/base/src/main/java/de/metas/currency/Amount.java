@@ -266,6 +266,7 @@ public class Amount implements Comparable<Amount>
 				: this;
 	}
 
+	@NonNull
 	public Money toMoney(@NonNull final Function<CurrencyCode, CurrencyId> currencyIdMapper)
 	{
 		return Money.of(value, currencyIdMapper.apply(currencyCode));

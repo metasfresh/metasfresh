@@ -9,6 +9,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 /*
  * #%L
  * metasfresh-material-event
@@ -61,6 +63,6 @@ public class PostMaterialEventService
 	public void enqueueEventNow(final MaterialEvent event)
 	{
 		materialEventService.enqueueEvent(event);
-		logger.info("Posted MaterialEvent={}", event);
+		logger.info("Posted MaterialEvent={}, Timestamp={}, ThreadId={}", event, Instant.now(), Thread.currentThread().getId());
 	}
 }

@@ -6,10 +6,11 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -103,6 +104,9 @@ public class NewManualInvoiceCandidate
 
 	TableRecordReference recordReference;
 
+	@NonNull
+	PaymentTermId paymentTermId;
+
 	List<InvoiceDetailItem> invoiceDetailItems;
 
 	private NewManualInvoiceCandidate(
@@ -131,6 +135,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final ProjectId projectId,
 			@Nullable final ActivityId activityId,
 			@Nullable final TableRecordReference recordReference,
+			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -158,19 +163,20 @@ public class NewManualInvoiceCandidate
 		this.activityId = activityId;
 		this.recordReference = recordReference;
 		this.invoiceRule = invoiceRule;
+		this.paymentTermId = paymentTermId;
 		this.invoiceDetailItems = invoiceDetailItems;
 
 		if (priceEnteredOverride != null)
 		{
 			if (!priceEnteredOverride.getProductId().equals(productId))
 			{
-				throw new AdempiereException("priceEnteredOverride.productId={} is inconsistant with this instance's productId={}")
+				throw new AdempiereException("priceEnteredOverride.productId={} is inconsistent with this instance's productId={}")
 						.appendParametersToMessage()
 						.setParameter("newManualInvoiceCandidate", this);
 			}
 			if (!priceEnteredOverride.getUomId().equals(invoicingUomId))
 			{
-				throw new AdempiereException("priceEnteredOverride.uomId={} is inconsistant with this instance's invoicingUomId={}")
+				throw new AdempiereException("priceEnteredOverride.uomId={} is inconsistent with this instance's invoicingUomId={}")
 						.appendParametersToMessage()
 						.setParameter("newManualInvoiceCandidate", this);
 			}

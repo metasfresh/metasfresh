@@ -46,8 +46,6 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -84,7 +82,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		}
 	};
 
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
 
 	@Override
 	public List<IInvoiceCandidateHandler> retrieveImplementationsForTable(final Properties ctx, final String tableName)
@@ -301,7 +299,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
+		if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
 		{
 			return ImmutableList.of();
 		}
@@ -376,8 +374,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			@NonNull final IInvoiceCandidateHandler handler,
 			@NonNull final I_C_Invoice_Candidate ic)
 	{
-		Check.assumeNotNull(handler, "handler not null");
-
 		//
 		// Make sure there is a link to creator/handler.
 		// We are setting the handler only if it was not set because it might be that the handler was set by a delegated handler which is not this one.
@@ -393,6 +389,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final int adUserInChargeId = handler.getAD_User_InCharge_ID(ic);
 			ic.setAD_User_InCharge_ID(adUserInChargeId);
 		}
+
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class); // not having this as field bc there might be problems with circular dependencies
+		invoiceCandBL.setPaymentTermIfMissing(ic);
 
 		// Save it
 		InterfaceWrapperHelper.save(ic);
@@ -511,16 +510,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final OnInvalidateForModelAction onInvalidateForModelAction = handler.getOnInvalidateForModelAction();
 			switch (onInvalidateForModelAction)
 			{
-				case RECREATE_ASYNC:
-					scheduleCreateMissingCandidatesFor(model, handler);
-					break;
-				case REVALIDATE:
-					handler.invalidateCandidatesFor(model);
-					break;
-				default:
-					// nothing
-					logger.warn("Got no OnInvalidateForModelAction for " + model + ". Doing nothing.");
-					break;
+				case RECREATE_ASYNC -> scheduleCreateMissingCandidatesFor(model, handler);
+				case REVALIDATE -> handler.invalidateCandidatesFor(model);
+				default -> logger.warn("Got no OnInvalidateForModelAction for " + model + ". Doing nothing."); // nothing
 			}
 		}
 	}

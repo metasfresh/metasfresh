@@ -107,7 +107,11 @@ public class M_InOutLine_HandlerTest
 
 		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		save(paymentTerm);
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
+		bPartner.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		save(bPartner);
 
 		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
@@ -150,7 +154,7 @@ public class M_InOutLine_HandlerTest
 		save(packagingInOutLine);
 
 		orderPaymentTermId = createPaymentTerm("orderPaymentTerm");
-		paymentTermA = createPaymentTerm("paymentTermA");
+		paymentTermA = createPaymentTerm("paymentTermA", true);
 		paymentTermB = createPaymentTerm("paymentTermB");
 
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
@@ -162,8 +166,14 @@ public class M_InOutLine_HandlerTest
 
 	private PaymentTermId createPaymentTerm(final String name)
 	{
+		return createPaymentTerm(name, false);
+	}
+
+	private PaymentTermId createPaymentTerm(final String name, final boolean isDefault)
+	{
 		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
 		paymentTerm.setName(name);
+		paymentTerm.setIsDefault(isDefault);
 		save(paymentTerm);
 		POJOWrapper.setInstanceName(paymentTerm, name);
 		return PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
@@ -784,7 +794,7 @@ public class M_InOutLine_HandlerTest
 	{
 		final String description = termId == null ? "C_PaymentTerm_ID=0" : termId.toString();
 
-		return new Condition<I_C_Invoice_Candidate>(description)
+		return new Condition<>(description)
 		{
 			@Override
 			public boolean matches(final I_C_Invoice_Candidate ic)

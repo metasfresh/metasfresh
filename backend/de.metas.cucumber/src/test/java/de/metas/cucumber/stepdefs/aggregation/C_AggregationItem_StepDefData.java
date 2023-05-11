@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,16 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.cache;
+package de.metas.cucumber.stepdefs.aggregation;
 
-import de.metas.cache.CacheMgt;
-import io.cucumber.java.en.Then;
+import de.metas.aggregation.model.I_C_AggregationItem;
+import de.metas.cucumber.stepdefs.StepDefData;
 
-public class Case_StepDef
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_AggregationItem_StepDefData extends StepDefData<I_C_AggregationItem>
 {
-	@Then("the metasfresh cache is reset")
-	public void processMetasfreshResponse()
+	public C_AggregationItem_StepDefData()
 	{
-		CacheMgt.get().reset();
+		super(I_C_AggregationItem.class);
 	}
 }

@@ -165,7 +165,7 @@ Feature: desadv and invoic
       | invoice_1               | endcustomer_1            | l_1                               | poReference_29042022_1 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
       | invoiceLine_1               | invoice_1               | p_1                     | 50          | true      | 12.50          | 5                           | TU                             | KGM                   |
 
     And validate created edi desadv
@@ -331,7 +331,7 @@ Feature: desadv and invoic
       | invoice_1               | endcustomer_1            | l_1                               | poReference_02052022_2 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
       | invoiceLine_1               | invoice_1               | p_1                     | 50          | true      | 5              | 5                           | PCE                            | TU                    |
 
     And validate created edi desadv
@@ -494,7 +494,7 @@ Feature: desadv and invoic
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_3 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
       | invoiceLine_1               | invoice_1               | p_1                     | 5           | true      | 5              | 5                           | PCE                            | PCE                   |
 
     And validate created edi desadv
@@ -659,7 +659,7 @@ Feature: desadv and invoic
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_4 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
       | invoiceLine_1               | invoice_1               | p_1                     | 5           | true      | 1.25           | 5                           | PCE                            | KGM                   |
 
     And validate created edi desadv
@@ -829,7 +829,7 @@ Feature: desadv and invoic
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_5 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
       | invoiceLine_1               | invoice_1               | p_1                     | 20          | true      | 20             | 5                           | KGM                            | PCE                   |
 
     And validate created edi desadv
@@ -998,7 +998,7 @@ Feature: desadv and invoic
       | invoice_1               | endcustomer_1            | l_1                               | poReference_04052022_6 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
       | invoiceLine_1               | invoice_1               | p_1                     | 25          | true      | 25             | 5                           | TU                             | PCE                   |
 
     And validate created edi desadv
