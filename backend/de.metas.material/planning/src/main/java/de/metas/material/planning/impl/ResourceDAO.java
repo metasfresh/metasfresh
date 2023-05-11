@@ -203,17 +203,12 @@ public class ResourceDAO implements IResourceDAO
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
 		productsRepo.updateProductsByResourceIds(ImmutableSet.of(resourceId), (resourceId1, existingProduct) -> {
-			final I_M_Product productToUpdate;
-			if (existingProduct == null)
+			final I_M_Product productToUpdate = existingProduct != null ? existingProduct : InterfaceWrapperHelper.newInstance(I_M_Product.class);
+
+			if(InterfaceWrapperHelper.isNew(existingProduct))
 			{
 				final ResourceType fromResourceType = getResourceTypeById(resourceTypeId);
-				productToUpdate = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-
 				updateProductFromResourceType(productToUpdate, fromResourceType);
-			}
-			else
-			{
-				productToUpdate = existingProduct;
 			}
 
 			updateProductFromResource(productToUpdate, resource);
