@@ -16,15 +16,15 @@ jobs:
         env:
           GIT_REF: ${{ github.ref_name }}
         run: |
-          echo "::set-output name=refname::$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')"
+          echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: define-build-info-properties
         id: build-info-properties
         env:
           BUILD_SYSTEM: ${{ runner.name }}
           BUILD_USER: ${{ github.actor }}
         run: |
-          echo "::set-output name=content::build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
-          echo "::set-output name=mfversion::$(cat docker-builds/version.info)"
+          echo "content=build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "mfversion=$(cat docker-builds/version.info)" >> $GITHUB_OUTPUT
       - name: define-git-properties
         id: git-properties
         env:
@@ -33,7 +33,7 @@ jobs:
           GIT_ID: ${{ github.event.head_commit.id }}
           GIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          echo "::set-output name=content::git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$GIT_MSG"
+          echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$GIT_MSG" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
       - name: print-info
