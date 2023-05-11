@@ -26,6 +26,7 @@ SELECT t.LotNumber              AS LotNumber,
        NULL                     AS Inventory,
        NOW()                    AS DocumentDate,
        getCurrentStorageStock(t.m_product_id,
+                              t.c_uom_id,
                               1000017, -- Lot-Nummer
                               t.lotnumber,
                               t.ad_client_id,
@@ -50,31 +51,36 @@ WHERE t.hutracetype IN ('PRODUCTION_ISSUE',
 
 UNION
 
-(SELECT DISTINCT ON (t.m_inout_ID) t.LotNumber                                                                                                                                               AS LotNumber,
-                                   t.hutracetype                                                                                                                                             AS HUTraceType,
-                                   p.value || '_' || p.name                                                                                                                                  AS Product,
-                                   io.documentno                                                                                                                                             AS InOut,
-                                   NULL                                                                                                                                                      AS PPOrder,
-                                   NULL                                                                                                                                                      AS Inventory,
-                                   io.movementdate                                                                                                                                           AS DocumentDate,
+(SELECT DISTINCT ON (t.m_inout_ID) t.LotNumber                                                      AS LotNumber,
+                                   t.hutracetype                                                    AS HUTraceType,
+                                   p.value || '_' || p.name                                         AS Product,
+                                   io.documentno                                                    AS InOut,
+                                   NULL                                                             AS PPOrder,
+                                   NULL                                                             AS Inventory,
+                                   io.movementdate                                                  AS DocumentDate,
 
-                                   (CASE WHEN t.hutracetype = 'MATERIAL_SHIPMENT' THEN -1 ELSE 1 END) * (SELECT SUM(uomconvert(p_m_product_id := p.m_product_id, p_c_uom_from_id := iol.c_uom_id, p_c_uom_to_id := p.c_uom_id, p_qty := iol.movementqty))
-                                                                                                         FROM metasfresh.public.m_inoutline iol
-                                                                                                                  LEFT JOIN m_attributesetinstance asi ON iol.m_attributesetinstance_id = asi.m_attributesetinstance_id
-                                                                                                                  LEFT JOIN M_AttributeInstance ai ON asi.m_attributesetinstance_id = ai.m_attributesetinstance_id
-                                                                                                         WHERE io.m_inout_id = iol.m_inout_id
-                                                                                                           AND iol.m_product_id = p.m_product_id
-                                                                                                           AND ((t.lotnumber IS NOT NULL AND ai.m_attribute_id = 1000017 AND ai.value = t.lotnumber)
-                                                                                                             OR (t.lotnumber IS NULL AND ai.m_attribute_id = 1000017 AND ai.value IS NULL))) AS Qty,
-                                   u.uomsymbol                                                                                                                                               AS UOM
+                                   CASE WHEN dt.isSOTrx = 'Y' THEN -1 ELSE 1 END * (SELECT SUM(uomconvert(p_m_product_id := p.m_product_id, p_c_uom_from_id := iol.c_uom_id, p_c_uom_to_id := p.c_uom_id, p_qty := iol.movementqty))
+                                                                              FROM metasfresh.public.m_inoutline iol
+                                                                              WHERE io.m_inout_id = iol.m_inout_id
+                                                                                AND iol.m_product_id = p.m_product_id
+                                                                                AND EXISTS (SELECT 1
+                                                                                            FROM m_hu_assignment hua
+                                                                                                     JOIN M_HU_Attribute huat ON hua.m_hu_id = huat.m_hu_id
+                                                                                            WHERE hua.ad_table_id = get_table_id('M_InOutLine')
+                                                                                              AND hua.record_id = iol.m_inoutline_id
+                                                                                              AND huat.m_attribute_id = 1000017
+                                                                                              AND ((t.lotnumber IS NOT NULL AND huat.value = t.lotnumber)
+                                                                                                OR (t.lotnumber IS NULL AND huat.value IS NULL)
+                                                                                                ))) AS Qty,
+                                   u.uomsymbol                                                      AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
                ON t.m_product_id = p.m_product_id
           JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
           LEFT JOIN M_InOut io ON t.m_inout_id = io.m_inout_id
-          LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
-          LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
+          LEFT JOIN C_DocType dt ON io.c_doctype_id = dt.c_doctype_id
  WHERE t.hutracetype IN ('MATERIAL_RECEIPT')
+   AND io.docstatus IN ('CO', 'CL')
    AND EXISTS (SELECT 1
                FROM T_Selection s
                WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
@@ -82,24 +88,25 @@ UNION
 
 
 UNION ALL
-(SELECT t.LotNumber              AS LotNumber,
-        t.hutracetype            AS HUTraceType,
-        p.value || '_' || p.name AS Product,
-        io.documentno            AS InOut,
-        NULL                     AS PPOrder,
-        NULL                     AS Inventory,
-        io.movementdate          AS DocumentDate,
+(SELECT t.LotNumber                                                            AS LotNumber,
+        t.hutracetype                                                          AS HUTraceType,
+        p.value || '_' || p.name                                               AS Product,
+        io.documentno                                                          AS InOut,
+        NULL                                                                   AS PPOrder,
+        NULL                                                                   AS Inventory,
+        io.movementdate                                                        AS DocumentDate,
 
-        -1 *  ROUND(t.qty, u.stdprecision)                 AS Qty,
-        u.uomsymbol              AS UOM
+        CASE WHEN dt.isSOTrx = 'Y' THEN -1 ELSE 1 END * ROUND(t.qty, u.stdprecision) AS Qty,
+        u.uomsymbol                                                            AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
                ON t.m_product_id = p.m_product_id
           JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
           LEFT JOIN M_InOut io ON t.m_inout_id = io.m_inout_id
-          LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
-          LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
+          LEFT JOIN C_DocType dt ON io.c_doctype_id = dt.c_doctype_id
+
  WHERE t.hutracetype IN ('MATERIAL_SHIPMENT')
+   AND io.docstatus IN ('CO', 'CL')
    AND EXISTS (SELECT 1
                FROM T_Selection s
                WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
@@ -107,15 +114,15 @@ UNION ALL
 
 
 UNION ALL
-(SELECT DISTINCT ON (t.pp_cost_collector_id) t.LotNumber                                                                 AS LotNumber,
-                                             t.hutracetype                                                               AS HUTraceType,
-                                             p.value || '_' || p.name                                                    AS Product,
-                                             io.documentno                                                               AS InOut,
-                                             po.documentno                                                               AS PPOrder,
-                                             i.documentno                                                                AS Inventory,
-                                             COALESCE(io.movementdate, cc.movementdate, po.datepromised, i.movementdate) AS DocumentDate,
-                                             ROUND(t.qty, u.stdprecision)                                                AS Qty,
-                                             u.uomsymbol                                                                 AS UOM
+(SELECT DISTINCT ON (t.pp_cost_collector_id) t.LotNumber                                                                                    AS LotNumber,
+                                             t.hutracetype                                                                                  AS HUTraceType,
+                                             p.value || '_' || p.name                                                                       AS Product,
+                                             io.documentno                                                                                  AS InOut,
+                                             po.documentno                                                                                  AS PPOrder,
+                                             i.documentno                                                                                   AS Inventory,
+                                             COALESCE(io.movementdate, cc.movementdate, po.datepromised, i.movementdate)                    AS DocumentDate,
+                                             CASE WHEN t.hutracetype = 'PRODUCTION_ISSUE' THEN -1 ELSE 1 END * ROUND(t.qty, u.stdprecision) AS Qty,
+                                             u.uomsymbol                                                                                    AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
                ON t.m_product_id = p.m_product_id
@@ -125,6 +132,7 @@ UNION ALL
           LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
           LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
  WHERE t.hutracetype IN ('PRODUCTION_ISSUE', 'PRODUCTION_RECEIPT')
+   AND po.docstatus IN ('CO', 'CL')
    AND EXISTS (SELECT 1
                FROM T_Selection s
                WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
@@ -132,15 +140,15 @@ UNION ALL
 
 
 UNION ALL
-(SELECT t.LotNumber                                                                 AS LotNumber,
-        t.hutracetype                                                               AS HUTraceType,
-        p.value || '_' || p.name                                                    AS Product,
-        io.documentno                                                               AS InOut,
-        po.documentno                                                               AS PPOrder,
-        i.documentno                                                                AS Inventory,
-        COALESCE(io.movementdate, cc.movementdate, po.datepromised, i.movementdate) AS DocumentDate,
-        ROUND(t.qty, u.stdprecision)                                                                              AS Qty,
-        u.uomsymbol                                                                 AS UOM
+(SELECT t.LotNumber                                                                         AS LotNumber,
+        t.hutracetype                                                                       AS HUTraceType,
+        p.value || '_' || p.name                                                            AS Product,
+        io.documentno                                                                       AS InOut,
+        po.documentno                                                                       AS PPOrder,
+        i.documentno                                                                        AS Inventory,
+        COALESCE(io.movementdate, cc.movementdate, po.datepromised, i.movementdate)         AS DocumentDate,
+        CASE WHEN i.C_Doctype_ID = 540948 THEN -1 ELSE 1 END * ROUND(t.qty, u.stdprecision) AS Qty,
+        u.uomsymbol                                                                         AS UOM
  FROM M_HU_Trace t
           JOIN M_Product p
                ON t.m_product_id = p.m_product_id
@@ -150,6 +158,7 @@ UNION ALL
           LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
           LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
  WHERE t.hutracetype = 'MATERIAL_INVENTORY'
+   AND i.docstatus IN ('CO', 'CL')
    AND EXISTS (SELECT 1
                FROM T_Selection s
                WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
