@@ -713,8 +713,6 @@ public class HUTraceEventsService
 
 		for (final I_M_HU_Assignment huAssignment : huAssignments)
 		{
-			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
-
 			final HuId huId = HuId.ofRepoId(huAssignment.getM_HU_ID());
 			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
@@ -729,44 +727,50 @@ public class HUTraceEventsService
 			else
 			{
 				builder.topLevelHuId(huId);
-				createTraceForPOIssueOrReceiptHU(builder, ppOrderId, huRecord);
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 			}
 
 			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
 
 			for (final I_M_HU vhu : vhus)
 			{
-				createTraceForPOIssueOrReceiptHU(builder, ppOrderId, vhu);
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
 			}
 		}
 	}
 
-	private void createTraceForPOIssueOrReceiptHU(final @NonNull HUTraceEventBuilder builder, final @NonNull PPOrderId ppOrderId,
+	private void createTraceForPOIssueOrReceiptHU(final @NonNull HUTraceEventBuilder builder, @NonNull final I_PP_Cost_Collector ppCostCollector,
 			@NonNull final I_M_HU hu)
 	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
+
 		final Optional<I_PP_Order_Qty> ppOrderQty = huPPOrderQtyDAO.retrieveOrderQtyForHu(
 				ppOrderId,
 				HuId.ofRepoId(hu.getM_HU_ID()));
 
 		if (!ppOrderQty.isPresent())
 		{
-			return;
+			createAndAddEvents(builder, ImmutableList.of(ppCostCollector));
+
 		}
-
-		final Quantity qtyToSet = Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID()));
-
-		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
-		if (!productAndQty.isPresent())
+		else
 		{
-			// skip such cases for now. To be handled in a followup
-			return;
+
+			final Quantity qtyToSet = Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID()));
+
+			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
+			if (!productAndQty.isPresent())
+			{
+				// skip such cases for now. To be handled in a followup
+				return;
+			}
+
+			builderSetVhuProductAndQty(builder, hu)
+					.vhuStatus(hu.getHUStatus())
+					.qty(qtyToSet);
+
+			huTraceRepository.addEvent(builder.build());
 		}
-
-		builderSetVhuProductAndQty(builder, hu)
-				.vhuStatus(hu.getHUStatus())
-				.qty(qtyToSet);
-
-		huTraceRepository.addEvent(builder.build());
 	}
 
 	private HUTraceEventBuilder builderSetVhuProductAndQty(
