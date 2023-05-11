@@ -125,7 +125,7 @@ public final class PPOrderCreatedHandler
 
 		return candidateChangeService.onCandidateNewOrChange(
 				headerCandidate,
-				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(true));
+				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(false));
 	}
 
 	@NonNull

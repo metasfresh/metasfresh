@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.IOrgDAO;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -30,6 +32,7 @@ import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
+import org.mockito.Mockito;
 
 /*
  * #%L
@@ -56,6 +59,7 @@ import de.metas.user.UserRepository;
 public class PurchaseCandidateAdvisedEventCreatorTest
 {
 	private I_PP_Product_Planning productPlanningRecord;
+	private IOrgDAO orgDAO;
 
 	@Before
 	public void init()
@@ -65,6 +69,9 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		productPlanningRecord = newInstance(I_PP_Product_Planning.class);
 		productPlanningRecord.setIsPurchased("Y");
 		save(productPlanningRecord);
+
+		orgDAO = Mockito.mock(IOrgDAO.class);
+		Services.registerService(IOrgDAO.class, orgDAO);
 	}
 
 	@Test
@@ -78,6 +85,9 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		final I_C_BPartner bPartnerVendorRecord = newInstance(I_C_BPartner.class);
 		bPartnerVendorRecord.setPO_DiscountSchema(discountSchemaRecord); // note that right now we don't need to have an actual price
 		save(bPartnerVendorRecord);
+
+		Mockito.when(orgDAO.getTimeZone(Mockito.any()))
+				.thenReturn(SystemTime.zoneId());
 
 		SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))

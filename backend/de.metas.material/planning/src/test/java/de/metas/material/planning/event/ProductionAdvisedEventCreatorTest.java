@@ -1,6 +1,7 @@
 package de.metas.material.planning.event;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -14,7 +15,9 @@ import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidatePojoSupplier;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.product.ResourceId;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -61,6 +64,7 @@ public class ProductionAdvisedEventCreatorTest
 
 	private I_M_Product product;
 	private I_PP_Product_Planning ppProductPlanning;
+	private IOrgDAO orgDAO;
 
 	@BeforeEach
 	public void init()
@@ -79,6 +83,9 @@ public class ProductionAdvisedEventCreatorTest
 
 		ppOrderCandidateDemandMatcher = Mockito.mock(PPOrderCandidateDemandMatcher.class);
 		ppOrderCandidatePojoSupplier = Mockito.mock(PPOrderCandidatePojoSupplier.class);
+
+		orgDAO = Mockito.mock(IOrgDAO.class);
+		Services.registerService(IOrgDAO.class, orgDAO);
 	}
 
 	@Test
@@ -123,6 +130,9 @@ public class ProductionAdvisedEventCreatorTest
 
 		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(IMaterialRequest.class)))
 				.thenReturn(createDummyPPOrderCandidate());
+
+		Mockito.when(orgDAO.getTimeZone(Mockito.any()))
+				.thenReturn(SystemTime.zoneId());
 
 		SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
