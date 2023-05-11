@@ -109,7 +109,9 @@ public class SupplyRequiredEventCreator
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
 				.fullDemandQty(fullDemandQty)
 				.simulated(candidate.isSimulated())
-				.isLotForLot(candidate.getLotForLot());
+				.isLotForLot(candidate.getLotForLot())
+				.updated(candidate.isUpdated())
+				.deltaQuantity(candidate.getDeltaQuantity());
 	}
 
 }

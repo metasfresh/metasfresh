@@ -69,7 +69,7 @@ public class DDOrderAdvisedEventCreator
 
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning(); // won't be null; if there was no productPlanningData, we wouldn't be here.
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
-		if(!productPlanningData.isLotForLot() && requiredQty.signum() == 0)
+		if(!productPlanningData.isLotForLot() && requiredQty.signum() <= 0)
 		{
 			Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
 			return ImmutableList.of();
@@ -77,19 +77,34 @@ public class DDOrderAdvisedEventCreator
 
 		if(productPlanningData.isLotForLot())
 		{
-			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+			final BigDecimal usedQty;
+			if(!supplyRequiredDescriptor.isUpdated())
+			{
+				usedQty = supplyRequiredDescriptor.getFullDemandQty();
+				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", usedQty);
+			}
+			// we don't reduce Quantity of DDOrders atm
+			else if(supplyRequiredDescriptor.getDeltaQuantity().signum() > 0)
+			{
+				usedQty = supplyRequiredDescriptor.getDeltaQuantity();
+				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", usedQty);
+			}
+			else
+			{
+				Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=true and updated=true, but deltaQty={}", supplyRequiredDescriptor.getDeltaQuantity());
+				return ImmutableList.of();
+			}
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
 					.isLotForLot("Y")
-					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(fullDemandQty))
+					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
 					.build();
-			Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true", fullDemandQty);
 		}
 		else
 		{
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
-		if(requiredQty.signum() == 0)
+		if(productPlanningData.isLotForLot())
 		{
 			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
 		}

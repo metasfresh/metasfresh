@@ -70,6 +70,10 @@ public class SupplyRequiredDescriptor
 
 	String isLotForLot;
 
+	boolean updated;
+
+	BigDecimal deltaQuantity;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private SupplyRequiredDescriptor(
@@ -85,7 +89,9 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
 			@JsonProperty("simulated") final boolean simulated,
 			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty,
-			@JsonProperty("isLotForLot") final String isLotForLot)
+			@JsonProperty("isLotForLot") final String isLotForLot,
+			@JsonProperty("updated") final boolean updated,
+			@JsonProperty("deltaQuantity") final BigDecimal deltaQuantity)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -104,5 +110,7 @@ public class SupplyRequiredDescriptor
 		this.simulated = simulated;
 		this.fullDemandQty = fullDemandQty;
 		this.isLotForLot = isLotForLot;
+		this.updated = updated;
+		this.deltaQuantity = deltaQuantity;
 	}
 }

@@ -89,18 +89,39 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		if(productPlanning.isLotForLot())
 		{
-			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
-			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(fullDemandQty);
+			final BigDecimal usedQty;
+			if(!supplyRequiredDescriptor.isUpdated())
+			{
+				usedQty = supplyRequiredDescriptor.getFullDemandQty();
+				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", usedQty);
+			}
+			// we don't reduce Quantity of PurchaseCandidates atm
+			else if(supplyRequiredDescriptor.getDeltaQuantity().signum() > 0)
+			{
+				usedQty = supplyRequiredDescriptor.getDeltaQuantity();
+				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", usedQty);
+			}
+			else
+			{
+				Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because LotForLot=true and updated=true, but deltaQty={}", supplyRequiredDescriptor.getDeltaQuantity());
+				return Optional.empty();
+			}
+			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty);
 			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder()
 												   .materialDescriptor(updatedMaterialDescriptor)
 												   .isLotForLot("Y")
 												   .build());
-			Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true", fullDemandQty);
 		}
 		else
 		{
 			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
 		}
+
+		if(productPlanning.isLotForLot())
+		{
+			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
+		}
+
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
 		return Optional.of(event.build());

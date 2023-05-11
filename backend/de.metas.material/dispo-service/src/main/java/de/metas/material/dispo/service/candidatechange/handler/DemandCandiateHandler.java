@@ -147,7 +147,14 @@ public class DemandCandiateHandler implements CandidateHandler
 
 		if (savedCandidate.getType() == CandidateType.DEMAND)
 		{
-			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
+			if(candidateSaveResult.getPreviousQty() == null)
+			{
+				fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
+			}
+			else
+			{
+				fireSupplyRequiredEventIfNeeded(candidateSaveResult.toCandidateWithUpdateInfo(), savedStockCandidate);
+			}
 		}
 		return candidateToReturn;
 	}
@@ -196,7 +203,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getMinMaxDescriptor());
 		// note: since this candidate might need to be handled "lotForLot", we may fire the event even if requiredQty <= 0
 		final BigDecimal fullDemandQty = demandCandidateWithId.getMaterialDescriptor().getQuantity();
-		if (requiredQty.signum() > 0 || fullDemandQty.signum() > 0)
+		if (requiredQty.signum() > 0 || (fullDemandQty.signum() > 0 && !demandCandidateWithId.isUpdated()))
 		{
 			postSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 		}

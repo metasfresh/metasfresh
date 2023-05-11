@@ -25,7 +25,6 @@ package de.metas.material.planning.ppordercandidate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
@@ -83,19 +82,35 @@ public class PPOrderCandidateAdvisedEventCreator
 
 		if(productPlanning.isLotForLot())
 		{
-			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+			final BigDecimal usedQty;
+			if(!supplyRequiredDescriptor.isUpdated())
+			{
+				usedQty = supplyRequiredDescriptor.getFullDemandQty();
+				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", usedQty);
+			}
+			// we don't reduce Quantity of PPOrders and PPOrderCandidates atm
+			else if(supplyRequiredDescriptor.getDeltaQuantity().signum() > 0)
+			{
+				usedQty = supplyRequiredDescriptor.getDeltaQuantity();
+				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", usedQty);
+			}
+			else
+			{
+				Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent because LotForLot=true and updated=true, but deltaQty={}", supplyRequiredDescriptor.getDeltaQuantity());
+				return ImmutableList.of();
+			}
+
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
 					.isLotForLot("Y")
-					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(fullDemandQty))
+					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
 					.build();
-			Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true", fullDemandQty);
 		}
 		else
 		{
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
-		if(requiredQty.signum() == 0)
+		if(productPlanning.isLotForLot())
 		{
 			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
 		}
