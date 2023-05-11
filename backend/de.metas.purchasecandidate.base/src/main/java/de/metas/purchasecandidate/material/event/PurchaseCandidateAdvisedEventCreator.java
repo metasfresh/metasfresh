@@ -71,6 +71,24 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
+		final I_PP_Product_Planning ppOrderProductPlanning = mrpContext.getPpOrderProductPlanning();
+		if(productPlanning.isLotForLot()
+				&& supplyRequiredDescriptor.getPpOrderCandidateId() > 0
+				&& ppOrderProductPlanning != null
+				&& ppOrderProductPlanning.isCreatePlan())
+		{
+			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because it should be created by PPOrder");
+			return Optional.empty();
+		}
+		if(!productPlanning.isLotForLot()
+				&& supplyRequiredDescriptor.getPpOrderId() > 0
+				&& ppOrderProductPlanning != null
+				&& !ppOrderProductPlanning.isCreatePlan())
+		{
+			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because it should already be created by PPOrderCandidate");
+			return Optional.empty();
+		}
+
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
 		final OrgId orgId = supplyRequiredDescriptor.getEventDescriptor().getOrgId();
 

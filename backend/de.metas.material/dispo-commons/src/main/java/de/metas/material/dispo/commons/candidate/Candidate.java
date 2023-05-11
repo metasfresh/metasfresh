@@ -108,6 +108,10 @@ public class Candidate
 
 	String lotForLot;
 
+	/**
+	 * Used in case LotForLot to not create a new Supply with fullDemandQty
+	 * in case of updated Demand
+	 */
 	boolean updated;
 
 	BigDecimal deltaQuantity;

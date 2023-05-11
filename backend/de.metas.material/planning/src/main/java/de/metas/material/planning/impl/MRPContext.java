@@ -43,6 +43,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -83,13 +84,18 @@ public final class MRPContext implements IMutableMRPContext
 	private Timestamp timeFence;
 	private int plannerUserId;
 
+	@Nullable
 	private I_PP_MRP mrp;
+
+	@Nullable
 	private List<I_PP_MRP> mrpDemands;
 	private int enforced_PP_MRP_Demand_ID = -1;
 
 	private BigDecimal qtyProjectOnHand = BigDecimal.ZERO;
 
 	private int attributeSetInstanceId = AttributeConstants.M_AttributeSetInstance_ID_None;
+
+	private I_PP_Product_Planning ppOrderProductPlanning;
 
 	@VisibleForTesting
 	public MRPContext()
@@ -101,7 +107,7 @@ public final class MRPContext implements IMutableMRPContext
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append("MRPContext [");
-		sb.append("\n adClientId=" + adClientId);
+		sb.append("\n adClientId=").append(adClientId);
 
 		sb.append("\n org=");
 		if (org == null)
@@ -215,13 +221,13 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final Logger getLogger()
+	public Logger getLogger()
 	{
 		return mrpLogger;
 	}
 
 	@Override
-	public final void setLogger(final Logger mrpLogger)
+	public void setLogger(final Logger mrpLogger)
 	{
 		Check.assumeNotNull(mrpLogger, "mrpLogger not null");
 		this.mrpLogger = mrpLogger;
@@ -264,7 +270,7 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final OrgId getOrgId()
+	public OrgId getOrgId()
 	{
 		final I_AD_Org org = getAD_Org();
 		if (org == null)
@@ -287,7 +293,7 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final ProductId getProductId()
+	public ProductId getProductId()
 	{
 		final I_M_Product product = getM_Product();
 		return product == null ? null : ProductId.ofRepoId(product.getM_Product_ID());
@@ -376,7 +382,7 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final int getPlant_ID()
+	public int getPlant_ID()
 	{
 		final I_S_Resource plant = getPlant();
 		if (plant == null)
@@ -399,7 +405,7 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final WarehouseId getWarehouseId()
+	public WarehouseId getWarehouseId()
 	{
 		final I_M_Warehouse warehouse = getM_Warehouse();
 		if (warehouse == null)
@@ -517,5 +523,17 @@ public final class MRPContext implements IMutableMRPContext
 					.setParameter("IMaterialPlanningContext.ProductPlanning", getProductPlanning())
 					.setParameter("IMaterialPlanningContext.ProductPlanning.M_Product_ID", productPlanningProductId);
 		}
+	}
+
+	@Override
+	public I_PP_Product_Planning getPpOrderProductPlanning()
+	{
+		return ppOrderProductPlanning;
+	}
+
+	@Override
+	public void setPpOrderProductPlanning(final I_PP_Product_Planning ppOrderProductPlanning)
+	{
+		this.ppOrderProductPlanning = ppOrderProductPlanning;
 	}
 }

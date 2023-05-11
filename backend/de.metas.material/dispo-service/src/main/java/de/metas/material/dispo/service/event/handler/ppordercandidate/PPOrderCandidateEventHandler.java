@@ -222,6 +222,7 @@ public abstract class PPOrderCandidateEventHandler
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLineData.getProductBomLineId())
 				.description(ppOrderLineData.getDescription())
+				.ppOrderCandidateId(ppOrderCandidate.getPpOrderCandidateId())
 				.ppOrderLineCandidateId(ppOrderLineCandidate.getPpOrderLineCandidateId())
 				.build();
 	}

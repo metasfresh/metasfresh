@@ -76,7 +76,29 @@ public class SupplyRequiredDescriptor
 	 */
 	boolean updated;
 
+	/**
+	 * Used in case LotForLot to not create a new Supply with fullDemandQty
+	 * in case of updated Demand
+	 */
 	BigDecimal deltaQuantity;
+
+	/**
+	 * Used to avoid duplicated demand after Manufacturing Orders
+	 * in case of LotForLot and not LotForLot with isCreatePlan = false
+	 */
+	int ppOrderId;
+
+	/**
+	 * Used to avoid duplicated demand after Manufacturing OrderCandidates
+	 * in case of LotForLot and not LotForLot with isCreatePlan = false
+	 */
+	int ppOrderCandidateId;
+
+	/**
+	 * Used to avoid duplicated demand after Manufacturing Orders / OrderCandidates
+	 * in case of LotForLot and not LotForLot with isCreatePlan = false
+	 */
+	int ppOrderProductPlanningId;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -95,7 +117,10 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty,
 			@JsonProperty("isLotForLot") final String isLotForLot,
 			@JsonProperty("updated") final boolean updated,
-			@JsonProperty("deltaQuantity") final BigDecimal deltaQuantity)
+			@JsonProperty("deltaQuantity") final BigDecimal deltaQuantity,
+			@JsonProperty("ppOrderId") final int ppOrderId,
+			@JsonProperty("ppOrderCandidateId") final int ppOrderCandidateId,
+			@JsonProperty("ppOrderProductPlanningId") final int ppOrderProductPlanningId)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -114,7 +139,12 @@ public class SupplyRequiredDescriptor
 		this.simulated = simulated;
 		this.fullDemandQty = fullDemandQty;
 		this.isLotForLot = isLotForLot;
+
 		this.updated = updated;
 		this.deltaQuantity = deltaQuantity;
+
+		this.ppOrderId = ppOrderId > 0 ? ppOrderId : -1;
+		this.ppOrderCandidateId = ppOrderCandidateId > 0 ? ppOrderCandidateId : -1;
+		this.ppOrderProductPlanningId = ppOrderProductPlanningId > 0 ? ppOrderProductPlanningId : -1;
 	}
 }
