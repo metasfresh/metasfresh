@@ -7,7 +7,9 @@ import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.impl.BankStatementBL;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.MoneyService;
+import de.metas.util.Services;
 import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -66,7 +68,8 @@ public class C_BankStatementLine_Test
 						bankRepo = new BankRepository(),
 						new CurrencyRepository()),
 				new MoneyService(new CurrencyRepository()));
-		callout = new C_BankStatementLine(bankStatementBL);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+		callout = new C_BankStatementLine(bankStatementBL, currencyConversionBL);
 	}
 
 	@Builder(builderMethodName = "bankStatementLine", builderClassName = "$BankStatementLineBuilder")

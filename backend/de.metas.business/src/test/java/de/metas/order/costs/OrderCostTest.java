@@ -61,10 +61,12 @@ class OrderCostTest
 			@Nullable String inoutCostAmount)
 	{
 		return OrderCostDetail.builder()
-				.orderLineId(orderLineId != null ? orderLineId : OrderLineId.ofRepoId(11))
-				.productId(ProductId.ofRepoId(12))
-				.qtyOrdered(qty != null ? kg(qty) : kg("0"))
-				.orderLineNetAmt(euroOrZero(orderLineNetAmt))
+				.orderLineInfo(OrderCostDetailOrderLinePart.builder()
+						.orderLineId(orderLineId != null ? orderLineId : OrderLineId.ofRepoId(11))
+						.productId(ProductId.ofRepoId(12))
+						.qtyOrdered(qty != null ? kg(qty) : kg("0"))
+						.orderLineNetAmt(euroOrZero(orderLineNetAmt))
+						.build())
 				.costAmount(euroOrZero(costAmount))
 				.inoutCostAmount(euroOrZero(inoutCostAmount))
 				.build();

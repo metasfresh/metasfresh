@@ -17,6 +17,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.X_C_PaymentTerm;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -133,6 +134,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
 				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
 				.setDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 14))
+				.setDateToInvoice(LocalDate.of(2019, Month.SEPTEMBER, 14))
 				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 1)) // dateInvoiced shall take precedence!
 				.build();
 
@@ -192,6 +194,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
 		pt.setC_PaymentTerm_ID(100);
 		pt.setIsAllowOverrideDueDate(true);
+		pt.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
+		pt.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
 		InterfaceWrapperHelper.save(pt);
 
 		return pt.getC_PaymentTerm_ID();

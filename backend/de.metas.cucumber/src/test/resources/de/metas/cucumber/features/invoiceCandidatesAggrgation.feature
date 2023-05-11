@@ -70,9 +70,21 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
@@ -144,9 +156,22 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
@@ -218,9 +243,21 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
@@ -292,9 +329,23 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1,invoice_2     |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in their own respective invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
+      | invoice_2               | invoice_candidate_2               |
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
@@ -370,9 +421,23 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |

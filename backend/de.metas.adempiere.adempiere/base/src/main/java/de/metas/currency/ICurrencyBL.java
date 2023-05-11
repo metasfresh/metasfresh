@@ -46,9 +46,20 @@ import java.util.Properties;
  */
 public interface ICurrencyBL extends ISingletonService
 {
+	/**
+	 * @param conversionTypeId optional; if {@code null}, the default conversion-type for the given client, org and date is assumed.
+	 */
 	@NonNull CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull Instant conversionDate,
 			@Nullable CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
+
+	/**
+	 * @return a context with the default conversion for the given client, org and date.
+	 */
+	@NonNull CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull Instant conversionDate,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
@@ -64,6 +75,9 @@ public interface ICurrencyBL extends ISingletonService
 			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId);
 
+	/**
+	 * @param conversionType optional; if {@code null}, then {@link ConversionTypeMethod#Spot} is assumed.
+	 */
 	@NonNull CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull Instant conversionDate,
 			@Nullable ConversionTypeMethod conversionType,

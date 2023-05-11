@@ -39,6 +39,9 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -70,6 +73,7 @@ public class ImportInvoiceCandidatesService
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final ManualCandidateService manualCandidateService;
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
@@ -116,6 +120,12 @@ public class ImportInvoiceCandidatesService
 				.map(date -> TimeUtil.asLocalDate(date, orgZoneId))
 				.orElseGet(() -> computeDateOrderedBasedOnPresetDateInvoiced(orgZoneId, record.getPresetDateInvoiced()));
 
+		final BPartnerInfo billPartnerInfo = getBPartnerInfo(record);
+		final SOTrx soTrx = SOTrx.ofBoolean(record.isSOTrx());
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(billPartnerInfo.getBpartnerId(), soTrx);
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(paymentTermQuery);
+
 		return NewManualInvoiceCandidate.builder()
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
@@ -126,7 +136,7 @@ public class ImportInvoiceCandidatesService
 				.presetDateInvoiced(TimeUtil.asLocalDate(record.getPresetDateInvoiced(), orgZoneId))
 
 				.orgId(orgId)
-				.billPartnerInfo(getBPartnerInfo(record))
+				.billPartnerInfo(billPartnerInfo)
 				.invoiceRule(InvoiceRule.ofNullableCode(record.getInvoiceRule()))
 				.invoiceDocTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
 
@@ -141,8 +151,9 @@ public class ImportInvoiceCandidatesService
 				.descriptionBottom(record.getDescriptionBottom())
 				.userInChargeId(UserId.ofRepoIdOrNull(record.getAD_User_InCharge_ID()))
 				.recordReference(recordReference)
-				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
+				.soTrx(soTrx)
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.paymentTermId(paymentTermId)
 				.build();
 	}
 

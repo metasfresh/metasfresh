@@ -325,6 +325,20 @@ public class OrderCost
 						.map(detail -> detail.copy(mapper))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
 
+	public void updateOrderLineInfoIfApplies(
+			final OrderCostDetailOrderLinePart orderLineInfo,
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		final OrderCostDetail detail = getDetailByOrderLineIdIfExists(orderLineInfo.getOrderLineId()).orElse(null);
+		if (detail == null)
+		{
+			return;
+		}
+
+		detail.setOrderLineInfo(orderLineInfo);
+		updateCostAmount(currencyPrecisionProvider, uomConverter);
 	}
 }

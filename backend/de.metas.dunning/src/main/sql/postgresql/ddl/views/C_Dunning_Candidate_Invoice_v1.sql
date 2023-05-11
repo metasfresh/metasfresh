@@ -16,7 +16,6 @@ SELECT
      , i.DateInvoiced
      , COALESCE(ips.DueDate, i.DueDate) AS DueDate
 	, i.C_PaymentTerm_ID
-	-- , COALESCE(daysBetween(?,ips.DueDate), paymentTermDueDays(i.C_PaymentTerm_ID,i.DateInvoiced,?)) AS DaysDue
 	, i.IsInDispute
 	, COALESCE(bp.C_Dunning_ID, bpg.C_Dunning_ID, dunnOrg.C_Dunning_ID) as C_Dunning_ID
 	, i.IsActive
