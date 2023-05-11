@@ -1,4 +1,5 @@
 DROP FUNCTION IF EXISTS getCurrentStorageStock(p_M_Product_ID   numeric,
+                                               p_C_UOM_ID       numeric,
                                                p_M_Attribute_ID numeric,
                                                p_AttrivuteValue character varying,
                                                p_AD_Client_ID   numeric,
@@ -6,6 +7,7 @@ DROP FUNCTION IF EXISTS getCurrentStorageStock(p_M_Product_ID   numeric,
 ;
 
 CREATE OR REPLACE FUNCTION getCurrentStorageStock(p_M_Product_ID   numeric,
+                                                  p_C_UOM_ID       numeric,
                                                   p_M_Attribute_ID numeric,
                                                   p_AttrivuteValue character varying,
                                                   p_AD_Client_ID   numeric,
@@ -15,12 +17,13 @@ AS
 
 $$
 
-SELECT SUM(s.qty)
+SELECT (COALESCE(SUM(s.qty), 0))
 
 FROM m_hu_storage s
- JOIN M_HU hu on s.m_hu_id = hu.m_hu_id
+         JOIN M_HU hu ON s.m_hu_id = hu.m_hu_id
 
 WHERE p_M_Product_ID = s.M_Product_ID
+  AND s.c_uom_id = p_C_UOM_ID
   AND s.IsActive = 'Y'
   AND s.AD_Client_ID = p_AD_Client_ID
   AND s.AD_Org_ID = p_AD_Org_ID
@@ -33,15 +36,13 @@ WHERE p_M_Product_ID = s.M_Product_ID
                  FROM m_hu_attribute hua
                  WHERE s.m_hu_id = hua.m_hu_id
                    AND hua.m_attribute_id = p_M_Attribute_ID
-                   AND hua.value is null
-        ))
-      )
-           OR (EXISTS (SELECT 1
-                                              FROM m_hu_attribute hua
-                                              WHERE s.m_hu_id = hua.m_hu_id
-                                                AND hua.m_attribute_id = p_M_Attribute_ID
-                                                AND hua.value = p_AttrivuteValue
-                                               )))
+                   AND hua.value IS NULL))
+           )
+    OR (EXISTS (SELECT 1
+                FROM m_hu_attribute hua
+                WHERE s.m_hu_id = hua.m_hu_id
+                  AND hua.m_attribute_id = p_M_Attribute_ID
+                  AND hua.value = p_AttrivuteValue)))
 
 $$
     LANGUAGE SQL STABLE
@@ -59,6 +60,7 @@ COMMENT ON FUNCTION getCurrentStorageStock(p_M_Product_ID numeric,
        getCurrentStorageStock
            (
                p_M_Product_ID := M_Product_ID,
+               p_C_UOM_ID := 540017 -- kg
                p_M_Attribute_ID := 1000017, -- Lot number
                p_AttrivuteValue := ''55555555'',
                p_AD_Client_ID := 1000000,
