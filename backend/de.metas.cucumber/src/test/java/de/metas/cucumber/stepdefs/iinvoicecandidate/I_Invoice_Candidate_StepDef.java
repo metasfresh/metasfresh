@@ -56,6 +56,7 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -73,6 +74,8 @@ public class I_Invoice_Candidate_StepDef
 	private final AD_Org_StepDefData orgTable;
 	private final C_Activity_StepDefData activityTable;
 
+	private final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -85,7 +88,8 @@ public class I_Invoice_Candidate_StepDef
 			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_UOM_StepDefData uomTable,
 			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final C_Activity_StepDefData activityTable)
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable)
 	{
 		this.iInvoiceCandidateTable = iInvoiceCandidateTable;
 		this.bpartnerTable = bpartnerTable;
@@ -96,6 +100,7 @@ public class I_Invoice_Candidate_StepDef
 		this.uomTable = uomTable;
 		this.orgTable = orgTable;
 		this.activityTable = activityTable;
+		this.iInvoiceCandidateListTable = iInvoiceCandidateListTable;
 	}
 
 	@And("I_Invoice_Candidate is found: searching by product value")
@@ -104,6 +109,31 @@ public class I_Invoice_Candidate_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			validateCreatedIInvoiceCandidate(row);
+		}
+	}
+
+	@And("locate I_Invoice_Candidate list searching by bill partner value")
+	public void loadImportInvoiceCandidatesByPartnerValue(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String billBPartnerValue = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value);
+
+			final List<I_I_Invoice_Candidate> importInvoiceCandidates = queryBL.createQueryBuilder(I_I_Invoice_Candidate.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value, billBPartnerValue)
+					.orderByDescending(I_I_Invoice_Candidate.COLUMNNAME_Created)
+					.create()
+					.list(I_I_Invoice_Candidate.class);
+
+			final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.ExpectedCount");
+			if (numberOfCandidates != null)
+			{
+				assertThat(numberOfCandidates).as("ExpectedCount").isEqualTo(importInvoiceCandidates.size());
+			}
+
+			final String iInvoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+			iInvoiceCandidateListTable.putOrReplace(iInvoiceCandidateIdentifier, importInvoiceCandidates);
 		}
 	}
 
@@ -166,7 +196,7 @@ public class I_Invoice_Candidate_StepDef
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_QtyDelivered);
 
 		softly.assertThat(invoiceCandidate.getM_Product_ID()).as("M_Product_ID").isNotNull();
-		softly.assertThat(invoiceCandidate.getQtyOrdered()).as("QtyOrdered").isNotNull().isEqualTo(qtyOrdered);;
+		softly.assertThat(invoiceCandidate.getQtyOrdered()).as("QtyOrdered").isNotNull().isEqualTo(qtyOrdered);
 		softly.assertThat(invoiceCandidate.getQtyDelivered()).as("QtyDelivered").isEqualTo(qtyDelivered);
 
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID()));

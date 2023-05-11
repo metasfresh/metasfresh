@@ -99,7 +99,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
 		icChangesChecker.setBeforeChanges(unorderedICs);
 
-		//
+		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
+		// otherwise, we can easly run into DB-deadloacks
+		ensureICsAreUpdated(pInstanceId);
+
 		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
 		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
 
@@ -246,6 +249,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 	private void waitForInvoiceCandidatesUpdated(final @NonNull PInstanceId pinstanceId)
 	{
+		Loggables.addLog("waitForInvoiceCandidatesUpdated - Start waiting for the IC-selection with AD_PInstance_ID={} to be updated.", pinstanceId.getRepoId());
 		try
 		{
 			TryAndWaitUtil.tryAndWait(
@@ -259,6 +263,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
 					.setParameter("AD_PInstance_ID (ICs-selection)", pinstanceId.getRepoId());
+		}
+		finally
+		{
+			Loggables.addLog("waitForInvoiceCandidatesUpdated - Done waiting for the IC-selection with AD_PInstance_ID={} to be updated.", pinstanceId.getRepoId());
 		}
 	}
 
@@ -341,12 +349,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		if (Check.isNotBlank(poReference))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
-		}
-
-		// issue https://github.com/metasfresh/metasfresh/issues/3809
-		if (invoicingParams.isSupplementMissingPaymentTermIds())
-		{
-			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
 
 		//

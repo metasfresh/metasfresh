@@ -19,7 +19,6 @@
         <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="metasfresh/misc/dev-support/docker/infrastructure/env-files/master.env" />
       </ENTRIES>
     </extension>
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="ALTERNATIVE_JRE_PATH" value="temurin-1.8" />
     <option name="PACKAGE_NAME" value="de.metas.cucumber" />
     <option name="MAIN_CLASS_NAME" value="de.metas.cucumber.RunCucumberTest" />

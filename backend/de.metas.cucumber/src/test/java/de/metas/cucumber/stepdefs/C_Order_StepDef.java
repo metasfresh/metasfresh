@@ -338,6 +338,12 @@ public class C_Order_StepDef
 				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
 			}
 
+			final int salesRepID = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_SalesRep_ID);
+			if (salesRepID > 0)
+			{
+				order.setSalesRep_ID(salesRepID);
+			}
+
 			saveRecord(order);
 
 			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
@@ -402,8 +408,8 @@ public class C_Order_StepDef
 		assertThat(errorThrown).isTrue();
 	}
 
-	@And("^the order identified by (.*) is (completed) and the following exception is thrown: (.*)$")
-	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final String exceptionMessage)
+	@And("^the order identified by (.*) is (completed) and an exception with error-code (.*) is thrown$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final String errorCode)
 	{
 		try
 		{
@@ -412,7 +418,7 @@ public class C_Order_StepDef
 		}
 		catch (final AdempiereException exception)
 		{
-			assertThat(exception.getMessage()).contains(exceptionMessage);
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
 		}
 	}
 

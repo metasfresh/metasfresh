@@ -405,6 +405,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "apiVersion": "ApiVersion",
+      "bPartnerImportSettings": [
+        {
+          "isSingleBPartner": true,
+          "partnerCodePattern": "PartnerCode-Pattern",
+          "seqNo": 10,
+          "singleBPartner": true
+        }
+      ],
       "baseURL": "baseURL",
       "checkDescriptionForMaterialType": false,
       "contentSourceLocalFile": {
@@ -464,6 +472,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getByTypeAndParent=[
   {
     "apiVersion": "ApiVersion",
+    "bPartnerImportSettings": [
+      {
+        "isSingleBPartner": true,
+        "partnerCodePattern": "PartnerCode-Pattern",
+        "seqNo": 10,
+        "singleBPartner": true
+      }
+    ],
     "baseURL": "baseURL",
     "checkDescriptionForMaterialType": false,
     "contentSourceLocalFile": {
@@ -520,6 +536,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "apiVersion": "ApiVersion",
+      "bPartnerImportSettings": [
+        {
+          "isSingleBPartner": true,
+          "partnerCodePattern": "PartnerCode-Pattern",
+          "seqNo": 10,
+          "singleBPartner": true
+        }
+      ],
       "baseURL": "baseURL",
       "checkDescriptionForMaterialType": false,
       "contentSourceLocalFile": {
@@ -859,6 +883,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
       "auditFileFolder": "auditFileFolder",
       "childConfig": {
         "apiVersion": "ApiVersion",
+        "bPartnerImportSettings": [
+          {
+            "isSingleBPartner": true,
+            "partnerCodePattern": "PartnerCode-Pattern",
+            "seqNo": 10,
+            "singleBPartner": true
+          }
+        ],
         "baseURL": "baseURL",
         "checkDescriptionForMaterialType": false,
         "contentSourceLocalFile": {

@@ -77,7 +77,8 @@ Feature: Business Partner block management
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
-    Then the order identified by o_1 is completed and the following exception is thrown: Order cannot be completed because the partner is blocked!
+    Then the order identified by o_1 is completed and an exception with error-code CannotCompleteOrderWithBlockedPartner is thrown
+
 
   @from:cucumber
   Scenario: we cannot complete a shipment for a blocked Business Partner
@@ -134,7 +135,8 @@ Feature: Business Partner block management
       | C_BPartner_BlockStatus_ID.Identifier | OPT.Reason            | BlockStatus |
       | bs_b_1                               | test_block_23022023_3 | B           |
 
-    Then the shipment identified by shipment_1 is completed and the following exception is thrown: Document (goods issue/receipt) cannot be completed because the partner is blocked!
+    Then the shipment identified by shipment_1 is completed and an exception with error-code CannotCompleteInOutWithBlockedPartner is thrown
+
 
   @from:cucumber
   Scenario: we cannot receive HUs from blocked BP
@@ -199,6 +201,6 @@ Feature: Business Partner block management
       | bs_b_1                               | test_block_23022023_4 | B           |
 
     Then create material receipt and the following exception is thrown
-      | M_InOut_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | Exception                                                                          |
-      | inOut_PO              | processedLU        | receiptSchedule_PO              | Document (goods issue/receipt) cannot be completed because the partner is blocked! |
+      | M_InOut_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | ErrorCode                             |
+      | inOut_PO              | processedLU        | receiptSchedule_PO              | CannotCompleteInOutWithBlockedPartner |
     

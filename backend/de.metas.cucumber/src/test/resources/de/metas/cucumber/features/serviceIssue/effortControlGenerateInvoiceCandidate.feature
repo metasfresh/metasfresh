@@ -87,7 +87,7 @@ Feature: Create customer invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | invoice100              | customer_SO              | customerLocation_SO               | customerUser_SO       | true      | CO        | Ausgangsrechnung      | costCenter100                | testProject                 |
     And validate invoice lines for invoice100:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                    |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                    |
       | invoiceLine100_1            | invoiceableProduct      | 12          | true      | 10               | 10              | 120            | costCenter100                | testProject                 | 1210221\nbudgetIssue100_1_12102022 |
       | invoiceLine100_2            | invoiceableProduct      | 4           | true      | 10               | 10              | 40             | costCenter100                | testProject                 | 1210222\nbudgetIssue100_2_12102022 |
 
@@ -191,7 +191,7 @@ Feature: Create customer invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | invoice300_1            | customer_SO              | customerLocation_SO               | customerUser_SO       | true      | CO        | Ausgangsrechnung      | costCenter300                | testProject                 |
     And validate invoice lines for invoice300_1:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | invoiceLine300_1            | invoiceableProduct      | 30          | true      | 10               | 10              | 300            | costCenter300                | testProject                 | 1310222\nbudgetIssue300 |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
@@ -236,7 +236,7 @@ Feature: Create customer invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | invoice300_2            | customer_SO              | customerLocation_SO               | customerUser_SO       | true      | CO        | Ausgangsrechnung      | costCenter300                | testProject                 |
     And validate invoice lines for invoice300_2:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | invoiceLine300_2            | invoiceableProduct      | 4           | true      | 10               | 10              | 40             | costCenter300                | testProject                 | 1310222\nbudgetIssue300 |
 
   @from:cucumber
@@ -282,7 +282,7 @@ Feature: Create customer invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | invoice400              | customer_SO              | customerLocation_SO               | customerUser_SO       | true      | CO        | Ausgangsrechnung      | costCenter400                | testProject                 |
     And validate invoice lines for invoice400:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | invoiceLine400              | invoiceableProduct      | 40          | true      | 10               | 10              | 400            | costCenter400                | testProject                 | 1310223\nbudgetIssue400 |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |

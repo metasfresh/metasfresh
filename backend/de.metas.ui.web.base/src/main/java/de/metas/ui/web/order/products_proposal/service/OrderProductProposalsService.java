@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
@@ -44,7 +43,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -232,7 +230,6 @@ public class OrderProductProposalsService
 	{
 		final Instant conversionDate = Instant.now();
 		return currencyConversionBL.createCurrencyConversionContext(conversionDate,
-																	ConversionTypeMethod.Spot,
 																	clientAndOrgId.getClientId(),
 																	clientAndOrgId.getOrgId());
 	}

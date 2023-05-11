@@ -18,8 +18,10 @@ import java.util.function.Supplier;
 public class SAPGLJournalService
 {
 	private final SAPGLJournalRepository glJournalRepository;
-	@Getter private final SAPGLJournalCurrencyConverter currencyConverter;
-	@Getter private final SAPGLJournalTaxProvider taxProvider;
+	@Getter
+	private final SAPGLJournalCurrencyConverter currencyConverter;
+	@Getter
+	private final SAPGLJournalTaxProvider taxProvider;
 
 	public SAPGLJournalService(
 			@NonNull final SAPGLJournalRepository glJournalRepository,
@@ -79,6 +81,19 @@ public class SAPGLJournalService
 	public DocStatus getDocStatus(final SAPGLJournalId glJournalId)
 	{
 		return glJournalRepository.getDocStatus(glJournalId);
+	}
+
+	@NonNull
+	public SAPGLJournal reverse(@NonNull final SAPGLJournalReverseRequest reverseJournalRequest)
+	{
+		final SAPGLJournal journalToBeReversed = glJournalRepository.getById(reverseJournalRequest.getSourceJournalId());
+
+		final SAPGLJournal reversal = glJournalRepository.create(journalToBeReversed.getReversal(reverseJournalRequest.getDateDoc()),
+																 currencyConverter);
+
+		glJournalRepository.save(journalToBeReversed.withDocStatus(DocStatus.Reversed));
+
+		return reversal;
 	}
 
 	@NonNull
