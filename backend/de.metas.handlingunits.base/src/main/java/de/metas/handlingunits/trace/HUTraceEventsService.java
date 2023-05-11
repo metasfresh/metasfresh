@@ -272,12 +272,10 @@ public class HUTraceEventsService
 				.vhuStatus(hu.getHUStatus());
 		builder.eventTime(inventoryLineRecord.getUpdated().toInstant());
 
-		final BigDecimal multiplier = huStatusBL.isStatusDestroyed(hu) ? BigDecimal.valueOf(-1) : BigDecimal.ONE;
 		final UomId uomId = UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID());
 
 		final BigDecimal qtyCountMinusBooked = inventoryLineRecord.getQtyCount()
-				.subtract(inventoryLineRecord.getQtyBook())
-				.multiply(multiplier);
+				.subtract(inventoryLineRecord.getQtyBook());
 
 		// shortage, overage
 		if (!(qtyCountMinusBooked.signum() == 0))
@@ -287,8 +285,7 @@ public class HUTraceEventsService
 		// disposal, new inventory with aggregated HUs
 		else if (inventoryBL.isInternalUseInventory(inventoryLineRecord))
 		{
-			final BigDecimal qtyInternalUse = inventoryLineRecord.getQtyInternalUse()
-					.multiply(multiplier);
+			final BigDecimal qtyInternalUse = inventoryLineRecord.getQtyInternalUse();
 			builder.qty(Quantitys.create(qtyInternalUse, uomId));
 		}
 
@@ -666,7 +663,6 @@ public class HUTraceEventsService
 				builder.orgId(OrgId.ofRepoIdOrNull(huAssignment.getAD_Org_ID()))
 						.eventTime(huAssignment.getUpdated().toInstant());
 
-
 				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)
 				{
@@ -757,8 +753,7 @@ public class HUTraceEventsService
 			return;
 		}
 
-		final BigDecimal multiplier = huStatusBL.isStatusDestroyed(hu) ? BigDecimal.valueOf(-1) : BigDecimal.ONE;
-		final Quantity qtyToSet = Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())).multiply(multiplier);
+		final Quantity qtyToSet = Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID()));
 
 		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
 		if (!productAndQty.isPresent())
