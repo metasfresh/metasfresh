@@ -24,35 +24,6 @@ CREATE OR REPLACE VIEW rv_unposted AS
  WHERE gl_journal.posted <> 'Y'
    AND gl_journal.docstatus <> 'VO'
    AND gl_journal.processed = 'Y')
-<<<<<<< HEAD
---
-UNION ALL
---
-(SELECT j.ad_client_id,
-           j.ad_org_id,
-           j.created,
-           j.createdby,
-           j.updated,
-           j.updatedby,
-           j.isactive,
-           j.documentno,
-           j.datedoc,
-           j.dateacct,
-           542275             AS ad_table_id,
-           j.sap_gljournal_id AS record_id,
-           'N'::char(1)    AS issotrx,
-           j.posted,
-           j.PostingError_Issue_ID,
-           j.processing,
-           j.processed,
-           j.docstatus
-    FROM sap_gljournal j
-    WHERE j.posted <> 'Y'
-      AND j.docstatus <> 'VO'
-      AND j.processed = 'Y'
-)
-=======
->>>>>>> 46baed606fd (RV_Unposted)
 --
 UNION ALL
 --
@@ -426,32 +397,4 @@ UNION ALL
  WHERE pp_cost_collector.posted <> 'Y'
    AND pp_cost_collector.docstatus <> 'VO'
    AND pp_cost_collector.processed = 'Y')
-<<<<<<< HEAD
---
-UNION ALL
---
-(SELECT cr.ad_client_id,
-        cr.ad_org_id,
-        cr.created,
-        cr.createdby,
-        cr.updated,
-        cr.updatedby,
-        cr.isactive,
-        cr.documentno,
-        cr.dateacct             AS datedoc,
-        cr.dateacct,
-        542190                  AS ad_table_id,
-        cr.m_costrevaluation_id AS record_id,
-        'N'::char(1)            AS issotrx,
-        cr.posted,
-        cr.PostingError_Issue_ID,
-        cr.processing,
-        cr.processed,
-        cr.docstatus
- FROM m_costrevaluation cr
- WHERE cr.posted <> 'Y'
-   AND cr.docstatus IN ('CO', 'CL', 'RE')
-   AND cr.processed = 'Y')
-=======
->>>>>>> 46baed606fd (RV_Unposted)
 ;
