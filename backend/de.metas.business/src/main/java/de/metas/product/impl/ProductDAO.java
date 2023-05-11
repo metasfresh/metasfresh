@@ -439,7 +439,7 @@ public class ProductDAO implements IProductDAO
 	{
 		final ProductId productId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
@@ -453,12 +453,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void updateProductsByResourceIds(@NonNull final Set<ResourceId> resourceIds, @NonNull final Consumer<I_M_Product> productUpdater)
 	{
-		updateProductsByResourceIds(resourceIds, (resourceId, product) -> {
-			if (product != null)
-			{
-				productUpdater.accept(product);
-			}
-		});
+		updateProductsByResourceIds(resourceIds, (resourceId, product) -> productUpdater.accept(product));
 	}
 
 	@Override
@@ -466,22 +461,22 @@ public class ProductDAO implements IProductDAO
 	{
 		Check.assumeNotEmpty(resourceIds, "resourceIds is not empty");
 
-		final Set<ProductId> productIds = queryBL
+		final Set<ProductId> existingProductIds = queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx!
-				.addInArrayFilter(I_M_Product.COLUMN_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceIds)
 				.create()
 				.listIds(ProductId::ofRepoId);
-		if (productIds.isEmpty())
-		{
-			return;
-		}
 
-		final Map<ResourceId, I_M_Product> productsByResourceId = Maps.uniqueIndex(
-				loadByRepoIdAwares(productIds, I_M_Product.class),
+		final Map<ResourceId, I_M_Product> existingProductsByResourceId = Maps.uniqueIndex(
+				loadByRepoIdAwares(existingProductIds, I_M_Product.class),
 				product -> ResourceId.ofRepoId(product.getS_Resource_ID()));
 
 		resourceIds.forEach(resourceId -> {
-			final I_M_Product product = productsByResourceId.get(resourceId); // might be null
+			I_M_Product product = existingProductsByResourceId.get(resourceId); // might be null
+			if (product == null)
+			{
+				product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			}
 			productUpdater.accept(resourceId, product);
 			saveRecord(product);
 		});
