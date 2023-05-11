@@ -272,9 +272,16 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final DocLine_CostCollector docLine = getLine();
 		final Quantity qtyIssued = getMovementQty();
 
+<<<<<<< HEAD
 		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 		final Account credit = docLine.getAccount(isFloorStock ? ProductAcctType.P_FloorStock_Acct : ProductAcctType.P_Asset_Acct, as);
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
+=======
+		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
+
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow().retainOnlyAccountable(as);
+>>>>>>> 43364ef3e7e (Doc_PPCostCollector: post only accountable elements)
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
