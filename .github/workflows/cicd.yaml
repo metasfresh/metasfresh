@@ -1,5 +1,5 @@
 name: cicd
-on: [push]
+on: [push, workflow_dispatch]
 jobs:
 
   init:
@@ -16,24 +16,23 @@ jobs:
         env:
           GIT_REF: ${{ github.ref_name }}
         run: |
-          echo "::set-output name=refname::$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')"
+          echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: define-build-info-properties
         id: build-info-properties
         env:
           BUILD_SYSTEM: ${{ runner.name }}
           BUILD_USER: ${{ github.actor }}
         run: |
-          echo "::set-output name=content::build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
-          echo "::set-output name=mfversion::$(cat docker-builds/version.info)"
+          echo "content=build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "mfversion=$(cat docker-builds/version.info)" >> $GITHUB_OUTPUT
       - name: define-git-properties
         id: git-properties
         env:
           GIT_URL: ${{ github.repositoryUrl }}
-          GIT_REF: ${{ github.event.ref }}
-          GIT_ID: ${{ github.event.head_commit.id }}
-          GIT_MSG: ${{ github.event.head_commit.message }}
+          GIT_REF: ${{ github.ref }}
+          GIT_ID: ${{ github.sha }}
         run: |
-          echo "::set-output name=content::git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$GIT_MSG"
+          echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$(git show -s --format=%s $GIT_ID)" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
       - name: print-info
@@ -45,6 +44,7 @@ jobs:
           echo -e "[sanitized refname]\n$OUT_REFNAME\n"
           echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
           echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
+          echo 'Artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`.' >> $GITHUB_STEP_SUMMARY
 
   java:
     runs-on: ubuntu-latest
@@ -129,26 +129,26 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-mobile
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.mobile \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
-          .
+      # - name: build-mobile
+        # run: |
+          # docker buildx build \
+          # --file docker-builds/Dockerfile.mobile \
+          # --cache-to type=inline \
+          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
+          # .
       - name: push-images
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
         run: |
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
+          # echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           
   test-frontend:
     name: test (frontend)
@@ -296,16 +296,16 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: build-mobile-compat
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.mobile.compat \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
-          .
+      # - name: build-mobile-compat
+        # run: |
+          # docker buildx build \
+          # --file docker-builds/Dockerfile.mobile.compat \
+          # --cache-to type=inline \
+          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          # --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          # .
       - name: build-frontend-compat
         run: |
           docker buildx build \
@@ -317,6 +317,8 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
         run: |
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
@@ -324,8 +326,6 @@ jobs:
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
           docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
           docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
           docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
@@ -398,7 +398,7 @@ jobs:
           path: junit/**/junit.log
       - name: produce-summary
         run: |
-          echo 'test results can be found at http://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   cucumber:
     name: test (cucumber)
