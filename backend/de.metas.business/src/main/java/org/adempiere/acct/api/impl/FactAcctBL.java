@@ -26,7 +26,6 @@ import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.util.Check;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -81,119 +80,5 @@ public class FactAcctBL implements IFactAcctBL
 				.setUserElementString7(fa.getUserElementString7())
 
 				.build();
-	}
-
-	@Override
-	public void updateFactLineFromDimension(final I_Fact_Acct fa, final AccountDimension dim)
-	{
-		if (dim.getAcctSchemaId() != null)
-		{
-			fa.setC_AcctSchema_ID(dim.getAcctSchemaId().getRepoId());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Client))
-		{
-			// fa.setAD_Client_ID(dim.getAD_Client_ID());
-			Check.assume(fa.getAD_Client_ID() == dim.getAD_Client_ID(), "Fact_Acct and dimension shall have the same AD_Client_ID");
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Organization))
-		{
-			fa.setAD_Org_ID(dim.getAD_Org_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Account))
-		{
-			fa.setAccount_ID(dim.getC_ElementValue_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.SubAccount))
-		{
-			fa.setC_SubAcct_ID(dim.getC_SubAcct_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Product))
-		{
-			fa.setM_Product_ID(dim.getM_Product_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.BPartner))
-		{
-			fa.setC_BPartner_ID(dim.getC_BPartner_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.OrgTrx))
-		{
-			fa.setAD_OrgTrx_ID(dim.getAD_OrgTrx_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.LocationFrom))
-		{
-			fa.setC_LocFrom_ID(dim.getC_LocFrom_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.LocationTo))
-		{
-			fa.setC_LocTo_ID(dim.getC_LocTo_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.SalesRegion))
-		{
-			fa.setC_SalesRegion_ID(dim.getC_SalesRegion_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Project))
-		{
-			fa.setC_Project_ID(dim.getC_Project_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Campaign))
-		{
-			fa.setC_Campaign_ID(dim.getC_Campaign_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Activity))
-		{
-			fa.setC_Activity_ID(dim.getC_Activity_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.SalesOrder))
-		{
-			fa.setC_OrderSO_ID(dim.getSalesOrderId());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.SectionCode))
-		{
-			fa.setM_SectionCode_ID(dim.getM_SectionCode_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserList1))
-		{
-			fa.setUser1_ID(dim.getUser1_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserList2))
-		{
-			fa.setUser2_ID(dim.getUser2_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElement1))
-		{
-			fa.setUserElement1_ID(dim.getUserElement1_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElement2))
-		{
-			fa.setUserElement2_ID(dim.getUserElement2_ID());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString1))
-		{
-			fa.setUserElementString1(dim.getUserElementString1());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString2))
-		{
-			fa.setUserElementString2(dim.getUserElementString2());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString3))
-		{
-			fa.setUserElementString3(dim.getUserElementString3());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString4))
-		{
-			fa.setUserElementString4(dim.getUserElementString4());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString5))
-		{
-			fa.setUserElementString5(dim.getUserElementString5());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString6))
-		{
-			fa.setUserElementString6(dim.getUserElementString6());
-		}
-		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString7))
-		{
-			fa.setUserElementString7(dim.getUserElementString7());
-		}
 	}
 }

@@ -94,7 +94,7 @@ Feature: create Purchase Candidate having manual price set
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_1               | inOut_1               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
@@ -207,7 +207,7 @@ Feature: create Purchase Candidate having manual price set
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_1               | inOut_1               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
@@ -315,7 +315,7 @@ Feature: create Purchase Candidate having manual price set
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_1               | inOut_1               |
 
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required

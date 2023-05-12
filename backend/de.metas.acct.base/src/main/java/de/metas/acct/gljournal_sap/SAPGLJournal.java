@@ -5,6 +5,7 @@ import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalCreateRequest;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalLineCreateRequest;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
@@ -22,8 +23,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.ListIterator;
@@ -42,11 +45,11 @@ public class SAPGLJournal
 
 	@NonNull @Getter private final AcctSchemaId acctSchemaId;
 	@NonNull @Getter private final PostingType postingType;
+	@NonNull @Getter @With private final DocStatus docStatus;
 	@NonNull private final ArrayList<SAPGLJournalLine> lines;
 
 	@NonNull @Getter private Money totalAcctDR;
 	@NonNull @Getter private Money totalAcctCR;
-	@NonNull @Getter private final DocStatus docStatus;
 
 	@NonNull @Getter private final OrgId orgId;
 	@NonNull @Getter private final Dimension dimension;
@@ -168,7 +171,7 @@ public class SAPGLJournal
 		for (ListIterator<SAPGLJournalLine> it = lines.listIterator(); it.hasNext(); )
 		{
 			final SAPGLJournalLine line = it.next();
-			if (line.isTaxLine())
+			if (line.isGeneratedTaxLine())
 			{
 				// remove old tax lines, we will generate them if needed
 				it.remove();
@@ -217,5 +220,38 @@ public class SAPGLJournal
 	{
 		lines.removeIf(predicate);
 		updateTotals();
+	}
+
+	@NonNull
+	public SAPGLJournalCreateRequest getReversal(@NonNull final Instant reversalDocDate)
+	{
+		return SAPGLJournalCreateRequest.builder()
+				.docTypeId(docTypeId)
+				.conversionCtx(conversionCtx)
+				.dateDoc(reversalDocDate)
+				.acctSchemaId(acctSchemaId)
+				.postingType(postingType)
+				.reversalId(id)
+				.totalAcctDR(getTotalAcctCR())
+				.totalAcctCR(getTotalAcctDR())
+				.orgId(orgId)
+				.dimension(dimension)
+				.description(description)
+				.glCategoryId(glCategoryId)
+				//
+				.lines(getLines()
+							   .stream()
+							   .map(line -> SAPGLJournalLineCreateRequest.builder()
+									   .postingSign(line.getPostingSign())
+									   .account(line.getAccount())
+									   .postingSign(line.getPostingSign().reverse())
+									   .amount(line.getAmount().toBigDecimal())
+									   .dimension(line.getDimension())
+									   .description(line.getDescription())
+									   .taxId(line.getTaxId())
+									   .determineTaxBaseSAP(line.isDetermineTaxBaseSAP())
+									   .build())
+							   .collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 }

@@ -299,7 +299,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
+		if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
 		{
 			return ImmutableList.of();
 		}
@@ -389,6 +389,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final int adUserInChargeId = handler.getAD_User_InCharge_ID(ic);
 			ic.setAD_User_InCharge_ID(adUserInChargeId);
 		}
+
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class); // not having this as field bc there might be problems with circular dependencies
+		invoiceCandBL.setPaymentTermIfMissing(ic);
 
 		// Save it
 		InterfaceWrapperHelper.save(ic);
@@ -507,16 +510,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final OnInvalidateForModelAction onInvalidateForModelAction = handler.getOnInvalidateForModelAction();
 			switch (onInvalidateForModelAction)
 			{
-				case RECREATE_ASYNC:
-					scheduleCreateMissingCandidatesFor(model, handler);
-					break;
-				case REVALIDATE:
-					handler.invalidateCandidatesFor(model);
-					break;
-				default:
-					// nothing
-					logger.warn("Got no OnInvalidateForModelAction for " + model + ". Doing nothing.");
-					break;
+				case RECREATE_ASYNC -> scheduleCreateMissingCandidatesFor(model, handler);
+				case REVALIDATE -> handler.invalidateCandidatesFor(model);
+				default -> logger.warn("Got no OnInvalidateForModelAction for " + model + ". Doing nothing."); // nothing
 			}
 		}
 	}
