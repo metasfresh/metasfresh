@@ -51,9 +51,7 @@ public class StepRequiredCapacity
 		final HashMap<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map = new HashMap<>(this.map);
 		other.map.forEach((resourceGroupYearWeek, capacityItems) -> map.merge(resourceGroupYearWeek,
 																			  capacityItems,
-																			  (items1, items2) -> items2 != null
-																					  ? Stream.concat(items1.stream(), items2.stream()).toList()
-																					  : items1));
+																			  (existingItems, newItems) -> Stream.concat(existingItems.stream(), newItems.stream()).toList()));
 
 		return new StepRequiredCapacity(map);
 	}
@@ -63,9 +61,7 @@ public class StepRequiredCapacity
 		final HashMap<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map = new HashMap<>(this.map);
 		other.map.forEach((resourceGroupYearWeek, capacityItems) -> map.merge(resourceGroupYearWeek,
 																			  capacityItems,
-																			  (items1, items2) -> items2 != null
-																					  ? ListUtils.subtract(items1, items2)
-																					  : items1));
+																			  ListUtils::subtract));
 
 		return new StepRequiredCapacity(map);
 	}
