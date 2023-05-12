@@ -319,9 +319,17 @@ public class RetrieveDbRecordsUtil
 		}
 		if (query.getQty() != null)
 		{
+<<<<<<< HEAD
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_Qty, query.getQty());
 			queryIsEmpty = false;
 		}
+=======
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_Qty, query.getQty().toBigDecimal());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_C_UOM_ID, query.getQty().getUomId());
+			queryIsEmpty = false;
+		}
+
+>>>>>>> 460e9a9763c (HU traces report (#15227))
 		if (!Check.isEmpty(query.getVhuStatus()))
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHUStatus, query.getVhuStatus());

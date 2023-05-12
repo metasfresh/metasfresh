@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -282,4 +283,17 @@ public class HUAttributesBL implements IHUAttributesBL
 		return true;
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	@Nullable
+	public String getHUAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		return Optional.ofNullable(attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode))
+				.map(atrId -> huAttributesDAO.retrieveAttribute(hu, atrId))
+				.map(I_M_HU_Attribute::getValue)
+				.orElse(null);
+	}
+
+>>>>>>> 460e9a9763c (HU traces report (#15227))
 }

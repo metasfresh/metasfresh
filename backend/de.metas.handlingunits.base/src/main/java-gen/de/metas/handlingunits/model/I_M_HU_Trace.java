@@ -99,6 +99,31 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+>>>>>>> 460e9a9763c (HU traces report (#15227))
 	 * Set Status.
 	 *
 	 * <br>Type: List

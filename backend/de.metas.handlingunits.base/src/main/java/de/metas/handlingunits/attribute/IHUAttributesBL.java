@@ -80,4 +80,10 @@ public interface IHUAttributesBL extends ISingletonService
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 			@NonNull ProductId productId);
+<<<<<<< HEAD
+=======
+
+	@Nullable
+	String getHUAttributeValue(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
+>>>>>>> 460e9a9763c (HU traces report (#15227))
 }

@@ -1,23 +1,28 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.trace.process;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MovementLine;
-
 import com.google.common.collect.ImmutableList;
-<<<<<<< HEAD
-
-=======
->>>>>>> 460e9a9763c (HU traces report (#15227))
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
@@ -25,6 +30,7 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
@@ -33,8 +39,6 @@ import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import lombok.NonNull;
-<<<<<<< HEAD
-=======
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -53,55 +57,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
->>>>>>> 460e9a9763c (HU traces report (#15227))
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-public class M_HU_Trace_CreateForHU extends M_HU_Trace_CreateForHU_Template
+abstract class M_HU_Trace_CreateForHU_Template  extends JavaProcess
 {
-<<<<<<< HEAD
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	
-=======
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
+	private final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 
->>>>>>> 460e9a9763c (HU traces report (#15227))
+	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+
 	@Override
-	protected IQueryFilter<I_M_HU> getSelectedHUs()
+	protected String doIt() throws Exception
 	{
-<<<<<<< HEAD
-		final HuId huId = HuId.ofRepoId(getRecord_ID());
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final IQueryFilter<I_M_HU> selectedHUsFilter = getSelectedHUs();
 
-		writeTraceForHu(hu);
+		final Iterator<I_M_HU> hus = queryBL.createQueryBuilder(I_M_HU.class)
+				.filter(selectedHUsFilter)
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
+				.create()
+				.iterate(I_M_HU.class);
+
+		for (final I_M_HU hu : IteratorUtils.asIterable(hus))
+		{
+			writeTraceForHu(hu);
+		}
 
 		return MSG_OK;
 	}
 
+	protected abstract IQueryFilter<I_M_HU> getSelectedHUs();
+
 	private void writeTraceForHu(final I_M_HU hu)
 	{
 		addLog("Writing trace records hu={}", hu);
-
-		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 
 		// write the HU_Assigment related trace
 		{
@@ -126,9 +116,15 @@ public class M_HU_Trace_CreateForHU extends M_HU_Trace_CreateForHU_Template
 				addLog("Checking for PP_Cost_Collector={}", costCollector);
 				huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
 			}
+
+			final Set<I_M_InventoryLine> inventoryLines = inventoryRepository.retrieveAllLinesForHU(this, HuId.ofRepoId(hu.getM_HU_ID()));
+			for (final I_M_InventoryLine inventoryLine : inventoryLines)
+			{
+				addLog("Checking for M_Inventory_Line={}", inventoryLine);
+				huTraceEventsCreateAndAdd.createAndAddFor(inventoryLine.getM_Inventory(), ImmutableList.of(inventoryLine));
+			}
 		}
 
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final List<I_M_ShipmentSchedule_QtyPicked> schedsQtyPicked = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
 		for (final I_M_ShipmentSchedule_QtyPicked schedQtyPicked : schedsQtyPicked)
 		{
@@ -136,7 +132,7 @@ public class M_HU_Trace_CreateForHU extends M_HU_Trace_CreateForHU_Template
 			huTraceEventsCreateAndAdd.createAndAddFor(schedQtyPicked);
 		}
 
-		final List<I_M_HU_Trx_Line> huTrxLines = Services.get(IHUTrxDAO.class).retrieveReferencingTrxLinesForHU(hu);
+		final List<I_M_HU_Trx_Line> huTrxLines = huTrxDAO.retrieveReferencingTrxLinesForHU(hu);
 		for (final I_M_HU_Trx_Line huTrxLine : huTrxLines)
 		{
 			addLog("Checking for M_HU_Trx_Line={}", huTrxLine);
@@ -149,7 +145,7 @@ public class M_HU_Trace_CreateForHU extends M_HU_Trace_CreateForHU_Template
 				{
 					final I_M_HU sourceHU = handlingUnitsDAO.getById(newlyInsertedEvent.getVhuSourceId());
 
-					addLog("Recursing for for source M_HU={}", sourceHU);
+					addLog("Recursing for source M_HU={}", sourceHU);
 					writeTraceForHu(sourceHU);
 				}
 			}
@@ -158,8 +154,6 @@ public class M_HU_Trace_CreateForHU extends M_HU_Trace_CreateForHU_Template
 
 	private <T> List<T> retrieveAnyModelForHU(@NonNull final I_M_HU hu, @NonNull final Class<T> clazz)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
 				.setJoinOr()
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
@@ -180,8 +174,5 @@ public class M_HU_Trace_CreateForHU extends M_HU_Trace_CreateForHU_Template
 				.collect(Collectors.toList());
 
 		return result;
-=======
-		return getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
->>>>>>> 460e9a9763c (HU traces report (#15227))
 	}
 }
