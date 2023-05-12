@@ -30,12 +30,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,7 +63,8 @@ public class HuTraceEventToDbRecordUtil
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(dbRecord.getM_ShipmentSchedule_ID()))
 				.type(HUTraceType.ofCode(dbRecord.getHUTraceType())) // HUTraceType is also a mandatory column, so no NPE
-				.lotNumber(dbRecord.getLotNumber());
+				.lotNumber(dbRecord.getLotNumber())
+				.inventoryId(InventoryId.ofRepoIdOrNull(dbRecord.getM_Inventory_ID()));
 
 		if (dbRecord.getM_HU_Trace_ID() > 0)
 		{
@@ -81,7 +82,7 @@ public class HuTraceEventToDbRecordUtil
 
 		return builder.build();
 	}
-	
+
 	public static void copyToDbRecord(
 			@NonNull final HUTraceEvent huTraceRecord,
 			@NonNull final I_M_HU_Trace dbRecord)
@@ -90,7 +91,7 @@ public class HuTraceEventToDbRecordUtil
 		{
 			dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId().get().getRepoId()); // note that zero means "new", and not "nothing" or null
 		}
-		// HU_TraceEvent_ID is not copied to the dbRecord! because the dbREcord is where it always comes from
+		// HU_TraceEvent_ID is not copied to the dbRecord! because the dbRecord is where it always comes from
 		dbRecord.setAD_Org_ID(OrgId.toRepoIdOrAny(huTraceRecord.getOrgId()));
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));

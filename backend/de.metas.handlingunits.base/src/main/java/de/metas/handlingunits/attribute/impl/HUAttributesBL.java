@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -287,14 +288,10 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Nullable
 	public String getHUAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
 	{
-		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
-		if (attributeId == null)
-		{
-			return null;
-		}
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(hu, attributeId);
-
-		return huAttribute == null ? null : huAttribute.getValue();
+		return Optional.ofNullable(attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode))
+				.map(atrId -> huAttributesDAO.retrieveAttribute(hu, atrId))
+				.map(I_M_HU_Attribute::getValue)
+				.orElse(null);
 	}
 
 }

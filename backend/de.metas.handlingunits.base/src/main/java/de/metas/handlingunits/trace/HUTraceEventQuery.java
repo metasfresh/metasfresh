@@ -16,7 +16,6 @@ import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -31,12 +30,12 @@ import java.util.OptionalInt;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,15 +44,14 @@ import java.util.OptionalInt;
 
 /**
  * Used to pass to {@link HUTraceRepository#query(HUTraceEventQuery)} to retrieve {@link HUTraceEvent}s.
- * 
+ * <p>
  * This class has the properties that {@link HUTraceEvent} has, but the following differences:
  * <ul>
  * <li>none of those properties is mandatory, all may be {@code null}
  * <li>there is the mandatory {@link RecursionMode}
  * </ul>
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 @Value
 @Builder
@@ -105,6 +103,7 @@ public class HUTraceEventQuery
 
 	ProductId productId;
 
+	@Nullable
 	Quantity qty;
 
 	String vhuStatus;
@@ -121,6 +120,7 @@ public class HUTraceEventQuery
 
 	int movementId;
 
+	@Nullable
 	InventoryId inventoryId;
 
 	int ppCostCollectorId;
@@ -135,5 +135,6 @@ public class HUTraceEventQuery
 
 	int huTrxLineId;
 
-	@Nullable String lotNumber;
+	@Nullable
+	String lotNumber;
 }
