@@ -42,7 +42,6 @@ import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -393,12 +392,6 @@ public class CostingService implements ICostingService
 
 	@Override
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
-	{
-		return createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
-	}
-
-	@Override
-	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
 		return createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
 	}

@@ -252,13 +252,13 @@ BEGIN
                               AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
                             GET DIAGNOSTICS rowcount_mcost_updated = ROW_COUNT;
                         ELSE
-                        DELETE
-                        FROM m_cost c
-                        WHERE c.c_acctschema_id = p_C_AcctSchema_ID
-                          AND c.m_costelement_id = p_M_CostElement_Id
-                          AND c.M_Product_ID = v_currentProduct.m_product_id
-                          AND c.ad_client_id = 1000000
-                          AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
+                            DELETE
+                            FROM m_cost c
+                            WHERE c.c_acctschema_id = p_C_AcctSchema_ID
+                              AND c.m_costelement_id = p_M_CostElement_Id
+                              AND c.M_Product_ID = v_currentProduct.m_product_id
+                              AND c.ad_client_id = 1000000
+                              AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
                             GET DIAGNOSTICS rowcount_mcost_deleted = ROW_COUNT;
                         END IF;
                     END IF;

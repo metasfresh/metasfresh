@@ -43,6 +43,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -112,14 +113,81 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	}
 
 	@Override
-	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
-		if (existingCostDetail != null)
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
 		{
-			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+			CostDetail mainCostDetail = null;
+			CostDetail costAdjustmentDetail = null;
+			CostDetail alreadyShippedDetail = null;
+			for (final CostDetail existingCostDetail : existingCostDetails)
+			{
+				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
+				switch (amtType)
+				{
+					case MAIN ->
+					{
+						if (mainCostDetail != null)
+						{
+							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
+						}
+						mainCostDetail = existingCostDetail;
+					}
+					case ADJUSTMENT ->
+					{
+						if (costAdjustmentDetail != null)
+						{
+							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
+						}
+						costAdjustmentDetail = existingCostDetail;
+					}
+					case ALREADY_SHIPPED ->
+					{
+						if (alreadyShippedDetail != null)
+						{
+							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
+						}
+						alreadyShippedDetail = existingCostDetail;
+					}
+					default -> throw new AdempiereException("Unknown type: " + amtType);
+				}
+			}
+
+			if (mainCostDetail == null)
+			{
+				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
+			}
+
+			// make sure DateAcct is up-to-date
+			utils.updateDateAcct(mainCostDetail, request.getDate());
+			if (costAdjustmentDetail != null)
+			{
+				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
+			}
+			if (alreadyShippedDetail != null)
+			{
+				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
+			}
+
+			return Optional.of(
+					utils.toCostDetailCreateResult(mainCostDetail)
+							.withAmt(CostAmountDetailed.builder()
+									.mainAmt(mainCostDetail.getAmt())
+									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
+									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
+									.build())
+			);
 		}
 
+		else
+		{
+			return Optional.ofNullable(createCostOrNull(request));
+		}
+	}
+
+	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
@@ -127,34 +195,34 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		if (costCollectorType.isMaterial(orderBOMLineId))
 		{
-			return Optional.of(createIssueOrReceipt(request));
+			return createIssueOrReceipt(request);
 		}
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			if(actualResourceId.isNoResource())
+			if (actualResourceId.isNoResource())
 			{
-				return Optional.empty();
+				return null;
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
-			return Optional.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
+			return createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
 		}
 		else if (costCollectorType.isUsageVariance())
 		{
 			if (cc.getPP_Order_BOMLine_ID() > 0)
 			{
-				return Optional.of(createUsageVariance(request));
+				return createUsageVariance(request);
 			}
 			else
 			{
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-				if(actualResourceId.isNoResource())
+				if (actualResourceId.isNoResource())
 				{
-					return Optional.empty();
+					return null;
 				}
 
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
@@ -162,7 +230,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
 
-				return Optional.of(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
+				return createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty));
 			}
 		}
 		else

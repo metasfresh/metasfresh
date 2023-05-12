@@ -347,14 +347,6 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
-		if(costResult == null)
-		{
-			// NOTE: there is no need to fail if no cost details were created
-			// because it might be that there are no cost elements defined for resource, which is acceptable
-			return ImmutableList.of();
-		}
-
 		final Account debit = docLine.getAccount(varianceAcctType, as);
 		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 		final Quantity qty = getMovementQty();
