@@ -101,4 +101,7 @@ public interface IUserDAO extends ISingletonService
 			@NonNull OrgId targetOrgId);
 
 	ImmutableSet<UserId> retrieveUsersByJobId(JobId jobId);
+
+	@NonNull
+	ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull String externalId, @NonNull OrgId orgId);
 }
