@@ -122,13 +122,17 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = //
 				PurchaseOrderFromItemsAggregator.newInstance(docTypeId);
 
-		PurchaseCandidateToOrderWorkflow.builder()
-				.purchaseCandidateRepo(purchaseCandidateRepo)
-				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
-				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
-				.build()
-				.executeForPurchaseCandidates(getPurchaseCandidates());
+		final List<PurchaseCandidate> purchaseCandidates = getPurchaseCandidates();
+		if (!purchaseCandidates.isEmpty())
+		{
+			PurchaseCandidateToOrderWorkflow.builder()
+					.purchaseCandidateRepo(purchaseCandidateRepo)
+					.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
+					.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
+					.build()
+					.executeForPurchaseCandidates(purchaseCandidates);
 
+		}
 		return Result.SUCCESS;
 	}
 
