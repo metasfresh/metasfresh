@@ -34,7 +34,8 @@ properties([
                         description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
 
-                booleanParam(defaultValue: false,
+				// The PROCUREMENT_WEBUI_BUILD doesn't work right now!
+                booleanParam(defaultValue: true,
                         description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
 
