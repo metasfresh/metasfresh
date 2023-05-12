@@ -85,6 +85,11 @@ public class WOProjectStep
 	@Nullable
 	Instant woFindingsCreatedDate;
 
+	@Nullable
+	Instant woDueDate;
+
+	boolean manuallyLocked;
+
 	public ProjectId getProjectId() {return woProjectStepId.getProjectId();}
 
 	@NonNull

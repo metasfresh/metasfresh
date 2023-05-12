@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.X_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,6 +65,8 @@ public class PaymentTermGrossProfitComponentTest
 	{
 		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
 		paymentTermRecord.setDiscount(new BigDecimal("3"));
+		paymentTermRecord.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
+		paymentTermRecord.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
 		save(paymentTermRecord);
 
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());

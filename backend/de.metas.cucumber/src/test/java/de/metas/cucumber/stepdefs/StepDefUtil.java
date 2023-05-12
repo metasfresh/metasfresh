@@ -190,7 +190,7 @@ public class StepDefUtil
 		{
 			logContext.run();
 		}
-		Assertions.fail("the given spllier didn't succeed within the " + maxWaitSeconds + "second timeout");
+		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout");
 		return null;
 	}
 

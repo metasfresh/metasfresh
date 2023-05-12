@@ -39,8 +39,14 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -159,5 +165,22 @@ public class C_DataImport_StepDef
 				+ activityValue + ";";
 
 		testContext.setRequestPayload(payload.replaceAll("null", ""));
+	}
+
+	@And("store file content as requestBody in context")
+	public void store_file_content_requestBody_in_context(@NonNull final DataTable dataTable) throws IOException
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final String fileName = DataTableUtil.extractStringForColumnName(row, "FileName");
+
+		final InputStream inputStream = C_DataImport_StepDef.class.getClassLoader().getResourceAsStream(fileName);
+
+		final String content = new BufferedReader(
+				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+				.lines()
+				.collect(Collectors.joining("\n"));
+
+		testContext.setRequestPayload(content);
 	}
 }

@@ -230,11 +230,12 @@ import java.util.Properties;
 
 		//
 		// Update accounting dimensions
-		factAcctBL.updateFactLineFromDimension(factLine, AccountDimension.builder()
-				.applyOverrides(accountDimension)
-				.clearC_AcctSchema_ID()
-				.clearSegmentValue(AcctSegmentType.Account)
-				.build());
+
+		factLine.updateFromDimension(AccountDimension.builder()
+											 .applyOverrides(accountDimension)
+											 .clearC_AcctSchema_ID()
+											 .clearSegmentValue(AcctSegmentType.Account)
+											 .build());
 
 		// Amount
 		setAmountToFactLine(glDistributionLine, factLine);

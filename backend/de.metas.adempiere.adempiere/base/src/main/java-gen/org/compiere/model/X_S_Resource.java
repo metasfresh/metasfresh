@@ -10,10 +10,10 @@ import java.util.Properties;
  *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent
+public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1847142490L;
+	private static final long serialVersionUID = -1720848993L;
 
     /** Standard Constructor */
     public X_S_Resource (final Properties ctx, final int S_Resource_ID, @Nullable final String trxName)
@@ -246,6 +246,33 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QueuingTime);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_S_HumanResourceTestGroup getS_HumanResourceTestGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_HumanResourceTestGroup_ID, org.compiere.model.I_S_HumanResourceTestGroup.class);
+	}
+
+	@Override
+	public void setS_HumanResourceTestGroup(final org.compiere.model.I_S_HumanResourceTestGroup S_HumanResourceTestGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_S_HumanResourceTestGroup_ID, org.compiere.model.I_S_HumanResourceTestGroup.class, S_HumanResourceTestGroup);
+	}
+
+	@Override
+	public void setS_HumanResourceTestGroup_ID (final int S_HumanResourceTestGroup_ID)
+	{
+		if (S_HumanResourceTestGroup_ID < 1) 
+			set_Value (COLUMNNAME_S_HumanResourceTestGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_HumanResourceTestGroup_ID, S_HumanResourceTestGroup_ID);
+	}
+
+	@Override
+	public int getS_HumanResourceTestGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_HumanResourceTestGroup_ID);
 	}
 
 	@Override

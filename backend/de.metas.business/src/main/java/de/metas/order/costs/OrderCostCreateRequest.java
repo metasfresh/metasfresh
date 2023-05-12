@@ -54,6 +54,5 @@ public class OrderCostCreateRequest
 	public static class OrderLine
 	{
 		@NonNull ProductId productId;
-		@Nullable BPartnerId bpartnerId2;
 	}
 }

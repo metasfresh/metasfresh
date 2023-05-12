@@ -184,7 +184,7 @@ public class WOProjectCalendarService implements CalendarService
 			return Stream.empty();
 		}
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 
 		final ArrayList<CalendarEntry> result = new ArrayList<>();
 		result.addAll(
@@ -201,8 +201,7 @@ public class WOProjectCalendarService implements CalendarService
 						.startDate(calendarQuery.getStartDate())
 						.endDate(calendarQuery.getEndDate())
 						.skipAllocatedResources(calendarQuery.isSkipAllocatedResources())
-						//
-						.build().execute());
+						.execute());
 		result.addAll(
 				BudgetProjectsCalendarQueryExecutor.builder()
 						.resourceService(resourceService)
@@ -302,7 +301,7 @@ public class WOProjectCalendarService implements CalendarService
 
 		final BudgetProjectResource actualBudget = budgetProjectService.getBudgetsById(projectResourceId);
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 
 		final OldAndNewValues<CalendarEntry> result = budgetProjectSimulationService
 				.createOrUpdate(
@@ -339,7 +338,7 @@ public class WOProjectCalendarService implements CalendarService
 
 		final WOProjectStepId stepId = projectResources.getStepId(projectResourceId);
 		simulationEditor.changeResourceDateRangeAndShiftSteps(projectResourceId, request.getDateRange(), stepId);
-		
+
 		if (!Check.isBlank(request.getTitle()))
 		{
 			throw new AdempiereException("Changing title is not supported yet");
@@ -361,7 +360,7 @@ public class WOProjectCalendarService implements CalendarService
 
 		//
 		// toCalendarEntry converter:
-		final Function<WOProjectResource, CalendarEntry> toCalendarEntry = new ToCalendarEntryConverter().asFunction(simulationPlanHeader, simulationEditor);
+		final Function<WOProjectResource, CalendarEntry> toCalendarEntry = new ToCalendarEntryConverter(woProjectService).asFunction(simulationPlanHeader, simulationEditor);
 
 		//
 		return CalendarEntryUpdateResult.builder()
@@ -409,7 +408,7 @@ public class WOProjectCalendarService implements CalendarService
 		final BudgetProject project = budgetProjectService.getById(budgetProjectResourceId.getProjectId())
 				.orElseThrow(() -> new AdempiereException("No project found for " + budgetProjectResourceId));
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 
 		return toCalendarEntry.from(budget, project, simulationPlanHeader);
 	}
@@ -430,7 +429,7 @@ public class WOProjectCalendarService implements CalendarService
 			resource = woProjectSimulationService.getSimulationPlanById(simulationPlanHeader.getId()).applyOn(resource);
 		}
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 		return toCalendarEntry.from(
 				resource,
 				woProjectService.getStepsByProjectId(projectId).getById(stepId),

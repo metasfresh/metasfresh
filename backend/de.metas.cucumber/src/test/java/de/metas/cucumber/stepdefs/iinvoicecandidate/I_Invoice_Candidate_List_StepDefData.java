@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,16 +20,17 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.cache;
+package de.metas.cucumber.stepdefs.iinvoicecandidate;
 
-import de.metas.cache.CacheMgt;
-import io.cucumber.java.en.Then;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 
-public class Case_StepDef
+import java.util.List;
+
+public class I_Invoice_Candidate_List_StepDefData extends StepDefData<List<I_I_Invoice_Candidate>>
 {
-	@Then("the metasfresh cache is reset")
-	public void processMetasfreshResponse()
+	public I_Invoice_Candidate_List_StepDefData()
 	{
-		CacheMgt.get().reset();
+		super(null);
 	}
 }

@@ -41,8 +41,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IInvoiceSourceDAO extends ISingletonService
 {
-	Timestamp retrieveDueDate(org.compiere.model.I_C_Invoice invoice);
-
 	int computeDueDays(Date dueDate, Date date);
 
 	Iterator<I_C_Dunning_Candidate_Invoice_v1> retrieveDunningCandidateInvoices(IDunningContext context);

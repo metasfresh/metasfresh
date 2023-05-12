@@ -360,7 +360,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				sql += " AND ";
 			}
 
-			sql += "paymentTermDueDays(C_PaymentTerm_ID, DateInvoiced, ?) >= 0"; // ##
+			sql += "daysbetween(?,  i.duedate::timestamp WITH TIME ZONE)  >= 0"; // ##
 			sqlParams.add(payDate);
 
 			if (isOnlyDiscount())
