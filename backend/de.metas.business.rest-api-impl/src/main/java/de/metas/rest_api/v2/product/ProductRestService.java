@@ -59,6 +59,7 @@ import de.metas.product.ProductRepository;
 import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
+import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -100,7 +101,6 @@ public class ProductRestService
 	private final QualityAttributeService qualityAttributeService;
 
 	public ProductRestService(
-
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final SectionCodeService sectionCodeService,

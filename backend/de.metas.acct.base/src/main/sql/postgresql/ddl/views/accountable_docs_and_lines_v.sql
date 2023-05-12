@@ -53,7 +53,7 @@ UNION ALL
           INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id)
 UNION ALL
 (SELECT 'M_InOut'                                                                    AS TableName,
-        30::integer                                                                  AS tablename_prio,
+        (CASE WHEN io.isSOTrx = 'N' THEN 30 ELSE 100 END)::integer                                                                  AS tablename_prio,
         io.m_inout_id                                                                AS Record_ID,
         io.reversal_id                                                               AS reversal_id,
         iol.m_inoutline_id                                                           AS Line_ID,
@@ -128,7 +128,13 @@ UNION ALL
           INNER JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id)
 UNION ALL
 (SELECT 'M_Inventory'                                                                 AS TableName,
-        60::integer                                                                   AS tablename_prio,
+        -- if the inventory is on first day of month, then process it before everything (we usually use that to create stock at the beginning of the month)
+        (CASE
+             WHEN documentno = 'init'                                                                   THEN -1000
+             WHEN EXTRACT(DAY FROM inv.movementdate) = 1                                                THEN 5
+             WHEN EXTRACT(DAY FROM inv.movementdate) = 31 AND EXTRACT(MONTH FROM inv.movementdate) = 12 THEN 110
+                                                                                                        ELSE 110
+         END)::integer                                                                   AS tablename_prio,
         inv.m_inventory_id                                                            AS Record_ID,
         inv.reversal_id                                                               AS reversal_id,
         invl.m_inventoryline_id                                                       AS Line_ID,

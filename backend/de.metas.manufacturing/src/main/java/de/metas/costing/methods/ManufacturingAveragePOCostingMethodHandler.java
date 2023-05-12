@@ -101,6 +101,12 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
+		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
+		if (existingCostDetail != null)
+		{
+			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+		}
+
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
@@ -126,6 +132,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if(actualResourceId.isNoResource())
+			{
+				return Optional.empty();
+			}
+
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
