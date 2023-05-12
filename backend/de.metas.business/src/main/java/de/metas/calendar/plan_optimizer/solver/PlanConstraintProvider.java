@@ -10,7 +10,6 @@ import de.metas.project.InternalPriority;
 import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.util.Check;
-import de.metas.util.time.DurationUtils;
 import org.compiere.SpringContextHolder;
 import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
 import org.optaplanner.core.api.score.stream.Constraint;
@@ -29,8 +28,8 @@ public class PlanConstraintProvider implements ConstraintProvider
 	public static final int HARD_LEVELS_SIZE = 2;
 	public static final int SOFT_LEVELS_SIZE = 3;
 
-	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 0, 1 }, new int[] { 0, 0, 0 });
-	private static final BendableScore ONE_HARD_2 = BendableScore.of(new int[] { 1, 0 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1, 0 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_HARD_2 = BendableScore.of(new int[] { 0, 1 }, new int[] { 0, 0, 0 });
 	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0, 0 }, new int[] { 1, 0, 0 });
 	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 1, 0 });
 	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 0, 1 });
@@ -90,7 +89,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						StepRequiredCapacity.ZERO,
 						StepRequiredCapacity::add,
 						StepRequiredCapacity::subtract))
-				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
+				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity) 
 				.asConstraint("Available human resource test group capacity");
 	}
 
@@ -105,7 +104,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 		final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(humanResourceTestGroupService.getByIds(ids));
 		humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
-		return DurationUtils.toInt(humanResourceAvailableCapacity.getOverReservedCapacity(), Plan.PLANNING_TIME_PRECISION);
+		return humanResourceAvailableCapacity.getOverReservedCapacity().intValue();
 	}
 
 	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
