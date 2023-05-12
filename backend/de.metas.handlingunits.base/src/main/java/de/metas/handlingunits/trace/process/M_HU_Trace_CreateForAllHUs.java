@@ -1,14 +1,8 @@
-package de.metas.handlingunits.trace.process;
-
-import de.metas.handlingunits.model.I_M_HU;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryFilter;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,12 +20,18 @@ import org.adempiere.ad.dao.IQueryFilter;
  * #L%
  */
 
-public class M_HU_Trace_CreateForHU extends M_HU_Trace_CreateForHU_Template
-{
+package de.metas.handlingunits.trace.process;
 
+import de.metas.handlingunits.model.I_M_HU;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
+
+public class M_HU_Trace_CreateForAllHUs extends M_HU_Trace_CreateForHU_Template
+{
 	@Override
 	protected IQueryFilter<I_M_HU> getSelectedHUs()
 	{
-		return getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		return ConstantQueryFilter.of(true);
+
 	}
 }

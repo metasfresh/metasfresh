@@ -321,11 +321,6 @@ public class RetrieveDbRecordsUtil
 		if (query.getQty() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_Qty, query.getQty().toBigDecimal());
-			queryIsEmpty = false;
-		}
-
-		if (query.getQty() != null)
-		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_C_UOM_ID, query.getQty().getUomId());
 			queryIsEmpty = false;
 		}
