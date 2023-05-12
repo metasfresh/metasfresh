@@ -45,12 +45,13 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -133,6 +134,8 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
+
+			icRecord.setC_PaymentTerm_ID(ic.getPaymentTermId().getRepoId());
 		}
 		else
 		{
@@ -262,7 +265,8 @@ public class ExternallyReferencedCandidateRepository
 	{
 		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
 
-		candidate.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
+		final OrgId orgId = OrgId.ofRepoId(icRecord.getAD_Org_ID());
+		candidate.orgId(orgId)
 				.id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
 				.externalHeaderId(ExternalId.ofOrNull(icRecord.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(icRecord.getExternalLineId()));
@@ -277,8 +281,9 @@ public class ExternallyReferencedCandidateRepository
 				.build();
 		candidate.billPartnerInfo(bpartnerInfo);
 
-		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
-		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced()));
+		final ZoneId orgTZ = orgDAO.getTimeZone(orgId);
+		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered(), orgTZ));
+		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced(), orgTZ));
 
 		candidate.invoiceRule(InvoiceRule.ofCode(icRecord.getInvoiceRule()))
 				.invoiceRuleOverride(InvoiceRule.ofNullableCode(icRecord.getInvoiceRule_Override()));
@@ -327,6 +332,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.projectId(ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()));
 
 		candidate.activityId(ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()));
+
+		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 
 		return candidate.build();
 	}

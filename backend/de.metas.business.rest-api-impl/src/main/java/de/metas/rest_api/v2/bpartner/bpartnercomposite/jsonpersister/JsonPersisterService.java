@@ -2335,7 +2335,6 @@ public class JsonPersisterService
 	{
 		final CurrencyConversionContext currencyConversionContext =
 				currencyBL.createCurrencyConversionContext(Instant.now(),
-														   ConversionTypeMethod.Spot,
 														   clientAndOrgId.getClientId(),
 														   clientAndOrgId.getOrgId());
 

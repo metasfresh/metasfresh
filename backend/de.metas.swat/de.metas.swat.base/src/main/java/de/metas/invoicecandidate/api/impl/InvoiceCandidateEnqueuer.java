@@ -351,12 +351,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
 		}
 
-		// issue https://github.com/metasfresh/metasfresh/issues/3809
-		if (invoicingParams.isSupplementMissingPaymentTermIds())
-		{
-			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
-		}
-
 		//
 		// Flag those invoice candidates as approved, since user decided to invoice them.
 		// Also, this will prevent changing the prices, net amounts etc while invoicing.

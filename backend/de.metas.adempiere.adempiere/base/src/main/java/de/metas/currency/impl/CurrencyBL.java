@@ -253,6 +253,15 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	public @NonNull CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull final Instant conversionDate,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		return createCurrencyConversionContext(conversionDate, (CurrencyConversionTypeId)null, clientId, orgId);
+	}
+
+	@Override
 	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull final Instant conversionDate,

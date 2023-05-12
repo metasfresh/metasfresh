@@ -50,6 +50,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
 import org.junit.Before;
@@ -161,6 +162,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(discountSchemaRecord);
 
 		paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
+		paymentTermRecord.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
 		saveRecord(paymentTermRecord);
 
 		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);

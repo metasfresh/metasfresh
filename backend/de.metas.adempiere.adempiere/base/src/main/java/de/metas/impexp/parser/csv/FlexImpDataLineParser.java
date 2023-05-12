@@ -46,7 +46,7 @@ final class FlexImpDataLineParser implements CsvImpDataLineParser
 	public FlexImpDataLineParser(@NonNull final ImpFormat importFormat)
 	{
 		columns = importFormat.getColumns();
-		cellDelimiter = importFormat.getFormatType().getCellDelimiterChar();
+		cellDelimiter = importFormat.getCellDelimiterChar();
 		cellQuote = DEFAULT_CELL_QUOTE;
 	}
 

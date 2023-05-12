@@ -52,27 +52,46 @@ public interface I_C_PaymentTerm
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set After Delivery.
-	 * Due after delivery rather than after invoicing
+	 * Set Special Baseline Date Determination.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAfterDelivery (boolean AfterDelivery);
+	void setBaseLineType (java.lang.String BaseLineType);
 
 	/**
-	 * Get After Delivery.
-	 * Due after delivery rather than after invoicing
+	 * Get Special Baseline Date Determination.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAfterDelivery();
+	java.lang.String getBaseLineType();
 
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_AfterDelivery = new ModelColumn<>(I_C_PaymentTerm.class, "AfterDelivery", null);
-	String COLUMNNAME_AfterDelivery = "AfterDelivery";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_BaseLineType = new ModelColumn<>(I_C_PaymentTerm.class, "BaseLineType", null);
+	String COLUMNNAME_BaseLineType = "BaseLineType";
+
+	/**
+	 * Set Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCalculationMethod (java.lang.String CalculationMethod);
+
+	/**
+	 * Get Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCalculationMethod();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_CalculationMethod = new ModelColumn<>(I_C_PaymentTerm.class, "CalculationMethod", null);
+	String COLUMNNAME_CalculationMethod = "CalculationMethod";
 
 	/**
 	 * Set Payment Term.
@@ -278,75 +297,6 @@ public interface I_C_PaymentTerm
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
-	 * Set Fix month cutoff.
-	 * Last day to include for next due date
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFixMonthCutoff (int FixMonthCutoff);
-
-	/**
-	 * Get Fix month cutoff.
-	 * Last day to include for next due date
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getFixMonthCutoff();
-
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_FixMonthCutoff = new ModelColumn<>(I_C_PaymentTerm.class, "FixMonthCutoff", null);
-	String COLUMNNAME_FixMonthCutoff = "FixMonthCutoff";
-
-	/**
-	 * Set Fix month day.
-	 * Day of the month of the due date
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFixMonthDay (int FixMonthDay);
-
-	/**
-	 * Get Fix month day.
-	 * Day of the month of the due date
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getFixMonthDay();
-
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_FixMonthDay = new ModelColumn<>(I_C_PaymentTerm.class, "FixMonthDay", null);
-	String COLUMNNAME_FixMonthDay = "FixMonthDay";
-
-	/**
-	 * Set Fix month offset.
-	 * Number of months (0=same, 1=following)
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFixMonthOffset (int FixMonthOffset);
-
-	/**
-	 * Get Fix month offset.
-	 * Number of months (0=same, 1=following)
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getFixMonthOffset();
-
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_FixMonthOffset = new ModelColumn<>(I_C_PaymentTerm.class, "FixMonthOffset", null);
-	String COLUMNNAME_FixMonthOffset = "FixMonthOffset";
-
-	/**
 	 * Set Grace Days.
 	 * Days after due date to send first dunning letter
 	 *
@@ -437,29 +387,6 @@ public interface I_C_PaymentTerm
 
 	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_PaymentTerm.class, "IsDefault", null);
 	String COLUMNNAME_IsDefault = "IsDefault";
-
-	/**
-	 * Set Fixed due date.
-	 * Payment is due on a fixed date
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDueFixed (boolean IsDueFixed);
-
-	/**
-	 * Get Fixed due date.
-	 * Payment is due on a fixed date
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDueFixed();
-
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsDueFixed = new ModelColumn<>(I_C_PaymentTerm.class, "IsDueFixed", null);
-	String COLUMNNAME_IsDueFixed = "IsDueFixed";
 
 	/**
 	 * Set Next Business Day.
