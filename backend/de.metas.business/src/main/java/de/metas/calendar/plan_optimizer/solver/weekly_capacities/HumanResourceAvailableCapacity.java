@@ -37,12 +37,12 @@ public class HumanResourceAvailableCapacity
 		requiredCapacity.forEach(this::reserveCapacity);
 	}
 
-	public Double getOverReservedCapacity()
+	public Long getOverReservedCapacity()
 	{
 		return reservations.values()
 				.stream()
 				.map(Reservation::getOverReservedCapacity)
-				.reduce((double)0, Double::sum);
+				.reduce((long)0, Long::sum);
 	}
 
 	private void reserveCapacity(
@@ -80,7 +80,7 @@ public class HumanResourceAvailableCapacity
 		@NonNull ResourceGroupYearWeek resourceGroupYearWeek;
 		@NonNull Duration totalCapacity;
 		@NonNull Duration reservedCapacity = Duration.ZERO;
-		@NonNull Double overReservedCapacity = (double)0;
+		@NonNull Long overReservedCapacity = (long)0;
 
 		public Reservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek, @NonNull final Duration totalCapacity)
 		{
@@ -110,7 +110,7 @@ public class HumanResourceAvailableCapacity
 		}
 
 		@NonNull
-		public Double getOverReservedCapacity()
+		public Long getOverReservedCapacity()
 		{
 			return overReservedCapacity;
 		}
