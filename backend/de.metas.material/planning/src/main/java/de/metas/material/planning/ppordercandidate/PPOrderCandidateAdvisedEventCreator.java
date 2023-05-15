@@ -89,6 +89,7 @@ public class PPOrderCandidateAdvisedEventCreator
 				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", usedQty);
 			}
 			// we don't reduce Quantity of PPOrders and PPOrderCandidates atm
+			// don't use fullDemandQty in case of update
 			else if(supplyRequiredDescriptor.getDeltaQuantity().signum() > 0)
 			{
 				usedQty = supplyRequiredDescriptor.getDeltaQuantity();
@@ -110,9 +111,11 @@ public class PPOrderCandidateAdvisedEventCreator
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
-		if(requiredQty.signum() == 0)
+		final BigDecimal finalQtyUsed = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(requiredQty.compareTo(finalQtyUsed) != 0)
 		{
-			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
+			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
+			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
 		}
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);

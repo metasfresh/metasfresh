@@ -104,9 +104,11 @@ public class DDOrderAdvisedEventCreator
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
-		if(requiredQty.signum() == 0)
+		final BigDecimal finalQtyUsed = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(requiredQty.compareTo(finalQtyUsed) != 0)
 		{
-			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
+			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
+			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
 		}
 
 		final List<DDOrderAdvisedEvent> events = new ArrayList<>();

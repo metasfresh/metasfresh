@@ -81,6 +81,11 @@ public class SupplyRequiredHandlerUtils
 
 	public void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
+		updateMainDataWithQty(supplyRequiredDescriptor, supplyRequiredDescriptor.getMaterialDescriptor().getQuantity());
+	}
+
+	public void updateMainDataWithQty(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor, final BigDecimal qty)
+	{
 		if (supplyRequiredDescriptor.isSimulated())
 		{
 			return;
@@ -93,7 +98,7 @@ public class SupplyRequiredHandlerUtils
 
 		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
 				.identifier(mainDataRecordIdentifier)
-				.qtySupplyRequired(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.qtySupplyRequired(qty)
 				.build();
 
 		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);

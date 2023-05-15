@@ -100,7 +100,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final PurchaseCandidateAdvisedEvent.PurchaseCandidateAdvisedEventBuilder event = PurchaseCandidateAdvisedEvent.builder()
+		final PurchaseCandidateAdvisedEvent.PurchaseCandidateAdvisedEventBuilder eventBuilder = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
@@ -126,23 +126,26 @@ public class PurchaseCandidateAdvisedEventCreator
 				return Optional.empty();
 			}
 			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty);
-			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder()
+			eventBuilder.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder()
 												   .materialDescriptor(updatedMaterialDescriptor)
 												   .isLotForLot("Y")
 												   .build());
 		}
 		else
 		{
-			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
+			eventBuilder.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
 		}
 
-		if(requiredQty.signum() == 0)
+		final PurchaseCandidateAdvisedEvent event = eventBuilder.build();
+		final BigDecimal finalQtyUsed = event.getSupplyRequiredDescriptor().getMaterialDescriptor().getQuantity();
+		if(requiredQty.compareTo(finalQtyUsed) != 0)
 		{
-			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
+			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
+			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
 		}
 
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
-		return Optional.of(event.build());
+		return Optional.of(event);
 	}
 }
