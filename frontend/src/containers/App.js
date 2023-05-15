@@ -1,6 +1,6 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import '../assets/css/styles.css';
@@ -28,10 +28,33 @@ import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
+import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
+
+const computeTitleFromState = (state) => {
+  if (state?.appHandler?.isLogged) {
+    const breadcrumb = state?.menuHandler?.breadcrumb;
+    if (breadcrumb?.length > 0) {
+      const lastElement = breadcrumb.slice(-1)[0];
+      const caption = lastElement?.caption;
+      if (caption) {
+        let title = caption;
+        const docSummary = getDocSummaryDataFromState(state)?.value;
+        if (docSummary) {
+          title += ' / ' + docSummary;
+        }
+        return title;
+      }
+    }
+
+    return 'metasfresh';
+  } else {
+    return 'Login';
+  }
+};
 
 /**
  * @file Functional component.
@@ -266,6 +289,11 @@ const App = () => {
   // if (APP_PLUGINS.length && pluginsLoading) {
   //   return null;
   // }
+
+  const title = useSelector((state) => computeTitleFromState(state));
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
 
   return (
     <ShortcutProvider>
