@@ -514,6 +514,11 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100| -100                   |                                 |
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 0                      |                                 |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 5                              | 5                          | 0                             | 0                             | warehouseStd                  | 5                            | 5                  |
+
+
   @Id:S0264_700
   @from:cucumber
   Scenario: Full stock available at demand time, supplied via production Lot for Lot
@@ -549,6 +554,10 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | EndCustomer_31032022_1 | N            | Y              | ps_1                          |
 
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
+
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-16   |
@@ -574,6 +583,10 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 5   | 15                     | 2021-04-16T00:00:00             |
       | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -5  | 10                     |                                 |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                             | 0                             | warehouseStd                  | 10                           | 10                 |
+
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | 2021-04-16T21:00:00Z |
@@ -596,4 +609,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_5        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |                                 |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100| -100                   |                                 |
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 0                      |                                 |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 10                             | 10                         | 0                             | 0                             | warehouseStd                  | 10                           | 10                 |
 
