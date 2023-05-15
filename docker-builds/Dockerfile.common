@@ -4,6 +4,7 @@ COPY docker-builds/mvn/settings.xml /root/.m2/
 
 WORKDIR /parent
 COPY misc/parent-pom .
+RUN sed -i 's/dwControl/dwcontrol/' pom.xml
 RUN mvn clean install -Dmaven.gitcommitid.skip=true
 
 WORKDIR /commons
