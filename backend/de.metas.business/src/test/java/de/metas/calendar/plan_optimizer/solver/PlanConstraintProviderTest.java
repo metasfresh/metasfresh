@@ -22,14 +22,14 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class PlanConstraintProviderTest
 {
 	private static final ProjectId PROJECT_ID1 = ProjectId.ofRepoId(1);
 	private static final ProjectId PROJECT_ID2 = ProjectId.ofRepoId(2);
-	private static final Resource RESOURCE = new Resource(ResourceId.ofRepoId(1), "R1");
-	private static final Resource RESOURCE2 = new Resource(ResourceId.ofRepoId(2), "R2");
+	private static final Resource RESOURCE = new Resource(ResourceId.ofRepoId(1), "R1", null);
+	private static final Resource RESOURCE2 = new Resource(ResourceId.ofRepoId(2), "R2", null);
 
 	private static ConstraintVerifier<PlanConstraintProvider, Plan> constraintVerifier;
 
