@@ -4,12 +4,16 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.time.DateTimeException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.chrono.Chronology;
 import java.time.chrono.IsoChronology;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQuery;
+import java.time.temporal.WeekFields;
 
 import static java.time.DayOfWeek.THURSDAY;
 import static java.time.DayOfWeek.WEDNESDAY;
@@ -116,5 +120,14 @@ public class YearWeek
 			return 53;
 		}
 		return 52;
+	}
+
+	public LocalDateTime nextWeekMonday()
+	{
+		return LocalDate.of(year, Month.JANUARY, 1)
+				//.with(WeekFields.ISO.weekBasedYear(), year) // year
+				.with(WeekFields.ISO.weekOfWeekBasedYear(), week + 1) // week of year
+				.with(WeekFields.ISO.dayOfWeek(), DayOfWeek.MONDAY.getValue())
+				.atStartOfDay();
 	}
 }

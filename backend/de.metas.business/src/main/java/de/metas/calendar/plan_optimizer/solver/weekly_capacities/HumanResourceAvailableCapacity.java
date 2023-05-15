@@ -96,14 +96,7 @@ public class HumanResourceAvailableCapacity
 				if (totalCapacity.compareTo(reservedCapacity) < 0)
 				{
 					final LocalDateTime startDate = item.getStartDate();
-					final YearWeek overCapacityWeek = YearWeek.from(startDate);
-
-					final LocalDateTime nextAvailableDate = LocalDate.now()
-							.with(WeekFields.ISO.weekBasedYear(), overCapacityWeek.getYear()) // year
-							.with(WeekFields.ISO.weekOfWeekBasedYear(), overCapacityWeek.getWeek() + 1) // week of year
-							.with(WeekFields.ISO.dayOfWeek(), DayOfWeek.MONDAY.getValue())
-							.atStartOfDay();
-
+					final LocalDateTime nextAvailableDate = YearWeek.from(startDate).nextWeekMonday();
 					this.overReservedCapacity = this.overReservedCapacity + Plan.PLANNING_TIME_PRECISION.between(startDate, nextAvailableDate);
 				}
 			});

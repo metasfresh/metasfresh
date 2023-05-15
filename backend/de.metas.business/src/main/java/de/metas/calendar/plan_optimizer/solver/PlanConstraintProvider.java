@@ -34,6 +34,8 @@ public class PlanConstraintProvider implements ConstraintProvider
 	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 1, 0 });
 	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 0, 1 });
 
+	private final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
+
 	@Override
 	public Constraint[] defineConstraints(final ConstraintFactory constraintFactory)
 	{
@@ -89,14 +91,12 @@ public class PlanConstraintProvider implements ConstraintProvider
 						StepRequiredCapacity.ZERO,
 						StepRequiredCapacity::add,
 						StepRequiredCapacity::subtract))
-				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity) 
+				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
 				.asConstraint("Available human resource test group capacity");
 	}
 
 	private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
 	{
-		final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
-
 		final Set<HumanResourceTestGroupId> ids = requiredCapacity.getMap().keySet()
 				.stream()
 				.map(ResourceGroupYearWeek::getGroupId)
