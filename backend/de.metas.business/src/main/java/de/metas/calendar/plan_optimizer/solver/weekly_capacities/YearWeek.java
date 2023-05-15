@@ -125,7 +125,7 @@ public class YearWeek
 	public LocalDateTime nextWeekMonday()
 	{
 		return LocalDate.of(year, Month.JANUARY, 1)
-				//.with(WeekFields.ISO.weekBasedYear(), year) // year
+				.with(WeekFields.ISO.weekBasedYear(), year) // year
 				.with(WeekFields.ISO.weekOfWeekBasedYear(), week + 1) // week of year
 				.with(WeekFields.ISO.dayOfWeek(), DayOfWeek.MONDAY.getValue())
 				.atStartOfDay();
