@@ -8,11 +8,8 @@ import de.metas.resource.HumanResourceTestGroup;
 import de.metas.resource.HumanResourceTestGroupId;
 import lombok.NonNull;
 
-import java.time.DayOfWeek;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.WeekFields;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
