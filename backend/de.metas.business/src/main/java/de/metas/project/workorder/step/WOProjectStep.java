@@ -105,4 +105,9 @@ public class WOProjectStep
 		return Optional.ofNullable(dateRange)
 				.map(CalendarDateRange::getEndDate);
 	}
+
+	public boolean inTesting()
+	{
+		return WOStepStatus.INTESTING.equals(woStepStatus);
+	}
 }
