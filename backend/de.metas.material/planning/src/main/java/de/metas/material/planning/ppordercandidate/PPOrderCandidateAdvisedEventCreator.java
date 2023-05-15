@@ -110,7 +110,7 @@ public class PPOrderCandidateAdvisedEventCreator
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
-		if(productPlanning.isLotForLot())
+		if(requiredQty.signum() == 0)
 		{
 			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
 		}

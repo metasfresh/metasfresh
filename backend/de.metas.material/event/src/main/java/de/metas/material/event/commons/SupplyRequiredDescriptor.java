@@ -92,7 +92,7 @@ public class SupplyRequiredDescriptor
 	 * Used to avoid duplicated demand after Manufacturing OrderCandidates
 	 * in case of LotForLot and not LotForLot with isCreatePlan = false
 	 */
-	int ppOrderCandidateId;
+	int ppOrderLineCandidateId;
 
 	/**
 	 * Used to avoid duplicated demand after Manufacturing Orders / OrderCandidates
@@ -119,7 +119,7 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("updated") final boolean updated,
 			@JsonProperty("deltaQuantity") final BigDecimal deltaQuantity,
 			@JsonProperty("ppOrderId") final int ppOrderId,
-			@JsonProperty("ppOrderCandidateId") final int ppOrderCandidateId,
+			@JsonProperty("ppOrderLineCandidateId") final int ppOrderLineCandidateId,
 			@JsonProperty("ppOrderProductPlanningId") final int ppOrderProductPlanningId)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
@@ -144,7 +144,7 @@ public class SupplyRequiredDescriptor
 		this.deltaQuantity = deltaQuantity;
 
 		this.ppOrderId = ppOrderId > 0 ? ppOrderId : -1;
-		this.ppOrderCandidateId = ppOrderCandidateId > 0 ? ppOrderCandidateId : -1;
+		this.ppOrderLineCandidateId = ppOrderLineCandidateId > 0 ? ppOrderLineCandidateId : -1;
 		this.ppOrderProductPlanningId = ppOrderProductPlanningId > 0 ? ppOrderProductPlanningId : -1;
 	}
 }

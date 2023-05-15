@@ -104,7 +104,7 @@ public class DDOrderAdvisedEventCreator
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
 		}
 
-		if(productPlanningData.isLotForLot())
+		if(requiredQty.signum() == 0)
 		{
 			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
 		}

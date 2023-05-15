@@ -63,6 +63,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
+		//temporary workaround for 2 PurchaseCandidates one for each PPOrderCandidate and PPOrder
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
 		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
@@ -73,7 +74,7 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		final I_PP_Product_Planning ppOrderProductPlanning = mrpContext.getPpOrderProductPlanning();
 		if(productPlanning.isLotForLot()
-				&& supplyRequiredDescriptor.getPpOrderCandidateId() > 0
+				&& supplyRequiredDescriptor.getPpOrderLineCandidateId() > 0
 				&& ppOrderProductPlanning != null
 				&& ppOrderProductPlanning.isCreatePlan())
 		{
@@ -135,7 +136,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			event.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
 		}
 
-		if(productPlanning.isLotForLot())
+		if(requiredQty.signum() == 0)
 		{
 			SupplyRequiredHandlerUtils.updateMainData(supplyRequiredDescriptor);
 		}

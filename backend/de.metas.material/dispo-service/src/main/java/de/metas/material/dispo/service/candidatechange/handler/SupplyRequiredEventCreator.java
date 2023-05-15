@@ -105,10 +105,10 @@ public class SupplyRequiredEventCreator
 				descriptorBuilder
 						.ppOrderId(productionDetail.getPpOrderId());
 			}
-			if(productionDetail.getPpOrderCandidateId() > 0)
+			if(productionDetail.getPpOrderLineCandidateId() > 0)
 			{
 				descriptorBuilder
-						.ppOrderCandidateId(productionDetail.getPpOrderCandidateId());
+						.ppOrderLineCandidateId(productionDetail.getPpOrderLineCandidateId());
 			}
 			descriptorBuilder.ppOrderProductPlanningId(productionDetail.getProductPlanningId());
 		}
