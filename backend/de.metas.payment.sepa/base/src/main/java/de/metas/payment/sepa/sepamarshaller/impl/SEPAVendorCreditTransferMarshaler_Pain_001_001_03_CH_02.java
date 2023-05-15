@@ -3,7 +3,9 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
+import de.metas.banking.PaySelectionId;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -14,6 +16,8 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
@@ -68,10 +72,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.Nullable;
@@ -1006,7 +1014,31 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			sb.append(" @C_BP_BankAccount_ID@ ");
 			sb.append(line.getC_BP_BankAccount().getDescription());
 		}
+		if (line.getStructuredRemittanceInfo() != null)
+		{
+			sb.append(" @StructuredRemittanceInfo@ ");
+			sb.append(line.getStructuredRemittanceInfo());
+		}
+		if (line.getRecord_ID() > 0)
+		{
+			sb.append(" @C_Invoice_ID@ ");
+			sb.append(getInvoiceIDByRecordID(line));
+		}
+
 		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
+	}
+
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private int getInvoiceIDByRecordID(final I_SEPA_Export_Line sepaline)
+	{
+		final TableRecordReference referencedRecord = TableRecordReference.of(
+				sepaline.getAD_Table_ID(),
+				sepaline.getRecord_ID());
+
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(
+				InvoiceId.ofRepoId(referencedRecord.getRecord_ID()));
+
+		return invoice.getC_Invoice_ID();
 	}
 
 	@VisibleForTesting
