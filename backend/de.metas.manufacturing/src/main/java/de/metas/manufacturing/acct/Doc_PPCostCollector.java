@@ -202,6 +202,38 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		return fact;
 	}
 
+	@Nullable
+	private Fact createFactLines_ComponentIssue(
+			@NonNull final AcctSchema as,
+			@NonNull final CostElement costElement,
+			@NonNull final MAccount debit,
+			@NonNull final MAccount credit,
+			@NonNull final CostAmount cost,
+			@NonNull final Quantity qty)
+	{
+		final DocLine_CostCollector docLine = getLine();
+		final String description = costElement.getName();
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+
+		final FactLine dr = fact.createLine(docLine, debit, cost.getCurrencyId(), cost.getValue(), null);
+		dr.setQty(qty);
+		dr.addDescription(description);
+		dr.setC_Project_ID(docLine.getC_Project_ID());
+		dr.setC_Activity_ID(docLine.getActivityId());
+		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
+		dr.setM_Locator_ID(docLine.getM_Locator_ID());
+
+		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
+		cr.setQty(qty.negate());
+		cr.addDescription(description);
+		cr.setC_Project_ID(docLine.getC_Project_ID());
+		cr.setC_Activity_ID(docLine.getActivityId());
+		cr.setC_Campaign_ID(docLine.getC_Campaign_ID());
+		cr.setM_Locator_ID(docLine.getM_Locator_ID());
+
+		return fact;
+	}
+
 	/**
 	 * <pre>
 	 * (for each cost element)
@@ -281,7 +313,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
-			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
+			final Fact fact = createFactLines_ComponentIssue(as, element, debit, credit, costs, qtyIssued);
+
+
+
 			if (fact != null)
 			{
 				facts.add(fact);
