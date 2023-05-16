@@ -10,6 +10,10 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.resource.HumanResourceTestGroupRepository;
+import de.metas.resource.HumanResourceTestGroupService;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -38,6 +42,8 @@ class PlanConstraintProviderTest
 	@BeforeAll
 	static void beforeAll()
 	{
+		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new HumanResourceTestGroupRepository()));
 		constraintVerifier = ConstraintVerifier.build(new PlanConstraintProvider(), Plan.class, Step.class);
 	}
 
