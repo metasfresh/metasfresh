@@ -1003,8 +1003,28 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
+<<<<<<< HEAD
 			sb.append(" @C_BP_BankAccount_ID@ ");
 			sb.append(line.getC_BP_BankAccount().getDescription());
+=======
+			final I_C_BP_BankAccount bpBankAccount = line.getC_BP_BankAccount();
+
+			if (Check.isNotBlank(bpBankAccount.getDescription()))
+			{
+				sb.append(" @C_BP_BankAccount_ID@ ");
+				sb.append(bpBankAccount.getDescription());
+			}
+			if (Check.isNotBlank(bpBankAccount.getName()))
+			{
+				sb.append(" @Name@ ");
+				sb.append(bpBankAccount.getName());
+			}
+			if (Check.isNotBlank(bpBankAccount.getIBAN()))
+			{
+				sb.append(" @IBAN@ ");
+				sb.append(bpBankAccount.getIBAN());
+			}
+>>>>>>> 71872936dea (changing so that its shows bankdata (#15322))
 		}
 		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
 	}
