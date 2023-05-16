@@ -39,8 +39,7 @@ set -u
 
 # the winpty is needed to avoid an error when running the script in git bash on windows
 
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "UPDATE pg_database SET datistemplate='false' WHERE datname='${BRANCH_NAME}_infrastructure';"
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "alter database ${BRANCH_NAME}_infrastructure is_template true;"
+winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "UPDATE pg_database SET datistemplate='false' WHERE datname='metasfresh_template_${BRANCH_NAME}';"
+winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh_template_${BRANCH_NAME};"
 
-echo "The local template has been removed."
-echo "You can now create a new template"
+echo "The template-DB metasfresh_template_${BRANCH_NAME} was dropped and can be recreated with 20_convert_db_to_template.sh"
