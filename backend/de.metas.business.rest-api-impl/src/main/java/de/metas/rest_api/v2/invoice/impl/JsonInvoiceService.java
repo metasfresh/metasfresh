@@ -42,6 +42,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -79,6 +80,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.invoice.InvoicesRestController;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceRequest;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceRequestItem;
@@ -127,6 +129,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest.STORAGE_UOM;
 
 /*
@@ -154,6 +157,8 @@ import static de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest.STOR
 @Service
 public class JsonInvoiceService
 {
+	private static final String DEFAULT_DATA_SOURCE_INTERNAL_NAME = "SOURCE." + InvoicesRestController.class.getName();
+
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -589,8 +594,11 @@ public class JsonInvoiceService
 
 		final DocTypeId docTypeId = getDocTypeId(invoiceHeader.getInvoiceDocType(), clientAndOrgId);
 
+		final InputDataSourceId dataSourceId = getInputDataSourceId(invoiceHeader, masterdataProvider, clientAndOrgId.getOrgId());
+
 		return CreateInvoiceRequestHeader.builder()
 				.externalHeaderId(invoiceHeader.getExternalHeaderId())
+				.dataSourceId(dataSourceId)
 				.orgId(clientAndOrgId.getOrgId())
 				.billBPartnerLocationId(bPartnerInfo.getBPartnerLocationIdOrError())
 				.billContactId(bPartnerInfo.getContactId())
@@ -839,6 +847,32 @@ public class JsonInvoiceService
 		}
 	}
 
+
+	@NonNull
+	private static InputDataSourceId getInputDataSourceId(
+			@NonNull final JsonCreateInvoiceRequestItemHeader invoiceHeader,
+			@NonNull final MasterdataProvider masterdataProvider,
+			@NonNull final OrgId orgId)
+	{
+		final String dataSourceIdentifier = coalesce(
+				invoiceHeader.getDataSource(),
+				"int-" + DEFAULT_DATA_SOURCE_INTERNAL_NAME);
+
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(
+				dataSourceIdentifier,
+				orgId);
+
+		if (dataSourceId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataSource")
+					.resourceIdentifier(dataSourceIdentifier)
+					.parentResource(invoiceHeader).build();
+		}
+
+		return dataSourceId;
+	}
+	
 	@Value
 	@Builder
 	private static class InvoiceLoader

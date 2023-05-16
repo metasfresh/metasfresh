@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+import de.metas.impex.InputDataSourceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -76,6 +77,9 @@ public class CreateInvoiceRequestHeader
 
 	@NonNull
 	CurrencyId currencyId;
+
+	@Nullable
+	InputDataSourceId dataSourceId;
 
 	@Nullable
 	BPartnerContactId billContactId;
