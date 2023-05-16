@@ -854,19 +854,19 @@ public class JsonInvoiceService
 			@NonNull final MasterdataProvider masterdataProvider,
 			@NonNull final OrgId orgId)
 	{
-		final String dataSourceInternalNameToUse = coalesce(
+		final String dataSourceIdentifier = coalesce(
 				invoiceHeader.getDataSource(),
 				"int-" + DEFAULT_DATA_SOURCE_INTERNAL_NAME);
 
 		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(
-				dataSourceInternalNameToUse,
+				dataSourceIdentifier,
 				orgId);
 
 		if (dataSourceId == null)
 		{
 			throw MissingResourceException.builder()
 					.resourceName("dataSource")
-					.resourceIdentifier(dataSourceInternalNameToUse)
+					.resourceIdentifier(dataSourceIdentifier)
 					.parentResource(invoiceHeader).build();
 		}
 
