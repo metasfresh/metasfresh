@@ -1005,20 +1005,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
-			if (Check.isNotBlank(line.getC_BP_BankAccount().getDescription()))
+			final I_C_BP_BankAccount bpBankAccount = line.getC_BP_BankAccount();
+
+			if (Check.isNotBlank(bpBankAccount.getDescription()))
 			{
 				sb.append(" @C_BP_BankAccount_ID@ ");
-				sb.append(line.getC_BP_BankAccount().getDescription());
+				sb.append(bpBankAccount.getDescription());
 			}
-			if (Check.isNotBlank(line.getC_BP_BankAccount().getName()))
+			if (Check.isNotBlank(bpBankAccount.getName()))
 			{
 				sb.append(" @Name@ ");
-				sb.append(line.getC_BP_BankAccount().getName());
+				sb.append(bpBankAccount.getName());
 			}
-			if (Check.isNotBlank(line.getC_BP_BankAccount().getIBAN()))
+			if (Check.isNotBlank(bpBankAccount.getIBAN()))
 			{
 				sb.append(" @IBAN@ ");
-				sb.append(line.getC_BP_BankAccount().getIBAN());
+				sb.append(bpBankAccount.getIBAN());
 			}
 		}
 		if (line.getRecord_ID() > 0)
