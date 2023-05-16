@@ -1,9 +1,11 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.PaySelectionId;
+import de.metas.banking.PaySelectionLineId;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.bpartner.BPartnerId;
@@ -20,6 +22,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
@@ -101,6 +104,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -1036,22 +1040,32 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		{
 			sb.append(" @C_Invoice_ID@ ");
 			sb.append(getInvoiceIDByRecordID(line));
+			sb.append(" @Line@ ");
+			sb.append(getLineNoByRecordID(line));
 		}
 
 		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
 	}
 
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private int getInvoiceIDByRecordID(final I_SEPA_Export_Line sepaline)
 	{
 		final TableRecordReference referencedRecord = TableRecordReference.of(
 				sepaline.getAD_Table_ID(),
 				sepaline.getRecord_ID());
 
-		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(
-				InvoiceId.ofRepoId(referencedRecord.getRecord_ID()));
+		final I_C_PaySelectionLine paySelectionLine = referencedRecord.getModel(I_C_PaySelectionLine.class);
 
-		return invoice.getC_Invoice_ID();
+		return paySelectionLine.getC_Invoice_ID();
+	}
+
+	private int getLineNoByRecordID(final I_SEPA_Export_Line sepaline)
+	{
+		final TableRecordReference referencedRecord = TableRecordReference.of(
+				sepaline.getAD_Table_ID(),
+				sepaline.getRecord_ID());
+		final I_C_PaySelectionLine paySelectionLine = referencedRecord.getModel(I_C_PaySelectionLine.class);
+
+		return paySelectionLine.getLine();
 	}
 
 	@VisibleForTesting
