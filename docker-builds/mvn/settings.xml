@@ -9,7 +9,6 @@
             <properties>
                 <metasfresh.version>10.0.0</metasfresh.version>
             </properties>
-
             <repositories>
                 <repository>
                     <id>github-3rdparty-maven</id>
@@ -38,7 +37,6 @@
 		</server>
 	</servers>
 
-    <!-- List of profiles that are active for all builds. -->
     <activeProfiles>
         <activeProfile>env-dev</activeProfile>
     </activeProfiles>
