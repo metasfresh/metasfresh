@@ -1,17 +1,16 @@
 package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import lombok.NonNull;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -58,7 +57,6 @@ public class VendorGatewayInvokerFactory
 		if (vendorGatewayService.isPresent())
 		{
 			return RealVendorGatewayInvoker.builder()
-					.orgId(orgId)
 					.vendorId(vendorId)
 					.vendorGatewayService(vendorGatewayService.get())
 					.build();
