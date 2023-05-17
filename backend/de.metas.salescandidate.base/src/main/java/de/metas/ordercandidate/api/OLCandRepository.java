@@ -92,8 +92,6 @@ public class OLCandRepository
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)
 	{
-		Check.assumeNotNull(request, "request is not null");
-
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
