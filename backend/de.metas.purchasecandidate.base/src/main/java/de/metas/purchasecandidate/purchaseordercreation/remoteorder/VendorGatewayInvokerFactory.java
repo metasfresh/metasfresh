@@ -1,16 +1,12 @@
 package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import lombok.NonNull;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /*
  * #%L
@@ -46,11 +42,6 @@ public class VendorGatewayInvokerFactory
 
 	public VendorGatewayInvoker createForVendorId(@NonNull final BPartnerId vendorId)
 	{
-		final OrgId orgId = OrgId.ofRepoIdOrNull(Env.getAD_Org_ID(Env.getCtx()));
-		Check.errorIf(orgId == null || orgId.isAny(),
-				"Missing AD_Org_ID in the current ctx; ctx={}",
-				(Supplier<Object[]>)() -> Env.getEntireContext(Env.getCtx()));
-
 		final Optional<VendorGatewayService> vendorGatewayService = vendorGatewayRegistry
 				.getSingleVendorGatewayService(vendorId.getRepoId());
 
