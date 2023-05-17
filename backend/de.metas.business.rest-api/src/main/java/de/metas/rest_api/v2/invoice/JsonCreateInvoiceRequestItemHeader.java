@@ -24,8 +24,6 @@ package de.metas.rest_api.v2.invoice;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
-import de.metas.common.rest_api.v2.SwaggerDocConstants;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
