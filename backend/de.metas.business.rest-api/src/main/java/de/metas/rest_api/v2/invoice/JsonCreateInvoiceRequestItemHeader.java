@@ -89,7 +89,6 @@ public class JsonCreateInvoiceRequestItemHeader
 	@Nullable
 	BigDecimal taxTotal;
 
-	@ApiModelProperty(value = "Identifier of the `AD_InputDataSource` record that tells where this Invoice came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	@Nullable
 	String dataSource;
 	
