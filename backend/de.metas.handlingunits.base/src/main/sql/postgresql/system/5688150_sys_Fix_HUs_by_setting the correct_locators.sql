@@ -1,4 +1,4 @@
-create table backup.m_hu_bkp_locator as SELECT * from m_HU;
+select backup_table('m_hu');
 
 with records as (
     SELECT t.qty,
