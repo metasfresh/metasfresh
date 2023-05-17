@@ -1,15 +1,18 @@
 package de.metas.purchasecandidate.material.event;
 
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.organization.IOrgDAO;
+import de.metas.pricing.conditions.BreakValueType;
+import de.metas.purchasecandidate.VendorProductInfoService;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -20,19 +23,16 @@ import org.compiere.model.X_M_DiscountSchema;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
-
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.impl.MRPContextFactory;
-import de.metas.pricing.conditions.BreakValueType;
-import de.metas.purchasecandidate.VendorProductInfoService;
-import de.metas.user.UserRepository;
 import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
 /*
  * #%L
@@ -110,7 +110,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 						supplyRequiredDescriptor,
 						mrpContext);
 
-		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 
 		assertThat(purchaseAdvisedEvent).isPresent();
 		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
@@ -128,7 +128,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 						mrpContext);
 
 		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
-				.isLotForLot("Y")
+				.isLotForLot(ISLOTFORLOT_Yes)
 				.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(new BigDecimal("10")))
 				.build();
 

@@ -46,6 +46,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+
 @Service
 public class PPOrderCandidateAdvisedEventCreator
 {
@@ -103,13 +106,13 @@ public class PPOrderCandidateAdvisedEventCreator
 			}
 
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
-					.isLotForLot("Y")
+					.isLotForLot(ISLOTFORLOT_Yes)
 					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
 					.build();
 		}
 		else
 		{
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 		}
 
 		final BigDecimal finalQtyUsed = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();

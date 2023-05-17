@@ -121,6 +121,7 @@ public final class PPOrderCreatedHandler
 				.businessCaseDetail(createProductionDetailForPPOrder(ppOrderEvent))
 				.materialDescriptor(createMaterialDescriptorForPPOrder(ppOrder))
 				// .groupId(null) // will be set after save
+				.lotForLot(ppOrderEvent.getLotForLot())
 				.build();
 
 		return candidateChangeService.onCandidateNewOrChange(

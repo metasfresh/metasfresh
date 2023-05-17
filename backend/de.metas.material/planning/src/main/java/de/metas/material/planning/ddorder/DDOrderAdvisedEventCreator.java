@@ -21,6 +21,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+
 /*
  * #%L
  * metasfresh-material-planning
@@ -95,13 +98,13 @@ public class DDOrderAdvisedEventCreator
 				return ImmutableList.of();
 			}
 			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
-					.isLotForLot("Y")
+					.isLotForLot(ISLOTFORLOT_Yes)
 					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
 					.build();
 		}
 		else
 		{
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot("N").build();
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 		}
 
 		final BigDecimal finalQtyUsed = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();

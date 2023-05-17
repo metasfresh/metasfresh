@@ -163,7 +163,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		final DistributionDetail distributionDetail = createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine);
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ddOrderEvent.getSupplyRequiredDescriptor();
-		final String lotForLot = supplyRequiredDescriptor == null ? null : supplyRequiredDescriptor.getIsLotForLot();
+		final String lotForLot = supplyRequiredDescriptor == null ? "" : supplyRequiredDescriptor.getIsLotForLot();
 
 		// create or update the supply candidate
 		final Candidate supplyCandidate = createSupplyCandidateBuilder(ddOrderEvent, ddOrderLine)

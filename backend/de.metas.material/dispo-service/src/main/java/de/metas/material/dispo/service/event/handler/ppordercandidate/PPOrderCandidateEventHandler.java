@@ -86,10 +86,6 @@ public abstract class PPOrderCandidateEventHandler
 				supplyRequiredDescriptor,
 				headerCandidateMaterialDescriptor).ifPresent(builder::additionalDemandDetail);
 
-		if(supplyRequiredDescriptor != null)
-		{
-			builder.lotForLot(supplyRequiredDescriptor.getIsLotForLot());
-		}
 
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
@@ -97,6 +93,7 @@ public abstract class PPOrderCandidateEventHandler
 				.businessCaseDetail(headerCandidateProductionDetail)
 				.materialDescriptor(headerCandidateMaterialDescriptor)
 				// .groupId(null) // will be set after save
+				.lotForLot(ppOrderCandidate.getPpOrderData().getLotForLot())
 				.build();
 
 		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);

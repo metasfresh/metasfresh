@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+
 /*
  * #%L
  * metasfresh-material-planning
@@ -128,12 +131,12 @@ public class PurchaseCandidateAdvisedEventCreator
 			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty);
 			eventBuilder.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder()
 												   .materialDescriptor(updatedMaterialDescriptor)
-												   .isLotForLot("Y")
+												   .isLotForLot(ISLOTFORLOT_Yes)
 												   .build());
 		}
 		else
 		{
-			eventBuilder.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
+			eventBuilder.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build());
 		}
 
 		final PurchaseCandidateAdvisedEvent event = eventBuilder.build();

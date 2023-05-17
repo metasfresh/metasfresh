@@ -42,6 +42,7 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.reflections.util.Utils;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -104,6 +105,11 @@ public class CreateOrderCandidateCommand
 		if (request.isSimulated())
 		{
 			ppOrderCandidateRecord.setProcessed(true);
+		}
+
+		if(!Utils.isEmpty(request.getLotForLot()))
+		{
+			ppOrderCandidateRecord.setIsLotForLot(request.getLotForLot());
 		}
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);

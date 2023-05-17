@@ -127,6 +127,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 					.minMaxDescriptor(supplyRequiredDescriptor.getMinMaxDescriptor())
 					.quantity(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
 					.simulated(supplyRequiredDescriptor.isSimulated())
+					.lotForLot(supplyRequiredDescriptor.getIsLotForLot())
 					.build();
 
 			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, CandidateHandler.OnNewOrChangeAdvise.DONT_UPDATE);

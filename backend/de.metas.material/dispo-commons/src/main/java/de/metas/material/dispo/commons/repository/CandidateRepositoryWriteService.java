@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
+import de.metas.common.util.StringUtils;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -51,6 +52,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
+import org.reflections.util.Utils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -408,7 +410,7 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
 
 		final String lotForLot = candidate.getLotForLot();
-		if(lotForLot != null)
+		if(!Utils.isEmpty(lotForLot))
 		{
 			candidateRecord.setIsLotForLot(candidate.getLotForLot());
 		}
