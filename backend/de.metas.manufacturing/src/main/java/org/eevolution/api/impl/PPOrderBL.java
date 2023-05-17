@@ -124,7 +124,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-	private final PPOrderCandidateDAO ppOrderCandidateDAO = SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class);
+	private final PPOrderCandidateDAO ppOrderCandidateDAO = new PPOrderCandidateDAO();
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
