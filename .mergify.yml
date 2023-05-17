@@ -49,6 +49,7 @@ pull_request_rules:
      - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
+        title: "{{ head }} to master - Port PR {{ title }} (copy #{{ number }})"
         branches:
           - master
         assignees: # the original PR's author shall be notified when the merge-towards-master build fails
