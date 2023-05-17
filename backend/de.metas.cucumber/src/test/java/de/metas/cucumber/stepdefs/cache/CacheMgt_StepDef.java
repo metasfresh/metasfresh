@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.cache;
 import de.metas.cache.CacheMgt;
 import io.cucumber.java.en.Then;
 
-public class Case_StepDef
+public class CacheMgt_StepDef
 {
 	@Then("the metasfresh cache is reset")
 	public void processMetasfreshResponse()

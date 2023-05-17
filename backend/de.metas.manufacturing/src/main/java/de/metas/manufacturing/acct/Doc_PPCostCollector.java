@@ -179,11 +179,6 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			@NonNull final CostAmount cost,
 			@NonNull final Quantity qty)
 	{
-		if (cost.signum() == 0)
-		{
-			return null;
-		}
-
 		final DocLine_CostCollector docLine = getLine();
 		final String description = costElement.getName();
 		final Fact fact = new Fact(this, as, PostingType.Actual);
@@ -279,7 +274,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 		final Account credit = docLine.getAccount(isFloorStock ? ProductAcctType.P_FloorStock_Acct : ProductAcctType.P_Asset_Acct, as);
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow().retainOnlyAccountable(as);
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())

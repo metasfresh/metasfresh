@@ -26,7 +26,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.lang3.StringUtils;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -48,10 +47,16 @@ class ToCalendarEntryConverter
 	@NonNull
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull
-	private final WOProjectService woProjectService = SpringContextHolder.instance.getBean(WOProjectService.class);
+	private final WOProjectService woProjectService;
 
 	@NonNull
 	private final ProjectFrontendURLsProvider frontendURLs = new ProjectFrontendURLsProvider();
+
+	public ToCalendarEntryConverter(
+			@NonNull final WOProjectService woProjectService)
+	{
+		this.woProjectService = woProjectService;
+	}
 
 	@NonNull
 	public Optional<CalendarEntry> from(
@@ -69,7 +74,7 @@ class ToCalendarEntryConverter
 						.title(getCalendarWOEntryTitle(project, step, resource))
 						.description(TranslatableStrings.anyLanguage(resource.getDescription()))
 						.dateRange(dateRange)
-						.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
+						.editable(isEditable(step, simulationHeaderRef))
 						.color(woProjectService.getCalendarColor(project))
 						.url(frontendURLs.getProjectUrl(ProjectCategory.WorkOrderJob, resource.getProjectId()).orElse(null))
 
@@ -186,5 +191,17 @@ class ToCalendarEntryConverter
 				.append(" - ")
 				.appendQty(plannedDuration.toBigDecimal(), plannedDuration.getUOMSymbol())
 				.build();
+	}
+
+	private static boolean isEditable(
+			@NonNull final WOProjectStep step,
+			@Nullable final SimulationPlanRef simulationHeaderRef)
+	{
+		if (step.isManuallyLocked())
+		{
+			return false;
+		}
+
+		return simulationHeaderRef != null && simulationHeaderRef.isEditable();
 	}
 }

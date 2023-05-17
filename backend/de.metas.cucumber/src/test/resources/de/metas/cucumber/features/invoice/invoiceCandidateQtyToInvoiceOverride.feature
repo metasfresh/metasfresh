@@ -71,7 +71,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
@@ -159,7 +159,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 150         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
@@ -247,7 +247,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 102         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
@@ -335,7 +335,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 148         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
@@ -414,7 +414,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 150         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -496,7 +496,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 100         | true      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -576,7 +576,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_3      | inOut_21072022_3      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
@@ -662,7 +662,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_5      | inOut_21072022_5      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
@@ -747,7 +747,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_8      | inOut_21072022_8      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
@@ -833,7 +833,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_9      | inOut_21072022_9      |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
 
@@ -937,7 +937,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -1036,7 +1036,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates

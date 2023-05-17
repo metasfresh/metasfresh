@@ -54,6 +54,9 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
@@ -99,7 +102,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ZERO;
 
@@ -115,6 +118,7 @@ public class CreateInvoiceCandidatesService
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
@@ -188,7 +192,7 @@ public class CreateInvoiceCandidatesService
 		final OrgId orgId = syncOrgIdToCandidate(candidate, item);
 		final ProductId productId = syncProductToCandidate(candidate, orgId, item);
 
-		syncBPartnerToCandidate(candidate, orgId, item);
+		syncBPartnerToCandidate(candidate, orgId, item); // here we also add the payment-term!
 
 		syncTargetDocTypeToCandidate(candidate, orgId, item.getInvoiceDocType());
 
@@ -235,7 +239,7 @@ public class CreateInvoiceCandidatesService
 		}
 
 		// qtyDelivered
-		final BigDecimal qtyDeliveredEff = coalesce(item.getQtyDelivered(), ZERO);
+		final BigDecimal qtyDeliveredEff = coalesceNotNull(item.getQtyDelivered(), ZERO);
 		final StockQtyAndUOMQty qtyDelivered = StockQtyAndUOMQtys.createConvert(
 				Quantitys.create(qtyDeliveredEff, uomId),
 				productId,
@@ -309,21 +313,13 @@ public class CreateInvoiceCandidatesService
 				.orgId(orgId)
 				.includeAnyOrg(true)
 				.outOfTrx(true);
-		final ProductId productId;
-		switch (productIdentifier.getType())
+		final ProductId productId = switch (productIdentifier.getType())
 		{
-			case EXTERNAL_ID:
-				productId = productDAO.retrieveProductIdBy(productQuery.externalId(productIdentifier.asExternalId()).build());
-				break;
-			case METASFRESH_ID:
-				productId = ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue());
-				break;
-			case VALUE:
-				productId = productDAO.retrieveProductIdBy(productQuery.value(productIdentifier.asValue()).build());
-				break;
-			default:
-				throw new AdempiereException("Unexpected type=" + productIdentifier.getType());
-		}
+			case EXTERNAL_ID -> productDAO.retrieveProductIdBy(productQuery.externalId(productIdentifier.asExternalId()).build());
+			case METASFRESH_ID -> ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue());
+			case VALUE -> productDAO.retrieveProductIdBy(productQuery.value(productIdentifier.asValue()).build());
+			default -> throw new AdempiereException("Unexpected type=" + productIdentifier.getType());
+		};
 		if (productId == null)
 		{
 			throw MissingResourceException.builder().resourceName("product").resourceIdentifier(productIdentifier.toJson()).parentResource(item).build();
@@ -449,7 +445,14 @@ public class CreateInvoiceCandidatesService
 			bpartnerInfo.contactId(contact.getId());
 		}
 
-		candidate.billPartnerInfo(bpartnerInfo.build());
+		final BPartnerInfo build = bpartnerInfo.build();
+		candidate.billPartnerInfo(build);
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(build.getBpartnerId(), SOTrx.ofBoolean(item.getSoTrx().isSales()));
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(paymentTermQuery);
+		candidate.paymentTermId(paymentTermId);
+
+		candidate.paymentTermId(paymentTermId);
 	}
 
 	private void syncDiscountOverrideToCandidate(
@@ -475,10 +478,9 @@ public class CreateInvoiceCandidatesService
 
 		final ProductPrice price = createProductPriceOrNull(priceEnteredOverride, productId, item);
 		candidate.priceEnteredOverride(price);
-		return;
-
 	}
 
+	@Nullable
 	private ProductPrice createProductPriceOrNull(
 			@Nullable final JsonPrice jsonPrice,
 			@NonNull final ProductId productId,
@@ -529,7 +531,7 @@ public class CreateInvoiceCandidatesService
 		{
 			priceUomId = uomDAO.getUomIdByX12DE355(uomCode);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier("priceUomCode").parentResource(item).cause(e).build();
 		}

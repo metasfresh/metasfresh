@@ -1,4 +1,4 @@
-import { formatQtyToHumanReadable } from '../../../../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../../../../utils/qtys';
 
 export const computeStepScanUserInfoQtys = ({
   uom,
@@ -9,11 +9,11 @@ export const computeStepScanUserInfoQtys = ({
   return [
     {
       captionKey: 'general.QtyToPick_Total',
-      value: formatQtyToHumanReadable({ qty: lineQtyToIssue, uom, tolerance: lineQtyToIssueTolerance }),
+      value: formatQtyToHumanReadableStr({ qty: lineQtyToIssue, uom, tolerance: lineQtyToIssueTolerance }),
     },
     {
       captionKey: 'general.QtyToPick',
-      value: formatQtyToHumanReadable({ qty: lineQtyToIssueRemaining, uom }),
+      value: formatQtyToHumanReadableStr({ qty: lineQtyToIssueRemaining, uom }),
     },
   ];
 };

@@ -68,10 +68,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.Nullable;
@@ -1003,10 +1005,71 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
-			sb.append(" @C_BP_BankAccount_ID@ ");
-			sb.append(line.getC_BP_BankAccount().getDescription());
+
+			final I_C_BP_BankAccount bpBankAccount = line.getC_BP_BankAccount();
+
+			if (Check.isNotBlank(bpBankAccount.getDescription()))
+			{
+				sb.append(" @C_BP_BankAccount_ID@ ");
+				sb.append(bpBankAccount.getDescription());
+			}
+			if (Check.isNotBlank(bpBankAccount.getName()))
+			{
+				sb.append(" @Name@ ");
+				sb.append(bpBankAccount.getName());
+			}
+			if (Check.isNotBlank(bpBankAccount.getIBAN()))
+			{
+				sb.append(" @IBAN@ ");
+				sb.append(bpBankAccount.getIBAN());
+			}
+
 		}
+		if (line.getRecord_ID() > 0)
+		{
+			sb.append(" @C_Invoice_ID@ ");
+			sb.append(getInvoiceId(line));
+			sb.append(" @Line@ ");
+			sb.append(getLineNo(line));
+			if (Check.isNotBlank(getReference(line)))
+			{
+				sb.append(" @Reference@ ");
+				sb.append(getReference(line));
+			}
+		}
+
 		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
+	}
+
+	private int getInvoiceId(@NonNull final I_SEPA_Export_Line sepaline)
+	{
+		final TableRecordReference referencedRecord = TableRecordReference.of(
+				sepaline.getAD_Table_ID(),
+				sepaline.getRecord_ID());
+
+		final I_C_PaySelectionLine paySelectionLine = referencedRecord.getModel(I_C_PaySelectionLine.class);
+
+		return paySelectionLine.getC_Invoice_ID();
+	}
+
+	private String getReference(@NonNull final I_SEPA_Export_Line sepaline)
+	{
+		final TableRecordReference referencedRecord = TableRecordReference.of(
+				sepaline.getAD_Table_ID(),
+				sepaline.getRecord_ID());
+		final I_C_PaySelectionLine paySelectionLine = referencedRecord.getModel(I_C_PaySelectionLine.class);
+
+		return paySelectionLine.getReference();
+	}
+
+	private int getLineNo(@NonNull final I_SEPA_Export_Line sepaline)
+	{
+		final TableRecordReference referencedRecord = TableRecordReference.of(
+				sepaline.getAD_Table_ID(),
+				sepaline.getRecord_ID());
+		final I_C_PaySelectionLine paySelectionLine = referencedRecord.getModel(I_C_PaySelectionLine.class);
+
+		return paySelectionLine.getLine();
 	}
 
 	@VisibleForTesting

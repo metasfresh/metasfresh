@@ -200,6 +200,7 @@ public class ManualInvoiceService
 
 		final CreateManualInvoiceRequest.CreateManualInvoiceRequestBuilder createManualInvoiceRequestBuilder = CreateManualInvoiceRequest.builder()
 				.orgId(requestHeader.getOrgId())
+				.dataSourceId(requestHeader.getDataSourceId())
 				.billBPartnerLocationId(requestHeader.getBillBPartnerLocationId())
 				.billContactId(requestHeader.getBillContactId())
 				.priceListId(priceListId)

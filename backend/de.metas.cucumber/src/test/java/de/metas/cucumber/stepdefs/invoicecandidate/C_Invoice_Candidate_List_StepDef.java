@@ -122,15 +122,6 @@ public class C_Invoice_Candidate_List_StepDef
 						}
 
 						InterfaceWrapperHelper.saveRecord(invoiceCandidate);
-
-						try
-						{
-							StepDefUtil.tryAndWait(30, 2000, () -> !invoiceCandDAO.isToRecompute(invoiceCandidate));
-						}
-						catch (final InterruptedException e)
-						{
-							throw new RuntimeException(e);
-						}
 					});
 		}
 	}

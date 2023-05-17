@@ -31,11 +31,13 @@ import de.metas.invoice.review.InvoiceReviewId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.impl.InvoiceReviewRepository;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponse;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponseResult;
 import de.metas.rest_api.v2.invoice.JsonInvoiceReviewUpsertItem;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.MissingPropertyException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -92,22 +94,22 @@ public class JsonInvoiceReviewService
 		final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
 				.orgId(orgId);
 
-		final IdentifierString identifierString = IdentifierString.ofOrNull(jsonInvoiceReviewUpsertItem.getInvoiceIdentifier());
-
-		if (identifierString == null)
+		if (jsonInvoiceReviewUpsertItem.getInvoiceId() != null)
 		{
-			return null;
+			invoiceQueryBuilder.invoiceId(jsonInvoiceReviewUpsertItem.getInvoiceId());
 		}
-		switch (identifierString.getType())
+		else
 		{
-			case METASFRESH_ID:
-				invoiceQueryBuilder.invoiceId(identifierString.asMetasfreshId().getValue());
-				break;
-			case EXTERNAL_ID:
-				invoiceQueryBuilder.externalId(identifierString.asExternalId());
-				break;
-			default:
-				throw new AdempiereException("Invalid identifierString: " + identifierString);
+			if (Check.isNotBlank(jsonInvoiceReviewUpsertItem.getExternalId()))
+			{
+				invoiceQueryBuilder
+						.externalId(ExternalId.of(jsonInvoiceReviewUpsertItem.getExternalId()))
+						.orgId(orgId);
+			}
+			else
+			{
+				throw new MissingPropertyException("externalId", jsonInvoiceReviewUpsertItem);
+			}
 		}
 		return invoiceQueryBuilder.build();
 	}

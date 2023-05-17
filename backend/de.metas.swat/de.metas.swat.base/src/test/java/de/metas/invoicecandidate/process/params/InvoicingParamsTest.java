@@ -20,7 +20,6 @@ class InvoicingParamsTest
 				.onlyApprovedForInvoicing(true)
 				.consolidateApprovedICs(true)
 				.ignoreInvoiceSchedule(true)
-				.supplementMissingPaymentTermIds(true)
 				//.storeInvoicesInResult(true) // don't set it because this field is not converted to params
 				//.assumeOneInvoice(true)  // don't set it because this field is not converted to params
 				.dateInvoiced(LocalDate.parse("2023-01-30"))

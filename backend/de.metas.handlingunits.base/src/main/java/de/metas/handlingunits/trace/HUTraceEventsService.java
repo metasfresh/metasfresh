@@ -3,38 +3,53 @@ package de.metas.handlingunits.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.IPair;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineHU;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
-import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +86,6 @@ import java.util.function.Function;
  * and add those events to the {@link HUTraceRepository}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class HUTraceEventsService
@@ -90,14 +104,28 @@ public class HUTraceEventsService
 	private final transient HUTraceRepository huTraceRepository;
 	private final transient HUAccessService huAccessService;
 
+	private final transient InventoryRepository inventoryRepository;
+
+	private final transient IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+	private final IHUAttributesBL huAttributeService = Services.get(IHUAttributesBL.class);
+
+	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
+	final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
 	public HUTraceEventsService(
 			@NonNull final HUTraceRepository huTraceRepository,
-			@NonNull final HUAccessService huAccessService)
+			@NonNull final HUAccessService huAccessService,
+			@NonNull final InventoryRepository inventoryRepository)
 	{
 		this.huAccessService = huAccessService;
 		this.huTraceRepository = huTraceRepository;
+		this.inventoryRepository = inventoryRepository;
 	}
 
 	/**
@@ -120,12 +148,15 @@ public class HUTraceEventsService
 		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
 			builder.type(HUTraceType.PRODUCTION_ISSUE);
+
+			createAndAddEventsForPOIssueOrReceipt(builder, costCollector);
 		}
 		else
 		{
 			builder.type(HUTraceType.PRODUCTION_RECEIPT);
+
+			createAndAddEventsForPOIssueOrReceipt(builder, costCollector);
 		}
-		createAndAddEvents(builder, ImmutableList.of(costCollector));
 	}
 
 	public void createAndAddFor(
@@ -163,6 +194,102 @@ public class HUTraceEventsService
 				.eventTime(movement.getMovementDate().toInstant());
 
 		createAndAddEvents(builder, movementLines);
+	}
+
+	public void createAndAddFor(
+			@NonNull final I_M_Inventory inventory,
+			final List<I_M_InventoryLine> inventoryLines)
+	{
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.inventoryId(InventoryId.ofRepoId(inventory.getM_Inventory_ID()))
+				.docTypeId(DocTypeId.optionalOfRepoId(inventory.getC_DocType_ID()))
+				.docStatus(inventory.getDocStatus())
+				.type(HUTraceType.MATERIAL_INVENTORY)
+
+				.orgId(OrgId.ofRepoIdOrNull(inventory.getAD_Org_ID()));
+
+		createAndAddEventsForInventoryLines(builder, inventoryLines);
+	}
+
+	@VisibleForTesting
+	void createAndAddEventsForInventoryLines(
+			@NonNull final HUTraceEventBuilder builder,
+			@NonNull final List<I_M_InventoryLine> inventoryLines)
+	{
+		for (final I_M_InventoryLine inventoryLineRecord : inventoryLines)
+		{
+			final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord);
+
+			final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
+
+			for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
+			{
+				final HuId huId = inventoryLineHU.getHuId();
+				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
+
+				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
+				if (topLevelHuId != null)
+				{
+					builder.topLevelHuId(topLevelHuId);
+				}
+				else
+				{
+					builder.topLevelHuId(huId); // HU was already unloaded from the parent, possibly destroyed. Consider it the top level HU
+				}
+
+				final boolean isQtyDifference = !inventoryLineRecord.getQtyBook().equals(inventoryLineRecord.getQtyCount());
+
+				if (topLevelHuId == null || isQtyDifference)
+				{
+					createTraceForInventoryLine(builder, inventoryLineRecord, huRecord);
+				}
+
+				if (!isQtyDifference) // no need to trace vhus if the inventory was for qty difference
+				{
+					final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+
+					for (final I_M_HU vhu : vhus)
+					{
+						createTraceForInventoryLine(builder, inventoryLineRecord, vhu);
+					}
+				}
+			}
+		}
+	}
+
+	private void createTraceForInventoryLine(
+			@NonNull final HUTraceEventBuilder builder,
+			@NonNull final I_M_InventoryLine inventoryLineRecord,
+			@NonNull final I_M_HU hu)
+	{
+		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
+		if (!productAndQty.isPresent())
+		{
+			// skip such cases for now. To be handled in a followup
+			return;
+		}
+		builderSetVhuProductAndQty(builder, hu)
+				.vhuStatus(hu.getHUStatus());
+		builder.eventTime(inventoryLineRecord.getUpdated().toInstant());
+
+		final UomId uomId = UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID());
+
+		final BigDecimal qtyCountMinusBooked = inventoryLineRecord.getQtyCount()
+				.subtract(inventoryLineRecord.getQtyBook());
+
+		// shortage, overage
+		if (!(qtyCountMinusBooked.signum() == 0))
+		{
+			builder.qty(Quantitys.create(qtyCountMinusBooked, uomId));
+		}
+		// disposal, new inventory with aggregated HUs
+		else if (inventoryBL.isInternalUseInventory(inventoryLineRecord))
+		{
+			final BigDecimal qtyInternalUse = inventoryLineRecord.getQtyInternalUse();
+			builder.qty(Quantitys.create(qtyInternalUse, uomId));
+		}
+
+		huTraceRepository.addEvent(builder.build());
 	}
 
 	public void createAndAddFor(
@@ -205,7 +332,6 @@ public class HUTraceEventsService
 		final List<I_M_HU> vhus;
 		if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
 		{
-			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 			final HuId vhuId = HuId.ofRepoId(shipmentScheduleQtyPicked.getVHU_ID());
 			final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
@@ -229,6 +355,13 @@ public class HUTraceEventsService
 
 		for (final I_M_HU vhu : vhus)
 		{
+			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+			if (!productAndQty.isPresent())
+			{
+				// skip such cases for now. To be handled in a followup
+				continue;
+			}
+
 			builderSetVhuProductAndQty(builder, vhu)
 					.vhuStatus(vhu.getHUStatus());
 
@@ -236,7 +369,8 @@ public class HUTraceEventsService
 		}
 	}
 
-	public void createAndAddFor(@NonNull final HUTraceForReturnedQtyRequest returnedQtyRequest)
+	public void createAndAddFor(
+			@NonNull final HUTraceForReturnedQtyRequest returnedQtyRequest)
 	{
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
@@ -255,7 +389,8 @@ public class HUTraceEventsService
 		setSourceVHUAndAddEvent(returnedQtyRequest.getSourceShippedVHUIds(), builder);
 	}
 
-	private void setSourceVHUAndAddEvent(@NonNull final Set<HuId> sourceShippedVHUIds, @NonNull HUTraceEventBuilder huTraceEventBuilder)
+	private void setSourceVHUAndAddEvent(
+			@NonNull final Set<HuId> sourceShippedVHUIds, @NonNull HUTraceEventBuilder huTraceEventBuilder)
 	{
 		sourceShippedVHUIds.stream()
 				.map(huTraceEventBuilder::vhuSourceId)
@@ -273,9 +408,8 @@ public class HUTraceEventsService
 	 * </ul>
 	 *
 	 * @param trxHeader needed because we use its {@code updated} timestamp for our eventTime.
-	 *
 	 * @return a map with two lists that contains all events which were created and given to the repository.<br>
-	 *         The events that were actually inserted are in the list with the {@code true} key.
+	 * The events that were actually inserted are in the list with the {@code true} key.
 	 */
 	public Map<Boolean, List<HUTraceEvent>> createAndAddFor(
 			@NonNull final I_M_HU_Trx_Hdr trxHeader,
@@ -335,12 +469,15 @@ public class HUTraceEventsService
 				final int vhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(vhu);
 				Check.errorIf(vhuTopLevelHuId <= 0, "vhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", vhuTopLevelHuId, vhu);
 
+				final String lotNumberHUAttributeValue = huAttributeService.getHUAttributeValue(vhu, AttributeConstants.ATTR_LotNumber);
+
 				traceEventBuilder
 						.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 						.topLevelHuId(HuId.ofRepoId(vhuTopLevelHuId))
 						.productId(productAndQty.get().getLeft())
-						.qty(productAndQty.get().getRight().toBigDecimal())
-						.vhuStatus(trxLine.getHUStatus()); // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
+						.qty(productAndQty.get().getRight())
+						.vhuStatus(trxLine.getHUStatus()) // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
+						.lotNumber(lotNumberHUAttributeValue);
 
 				final I_M_HU_Trx_Line sourceTrxLine = trxLine.getParent_HU_Trx_Line();
 				final List<I_M_HU> sourceVhus = getVhus.apply(sourceTrxLine);
@@ -349,7 +486,7 @@ public class HUTraceEventsService
 					if (!huStatusBL.isPhysicalHU(sourceVhu))
 					{
 						logger.info("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) has status={}; nothing to do with that sourceVhu; sourceVhu={}; sourceTrxLine={}; trxLine={}",
-								sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
+									sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
 						continue;
 					}
 
@@ -358,7 +495,7 @@ public class HUTraceEventsService
 					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
 					{
 						logger.info("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) is the same as vhu of the current trxLine itself; nothing to do with that sourceVhu; vhu/sourceVhu={}; sourceTrxLine={}; trxLine={}",
-								sourceVhu, sourceTrxLine, trxLine);
+									sourceVhu, sourceTrxLine, trxLine);
 						continue; // the source-HU might be the same if e.g. only the status was changed
 					}
 
@@ -377,7 +514,7 @@ public class HUTraceEventsService
 							.vhuId(HuId.ofRepoId(sourceVhu.getM_HU_ID()))
 							.topLevelHuId(HuId.ofRepoId(sourceVhuTopLevelHuId))
 							.vhuSourceId(null)
-							.qty(productAndQty.get().getRight().toBigDecimal().negate())
+							.qty(productAndQty.get().getRight().negate())
 							.build();
 
 					// add the source before the destination because I think it's nicer if it has the lower ID
@@ -399,7 +536,8 @@ public class HUTraceEventsService
 	 * @return
 	 */
 	@VisibleForTesting
-	List<I_M_HU_Trx_Line> filterTrxLinesToUse(@NonNull final List<I_M_HU_Trx_Line> trxLines)
+	List<I_M_HU_Trx_Line> filterTrxLinesToUse(
+			@NonNull final List<I_M_HU_Trx_Line> trxLines)
 	{
 		final List<I_M_HU_Trx_Line> trxLinesToUse = new ArrayList<>();
 		for (final I_M_HU_Trx_Line trxLine : trxLines)
@@ -432,7 +570,9 @@ public class HUTraceEventsService
 	/**
 	 * Creates two trace records for the given {@code hu} which is moved from one parent to another parent (source or target parent might also be null).
 	 */
-	public void createAndAddForHuParentChanged(@NonNull final I_M_HU hu, @Nullable final I_M_HU_Item parentHUItemOld)
+	public void createAndAddForHuParentChanged(
+			@NonNull final I_M_HU hu,
+			@Nullable final I_M_HU_Item parentHUItemOld)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		if (!huStatusBL.isPhysicalHU(hu))
@@ -470,21 +610,25 @@ public class HUTraceEventsService
 		for (final I_M_HU vhu : vhus)
 		{
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+
 			if (!productAndQty.isPresent())
 			{
 				logger.info("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
 				continue;
 			}
 
+			final String lotNumberHUAttributeValue = huAttributeService.getHUAttributeValue(vhu, AttributeConstants.ATTR_LotNumber);
+
 			builder.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 					.vhuStatus(vhu.getHUStatus())
 					.productId(productAndQty.get().getLeft())
 					.topLevelHuId(oldTopLevelHuId)
-					.qty(productAndQty.get().getRight().toBigDecimal().negate());
+					.qty(productAndQty.get().getRight().negate())
+					.lotNumber(lotNumberHUAttributeValue);
 			huTraceRepository.addEvent(builder.build());
 
 			builder.topLevelHuId(newTopLevelHuId)
-					.qty(productAndQty.get().getRight().toBigDecimal());
+					.qty(productAndQty.get().getRight());
 			huTraceRepository.addEvent(builder.build());
 		}
 	}
@@ -494,33 +638,30 @@ public class HUTraceEventsService
 	 * {@link I_M_HU_Assignment}s' top level HUs.
 	 *
 	 * @param builder a pre fabricated builder. {@code huId}s and {@code eventTime} will be set by this method.
-	 * @param models stream of objects that might be associated with HUs (e.g. inout lines).
+	 * @param models  stream of objects that might be associated with HUs (e.g. inout lines).
 	 */
 	@VisibleForTesting
 	void createAndAddEvents(
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 		for (final Object model : models)
 		{
 			final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(model);
 
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
-				if (huStatusBL.isStatusDestroyed(huAssignment.getM_HU()))
-				{
-					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
-				}
-
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU()));
-				Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
-
+				if (topLevelHuId != null)
+				{
+					builder.topLevelHuId(topLevelHuId);
+				}
+				else
+				{
+					builder.topLevelHuId(HuId.ofRepoId(huAssignment.getM_HU_ID()));
+				}
 				builder.orgId(OrgId.ofRepoIdOrNull(huAssignment.getAD_Org_ID()))
-						.eventTime(huAssignment.getUpdated().toInstant())
-						.topLevelHuId(topLevelHuId);
+						.eventTime(huAssignment.getUpdated().toInstant());
 
 				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)
@@ -547,12 +688,88 @@ public class HUTraceEventsService
 
 				for (final I_M_HU vhu : vhus)
 				{
+					final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+					if (!productAndQty.isPresent())
+					{
+						// skip such cases for now. To be handled in a followup
+						continue;
+					}
+
 					builderSetVhuProductAndQty(builder, vhu)
 							.vhuStatus(vhu.getHUStatus());
 
 					huTraceRepository.addEvent(builder.build());
 				}
 			}
+		}
+	}
+
+	@VisibleForTesting
+	void createAndAddEventsForPOIssueOrReceipt(
+			@NonNull final HUTraceEventBuilder builder,
+			@NonNull final I_PP_Cost_Collector ppCostCollector)
+	{
+		final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(ppCostCollector);
+
+		for (final I_M_HU_Assignment huAssignment : huAssignments)
+		{
+			final HuId huId = HuId.ofRepoId(huAssignment.getM_HU_ID());
+			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
+
+			builder.orgId(OrgId.ofRepoIdOrNull(ppCostCollector.getAD_Org_ID()))
+					.eventTime(ppCostCollector.getUpdated().toInstant());
+
+			final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
+			if (topLevelHuId != null)
+			{
+				builder.topLevelHuId(topLevelHuId);
+			}
+			else
+			{
+				builder.topLevelHuId(huId);
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
+			}
+
+			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+
+			for (final I_M_HU vhu : vhus)
+			{
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
+			}
+		}
+	}
+
+	private void createTraceForPOIssueOrReceiptHU(final @NonNull HUTraceEventBuilder builder, @NonNull final I_PP_Cost_Collector ppCostCollector,
+			@NonNull final I_M_HU hu)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
+
+		final Optional<I_PP_Order_Qty> ppOrderQty = huPPOrderQtyDAO.retrieveOrderQtyForHu(
+				ppOrderId,
+				HuId.ofRepoId(hu.getM_HU_ID()));
+
+		if (!ppOrderQty.isPresent())
+		{
+			createAndAddEvents(builder, ImmutableList.of(ppCostCollector));
+
+		}
+		else
+		{
+
+			final Quantity qtyToSet = Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID()));
+
+			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
+			if (!productAndQty.isPresent())
+			{
+				// skip such cases for now. To be handled in a followup
+				return;
+			}
+
+			builderSetVhuProductAndQty(builder, hu)
+					.vhuStatus(hu.getHUStatus())
+					.qty(qtyToSet);
+
+			huTraceRepository.addEvent(builder.build());
 		}
 	}
 
@@ -563,9 +780,12 @@ public class HUTraceEventsService
 		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 		Check.errorUnless(productAndQty.isPresent(), "Missing product and quantity for vhu={}", vhu);
 
+		final String lotNumberHUAttributeValue = huAttributeService.getHUAttributeValue(vhu, AttributeConstants.ATTR_LotNumber);
+
 		return builder
 				.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.productId(productAndQty.get().getLeft())
-				.qty(productAndQty.get().getRight().toBigDecimal());
+				.qty(productAndQty.get().getRight())
+				.lotNumber(lotNumberHUAttributeValue);
 	}
 }

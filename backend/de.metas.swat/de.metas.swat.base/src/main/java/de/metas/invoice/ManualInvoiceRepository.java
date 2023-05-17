@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
+import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.request.CreateManualInvoiceLineRequest;
 import de.metas.invoice.request.CreateManualInvoiceRequest;
 import de.metas.lang.SOTrx;
@@ -173,7 +174,7 @@ class ManualInvoiceRepository
 		invoiceRecord.setIsSOTrx(createManualInvoiceRequest.getSoTrx().toBoolean());
 		invoiceRecord.setC_Currency_ID(createManualInvoiceRequest.getCurrencyId().getRepoId());
 		invoiceRecord.setM_PriceList_ID(createManualInvoiceRequest.getPriceListId().getRepoId());
-
+		invoiceRecord.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(createManualInvoiceRequest.getDataSourceId()));
 		saveRecord(invoiceRecord);
 
 		return invoiceRecord;
