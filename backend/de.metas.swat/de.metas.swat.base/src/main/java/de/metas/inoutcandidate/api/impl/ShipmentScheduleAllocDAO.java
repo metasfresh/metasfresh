@@ -1,9 +1,11 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inout.InOutLineId;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.ShipmentScheduleQtyPickedId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -23,6 +25,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -218,6 +221,25 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.list(modelClass);
 	}
 
+	@Override
+	@NonNull
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveQtyPickedRecordsByIds(
+			@NonNull final Collection<ShipmentScheduleQtyPickedId> qtyPickedRecordIds,
+			@NonNull final Class<T> modelClass)
+	{
+		if (qtyPickedRecordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID, qtyPickedRecordIds)
+				.create()
+				.list(modelClass);
+	}
+	
 	@Override
 	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllForInOutLine(
 			@NonNull final I_M_InOutLine inoutLine,
