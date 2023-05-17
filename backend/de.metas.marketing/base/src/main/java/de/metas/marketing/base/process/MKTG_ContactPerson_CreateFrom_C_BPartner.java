@@ -114,6 +114,7 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 				.andCollect(I_C_BPartner_Export.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
 				.create();
 
+		// note that with "andCollect" we created a query, but we need to return an IQueryFilter; thats why we crete the query filter here
 		return queryBL.createCompositeQueryFilter(I_C_BPartner.class)
 				.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, exportBPToBPQuery);
 	}
