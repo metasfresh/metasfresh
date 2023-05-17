@@ -3,15 +3,7 @@ import PropTypes from 'prop-types';
 import SimpleList from '../../../components/widget/List/SimpleList';
 
 import './SimulationsDropDown.scss';
-
-const KEY_ACTUAL_DATA = 'ACTUAL';
-const OPTION_ACTUAL_DATA = { key: KEY_ACTUAL_DATA, caption: 'Actual data' }; // TODO trl
-
-const KEY_NEW_SIMULATION = 'NEW';
-const OPTION_NEW_SIMULATION = {
-  key: KEY_NEW_SIMULATION,
-  caption: 'New simulation', // TODO trl
-};
+import counterpart from 'counterpart';
 
 function computeSelectedSimulation(simulations, selectedSimulationId) {
   if (selectedSimulationId == null) {
@@ -36,7 +28,7 @@ const toKeyCaption = (simulation) => {
   if (simulation) {
     let caption = simulation.name;
     if (simulation.processed) {
-      caption = 'Processed: ' + caption; // TODO trl
+      caption = counterpart.translate('simulation.processed') + caption;
     }
 
     return {
@@ -69,6 +61,18 @@ const SimulationsDropDown = ({
     } else {
       onSelect(keyCaptionEntry.extendedProps.simulation);
     }
+  };
+
+  const KEY_ACTUAL_DATA = 'ACTUAL';
+  const OPTION_ACTUAL_DATA = {
+    key: KEY_ACTUAL_DATA,
+    caption: counterpart.translate('option.actual.data'),
+  };
+
+  const KEY_NEW_SIMULATION = 'NEW';
+  const OPTION_NEW_SIMULATION = {
+    key: KEY_NEW_SIMULATION,
+    caption: counterpart.translate('option.new.simulation'),
   };
 
   return (

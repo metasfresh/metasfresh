@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import './ConflictsSummary.scss';
+import counterpart from 'counterpart';
 
 const ConflictsSummary = ({ conflictsCount }) => {
   //
@@ -10,7 +11,9 @@ const ConflictsSummary = ({ conflictsCount }) => {
   }
 
   return (
-    <div className="conflicts-summary">&#9888; {conflictsCount} conflicts</div>
+    <div className="conflicts-summary">
+      &#9888; {conflictsCount} {counterpart.translate('conflicts.summary')}
+    </div>
   );
 };
 
