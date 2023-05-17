@@ -100,6 +100,8 @@ public class SupplyRequiredDescriptor
 	 */
 	int ppOrderProductPlanningId;
 
+	MinMaxDescriptor minMaxDescriptor;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private SupplyRequiredDescriptor(
@@ -120,7 +122,8 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("deltaQuantity") final BigDecimal deltaQuantity,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("ppOrderLineCandidateId") final int ppOrderLineCandidateId,
-			@JsonProperty("ppOrderProductPlanningId") final int ppOrderProductPlanningId)
+			@JsonProperty("ppOrderProductPlanningId") final int ppOrderProductPlanningId,
+			@JsonProperty("minMaxDescriptor") final MinMaxDescriptor minMaxDescriptor)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -146,5 +149,7 @@ public class SupplyRequiredDescriptor
 		this.ppOrderId = ppOrderId > 0 ? ppOrderId : -1;
 		this.ppOrderLineCandidateId = ppOrderLineCandidateId > 0 ? ppOrderLineCandidateId : -1;
 		this.ppOrderProductPlanningId = ppOrderProductPlanningId > 0 ? ppOrderProductPlanningId : -1;
+
+		this.minMaxDescriptor = minMaxDescriptor;
 	}
 }

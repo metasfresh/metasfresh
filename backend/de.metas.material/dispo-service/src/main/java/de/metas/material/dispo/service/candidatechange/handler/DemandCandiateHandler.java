@@ -203,7 +203,9 @@ public class DemandCandiateHandler implements CandidateHandler
 		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getMinMaxDescriptor());
 		// note: since this candidate might need to be handled "lotForLot", we may fire the event even if requiredQty <= 0
 		final BigDecimal fullDemandQty = demandCandidateWithId.getMaterialDescriptor().getQuantity();
-		if (requiredQty.signum() > 0 || (fullDemandQty.signum() > 0 && !demandCandidateWithId.isUpdated()))
+		final BigDecimal deltaQuantity = demandCandidateWithId.isUpdated() ? demandCandidateWithId.getDeltaQuantity() : BigDecimal.ZERO;
+		if (requiredQty.signum() > 0
+				|| (fullDemandQty.signum() > 0  && !(requiredQty.signum() == 0 && fullDemandQty.compareTo(deltaQuantity) == 0)))
 		{
 			postSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 		}

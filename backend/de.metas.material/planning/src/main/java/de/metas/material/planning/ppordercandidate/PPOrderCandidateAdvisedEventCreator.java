@@ -83,21 +83,22 @@ public class PPOrderCandidateAdvisedEventCreator
 		if(productPlanning.isLotForLot())
 		{
 			final BigDecimal usedQty;
+			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+			final BigDecimal deltaQty = supplyRequiredDescriptor.getDeltaQuantity() != null ? supplyRequiredDescriptor.getDeltaQuantity() : BigDecimal.ZERO;
 			if(!supplyRequiredDescriptor.isUpdated())
 			{
-				usedQty = supplyRequiredDescriptor.getFullDemandQty();
-				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", usedQty);
+				usedQty = fullDemandQty;
+				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", fullDemandQty);
 			}
 			// we don't reduce Quantity of PPOrders and PPOrderCandidates atm
-			// don't use fullDemandQty in case of update
-			else if(supplyRequiredDescriptor.getDeltaQuantity().signum() > 0)
+			else if(deltaQty.signum() > 0 && deltaQty.compareTo(fullDemandQty) != 0)
 			{
-				usedQty = supplyRequiredDescriptor.getDeltaQuantity();
-				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", usedQty);
+				usedQty = deltaQty;
+				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", deltaQty);
 			}
 			else
 			{
-				Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent because LotForLot=true and updated=true, but deltaQty={}", supplyRequiredDescriptor.getDeltaQuantity());
+				Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent with LotForLot=true, updated=true and deltaQty={} because deltaQty is negative", deltaQty);
 				return ImmutableList.of();
 			}
 

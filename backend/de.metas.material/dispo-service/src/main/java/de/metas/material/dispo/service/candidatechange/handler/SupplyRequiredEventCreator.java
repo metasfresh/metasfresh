@@ -131,7 +131,8 @@ public class SupplyRequiredEventCreator
 				.simulated(candidate.isSimulated())
 				.isLotForLot(candidate.getLotForLot())
 				.updated(candidate.isUpdated())
-				.deltaQuantity(candidate.getDeltaQuantity());
+				.deltaQuantity(candidate.getDeltaQuantity())
+				.minMaxDescriptor(candidate.getMinMaxDescriptor());
 	}
 
 }
