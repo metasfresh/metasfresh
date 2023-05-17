@@ -387,6 +387,7 @@ public final class MasterdataProvider
 				.build();
 	}
 
+	@Nullable
 	public PaymentTermId getPaymentTermId(@NonNull final JsonOLCandCreateRequest request, @NonNull final OrgId orgId)
 	{
 

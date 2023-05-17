@@ -151,7 +151,7 @@ public class CreateQuotationFromProjectCommand
 				.priceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()))
 				.priceListVersionId(priceListVersionId)
 				.currencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()))
-				.countryId(CountryId.ofRepoId(priceList.getC_Country_ID()))
+				.countryId(CountryId.ofRepoIdOrNull(priceList.getC_Country_ID()))
 				.build();
 	}
 
