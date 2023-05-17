@@ -53,7 +53,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.agg.key.impl.PPOrderCandidateHeaderAggregationKeyBuilder;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -69,7 +69,7 @@ public class PPOrderProducerFromCandidate implements ITrxItemChunkProcessor<I_PP
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
 
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter = SpringContextHolder.instance.getBean(PPOrderCandidatePojoConverter.class);
-	private final PPOrderCandidateDAO ppOrderCandidatesDAO = SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	private final IAggregationKeyBuilder<I_PP_Order_Candidate> ppOrderCandidateKeyBuilder;
 	private final OrderGenerateResult result;
@@ -225,7 +225,7 @@ public class PPOrderProducerFromCandidate implements ITrxItemChunkProcessor<I_PP
 
 		for (final I_PP_Order_Candidate ppOrderCandidateRecord : currentCandidates)
 		{
-			ppOrderCandidatesDAO.createProductionOrderAllocation(ppOrderCandidateRecord, ppOrder);
+			ppOrderCandidateDAO.createProductionOrderAllocation(ppOrderCandidateRecord, ppOrder);
 
 			markCandidateAsProcessed(ppOrderCandidateRecord);
 		}
@@ -251,6 +251,6 @@ public class PPOrderProducerFromCandidate implements ITrxItemChunkProcessor<I_PP
 	private void markCandidateAsProcessed(@NonNull final I_PP_Order_Candidate candidateRecord)
 	{
 		candidateRecord.setProcessed(true);
-		ppOrderCandidatesDAO.save(candidateRecord);
+		ppOrderCandidateDAO.save(candidateRecord);
 	}
 }

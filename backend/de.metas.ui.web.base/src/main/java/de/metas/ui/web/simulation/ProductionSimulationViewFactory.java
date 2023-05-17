@@ -40,7 +40,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import static de.metas.ui.web.simulation.process.C_Order_ProductionSimulationView_Launcher.VIEW_FACTORY_PARAM_DOCUMENT_LINE_DESCRIPTOR;
 
@@ -55,12 +54,10 @@ public class ProductionSimulationViewFactory implements IViewFactory
 	private final ProductionSimulationRowsRepository rowsRepo;
 
 	public ProductionSimulationViewFactory(
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		this.rowsRepo = ProductionSimulationRowsRepository.builder()
 				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
-				.ppOrderCandidateDAO(ppOrderCandidateDAO)
 				.build();
 	}
 
