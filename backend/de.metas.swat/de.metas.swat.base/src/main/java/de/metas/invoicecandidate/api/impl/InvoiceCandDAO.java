@@ -1358,6 +1358,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return selectionToUpdateId;
 	}
 
+	@Nullable
 	private PaymentTermId retrievePaymentTermId(final PInstanceId selectionId)
 	{
 		final ICompositeQueryFilter<I_C_Invoice_Candidate> paymentTermSetFilter = queryBL
