@@ -26,13 +26,19 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
+<<<<<<< HEAD
+=======
+import de.metas.inoutcandidate.ShipmentScheduleQtyPickedId;
+>>>>>>> faae7f95886 (B2b: Kommisionierung rückgängig machen (#15340))
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_InOutLine;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -78,6 +84,9 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllForInOutLine(I_M_InOutLine inoutLine, Class<T> modelClass);
 
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveByInOutLineId(InOutLineId inoutLineId, Class<T> modelClass);
+
+	@NonNull
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveQtyPickedRecordsByIds(Collection<ShipmentScheduleQtyPickedId> qtyPickedRecordIds, Class<T> modelClass); 
 
 	/**
 	 * Retrieve all the schedules of the given InOut, based on the M_ShipmentSchedule_QtyPicked entries
