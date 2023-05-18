@@ -1,9 +1,11 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.ShipmentScheduleQtyPickedId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -23,6 +25,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -155,7 +158,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		return queryBuilder.create()
 				.list(clazz);
 	}
-	
+
 	@NonNull
 	@Override
 	public BigDecimal retrieveNotOnShipmentLineQty(final I_M_ShipmentSchedule shipmentSchedule)
@@ -216,6 +219,25 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.addColumn(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID);
 
 		return queryBuilder
+				.create()
+				.list(modelClass);
+	}
+
+	@Override
+	@NonNull
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveQtyPickedRecordsByIds(
+			@NonNull final Collection<ShipmentScheduleQtyPickedId> qtyPickedRecordIds,
+			@NonNull final Class<T> modelClass)
+	{
+		if (qtyPickedRecordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID, qtyPickedRecordIds)
 				.create()
 				.list(modelClass);
 	}
@@ -300,7 +322,6 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		logger.debug("Updated {} M_ShipmentSchedule_QtyPicked to Processed={} for intout={}", updated, newProcessedValue, inOut);
 	}
 
-
 	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecords(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
@@ -322,13 +343,16 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 		final HashMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> scheduleId2QtyPicked = new HashMap<>();
 
-		records.forEach( qtyPickedRecord -> {
+		records.forEach(qtyPickedRecord -> {
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(qtyPickedRecord.getM_ShipmentSchedule_ID());
 
 			final ArrayList<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = new ArrayList<>();
 			qtyPickedList.add(qtyPickedRecord);
 
-			scheduleId2QtyPicked.merge(shipmentScheduleId, qtyPickedList, (oldList, newList) -> {oldList.addAll(newList);return oldList;});
+			scheduleId2QtyPicked.merge(shipmentScheduleId, qtyPickedList, (oldList, newList) -> {
+				oldList.addAll(newList);
+				return oldList;
+			});
 		});
 
 		return ImmutableMap.copyOf(scheduleId2QtyPicked);
