@@ -26,7 +26,7 @@ const SimulationOptimizerButton = ({
     case 'STOPPED':
       return (
         <button onClick={() => onStart({ simulationId })}>
-          {counterpart.translate('button.start.optimization')}
+          {counterpart.translate('calendar.button.start.optimization')}
         </button>
       );
     default:

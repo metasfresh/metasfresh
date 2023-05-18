@@ -28,7 +28,7 @@ const toKeyCaption = (simulation) => {
   if (simulation) {
     let caption = simulation.name;
     if (simulation.processed) {
-      caption = counterpart.translate('simulation.processed') + caption;
+      caption = counterpart.translate('calendar.simulation.processed') + caption;
     }
 
     return {
@@ -66,13 +66,13 @@ const SimulationsDropDown = ({
   const KEY_ACTUAL_DATA = 'ACTUAL';
   const OPTION_ACTUAL_DATA = {
     key: KEY_ACTUAL_DATA,
-    caption: counterpart.translate('option.actual.data'),
+    caption: counterpart.translate('calendar.option.actual.data'),
   };
 
   const KEY_NEW_SIMULATION = 'NEW';
   const OPTION_NEW_SIMULATION = {
     key: KEY_NEW_SIMULATION,
-    caption: counterpart.translate('option.new.simulation'),
+    caption: counterpart.translate('calendar.option.new.simulation'),
   };
 
   return (
