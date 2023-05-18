@@ -397,7 +397,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				//
 				.productId(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()))
 				.qtyPercentage(orderBOMLine.isQtyPercentage())
-				.qtyForOneFinishedGood(CoalesceUtil.firstPositiveOrZero(orderBOMLine.getQtyBOM(),orderBOMLine.getQtyEntered()))
+				.qtyForOneFinishedGood(CoalesceUtil.firstPositiveOrZero(orderBOMLine.getQtyBOM(), orderBOMLine.getQtyEntered()))
 				.percentOfFinishedGood(Percent.of(orderBOMLine.getQtyBatch()))
 				.scrap(Percent.of(orderBOMLine.getScrap()))
 				//
