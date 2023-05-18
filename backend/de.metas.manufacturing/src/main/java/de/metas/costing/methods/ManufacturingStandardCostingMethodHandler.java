@@ -115,6 +115,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
+<<<<<<< HEAD
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
 		if (!existingCostDetails.isEmpty())
 		{
@@ -189,6 +190,15 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
+=======
+		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
+		if (existingCostDetail != null)
+		{
+			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+		}
+
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
@@ -200,9 +210,15 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+<<<<<<< HEAD
 			if (actualResourceId.isNoResource())
 			{
 				return null;
+=======
+			if(actualResourceId.isNoResource())
+			{
+				return Optional.empty();
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
@@ -220,9 +236,15 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			else
 			{
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+<<<<<<< HEAD
 				if (actualResourceId.isNoResource())
 				{
 					return null;
+=======
+				if(actualResourceId.isNoResource())
+				{
+					return Optional.empty();
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 				}
 
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);

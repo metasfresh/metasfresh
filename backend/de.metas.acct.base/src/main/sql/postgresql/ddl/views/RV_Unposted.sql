@@ -24,6 +24,7 @@ CREATE OR REPLACE VIEW rv_unposted AS
  WHERE gl_journal.posted <> 'Y'
    AND gl_journal.docstatus <> 'VO'
    AND gl_journal.processed = 'Y')
+<<<<<<< HEAD
 --
 UNION ALL
 --
@@ -50,6 +51,8 @@ UNION ALL
       AND j.docstatus <> 'VO'
       AND j.processed = 'Y'
 )
+=======
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 --
 UNION ALL
 --
@@ -423,6 +426,7 @@ UNION ALL
  WHERE pp_cost_collector.posted <> 'Y'
    AND pp_cost_collector.docstatus <> 'VO'
    AND pp_cost_collector.processed = 'Y')
+<<<<<<< HEAD
 --
 UNION ALL
 --
@@ -448,4 +452,6 @@ UNION ALL
  WHERE cr.posted <> 'Y'
    AND cr.docstatus IN ('CO', 'CL', 'RE')
    AND cr.processed = 'Y')
+=======
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 ;

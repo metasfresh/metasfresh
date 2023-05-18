@@ -5,15 +5,12 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
-<<<<<<< HEAD
-import de.metas.costing.CostDetailAdjustment;
-=======
->>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -22,6 +19,7 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -39,7 +37,6 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -66,7 +63,7 @@ import java.util.Set;
  */
 
 @Component
-public class ManufacturingAveragePOCostingMethodHandler implements CostingMethodHandler
+public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHandler
 {
 	// services
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
@@ -76,24 +73,20 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	//
 	private final CostingMethodHandlerUtils utils;
 
-	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
-
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
-	public ManufacturingAveragePOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
+	public ManufacturingLastPOCostingMethodHandler(
+			@NonNull final CostingMethodHandlerUtils utils)
 	{
 		this.utils = utils;
-		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
 	}
 
 	@Override
 	public CostingMethod getCostingMethod()
 	{
-		return CostingMethod.AveragePO;
+		return CostingMethod.LastPOPrice;
 	}
 
 	@Override
@@ -103,84 +96,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
-	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-<<<<<<< HEAD
-		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
-		if (!existingCostDetails.isEmpty())
-		{
-			CostDetail mainCostDetail = null;
-			CostDetail costAdjustmentDetail = null;
-			CostDetail alreadyShippedDetail = null;
-			for (final CostDetail existingCostDetail : existingCostDetails)
-			{
-				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
-				switch (amtType)
-				{
-					case MAIN ->
-					{
-						if (mainCostDetail != null)
-						{
-							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
-						}
-						mainCostDetail = existingCostDetail;
-					}
-					case ADJUSTMENT ->
-					{
-						if (costAdjustmentDetail != null)
-						{
-							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
-						}
-						costAdjustmentDetail = existingCostDetail;
-					}
-					case ALREADY_SHIPPED ->
-					{
-						if (alreadyShippedDetail != null)
-						{
-							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
-						}
-						alreadyShippedDetail = existingCostDetail;
-					}
-					default -> throw new AdempiereException("Unknown type: " + amtType);
-				}
-			}
-
-			if (mainCostDetail == null)
-			{
-				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
-			}
-
-			// make sure DateAcct is up-to-date
-			utils.updateDateAcct(mainCostDetail, request.getDate());
-			if (costAdjustmentDetail != null)
-			{
-				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
-			}
-			if (alreadyShippedDetail != null)
-			{
-				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
-			}
-
-			return Optional.of(
-					utils.toCostDetailCreateResult(mainCostDetail)
-							.withAmt(CostAmountDetailed.builder()
-									.mainAmt(mainCostDetail.getAmt())
-									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
-									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
-									.build())
-			);
-		}
-
-		else
-		{
-			return Optional.ofNullable(createCostOrNull(request));
-		}
-	}
-
-	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
-	{
-		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
-=======
 		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
 		if (existingCostDetail != null)
 		{
@@ -188,7 +105,6 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
->>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
@@ -215,11 +131,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if(actualResourceId.isNoResource())
 			{
-<<<<<<< HEAD
-				return null;
-=======
 				return Optional.empty();
->>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
@@ -259,7 +171,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			utils.saveCurrentCost(currentCost);
 		}
 
-		return result;
+		return Optional.ofNullable(result);
 	}
 
 	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)
@@ -342,8 +254,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	private CostDetailCreateResult createActivityControl(
-			final CostDetailCreateRequest ignoredRequest,
-			final Duration ignoredTotalDuration)
+			final CostDetailCreateRequest request,
+			final Duration totalDuration)
 	{
 		// TODO Auto-generated method stub
 		throw new AdempiereException("Computing activity costs is not yet supported");
@@ -357,15 +269,17 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final OrderLineId orderLineId)
+	{
+		return Optional.empty();
+	}
+
+	@Override
 	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
-	{
-		return averagePOCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
 }

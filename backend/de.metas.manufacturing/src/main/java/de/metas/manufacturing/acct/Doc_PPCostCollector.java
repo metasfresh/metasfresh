@@ -191,8 +191,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
 		dr.setM_Locator_ID(docLine.getM_Locator_ID());
 
+<<<<<<< HEAD
 		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.toBigDecimal());
 		cr.setQty(qty);
+=======
+		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
+		cr.setQty(qty.negate());
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 		cr.addDescription(description);
 		cr.setC_Project_ID(docLine.getC_Project_ID());
 		cr.setC_Activity_ID(docLine.getActivityId());
@@ -222,7 +227,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+=======
+		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
@@ -272,8 +281,14 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final DocLine_CostCollector docLine = getLine();
 		final Quantity qtyIssued = getMovementQty();
 
+<<<<<<< HEAD
 		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 		final Account credit = docLine.getAccount(isFloorStock ? ProductAcctType.P_FloorStock_Acct : ProductAcctType.P_Asset_Acct, as);
+=======
+		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
+
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow().retainOnlyAccountable(as);
 
 		final ArrayList<Fact> facts = new ArrayList<>();
@@ -281,6 +296,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
+
+
+
 			if (fact != null)
 			{
 				facts.add(fact);
@@ -310,7 +328,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		final Quantity qtyMoved = getMovementQty();
+<<<<<<< HEAD
 		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+=======
+		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
@@ -347,8 +369,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
+<<<<<<< HEAD
 		final Account debit = docLine.getAccount(varianceAcctType, as);
 		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+=======
+		final MAccount debit = docLine.getAccount(varianceAcctType, as);
+		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 		final Quantity qty = getMovementQty();
 
 		final ArrayList<Fact> facts = new ArrayList<>();

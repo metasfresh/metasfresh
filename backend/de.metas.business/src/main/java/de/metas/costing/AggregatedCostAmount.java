@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,9 +12,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.costing.methods.CostAmountDetailed;
 import org.adempiere.exceptions.AdempiereException;
 
+=======
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.util.Check;
@@ -23,6 +26,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -119,7 +130,11 @@ public class AggregatedCostAmount
 		final CostingMethod costingMethod = costing.getCostingMethod();
 		final ImmutableSet<CostElementId> postOnlyCostElementIds = costing.getPostOnlyCostElementIds();
 
+<<<<<<< HEAD
 		final LinkedHashMap<CostElement, CostAmountDetailed> amountsPerElementNew = new LinkedHashMap<>();
+=======
+		final LinkedHashMap<CostElement, CostAmount> amountsPerElementNew = new LinkedHashMap<>();
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 		amountsPerElement.forEach((costElement, costAmount) -> {
 			if (isCostElementMatching(costElement, costingMethod, postOnlyCostElementIds))
 			{
@@ -135,7 +150,11 @@ public class AggregatedCostAmount
 		return new AggregatedCostAmount(costSegment, amountsPerElementNew);
 	}
 
+<<<<<<< HEAD
 	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
+=======
+	public CostAmount getTotalAmountToPost(@NonNull final AcctSchema as)
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 	{
 		final AcctSchemaCosting acctSchemaCosting = as.getCosting();
 		return getTotalAmount(acctSchemaCosting.getCostingMethod(), acctSchemaCosting.getPostOnlyCostElementIds())

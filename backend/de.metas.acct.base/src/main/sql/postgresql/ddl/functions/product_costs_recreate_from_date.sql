@@ -14,8 +14,12 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_M_Product_IDs              numeric[],
     p_ReorderDocs                char(1),
     p_ReorderDocs_DateAcct_Trunc varchar,
+<<<<<<< HEAD
     p_StartDateAcct              timestamp WITH TIME ZONE,
     p_DryRun           char(1))
+=======
+    p_StartDateAcct              timestamp WITH TIME ZONE)
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 ;
 
 
@@ -26,8 +30,12 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
     p_M_Product_IDs              numeric[] = NULL,
     p_ReorderDocs                char(1) = 'Y',
     p_ReorderDocs_DateAcct_Trunc varchar = 'DD',
+<<<<<<< HEAD
     p_StartDateAcct              timestamp WITH TIME ZONE = '1970-01-01',
     p_DryRun           char(1) = 'N')
+=======
+    p_StartDateAcct              timestamp WITH TIME ZONE = '1970-01-01')
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
     RETURNS text
 AS
 $BODY$

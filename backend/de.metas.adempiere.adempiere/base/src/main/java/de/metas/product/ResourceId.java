@@ -2,14 +2,20 @@ package de.metas.product;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
+=======
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.util.Collection;
+=======
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 import java.util.Objects;
 import java.util.Optional;
 
@@ -59,7 +65,11 @@ public class ResourceId implements RepoIdAware
 	@Nullable
 	public static ResourceId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
+<<<<<<< HEAD
 		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
+=======
+		return repoId > 0 ? ofRepoId(repoId) : null;
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 	}
 
 	public static Optional<ResourceId> optionalOfRepoId(final int repoId)

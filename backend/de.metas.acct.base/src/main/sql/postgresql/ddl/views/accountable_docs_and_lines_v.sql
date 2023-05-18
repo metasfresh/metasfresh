@@ -53,7 +53,11 @@ UNION ALL
           INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id)
 UNION ALL
 (SELECT 'M_InOut'                                                                    AS TableName,
+<<<<<<< HEAD
         (CASE WHEN io.isSOTrx = 'N' THEN 30 ELSE 100 END)::integer                                                                  AS tablename_prio,
+=======
+        (CASE WHEN io.isSOTrx = 'N' THEN 30 ELSE 100 END)::integer                   AS tablename_prio,
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
         io.m_inout_id                                                                AS Record_ID,
         io.reversal_id                                                               AS reversal_id,
         iol.m_inoutline_id                                                           AS Line_ID,
@@ -134,7 +138,11 @@ UNION ALL
              WHEN EXTRACT(DAY FROM inv.movementdate) = 1                                                THEN 5
              WHEN EXTRACT(DAY FROM inv.movementdate) = 31 AND EXTRACT(MONTH FROM inv.movementdate) = 12 THEN 110
                                                                                                         ELSE 110
+<<<<<<< HEAD
          END)::integer                                                                   AS tablename_prio,
+=======
+         END)::integer                                                                AS tablename_prio,
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
         inv.m_inventory_id                                                            AS Record_ID,
         inv.reversal_id                                                               AS reversal_id,
         invl.m_inventoryline_id                                                       AS Line_ID,
@@ -234,6 +242,7 @@ UNION ALL
         cc.movementqty          AS qty
  FROM pp_cost_collector cc
           INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id)
+<<<<<<< HEAD
 UNION ALL
 (SELECT 'M_CostRevaluation'          AS TableName,
         990::integer                 AS tablename_prio,
@@ -259,6 +268,8 @@ UNION ALL
  FROM m_costrevaluationline crl
           INNER JOIN m_costrevaluation cr ON crl.m_costrevaluation_id = cr.m_costrevaluation_id
           INNER JOIN c_doctype dt ON dt.c_doctype_id = cr.c_doctype_id)
+=======
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 ;
 
 /*

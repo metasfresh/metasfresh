@@ -291,7 +291,12 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
+<<<<<<< HEAD
 		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
+=======
+		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+		dr.setQty(line.getQty().negate());
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 
 		//
 		// CoGS CR
@@ -306,9 +311,15 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
+<<<<<<< HEAD
 		cr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 		cr.setAD_Org_ID(line.getOrderOrgId());        // Revenue X-Org
 		cr.setQty(line.getQty().negate());
+=======
+		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
+		cr.setQty(line.getQty());
+>>>>>>> d1dcb11b34b ( last po costing method and various fixes (#15308))
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
