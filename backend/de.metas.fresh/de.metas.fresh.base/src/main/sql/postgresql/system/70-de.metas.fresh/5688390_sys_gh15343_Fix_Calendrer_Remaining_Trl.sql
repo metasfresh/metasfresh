@@ -95,3 +95,28 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 UPDATE AD_Message_Trl SET MsgText='Processed: ',Updated=TO_TIMESTAMP('2023-05-17 22:30:04.787','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545272
 ;
 
+-- Value: webui.calendar.option.actual.data
+-- 2023-05-18T08:59:41.937325900Z
+UPDATE AD_Message SET Value='webui.calendar.option.actual.data',Updated=TO_TIMESTAMP('2023-05-18 09:59:41.935','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545268
+;
+
+-- Value: webui.calendar.option.new.simulation
+-- 2023-05-18T09:00:38.325442600Z
+UPDATE AD_Message SET Value='webui.calendar.option.new.simulation',Updated=TO_TIMESTAMP('2023-05-18 10:00:38.323','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545269
+;
+
+-- Value: webui.calendar.conflicts.summary
+-- 2023-05-18T09:01:19.196133300Z
+UPDATE AD_Message SET Value='webui.calendar.conflicts.summary',Updated=TO_TIMESTAMP('2023-05-18 10:01:19.194','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545271
+;
+
+-- Value: webui.calendar.button.start.optimization
+-- 2023-05-18T09:02:06.906767600Z
+UPDATE AD_Message SET Value='webui.calendar.button.start.optimization',Updated=TO_TIMESTAMP('2023-05-18 10:02:06.905','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545270
+;
+
+-- Value: webui.calendar.simulation.processed
+-- 2023-05-18T09:02:51.035711900Z
+UPDATE AD_Message SET Value='webui.calendar.simulation.processed',Updated=TO_TIMESTAMP('2023-05-18 10:02:51.033','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545272
+;
+
