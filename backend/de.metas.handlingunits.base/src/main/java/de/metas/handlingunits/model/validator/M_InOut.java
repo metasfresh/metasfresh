@@ -368,6 +368,10 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
+		if (returnsServiceFacade.isServiceRepair(returnInOut))
+		{
+			return;
+		}
 		if (!(returnsServiceFacade.isVendorReturn(returnInOut) || returnsServiceFacade.isCustomerReturn(returnInOut)))
 		{
 			return; // nothing to do
