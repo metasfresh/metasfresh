@@ -28,6 +28,9 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.impl.InvoiceReview;
+import de.metas.invoice.service.impl.InvoiceReviewRepository;
 import de.metas.po.CustomColumnService;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponse;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponseResult;
@@ -48,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_C_Invoice_Review_ID;
 import static org.compiere.model.I_C_Invoice_Review.COLUMNNAME_ExternalId;
@@ -85,23 +88,23 @@ public class C_Invoice_Review_StepDef
 		final String orgCode = tableRow.get("orgCode");
 		final String customColumn = tableRow.get("customColumn");
 
-		final String invoiceIdentifier;
+		final JsonInvoiceReviewUpsertItem.JsonInvoiceReviewUpsertItemBuilder payloadBuilder = JsonInvoiceReviewUpsertItem.builder();
+
 		if (tableRow.containsKey("OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER))
 		{
 			final I_C_Invoice invoice = invoiceTable.get(tableRow.get("OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER));
-			invoiceIdentifier = Integer.toString(invoice.getC_Invoice_ID());
+			payloadBuilder.invoiceId(invoice.getC_Invoice_ID());
 		}
 		else if (tableRow.containsKey("OPT." + COLUMNNAME_ExternalId))
 		{
-			invoiceIdentifier = "ext-" + tableRow.get("OPT." + COLUMNNAME_ExternalId);
+			payloadBuilder.externalId(tableRow.get("OPT." + COLUMNNAME_ExternalId));
 		}
 		else
 		{
 			throw new AdempiereException("Don't know how to identify invoice to review");
 		}
 
-		final JsonInvoiceReviewUpsertItem payload = JsonInvoiceReviewUpsertItem.builder()
-				.invoiceIdentifier(invoiceIdentifier)
+		final JsonInvoiceReviewUpsertItem payload = payloadBuilder
 				.orgCode(orgCode)
 				.extendedProps(Collections.singletonMap("customColumn", customColumn))
 				.build();
@@ -109,7 +112,29 @@ public class C_Invoice_Review_StepDef
 		testContext.setRequestPayload(JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(payload));
 	}
 
-	@And("validate invoice review")
+	@Then("validate invoice reviews and store them with their identifiers")
+	public void validateInvoiceReviewAndStoreItsIdentifier(@NonNull final DataTable dataTable)
+	{
+		final InvoiceReviewRepository invoiceReviewRepository = new InvoiceReviewRepository(customColumnService);
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final int invoiceId = invoiceTable.get(invoiceIdentifier).getC_Invoice_ID();
+
+			final InvoiceReview review = invoiceReviewRepository.getByInvoiceId(InvoiceId.ofRepoId(invoiceId));
+
+			// soft assertion makes no sense here, because if this fails we can't test any further and will run into an NPE
+			assertThat(review).as("Missing InvoiceReview for invoiceId %s (identifier=%s)", invoiceId, invoiceIdentifier).isNotNull();
+
+			final I_C_Invoice_Review reviewRecord = InterfaceWrapperHelper.load(review.getId(), I_C_Invoice_Review.class);
+
+			validateInvoiceReview(reviewRecord, row);
+			invoiceReviewTable.put(invoiceIdentifier, reviewRecord);
+		}
+	}
+
+	@And("validate invoice reviews")
 	public void validate_invoice_reviews(@NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
@@ -154,9 +179,12 @@ public class C_Invoice_Review_StepDef
 		final JsonCreateInvoiceReviewResponse jsonCreateInvoiceResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonCreateInvoiceReviewResponse.class);
 
 		final JsonCreateInvoiceReviewResponseResult result = jsonCreateInvoiceResponse.getResult();
-		assertThat(result).isNotNull();
-		assertThat(result.getReviewId()).isNotNull();
-		assertThat(jsonCreateInvoiceResponse.getErrors()).isNull();
+		assertThat(result).as("the received jsonCreateInvoiceResponse has a null-result; response=%s", jsonCreateInvoiceResponse).isNotNull();
+
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(result.getReviewId()).as("result.reviewId").isNotNull();
+		softly.assertThat(jsonCreateInvoiceResponse.getErrors()).as("result.errors").isNull();
+		softly.assertAll();
 
 		final I_C_Invoice_Review review = InterfaceWrapperHelper.load(result.getReviewId().getValue(), I_C_Invoice_Review.class);
 		assertThat(review).isNotNull();
@@ -180,11 +208,10 @@ public class C_Invoice_Review_StepDef
 			softly.assertThat(jsonCreateInvoiceResponse.getResult()).isNull();
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).isNotNull();
-			softly.assertThat(jsonCreateInvoiceResponse.getErrors().size()).isEqualTo(1);
-
-			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
-
+			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).hasSize(1);
 			softly.assertAll();
+
+			assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
 		}
 	}
 }

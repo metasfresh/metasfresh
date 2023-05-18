@@ -594,6 +594,11 @@ UPDATE AD_Element_Trl SET Name='VAT Code override', PrintName='VAT Code override
 ALTER TABLE C_Invoice_Candidate ADD CONSTRAINT CVATCodeOverride_CInvoiceCandidate FOREIGN KEY (C_VAT_Code_Override_ID) REFERENCES public.C_VAT_Code DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- 2023-05-02
+-- This UC doesn't seem to work: e.g. what if we have the same vatcode valid at different times?
+-- Or one code for STOtrx=Y and another one for SOTrx=N
+-- I also checked at de.metas.acct.vatcode.impl.VATCodeDAO.findVATCode
+/*
 -- 2022-11-25T15:14:12.014Z
 INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540714,0,540703,TO_TIMESTAMP('2022-11-25 17:14:11','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','unique_vatcode_organization','N',TO_TIMESTAMP('2022-11-25 17:14:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -613,6 +618,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 -- 2022-11-25T15:14:52.105Z
 CREATE UNIQUE INDEX unique_vatcode_organization ON C_VAT_Code (VATCode,AD_Org_ID)
 ;
+*/
 
 -- Name: VAT_Code_for_soTrx
 -- 2022-11-25T15:37:11.849Z

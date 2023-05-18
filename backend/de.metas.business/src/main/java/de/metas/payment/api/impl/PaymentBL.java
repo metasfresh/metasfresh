@@ -623,7 +623,7 @@ public class PaymentBL implements IPaymentBL
 			@NonNull final I_C_Payment payment,
 			@NonNull final Money writeOffAmt,
 			@NonNull final Instant writeOffDate,
-			@Nullable String description)
+			@Nullable final String description)
 	{
 		Check.assume(writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 
@@ -938,7 +938,7 @@ public class PaymentBL implements IPaymentBL
 
 		return Optional.ofNullable(singleSectionCodeId);
 	}
-	
+
 	@NonNull
 	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
 	{

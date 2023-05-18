@@ -93,7 +93,7 @@ public class ProcessSkippedBPartnerRouteBuilder extends RouteBuilder
 
 		final BPartnerRow bPartnerRow = request.getBPartnerRow();
 
-		final String bPartnerIdentifier = UpsertBPartnerRequestBuilder.getBPartnerExternalIdentifier(bPartnerRow);
+		final String bPartnerIdentifier = UpsertBPartnerRequestBuilder.getBPartnerExternalIdentifierTruncatedPartnerCode(bPartnerRow);
 
 		final BPRetrieveCamelRequest retrieveCamelRequest = BPRetrieveCamelRequest.builder()
 				.bPartnerIdentifier(bPartnerIdentifier)

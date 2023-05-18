@@ -189,7 +189,7 @@ public class DBException extends AdempiereException
 	/**
 	 * @see java.sql.SQLException#getErrorCode()
 	 */
-	public int getErrorCode()
+	public int getSQLErrorCode()
 	{
 		final SQLException e = getSQLException();
 		return e != null ? e.getErrorCode() : -1;

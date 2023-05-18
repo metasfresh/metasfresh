@@ -423,6 +423,31 @@ public interface I_S_Resource
 	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
+	 * Set Test facility group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_HumanResourceTestGroup_ID (int S_HumanResourceTestGroup_ID);
+
+	/**
+	 * Get Test facility group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_HumanResourceTestGroup_ID();
+
+	@Nullable org.compiere.model.I_S_HumanResourceTestGroup getS_HumanResourceTestGroup();
+
+	void setS_HumanResourceTestGroup(@Nullable org.compiere.model.I_S_HumanResourceTestGroup S_HumanResourceTestGroup);
+
+	ModelColumn<I_S_Resource, org.compiere.model.I_S_HumanResourceTestGroup> COLUMN_S_HumanResourceTestGroup_ID = new ModelColumn<>(I_S_Resource.class, "S_HumanResourceTestGroup_ID", org.compiere.model.I_S_HumanResourceTestGroup.class);
+	String COLUMNNAME_S_HumanResourceTestGroup_ID = "S_HumanResourceTestGroup_ID";
+
+	/**
 	 * Set Resource Group.
 	 *
 	 * <br>Type: Search

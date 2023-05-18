@@ -130,7 +130,6 @@ public class GenerateVendorInvoiceProcess extends JavaProcess
 	{
 		return InvoicingParams.builder()
 				.ignoreInvoiceSchedule(false)
-				.supplementMissingPaymentTermIds(true)
 				.dateInvoiced(SystemTime.asLocalDate())
 				.build();
 	}

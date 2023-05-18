@@ -23,22 +23,29 @@
 package de.metas.payment.paymentterm.impl;
 
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.CalculationMethod;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 @Builder
 @Value
-public class PaymentTerm
+public final class PaymentTerm
 {
 	@NonNull PaymentTermId id;
 	@NonNull OrgId orgId;
 	@NonNull ClientId clientId;
+	@NonNull CalculationMethod calculationMethod;
+	@NonNull BaseLineType baseLineType;
 
 	@Nullable String value;
 	@Nullable String name;
@@ -52,5 +59,40 @@ public class PaymentTerm
 	int netDays;
 	boolean allowOverrideDueDate;
 	boolean _default;
-}
 
+	/**
+	 * Computes the due date based on the calculation method and net days of this payment term.
+	 *
+	 * @param baseLineDate the base line date to compute the due date from
+	 * @return the computed due date
+	 * @throws AdempiereException if the calculation method is unknown
+	 */
+	public Timestamp computeDueDate(@NonNull final Timestamp baseLineDate)
+	{
+		final Timestamp computedDate;
+
+		switch (calculationMethod)
+		{
+			case BaseLineDatePlusXDays:
+				computedDate= TimeUtil.addDays(baseLineDate, netDays);
+				break;
+			case BaseLineDatePlusXDaysAndThenEndOfMonth:
+				final Timestamp computedBLDate = TimeUtil.addDays(baseLineDate, netDays);
+				computedDate = TimeUtil.getMonthLastDay(computedBLDate);
+				break;
+			case EndOfTheMonthOfBaselineDatePlusXDays:
+				final Timestamp endOfMonthDate = TimeUtil.getMonthLastDay(baseLineDate);
+				computedDate = TimeUtil.addDays(endOfMonthDate, netDays);
+				break;
+			default:
+				throw new AdempiereException("Unknown calculation method for payment term " + id);
+		}
+
+		return computedDate;
+	}
+
+	public boolean isBaseLineTypeInvoiceDate()
+	{
+		return baseLineType.isInvoiceDate();
+	}
+}

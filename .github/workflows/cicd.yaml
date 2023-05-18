@@ -1,9 +1,5 @@
 name: cicd
-on: 
-  push:
-
-  # see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch for custom input parameters  
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 jobs:
 
   init:
@@ -20,24 +16,23 @@ jobs:
         env:
           GIT_REF: ${{ github.ref_name }}
         run: |
-          echo "::set-output name=refname::$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')"
+          echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: define-build-info-properties
         id: build-info-properties
         env:
           BUILD_SYSTEM: ${{ runner.name }}
           BUILD_USER: ${{ github.actor }}
         run: |
-          echo "::set-output name=content::build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
-          echo "::set-output name=mfversion::$(cat docker-builds/version.info)"
+          echo "content=build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "mfversion=$(cat docker-builds/version.info)" >> $GITHUB_OUTPUT
       - name: define-git-properties
         id: git-properties
         env:
           GIT_URL: ${{ github.repositoryUrl }}
-          GIT_REF: ${{ github.event.ref }}
-          GIT_ID: ${{ github.event.head_commit.id }}
-          GIT_MSG: ${{ github.event.head_commit.message }}
+          GIT_REF: ${{ github.ref }}
+          GIT_ID: ${{ github.sha }}
         run: |
-          echo "::set-output name=content::git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$GIT_MSG"
+          echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$(git show -s --format=%s $GIT_ID)" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
       - name: print-info
@@ -49,6 +44,7 @@ jobs:
           echo -e "[sanitized refname]\n$OUT_REFNAME\n"
           echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
           echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
+          echo 'Artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`.' >> $GITHUB_STEP_SUMMARY
 
   java:
     runs-on: ubuntu-latest
@@ -403,7 +399,7 @@ jobs:
           path: junit/**/junit.log
       - name: produce-summary
         run: |
-          echo 'test results can be found at http://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   cucumber:
     name: test (cucumber)
@@ -454,7 +450,7 @@ jobs:
           path: cucumber.log
       - name: produce-summary
         run: |
-          echo 'test results can be found at http://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   redeploy:
     runs-on: ubuntu-latest

@@ -37,9 +37,13 @@ import java.util.Map;
 @Jacksonized
 public class JsonInvoiceReviewUpsertItem
 {
-	@NonNull
-	@Schema(description = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
-	String invoiceIdentifier;
+	@Nullable
+	@Schema(description = "Optional; if omitted, then both `externalId` and `orgCode` have to be provided. Translates to `C_Invoice.C_Invoice_ID`")
+	Integer invoiceId;
+
+	@Nullable
+	@Schema(description = "Optional; if omitted, then both `invoiceId` has to be provided. If given, then also `orgCode` has to be provided. Translates to `C_Invoice.ExternalId`")
+	String externalId;
 
 	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"

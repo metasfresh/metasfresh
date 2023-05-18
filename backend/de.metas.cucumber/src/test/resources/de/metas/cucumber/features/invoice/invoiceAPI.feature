@@ -105,7 +105,7 @@ Feature: create invoices using invoice API
       | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
       | invoiceLine_1               | invoice_1               | product_1               | 10          | true      | 10               | 10              | 400            | tax_1                   | 10       | 28             | KGM                   | PCE                       | true              | 40                        |
 
     And C_Invoice_Acct is found:
@@ -224,7 +224,7 @@ Feature: create invoices using invoice API
       | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
       | invoiceLine_1               | invoice_1               | product_1               | 10          | true      | 10               | 10              | 400            | tax_1                   | 10       | 76             | KGM                   | PCE                       | true              | 40                        |
 
     And C_Invoice_Acct is found:
@@ -313,7 +313,7 @@ Feature: create invoices using invoice API
       | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-25       | 2022-01-24   | 2022-01-23      | docType                     | docType                           | true        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
       | invoiceLine_1               | invoice_1               | product_1               | 10          | true      | 2                | 2               | 20             | tax_1                   | 10       | 1.4            | PCE                   | PCE                       | false             | 10                        |
 
   @from:cucumber
@@ -497,5 +497,5 @@ Feature: create invoices using invoice API
       | invoice_2               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
       | invoiceLine_2               | invoice_2               | product_2               | 10          | true      | 10               | 10              | 100            | tax                     | 10       | 5              | PCE                   | PCE                       | true              | 10                        |

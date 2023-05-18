@@ -10,7 +10,7 @@ import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
-import { formatQtyToHumanReadable } from '../../../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 import { useLineHeaderEntriesRefresh } from './RawMaterialIssueLineScreen';
 
@@ -77,15 +77,15 @@ const computeHeaderEntriesFromParams = ({ url, locatorName, huQRCode, uom, qtyTo
       },
       {
         caption: 'HU ' + trl('activities.mfg.issues.qtyToIssueTarget'),
-        value: formatQtyToHumanReadable({ qty: qtyToIssue, uom }),
+        value: formatQtyToHumanReadableStr({ qty: qtyToIssue, uom }),
       },
       {
         caption: 'HU ' + trl('activities.mfg.issues.qtyIssued'),
-        value: formatQtyToHumanReadable({ qty: qtyIssued || 0, uom }),
+        value: formatQtyToHumanReadableStr({ qty: qtyIssued || 0, uom }),
       },
       {
         caption: 'HU ' + trl('activities.mfg.issues.qtyRejected'),
-        value: formatQtyToHumanReadable({ qty: qtyRejected, uom }),
+        value: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
         hidden: !qtyRejected,
       },
       {

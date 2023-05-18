@@ -14,7 +14,7 @@ import {
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
-import { formatQtyToHumanReadable } from '../../../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 const RawMaterialIssueLineScreen = () => {
   const {
@@ -125,7 +125,7 @@ const computeHeaderEntriesFromParams = ({
       { caption: trl('general.Product'), value: productName },
       {
         caption: trl('activities.mfg.issues.qtyToIssueTarget'),
-        value: formatQtyToHumanReadable({
+        value: formatQtyToHumanReadableStr({
           qty: qtyToIssue,
           uom,
           tolerance: qtyToIssueTolerance,
@@ -134,7 +134,7 @@ const computeHeaderEntriesFromParams = ({
       },
       {
         caption: trl('activities.mfg.issues.qtyToIssueRemaining'),
-        value: formatQtyToHumanReadable({
+        value: formatQtyToHumanReadableStr({
           qty: qtyToIssueRemaining,
           uom,
           precision: 999,
@@ -142,7 +142,7 @@ const computeHeaderEntriesFromParams = ({
       },
       {
         caption: trl('activities.mfg.issues.qtyIssued'),
-        value: formatQtyToHumanReadable({ qty: qtyIssued, uom, precision: 999 }),
+        value: formatQtyToHumanReadableStr({ qty: qtyIssued, uom, precision: 999 }),
       },
     ],
   };

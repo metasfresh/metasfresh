@@ -2,9 +2,9 @@
 Feature: import bank statement in camt53 import format
 
   Background:
-	Given infrastructure and metasfresh are running
+    Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-	And metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
 
     And metasfresh contains M_Products:
       | Identifier | Name                            |
@@ -233,7 +233,7 @@ Feature: import bank statement in camt53 import format
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.StmtAmt | OPT.StatementLineDate | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier | OPT.Processed | OPT.IsReconciled |
       | bsl_1                             | 2022-05-11     | 2022-05-11   | EUR                        | -119       | -119        | 2022-05-11            | bpartner_1                   | inv_1                       | true          | true             |
       | bsl_2                             | 2022-09-07     | 2022-09-07   | EUR                        | 41772      | 41772       | 2022-09-07            |                              |                             | true          | false            |
-    Then validate created invoices
+    And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1                   | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
 

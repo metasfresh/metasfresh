@@ -9,6 +9,7 @@ import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
@@ -77,9 +78,11 @@ class WOProjectCalendarServiceTest
 				woProjectResourceRepository,
 				new CalendarConflictEventsDispatcher()
 		);
+		final SimulationPlanService simulationPlanService = new SimulationPlanService(simulationPlanRepository, Optional.empty());
+
 		this.woProjectCalendarService = new WOProjectCalendarService(
 				resourceService,
-				new SimulationPlanService(simulationPlanRepository, Optional.empty()),
+				simulationPlanService,
 				new PlainProjectRepository(),
 				woProjectService,
 				budgetProjectService,

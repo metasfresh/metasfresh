@@ -31,12 +31,13 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.project.ProjectId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
@@ -57,6 +58,9 @@ import java.util.List;
 @Data
 public class ExternallyReferencedCandidate
 {
+	/**
+	 * Note that {@code newIC} does not contain the paymentTermId. It's later deducted from the billPartnerId and soTrx.
+	 */
 	public static ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		return ExternallyReferencedCandidate
@@ -80,7 +84,8 @@ public class ExternallyReferencedCandidate
 				.soTrx(newIC.getSoTrx())
 				.projectId(newIC.getProjectId())
 				.invoiceDetailItems(newIC.getInvoiceDetailItems())
-				.activityId(newIC.getActivityId());
+				.activityId(newIC.getActivityId())
+				.paymentTermId(newIC.getPaymentTermId());
 	}
 
 	private final OrgId orgId;
@@ -88,9 +93,13 @@ public class ExternallyReferencedCandidate
 	// may be null if this instance was not loaded by the repo
 	private final InvoiceCandidateId id;
 
+	@Nullable
 	private ExternalId externalHeaderId;
+
+	@Nullable
 	private ExternalId externalLineId;
 
+	@Nullable
 	private String poReference;
 
 	private final BPartnerInfo billPartnerInfo;
@@ -99,12 +108,14 @@ public class ExternallyReferencedCandidate
 
 	private final InvoiceRule invoiceRule;
 
+	@Nullable
 	private InvoiceRule invoiceRuleOverride;
 
 	private final SOTrx soTrx;
 
 	private LocalDate dateOrdered;
 
+	@Nullable
 	private LocalDate presetDateInvoiced;
 
 	private StockQtyAndUOMQty qtyOrdered;
@@ -121,6 +132,7 @@ public class ExternallyReferencedCandidate
 	private final ProductPrice priceEntered;
 
 	/** If given, then productId and currencyId have to match! */
+	@Nullable
 	private ProductPrice priceEnteredOverride;
 
 	private final ProductPrice priceActual;
@@ -129,20 +141,29 @@ public class ExternallyReferencedCandidate
 
 	private final TaxId taxId;
 
+	@Nullable
 	private Percent discountOverride;
 
+	@Nullable
 	private DocTypeId invoiceDocTypeId;
 
+	@Nullable
 	private String lineDescription;
 
+	@Nullable
 	private String descriptionBottom;
 
+	@Nullable
 	private UserId userInChargeId;
 
+	@Nullable
 	private ProjectId projectId;
 
 	@Nullable
 	private ActivityId activityId;
+
+	@NonNull
+	PaymentTermId paymentTermId;
 
 	/**
 	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
@@ -183,6 +204,7 @@ public class ExternallyReferencedCandidate
 			@Nullable final String lineDescription,
 			@Nullable final ProjectId projectId,
 			@Nullable final String descriptionBottom,
+			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -215,6 +237,7 @@ public class ExternallyReferencedCandidate
 		this.descriptionBottom = descriptionBottom;
 		this.userInChargeId = userInChargeId;
 		this.activityId = activityId;
+		this.paymentTermId = paymentTermId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 

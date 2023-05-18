@@ -6,6 +6,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostId;
 import de.metas.order.costs.OrderCostRepository;
+import de.metas.order.costs.OrderCostRepositorySession;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -35,7 +36,7 @@ public class C_Order_Cost
 				throw new AdempiereException("Deleting order costs is not allowed when order is not Drafted");
 			}
 
-			final OrderAndLineId createdOrderLineId = OrderCostRepository.extractCreatedOrderAndLineId(record);
+			final OrderAndLineId createdOrderLineId = OrderCostRepositorySession.extractCreatedOrderAndLineId(record);
 			if (createdOrderLineId != null)
 			{
 				orderBL.deleteLineById(createdOrderLineId);

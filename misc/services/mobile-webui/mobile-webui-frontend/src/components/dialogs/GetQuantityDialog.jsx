@@ -8,7 +8,7 @@ import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
-import { formatQtyToHumanReadable } from '../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 
 const GetQuantityDialog = ({
@@ -112,7 +112,7 @@ const GetQuantityDialog = ({
                 {qtyCaption && (
                   <tr>
                     <th>{qtyCaption}</th>
-                    <td>{formatQtyToHumanReadable({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                    <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
                   </tr>
                 )}
                 {userInfo &&
@@ -159,7 +159,7 @@ const GetQuantityDialog = ({
                   <>
                     <tr>
                       <th>{trl('general.QtyRejected')}</th>
-                      <td>{formatQtyToHumanReadable({ qty: qtyRejected, uom })}</td>
+                      <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
                     </tr>
                     <tr>
                       <td colSpan={2}>
