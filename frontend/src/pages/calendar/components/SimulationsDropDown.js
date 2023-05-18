@@ -28,7 +28,8 @@ const toKeyCaption = (simulation) => {
   if (simulation) {
     let caption = simulation.name;
     if (simulation.processed) {
-      caption = counterpart.translate('calendar.simulation.processed') + caption;
+      caption =
+        counterpart.translate('calendar.simulation.processed') + caption;
     }
 
     return {
