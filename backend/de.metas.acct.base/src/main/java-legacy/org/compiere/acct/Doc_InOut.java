@@ -264,6 +264,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+		dr.setQty(line.getQty().negate());
 
 		//
 		// CoGS CR
@@ -279,7 +280,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
-		cr.setQty(line.getQty().negate());
+		cr.setQty(line.getQty());
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
