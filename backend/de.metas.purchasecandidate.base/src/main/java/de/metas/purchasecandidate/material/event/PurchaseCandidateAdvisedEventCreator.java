@@ -66,7 +66,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		//temporary workaround for 2 PurchaseCandidates one for each PPOrderCandidate and PPOrder
+		// temporary workaround to avoid creating 2 PurchaseCandidates, one for each PPOrderCandidate and PPOrder
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
 		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)

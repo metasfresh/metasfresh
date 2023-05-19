@@ -152,7 +152,7 @@ public class DemandCandiateHandler implements CandidateHandler
 				fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
 			}
 			else
-			{
+			{ // it's an update => make sure that the supplyRequiredEvent has the updated-flag set and contains the qty-delta
 				fireSupplyRequiredEventIfNeeded(candidateSaveResult.toCandidateWithUpdateInfo(), savedStockCandidate);
 			}
 		}
@@ -204,8 +204,9 @@ public class DemandCandiateHandler implements CandidateHandler
 		// note: since this candidate might need to be handled "lotForLot", we may fire the event even if requiredQty <= 0
 		final BigDecimal fullDemandQty = demandCandidateWithId.getMaterialDescriptor().getQuantity();
 		final BigDecimal deltaQuantity = demandCandidateWithId.isUpdated() ? demandCandidateWithId.getDeltaQuantity() : BigDecimal.ZERO;
+		final boolean deltaEqualsFullDepand = fullDemandQty.compareTo(deltaQuantity) == 0; // if a sales order is reactivated, qty is changed and then the order is completed, we get 3 events; the last one has delta=fullDemand and we don't to get confused by that last event.
 		if (requiredQty.signum() > 0
-				|| (fullDemandQty.signum() > 0  && !(requiredQty.signum() == 0 && fullDemandQty.compareTo(deltaQuantity) == 0)))
+				|| (fullDemandQty.signum() > 0  && !(requiredQty.signum() == 0 && deltaEqualsFullDepand)))
 		{
 			postSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 		}
@@ -251,7 +252,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final SupplyRequiredEvent supplyRequiredEvent;
 		if(requiredQty.signum() != 0)
 		{
-			// create supply record now! otherwise
+			// create supply record now! otherwise if e.g. a new shipmentschedule-event comes in before the planner responded to the current one (and if we are not lot-4-lot), the next demand-event's qty will be too high
 			final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
 					.type(CandidateType.SUPPLY)
 					.businessCase(null)
@@ -269,7 +270,7 @@ public class DemandCandiateHandler implements CandidateHandler
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
 		}
 		else
-		{
+		{ // fire the event anyway, because it might be lot4lot
 			supplyRequiredEvent = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, null);
 		}
 
