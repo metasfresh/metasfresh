@@ -44,9 +44,6 @@ public class InfrastructureSupport
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
 
-	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
-	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
-
 	/**
 	 * Can be set when running/developing cucumber-tests locally.
 	 * If set, then cucumber runs against your local DB, and not an ephemeral DB-image.
