@@ -227,7 +227,7 @@ public class CreatePurchaseCandidatesService
 	{
 		return purchaseDatePromised != null ?
 				purchaseDatePromised :
-				SystemTime.asZonedDateTime(orgDAO.getTimeZone(orgId));
+				SystemTime.asZonedDateTimeAtEndOfDay(orgDAO.getTimeZone(orgId));
 	}
 
 	@NonNull
