@@ -33,26 +33,29 @@ import lombok.NonNull;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 
 public class ProductionSimulationRowsRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final LookupDataSource productLookup;
 	private final LookupDataSource attributeSetInstanceLookup;
 	private final LookupDataSource warehouseLookup;
 
 	@Builder
 	public ProductionSimulationRowsRepository(
+<<<<<<< HEAD
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
 			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+=======
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	{
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 
 		productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
 		attributeSetInstanceLookup = lookupDataSourceFactory.searchInTableLookup(I_M_AttributeSetInstance.Table_Name);

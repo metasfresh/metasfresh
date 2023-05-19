@@ -2,6 +2,7 @@ package de.metas.material.planning.event;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -12,7 +13,12 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+<<<<<<< HEAD
+=======
+import de.metas.util.Services;
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -28,7 +34,13 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 /*
  * #%L
@@ -54,10 +66,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DDOrderAdvisedOrCreatedEventCreatorTest
 {
-	DDOrderDemandMatcher ddOrderDemandMatcher;
-	DDOrderPojoSupplier ddOrderPojoSupplier;
+	private DDOrderDemandMatcher ddOrderDemandMatcher;
+	private DDOrderPojoSupplier ddOrderPojoSupplier;
 
+	private I_PP_Product_Planning ppProductPlanning;
 	private I_M_Product product;
+
+	private IOrgDAO orgDAO;
 
 	@BeforeEach
 	public void init()
@@ -67,20 +82,33 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
 
+		ppProductPlanning = newInstance(I_PP_Product_Planning.class);
+		saveRecord(ppProductPlanning);
+
 		product = newInstance(I_M_Product.class);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 
 		ddOrderDemandMatcher = Mockito.mock(DDOrderDemandMatcher.class);
 		ddOrderPojoSupplier = Mockito.mock(DDOrderPojoSupplier.class);
+
+		orgDAO = Mockito.mock(IOrgDAO.class);
+		Services.registerService(IOrgDAO.class, orgDAO);
 	}
 
 	@Test
-	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
+	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot_Info()
 	{
+<<<<<<< HEAD
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
+=======
+		ppProductPlanning.setIsLotForLot(false);
+		saveRecord(ppProductPlanning);
+
+		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(newInstance(I_PP_Product_Planning.class));
+				.thenReturn(ppProductPlanning);
 
 		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -88,13 +116,48 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 		Mockito.when(ddOrderPojoSupplier.supplyPojos(Mockito.any()))
 				.thenReturn(ImmutableList.of(createDummyDDOrder()));
 
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
+		SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final DDOrderAdvisedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
 		final List<DDOrderAdvisedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
+
 		assertThat(events).hasSize(1);
-		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+		assertThat(events.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+	}
+
+	@Test
+	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot()
+	{
+		ppProductPlanning.setIsLotForLot(true);
+		saveRecord(ppProductPlanning);
+
+		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
+		Mockito.when(mrpContext.getProductPlanning())
+				.thenReturn(ppProductPlanning);
+
+		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
+				.thenReturn(true);
+
+		Mockito.when(ddOrderPojoSupplier.supplyPojos(Mockito.any()))
+				.thenReturn(ImmutableList.of(createDummyDDOrder()));
+
+		Mockito.when(orgDAO.getTimeZone(Mockito.any()))
+				.thenReturn(SystemTime.zoneId());
+
+		SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
+
+		final DDOrderAdvisedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
+		final List<DDOrderAdvisedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+				.isLotForLot(ISLOTFORLOT_Yes)
+				.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(new BigDecimal("20")))
+				.build();
+
+		assertThat(events).hasSize(1);
+		assertThat(events.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 
 	private DDOrder createDummyDDOrder()

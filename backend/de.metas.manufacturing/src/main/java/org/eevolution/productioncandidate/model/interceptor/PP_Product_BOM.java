@@ -37,7 +37,7 @@ import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.stereotype.Component;
 
@@ -47,17 +47,12 @@ import java.util.Optional;
 @Interceptor(I_PP_Product_BOM.class)
 public class PP_Product_BOM
 {
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
-
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
-	public PP_Product_BOM(@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
-	{
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
-	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onComplete(@NonNull final I_PP_Product_BOM productBOMRecord)

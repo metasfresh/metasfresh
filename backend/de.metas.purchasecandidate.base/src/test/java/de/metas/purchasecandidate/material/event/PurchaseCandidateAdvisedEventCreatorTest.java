@@ -7,11 +7,21 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+<<<<<<< HEAD
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.impl.MaterialPlanningContext;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
+=======
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.impl.MRPContextFactory;
+import de.metas.organization.IOrgDAO;
+import de.metas.pricing.conditions.BreakValueType;
+import de.metas.purchasecandidate.VendorProductInfoService;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -21,13 +31,25 @@ import org.compiere.model.X_M_DiscountSchema;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+<<<<<<< HEAD
 import java.util.Optional;
 
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 /*
  * #%L
@@ -54,6 +76,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class PurchaseCandidateAdvisedEventCreatorTest
 {
 	private I_PP_Product_Planning productPlanningRecord;
+	private IOrgDAO orgDAO;
 
 	@Before
 	public void init()
@@ -63,6 +86,9 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		productPlanningRecord = newInstance(I_PP_Product_Planning.class);
 		productPlanningRecord.setIsPurchased("Y");
 		save(productPlanningRecord);
+
+		orgDAO = Mockito.mock(IOrgDAO.class);
+		Services.registerService(IOrgDAO.class, orgDAO);
 	}
 
 	@Test
@@ -77,10 +103,14 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		bPartnerVendorRecord.setPO_DiscountSchema(discountSchemaRecord); // note that right now we don't need to have an actual price
 		save(bPartnerVendorRecord);
 
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
+		Mockito.when(orgDAO.getTimeZone(Mockito.any()))
+				.thenReturn(SystemTime.zoneId());
+
+		SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.materialDescriptor(createMaterialDescriptor())
 				.demandCandidateId(50)
+				.fullDemandQty(BigDecimal.TEN)
 				.build();
 
 		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
@@ -96,10 +126,32 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 						supplyRequiredDescriptor,
 						mrpContext);
 
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
+
 		assertThat(purchaseAdvisedEvent).isPresent();
 		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
 		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+
+		productPlanningRecord.setIsLotForLot(true);
+		save(productPlanningRecord);
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(null).build();
+
+		// invoke the method under test
+		final Optional<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvent2 = purchaseCandidateAdvisedEventCreator
+				.createPurchaseAdvisedEvent(
+						supplyRequiredDescriptor,
+						mrpContext);
+
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+				.isLotForLot(ISLOTFORLOT_Yes)
+				.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(new BigDecimal("10")))
+				.build();
+
+		assertThat(purchaseAdvisedEvent2).isPresent();
+		assertThat(purchaseAdvisedEvent2.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
+		assertThat(purchaseAdvisedEvent2.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+		assertThat(purchaseAdvisedEvent2.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 
 	static MaterialDescriptor createMaterialDescriptor()
@@ -113,7 +165,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		return MaterialDescriptor.builder()
 				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
 				.warehouseId(WarehouseId.ofRepoId(40))
-				.quantity(TEN)
+				.quantity(BigDecimal.ONE)
 				.date(SystemTime.asInstant())
 				.build();
 	}

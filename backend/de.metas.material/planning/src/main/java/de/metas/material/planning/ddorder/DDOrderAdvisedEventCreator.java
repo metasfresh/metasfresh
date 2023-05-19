@@ -9,6 +9,7 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -16,8 +17,12 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
 /*
  * #%L
@@ -57,12 +62,61 @@ public class DDOrderAdvisedEventCreator
 	}
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
+<<<<<<< HEAD
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMaterialPlanningContext mrpContext)
+=======
+			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
+			final IMutableMRPContext mrpContext)
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	{
 		if(!ddOrderDemandMatcher.matches(mrpContext))
 		{
 			return ImmutableList.of();
+		}
+
+		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning(); // won't be null; if there was no productPlanningData, we wouldn't be here.
+		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(!productPlanningData.isLotForLot() && requiredQty.signum() <= 0)
+		{
+			Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
+			return ImmutableList.of();
+		}
+
+		if(productPlanningData.isLotForLot())
+		{
+			final BigDecimal usedQty;
+			if(!supplyRequiredDescriptor.isUpdated())
+			{
+				usedQty = supplyRequiredDescriptor.getFullDemandQty();
+				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", usedQty);
+			}
+			// we don't reduce Quantity of DDOrders atm
+			else if(supplyRequiredDescriptor.getDeltaQuantity().signum() > 0)
+			{
+				usedQty = supplyRequiredDescriptor.getDeltaQuantity();
+				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", usedQty);
+			}
+			else
+			{
+				Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=true and updated=true, but deltaQty={}", supplyRequiredDescriptor.getDeltaQuantity());
+				return ImmutableList.of();
+			}
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+					.isLotForLot(ISLOTFORLOT_Yes)
+					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
+					.build();
+		}
+		else
+		{
+			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
+		}
+
+		final BigDecimal finalQtyUsed = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(requiredQty.compareTo(finalQtyUsed) != 0)
+		{
+			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
+			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
 		}
 
 		final List<DDOrderAdvisedEvent> events = new ArrayList<>();
@@ -71,7 +125,7 @@ public class DDOrderAdvisedEventCreator
 				.supplyPojos(
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext));
 
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+
 		for (final DDOrder ddOrder : ddOrders)
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())

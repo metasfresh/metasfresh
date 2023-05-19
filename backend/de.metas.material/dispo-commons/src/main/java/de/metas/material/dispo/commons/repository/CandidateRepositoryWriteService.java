@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
+import de.metas.common.util.StringUtils;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -50,6 +51,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
+import org.reflections.util.Utils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -239,6 +241,14 @@ public class CandidateRepositoryWriteService
 			return candidate.withQuantity(getQtyDelta());
 		}
 
+		public Candidate toCandidateWithUpdateInfo()
+		{
+			return candidate.toBuilder()
+					.deltaQuantity(getQtyDelta())
+					.updated(true)
+					.build();
+		}
+
 		/**
 		 * Convenience method that returns a new instance whose included {@link Candidate} has the given id.
 		 */
@@ -398,6 +408,12 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
+
+		final String lotForLot = candidate.getLotForLot();
+		if(!Utils.isEmpty(lotForLot))
+		{
+			candidateRecord.setIsLotForLot(candidate.getLotForLot());
+		}
 
 		final DemandDetail demandDetail = candidate.getDemandDetail();
 

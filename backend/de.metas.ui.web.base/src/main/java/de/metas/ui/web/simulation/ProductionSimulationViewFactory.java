@@ -41,7 +41,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import static de.metas.ui.web.simulation.process.C_Order_ProductionSimulationView_Launcher.VIEW_FACTORY_PARAM_DOCUMENT_LINE_DESCRIPTOR;
 
@@ -56,6 +55,7 @@ public class ProductionSimulationViewFactory implements IViewFactory
 	private final ProductionSimulationRowsRepository rowsRepo;
 
 	public ProductionSimulationViewFactory(
+<<<<<<< HEAD
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
 			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
@@ -64,6 +64,12 @@ public class ProductionSimulationViewFactory implements IViewFactory
 				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
 				.ppOrderCandidateDAO(ppOrderCandidateDAO)
 				.lookupDataSourceFactory(lookupDataSourceFactory)
+=======
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+	{
+		this.rowsRepo = ProductionSimulationRowsRepository.builder()
+				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 				.build();
 	}
 

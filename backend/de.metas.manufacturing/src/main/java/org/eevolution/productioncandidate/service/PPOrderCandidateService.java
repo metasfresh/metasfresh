@@ -56,9 +56,13 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+<<<<<<< HEAD
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
+=======
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -79,6 +83,7 @@ public class PPOrderCandidateService
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+<<<<<<< HEAD
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -94,6 +99,16 @@ public class PPOrderCandidateService
 		this.productPlanningService = productPlanningService;
 		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
+=======
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
+
+	private final ProductPlanningService productPlanningService;
+
+	public PPOrderCandidateService(
+			@NonNull final ProductPlanningService productPlanningService)
+	{
+		this.productPlanningService = productPlanningService;
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	}
 
 	@NonNull

@@ -59,6 +59,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+
 @Service
 public class PPOrderCandidatePojoSupplier
 {
@@ -145,7 +148,11 @@ public class PPOrderCandidatePojoSupplier
 
 		final Quantity ppOrderCandidateQuantity = uomConversionBL.convertToProductUOM(qtyToSupply, productId);
 
+<<<<<<< HEAD
 		final int orderLineId = request.getMrpDemandOrderLineSOId();
+=======
+		final String isLotForLot = productPlanningData.isLotForLot() ? ISLOTFORLOT_Yes : ISLOTFORLOT_No;
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 		return PPOrderCandidate.builder()
 				.simulated(request.isSimulated())
@@ -161,7 +168,11 @@ public class PPOrderCandidatePojoSupplier
 									 .orderLineId(orderLineId)
 									 .shipmentScheduleId(request.getMrpDemandShipmentScheduleId())
 									 .bpartnerId(BPartnerId.ofRepoIdOrNull(request.getMrpDemandBPartnerId()))
+<<<<<<< HEAD
 									 .packingMaterialId(getPackingMaterialId(orderLineId))
+=======
+									 .lotForLot(isLotForLot)
+>>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 									 .build())
 				.build();
 	}
