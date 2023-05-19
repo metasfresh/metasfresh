@@ -977,7 +977,6 @@ public final class AggregationEngine
 		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
 	}
 
-	@Nullable
 	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType docTypeInvoice = docTypeBL.getByIdInTrx(docTypeId);
