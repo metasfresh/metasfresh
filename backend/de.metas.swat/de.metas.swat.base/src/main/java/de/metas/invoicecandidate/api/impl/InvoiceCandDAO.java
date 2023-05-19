@@ -1256,6 +1256,16 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.anyMatch();
 	}
 
+	@Override
+	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOnlySelection(selectionId)
+				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
+				.create()
+				.anyMatch();
+	}
+
 	private IQueryBuilder<I_C_Invoice_Candidate> retrieveForBillPartnerQuery(final I_C_BPartner bpartner)
 	{
 		return queryBL
