@@ -19,8 +19,6 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IResourceProductService;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -32,7 +30,9 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +63,7 @@ import java.util.Set;
  */
 
 @Component
-public class ManufacturingAveragePOCostingMethodHandler implements CostingMethodHandler
+public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHandler
 {
 	// services
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
@@ -77,7 +77,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
-	public ManufacturingAveragePOCostingMethodHandler(
+	public ManufacturingLastPOCostingMethodHandler(
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
 		this.utils = utils;
@@ -86,7 +86,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	@Override
 	public CostingMethod getCostingMethod()
 	{
-		return CostingMethod.AveragePO;
+		return CostingMethod.LastPOPrice;
 	}
 
 	@Override

@@ -297,6 +297,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public void saveHU(final I_M_HU hu)
+	{
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
 	public void markDestroyed(final IHUContext huContext, final Collection<I_M_HU> hus)
 	{
 		// services
