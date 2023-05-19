@@ -30,6 +30,7 @@ import {
 } from './components/CalendarEvent';
 import SimulationOptimizerButton from './components/SimulationOptimizerButton';
 import { useSimulationOptimizerStatus } from './hooks/useSimulationOptimizerStatus';
+import counterpart from 'counterpart';
 
 const Calendar = ({
   view,
@@ -210,7 +211,9 @@ const Calendar = ({
             right:
               'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
           }}
-          resourceAreaHeaderContent="Resources"
+          resourceAreaHeaderContent={counterpart.translate(
+            'calendar.resource.area.header'
+          )}
           resources={calendarData.getResourcesArray()}
           resourceLabelContent={(params) => (
             <CalendarResourceLabel

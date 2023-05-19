@@ -1,13 +1,12 @@
 package de.metas.marketing.base.bpartner;
 
-import java.util.Map;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Map;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -44,9 +43,10 @@ public enum DefaultAddressType
 		this.code = code;
 	}
 
+	@NonNull
 	public static DefaultAddressType forCode(@NonNull final String code)
 	{
-		DefaultAddressType type = code2type.get(code);
+		final DefaultAddressType type = code2type.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + DefaultAddressType.class + " found for code: " + code);

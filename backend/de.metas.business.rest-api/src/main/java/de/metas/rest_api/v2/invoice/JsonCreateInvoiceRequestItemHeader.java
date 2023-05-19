@@ -24,6 +24,8 @@ package de.metas.rest_api.v2.invoice;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
+import de.metas.common.rest_api.v2.SwaggerDocConstants;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,10 +46,10 @@ public class JsonCreateInvoiceRequestItemHeader
 {
 	@NonNull
 	String externalHeaderId;
-	
+
 	@NonNull
 	String orgCode;
-	
+
 	@NonNull
 	JsonDocTypeInfo invoiceDocType;
 
@@ -59,13 +61,13 @@ public class JsonCreateInvoiceRequestItemHeader
 
 	@NonNull
 	String currencyCode;
-	
+
 	@NonNull
 	String billPartnerIdentifier;
 
 	@NonNull
 	String billLocationIdentifier;
-	
+
 	@Nullable
 	String billContactIdentifier;
 
@@ -87,9 +89,10 @@ public class JsonCreateInvoiceRequestItemHeader
 	@Nullable
 	BigDecimal taxTotal;
 
+	@Schema(description = "Identifier of the `AD_InputDataSource` record that tells where this Invoice came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	@Nullable
 	String dataSource;
-	
+
 	@Nullable
 	Map<String, Object> extendedProps;
 
