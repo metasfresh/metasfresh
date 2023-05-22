@@ -62,7 +62,7 @@ public class DDOrderAdvisedEventCreator
 	}
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
-			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMaterialPlanningContext mrpContext)
 	{
 		if(!ddOrderDemandMatcher.matches(mrpContext))
@@ -78,6 +78,7 @@ public class DDOrderAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
+		final SupplyRequiredDescriptor supplyRequiredDescriptorToUse;
 		if(productPlanningData.isLotForLot())
 		{
 			final BigDecimal usedQty;
@@ -97,28 +98,28 @@ public class DDOrderAdvisedEventCreator
 				Loggables.addLog("Didn't create DDOrderAdvisedEvent because LotForLot=true and updated=true, but deltaQty={}", supplyRequiredDescriptor.getDeltaQuantity());
 				return ImmutableList.of();
 			}
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder()
 					.isLotForLot(ISLOTFORLOT_Yes)
 					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
 					.build();
 		}
 		else
 		{
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
+			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 		}
 
-		final BigDecimal finalQtyUsed = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		final BigDecimal finalQtyUsed = supplyRequiredDescriptorToUse.getMaterialDescriptor().getQuantity();
 		if(requiredQty.compareTo(finalQtyUsed) != 0)
 		{
 			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
-			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
+			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptorToUse, deltaToApply);
 		}
 
 		final List<DDOrderAdvisedEvent> events = new ArrayList<>();
 
 		final List<DDOrder> ddOrders = ddOrderPojoSupplier
 				.supplyPojos(
-						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext));
+						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, mrpContext));
 
 
 		for (final DDOrder ddOrder : ddOrders)
@@ -136,8 +137,8 @@ public class DDOrderAdvisedEventCreator
 						mrpContext.getTrxName());
 
 				final DDOrderAdvisedEvent distributionAdvisedEvent = DDOrderAdvisedEvent.builder()
-						.supplyRequiredDescriptor(supplyRequiredDescriptor)
-						.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
+						.supplyRequiredDescriptor(supplyRequiredDescriptorToUse)
+						.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptorToUse.getEventDescriptor()))
 						.fromWarehouseId(WarehouseId.ofRepoId(networkLine.getM_WarehouseSource_ID()))
 						.toWarehouseId(WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID()))
 						.ddOrder(ddOrder)
