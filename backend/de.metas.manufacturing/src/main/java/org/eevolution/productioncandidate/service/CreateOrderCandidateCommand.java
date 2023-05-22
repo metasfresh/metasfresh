@@ -113,14 +113,12 @@ public class CreateOrderCandidateCommand
 			ppOrderCandidateRecord.setProcessed(true);
 		}
 
-<<<<<<< HEAD
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
-=======
+
 		if(!Utils.isEmpty(request.getLotForLot()))
 		{
 			ppOrderCandidateRecord.setIsLotForLot(request.getLotForLot());
 		}
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 

@@ -62,11 +62,8 @@ public class PPOrderCandidateCreateRequest
 	ShipmentScheduleId shipmentScheduleId;
 	boolean simulated;
 	String traceId;
-<<<<<<< HEAD
 	HUPIItemProductId packingMaterialId;
-=======
 	String lotForLot;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 	@Builder
 	public PPOrderCandidateCreateRequest(
@@ -84,11 +81,8 @@ public class PPOrderCandidateCreateRequest
 			@Nullable final ShipmentScheduleId shipmentScheduleId,
 			final boolean simulated,
 			@Nullable final String traceId,
-<<<<<<< HEAD
-			@Nullable final HUPIItemProductId packingMaterialId)
-=======
+			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final String lotForLot)
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -106,11 +100,8 @@ public class PPOrderCandidateCreateRequest
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.simulated = simulated;
 		this.traceId = traceId;
-<<<<<<< HEAD
 		this.packingMaterialId = packingMaterialId;
-=======
 		this.lotForLot = lotForLot;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

@@ -37,6 +37,7 @@ import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.DeletePPOrderCandidatesQuery;
 import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 
 import java.util.Iterator;

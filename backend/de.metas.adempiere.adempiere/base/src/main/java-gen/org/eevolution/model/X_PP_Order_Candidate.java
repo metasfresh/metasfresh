@@ -13,11 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-<<<<<<< HEAD
-	private static final long serialVersionUID = 329777100L;
-=======
 	private static final long serialVersionUID = 433926720L;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)

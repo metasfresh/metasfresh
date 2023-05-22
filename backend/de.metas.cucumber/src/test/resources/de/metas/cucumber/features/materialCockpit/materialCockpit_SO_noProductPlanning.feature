@@ -34,14 +34,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -57,14 +53,11 @@ Feature: sales order interaction with material cockpit - no product planning
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
-<<<<<<< HEAD
+
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    And after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -72,14 +65,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 0               |
 
     And the shipment identified by s_1 is reactivated
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    And after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -87,14 +76,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And the shipment identified by s_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    And after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -129,14 +114,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -145,13 +126,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
     When the order identified by o_1 is reactivated
 
-<<<<<<< HEAD
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 10                         | 0                             | 0                            |
 
@@ -163,14 +140,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 12                              | 12                      | 0                          | -12                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -205,14 +178,11 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
+
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -226,14 +196,11 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_1                     | 10         |
     And the order identified by o_2 is completed
-<<<<<<< HEAD
+
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 20                              | 20                      | 0                          | -20                           | 0                            |
 
@@ -272,12 +239,9 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-=======
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
     Then after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
@@ -292,14 +256,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_2                     | 10         |
     When the order identified by o_2 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_2                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
@@ -347,14 +307,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1       | o_1                   | p_1                     | 10         | lineASI                                  |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI                      | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -400,14 +356,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1       | o_1                   | p_1                     | 10         | lineASI_1                                |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -431,14 +383,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_2       | o_2                   | p_1                     | 10         | lineASI_2                                |
     When the order identified by o_2 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  | lineASI_2                    | 10                              | 10                      | 0                          | -10                           | 0                            |
@@ -487,14 +435,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         | lineASI_1                                |
       | ol_2       | o_1                   | p_1                     | 10         |                                          |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
@@ -505,13 +449,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
     When the order identified by o_1 is reactivated
 
-<<<<<<< HEAD
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 0                               | 0                       | 10                         | 0                             | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 10                         | 0                             | 0                            |
@@ -525,12 +465,9 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_2                      | lineASI_1                                |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-=======
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
     Then after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | 0                          | -20                           | 0                            |
@@ -579,14 +516,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1       | o_1                   | p_1                     | 10         | lineASI_1                                |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -599,14 +532,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_2       | o_2                   | p_1                     | 10         | lineASI_1                                |
     When the order identified by o_2 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | 0                          | -20                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -653,14 +582,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -671,14 +596,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1                      | lineASI_1                                |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
@@ -690,14 +611,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 12                              | 12                      | 0                          | -12                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
@@ -734,14 +651,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-15  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -752,14 +665,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_Order_ID.Identifier | OPT.DatePromised     |
       | o_1                   | 2021-04-17T00:00:00Z |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-17  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-15  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
@@ -806,14 +715,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
@@ -824,14 +729,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1                      | lineASI_1                                |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
@@ -843,14 +744,10 @@ Feature: sales order interaction with material cockpit - no product planning
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 8              |
     When the order identified by o_1 is completed
-<<<<<<< HEAD
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
-=======
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 8                               | 8                       | 0                          | -8                            | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |

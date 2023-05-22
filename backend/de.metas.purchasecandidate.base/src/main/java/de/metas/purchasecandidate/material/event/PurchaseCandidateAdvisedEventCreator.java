@@ -4,12 +4,10 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
-<<<<<<< HEAD
+
 import de.metas.material.planning.IMaterialPlanningContext;
-=======
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
+
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -101,7 +99,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		final OrgId orgId = supplyRequiredDescriptor.getEventDescriptor().getOrgId();
 
 		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
-		if (!defaultVendorProductInfo.isPresent())
+		if (defaultVendorProductInfo.isEmpty())
 		{
 			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
 			return Optional.empty();

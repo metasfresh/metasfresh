@@ -148,11 +148,9 @@ public class PPOrderCandidatePojoSupplier
 
 		final Quantity ppOrderCandidateQuantity = uomConversionBL.convertToProductUOM(qtyToSupply, productId);
 
-<<<<<<< HEAD
 		final int orderLineId = request.getMrpDemandOrderLineSOId();
-=======
+
 		final String isLotForLot = productPlanningData.isLotForLot() ? ISLOTFORLOT_Yes : ISLOTFORLOT_No;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 		return PPOrderCandidate.builder()
 				.simulated(request.isSimulated())
@@ -168,11 +166,8 @@ public class PPOrderCandidatePojoSupplier
 									 .orderLineId(orderLineId)
 									 .shipmentScheduleId(request.getMrpDemandShipmentScheduleId())
 									 .bpartnerId(BPartnerId.ofRepoIdOrNull(request.getMrpDemandBPartnerId()))
-<<<<<<< HEAD
 									 .packingMaterialId(getPackingMaterialId(orderLineId))
-=======
 									 .lotForLot(isLotForLot)
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 									 .build())
 				.build();
 	}

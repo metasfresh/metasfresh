@@ -7,21 +7,13 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
-<<<<<<< HEAD
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.impl.MaterialPlanningContext;
-import de.metas.pricing.conditions.BreakValueType;
-import de.metas.purchasecandidate.VendorProductInfoService;
-import de.metas.user.UserRepository;
-=======
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -33,14 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-<<<<<<< HEAD
-import java.util.Optional;
-
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-=======
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -49,7 +33,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
+
 
 /*
  * #%L

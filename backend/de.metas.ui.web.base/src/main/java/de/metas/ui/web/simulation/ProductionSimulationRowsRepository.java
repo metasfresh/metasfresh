@@ -47,13 +47,8 @@ public class ProductionSimulationRowsRepository
 
 	@Builder
 	public ProductionSimulationRowsRepository(
-<<<<<<< HEAD
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
-=======
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	{
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 

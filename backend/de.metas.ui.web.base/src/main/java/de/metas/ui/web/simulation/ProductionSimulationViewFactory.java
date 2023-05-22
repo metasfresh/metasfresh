@@ -55,21 +55,12 @@ public class ProductionSimulationViewFactory implements IViewFactory
 	private final ProductionSimulationRowsRepository rowsRepo;
 
 	public ProductionSimulationViewFactory(
-<<<<<<< HEAD
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.rowsRepo = ProductionSimulationRowsRepository.builder()
 				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
-				.ppOrderCandidateDAO(ppOrderCandidateDAO)
 				.lookupDataSourceFactory(lookupDataSourceFactory)
-=======
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
-	{
-		this.rowsRepo = ProductionSimulationRowsRepository.builder()
-				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 				.build();
 	}
 

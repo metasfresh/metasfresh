@@ -24,6 +24,7 @@ package org.eevolution.productioncandidate.model.dao;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.process.PInstanceId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.eevolution.api.ProductBOMId;
@@ -51,12 +52,17 @@ public interface IPPOrderCandidateDAO extends ISingletonService
 	Iterator<I_PP_Order_Candidate> retrieveOCForSelection(@NonNull final PInstanceId pinstanceId);
 
 	void createProductionOrderAllocation(
-			@NonNull final I_PP_Order_Candidate candidateRecord,
-			@NonNull final I_PP_Order orderRecord);
+			@NonNull final PPOrderCandidateId candidateId,
+			@NonNull final I_PP_Order orderRecord,
+			@NonNull final Quantity qtyToAllocate);
 
 	@NonNull
 	ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId);
 
 	@NonNull
 	ImmutableList<I_PP_Order_Candidate> getByProductBOMId(@NonNull final ProductBOMId productBOMId);
+
+	void deletePPOrderCandidates(@NonNull final DeletePPOrderCandidatesQuery deletePPOrderCandidatesQuery);
+
+	void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate);
 }

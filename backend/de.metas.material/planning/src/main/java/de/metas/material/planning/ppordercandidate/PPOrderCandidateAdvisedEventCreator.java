@@ -67,13 +67,8 @@ public class PPOrderCandidateAdvisedEventCreator
 
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
-<<<<<<< HEAD
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMaterialPlanningContext mrpContext)
-=======
 			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMutableMRPContext mrpContext)
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
+			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
 		{

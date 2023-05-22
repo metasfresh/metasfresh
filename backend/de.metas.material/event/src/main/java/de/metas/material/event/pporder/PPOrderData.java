@@ -92,11 +92,10 @@ public class PPOrderData
 	 */
 	BigDecimal qtyDelivered;
 
-<<<<<<< HEAD
 	HUPIItemProductId packingMaterialId;
-=======
+
 	String lotForLot;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
+
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -114,11 +113,8 @@ public class PPOrderData
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
-<<<<<<< HEAD
-			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId)
-=======
+			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId,
 			@JsonProperty("lotForLot") final String lotForLot)
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
@@ -133,11 +129,8 @@ public class PPOrderData
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
-<<<<<<< HEAD
 		this.packingMaterialId = packingMaterialId;
-=======
 		this.lotForLot = lotForLot;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	}
 
 	@JsonIgnore

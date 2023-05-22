@@ -13,11 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
 {
 
-<<<<<<< HEAD
-	private static final long serialVersionUID = 842114764L;
-=======
 	private static final long serialVersionUID = -449131942L;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
     /** Standard Constructor */
     public X_PP_Product_Planning (final Properties ctx, final int PP_Product_Planning_ID, @Nullable final String trxName)
@@ -356,7 +352,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
-<<<<<<< HEAD
 	@Override
 	public void setMaxManufacturedQtyPerOrderDispo (final @Nullable BigDecimal MaxManufacturedQtyPerOrderDispo)
 	{
@@ -385,8 +380,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
 
-=======
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	/** 
 	 * OnMaterialReceiptWithDestWarehouse AD_Reference_ID=540835
 	 * Reference name: OnMaterialReceiptWithDestWarehouse_List
@@ -466,7 +459,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-<<<<<<< HEAD
 	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
 	{
 		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
@@ -480,8 +472,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-=======
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	public void setSeqNo (final int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, SeqNo);

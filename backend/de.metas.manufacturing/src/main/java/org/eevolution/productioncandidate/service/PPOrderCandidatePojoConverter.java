@@ -135,11 +135,8 @@ public class PPOrderCandidatePojoConverter
 									 .qtyDelivered(qtyProcessedInStockUOM.toBigDecimal())
 									 .plantId(ResourceId.ofRepoId(ppOrderCandidateRecord.getS_Resource_ID()))
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderCandidateRecord))
-<<<<<<< HEAD
 									 .packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_HU_PI_Item_Product_ID()))
-=======
 									 .lotForLot(ppOrderCandidateRecord.getIsLotForLot())
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 									 .build())
 				.lines(toPPOrderLineCandidates(ppOrderCandidateRecord))
 				.build();

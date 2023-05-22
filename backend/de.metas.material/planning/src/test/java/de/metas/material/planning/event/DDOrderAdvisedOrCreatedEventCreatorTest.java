@@ -15,10 +15,7 @@ import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-<<<<<<< HEAD
-=======
 import de.metas.util.Services;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -34,13 +31,9 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-<<<<<<< HEAD
-import static org.assertj.core.api.Assertions.assertThat;
-=======
 import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 /*
  * #%L
@@ -99,14 +92,12 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot_Info()
 	{
-<<<<<<< HEAD
+
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
-=======
+
 		ppProductPlanning.setIsLotForLot(false);
 		saveRecord(ppProductPlanning);
 
-		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 		Mockito.when(mrpContext.getProductPlanning())
 				.thenReturn(ppProductPlanning);
 
@@ -133,7 +124,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 		ppProductPlanning.setIsLotForLot(true);
 		saveRecord(ppProductPlanning);
 
-		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
+		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
 				.thenReturn(ppProductPlanning);
 

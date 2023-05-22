@@ -13,11 +13,9 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-<<<<<<< HEAD
 import de.metas.material.planning.impl.MaterialPlanningContext;
-=======
 import de.metas.material.planning.ProductPlanningId;
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
+
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -130,15 +128,9 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 			return null;
 		}
 
-<<<<<<< HEAD
 		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
-=======
 		final ProductPlanningId ppOrderProductPlanningId = ProductPlanningId.ofRepoIdOrNull((materialDemandEvent.getPpOrderProductPlanningId()));
 		final I_PP_Product_Planning ppOrderProductPlanning = ppOrderProductPlanningId != null ? productPlanningDAO.getById(ppOrderProductPlanningId) : null;
-
-		final IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);
-		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 
 		mrpContext.setProductId(ProductId.ofRepoId(materialDescr.getProductId()));
 		mrpContext.setAttributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescr.getAttributeSetInstanceId()));
@@ -150,16 +142,11 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		mrpContext.setProductPlanning(productPlanning);
 		mrpContext.setPlantId(plantId);
 
-<<<<<<< HEAD
 		mrpContext.setClientId(eventDescr.getClientId());
 		mrpContext.setOrgId(eventDescr.getOrgId());
-=======
-		final I_AD_Org org = loadOutOfTrx(eventDescr.getOrgId(), I_AD_Org.class);
-		mrpContext.setAD_Client_ID(org.getAD_Client_ID());
-		mrpContext.setAD_Org(org);
 
 		mrpContext.setPpOrderProductPlanning(ppOrderProductPlanning);
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
+
 		return mrpContext;
 	}
 }

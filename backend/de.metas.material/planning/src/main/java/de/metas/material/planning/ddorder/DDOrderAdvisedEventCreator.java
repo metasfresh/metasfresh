@@ -62,13 +62,8 @@ public class DDOrderAdvisedEventCreator
 	}
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
-<<<<<<< HEAD
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			final IMaterialPlanningContext mrpContext)
-=======
 			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
-			final IMutableMRPContext mrpContext)
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
+			final IMaterialPlanningContext mrpContext)
 	{
 		if(!ddOrderDemandMatcher.matches(mrpContext))
 		{

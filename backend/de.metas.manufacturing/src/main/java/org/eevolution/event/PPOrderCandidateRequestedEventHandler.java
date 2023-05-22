@@ -113,11 +113,8 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 															   .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
 															   .simulated(isSimulated)
 															   .traceId(traceId)
-<<<<<<< HEAD
 															   .packingMaterialId(ppOrderData.getPackingMaterialId())
-=======
 															   .lotForLot(ppOrderData.getLotForLot())
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 															   .build());
 	}
 }

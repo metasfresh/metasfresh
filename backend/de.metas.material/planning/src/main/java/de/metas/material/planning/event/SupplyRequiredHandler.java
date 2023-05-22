@@ -33,11 +33,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-<<<<<<< HEAD
 import javax.annotation.Nullable;
-import java.time.ZoneId;
-=======
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,12 +66,8 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 {
 	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandler.class);
 
-<<<<<<< HEAD
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-=======
->>>>>>> 093c325d9be (Material Disposition:  Lot for Lot (#15159))
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
 	private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
 
