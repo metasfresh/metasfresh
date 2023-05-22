@@ -67,7 +67,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
-			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
@@ -83,6 +83,7 @@ public class PPOrderCandidateAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
+		final SupplyRequiredDescriptor supplyRequiredDescriptorToUse;
 		if(productPlanning.isLotForLot())
 		{
 			final BigDecimal usedQty;
@@ -105,24 +106,24 @@ public class PPOrderCandidateAdvisedEventCreator
 				return ImmutableList.of();
 			}
 
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder()
 					.isLotForLot(ISLOTFORLOT_Yes)
 					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
 					.build();
 		}
 		else
 		{
-			supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
+			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 		}
 
-		final BigDecimal finalQtyUsed = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		final BigDecimal finalQtyUsed = supplyRequiredDescriptorToUse.getMaterialDescriptor().getQuantity();
 		if(requiredQty.compareTo(finalQtyUsed) != 0)
 		{
 			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
-			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
+			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptorToUse, deltaToApply);
 		}
 
-		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
+		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, mrpContext);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
 		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(mrpContext, completeRequest, maxQtyPerOrder);
@@ -135,8 +136,8 @@ public class PPOrderCandidateAdvisedEventCreator
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request);
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
-					.supplyRequiredDescriptor(supplyRequiredDescriptor)
-					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
+					.supplyRequiredDescriptor(supplyRequiredDescriptorToUse)
+					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptorToUse.getEventDescriptor()))
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
