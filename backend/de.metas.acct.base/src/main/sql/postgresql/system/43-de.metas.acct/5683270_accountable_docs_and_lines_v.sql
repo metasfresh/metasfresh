@@ -127,37 +127,32 @@ UNION ALL
           INNER JOIN c_invoiceline il ON mi.c_invoiceline_id = il.c_invoiceline_id
           INNER JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id)
 UNION ALL
-(SELECT 'M_Inventory'                                                                 AS TableName,
+(SELECT 'M_Inventory'                                                                  AS TableName,
         -- if the inventory is on first day of month, then process it before everything (we usually use that to create stock at the beginning of the month)
-        (CASE
-             WHEN documentno = 'init'                                                                   THEN -1000
-             WHEN EXTRACT(DAY FROM inv.movementdate) = 1                                                THEN 5
-             WHEN EXTRACT(DAY FROM inv.movementdate) = 31 AND EXTRACT(MONTH FROM inv.movementdate) = 12 THEN 110
-                                                                                                        ELSE 110
-         END)::integer                                                                AS tablename_prio,
-        inv.m_inventory_id                                                            AS Record_ID,
-        inv.reversal_id                                                               AS reversal_id,
-        invl.m_inventoryline_id                                                       AS Line_ID,
-        invl.reversalline_id                                                          AS reversalline_id,
-        NULL                                                                          AS issotrx,
+        (CASE WHEN EXTRACT(DAY FROM inv.movementdate) = 1 THEN 5 ELSE 60 END)::integer AS tablename_prio,
+        inv.m_inventory_id                                                             AS Record_ID,
+        inv.reversal_id                                                                AS reversal_id,
+        invl.m_inventoryline_id                                                        AS Line_ID,
+        invl.reversalline_id                                                           AS reversalline_id,
+        NULL                                                                           AS issotrx,
         inv.docstatus,
         inv.posted,
-        inv.movementdate                                                              AS dateacct,
-        inv.ad_client_id                                                              AS ad_client_id,
-        inv.ad_org_id                                                                 AS ad_org_id,
+        inv.movementdate                                                               AS dateacct,
+        inv.ad_client_id                                                               AS ad_client_id,
+        inv.ad_org_id                                                                  AS ad_org_id,
         --
-        dt.c_doctype_id                                                               AS c_doctype_id,
-        dt.docbasetype                                                                AS docbasetype,
+        dt.c_doctype_id                                                                AS c_doctype_id,
+        dt.docbasetype                                                                 AS docbasetype,
         --
         invl.m_product_id,
-        NULL                                                                          AS c_currency_id,
-        invl.costprice                                                                AS price,
-        (SELECT p.c_uom_id FROM m_product p WHERE p.m_product_id = invl.m_product_id) AS c_uom_id,
+        NULL                                                                           AS c_currency_id,
+        invl.costprice                                                                 AS price,
+        (SELECT p.c_uom_id FROM m_product p WHERE p.m_product_id = invl.m_product_id)  AS c_uom_id,
         (CASE
              WHEN COALESCE(invl.qtyinternaluse, 0) != 0
                  THEN invl.qtyinternaluse
                  ELSE invl.qtycount - invl.qtybook
-         END)                                                                         AS qty
+         END)                                                                          AS qty
  FROM m_inventoryline invl
           INNER JOIN m_inventory inv ON invl.m_inventory_id = inv.m_inventory_id
           INNER JOIN c_doctype dt ON dt.c_doctype_id = inv.c_doctype_id)
@@ -234,31 +229,6 @@ UNION ALL
         cc.movementqty          AS qty
  FROM pp_cost_collector cc
           INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id)
-UNION ALL
-(SELECT 'M_CostRevaluation'          AS TableName,
-        990::integer                 AS tablename_prio,
-        cr.m_costrevaluation_id      AS Record_ID,
-        NULL                         AS reversal_id,
-        crl.m_costrevaluationline_id AS Line_ID,
-        NULL                         AS reversalline_id,
-        NULL                         AS issotrx,
-        cr.docstatus,
-        cr.posted,
-        cr.dateacct                  AS dateacct,
-        cr.ad_client_id              AS ad_client_id,
-        cr.ad_org_id                 AS ad_org_id,
-        --
-        dt.c_doctype_id              AS c_doctype_id,
-        dt.docbasetype               AS docbasetype,
-        --
-        crl.m_product_id,
-        crl.c_currency_id            AS c_currency_id,
-        crl.deltaamt                 AS price,
-        crl.c_uom_id                 AS c_uom_id,
-        0                            AS qty
- FROM m_costrevaluationline crl
-          INNER JOIN m_costrevaluation cr ON crl.m_costrevaluation_id = cr.m_costrevaluation_id
-          INNER JOIN c_doctype dt ON dt.c_doctype_id = cr.c_doctype_id)
 ;
 
 /*

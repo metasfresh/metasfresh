@@ -234,31 +234,6 @@ UNION ALL
         cc.movementqty          AS qty
  FROM pp_cost_collector cc
           INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id)
-UNION ALL
-(SELECT 'M_CostRevaluation'          AS TableName,
-        990::integer                 AS tablename_prio,
-        cr.m_costrevaluation_id      AS Record_ID,
-        NULL                         AS reversal_id,
-        crl.m_costrevaluationline_id AS Line_ID,
-        NULL                         AS reversalline_id,
-        NULL                         AS issotrx,
-        cr.docstatus,
-        cr.posted,
-        cr.dateacct                  AS dateacct,
-        cr.ad_client_id              AS ad_client_id,
-        cr.ad_org_id                 AS ad_org_id,
-        --
-        dt.c_doctype_id              AS c_doctype_id,
-        dt.docbasetype               AS docbasetype,
-        --
-        crl.m_product_id,
-        crl.c_currency_id            AS c_currency_id,
-        crl.deltaamt                 AS price,
-        crl.c_uom_id                 AS c_uom_id,
-        0                            AS qty
- FROM m_costrevaluationline crl
-          INNER JOIN m_costrevaluation cr ON crl.m_costrevaluation_id = cr.m_costrevaluation_id
-          INNER JOIN c_doctype dt ON dt.c_doctype_id = cr.c_doctype_id)
 ;
 
 /*
