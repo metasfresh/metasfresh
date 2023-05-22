@@ -50,19 +50,22 @@ public class Step
 	@PlanningPin
 	boolean pinned;
 
+	private Duration humanResourceTestGroupDuration;
+
 	// No-arg constructor required for OptaPlanner
 	public Step() {}
 
 	@Builder
 	private Step(
 			@NonNull final StepId id,
-			@Nullable Step previousStep,
-			@Nullable Step nextStep,
+			@Nullable final Step previousStep,
+			@Nullable final Step nextStep,
 			@NonNull final InternalPriority projectPriority,
 			@NonNull final Resource resource,
 			@NonNull final Duration duration,
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate,
+			@NonNull final Duration humanResourceTestGroupDuration,
 			final int delay,
 			final boolean pinned)
 	{
@@ -76,6 +79,7 @@ public class Step
 		this.startDateMin = startDateMin;
 		this.delay = delay;
 		this.pinned = pinned;
+		this.humanResourceTestGroupDuration = humanResourceTestGroupDuration;
 	}
 
 	@Override
@@ -89,6 +93,7 @@ public class Step
 				+ ", delay=" + getDelayAsDuration() + "(max. " + computeDelayMax() + ")"
 				+ ", " + resource
 				+ ", " + getProjectId()
+				+ ", humanResourceTestGroupDuration=" + getHumanResourceTestGroupDuration()
 				+ ", ID=" + (id != null ? id.getWoProjectResourceId().getRepoId() : "?");
 	}
 
