@@ -4,6 +4,11 @@
 -- OS user: root
 --
 
+/*
+--
+-- the following is actually already working fine in master
+-- this SQL introduces a duplication that causes QueueProcessorDAO#getByPackageProcessorId to fail
+--
 
 -- 2023-02-28T16:15:02.091Z
 -- URL zum Konzept
@@ -89,3 +94,4 @@ UPDATE C_Queue_Processor SET KeepAliveTimeMillis=1000,Updated=TO_TIMESTAMP('2023
 -- URL zum Konzept
 UPDATE C_Queue_Processor SET Description='Contains the processors that work deal with invoice candidates; goal: prevent different processors from doing their thing to the same C_Invoice_Candidate concurrently.',Updated=TO_TIMESTAMP('2023-02-28 17:21:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Queue_Processor_ID=540072
 ;
+*/
