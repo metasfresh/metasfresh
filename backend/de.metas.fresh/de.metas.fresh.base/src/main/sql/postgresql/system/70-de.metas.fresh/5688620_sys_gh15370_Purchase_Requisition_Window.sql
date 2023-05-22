@@ -7,10 +7,6 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-05-22 09:16:01.4
 INSERT INTO t_alter_column values('m_requisition','Author_ID','NUMERIC(10)',null,null)
 ;
 
--- 2023-05-22T08:16:06.593332Z
-INSERT INTO t_alter_column values('m_requisition','Author_ID',null,'NOT NULL',null)
-;
-
 -- Column: M_Requisition.Author_ID
 -- 2023-05-22T08:16:53.974330800Z
 UPDATE AD_Column SET DefaultValue='@AD_User_ID@',Updated=TO_TIMESTAMP('2023-05-22 09:16:53.974','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586661
