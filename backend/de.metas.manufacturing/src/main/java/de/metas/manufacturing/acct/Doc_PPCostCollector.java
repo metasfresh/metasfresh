@@ -191,8 +191,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
 		dr.setM_Locator_ID(docLine.getM_Locator_ID());
 
+<<<<<<< HEAD
 		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.toBigDecimal());
 		cr.setQty(qty);
+=======
+		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
+		cr.setQty(qty.negate());
+>>>>>>> befe1ef7b82 (Various fixes around accounting and customer return (#15396))
 		cr.addDescription(description);
 		cr.setC_Project_ID(docLine.getC_Project_ID());
 		cr.setC_Activity_ID(docLine.getActivityId());
