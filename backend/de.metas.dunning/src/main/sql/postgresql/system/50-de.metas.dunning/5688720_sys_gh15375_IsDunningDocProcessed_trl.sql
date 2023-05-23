@@ -22,7 +22,7 @@
 
 -- Element: IsDunningDocProcessed
 -- 2023-05-22T15:52:36.414Z
-UPDATE AD_Element_Trl SET Name='Mahnwesen verarbeitet', PrintName='Mahnwesen verarbeitet',Updated=TO_TIMESTAMP('2023-05-22 18:52:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541836 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Mahnung verarbeitet', PrintName='Mahnung verarbeitet',Updated=TO_TIMESTAMP('2023-05-22 18:52:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541836 AND AD_Language='de_DE'
 ;
 
 -- 2023-05-22T15:52:36.446Z
@@ -35,7 +35,7 @@ UPDATE AD_Element_Trl SET Name='Mahnwesen verarbeitet', PrintName='Mahnwesen ver
 
 -- Element: IsDunningDocProcessed
 -- 2023-05-22T15:52:43.849Z
-UPDATE AD_Element_Trl SET Name='Mahnwesen verarbeitet', PrintName='Mahnwesen verarbeitet',Updated=TO_TIMESTAMP('2023-05-22 18:52:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541836 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Mahnung verarbeitet', PrintName='Mahnung verarbeitet',Updated=TO_TIMESTAMP('2023-05-22 18:52:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541836 AND AD_Language='de_CH'
 ;
 
 -- 2023-05-22T15:52:43.851Z
