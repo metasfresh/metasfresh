@@ -1,3 +1,10 @@
+
+--
+-- this view comes from a customer-repo and was meanwhile superseeded in the master-branch
+-- see backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/system/10-de.metas.adempiere/5684561_sys_gh14679_gh14602_migrate_RV_DATEV_Export_Fact_Acct_Invoice_views.sql
+--
+
+/*
 DROP VIEW IF EXISTS rv_datev_export_fact_acct_invoice
 ;
 
@@ -315,3 +322,4 @@ WHERE invoices.isonelineperinvoicetax = get_sysconfig_value('DATEVExportLines_On
 ALTER TABLE rv_datev_export_fact_acct_invoice
     OWNER TO metasfresh
 ;
+*/
