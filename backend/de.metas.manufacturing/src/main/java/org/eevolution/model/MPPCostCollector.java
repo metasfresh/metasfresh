@@ -324,7 +324,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 
 		//
-		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this);
+		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this)
+				.negateIf(X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus.equals(mtrxMovementType));
 		final MTransaction mtrx = new MTransaction(getCtx(),
 				getAD_Org_ID(),
 				mtrxMovementType,

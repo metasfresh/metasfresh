@@ -31,7 +31,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -95,7 +94,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -309,6 +307,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
+	public void saveHU(final I_M_HU hu)
+	{
 		handlingUnitsRepo.saveHU(hu);
 	}
 
