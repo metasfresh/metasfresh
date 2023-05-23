@@ -169,28 +169,28 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final DocBaseType docBaseType = getDocBaseType();
+		final String docBaseType = getDocumentType();
 
 		//
 		// *** Sales - Shipment
-		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
+		if (DOCTYPE_MatShipment.equals(docBaseType) && isSOTrx())
 		{
 			return createFacts_SalesShipment(as);
 		}
 		//
 		// *** Sales - Return
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
+		else if (DOCTYPE_MatReceipt.equals(docBaseType) && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
+		else if (DOCTYPE_MatReceipt.equals(docBaseType) && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
+		else if (DOCTYPE_MatShipment.equals(docBaseType) && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}
@@ -201,16 +201,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 	}
 
-	@NonNull
-	private Fact newFacts(final AcctSchema as)
-	{
-		return new Fact(this, as, PostingType.Actual)
-				.setCurrencyConversionContext(getCurrencyConversionContext(as));
-	}
-
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
-		final Fact fact = newFacts(as);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
 		return ImmutableList.of(fact);
 	}
@@ -292,6 +285,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
+		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+		dr.setQty(line.getQty().negate());
 
 		//
 		// CoGS CR
@@ -307,8 +302,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-		cr.setAD_Org_ID(line.getOrderOrgId());        // Revenue X-Org
-		cr.setQty(line.getQty().negate());
+		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
+		cr.setQty(line.getQty());
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
