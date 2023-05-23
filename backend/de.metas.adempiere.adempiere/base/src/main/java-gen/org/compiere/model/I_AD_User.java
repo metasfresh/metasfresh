@@ -680,6 +680,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMail3 = "EMail3";
 
 	/**
+<<<<<<< HEAD
 	 * Set eMail Private.
 	 *
 	 * <br>Type: String
@@ -701,6 +702,8 @@ public interface I_AD_User
 	String COLUMNNAME_Email_private = "Email_private";
 
 	/**
+=======
+>>>>>>> 9f23c682af3 (BPartner quick input defaults)
 	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
@@ -1019,6 +1022,7 @@ public interface I_AD_User
 	String COLUMNNAME_IsAuthorizedSignatory = "IsAuthorizedSignatory";
 
 	/**
+<<<<<<< HEAD
 	 * Set Backoffice Contact.
 	 *
 	 * <br>Type: YesNo
@@ -1040,6 +1044,8 @@ public interface I_AD_User
 	String COLUMNNAME_IsBackofficeContact = "IsBackofficeContact";
 
 	/**
+=======
+>>>>>>> 9f23c682af3 (BPartner quick input defaults)
 	 * Set Invoice Contact Default.
 	 *
 	 * <br>Type: YesNo
@@ -1061,8 +1067,13 @@ public interface I_AD_User
 	String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
 
 	/**
+<<<<<<< HEAD
 	 * Set User restriction.
 	 * If checked and this role is assigned to a user/contact, then customised restrictions can be implemented (e.g. read-only rules).
+=======
+	 * Set Nutzerbeschränkung.
+	 * Wenn angekakt und diese Rolle ist bei einem Nutzer/Kontakt zugeordnet, dann können indivituell angepasste Einschränkungen implementiert werden (z.B. read-only-regeln)
+>>>>>>> 9f23c682af3 (BPartner quick input defaults)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1073,8 +1084,13 @@ public interface I_AD_User
 	void setIsCustomUserRestriction (boolean IsCustomUserRestriction);
 
 	/**
+<<<<<<< HEAD
 	 * Get User restriction.
 	 * If checked and this role is assigned to a user/contact, then customised restrictions can be implemented (e.g. read-only rules).
+=======
+	 * Get Nutzerbeschränkung.
+	 * Wenn angekakt und diese Rolle ist bei einem Nutzer/Kontakt zugeordnet, dann können indivituell angepasste Einschränkungen implementiert werden (z.B. read-only-regeln)
+>>>>>>> 9f23c682af3 (BPartner quick input defaults)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1242,6 +1258,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Is Membership Contact.
+	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1251,6 +1268,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Is Membership Contact.
+	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1566,6 +1584,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Memo = new ModelColumn<>(I_AD_User.class, "Memo", null);
 	String COLUMNNAME_Memo = "Memo";
+
+	/**
+	 * Set Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_Default_ID (int MKTG_Campaign_Default_ID);
+
+	/**
+	 * Get Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_Default_ID();
+
+	ModelColumn<I_AD_User, Object> COLUMN_MKTG_Campaign_Default_ID = new ModelColumn<>(I_AD_User.class, "MKTG_Campaign_Default_ID", null);
+	String COLUMNNAME_MKTG_Campaign_Default_ID = "MKTG_Campaign_Default_ID";
 
 	/**
 	 * Set Mobile Phone.

@@ -39,6 +39,7 @@ import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.greeting.GreetingStandardType;
+import de.metas.user.UserDefaultAttributesRepository;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import lombok.NonNull;
@@ -94,7 +95,11 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BpartnerRelatedRecordsRepository(),
 				new BPartnerContactAttributesRepository(),
 				new UserGroupRepository(),
+<<<<<<< HEAD
 				NullCustomizedWindowInfoMapRepository.instance);
+=======
+				new UserDefaultAttributesRepository());
+>>>>>>> 9f23c682af3 (BPartner quick input defaults)
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);
 		greeting_MRS = createGreeting(GreetingStandardType.MRS);
@@ -213,8 +218,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName+ " "
-														+ lastname+" And " + firstName2 + " "+ lastname2);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " "
+				+ lastname + " And " + firstName2 + " " + lastname2);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
@@ -240,10 +245,10 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	}
 
 	private I_C_BPartner_Contact_QuickInput createUser(final I_C_BPartner_QuickInput partner,
-			final String firstName,
-			final String lastname,
-			final I_C_Greeting greeting,
-			final boolean isMembership)
+													   final String firstName,
+													   final String lastname,
+													   final I_C_Greeting greeting,
+													   final boolean isMembership)
 	{
 		final I_C_BPartner_Contact_QuickInput user = newInstance(I_C_BPartner_Contact_QuickInput.class);
 		user.setC_BPartner_QuickInput_ID(partner.getC_BPartner_QuickInput_ID());
