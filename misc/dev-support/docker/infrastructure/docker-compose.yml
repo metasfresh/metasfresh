@@ -4,7 +4,7 @@ services:
     build: db
     image: docker-db
     container_name: ${BRANCH_NAME}_db
-    restart: always
+    #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
     volumes:
       - main_metasfresh_postgres:/var/lib/postgresql/data
     environment:
@@ -23,7 +23,7 @@ services:
     expose:
       - "${RABBITMQ_PORT}"
       - "${RABBITMQ_MGMT_PORT}"
-    restart: always
+    #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
     environment:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
@@ -51,7 +51,7 @@ services:
       - main_metasfresh_elasticsearch:/usr/share/elasticsearch/data
     environment:
       - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
-    restart: always
+    #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
 
   postgrest:
     build: postgrest
