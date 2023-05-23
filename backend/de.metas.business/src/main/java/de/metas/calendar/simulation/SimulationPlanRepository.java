@@ -38,6 +38,7 @@ public class SimulationPlanRepository
 			@NonNull final Supplier<String> defaultNameSupplier)
 	{
 		final I_C_SimulationPlan record = InterfaceWrapperHelper.newInstance(I_C_SimulationPlan.class);
+		record.setAD_Org_ID(simulationPlanCreateRequest.getOrgId().getRepoId());
 		record.setName(simulationPlanCreateRequest.getName().orElseGet(defaultNameSupplier));
 		record.setAD_User_Responsible_ID(simulationPlanCreateRequest.getResponsibleUserId().getRepoId());
 		record.setDocStatus(SimulationPlanDocStatus.Drafted.getCode());

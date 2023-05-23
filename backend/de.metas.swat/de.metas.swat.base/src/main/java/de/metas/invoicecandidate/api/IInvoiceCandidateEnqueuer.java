@@ -63,7 +63,7 @@ public interface IInvoiceCandidateEnqueuer
 	{
 		prepareSelection(pinstanceId);
 		return enqueueSelection(pinstanceId);
-	};
+	}
 
 	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
 

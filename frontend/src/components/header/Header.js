@@ -31,6 +31,10 @@ import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import {
+  getDocActionElementFromState,
+  getDocSummaryDataFromState,
+} from '../../reducers/windowHandlerUtils';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -959,19 +963,13 @@ Header.propTypes = {
 };
 
 const mapStateToProps = (state) => {
-  const { master } = state.windowHandler;
-  const { docActionElement, documentSummaryElement } = master.layout;
-  const docSummaryData =
-    documentSummaryElement &&
-    master.data[documentSummaryElement.fields[0].field];
-
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
     indicator: state.windowHandler.indicator,
-    docStatus: docActionElement,
-    docSummaryData,
+    docStatus: getDocActionElementFromState(state),
+    docSummaryData: getDocSummaryDataFromState(state),
   };
 };
 

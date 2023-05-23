@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,35 +20,21 @@
  * #L%
  */
 
-package de.metas.resource;
+package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
-import de.metas.user.UserId;
+import de.metas.calendar.plan_optimizer.domain.StepId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Value
 @Builder
-public class Resource
+public class StepItemRequiredCapacity
 {
-	@NonNull OrgId orgId;
-	@NonNull ResourceId resourceId;
-	boolean isActive;
-	@NonNull String value;
-	@NonNull ITranslatableString name;
-	@Nullable String description;
-	@Nullable ResourceGroupId resourceGroupId;
-	@NonNull ResourceTypeId resourceTypeId;
-	@Nullable ManufacturingResourceType manufacturingResourceType;
-
-	@Nullable UserId responsibleId;
-	
-	@Nullable String internalName;
-
-	@Nullable HumanResourceTestGroupId humanResourceTestGroupId;
+	@NonNull StepId stepId;
+	@NonNull LocalDateTime startDate;
+	@NonNull Duration humanResourceDuration;
 }
