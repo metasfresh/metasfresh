@@ -74,7 +74,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	@RunOutOfTrx
 	protected void prepare()
 	{
-		int selectionCount = createSelection();
+		final int selectionCount = createSelection();
+
 		if (selectionCount <= 0)
 		{
 			throw new AdempiereException(IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P);
@@ -150,6 +151,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 
 		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, p_OrgId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.addInSubQueryFilter()
