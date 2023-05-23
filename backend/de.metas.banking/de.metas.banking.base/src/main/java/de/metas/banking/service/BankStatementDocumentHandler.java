@@ -215,8 +215,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
+<<<<<<< HEAD
 		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+=======
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+>>>>>>> 315e598b7f3 (Use Bankstatement Org when testing period (#15393))
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
 		return IDocument.STATUS_InProgress;
