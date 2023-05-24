@@ -566,6 +566,28 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+				<!-- https://github.com/qaware/go-offline-maven-plugin
+					enables our docker builds to resolve dependencies in a separate layer
+					and therefore cache it. -->
+				<!-- plexus-utils get's pulled by surefire at build time
+					and needs to be declared as a dynamic dependency. 
+					We can probly get rid of this after the java 17 upgrade -->
+				<plugin>
+					<groupId>de.qaware.maven</groupId>
+					<artifactId>go-offline-maven-plugin</artifactId>
+					<version>1.2.8</version>
+					<configuration>
+						<dynamicDependencies>
+							<DynamicDependency>
+								<groupId>org.codehaus.plexus</groupId>
+								<artifactId>plexus-utils</artifactId>
+								<version>1.1</version>
+								<repositoryType>PLUGIN</repositoryType>
+							</DynamicDependency>
+						</dynamicDependencies>
+					</configuration>
+				</plugin>
+
             </plugins>
         </pluginManagement>
     </build>

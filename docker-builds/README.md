@@ -2,8 +2,27 @@
 ## Build
 
 ### local
-build all docker images on a local windows machine by executing ```build.cmd``` from repository root<br>
-docker images will not get pushed to any regsitry and just sit on your local system with _:local_ tags<br>
+Build all docker images on a local windows machine by executing ```build.cmd``` from repository root<br>
+The resulting docker images will not get pushed to any registry and just sit on your local system with _:local_ or _:local-compat_ tags<br>
+<br>
+The java builds need some third party maven package. Since we now get them from github (instead of nexus) and github packages currently only supports access to maven repositories when you are logged in, you need to supply credentials for the local build to work.<br>
+Otherwise you will encounter: `[ERROR] Failed to execute goal on project metasfresh-assemblies` [...] `401 Unauthorized`.<br>
+<br>
+Do the following
+* create a classic PAT: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+* select only the packages read scope
+* put the credentials into `docker-builds/mvn/local-settings.xml` in the following section
+```
+	<servers>
+		...
+		<server>
+			<id>github-3rdparty-maven</id>
+			<username>your github username goes here</username>
+			<password>your PAT goes here</password>
+		</server>
+	</servers>
+```
+The `docker-builds/mvn/local-settings.xml` is a copy of `docker-builds/mvn/settings.xml` that gets/got created on the first `build.cmd`.
 
 ### CICD (github actions)
 pipeline is located under _.github\workflows\cicd.yaml_ and gets executed on push<br>

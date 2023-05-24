@@ -41,14 +41,14 @@ echo.
 @echo building maven artifacts
 @echo --------------------------
 
-docker build -f docker-builds/Dockerfile.common -t %pubregistry%/metas-mvn-common:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.common --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-common:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.backend --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-backend:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.camel --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-camel:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.camel.dist -t %pubregistry%/metas-mvn-camel-dist:%qualifier% . || @goto error
 
 docker build -f docker-builds/Dockerfile.junit -t %pubregistry%/metas-junit:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.camel.junit -t %pubregistry%/metas-camel-junit:%qualifier% . || @goto error
-docker build -f docker-builds/Dockerfile.cucumber -t %pubregistry%/metas-cucumber:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.cucumber --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-cucumber:%qualifier% . || @goto error
 
 
 @echo.

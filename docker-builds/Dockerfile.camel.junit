@@ -17,7 +17,7 @@ COPY --from=camel /camel .
 RUN set -o pipefail && find -type f -name 'pom.xml' | xargs perl -i -p0e 's/<plugin>.*?maven-surefire-plugin.*?<\/plugin>//s'
 
 # run all tests, never fail, never surrender, and capture log and exit code
-RUN mvn -o surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+RUN mvn --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
 
 # capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
 RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
