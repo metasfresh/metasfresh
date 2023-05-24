@@ -218,12 +218,20 @@ public class WebuiDocumentReferencesService
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			adWindowId = entityDescriptor.getWindowId().toAdWindowId();
 			tableName = entityDescriptor.getTableName();
-
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+
 			recordId = document.getDocumentId().toInt();
 			keyColumnName = extractSingleKeyColumnNameOrNull(entityDescriptor);
 
 			genericZoomOrigin = extractGenericZoomOrigin(tableName, keyColumnName);
+
+			for (DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
+			{
+				final boolean isAdditionalZoomSource = "RV_InvoiceForBPartner".equals(tableName)
+						&& "C_Invoice_ID".equals(fieldDescriptor.getFieldName());
+
+				// TODO
+			}
 		}
 
 		@Nullable
@@ -239,6 +247,11 @@ public class WebuiDocumentReferencesService
 			if (idFieldBinding == null)
 			{
 				return null;
+			}
+
+			if("RV_InvoiceForBPartner_ID".equals(idFieldBinding.getColumnName()))
+			{
+				return "C_Invoice_ID";
 			}
 
 			return idFieldBinding.getColumnName();
