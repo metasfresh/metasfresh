@@ -775,10 +775,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		attributesBuilder.setWindowNo(sourceDocument != null ? sourceDocument.getWindowNo() : Env.WINDOW_MAIN);
 		attributesBuilder.setSourceDocument(sourceDocument);
 
-		final I_AD_User salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
-		if (salesRep != null)
+		final I_AD_User envContextUser = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		if (envContextUser != null)
 		{
-			attributesBuilder.setSalesRep(salesRep);
+			attributesBuilder.setSalesRep(envContextUser);
 		}
 
 		int C_BPartner_ID = -1;
@@ -786,6 +786,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		I_AD_User user = null;
 		final int AD_User_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_User_ID", -1) : -1;
 		String email = null;
+		//
+		I_AD_User salesRep = null;
+		final int SaleRep_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("SalesRep_ID", -1) : -1;
 		//
 		if (AD_User_ID > 0)
 		{
@@ -798,6 +801,19 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 			C_BPartner_ID = user.getC_BPartner_ID();
 			C_BPartner_Location_ID = user.getC_BPartner_Location_ID();
+		}
+		//
+		else if (SaleRep_ID > 0)
+		{
+			salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, SaleRep_ID);
+			attributesBuilder.setSalesRep(salesRep);
+			if (Services.get(IUserBL.class).isEMailValid(salesRep))
+			{
+				email = salesRep.getEMail();
+				attributesBuilder.setEmail(email);
+			}
+			C_BPartner_ID = salesRep.getC_BPartner_ID();
+			C_BPartner_Location_ID = salesRep.getC_BPartner_Location_ID();
 		}
 		if (C_BPartner_ID <= 0)
 		{
