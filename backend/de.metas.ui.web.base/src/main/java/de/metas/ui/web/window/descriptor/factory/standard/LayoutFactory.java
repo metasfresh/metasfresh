@@ -36,6 +36,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -536,7 +537,7 @@ public class LayoutFactory
 		}
 
 		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
-		if(viewEditMode != null)
+		if (viewEditMode != null)
 		{
 			return viewEditMode;
 		}
@@ -595,7 +596,7 @@ public class LayoutFactory
 		}
 		else if (LayoutElementType.Labels.equals(uiElementType))
 		{
-			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.extractLabelsFieldName(uiElement);
+			final String labelsFieldName = descriptorsFactory.getLabelsFieldName(AdUIElementId.ofRepoId(uiElement.getAD_UI_Element_ID()));
 			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
 			if (field == null)
 			{
@@ -710,7 +711,7 @@ public class LayoutFactory
 			return null;
 		}
 
-		if(!quickInputDescriptors.hasQuickInputEntityDescriptor(
+		if (!quickInputDescriptors.hasQuickInputEntityDescriptor(
 				entityDescriptor.getDocumentType(),
 				entityDescriptor.getDocumentTypeId(),
 				entityDescriptor.getTableName(),
