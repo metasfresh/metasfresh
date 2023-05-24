@@ -241,11 +241,11 @@ public class DunningDAO extends AbstractDunningDAO
 	public int deleteNotProcessedCandidates(final IDunningContext context, final I_C_DunningLevel dunningLevel)
 	{
 		final StringBuilder deleteSQL = new StringBuilder("DELETE FROM " + I_C_Dunning_Candidate.Table_Name +
-																  " WHERE "
-																  + I_C_Dunning_Candidate.COLUMNNAME_IsActive + "='Y' AND "
-																  + I_C_Dunning_Candidate.COLUMNNAME_AD_Client_ID + "=? AND "
-																  + I_C_Dunning_Candidate.COLUMNNAME_Processed + "='N' AND "
-																  + I_C_Dunning_Candidate.COLUMNNAME_C_DunningLevel_ID + "=?");
+				" WHERE "
+				+ I_C_Dunning_Candidate.COLUMNNAME_IsActive + "='Y' AND "
+				+ I_C_Dunning_Candidate.COLUMNNAME_AD_Client_ID + "=? AND "
+				+ I_C_Dunning_Candidate.COLUMNNAME_Processed + "='N' AND "
+				+ I_C_Dunning_Candidate.COLUMNNAME_C_DunningLevel_ID + "=?");
 
 		final List<Object> params = Stream.of(Env.getAD_Client_ID(context.getCtx()), dunningLevel.getC_DunningLevel_ID())
 				.collect(Collectors.toList());
@@ -260,7 +260,7 @@ public class DunningDAO extends AbstractDunningDAO
 		final int[] result = { 0 };
 
 		trxManager.run(context.getTrxName(), context.getTrxRunnerConfig(),
-											localTrxName -> result[0] = DB.executeUpdateEx(deleteSQL.toString(), params.toArray(), localTrxName));
+				localTrxName -> result[0] = DB.executeUpdateEx(deleteSQL.toString(), params.toArray(), localTrxName));
 		return result[0];
 	}
 

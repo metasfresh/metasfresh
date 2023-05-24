@@ -22,18 +22,6 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.engine.IDocument;
@@ -50,12 +38,22 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.model.X_C_DunningDoc;
 import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 public class DefaultDunningProducer implements IDunningProducer
 {
-	private final static transient Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
+	private final static Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
 
 	private IDunningContext dunningContext;
 
@@ -66,9 +64,8 @@ public class DefaultDunningProducer implements IDunningProducer
 	private final List<I_C_DunningDoc_Line_Source> dunningDocLineSources = new ArrayList<>();
 
 	@Override
-	public void setDunningContext(IDunningContext context)
+	public void setDunningContext(@NonNull IDunningContext context)
 	{
-		Check.assumeNotNull(context, "context not null");
 		this.dunningContext = context;
 	}
 
@@ -135,8 +132,7 @@ public class DefaultDunningProducer implements IDunningProducer
 		{
 			if (contextDunningLevel.getC_DunningLevel_ID() != candidate.getC_DunningLevel_ID())
 			{
-				logger.warn("Candidate {} has dunning level {} but in context we have {}. Using candidate's dunning level",
-						new Object[] { candidate, candidate.getC_DunningLevel(), contextDunningLevel });
+				logger.warn("Candidate {} has dunning level {} but in context we have {}. Using candidate's dunning level", candidate, candidate.getC_DunningLevel(), contextDunningLevel);
 			}
 
 			doc.setC_DunningLevel_ID(candidate.getC_DunningLevel_ID());
@@ -191,7 +187,7 @@ public class DefaultDunningProducer implements IDunningProducer
 		return line;
 	}
 
-	protected I_C_DunningDoc_Line_Source createDunningDocLineSource(final I_C_Dunning_Candidate candidate)
+	protected void createDunningDocLineSource(final I_C_Dunning_Candidate candidate)
 	{
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
@@ -202,8 +198,11 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		final I_C_DunningDoc_Line_Source source = dunningDAO.newInstance(getDunningContext(), I_C_DunningDoc_Line_Source.class);
 		source.setAD_Org_ID(candidate.getAD_Org_ID());
-		source.setC_Dunning_Candidate(candidate);
-		source.setC_DunningDoc_Line(dunningDocLine);
+		source.setC_Dunning_Candidate_ID(candidate.getC_Dunning_Candidate_ID());
+		source.setC_DunningDoc_ID(dunningDoc.getC_DunningDoc_ID());
+		source.setC_DunningDoc_Line_ID(dunningDocLine.getC_DunningDoc_Line_ID());
+		source.setAD_Table_ID(candidate.getAD_Table_ID());
+		source.setRecord_ID(candidate.getRecord_ID());
 		source.setProcessed(false);
 		source.setIsActive(true);
 
@@ -214,7 +213,6 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		dunningDocLineSources.add(source);
 
-		return source;
 	}
 
 	protected void aggregateDunningDocLine(I_C_DunningDoc_Line dunningDocLine, I_C_Dunning_Candidate candidate)
@@ -237,8 +235,7 @@ public class DefaultDunningProducer implements IDunningProducer
 
 	protected BigDecimal getAmount(final I_C_Dunning_Candidate candidate)
 	{
-		final BigDecimal amt = candidate.getDunningInterestAmt().add(candidate.getFeeAmt());
-		return amt;
+		return candidate.getDunningInterestAmt().add(candidate.getFeeAmt());
 	}
 
 	protected int getSalesRep_ID(final I_C_Dunning_Candidate candidate)

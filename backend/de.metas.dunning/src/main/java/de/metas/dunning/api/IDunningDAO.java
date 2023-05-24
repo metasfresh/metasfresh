@@ -34,10 +34,12 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IDunningDAO extends ISingletonService
 {
@@ -171,4 +173,6 @@ public interface IDunningDAO extends ISingletonService
 	I_C_DunningDoc getByIdInTrx(@NonNull DunningDocId dunningDocId);
 
 	int deleteTargetObsoleteCandidates(RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery, I_C_DunningLevel dunningLevel) ;
+
+	Set<DunningDocId> retrieveDunningDocIdsBySourceRef(@NonNull TableRecordReference sourceRef);
 }

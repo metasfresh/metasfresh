@@ -300,4 +300,15 @@ public interface I_C_DunningDoc_Line_Source
     public static final org.adempiere.model.ModelColumn<I_C_DunningDoc_Line_Source, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_DunningDoc_Line_Source, org.compiere.model.I_AD_User>(I_C_DunningDoc_Line_Source.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+
+	// TODO 1: add real columns!!!
+	// TODO 2: check/add DB INDEX on (Record_ID, AD_Table_ID)
+	// TODO 3: migrate current data (set C_DunningDoc_ID, AD_Table_ID, Record_ID)
+	String COLUMNNAME_C_DunningDoc_ID = "C_DunningDoc_ID";
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	String COLUMNNAME_Record_ID = "Record_ID";
+	default void setC_DunningDoc_ID(int i) {}
+	default void setAD_Table_ID(int i) {}
+	default void setRecord_ID(int i) {}
 }

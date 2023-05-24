@@ -22,6 +22,7 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
@@ -53,6 +54,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -74,7 +76,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 		return dunning;
 	}
 
-	private final transient CCache<OrgId, I_C_Dunning> orgId2dunning = CCache.<OrgId, I_C_Dunning> builder().tableName(I_C_Dunning.Table_Name).cacheMapType(CacheMapType.LRU).initialCapacity(100).build();
+	private final transient CCache<OrgId, I_C_Dunning> orgId2dunning = CCache.<OrgId, I_C_Dunning>builder().tableName(I_C_Dunning.Table_Name).cacheMapType(CacheMapType.LRU).initialCapacity(100).build();
 
 	@Override
 	public final I_C_Dunning retrieveDunningByOrg(@NonNull final OrgId orgId)
@@ -209,7 +211,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	}
 
 	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
-	/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
+		/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningLevel.class, ctx, trxName)
 				.addEqualsFilter(I_C_DunningLevel.COLUMNNAME_C_Dunning_ID, dunningId)
@@ -229,10 +231,22 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 
 	protected abstract Iterator<I_C_Dunning_Candidate> retrieveDunningCandidatesIterator(IDunningContext context, IDunningCandidateQuery query);
 
-
 	@Override
 	public I_C_DunningDoc getByIdInTrx(@NonNull final DunningDocId dunningDocId)
 	{
 		return load(dunningDocId, I_C_DunningDoc.class);
+	}
+
+	@Override
+	public Set<DunningDocId> retrieveDunningDocIdsBySourceRef(@NonNull final TableRecordReference sourceRef)
+	{
+		final List<DunningDocId> dunningDocIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_DunningDoc_Line_Source.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DunningDoc_Line_Source.COLUMNNAME_AD_Table_ID, sourceRef.getAD_Table_ID())
+				.addEqualsFilter(I_C_DunningDoc_Line_Source.COLUMNNAME_Record_ID, sourceRef.getRecord_ID())
+				.create()
+				.listDistinct(I_C_DunningDoc_Line_Source.COLUMNNAME_C_DunningDoc_ID, DunningDocId.class);
+		return ImmutableSet.copyOf(dunningDocIds);
 	}
 }
