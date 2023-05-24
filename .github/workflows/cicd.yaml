@@ -362,12 +362,18 @@ jobs:
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
       - name: run-junit-tests-j8
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
@@ -378,6 +384,7 @@ jobs:
           --file docker-builds/Dockerfile.camel.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
