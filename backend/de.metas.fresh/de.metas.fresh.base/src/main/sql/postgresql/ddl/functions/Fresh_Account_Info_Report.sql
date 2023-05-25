@@ -312,6 +312,7 @@ BEGIN
         DECLARE
         currencies numeric[];
         length int;
+        first boolean;
         row report.tmp_fresh_Account_Info_Report_Sub%rowtype;
         v_currencyid1 numeric;
         v_currencyid2 numeric;
@@ -358,26 +359,30 @@ BEGIN
                 SELECT iso_code FROM c_currency WHERE c_currency_id = v_currencyid5 INTO v_currency5;
             END IF;
 
+            first := true;
             FOR row IN SELECT * FROM report.tmp_fresh_Account_Info_Report_Sub ORDER BY DateAcct, Fact_Acct_ID
                 LOOP
-                    IF row.source_currency_id = v_currencyid1 THEN
+                    IF first THEN
                         v_sourcebalance1 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid1)).Balance;
+                        v_sourcebalance2 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid2)).Balance;
+                        v_sourcebalance3 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid3)).Balance;
+                        v_sourcebalance4 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid4)).Balance;
+                        v_sourcebalance5 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid5)).Balance;
+                        first := false;
+                    END IF;
+                    IF row.source_currency_id = v_currencyid1 THEN
                         v_rollingbalance1 := v_sourcebalance1 + (row.amtsourcedr - row.amtsourcecr);
                     END IF;
                     IF row.source_currency_id = v_currencyid2 THEN
-                        v_sourcebalance2 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid2)).Balance;
                         v_rollingbalance2 := v_sourcebalance2 + (row.amtsourcedr - row.amtsourcecr);
                     END IF;
                     IF row.source_currency_id = v_currencyid3 THEN
-                        v_sourcebalance3 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid3)).Balance;
                         v_rollingbalance3 := v_sourcebalance3 + (row.amtsourcedr - row.amtsourcecr);
                     END IF;
                     IF row.source_currency_id = v_currencyid4 THEN
-                        v_sourcebalance4 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid4)).Balance;
                         v_rollingbalance4 := v_sourcebalance4 + (row.amtsourcedr - row.amtsourcecr);
                     END IF;
                     IF row.source_currency_id = v_currencyid5 THEN
-                        v_sourcebalance5 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid5)).Balance;
                         v_rollingbalance5 := v_sourcebalance5 + (row.amtsourcedr - row.amtsourcecr);
                     END IF;
 
