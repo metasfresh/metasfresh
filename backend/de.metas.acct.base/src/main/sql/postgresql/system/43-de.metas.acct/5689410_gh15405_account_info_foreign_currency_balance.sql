@@ -105,18 +105,55 @@ DROP FUNCTION IF EXISTS  report.fresh_account_info_report_sub(
     IN ad_org_id             numeric)
 ;
 
-DROP FUNCTION IF EXISTS  report.fresh_account_info_report(
-    IN p_account_from_id        numeric,
-    IN p_account_to_id          numeric,
-    IN p_C_Period_Start_ID      numeric,
-    IN p_C_Period_End_ID        numeric,
-    IN p_StartDate              date,
-    IN p_EndDate                date,
-    IN p_c_activity_id          numeric,
-    IN p_displayvoiddocuments   character varying,
-    IN p_showcurrencyexchange   character varying,
-    IN p_showonlyemptyactivity  character varying,
-    IN p_ad_org_id              numeric)
+CREATE TABLE tmp_fresh_account_info_report_sub
+(
+    dateacct               date,
+    fact_acct_id           numeric(10),
+    bp_name                text,
+    description            text,
+    account2_id            text,
+    a_value                text,
+    amtsourcedr            numeric,
+    amtsourcecr            numeric,
+    amtacctdr              numeric,
+    amtacctcr              numeric,
+    amtacctdrend           numeric,
+    amtacctcrend           numeric,
+    saldo                  numeric,
+    carrysaldo             numeric,
+    param_acct_value       text,
+    param_acct_name        text,
+    param_end_date         date,
+    param_start_date       date,
+    param_activity_value   text,
+    param_activity_name    text,
+    docstatus              text,
+    conversionmultiplyrate numeric,
+    eurosaldo              numeric,
+    containseur            boolean,
+    ad_org_id              numeric(10),
+    vat_code               text,
+    tax_rate_name          text,
+    account_id             numeric(10),
+    c_acctschema_id        numeric(10),
+    start_date_acct        date,
+    source_currency_id     numeric(10),
+    sourcebalance1         numeric,
+    rollingbalance1        numeric,
+    currency1              text,
+    sourcebalance2         numeric,
+    rollingbalance2        numeric,
+    currency2              text,
+    sourcebalance3         numeric,
+    rollingbalance3        numeric,
+    currency3              text,
+    sourcebalance4         numeric,
+    rollingbalance4        numeric,
+    currency4              text,
+    sourcebalance5         numeric,
+    rollingbalance5        numeric,
+    currency5              text
+)
 ;
 
 DROP FUNCTION IF EXISTS  report.fresh_account_info_report(
