@@ -39,6 +39,7 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -598,7 +599,7 @@ public class LayoutFactory
 		}
 		else if (LayoutElementType.Labels.equals(uiElementType))
 		{
-			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.extractLabelsFieldName(uiElement);
+			final String labelsFieldName = descriptorsFactory.getLabelsFieldName(AdUIElementId.ofRepoId(uiElement.getAD_UI_Element_ID()));
 			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
 			if (field == null)
 			{

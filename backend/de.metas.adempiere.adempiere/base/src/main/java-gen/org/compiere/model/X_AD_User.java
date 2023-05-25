@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1217883274L;
+	private static final long serialVersionUID = -1013314438L;
 
 	/** Standard Constructor */
 	public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -308,14 +308,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_Title_ID (final int C_Title_ID)
 	{
-		if (C_Title_ID < 1) 
+		if (C_Title_ID < 1)
 			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
 	}
 
 	@Override
-	public int getC_Title_ID() 
+	public int getC_Title_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
@@ -1002,6 +1002,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getMemo()
 	{
 		return get_ValueAsString(COLUMNNAME_Memo);
+	}
+
+	@Override
+	public void setMKTG_Campaign_Default_ID (final int MKTG_Campaign_Default_ID)
+	{
+		if (MKTG_Campaign_Default_ID < 1)
+			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, null);
+		else
+			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, MKTG_Campaign_Default_ID);
+	}
+
+	@Override
+	public int getMKTG_Campaign_Default_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_MKTG_Campaign_Default_ID);
 	}
 
 	@Override
