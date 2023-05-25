@@ -29,7 +29,7 @@ spec:
         - name: RABBITMQ_VM_MEMORY_HIGH_WATERMARK
           value: "0.90"
         name: rabbitmq
-        image: dockerhub.metasfresh.com/rabbitmq:3.7.4-management
+        image: dockerhub.metasfresh.com/rabbitmq:3.11.16-management
         imagePullPolicy: Always
         ports:
           - containerPort: 5672

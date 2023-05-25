@@ -25,7 +25,7 @@ db:
   dbConnectionPoolMaxSize: 60
 
 rabbitmq:
-  image: dockerhub.metasfresh.com/rabbitmq:3.7.4-management
+  image: dockerhub.metasfresh.com/rabbitmq:3.11.16-management
   port:
     broker: 5672
     management: 15672

@@ -120,7 +120,7 @@ public class InfrastructureSupport
 			return;
 		}
 
-		final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.7.4");
+		final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.11.16");
 		rabbitMQContainer.start();
 
 		rabbitPort = rabbitMQContainer.getAmqpPort();
