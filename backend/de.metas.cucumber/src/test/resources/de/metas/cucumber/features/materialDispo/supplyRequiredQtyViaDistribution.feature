@@ -6,7 +6,6 @@ Feature: Stock shortage solved via distribution
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-07-04T08:00:00+00:00
     And there is no in transit M_Warehouse
-    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   @Id:S0229_100
@@ -1087,15 +1086,15 @@ Feature: Stock shortage solved via distribution
       | hu_1               | pi_v_1                        | A        | locatorHauptlager           |
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_Warehouse_ID.Identifier |
-      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouse_2                   |
-      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     | warehouse_2                   |
-      | c_3        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     | warehouseStd                  |
-      | c_4        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      | warehouseStd                  |
-      | c_5        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      | warehouseStd                  |
-      | c_6        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     | warehouse_2                   |
-      | c_7        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 2                      | warehouse_2                   |
-      | c_8        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 14                     | warehouseStd                  |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_2        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 2   | 16                     |
+      | c_3        | INVENTORY_UP        |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 14                     |
+      | c_4        | DEMAND              | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | 0                      |
+      | c_5        | SUPPLY              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 0                      |
+      | c_6        | DEMAND              | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 0   | 16                     |
+      | c_7        | UNEXPECTED_DECREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 2                      |
+      | c_8        | UNEXPECTED_INCREASE | DISTRIBUTION                  | p_1                     | 2022-07-04T08:00:00Z | 14  | 14                     |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_DD_Order_AtDate | OPT.QtyDemand_DD_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
