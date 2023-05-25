@@ -39,7 +39,7 @@ public class M_RequisitionLine
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_RequisitionLine.COLUMNNAME_C_BPartner_ID })
-	public void updateIIsVendor(@NonNull final I_M_RequisitionLine requisitionLine)
+	public void updateIsVendor(@NonNull final I_M_RequisitionLine requisitionLine)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(requisitionLine.getC_BPartner_ID());
 		if (bpartnerId != null)
