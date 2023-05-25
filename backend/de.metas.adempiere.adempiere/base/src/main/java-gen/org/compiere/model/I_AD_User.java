@@ -700,6 +700,7 @@ public interface I_AD_User
 	ModelColumn<I_AD_User, Object> COLUMN_Email_private = new ModelColumn<>(I_AD_User.class, "Email_private", null);
 	String COLUMNNAME_Email_private = "Email_private";
 
+
 	/**
 	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
@@ -1242,6 +1243,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Is Membership Contact.
+	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1251,6 +1253,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Is Membership Contact.
+	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1566,6 +1569,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Memo = new ModelColumn<>(I_AD_User.class, "Memo", null);
 	String COLUMNNAME_Memo = "Memo";
+
+	/**
+	 * Set Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_Default_ID (int MKTG_Campaign_Default_ID);
+
+	/**
+	 * Get Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_Default_ID();
+
+	ModelColumn<I_AD_User, Object> COLUMN_MKTG_Campaign_Default_ID = new ModelColumn<>(I_AD_User.class, "MKTG_Campaign_Default_ID", null);
+	String COLUMNNAME_MKTG_Campaign_Default_ID = "MKTG_Campaign_Default_ID";
 
 	/**
 	 * Set Mobile Phone.

@@ -183,7 +183,7 @@ public final class DataTypes
 			}
 			else if (LookupValuesList.class == targetType)
 			{
-				return cast(convertToLookupValuesList(value));
+				return cast(convertToLookupValuesList(value, lookupDataSource));
 			}
 			else if (DateRangeValue.class == targetType)
 			{
@@ -642,7 +642,9 @@ public final class DataTypes
 	}
 
 	@Nullable
-	private static LookupValuesList convertToLookupValuesList(final Object value)
+	private static LookupValuesList convertToLookupValuesList(
+			@Nullable final Object value,
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		if (value == null)
 		{
@@ -672,7 +674,7 @@ public final class DataTypes
 			final ArrayList<LookupValue> lookupValues = new ArrayList<>(fromList.size());
 			for (final Object fromItem : fromList)
 			{
-				final LookupValue lookupValue = convertToStringLookupValue(fromItem);
+				final LookupValue lookupValue = convertToStringLookupValue(fromItem, lookupDataSource);
 				lookupValues.add(lookupValue);
 			}
 
