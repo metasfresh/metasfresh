@@ -130,7 +130,7 @@ public class PP_Product_BOMLine
 		return true;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, skipIfCopying=true)
 	public void updateProductLowestLevelCode(final I_PP_Product_BOMLine bomLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
