@@ -65,8 +65,9 @@
 
         <mockito.version>2.7.22</mockito.version>
 
-        <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.6.2</junit-jupiter.version>
+        <!-- please keep junit jupiter and platform versions synched up -->
+        <junit-jupiter.version>5.6.3</junit-jupiter.version>
+        <junit-platform.version>1.6.3</junit-platform.version>
     </properties>
 
     <modules>
@@ -166,16 +167,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit-jupiter.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-params</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apiguardian</groupId>
-                    <artifactId>apiguardian-api</artifactId>
-                </exclusion>
-            </exclusions>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -183,25 +174,11 @@
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apiguardian</groupId>
-                    <artifactId>apiguardian-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
         <dependency>
             <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.6.2</version>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
         
@@ -429,7 +406,15 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.1.0</version>
+                    <dependencies>
+                        <!-- Declaring this explicitly to allow go-offline-maven-plugin to pick it up -->
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit-platform</artifactId>
+                            <version>3.1.0</version>
+                        </dependency>
+                    </dependencies>
                     <configuration>
                         <!-- Jacoco prepare-agent builds some command-line params without which jacoco will not instrument.
                              Hence it is important to add those command-line params where @{argLine} holds those params.
@@ -569,23 +554,10 @@
 				<!-- https://github.com/qaware/go-offline-maven-plugin
 					enables our docker builds to resolve dependencies in a separate layer
 					and therefore cache it. -->
-				<!-- plexus-utils get's pulled by surefire at build time
-					and needs to be declared as a dynamic dependency. 
-					We can probly get rid of this after the java 17 upgrade -->
 				<plugin>
 					<groupId>de.qaware.maven</groupId>
 					<artifactId>go-offline-maven-plugin</artifactId>
 					<version>1.2.8</version>
-					<configuration>
-						<dynamicDependencies>
-							<DynamicDependency>
-								<groupId>org.codehaus.plexus</groupId>
-								<artifactId>plexus-utils</artifactId>
-								<version>1.1</version>
-								<repositoryType>PLUGIN</repositoryType>
-							</DynamicDependency>
-						</dynamicDependencies>
-					</configuration>
 				</plugin>
 
             </plugins>

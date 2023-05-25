@@ -15,6 +15,7 @@ COPY backend/de.metas.cucumber/ .
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean test-compile --offline
 
+COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
