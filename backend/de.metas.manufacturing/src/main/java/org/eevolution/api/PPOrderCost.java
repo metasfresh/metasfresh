@@ -163,9 +163,9 @@ public class PPOrderCost
 			return this;
 		}
 
-		final boolean amtIsPositiveOrZero = amt.signum() >= 0;
-		final boolean qtyIsPositiveOrZero = qty.signum() >= 0;
-		if (amtIsPositiveOrZero != qtyIsPositiveOrZero)
+		final boolean amtIsPositive = amt.signum() > 0;
+		final boolean qtyIsPositive = qty.signum() > 0;
+		if (amtIsPositive != qtyIsPositive )
 		{
 			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
 		}
@@ -213,3 +213,4 @@ public class PPOrderCost
 	}
 
 }
+
