@@ -69,7 +69,7 @@ public final class Fact
 	private final AcctSchema acctSchema;
 	private final PostingType postingType;
 	private ArrayList<FactLine> m_lines = new ArrayList<>();
-	@Nullable private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private FactTrxStrategy _factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
 	@Nullable private CurrencyConversionContext currencyConversionContext = null;
 
 	public Fact(
@@ -86,8 +86,19 @@ public final class Fact
 
 	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
 	{
-		this.factTrxLinesStrategy = factTrxLinesStrategy;
+		this._factTrxLinesStrategy = factTrxLinesStrategy;
 		return this;
+	}
+
+	@Nullable
+	private FactTrxStrategy getFactTrxLinesStrategyEffective()
+	{
+		if (acctSchema.isAllowMultiDebitAndCredit())
+		{
+			return null;
+		}
+
+		return _factTrxLinesStrategy;
 	}
 
 	public Fact setCurrencyConversionContext(@Nullable final CurrencyConversionContext currencyConversionContext)
@@ -690,6 +701,7 @@ public final class Fact
 
 	public void save()
 	{
+		final FactTrxStrategy factTrxLinesStrategy = getFactTrxLinesStrategyEffective();
 		if (factTrxLinesStrategy != null)
 		{
 			factTrxLinesStrategy
