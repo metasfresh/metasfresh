@@ -85,6 +85,34 @@ DROP FUNCTION IF EXISTS  report.fresh_account_info_report_sub(
     IN ad_org_id             numeric)
 ;
 
+DROP FUNCTION IF EXISTS  report.fresh_account_info_report(
+    IN account_from_id       numeric,
+    IN account_to_id         numeric,
+    IN C_Period_Start_ID     numeric,
+    IN C_Period_End_ID       numeric,
+    IN StartDate             date,
+    IN EndDate               date,
+    IN c_activity_id         numeric,
+    IN displayvoiddocuments  character varying,
+    IN showcurrencyexchange  character varying,
+    IN showonlyemptyactivity character varying,
+    IN ad_org_id             numeric)
+;
+
+DROP FUNCTION IF EXISTS  report.fresh_account_info_report(
+    IN p_account_from_id        numeric,
+    IN p_account_to_id          numeric,
+    IN p_C_Period_Start_ID      numeric,
+    IN p_C_Period_End_ID        numeric,
+    IN p_StartDate              date,
+    IN p_EndDate                date,
+    IN p_c_activity_id          numeric,
+    IN p_displayvoiddocuments   character varying,
+    IN p_showcurrencyexchange   character varying,
+    IN p_showonlyemptyactivity  character varying,
+    IN p_ad_org_id              numeric)
+;
+
 CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
     IN p_account_from_id        numeric,
     IN p_account_to_id          numeric,
