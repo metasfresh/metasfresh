@@ -22,6 +22,7 @@ package de.metas.acct.callout;
  * #L%
  */
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.TaxAccountsRepository;
 import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchemaId;
@@ -35,7 +36,6 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
@@ -81,13 +81,17 @@ import java.math.BigDecimal;
 		{
 			return;
 		}
+		if (tax.isReverseCharge())
+		{
+			throw new AdempiereException("Reverse Charge Tax is not supported");
+		}
 
 		//
 		// Calculate Tax Amt
 		final BigDecimal taxBaseAmt = taxAccountable.getTaxBaseAmt();
 		final boolean taxIncluded = false;
 		final CurrencyPrecision precision = taxAccountable.getPrecision();
-		final BigDecimal taxAmt = tax.calculateTax(taxBaseAmt, taxIncluded, precision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(taxBaseAmt, taxIncluded, precision.toInt()).getTaxAmount();
 
 		final BigDecimal totalAmt = taxBaseAmt.add(taxAmt);
 
@@ -120,13 +124,17 @@ import java.math.BigDecimal;
 		{
 			return;
 		}
+		if (tax.isReverseCharge())
+		{
+			throw new AdempiereException("Reverse Charge Tax is not supported");
+		}
 
 		//
 		// Calculate TaxAmt
 		final BigDecimal taxTotalAmt = taxAccountable.getTaxTotalAmt();
 		final boolean taxIncluded = true;
 		final CurrencyPrecision precision = taxAccountable.getPrecision();
-		final BigDecimal taxAmt = tax.calculateTax(taxTotalAmt, taxIncluded, precision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(taxTotalAmt, taxIncluded, precision.toInt()).getTaxAmount();
 
 		final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
 

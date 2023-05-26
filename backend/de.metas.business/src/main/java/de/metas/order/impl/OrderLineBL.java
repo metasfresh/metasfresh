@@ -247,7 +247,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineAmout, taxIncluded, taxPrecision.toInt());
 		ol.setTaxAmtInfo(taxAmtInfo);
 	}
 
@@ -797,7 +797,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
-		if (tax.isZeroTax())
+		if (tax.isZeroTax() || tax.isReverseCharge())
 		{
 			return ProductPrice.builder()
 					.productId(productId)
@@ -807,7 +807,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
-		final BigDecimal taxAmt = taxBL.calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
+		final BigDecimal taxAmt = taxBL.calculateTaxAmt(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return ProductPrice.builder()
 				.productId(productId)

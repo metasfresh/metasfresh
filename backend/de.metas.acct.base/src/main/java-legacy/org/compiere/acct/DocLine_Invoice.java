@@ -102,11 +102,11 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 			if (!tax.isZeroTax())
 			{
 				final CurrencyPrecision taxPrecision = doc.getStdPrecision();
-				final BigDecimal lineTaxAmt = tax.calculateTax(lineNetAmt, true, taxPrecision.toInt());
+				final BigDecimal lineTaxAmt = tax.calculateTax(lineNetAmt, true, taxPrecision.toInt()).getTaxAmount();
 				logger.debug("LineNetAmt={} - LineTaxAmt={}", lineNetAmt, lineTaxAmt);
 				lineNetAmt = lineNetAmt.subtract(lineTaxAmt);
 
-				final BigDecimal priceListTax = tax.calculateTax(priceList, true, taxPrecision.toInt());
+				final BigDecimal priceListTax = tax.calculateTax(priceList, true, taxPrecision.toInt()).getTaxAmount();
 				priceList = priceList.subtract(priceListTax);
 
 				_includedTaxAmt = lineTaxAmt;

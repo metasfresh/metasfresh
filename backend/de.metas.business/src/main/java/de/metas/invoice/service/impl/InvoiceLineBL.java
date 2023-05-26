@@ -131,7 +131,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(il);
 
 		final I_C_Tax tax = MTax.get(ctx, taxId);
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
 
 		il.setTaxAmtInfo(taxAmtInfo);
 	}

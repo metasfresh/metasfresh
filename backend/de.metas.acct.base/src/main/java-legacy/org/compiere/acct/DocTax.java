@@ -16,12 +16,14 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.tax.api.TaxId;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import de.metas.acct.Account;
 
 import java.math.BigDecimal;
 
@@ -36,106 +38,64 @@ public final class DocTax
 	// services
 	private final AccountProvider accountProvider;
 
-	public DocTax(
+	@Getter private final TaxId taxId;
+	@Getter private final BigDecimal taxAmt;
+	private final String taxName;
+	private final BigDecimal taxBaseAmt;
+	private BigDecimal includedTaxAmt = BigDecimal.ZERO;
+	private final boolean salesTax;
+	@Getter private final boolean taxIncluded;
+	@Getter private final boolean isReverseCharge;
+	@Getter private final BigDecimal reverseChargeTaxAmt;
+
+	@Builder
+	private DocTax(
 			@NonNull final AccountProvider accountProvider,
 			@NonNull final TaxId taxId,
 			final String taxName,
-			final BigDecimal taxRate,
-			final BigDecimal taxBaseAmt,
-			final BigDecimal taxAmt,
+			@NonNull final BigDecimal taxBaseAmt,
+			@NonNull final BigDecimal taxAmt,
 			final boolean salesTax,
-			final boolean taxIncluded)
+			final boolean taxIncluded,
+			final boolean isReverseCharge,
+			@NonNull final BigDecimal reverseChargeTaxAmt)
 	{
 		this.accountProvider = accountProvider;
 		this.taxId = taxId;
-		m_taxName = taxName;
-		m_taxRate = taxRate;
-		m_taxBaseAmt = taxBaseAmt;
-		m_taxAmt = taxAmt;
-		m_salesTax = salesTax;
-		this.m_taxIncluded = taxIncluded;
-	}    // DocTax
+		this.taxName = taxName;
+		this.taxBaseAmt = taxBaseAmt;
+		this.taxAmt = taxAmt;
+		this.salesTax = salesTax;
+		this.taxIncluded = taxIncluded;
+		this.isReverseCharge = isReverseCharge;
+		this.reverseChargeTaxAmt = reverseChargeTaxAmt;
+	}
 
-	private final TaxId taxId;
-	/**
-	 * Amount
-	 */
-	private final BigDecimal m_taxAmt;
-	/**
-	 * Tax Rate
-	 */
-	private final BigDecimal m_taxRate;
-	/**
-	 * Name
-	 */
-	private final String m_taxName;
-	/**
-	 * Base Tax Amt
-	 */
-	private final BigDecimal m_taxBaseAmt;
-	/**
-	 * Included Tax
-	 */
-	private BigDecimal m_includedTax = BigDecimal.ZERO;
-	/**
-	 * Sales Tax
-	 */
-	private final boolean m_salesTax;
-	private final boolean m_taxIncluded;
+	@Override
+	public String toString()
+	{
+		return "Tax=(" + taxName + " TaxAmt=" + taxAmt + ")";
+	}
 
 	@NonNull
-	public Account getAccount(@NonNull final AcctSchema as)
+	public Account getTaxCreditOrExpense(@NonNull final AcctSchema as)
 	{
-		return accountProvider.getTaxAccount(as.getId(), getTaxId(), getAPTaxType());
+		return accountProvider.getTaxAccount(as.getId(), taxId, salesTax ? TaxAcctType.TaxExpense : TaxAcctType.TaxCredit);
 	}
 
 	@NonNull
 	public Account getTaxDueAcct(@NonNull final AcctSchema as)
 	{
-		return accountProvider.getTaxAccount(as.getId(), getTaxId(), TaxAcctType.TaxDue);
+		return accountProvider.getTaxAccount(as.getId(), taxId, TaxAcctType.TaxDue);
 	}
 
-	public BigDecimal getTaxAmt()
-	{
-		return m_taxAmt;
-	}
+	public int getC_Tax_ID() {return taxId.getRepoId();}
 
-	public BigDecimal getTaxBaseAmt()
-	{
-		return m_taxBaseAmt;
-	}
-
-	/**
-	 * @return tax rate in percent (0 to 100)
-	 */
-	public BigDecimal getRate()
-	{
-		return m_taxRate;
-	}
-
-	public String getTaxName()
-	{
-		return m_taxName;
-	}
-
-	public TaxId getTaxId()
-	{
-		return taxId;
-	}
-
-	public int getC_Tax_ID()
-	{
-		return getTaxId().getRepoId();
-	}
-
-	public String getDescription()
-	{
-		return getTaxName() + " " + getTaxBaseAmt();
-	}
+	public String getDescription() {return taxName + " " + taxBaseAmt;}
 
 	public void addIncludedTax(final BigDecimal amt)
 	{
-		m_includedTax = m_includedTax.add(amt);
+		includedTaxAmt = includedTaxAmt.add(amt);
 	}
 
 	/**
@@ -143,7 +103,7 @@ public final class DocTax
 	 */
 	public BigDecimal getIncludedTaxDifference()
 	{
-		return m_taxAmt.subtract(m_includedTax);
+		return taxAmt.subtract(includedTaxAmt);
 	}
 
 	/**
@@ -151,38 +111,6 @@ public final class DocTax
 	 *
 	 * @return true if difference
 	 */
-	public boolean isIncludedTaxDifference()
-	{
-		return BigDecimal.ZERO.compareTo(getIncludedTaxDifference()) != 0;
-	}
-
-	/**
-	 * @return AP tax type (Credit or Expense)
-	 */
-	private TaxAcctType getAPTaxType()
-	{
-		return isSalesTax() ? TaxAcctType.TaxExpense : TaxAcctType.TaxCredit;
-	}
-
-	/**
-	 * Is Sales Tax
-	 *
-	 * @return sales tax
-	 */
-	public boolean isSalesTax()
-	{
-		return m_salesTax;
-	}
-
-	public boolean isTaxIncluded()
-	{
-		return m_taxIncluded;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "Tax=(" + m_taxName + " TaxAmt=" + m_taxAmt + ")";
-	}
+	public boolean isIncludedTaxDifference() {return getIncludedTaxDifference().signum() != 0;}
 }
 
