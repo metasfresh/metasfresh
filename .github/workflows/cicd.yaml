@@ -311,10 +311,10 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: build-reports-compat
+      - name: build-report-compat
         run: |
           docker buildx build \
-          --file docker-builds/Dockerfile.backend.reports.compat \
+          --file docker-builds/Dockerfile.backend.report.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
