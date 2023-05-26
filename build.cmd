@@ -71,7 +71,7 @@ docker build -f docker-builds/Dockerfile.db-preloaded -t %pubregistry%/metas-db:
 @echo --------------------------
 docker build -f docker-builds/Dockerfile.backend.api.compat -t %pubregistry%/metas-api:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.backend.app.compat -t %pubregistry%/metas-app:%qualifier%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.backend.reports.compat -t %pubregistry%/metas-reports:%qualifier%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.report.compat -t %pubregistry%/metas-report:%qualifier%-compat . || @goto error
 @REM docker build -f docker-builds/Dockerfile.mobile.compat -t %pubregistry%/metas-mobile:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.frontend.compat -t %pubregistry%/metas-frontend:%qualifier%-compat . || @goto error
 
