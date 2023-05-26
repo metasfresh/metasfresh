@@ -235,7 +235,6 @@ BEGIN
                   fa.tax_rate_name::text,
                   fa.account_id,
                   fa.c_acctschema_id,
-                  fa.start_date_acct,
                   fa.c_currency_id    AS source_currency_id,
                   NULL::numeric       AS sourcebalance1,
                   NULL::numeric       AS rollingbalance1,
@@ -298,8 +297,7 @@ BEGIN
                         fa.vatcode                                                                       AS vat_code,
                         (SELECT t.name FROM c_tax t WHERE fa.c_tax_id = t.c_tax_id AND t.isactive = 'Y') AS tax_rate_name,
                         fa.c_currency_id,
-                        acs.C_AcctSchema_ID,
-                        COALESCE($5::date, (SELECT p.startdate::date FROM C_Period p WHERE C_Period_ID = $3)) AS start_date_acct
+                        acs.C_AcctSchema_ID
 
                  FROM (SELECT ev.C_ElementValue_ID, ev.value, ev.name, ev.ad_client_id
                        FROM C_ElementValue ev
@@ -414,27 +412,37 @@ BEGIN
             FOR row IN SELECT * FROM report.tmp_fresh_Account_Info_Report_Sub ORDER BY DateAcct, Fact_Acct_ID
                 LOOP
                     IF first THEN
-                        v_sourcebalance1 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid1)).Balance;
-                        v_sourcebalance2 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid2)).Balance;
-                        v_sourcebalance3 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid3)).Balance;
-                        v_sourcebalance4 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid4)).Balance;
-                        v_sourcebalance5 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.start_date_acct, row.ad_org_id, v_currencyid5)).Balance;
+                        v_sourcebalance1 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.param_start_date, row.ad_org_id, v_currencyid1)).Balance;
+                        v_sourcebalance2 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.param_start_date, row.ad_org_id, v_currencyid2)).Balance;
+                        v_sourcebalance3 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.param_start_date, row.ad_org_id, v_currencyid3)).Balance;
+                        v_sourcebalance4 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.param_start_date, row.ad_org_id, v_currencyid4)).Balance;
+                        v_sourcebalance5 := (de_metas_acct.sourceAcctBalanceToDate(row.Account_ID, row.C_AcctSchema_ID, row.param_start_date, row.ad_org_id, v_currencyid5)).Balance;
+                        v_rollingbalance1 := v_sourcebalance1;
+                        v_rollingbalance2 := v_sourcebalance2;
+                        v_rollingbalance3 := v_sourcebalance3;
+                        v_rollingbalance4 := v_sourcebalance4;
+                        v_rollingbalance5 := v_sourcebalance5;
                         first := false;
                     END IF;
                     IF row.source_currency_id = v_currencyid1 THEN
                         v_rollingbalance1 := v_sourcebalance1 + (row.amtsourcedr - row.amtsourcecr);
+                        v_sourcebalance1 :=  v_rollingbalance1;
                     END IF;
                     IF row.source_currency_id = v_currencyid2 THEN
                         v_rollingbalance2 := v_sourcebalance2 + (row.amtsourcedr - row.amtsourcecr);
+                        v_sourcebalance2 :=  v_rollingbalance2;
                     END IF;
                     IF row.source_currency_id = v_currencyid3 THEN
                         v_rollingbalance3 := v_sourcebalance3 + (row.amtsourcedr - row.amtsourcecr);
+                        v_sourcebalance3 :=  v_rollingbalance3;
                     END IF;
                     IF row.source_currency_id = v_currencyid4 THEN
                         v_rollingbalance4 := v_sourcebalance4 + (row.amtsourcedr - row.amtsourcecr);
+                        v_sourcebalance4 :=  v_rollingbalance4;
                     END IF;
                     IF row.source_currency_id = v_currencyid5 THEN
                         v_rollingbalance5 := v_sourcebalance5 + (row.amtsourcedr - row.amtsourcecr);
+                        v_sourcebalance5 :=  v_rollingbalance5;
                     END IF;
 
                     UPDATE report.tmp_fresh_Account_Info_Report_Sub r
@@ -442,14 +450,6 @@ BEGIN
                         sourcebalance1 = v_sourcebalance1, sourcebalance2 = v_sourcebalance2, sourcebalance3 = v_sourcebalance3, sourcebalance4 = v_sourcebalance4, sourcebalance5 = v_sourcebalance5,
                         currency1 = v_currency1, currency2 = v_currency2, currency3 = v_currency3,currency4 = v_currency4, currency5 = v_currency5
                     WHERE r.fact_acct_id = row.fact_acct_id;
-
-                    --UPDATE sourcebalance for next row
-                    v_sourcebalance1 :=  v_rollingbalance1;
-                    v_sourcebalance2 :=  v_rollingbalance2;
-                    v_sourcebalance3 :=  v_rollingbalance3;
-                    v_sourcebalance4 :=  v_rollingbalance4;
-                    v_sourcebalance5 :=  v_rollingbalance5;
-
                 END LOOP;
         END IF;
     END UPDATE_TABLE;
@@ -631,6 +631,5 @@ BEGIN
     END RESULT_TABLE;
 END;
 $BODY$
-    LANGUAGE plpgsql VOLATILE
-;
+    LANGUAGE plpgsql VOLATILE ;
 
