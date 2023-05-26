@@ -202,7 +202,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			if (!tax.isZeroTax())
 			{
 				final CurrencyPrecision taxPrecision = getStdPrecision();
-				final BigDecimal lineTaxAmt = tax.calculateTax(invoiceLineNetAmtBD, true, taxPrecision.toInt());
+				final BigDecimal lineTaxAmt = tax.calculateTax(invoiceLineNetAmtBD, true, taxPrecision.toInt()).getTaxAmount();
 				logger.debug("LineNetAmt={} - LineTaxAmt={}", invoiceLineNetAmtBD, lineTaxAmt);
 				invoiceLineNetAmtBD = invoiceLineNetAmtBD.subtract(lineTaxAmt);
 			}

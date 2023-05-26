@@ -48,6 +48,7 @@ public class TaxUtils
 				.isSmallBusiness(StringUtils.toBoolean(from.getIsSmallbusiness(), null))
 				.isFiscalRepresentation(StringUtils.toBoolean(from.getIsFiscalRepresentation(), null))
 				.isWholeTax(from.isWholeTax())
+				.isReverseCharge(from.isReverseCharge())
 				.isDocumentLevel(from.isDocumentLevel())
 				.isTaxExempt(from.isTaxExempt())
 				.rate(from.getRate())
