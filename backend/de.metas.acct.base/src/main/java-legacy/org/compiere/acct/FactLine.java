@@ -314,8 +314,8 @@ public final class FactLine extends X_Fact_Acct
 	{
 		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr);
 		setAmtSource(currencyId,
-					 amtSourceDr != null ? amtSourceDr.toBigDecimal() : BigDecimal.ZERO,
-					 amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
+				amtSourceDr != null ? amtSourceDr.toBigDecimal() : BigDecimal.ZERO,
+				amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
 	}
 
 	public void setAmtSource(final CurrencyId currencyId, @Nullable BigDecimal AmtSourceDr, @Nullable BigDecimal AmtSourceCr)
@@ -1022,7 +1022,7 @@ public final class FactLine extends X_Fact_Acct
 	public String toString()
 	{
 		String sb = "FactLine=[" + getAD_Table_ID() + ":" + getRecord_ID()
-				+ "," + m_acct
+				+ "," + getAccountConceptualName() + "/" + (m_acct != null ? m_acct.getCombination() : "?")
 				+ ",Cur=" + getC_Currency_ID()
 				+ ", DR=" + getAmtSourceDr() + "|" + getAmtAcctDr()
 				+ ", CR=" + getAmtSourceCr() + "|" + getAmtAcctCr()
@@ -1441,11 +1441,11 @@ public final class FactLine extends X_Fact_Acct
 			if (log.isInfoEnabled())
 			{
 				log.info("Not Found (try later) "
-								 + ",C_AcctSchema_ID=" + getC_AcctSchema_ID()
-								 + ", AD_Table_ID=" + AD_Table_ID
-								 + ",Record_ID=" + Record_ID
-								 + ",Line_ID=" + Line_ID
-								 + ", Account_ID=" + m_acct.getAccount_ID());
+						+ ",C_AcctSchema_ID=" + getC_AcctSchema_ID()
+						+ ", AD_Table_ID=" + AD_Table_ID
+						+ ",Record_ID=" + Record_ID
+						+ ",Line_ID=" + Line_ID
+						+ ", Account_ID=" + m_acct.getAccount_ID());
 			}
 
 			return false; // not updated
@@ -1475,13 +1475,13 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		setVATCode(services.findVATCode(VATCodeMatchingRequest.builder()
-												.setC_AcctSchema_ID(getC_AcctSchema_ID())
-												.setC_Tax_ID(taxId)
-												.setIsSOTrx(isSOTrx)
-												.setDate(getDateAcct())
-												.build())
-						   .map(VATCode::getCode)
-						   .orElse(null));
+						.setC_AcctSchema_ID(getC_AcctSchema_ID())
+						.setC_Tax_ID(taxId)
+						.setIsSOTrx(isSOTrx)
+						.setDate(getDateAcct())
+						.build())
+				.map(VATCode::getCode)
+				.orElse(null));
 	}
 
 	public void setQty(@NonNull final Quantity quantity)
@@ -1587,9 +1587,9 @@ public final class FactLine extends X_Fact_Acct
 		if (bPartnerId != null && bPartnerLocationId != null)
 		{
 			Check.assume(bPartnerLocationId.getBpartnerId().getRepoId() == bPartnerId.getRepoId(),
-						 "BPartnerId && BPartnerLocation.BPartnerId must match!"
-								 + " BPartnerId=" + bPartnerId.getRepoId()
-								 + " BPartnerLocationID=" + bPartnerLocationId.getRepoId());
+					"BPartnerId && BPartnerLocation.BPartnerId must match!"
+							+ " BPartnerId=" + bPartnerId.getRepoId()
+							+ " BPartnerLocationID=" + bPartnerLocationId.getRepoId());
 		}
 
 		if (bPartnerLocationId != null)
