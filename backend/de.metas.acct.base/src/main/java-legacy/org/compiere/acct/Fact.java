@@ -449,7 +449,6 @@ public final class Fact
 					log.debug("({}) - {}", elementType, line);
 				}
 			}
-			map.clear();
 		}
 	}   // balanceSegment
 
