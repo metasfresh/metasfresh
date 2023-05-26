@@ -44,6 +44,10 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
 @Service
 public class PPOrderCandidateAdvisedEventCreator
@@ -72,8 +76,54 @@ public class PPOrderCandidateAdvisedEventCreator
 		}
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
+		{
+			Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
+			return ImmutableList.of();
+		}
 
-		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
+		final SupplyRequiredDescriptor supplyRequiredDescriptorToUse;
+		if(productPlanning.isLotForLot())
+		{
+			final BigDecimal usedQty;
+			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
+			final BigDecimal deltaQty = supplyRequiredDescriptor.getDeltaQuantity() != null ? supplyRequiredDescriptor.getDeltaQuantity() : BigDecimal.ZERO;
+			if(!supplyRequiredDescriptor.isUpdated())
+			{
+				usedQty = fullDemandQty;
+				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", fullDemandQty);
+			}
+			// we don't reduce Quantity of PPOrders and PPOrderCandidates atm
+			else if(deltaQty.signum() > 0 && deltaQty.compareTo(fullDemandQty) != 0)
+			{
+				usedQty = deltaQty;
+				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", deltaQty);
+			}
+			else
+			{
+				Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent with LotForLot=true, updated=true and deltaQty={} because deltaQty is negative", deltaQty);
+				return ImmutableList.of();
+			}
+
+			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder()
+					.isLotForLot(ISLOTFORLOT_Yes)
+					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty))
+					.build();
+		}
+		else
+		{
+			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
+		}
+
+		final BigDecimal finalQtyUsed = supplyRequiredDescriptorToUse.getMaterialDescriptor().getQuantity();
+		if(requiredQty.compareTo(finalQtyUsed) != 0)
+		{
+			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
+			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptorToUse, deltaToApply);
+		}
+
+		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, mrpContext);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
 		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(mrpContext, completeRequest, maxQtyPerOrder);
@@ -86,8 +136,8 @@ public class PPOrderCandidateAdvisedEventCreator
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request);
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
-					.supplyRequiredDescriptor(supplyRequiredDescriptor)
-					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
+					.supplyRequiredDescriptor(supplyRequiredDescriptorToUse)
+					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptorToUse.getEventDescriptor()))
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 

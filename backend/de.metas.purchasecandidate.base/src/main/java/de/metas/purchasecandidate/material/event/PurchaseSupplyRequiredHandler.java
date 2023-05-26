@@ -14,6 +14,8 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.impl.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanningId;
+
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -127,6 +129,8 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		}
 
 		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
+		final ProductPlanningId ppOrderProductPlanningId = ProductPlanningId.ofRepoIdOrNull((materialDemandEvent.getPpOrderProductPlanningId()));
+		final I_PP_Product_Planning ppOrderProductPlanning = ppOrderProductPlanningId != null ? productPlanningDAO.getById(ppOrderProductPlanningId) : null;
 
 		mrpContext.setProductId(ProductId.ofRepoId(materialDescr.getProductId()));
 		mrpContext.setAttributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescr.getAttributeSetInstanceId()));
@@ -140,6 +144,9 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 		mrpContext.setClientId(eventDescr.getClientId());
 		mrpContext.setOrgId(eventDescr.getOrgId());
+
+		mrpContext.setPpOrderProductPlanning(ppOrderProductPlanning);
+
 		return mrpContext;
 	}
 }

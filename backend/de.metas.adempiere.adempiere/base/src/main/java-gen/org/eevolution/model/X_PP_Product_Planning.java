@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 842114764L;
+	private static final long serialVersionUID = -449131942L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (final Properties ctx, final int PP_Product_Planning_ID, @Nullable final String trxName)
@@ -141,6 +141,18 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return get_ValueAsBoolean(COLUMNNAME_IsDocComplete);
 	}
 
+	@Override
+	public void setIsLotForLot (final boolean IsLotForLot)
+	{
+		set_Value (COLUMNNAME_IsLotForLot, IsLotForLot);
+	}
+
+	@Override
+	public boolean isLotForLot() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLotForLot);
+	}
+
 	/** 
 	 * IsManufactured AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -265,6 +277,34 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public void setMaxManufacturedQtyPerOrder (final @Nullable BigDecimal MaxManufacturedQtyPerOrder)
+	{
+		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder, MaxManufacturedQtyPerOrder);
+	}
+
+	@Override
+	public BigDecimal getMaxManufacturedQtyPerOrder() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrder);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setMaxManufacturedQtyPerOrder_UOM_ID (final int MaxManufacturedQtyPerOrder_UOM_ID)
+	{
+		if (MaxManufacturedQtyPerOrder_UOM_ID < 1) 
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, MaxManufacturedQtyPerOrder_UOM_ID);
+	}
+
+	@Override
+	public int getMaxManufacturedQtyPerOrder_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID);
 	}
 
 	@Override

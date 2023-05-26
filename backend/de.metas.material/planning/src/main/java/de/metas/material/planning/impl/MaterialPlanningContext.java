@@ -56,6 +56,7 @@ public final class MaterialPlanningContext implements IMaterialPlanningContext
 	@Nullable private ResourceId plantId;
 	@Nullable private WarehouseId warehouseId;
 	@NonNull private AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
+	@Nullable private I_PP_Product_Planning ppOrderProductPlanning;
 
 	@VisibleForTesting
 	public MaterialPlanningContext()

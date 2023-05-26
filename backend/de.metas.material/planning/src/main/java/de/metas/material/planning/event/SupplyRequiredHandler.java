@@ -4,9 +4,6 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
-import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -22,7 +19,6 @@ import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.material.planning.impl.MaterialPlanningContext;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
-import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -38,7 +34,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -71,24 +66,21 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 {
 	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandler.class);
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
 	private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
 
 	private final PostMaterialEventService postMaterialEventService;
-	private final MainDataRequestHandler mainDataRequestHandler;
 
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator,
 			@NonNull final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator,
-			@NonNull final PostMaterialEventService fireMaterialEventService, final MainDataRequestHandler mainDataRequestHandler)
+			@NonNull final PostMaterialEventService fireMaterialEventService)
 	{
 		this.dDOrderAdvisedEventCreator = dDOrderAdvisedEventCreator;
 		this.ppOrderCandidateAdvisedEventCreator = ppOrderCandidateAdvisedEventCreator;
 		this.postMaterialEventService = fireMaterialEventService;
-		this.mainDataRequestHandler = mainDataRequestHandler;
 	}
 
 	@Override
@@ -108,7 +100,10 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	 */
 	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
-		updateMainData(descriptor);
+		if(descriptor.getMaterialDescriptor().getQuantity().signum() != 0)
+		{
+			SupplyRequiredHandlerUtils.updateMainData(descriptor);
+		}
 
 		final IMaterialPlanningContext mrpContext = createMRPContextOrNull(descriptor);
 		if (mrpContext == null)
@@ -170,25 +165,5 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		mrpContext.setClientId(eventDescr.getClientId());
 		mrpContext.setOrgId(eventDescr.getOrgId());
 		return mrpContext;
-	}
-
-	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		if (supplyRequiredDescriptor.isSimulated())
-		{
-			return;
-		}
-
-		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
-
-		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
-				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
-
-		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
-				.identifier(mainDataRecordIdentifier)
-				.qtySupplyRequired(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
-				.build();
-
-		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 }

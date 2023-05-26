@@ -62,4 +62,8 @@ public interface IMaterialPlanningContext extends IContextAware
 	void setProductPlanning(I_PP_Product_Planning productPlanningRecord);
 
 	void assertContextConsistent();
+
+	I_PP_Product_Planning getPpOrderProductPlanning();
+
+	void setPpOrderProductPlanning(@Nullable I_PP_Product_Planning ppOrderProductPlanning);
 }

@@ -257,6 +257,29 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_IsDocComplete = "IsDocComplete";
 
 	/**
+	 * Set Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsLotForLot (boolean IsLotForLot);
+
+	/**
+	 * Get Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLotForLot();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_PP_Product_Planning.class, "IsLotForLot", null);
+	String COLUMNNAME_IsLotForLot = "IsLotForLot";
+
+	/**
 	 * Set Wird produziert.
 	 *
 	 * <br>Type: List
@@ -343,7 +366,8 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_IsPickingOrder = "IsPickingOrder";
 
 	/**
-	 * Set Eingekauft.
+	 * Set Purchased.
+	 * Organization purchases this product
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -352,7 +376,8 @@ public interface I_PP_Product_Planning
 	void setIsPurchased (@Nullable java.lang.String IsPurchased);
 
 	/**
-	 * Get Eingekauft.
+	 * Get Purchased.
+	 * Organization purchases this product
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -410,6 +435,51 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_PP_Product_Planning.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Max. quantity per manufactoring order.
+	 * Optional;
+ steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder (@Nullable BigDecimal MaxManufacturedQtyPerOrder);
+
+	/**
+	 * Get Max. quantity per manufactoring order.
+	 * Optional;
+ steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMaxManufacturedQtyPerOrder();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_MaxManufacturedQtyPerOrder = new ModelColumn<>(I_PP_Product_Planning.class, "MaxManufacturedQtyPerOrder", null);
+	String COLUMNNAME_MaxManufacturedQtyPerOrder = "MaxManufacturedQtyPerOrder";
+
+	/**
+	 * Set Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder_UOM_ID (int MaxManufacturedQtyPerOrder_UOM_ID);
+
+	/**
+	 * Get Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxManufacturedQtyPerOrder_UOM_ID();
+
+	String COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID = "MaxManufacturedQtyPerOrder_UOM_ID";
 
 	/**
 	 * Set Product.

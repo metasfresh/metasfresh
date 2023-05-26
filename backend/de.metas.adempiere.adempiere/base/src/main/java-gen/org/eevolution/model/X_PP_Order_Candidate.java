@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 329777100L;
+	private static final long serialVersionUID = 433926720L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -111,6 +111,27 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	/** 
+	 * IsLotForLot AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISLOTFORLOT_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISLOTFORLOT_Yes = "Y";
+	/** No = N */
+	public static final String ISLOTFORLOT_No = "N";
+	@Override
+	public void setIsLotForLot (final @Nullable java.lang.String IsLotForLot)
+	{
+		set_Value (COLUMNNAME_IsLotForLot, IsLotForLot);
+	}
+
+	@Override
+	public java.lang.String getIsLotForLot() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsLotForLot);
 	}
 
 	@Override

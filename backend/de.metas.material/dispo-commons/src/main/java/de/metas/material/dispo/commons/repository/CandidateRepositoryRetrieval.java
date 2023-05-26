@@ -236,7 +236,8 @@ public class CandidateRepositoryRetrieval
 				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
 				.materialDescriptor(materialDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
-				.simulated(isSimulated(candidateRecord));
+				.simulated(isSimulated(candidateRecord))
+				.lotForLot(candidateRecord.getIsLotForLot());
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{

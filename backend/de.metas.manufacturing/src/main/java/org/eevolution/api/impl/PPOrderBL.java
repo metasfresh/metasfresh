@@ -92,9 +92,12 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -126,6 +129,8 @@ public class PPOrderBL implements IPPOrderBL
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -618,10 +623,19 @@ public class PPOrderBL implements IPPOrderBL
 
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrder);
 
+		final ImmutableList<I_PP_OrderCandidate_PP_Order> orderAllocations = ppOrderDAO.getPPOrderAllocations(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+		String lotForLot = "";
+		if(orderAllocations.size() == 1)
+		{
+			final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(orderAllocations.get(0).getPP_Order_Candidate_ID());
+			lotForLot = ppOrderCandidateDAO.getById(ppOrderCandidateId).getIsLotForLot();
+		}
+
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrder.getAD_Client_ID(), ppOrder.getAD_Org_ID()))
 				.ppOrder(ppOrderPojo)
 				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
+				.lotForLot(lotForLot)
 				.build();
 
 		materialEventService.enqueueEventAfterNextCommit(ppOrderCreatedEvent);

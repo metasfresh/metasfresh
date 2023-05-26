@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.eevolution.productioncandidate.model.dao;
+package org.eevolution.productioncandidate.model.dao.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.process.PInstanceId;
@@ -37,14 +37,14 @@ import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.springframework.stereotype.Component;
+import org.eevolution.productioncandidate.model.dao.DeletePPOrderCandidatesQuery;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 
 import java.util.Iterator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@Component
-public class PPOrderCandidateDAO
+public class PPOrderCandidateDAO implements IPPOrderCandidateDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

@@ -37,6 +37,9 @@ import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -77,16 +80,20 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
+	private final SupplyCandidateHandler supplyCandidateHandler;
+
 	public PPOrderCandidateAdvisedHandler(
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final CandidateChangeService candidateChangeService,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final ProductPlanningService productPlanningService)
+			@NonNull final ProductPlanningService productPlanningService,
+			@NonNull final SupplyCandidateHandler supplyCandidateHandler)
 	{
 		super(candidateChangeService, candidateRepositoryRetrieval);
 
 		this.materialEventService = materialEventService;
 		this.productPlanningService = productPlanningService;
+		this.supplyCandidateHandler = supplyCandidateHandler;
 	}
 
 	@Override
@@ -106,7 +113,34 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	{
 		validateEvent(event);
 
-		final PPOrderCandidateAdvisedEvent eventWithRecomputedQty = getEventWithRecomputedQtyAndDate(event);
+		// check if SupplyCandidate didn't get created in DemandCandidateHandler#postSupplyRequiredEvent() if required Qty was 0
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
+		final PPOrderCandidateAdvisedEvent updatedEvent;
+		if(supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() <= 0)
+		{
+			final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
+					.type(CandidateType.SUPPLY)
+					.businessCase(null)
+					.businessCaseDetail(null)
+					.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor())
+					//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
+					.minMaxDescriptor(supplyRequiredDescriptor.getMinMaxDescriptor())
+					.quantity(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+					.simulated(supplyRequiredDescriptor.isSimulated())
+					.lotForLot(supplyRequiredDescriptor.getIsLotForLot())
+					.build();
+
+			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, CandidateHandler.OnNewOrChangeAdvise.DONT_UPDATE);
+			final int supplyCandidateId = supplyCandidateWithId.getId().getRepoId();
+			final SupplyRequiredDescriptor updatedSupplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().supplyCandidateId(supplyCandidateId).build();
+			updatedEvent = event.toBuilder().supplyRequiredDescriptor(updatedSupplyRequiredDescriptor).build();
+		}
+		else
+		{
+			updatedEvent = event;
+		}
+
+		final PPOrderCandidateAdvisedEvent eventWithRecomputedQty = getEventWithRecomputedQtyAndDate(updatedEvent);
 
 		final MaterialDispoGroupId groupId = handlePPOrderCandidateAdvisedEvent(eventWithRecomputedQty);
 
