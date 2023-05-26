@@ -47,27 +47,7 @@ DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(
     IN displayvoiddocuments  character varying, --$8
     IN showcurrencyexchange  character varying, --$9
     IN showonlyemptyactivity character varying, --$10
-    IN ad_org_id             numeric) /*
- * #%L
- * de.metas.acct.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */ --$11
+    IN ad_org_id             numeric)
 ;
 
 DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
@@ -92,71 +72,6 @@ DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
 ;
 
 DROP FUNCTION IF EXISTS  report.fresh_account_info_report_sub(
-    IN account_from_id       numeric,
-    IN account_to_id         numeric,
-    IN C_Period_Start_ID     numeric,
-    IN C_Period_End_ID       numeric,
-    IN StartDate             date,
-    IN EndDate               date,
-    IN c_activity_id         numeric,
-    IN displayvoiddocuments  character varying,
-    IN showcurrencyexchange  character varying,
-    IN showonlyemptyactivity character varying,
-    IN ad_org_id             numeric)
-;
-
-CREATE TABLE tmp_fresh_account_info_report_sub
-(
-    dateacct               date,
-    fact_acct_id           numeric(10),
-    bp_name                text,
-    description            text,
-    account2_id            text,
-    a_value                text,
-    amtsourcedr            numeric,
-    amtsourcecr            numeric,
-    amtacctdr              numeric,
-    amtacctcr              numeric,
-    amtacctdrend           numeric,
-    amtacctcrend           numeric,
-    saldo                  numeric,
-    carrysaldo             numeric,
-    param_acct_value       text,
-    param_acct_name        text,
-    param_end_date         date,
-    param_start_date       date,
-    param_activity_value   text,
-    param_activity_name    text,
-    docstatus              text,
-    conversionmultiplyrate numeric,
-    eurosaldo              numeric,
-    containseur            boolean,
-    ad_org_id              numeric(10),
-    vat_code               text,
-    tax_rate_name          text,
-    account_id             numeric(10),
-    c_acctschema_id        numeric(10),
-    start_date_acct        date,
-    source_currency_id     numeric(10),
-    sourcebalance1         numeric,
-    rollingbalance1        numeric,
-    currency1              text,
-    sourcebalance2         numeric,
-    rollingbalance2        numeric,
-    currency2              text,
-    sourcebalance3         numeric,
-    rollingbalance3        numeric,
-    currency3              text,
-    sourcebalance4         numeric,
-    rollingbalance4        numeric,
-    currency4              text,
-    sourcebalance5         numeric,
-    rollingbalance5        numeric,
-    currency5              text
-)
-;
-
-DROP FUNCTION IF EXISTS  report.fresh_account_info_report(
     IN account_from_id       numeric,
     IN account_to_id         numeric,
     IN C_Period_Start_ID     numeric,
@@ -421,7 +336,7 @@ BEGIN
         currencies numeric[];
         length int;
         first boolean;
-        row report.tmp_fresh_Account_Info_Report_Sub%rowtype;
+        row record;
         v_currencyid1 numeric;
         v_currencyid2 numeric;
         v_currencyid3 numeric;
@@ -688,8 +603,6 @@ BEGIN
     END RESULT_TABLE;
 END;
 $BODY$
-    LANGUAGE plpgsql VOLATILE ;
-
-
-
+    LANGUAGE plpgsql VOLATILE
+;
 
