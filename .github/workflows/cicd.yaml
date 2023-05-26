@@ -284,6 +284,13 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare
+        env:
+          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
+          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
+        run: |
+          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
+          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
       - name: build-api-compat
         run: |
           docker buildx build \
@@ -303,6 +310,16 @@ jobs:
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: build-reports-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.reports.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: build-mobile-compat
         run: |
@@ -330,6 +347,8 @@ jobs:
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
