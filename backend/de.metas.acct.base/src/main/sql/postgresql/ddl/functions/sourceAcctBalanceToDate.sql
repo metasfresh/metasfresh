@@ -102,7 +102,6 @@ FROM (
              WHERE TRUE
                AND fo.PostingType = 'A'
              ORDER BY fo.DateAcct DESC
-             LIMIT 1
          )
          -- Include posting type Year End
          UNION ALL
@@ -119,7 +118,6 @@ FROM (
                AND $7 = 'N' -- p_ExcludePostingTypeYearEnd
                AND fo.PostingType = 'Y'
              ORDER BY fo.DateAcct DESC
-             LIMIT 1
          )
          -- Include posting type Statistical
          UNION ALL
@@ -136,7 +134,6 @@ FROM (
                AND $6 = 'Y' -- p_IncludePostingTypeStatistical
                AND fo.PostingType = 'S'
              ORDER BY fo.DateAcct DESC
-             LIMIT 1
          )
          -- Default value:
          UNION ALL
