@@ -36,9 +36,11 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.VatCodeId;
@@ -719,28 +721,30 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public void setTaxAmt()
 	{
-		BigDecimal TaxAmt = ZERO;
-		if (getC_Tax_ID() == 0)
+		final TaxId taxId = TaxId.ofRepoIdOrNull(getC_Tax_ID());
+		if (taxId == null)
 		{
 			return;
 		}
-		// setLineNetAmt();
-		MTax tax = MTax.get(getCtx(), getC_Tax_ID());
+
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+
+		final Tax tax = taxBL.getTaxById(taxId);
 		if (tax.isDocumentLevel() && m_IsSOTrx)
 		{
 			return;
 		}
 		//
-		TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
+		final BigDecimal taxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt()).getTaxAmount();
 		if (isTaxIncluded())
 		{
 			setLineTotalAmt(getLineNetAmt());
 		}
 		else
 		{
-			setLineTotalAmt(getLineNetAmt().add(TaxAmt));
+			setLineTotalAmt(getLineNetAmt().add(taxAmt));
 		}
-		super.setTaxAmt(TaxAmt);
+		super.setTaxAmt(taxAmt);
 	}    // setTaxAmt
 
 	/**

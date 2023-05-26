@@ -610,6 +610,13 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder setC_Tax_ID(final TaxId taxId)
+	{
+		assertNotBuild();
+		this.C_Tax_ID = taxId;
+		return this;
+	}
+
 	@Nullable
 	private TaxId getC_Tax_ID()
 	{

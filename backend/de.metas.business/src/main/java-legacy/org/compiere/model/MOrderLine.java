@@ -408,12 +408,9 @@ public class MOrderLine extends X_C_OrderLine
 
 			if (stdTax != null)
 			{
-				log.debug("stdTax rate is " + stdTax.getRate());
-				log.debug("orderTax rate is " + orderTax.getRate());
-
 				final ITaxBL taxBL = Services.get(ITaxBL.class);
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(orderTax, bd, isTaxIncluded, taxPrecision.toInt()));
-				taxStdAmt = taxStdAmt.add(taxBL.calculateTax(stdTax, bd, isTaxIncluded, taxPrecision.toInt()));
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(orderTax, bd, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxStdAmt.add(taxBL.calculateTaxAmt(stdTax, bd, isTaxIncluded, taxPrecision.toInt()));
 
 				bd = bd.subtract(taxStdAmt).add(taxThisAmt);
 

@@ -44,6 +44,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -171,6 +172,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	{
 		final String sql = "SELECT it.C_Tax_ID, t.Name, t.Rate, it.TaxBaseAmt, it.TaxAmt, t.IsSalesTax " // 1..6
 				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsTaxIncluded // 7
+				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsReverseCharge // 8
+				+ ", it." + I_C_InvoiceTax.COLUMNNAME_ReverseChargeTaxAmt // 9
 				+ " FROM C_Tax t, C_InvoiceTax it "
 				+ " WHERE t.C_Tax_ID=it.C_Tax_ID AND it.C_Invoice_ID=?";
 		final Object[] sqlParams = new Object[] { get_ID() };
@@ -186,17 +189,18 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final ImmutableList.Builder<DocTax> docTaxes = ImmutableList.builder();
 			while (rs.next())
 			{
-				final TaxId taxId = TaxId.ofRepoId(rs.getInt(1));
-				final String taxName = rs.getString(2);
-				final BigDecimal rate = rs.getBigDecimal(3);
-				final BigDecimal taxBaseAmt = rs.getBigDecimal(4);
-				final BigDecimal taxAmt = rs.getBigDecimal(5);
-				final boolean salesTax = DisplayType.toBoolean(rs.getString(6));
-				final boolean taxIncluded = DisplayType.toBoolean(rs.getString(7));
-				//
-				final DocTax taxLine = new DocTax(
-						getAccountProvider(), taxId, taxName, rate,
-						taxBaseAmt, taxAmt, salesTax, taxIncluded);
+				final DocTax taxLine = DocTax.builder()
+						.accountProvider(getAccountProvider())
+						.taxId(TaxId.ofRepoId(rs.getInt(1)))
+						.taxName(rs.getString(2))
+						//.taxRate(rs.getBigDecimal(3))
+						.taxBaseAmt(rs.getBigDecimal(4))
+						.taxAmt(rs.getBigDecimal(5))
+						.salesTax(DisplayType.toBoolean(rs.getString(6)))
+						.taxIncluded(DisplayType.toBoolean(rs.getString(7)))
+						.isReverseCharge(StringUtils.toBoolean(rs.getString(8)))
+						.reverseChargeTaxAmt(rs.getBigDecimal(9))
+						.build();
 				docTaxes.add(taxLine);
 			}
 
@@ -615,6 +619,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Payables                CR
 	 *      Charge          DR
 	 *      TaxCredit       DR
+	 *      TaxDue          DR               (if reverse charge)
 	 *      Expense         DR
 	 * </pre>
 	 */
@@ -643,13 +648,26 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit DR
 		for (final DocTax docTax : getTaxes())
 		{
-			final FactLine tl = fact.createLine(null,
-					docTax.getAccount(as),  // account
-					currencyId,
-					docTax.getTaxAmt(), null); // DR/CR
-			if (tl != null)
+			if (docTax.isReverseCharge())
 			{
-				tl.setC_Tax_ID(docTax.getC_Tax_ID());
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+				fact.createLine()
+						.setAccount(docTax.getTaxDueAcct(as))
+						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+			}
+			else
+			{
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, docTax.getTaxAmt(), null)
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
 			}
 		}
 
@@ -764,6 +782,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Payables        DR
 	 *      Charge                  CR
 	 *      TaxCredit               CR
+	 *      TaxDue                  CR  (if reverse charge)
 	 *      Expense                 CR
 	 * </pre>
 	 */
@@ -792,13 +811,29 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit CR
 		for (final DocTax docTax : getTaxes())
 		{
-			final FactLine tl = fact.createLine(null, docTax.getAccount(as),
-					currencyId, null, docTax.getTaxAmt());
-			if (tl != null)
+			if (docTax.isReverseCharge())
 			{
-				tl.setC_Tax_ID(docTax.getC_Tax_ID());
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+				fact.createLine()
+						.setAccount(docTax.getTaxDueAcct(as))
+						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+			}
+			else
+			{
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, null, docTax.getTaxAmt())
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
 			}
 		}
+
 		// Expense CR
 		for (final DocLine_Invoice line : getDocLines())
 		{

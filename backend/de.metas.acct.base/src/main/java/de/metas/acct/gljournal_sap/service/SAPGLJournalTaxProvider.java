@@ -56,7 +56,12 @@ public class SAPGLJournalTaxProvider
 		final CurrencyId currencyId = baseAmt.getCurrencyId();
 		final CurrencyPrecision precision = moneyService.getStdPrecision(currencyId);
 		final Tax tax = taxBL.getTaxById(taxId);
-		final BigDecimal taxAmtBD = tax.calculateTax(baseAmt.toBigDecimal(), false, precision.toInt());
+		if (tax.isReverseCharge())
+		{
+			throw new AdempiereException("Reverse Charge Tax is not supported");
+		}
+
+		final BigDecimal taxAmtBD = tax.calculateTax(baseAmt.toBigDecimal(), false, precision.toInt()).getTaxAmount();
 
 		return Money.of(taxAmtBD, currencyId);
 	}

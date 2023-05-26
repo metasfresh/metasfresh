@@ -74,7 +74,8 @@ import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.CalculateTaxResult;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1514,29 +1515,28 @@ public class MOrder extends X_C_Order implements IDocument
 			final MTax tax = oTax.getTax();
 			if (tax.isSummary())
 			{
-				final MTax[] cTaxes = tax.getChildTaxes(false);
-				for (final MTax cTax : cTaxes)
+				for (final I_C_Tax childTaxRecord : tax.getChildTaxes(false))
 				{
+					final Tax childTax = TaxUtils.from(childTaxRecord);
 					final CurrencyPrecision taxPrecision = orderBL.getTaxPrecision(this);
-					final boolean taxIncluded = orderBL.isTaxIncluded(this, TaxUtils.from(cTax));
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
+					final boolean taxIncluded = orderBL.isTaxIncluded(this, childTax);
+					final CalculateTaxResult calculateTaxResult = childTax.calculateTax(oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);
 					newOTax.setClientOrg(this);
 					newOTax.setC_Order_ID(getC_Order_ID());
-					newOTax.setC_Tax_ID(cTax.getC_Tax_ID());
+					newOTax.setC_Tax_ID(childTax.getTaxId().getRepoId());
 					newOTax.setPrecision(taxPrecision.toInt());
 					newOTax.setIsTaxIncluded(taxIncluded);
+					newOTax.setIsReverseCharge(childTax.isReverseCharge());
 					newOTax.setTaxBaseAmt(oTax.getTaxBaseAmt());
-					newOTax.setTaxAmt(taxAmt);
-					if (!newOTax.save(trxName))
-					{
-						return false;
-					}
+					newOTax.setTaxAmt(calculateTaxResult.getTaxAmount());
+					newOTax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
+					InterfaceWrapperHelper.save(newOTax);
 					//
 					if (!newOTax.isTaxIncluded())
 					{
-						grandTotal = grandTotal.add(taxAmt);
+						grandTotal = grandTotal.add(calculateTaxResult.getTaxAmount());
 					}
 				}
 				if (!oTax.delete(true, trxName))

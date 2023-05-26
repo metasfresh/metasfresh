@@ -245,7 +245,7 @@ public class MRMALine extends X_M_RMALine
 				if (!taxIncluded)
 				{
 					final ITaxBL taxBL = Services.get(ITaxBL.class);
-					taxAmt = taxBL.calculateTax(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
+					taxAmt = taxBL.calculateTaxAmt(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
 				}
 			}
 		}

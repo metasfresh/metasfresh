@@ -61,12 +61,14 @@ public interface ITaxBL extends ISingletonService
 			@Nullable VatCodeId vatCodeId);
 
 	/**
-	 * Calculate Tax - no rounding
-	 *
-	 * @param taxIncluded if true tax is calculated from gross otherwise from net
-	 * @return tax amount
+	 * @param taxIncluded if true tax is included in given amount
 	 */
-	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+	CalculateTaxResult calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+
+	/**
+	 * @return tax amount (only actual tax amount, NOT reverse charge tax amt)
+	 */
+	BigDecimal calculateTaxAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
 	 * Calculate base amount, excluding tax

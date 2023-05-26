@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1100201472L;
+	private static final long serialVersionUID = 584767978L;
 
     /** Standard Constructor */
     public X_C_Tax (final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
@@ -228,6 +228,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	public java.lang.String getIsFiscalRepresentation() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsFiscalRepresentation);
+	}
+
+	@Override
+	public void setIsReverseCharge (final boolean IsReverseCharge)
+	{
+		set_Value (COLUMNNAME_IsReverseCharge, IsReverseCharge);
+	}
+
+	@Override
+	public boolean isReverseCharge() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReverseCharge);
 	}
 
 	@Override

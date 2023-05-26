@@ -1314,11 +1314,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 			if (stdTax != null)
 			{
-				log.debug("stdTax rate is " + stdTax.getRate());
-				log.debug("invoiceTax rate is " + invoiceTax.getRate());
-
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
-				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxThisAmt.add(taxBL.calculateTaxAmt(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
@@ -1355,7 +1352,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
-		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount();
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
