@@ -49,6 +49,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.element.api.AdFieldId;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -129,6 +130,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
+	private final LabelFieldNameFactory labelFieldNameFactory = new LabelFieldNameFactory();
 
 	private WidgetTypeStandardNumberPrecision _standardNumberPrecision;
 
@@ -791,6 +793,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		collectSpecialField(fieldBuilder);
 	}
 
+	public String getLabelsFieldName(@NonNull final AdUIElementId uiElementId)
+	{
+		return labelFieldNameFactory.getFieldName(uiElementId);
+	}
+
 	@Nullable
 	private static ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
 	{
@@ -883,8 +890,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
+		final String fieldName = labelFieldNameFactory.createFieldName(AdUIElementId.ofRepoId(labelsUIElement.getAD_UI_Element_ID()), labelsTableName);
+
 		return LabelsLookup.builder()
-				.fieldName(extractLabelsFieldName(labelsUIElement))
+				.fieldName(fieldName)
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesUseNumericKey(labelsValuesLookupDescriptor.isNumericKey())
@@ -894,12 +903,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
-	}
-
-	@NonNull
-	public static String extractLabelsFieldName(final @NonNull I_AD_UI_Element labelsUIElement)
-	{
-		return "Labels_" + labelsUIElement.getAD_UI_Element_ID();
 	}
 
 	@Nullable

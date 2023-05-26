@@ -116,7 +116,8 @@ public class HUUniqueAttributesService
 				&& BigDecimal.ONE.equals(huStorage.getQty())))
 		{
 			final I_M_Attribute attribute = attributeDAO.getAttributeById(attributeId);
-			throw new AdempiereException(AdMessageKey.of(ERR_HU_Qty_Invalid_For_Unique_Attribute), attribute.getName(), huStorage.getM_HU_ID(), uomDAO.getEachUOM().getName());
+			throw new AdempiereException(AdMessageKey.of(ERR_HU_Qty_Invalid_For_Unique_Attribute), attribute.getName(), huStorage.getM_HU_ID(), uomDAO.getEachUOM().getName())
+					.markAsUserValidationError();
 		}
 	}
 
@@ -157,7 +158,8 @@ public class HUUniqueAttributesService
 			throw new AdempiereException(AdMessageKey.of(ERR_HU_Unique_Attribute_Duplicate), huUniqueAttribute.getM_HU_ID(),
 										 attribute.getName(),
 										 huUniqueAttribute.getValue(),
-										 product.getName());
+										 product.getName())
+					.markAsUserValidationError();
 		}
 	}
 

@@ -12,8 +12,10 @@ COPY --from=backend /root/.m2 /root/.m2/
 WORKDIR /cucumber
 COPY backend/de.metas.cucumber/ .
 
-RUN mvn clean test-compile
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean test-compile --offline
 
+COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
@@ -21,4 +23,4 @@ VOLUME /reports
 
 
 SHELL ["/bin/bash", "-c"]
-CMD mvn -o surefire:test --fail-never && cp target/*.xml /reports
+CMD mvn --offline surefire:test --fail-never && cp target/*.xml /reports
