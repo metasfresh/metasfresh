@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_AcctSchema extends org.compiere.model.PO implements I_C_AcctSchema, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 258234637L;
+	private static final long serialVersionUID = -1798562853L;
 
     /** Standard Constructor */
     public X_C_AcctSchema (final Properties ctx, final int C_AcctSchema_ID, @Nullable final String trxName)
@@ -316,6 +316,18 @@ public class X_C_AcctSchema extends org.compiere.model.PO implements I_C_AcctSch
 	public boolean isAdjustCOGS() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAdjustCOGS);
+	}
+
+	@Override
+	public void setIsAllowMultiDebitAndCredit (final boolean IsAllowMultiDebitAndCredit)
+	{
+		set_Value (COLUMNNAME_IsAllowMultiDebitAndCredit, IsAllowMultiDebitAndCredit);
+	}
+
+	@Override
+	public boolean isAllowMultiDebitAndCredit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowMultiDebitAndCredit);
 	}
 
 	@Override

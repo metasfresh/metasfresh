@@ -66,6 +66,7 @@ public class Tax
 	@Nullable
 	Boolean isSmallBusiness;
 	boolean isWholeTax;
+	boolean isReverseCharge;
 	boolean isDocumentLevel;
 	BigDecimal rate;
 	BoilerPlateId boilerPlateId;
@@ -86,6 +87,7 @@ public class Tax
 			@Nullable final Boolean isFiscalRepresentation,
 			@Nullable final Boolean isSmallBusiness,
 			final boolean isWholeTax,
+			final boolean isReverseCharge,
 			final boolean isDocumentLevel,
 			@NonNull final BigDecimal rate,
 			@Nullable final BoilerPlateId boilerPlateId,
@@ -104,6 +106,7 @@ public class Tax
 		this.isFiscalRepresentation = isFiscalRepresentation;
 		this.isSmallBusiness = isSmallBusiness;
 		this.isWholeTax = isWholeTax;
+		this.isReverseCharge = isReverseCharge;
 		this.isDocumentLevel = isDocumentLevel;
 		this.rate = rate;
 		this.boilerPlateId = boilerPlateId;
@@ -129,14 +132,17 @@ public class Tax
 				log.debug("C_Tax has isWholeTax=true; -> return ZERO");
 				return BigDecimal.ZERO;
 			}
-			if (!taxIncluded)
+			else if (!taxIncluded)
 			{
 				// the given amount is without tax => don't subtract the tax that is no included
 				log.debug("Parameter taxIncluded=false; -> return given param amount={}", amount);
 				return amount;
 			}
-			final BigDecimal taxAmt = calculateTax(amount, taxIncluded, scale);
-			return amount.subtract(taxAmt);
+			else
+			{
+				final BigDecimal taxAmt = calculateTax(amount, taxIncluded, scale).getTaxAmount();
+				return amount.subtract(taxAmt);
+			}
 		}
 	}
 
@@ -144,25 +150,34 @@ public class Tax
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net
 	 * @return tax amount
 	 */
-	public BigDecimal calculateTax(final BigDecimal amount, final boolean taxIncluded, final int scale)
+	public CalculateTaxResult calculateTax(@NonNull final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
 		// Null Tax
 		if (rate.signum() == 0)
 		{
-			return BigDecimal.ZERO;
+			return CalculateTaxResult.ZERO;
 		}
 
 		BigDecimal multiplier = rate.divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
 
 		final BigDecimal taxAmt;
+		final BigDecimal reverseChargeAmt;
 		if (isWholeTax)
 		{
 			Check.assume(taxIncluded, "TaxIncluded shall be set when IsWholeTax is set");
 			taxAmt = amount;
+			reverseChargeAmt = BigDecimal.ZERO;
+		}
+		else if (isReverseCharge)
+		{
+			Check.assume(!taxIncluded, "TaxIncluded shall NOT be set when IsReverseCharge is set");
+			taxAmt = BigDecimal.ZERO;
+			reverseChargeAmt = amount.multiply(multiplier);
 		}
 		else if (!taxIncluded)    // $100 * 6 / 100 == $6 == $100 * 0.06
 		{
 			taxAmt = amount.multiply(multiplier);
+			reverseChargeAmt = BigDecimal.ZERO;
 		}
 		else
 		// $106 - ($106 / (100+6)/100) == $6 == $106 - ($106/1.06)
@@ -170,18 +185,24 @@ public class Tax
 			multiplier = multiplier.add(BigDecimal.ONE);
 			final BigDecimal base = amount.divide(multiplier, 12, RoundingMode.HALF_UP);
 			taxAmt = amount.subtract(base);
+			reverseChargeAmt = BigDecimal.ZERO;
 		}
 
 		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, RoundingMode.HALF_UP);
+		final BigDecimal reverseChargeTaxAmtFinal = reverseChargeAmt.setScale(scale, RoundingMode.HALF_UP);
 
-		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}]", amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt);
+		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}] / reverse charge = {} [{}]",
+				amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt, reverseChargeAmt, reverseChargeTaxAmtFinal);
 
-		return taxAmtFinal;
-	}    // calculateTax
+		return CalculateTaxResult.builder()
+				.taxAmount(taxAmtFinal)
+				.reverseChargeAmt(reverseChargeTaxAmtFinal)
+				.build();
+	}
 
 	@NonNull
 	public BigDecimal calculateGross(@NonNull final BigDecimal netAmount, final int scale)
 	{
-		return netAmount.add(calculateTax(netAmount, false, scale));
+		return netAmount.add(calculateTax(netAmount, false, scale).getTaxAmount());
 	}
 }

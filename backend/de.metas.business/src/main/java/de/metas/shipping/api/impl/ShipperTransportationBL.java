@@ -167,7 +167,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		final Tax tax = taxBL.getTaxById(taxId);
 
-		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt()).getTaxAmount();
 
 		final Money taxAmtInfo = Money.of(taxAmt, orderLineCurrencyId);
 
