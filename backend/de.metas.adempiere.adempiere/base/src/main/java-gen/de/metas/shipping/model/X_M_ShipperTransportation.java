@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1950052061L;
+	private static final long serialVersionUID = 616718861L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -90,22 +90,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
-	}
-
-	/** Set Sammelrechnung erstellen.
-	 @param CollectiveBillReport Sammelrechnung erstellen	  */
-	@Override
-	public void setCollectiveBillReport (java.lang.String CollectiveBillReport)
-	{
-		set_Value (COLUMNNAME_CollectiveBillReport, CollectiveBillReport);
-	}
-
-	/** Get Sammelrechnung erstellen.
-	 @return Sammelrechnung erstellen	  */
-	@Override
-	public java.lang.String getCollectiveBillReport ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CollectiveBillReport);
 	}
 
 	@Override
@@ -583,5 +567,89 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public int getShipper_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Shipper_Location_ID);
+	}
+
+	@Override
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
+	{
+		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
+	}
+
+	@Override
+	public java.lang.String getUserElementString1() 
+	{
+		return get_ValueAsString(COLUMNNAME_UserElementString1);
+	}
+
+	@Override
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
+	{
+		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
+	}
+
+	@Override
+	public java.lang.String getUserElementString2() 
+	{
+		return get_ValueAsString(COLUMNNAME_UserElementString2);
+	}
+
+	@Override
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
+	{
+		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
+	}
+
+	@Override
+	public java.lang.String getUserElementString3() 
+	{
+		return get_ValueAsString(COLUMNNAME_UserElementString3);
+	}
+
+	@Override
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
+	{
+		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
+	}
+
+	@Override
+	public java.lang.String getUserElementString4() 
+	{
+		return get_ValueAsString(COLUMNNAME_UserElementString4);
+	}
+
+	@Override
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
+	{
+		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
+	}
+
+	@Override
+	public java.lang.String getUserElementString5() 
+	{
+		return get_ValueAsString(COLUMNNAME_UserElementString5);
+	}
+
+	@Override
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
+	{
+		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
+	}
+
+	@Override
+	public java.lang.String getUserElementString6() 
+	{
+		return get_ValueAsString(COLUMNNAME_UserElementString6);
+	}
+
+	@Override
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
+	{
+		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
+	}
+
+	@Override
+	public java.lang.String getUserElementString7() 
+	{
+		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
 }
