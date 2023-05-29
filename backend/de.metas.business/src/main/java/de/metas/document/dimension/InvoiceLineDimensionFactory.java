@@ -66,7 +66,7 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 	}
 
 	@Override
-	public void updateRecord(final I_C_InvoiceLine record, final Dimension from)
+	public void updateRecord(@NonNull final I_C_InvoiceLine record, @NonNull final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
@@ -75,6 +75,12 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
 		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
+		updateRecordUserElements(record, from);
+	}
+
+	@Override
+	public void updateRecordUserElements(@NonNull final I_C_InvoiceLine record, @NonNull final Dimension from)
+	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
