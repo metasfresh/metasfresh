@@ -55,6 +55,7 @@ public class DimensionService
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
 		getFactory(tableName).updateRecord(record, from);
+		getFactory(tableName).updateRecordUserElements(record, from);
 	}
 
 	@NonNull

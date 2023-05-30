@@ -64,7 +64,6 @@ public class MDCandidateDimensionFactory implements DimensionFactory<I_MD_Candid
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
 		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
-		updateRecordUserElements(record, from);
 	}
 
 	@Override
