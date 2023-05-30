@@ -10,7 +10,6 @@ import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -52,7 +51,6 @@ import java.util.Optional;
 public class RabbitMQEventBusConfiguration
 {
 	private static final String FANOUT_SUFFIX = "-fanout";
-	private static final String DIRECT_SUFFIX = "-direct";
 	private static final String APPLICATION_NAME_SPEL = "${spring.application.name:spring.application.name-not-set}";
 	@Value(APPLICATION_NAME_SPEL)
 	private String appName;
@@ -79,7 +77,7 @@ public class RabbitMQEventBusConfiguration
 
 	/**
 	 * Attempt to set the application name (e.g. metasfresh-webui-api) as the rabbitmq connection name.
-	 * Thx to https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq
+	 * Thx to <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq">spring-boot-features-rabbitmq</a>
 	 * <p>
 	 * (although right now it doesn't need to work..)
 	 */
@@ -119,21 +117,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public DirectExchange directEventsExchange()
-		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
 		public Binding fanoutEventsBinding()
 		{
 			return BindingBuilder.bind(eventsQueue()).to(fanoutEventsExchange());
-		}
-
-		@Bean
-		public Binding directEventsBinding()
-		{
-			return BindingBuilder.bind(eventsQueue()).to(directEventsExchange()).with(getQueueName());
 		}
 
 		@Override
@@ -180,21 +166,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public DirectExchange directCacheInvalidationExchange()
-		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
 		public Binding fanoutCacheInvalidationBinding()
 		{
 			return BindingBuilder.bind(cacheInvalidationQueue()).to(fanoutCacheInvalidationExchange());
-		}
-
-		@Bean
-		public Binding directCacheInvalidationBinding()
-		{
-			return BindingBuilder.bind(cacheInvalidationQueue()).to(directCacheInvalidationExchange()).with(getQueueName());
 		}
 
 		@Override
@@ -241,21 +215,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public DirectExchange directAccountingExchange()
-		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
 		public Binding fanoutAccountingBinding()
 		{
 			return BindingBuilder.bind(accountingQueue()).to(fanoutAccountingExchange());
-		}
-
-		@Bean
-		public Binding directAccountingBinding()
-		{
-			return BindingBuilder.bind(accountingQueue()).to(directAccountingExchange()).with(getQueueName());
 		}
 
 		@Override
@@ -302,21 +264,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public DirectExchange directSchedulerExchange()
-		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
 		public Binding fanoutSchedulerBinding()
 		{
 			return BindingBuilder.bind(schedulerQueue()).to(fanoutSchedulerExchange());
-		}
-
-		@Bean
-		public Binding directSchedulerBinding()
-		{
-			return BindingBuilder.bind(schedulerQueue()).to(directSchedulerExchange()).with(getQueueName());
 		}
 
 		@Override
@@ -363,21 +313,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public DirectExchange directAsyncBatchExchange()
-		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
 		public Binding fanoutAsyncBatchBinding()
 		{
 			return BindingBuilder.bind(asyncBatchQueue()).to(fanoutAsyncBatchExchange());
-		}
-
-		@Bean
-		public Binding directAsyncBatchBinding()
-		{
-			return BindingBuilder.bind(asyncBatchQueue()).to(directAsyncBatchExchange()).with(getQueueName());
 		}
 
 		@Override
@@ -424,21 +362,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public DirectExchange directMaterialEventsExchange()
-		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
 		public Binding fanoutMaterialEventsBinding()
 		{
 			return BindingBuilder.bind(materialEventsQueue()).to(fanoutMaterialEventsExchange());
-		}
-
-		@Bean
-		public Binding directMaterialEventsBinding()
-		{
-			return BindingBuilder.bind(materialEventsQueue()).to(directMaterialEventsExchange()).with(getQueueName());
 		}
 
 		@Override
@@ -485,21 +411,9 @@ public class RabbitMQEventBusConfiguration
 		}
 
 		@Bean
-		public DirectExchange directEffortControlExchange()
-		{
-			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
-		}
-
-		@Bean
 		public Binding fanoutEffortControlBinding()
 		{
 			return BindingBuilder.bind(effortControlQueue()).to(fanoutEffortControlExchange());
-		}
-
-		@Bean
-		public Binding directEffortControlBinding()
-		{
-			return BindingBuilder.bind(effortControlQueue()).to(directEffortControlExchange()).with(getQueueName());
 		}
 
 		@Override
