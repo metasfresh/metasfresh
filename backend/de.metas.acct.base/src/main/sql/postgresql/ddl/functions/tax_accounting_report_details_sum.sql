@@ -60,6 +60,7 @@ BEGIN
                                  x.ad_org_id,
                                  x.ad_client_id
                           FROM (
+<<<<<<< HEAD
                                    SELECT ev.value       AS kontono,
                                           ev.name        AS kontoname,
                                           tax.name       AS taxname,
@@ -81,6 +82,22 @@ BEGIN
                                           fa.c_currency_id,
 
                                           fa.vatcode     AS vatcode,
+=======
+                                   SELECT fa.kontono,
+                                          fa.kontoname,
+                                          fa.taxname,
+                                          fa.taxrate,
+                                          fa.dateacct,
+                                          fa.inv_baseamt,
+                                          fa.gl_baseamt,
+                                          fa.alloc_baseamt,
+                                          fa.inv_taxamt,
+                                          fa.gl_taxamt,
+                                          fa.alloc_taxamt,
+                                          fa.taxamtperaccount,
+                                          fa.c_currency_id,
+                                          fa.vatcode AS vatcode,
+>>>>>>> 7a2f211a300 (Add explicit alias in tax_accounting_report_details_sum (#15430))
                                           fa.C_Tax_ID,
                                           fa.ad_org_id,
                                           fa.ad_client_id
