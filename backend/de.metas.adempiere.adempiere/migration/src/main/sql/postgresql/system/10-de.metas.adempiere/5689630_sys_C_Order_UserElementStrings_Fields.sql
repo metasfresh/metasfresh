@@ -1146,3 +1146,91 @@ UPDATE AD_Field SET DisplayLogic='@$Element_S7/X@=Y',Updated=TO_TIMESTAMP('2023-
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,716051,0,294,540961,617905,'F',TO_TIMESTAMP('2023-05-29 16:07:11','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'UserElementString7',360,0,0,TO_TIMESTAMP('2023-05-29 16:07:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+
+-- UI Element: Sales Order_OLD(143,D) -> Order(186,D) -> advanced edit -> 10 -> advanced edit.Assignment
+-- Column: C_Order.UserElementString1
+-- 2023-05-30T08:56:33.731Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:56:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617893
+;
+
+-- UI Element: Sales Order_OLD(143,D) -> Order(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString3
+-- Column: C_Order.UserElementString3
+-- 2023-05-30T08:56:34.887Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:56:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617886
+;
+
+-- UI Element: Sales Order_OLD(143,D) -> Order(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString4
+-- Column: C_Order.UserElementString4
+-- 2023-05-30T08:56:36.042Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:56:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617894
+;
+
+-- UI Element: Sales Order_OLD(143,D) -> Order(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString5
+-- Column: C_Order.UserElementString5
+-- 2023-05-30T08:56:37.121Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:56:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617895
+;
+
+-- UI Element: Sales Order_OLD(143,D) -> Order(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString6
+-- Column: C_Order.UserElementString6
+-- 2023-05-30T08:56:38.182Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:56:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617896
+;
+
+-- UI Element: Sales Order_OLD(143,D) -> Order(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString7
+-- Column: C_Order.UserElementString7
+-- 2023-05-30T08:56:44.197Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:56:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617904
+;
+
+
+
+
+
+
+
+-- UI Element: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> advanced edit -> 10 -> advanced edit.Assignment
+-- Column: C_Order.UserElementString1
+-- 2023-05-30T08:57:39.501Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:57:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617889
+;
+
+-- UI Element: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> advanced edit -> 10 -> advanced edit.UserElementString2
+-- Column: C_Order.UserElementString2
+-- 2023-05-30T08:57:40.617Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:57:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617887
+;
+
+-- UI Element: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> advanced edit -> 10 -> advanced edit.UserElementString3
+-- Column: C_Order.UserElementString3
+-- 2023-05-30T08:57:41.761Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:57:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617888
+;
+
+-- UI Element: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> advanced edit -> 10 -> advanced edit.UserElementString4
+-- Column: C_Order.UserElementString4
+-- 2023-05-30T08:57:42.825Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:57:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617890
+;
+
+-- UI Element: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> advanced edit -> 10 -> advanced edit.UserElementString5
+-- Column: C_Order.UserElementString5
+-- 2023-05-30T08:57:44.023Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:57:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617891
+;
+
+-- UI Element: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> advanced edit -> 10 -> advanced edit.UserElementString6
+-- Column: C_Order.UserElementString6
+-- 2023-05-30T08:57:45.061Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:57:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617892
+;
+
+-- UI Element: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> advanced edit -> 10 -> advanced edit.UserElementString7
+-- Column: C_Order.UserElementString7
+-- 2023-05-30T08:57:48.169Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11:57:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617905
+;
+
+
