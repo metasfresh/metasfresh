@@ -49,7 +49,7 @@ SELECT ev.value      AS kontono,
        fa.ad_org_id,
        fa.ad_client_id
 
-FROM public.fact_acct fa
+FROM fact_acct fa
 
          LEFT OUTER JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
          LEFT OUTER JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id
