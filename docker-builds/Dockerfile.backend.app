@@ -1,7 +1,7 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
-FROM eclipse-temurin:17.0.5_8-jre
+FROM eclipse-temurin:17.0.7_7-jdk
 
 RUN apt-get -y update && apt-get -y install locales zip && rm -rf /var/lib/apt/lists/*
 RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
