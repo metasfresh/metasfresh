@@ -1,3 +1,121 @@
+DROP TABLE IF EXISTS report.tmp_fresh_account_info_report_sub
+;
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report(
+    account_id numeric,
+    startdate  date,
+    enddate    date)
+;
+
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(
+    account_id numeric,
+    startdate  date,
+    enddate    date)
+;
+
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
+                                                             numeric,
+                                                             numeric,
+                                                             numeric,
+                                                             numeric,
+                                                             character varying,
+                                                             character varying,
+                                                             character varying,
+                                                             numeric)
+;
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
+                                                             numeric,
+                                                             date,
+                                                             date,
+                                                             numeric,
+                                                             numeric,
+                                                             numeric,
+                                                             character varying,
+                                                             character varying,
+                                                             character varying,
+                                                             numeric)
+;
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
+                                                             numeric,
+                                                             date,
+                                                             date,
+                                                             numeric,
+                                                             numeric,
+                                                             numeric,
+                                                             character varying,
+                                                             character varying,
+                                                             character varying,
+                                                             numeric)
+;
+
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(
+    IN account_start_id      numeric, --$1
+    IN account_end_id        numeric, --$2
+    IN C_Period_Start_ID     numeric, --$3
+    IN C_Period_End_ID       numeric, --$4
+    IN StartDate             date, --$5
+    IN EndDate               date, --$6
+    IN c_activity_id         numeric, --$7
+    IN displayvoiddocuments  character varying, --$8
+    IN showcurrencyexchange  character varying, --$9
+    IN showonlyemptyactivity character varying, --$10
+    IN ad_org_id             numeric)
+;
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
+                                                         date,
+                                                         date,
+                                                         numeric,
+                                                         character varying,
+                                                         character varying,
+                                                         character varying,
+                                                         numeric)
+;
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
+                                                         numeric,
+                                                         numeric,
+                                                         numeric,
+                                                         numeric,
+                                                         character varying,
+                                                         character varying,
+                                                         character varying,
+                                                         numeric)
+;
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(
+    IN account_from_id       numeric,
+    IN account_to_id         numeric,
+    IN C_Period_Start_ID     numeric,
+    IN C_Period_End_ID       numeric,
+    IN StartDate             date,
+    IN EndDate               date,
+    IN c_activity_id         numeric,
+    IN displayvoiddocuments  character varying,
+    IN showcurrencyexchange  character varying,
+    IN showonlyemptyactivity character varying,
+    IN ad_org_id             numeric)
+;
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report(
+    IN account_from_id       numeric,
+    IN account_to_id         numeric,
+    IN C_Period_Start_ID     numeric,
+    IN C_Period_End_ID       numeric,
+    IN StartDate             date,
+    IN EndDate               date,
+    IN c_activity_id         numeric,
+    IN displayvoiddocuments  character varying,
+    IN showcurrencyexchange  character varying,
+    IN showonlyemptyactivity character varying,
+    IN ad_org_id             numeric)
+;
+
 DROP FUNCTION IF EXISTS report.fresh_account_info_report(
     IN p_account_from_id       numeric, -- 1
     IN p_account_to_id         numeric, -- 2
