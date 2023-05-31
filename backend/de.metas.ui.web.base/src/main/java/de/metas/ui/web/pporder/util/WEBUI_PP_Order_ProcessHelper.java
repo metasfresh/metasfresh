@@ -7,12 +7,12 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -42,6 +42,7 @@ public class WEBUI_PP_Order_ProcessHelper
 	private static final Logger logger = LogManager.getLogger(WEBUI_PP_Order_ProcessHelper.class);
 
 	private final static PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
+	private final static PickingConfigRepository pickingConfigRepository = SpringContextHolder.instance.getBean(PickingConfigRepository.class);
 
 	//
 	public ProcessPreconditionsResolution checkIssueSourceDefaultPreconditionsApplicable(final PPOrderLineRow ppOrderLineRow)
@@ -168,7 +169,7 @@ public class WEBUI_PP_Order_ProcessHelper
 	{
 		pickingCandidateService.processForHUIds(request.getHuIds(),
 												request.getShipmentScheduleId(),
-												OnOverDelivery.ofTakeWholeHUFlag(request.isTakeWholeHU()),
+												request.getOnOverDelivery(),
 												request.getPpOrderId());
 	}
 

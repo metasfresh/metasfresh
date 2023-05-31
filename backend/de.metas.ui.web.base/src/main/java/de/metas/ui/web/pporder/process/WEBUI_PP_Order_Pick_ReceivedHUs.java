@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -50,6 +51,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -58,6 +60,7 @@ import java.util.Set;
 
 public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -163,7 +166,7 @@ public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template imp
 														.huIds(ImmutableSet.copyOf(huIds))
 														.shipmentScheduleId(shipmentScheduleId)
 														.ppOrderId(ppOrderId)
-														.isTakeWholeHU(isTakeWholeHU)
+														.onOverDelivery(pickingCandidateService.getOnOverDelivery(isTakeWholeHU))
 														.build());
 	}
 

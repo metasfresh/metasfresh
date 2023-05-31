@@ -24,6 +24,7 @@ package de.metas.ui.web.pporder.util;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,5 +45,6 @@ public class ProcessPickingRequest
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
 
-	boolean isTakeWholeHU;
+	@NonNull
+	OnOverDelivery onOverDelivery;
 }

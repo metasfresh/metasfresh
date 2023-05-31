@@ -377,4 +377,10 @@ public class PickingCandidateService
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
+	
+	@NonNull
+	public OnOverDelivery getOnOverDelivery(final boolean pickWholeHU)
+	{
+		return OnOverDelivery.ofTakeWholeHUFlag(pickWholeHU, pickingConfigRepository.getPickingConfig().isAllowOverDelivery());
+	}
 }
