@@ -2,14 +2,16 @@ DROP FUNCTION IF EXISTS role_access_add_process_recursively
 (
     p_AD_Role_ID     numeric,
     p_AD_Process_IDs numeric[],
-    p_ScopeInfo      text
+    p_ScopeInfo      text,
+    p_IsReadWrite    char
 )
 ;
 
 CREATE OR REPLACE FUNCTION role_access_add_process_recursively(
     p_AD_Role_ID     numeric,
     p_AD_Process_IDs numeric[],
-    p_ScopeInfo      text = '-'
+    p_ScopeInfo      text = '-',
+    p_IsReadWrite    char = 'N'
 )
     RETURNS void
     LANGUAGE plpgsql
@@ -20,7 +22,7 @@ DECLARE
     v_roleInfo record;
     v_rowcount integer;
 BEGIN
-    RAISE NOTICE 'role_access_add_process_recursively[%]: AD_Role_ID=%, AD_Process_IDs=%', p_ScopeInfo, p_AD_Role_ID, p_AD_Process_IDs;
+    RAISE NOTICE 'role_access_add_process_recursively[%]: ScopeInfo=%, AD_Role_ID=%, AD_Process_IDs=%, IsReadWrite=%', p_AD_Role_ID, p_AD_Process_IDs,p_IsReadWrite;
 
     --
     -- Get role info
@@ -49,7 +51,7 @@ BEGIN
            0                        AS createdby,
            NOW()                    AS updated,
            0                        AS updatedby,
-           'Y'                      AS isreadwrite
+           p_IsReadWrite            AS isreadwrite
     FROM workflows
     WHERE NOT EXISTS (SELECT 1 FROM ad_workflow_access z WHERE z.ad_workflow_id = workflows.ad_workflow_id AND z.ad_role_id = p_AD_Role_ID);
     --
@@ -68,7 +70,7 @@ BEGIN
            NOW()                   AS Updated,
            0                       AS UpdatedBy,
            'Y'                     AS IsActive,
-           'Y'                     AS IsReadWrite
+           p_IsReadWrite           AS IsReadWrite
     FROM ad_process p
     WHERE p.ad_process_id = ANY (p_AD_Process_IDs)
       AND NOT EXISTS (SELECT 1 FROM ad_process_access z WHERE z.ad_process_id = p.ad_process_id AND z.ad_role_id = p_AD_Role_ID);

@@ -1,13 +1,15 @@
 DROP FUNCTION IF EXISTS role_access_add_window_recursively
 (
     p_AD_Role_ID    numeric,
-    p_AD_Window_IDs numeric[]
+    p_AD_Window_IDs numeric[],
+    p_IsReadWrite   char
 )
 ;
 
 CREATE OR REPLACE FUNCTION role_access_add_window_recursively(
     p_AD_Role_ID    numeric,
-    p_AD_Window_IDs numeric[]
+    p_AD_Window_IDs numeric[],
+    p_IsReadWrite   char
 )
     RETURNS void
     LANGUAGE plpgsql
@@ -18,7 +20,7 @@ DECLARE
     v_roleInfo record;
     v_rowcount integer;
 BEGIN
-    RAISE NOTICE 'role_access_add_window_recursively: AD_Role_ID=%, AD_Window_IDs=%', p_AD_Role_ID, p_AD_Window_IDs;
+    RAISE NOTICE 'role_access_add_window_recursively: AD_Role_ID=%, AD_Window_IDs=%, IsReadWrite=%', p_AD_Role_ID, p_AD_Window_IDs, p_IsReadWrite;
 
     --
     -- Get role info
@@ -47,7 +49,7 @@ BEGIN
            0                       AS CreatedBy,
            NOW()                   AS Updated,
            0                       AS UpdatedBy,
-           'Y'                     AS IsReadWrite
+           p_IsReadWrite           AS IsReadWrite
     FROM windows
     WHERE NOT EXISTS (SELECT 1 FROM ad_window_access z WHERE z.ad_window_id = windows.ad_window_id AND z.ad_role_id = p_AD_Role_ID);
     --
@@ -102,27 +104,3 @@ BEGIN
 END;
 $BODY$
 ;
-
-
-
---
---
--- Test
-/*
-DELETE
-FROM ad_window_access
-WHERE ad_role_id = 540154
-;
-
-DELETE
-FROM ad_process_access
-WHERE ad_role_id = 540154
-;
-
-SELECT role_access_add_window_recursively(
-               p_AD_Role_ID := 540154,
-               p_AD_Window_IDs := ARRAY [143]
-           )
-;
- */
-

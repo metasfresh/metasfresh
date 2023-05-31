@@ -1,15 +1,15 @@
 DROP FUNCTION IF EXISTS role_access_add_menu_recursively
 (
-    p_AD_Role_ID numeric,
-    p_AD_Menu_ID numeric
+    p_AD_Role_ID  numeric,
+    p_AD_Menu_ID  numeric,
+    p_IsReadWrite char
 )
 ;
 
-
-
 CREATE OR REPLACE FUNCTION role_access_add_menu_recursively(
-    p_AD_Role_ID numeric,
-    p_AD_Menu_ID numeric
+    p_AD_Role_ID  numeric,
+    p_AD_Menu_ID  numeric,
+    p_IsReadWrite char
 )
     RETURNS void
     LANGUAGE plpgsql
@@ -20,7 +20,7 @@ DECLARE
     v_roleInfo record;
     v_rowcount integer;
 BEGIN
-    RAISE NOTICE 'role_access_add_menu_recursively: AD_Role_ID=%, AD_Menu_ID=%', p_AD_Role_ID, p_AD_Menu_ID;
+    RAISE NOTICE 'role_access_add_menu_recursively: AD_Role_ID=%, AD_Menu_ID=%, IsReadWrite=%', p_AD_Role_ID, p_AD_Menu_ID, p_IsReadWrite;
 
     --
     -- Get role info
@@ -74,7 +74,8 @@ BEGIN
     -- Windows
     PERFORM role_access_add_window_recursively(
             p_ad_role_id := role_access_add_menu_recursively.p_ad_role_id,
-            p_ad_window_ids := (SELECT ARRAY_AGG(DISTINCT AD_Window_ID) FROM tmp_menu WHERE AD_Window_ID IS NOT NULL)
+            p_ad_window_ids := (SELECT ARRAY_AGG(DISTINCT AD_Window_ID) FROM tmp_menu WHERE AD_Window_ID IS NOT NULL),
+            p_IsReadWrite := role_access_add_menu_recursively.p_IsReadWrite
         );
 
     --
@@ -82,7 +83,8 @@ BEGIN
     PERFORM role_access_add_process_recursively(
             p_ad_role_id := role_access_add_menu_recursively.p_ad_role_id,
             p_AD_Process_IDs := (SELECT ARRAY_AGG(DISTINCT AD_Process_ID) FROM tmp_menu WHERE AD_Process_ID IS NOT NULL),
-            p_ScopeInfo := 'Menu processes'
+            p_ScopeInfo := 'Menu processes',
+            p_IsReadWrite := role_access_add_menu_recursively.p_IsReadWrite
         );
 
     --
@@ -109,20 +111,3 @@ BEGIN
 END;
 $BODY$
 ;
-
-
---
---
--- Test
-/*
-DELETE FROM ad_window_access WHERE ad_role_id = 540154;
-DELETE FROM ad_process_access WHERE ad_role_id = 540154;
-DELETE FROM ad_workflow_access WHERE ad_role_id = 540154;
-DELETE FROM ad_document_action_access WHERE ad_role_id = 540154;
-
-SELECT role_access_add_menu_recursively(
-               p_AD_Role_ID := 540154,
-               p_AD_Menu_ID := 1000010
-           )
-;
-*/
