@@ -1,5 +1,3 @@
--- Function: de_metas_acct.acctbalanceuntildate(numeric, numeric, date, character)
-
 DROP FUNCTION IF EXISTS de_metas_acct.acctbalanceuntildate(numeric,
                                                            numeric,
                                                            date,
