@@ -238,6 +238,12 @@ public class M_InOut
 			return;
 		}
 
+		// make sure not a Service Repair
+		if(returnsServiceFacade.isServiceRepair(shipment))
+		{
+			return;
+		}
+
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);
@@ -358,6 +364,9 @@ public class M_InOut
 	{
 		if (returnsServiceFacade.isServiceRepair(returnInOut))
 		{
+			// make sure to mark HUs as Destroyed, so will not available on the system
+			huInOutBL.destroyHUs(returnInOut);
+
 			return;
 		}
 		if (!(returnsServiceFacade.isVendorReturn(returnInOut) || returnsServiceFacade.isCustomerReturn(returnInOut)))
