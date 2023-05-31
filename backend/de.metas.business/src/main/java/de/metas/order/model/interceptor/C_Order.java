@@ -700,4 +700,17 @@ public class C_Order
 		}
 	}
 
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { org.compiere.model.I_C_Order.COLUMNNAME_M_SectionCode_ID })
+	@CalloutMethod(columnNames = org.compiere.model.I_C_Order.COLUMNNAME_M_SectionCode_ID)
+	public void updateSectionCode(@NonNull final org.compiere.model.I_C_Order order)
+	{
+		for (final org.compiere.model.I_C_OrderLine orderLine : orderDAO.retrieveOrderLines(order))
+		{
+			orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
+			orderDAO.save(orderLine);
+		}
+	}
+
 }
