@@ -59,3 +59,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=716155
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,716155,0,540508,540918,617927,'F',TO_TIMESTAMP('2023-05-31 16:07:39.096','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Externes Eigentum',40,0,0,TO_TIMESTAMP('2023-05-31 16:07:39.096','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+-- Field: Handling Unit -> Handling Unit -> Externes Eigentum
+-- Column: M_HU.IsExternalProperty
+-- 2023-05-31T16:40:14.822Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-05-31 19:40:14.822','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=716155
+;
+
