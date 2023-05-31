@@ -169,28 +169,28 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final String docBaseType = getDocumentType();
+		final DocBaseType docBaseType = getDocBaseType();
 
 		//
 		// *** Sales - Shipment
-		if (DOCTYPE_MatShipment.equals(docBaseType) && isSOTrx())
+		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
 		{
 			return createFacts_SalesShipment(as);
 		}
 		//
 		// *** Sales - Return
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (DOCTYPE_MatShipment.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}
@@ -199,6 +199,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			throw newPostingException()
 					.setDetailMessage("DocumentType unknown: " + docBaseType);
 		}
+	}
+
+	@NonNull
+	private Fact newFacts(final AcctSchema as)
+	{
+		return new Fact(this, as, PostingType.Actual)
+				.setCurrencyConversionContext(getCurrencyConversionContext(as));
 	}
 
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
@@ -285,7 +292,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		dr.setQty(line.getQty().negate());
 
 		//
