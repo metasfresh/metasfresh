@@ -1234,3 +1234,45 @@ UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-30 11
 ;
 
 
+
+
+-- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString7
+-- Column: C_Order.UserElementString7
+-- 2023-05-31T14:51:09.702Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-31 17:51:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617904
+;
+
+-- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString6
+-- Column: C_Order.UserElementString6
+-- 2023-05-31T14:51:10.275Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-31 17:51:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617896
+;
+
+-- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString5
+-- Column: C_Order.UserElementString5
+-- 2023-05-31T14:51:10.859Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-31 17:51:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617895
+;
+
+-- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString4
+-- Column: C_Order.UserElementString4
+-- 2023-05-31T14:51:11.510Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-31 17:51:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617894
+;
+
+-- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> advanced edit -> 10 -> advanced edit.UserElementString3
+-- Column: C_Order.UserElementString3
+-- 2023-05-31T14:51:12.851Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-31 17:51:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617886
+;
+
+-- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> advanced edit -> 10 -> advanced edit.Assignment
+-- Column: C_Order.UserElementString1
+-- 2023-05-31T14:51:18.082Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-05-31 17:51:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=617893
+;
+
+
+
+
+
