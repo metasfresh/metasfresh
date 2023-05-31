@@ -24,7 +24,9 @@ package de.metas.document.dimension;
 
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ShipperTransportationDimensionFactory implements DimensionFactory<I_M_ShipperTransportation>
 {
 	@Override

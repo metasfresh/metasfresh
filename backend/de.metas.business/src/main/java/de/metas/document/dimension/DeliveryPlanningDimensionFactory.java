@@ -24,7 +24,9 @@ package de.metas.document.dimension;
 
 import lombok.NonNull;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DeliveryPlanningDimensionFactory implements DimensionFactory<I_M_Delivery_Planning>
 {
 	@Override
