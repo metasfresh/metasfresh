@@ -92,6 +92,22 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
+	/** Set Sammelrechnung erstellen.
+	 @param CollectiveBillReport Sammelrechnung erstellen	  */
+	@Override
+	public void setCollectiveBillReport (java.lang.String CollectiveBillReport)
+	{
+		set_Value (COLUMNNAME_CollectiveBillReport, CollectiveBillReport);
+	}
+
+	/** Get Sammelrechnung erstellen.
+	 @return Sammelrechnung erstellen	  */
+	@Override
+	public java.lang.String getCollectiveBillReport ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CollectiveBillReport);
+	}
+
 	@Override
 	public org.compiere.model.I_C_Incoterms getC_Incoterms()
 	{

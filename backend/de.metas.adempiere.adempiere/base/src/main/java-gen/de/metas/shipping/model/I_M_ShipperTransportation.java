@@ -160,6 +160,29 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
+	 * Set Sammelrechnung erstellen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCollectiveBillReport(java.lang.String CollectiveBillReport);
+
+	/**
+	 * Get Sammelrechnung erstellen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCollectiveBillReport();
+
+	/** Column definition for CollectiveBillReport */
+	org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
+	/** Column name CollectiveBillReport */
+	String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
