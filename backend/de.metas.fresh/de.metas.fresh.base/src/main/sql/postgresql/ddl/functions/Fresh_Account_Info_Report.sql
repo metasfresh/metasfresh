@@ -36,6 +36,7 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
                 a_value                 text,
                 amtsourcedr             numeric,
                 amtsourcecr             numeric,
+                source_currency         text,
                 amtacctdr               numeric,
                 amtacctcr               numeric,
                 saldo                   numeric,
@@ -217,6 +218,7 @@ BEGIN
            fa.tax_rate_name::text,
            fa.account_id,
            fa.source_currency_id                                                                                           AS source_currency_id,
+           (SELECT cy.iso_code FROM c_currency cy WHERE cy.c_currency_id = fa.source_currency_id)::text                    AS source_currency,
 
            de_metas_acct.SourceBalanceAmt_add(
                    fa.Beginning_SourceBalance,
@@ -261,7 +263,7 @@ BEGIN
                          ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
                          (
                              EXISTS
-                                     (SELECT 1 FROM C_ElementValue elv WHERE ev.C_ElementValue_ID = elv.C_ElementValue_ID AND elv.ShowIntCurrency = 'Y' AND elv.Foreign_Currency_ID = v_EUR_Currency_ID AND elv.isActive = 'Y')
+                                 (SELECT 1 FROM C_ElementValue elv WHERE ev.C_ElementValue_ID = elv.C_ElementValue_ID AND elv.ShowIntCurrency = 'Y' AND elv.Foreign_Currency_ID = v_EUR_Currency_ID AND elv.isActive = 'Y')
                              )
                  END                                                                                                             AS ContainsEUR,
                  fa.ad_org_id,
@@ -302,6 +304,7 @@ BEGIN
                     r.Activity_Value                                                                                             AS a_value,
                     r.amtsourcedr                                                                                                AS amtsourcedr,
                     r.amtsourcecr                                                                                                AS amtsourcecr,
+                    r.source_currency                                                                                            AS source_currency,
                     r.AmtAcctDr                                                                                                  AS AmtAcctDr,
                     r.AmtAcctCr                                                                                                  AS AmtAcctCr,
                     r.Rolling_Balance                                                                                            AS Saldo,
@@ -348,6 +351,7 @@ BEGIN
                              NULL::text             AS a_value,
                              NULL::numeric          AS amtsourcedr,
                              NULL::numeric          AS amtsourcecr,
+                             NULL::text             AS source_currency,
                              NULL::numeric          AS amtacctdr,
                              NULL::numeric          AS amtacctcr,
                              r.Beginning_Balance    AS Saldo,
@@ -389,6 +393,7 @@ BEGIN
                              NULL::text             AS a_value,
                              NULL::numeric          AS amtsourcedr,
                              NULL::numeric          AS amtsourcecr,
+                             NULL::text             AS source_currency,
                              r.AmtAcctDrEnd         AS amtacctdr,
                              r.AmtAcctCrEnd         AS amtacctcr,
                              r.Beginning_Balance    AS saldo,
@@ -430,6 +435,7 @@ BEGIN
                              NULL::text             AS a_value,
                              NULL::numeric          AS amtsourcedr,
                              NULL::numeric          AS amtsourcecr,
+                             NULL::text             AS source_currency,
                              NULL::numeric          AS amtacctdr,
                              NULL::numeric          AS amtacctcr,
                              NULL::numeric          AS Saldo,
