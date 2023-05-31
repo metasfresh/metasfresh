@@ -518,6 +518,8 @@ public class DeliveryPlanningService
 		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord);
 		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord);
 
+		final Dimension deliveryPlanningDimension = dimensionService.getFromRecord(deliveryPlanningRecord);
+
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
@@ -548,6 +550,7 @@ public class DeliveryPlanningService
 				.uom(uomToUse)
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.deliveryPlanningId(deliveryPlanningId)
+				.dimension(deliveryPlanningDimension)
 				.build();
 	}
 

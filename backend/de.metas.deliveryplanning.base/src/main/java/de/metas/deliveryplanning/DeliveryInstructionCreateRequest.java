@@ -25,6 +25,7 @@ package de.metas.deliveryplanning;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
+import de.metas.document.dimension.Dimension;
 import de.metas.incoterms.IncotermsId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -108,5 +109,8 @@ public class DeliveryInstructionCreateRequest
 	OrderLineId orderLineId;
 
 	@NonNull DeliveryPlanningId deliveryPlanningId;
+
+	@Nullable
+	Dimension dimension;
 
 }

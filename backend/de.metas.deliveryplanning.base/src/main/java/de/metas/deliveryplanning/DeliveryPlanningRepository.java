@@ -483,13 +483,14 @@ public class DeliveryPlanningRepository
 
 		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 
+		dimensionService.updateRecordUserElements(shippingPackageRecord, request.getDimension());
 		saveRecord(shippingPackageRecord);
 
 		return deliveryInstructionRecord;
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
-													  @NonNull final I_M_ShipperTransportation deliveryInstruction)
+			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
