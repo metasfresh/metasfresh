@@ -2,6 +2,8 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
@@ -43,19 +45,26 @@ public class GenerateIncomingDeliveryPlanningCommand
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
-	@NonNull private final I_M_ReceiptSchedule receiptSchedule;
-	@NonNull private final DeliveryStatusColorPalette colorPalette;
+	@NonNull
+	private final I_M_ReceiptSchedule receiptSchedule;
+	@NonNull
+	private final DeliveryStatusColorPalette colorPalette;
+
+	@NonNull
+	private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateIncomingDeliveryPlanningCommand(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final DeliveryStatusColorPalette colorPalette)
+			@NonNull final DeliveryStatusColorPalette colorPalette,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 
 		this.receiptSchedule = receiptSchedule;
 		this.colorPalette = colorPalette;
+		this.dimensionService = dimensionService;
 	}
 
 	public void execute()
@@ -122,9 +131,11 @@ public class GenerateIncomingDeliveryPlanningCommand
 		if (orderLineId != null)
 		{
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+			final Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
 
 			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
 			requestBuilder.shipperId(ShipperId.ofRepoIdOrNull(orderLine.getM_Shipper_ID()));
+			requestBuilder.dimension(orderLineDimension);
 		}
 
 		return requestBuilder.build();

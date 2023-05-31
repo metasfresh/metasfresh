@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.InOutId;
@@ -82,6 +83,13 @@ public class DeliveryPlanningRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+
+	private final DimensionService dimensionService;
+
+	public DeliveryPlanningRepository(@NonNull final DimensionService dimensionService)
+	{
+		this.dimensionService = dimensionService;
+	}
 
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -304,6 +312,8 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setBatch(request.getBatch());
 		deliveryPlanningRecord.setC_OriginCountry_ID(CountryId.toRepoId(request.getOriginCountryId()));
 		deliveryPlanningRecord.setC_DestinationCountry_ID(CountryId.toRepoId(request.getDestinationCountryId()));
+
+		dimensionService.updateRecordUserElements(deliveryPlanningRecord, request.getDimension());
 
 		save(deliveryPlanningRecord);
 	}

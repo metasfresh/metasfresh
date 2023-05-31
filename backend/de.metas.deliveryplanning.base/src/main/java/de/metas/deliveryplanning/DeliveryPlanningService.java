@@ -40,6 +40,8 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -136,6 +138,8 @@ public class DeliveryPlanningService
 
 	private final BPartnerStatsService bPartnerStatsService;
 
+	private final DimensionService dimensionService;
+
 	final MoneyService moneyService;
 
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -156,13 +160,15 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService,
 			@NonNull final BPartnerStatsService bPartnerStatsService,
 			@NonNull final MoneyService moneyService,
-			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService)
+			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
 		this.bPartnerStatsService = bPartnerStatsService;
 		this.moneyService = moneyService;
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
+		this.dimensionService = dimensionService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -227,6 +233,8 @@ public class DeliveryPlanningService
 		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
 		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
 
+		final Dimension dimension = dimensionService.getFromRecord(deliveryPlanningRecord);
+
 		return DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
@@ -266,6 +274,7 @@ public class DeliveryPlanningService
 				.destinationCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_DestinationCountry_ID()))
 				.shipperId(ShipperId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Shipper_ID()))
 				.transportDetails(deliveryPlanningRecord.getTransportDetails())
+				.dimension(dimension)
 				.build();
 	}
 
@@ -663,7 +672,7 @@ public class DeliveryPlanningService
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
 				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
 				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
-		
+
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 
 		while (deliveryPlanningIterator.hasNext())
