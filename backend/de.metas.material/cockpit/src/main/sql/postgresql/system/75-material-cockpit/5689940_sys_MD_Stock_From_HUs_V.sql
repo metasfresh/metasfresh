@@ -1,6 +1,6 @@
 DROP VIEW IF EXISTS MD_Stock_From_HUs_V
 ;
-
+-- added hu.isExternalProperty='N' check
 CREATE OR REPLACE VIEW MD_Stock_From_HUs_V AS
 SELECT COALESCE(wh.AD_Client_ID, hu_agg.AD_Client_ID) AS AD_Client_ID,
        COALESCE(wh.AD_Org_ID, hu_agg.AD_Org_ID) AS AD_Org_ID,

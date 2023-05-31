@@ -148,6 +148,7 @@ public class HUDescriptorsFromHUAssignmentService
 
 			final BigDecimal quantity = huDescriptorsForCurrentProduct
 					.stream()
+					.filter(huDescriptor -> !huDescriptor.isExternalProperty())
 					.map(HUDescriptor::getQuantity)
 					.map(qty -> transaction.getMovementQty().signum() >= 0 ? qty : qty.negate()) // set signum according to transaction.movementQty
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
