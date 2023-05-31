@@ -8,7 +8,6 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageId;
@@ -165,8 +164,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private IInvoiceGenerateResult _collector;
 
 	public InvoiceCandBLCreateInvoices(
-			@Nullable final MatchInvoiceService matchInvoiceService,
-			@Nullable final InvoiceDimensionFactory invoiceDimensionFactory)
+			@Nullable final MatchInvoiceService matchInvoiceService)
 	{
 
 		this.matchInvoiceService = matchInvoiceService != null ? matchInvoiceService : SpringContextHolder.instance.getBean(MatchInvoiceService.class);
