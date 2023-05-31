@@ -319,7 +319,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		Dimension orderlineDimension = dimensionService.getFromRecord(oLine);
 		orderlineDimension = orderlineDimension.withActivityId(ActivityId.ofRepoIdOrNull(activityId));
 
-		dimensionService.updateRecord(this, orderlineDimension);
+		dimensionService.updateRecordIncludingUserElements(this, orderlineDimension);
 
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
 		//
@@ -415,7 +415,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			{
 				sLineDimension = sLineDimension.withProjectId(ProjectId.ofRepoIdOrNull(oLine.getC_Project_ID()));
 			}
-			dimensionService.updateRecord(this, sLineDimension);
+			dimensionService.updateRecordIncludingUserElements(this, sLineDimension);
 		}
 		// Check if shipment line is based on RMA
 		else if (sLine.getM_RMALine_ID() != 0)

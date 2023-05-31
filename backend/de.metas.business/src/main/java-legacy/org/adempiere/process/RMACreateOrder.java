@@ -129,7 +129,7 @@ public class RMACreateOrder extends JavaProcess
 
                 final Dimension originalDimension = dimensionService.getFromRecord(originalOLine);
 
-                dimensionService.updateRecord(orderLine, originalDimension);
+                dimensionService.updateRecordIncludingUserElements(orderLine, originalDimension);
 
                 if (!orderLine.save())
                 {

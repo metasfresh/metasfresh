@@ -124,7 +124,7 @@ public class OrderLineBuilder
 
 		if (dimension != null)
 		{
-			dimensionService.updateRecord(orderLine, dimension);
+			dimensionService.updateRecordIncludingUserElements(orderLine, dimension);
 		}
 
 		orderLineBL.updatePrices(orderLine);

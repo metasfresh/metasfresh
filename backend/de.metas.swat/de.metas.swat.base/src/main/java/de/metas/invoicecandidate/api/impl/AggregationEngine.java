@@ -21,6 +21,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
 import de.metas.forex.ForexContractRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
@@ -37,6 +38,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -119,18 +121,21 @@ public final class AggregationEngine
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
 	private final MatchInvoiceService matchInvoiceService;
+	private final transient InvoiceCandidateDimensionFactory invoiceCandidateDimensionFactory;
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
 	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
-	@Nullable private final ForexContractRef forexContractRef;
+	@Nullable
+	private final ForexContractRef forexContractRef;
 	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+
 	@Builder
 	private AggregationEngine(
 			@Nullable final MatchInvoiceService matchInvoiceService,
@@ -140,10 +145,12 @@ public final class AggregationEngine
 			@Nullable final LocalDate dateAcctParam,
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
-			@Nullable final ForexContractRef forexContractRef)
+			@Nullable final ForexContractRef forexContractRef,
+			@Nullable final InvoiceCandidateDimensionFactory invoiceCandidateDimensionFactory)
 	{
 		this.bpartnerBL = coalesceNotNull(bpartnerBL, () -> Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, () -> SpringContextHolder.instance.getBean(MatchInvoiceService.class));
+		this.invoiceCandidateDimensionFactory = coalesceNotNull(invoiceCandidateDimensionFactory, () -> SpringContextHolder.instance.getBean(InvoiceCandidateDimensionFactory.class));
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
@@ -309,10 +316,10 @@ public final class AggregationEngine
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-							+ " ic's own headerAggregationKey = {};\n"
-							+ " new headerAndAggregators = {}",
-					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
+									+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
+									+ " ic's own headerAggregationKey = {};\n"
+									+ " new headerAndAggregators = {}",
+							key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
 		{
@@ -460,8 +467,8 @@ public final class AggregationEngine
 				{
 					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-							pricingSystemName,
-							invoiceHeader.getBillTo())
+												 pricingSystemName,
+												 invoiceHeader.getBillTo())
 							.appendParametersToMessage()
 							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
 							.setParameter("C_Invoice_Candidate", icRecord);
@@ -492,6 +499,11 @@ public final class AggregationEngine
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 
 			invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(icRecord, headerAggregationId)));
+
+			final Dimension invoiceCandidateDimension = invoiceCandidateDimensionFactory.getFromRecord(icRecord);
+			invoiceHeader.setDimension(invoiceCandidateDimension);
+
+			//orderLineDimensionFactory.getFromRecord(fromOrderLine)
 
 			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
@@ -640,12 +652,12 @@ public final class AggregationEngine
 		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
 			final User defaultBillContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-					.onlyActive(true)
-					.contactType(ContactType.BILL_TO_DEFAULT)
-					.bpartnerId(billBPLocationId.getBpartnerId())
-					.bPartnerLocationId(billBPLocationId)
-					.ifNotFound(IfNotFound.RETURN_NULL)
-					.build());
+																					 .onlyActive(true)
+																					 .contactType(ContactType.BILL_TO_DEFAULT)
+																					 .bpartnerId(billBPLocationId.getBpartnerId())
+																					 .bPartnerLocationId(billBPLocationId)
+																					 .ifNotFound(IfNotFound.RETURN_NULL)
+																					 .build());
 			if (defaultBillContact != null)
 			{
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
@@ -832,7 +844,7 @@ public final class AggregationEngine
 		}
 
 		final Aggregation icHeaderAggregation = aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
-				headerAggregationId.getRepoId());
+																				   headerAggregationId.getRepoId());
 		if (icHeaderAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))
 		{
 			return SectionCodeId.ofRepoIdOrNull(icRecord.getM_SectionCode_ID());

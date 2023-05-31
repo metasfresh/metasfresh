@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.dimension.Dimension;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -11,6 +12,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
@@ -103,4 +105,7 @@ public interface IInvoiceHeader
 	void setC_PaymentInstruction_ID(int C_PaymentInstruction_ID);
 
 	int getC_PaymentInstruction_ID();
+
+	@NonNull
+	Dimension getDimension();
 }

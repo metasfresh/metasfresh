@@ -8,6 +8,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageId;
@@ -164,7 +165,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private IInvoiceGenerateResult _collector;
 
 	public InvoiceCandBLCreateInvoices(
-			@Nullable final MatchInvoiceService matchInvoiceService)
+			@Nullable final MatchInvoiceService matchInvoiceService,
+			@Nullable final InvoiceDimensionFactory invoiceDimensionFactory)
 	{
 
 		this.matchInvoiceService = matchInvoiceService != null ? matchInvoiceService : SpringContextHolder.instance.getBean(MatchInvoiceService.class);
@@ -447,6 +449,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
+
+			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
+
+
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
@@ -723,7 +729,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
-				dimensionService.updateRecord(invoiceLine, dimensionService.getFromRecord(cand));
+				dimensionService.updateRecordIncludingUserElements(invoiceLine, dimensionService.getFromRecord(cand));
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it

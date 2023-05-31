@@ -24,7 +24,6 @@ package de.metas.document.dimension;
 
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,24 +32,44 @@ public class InvoiceDimensionFactory implements DimensionFactory<I_C_Invoice>
 	@Override
 	public String getHandledTableName()
 	{
-		return null;
+		return I_C_Invoice.Table_Name;
 	}
 
 	@Override
-	public @NonNull Dimension getFromRecord(@NonNull final I_C_Invoice record)
+	@NonNull
+	public Dimension getFromRecord(@NonNull final I_C_Invoice record)
 	{
-		return null;
+		return Dimension.builder()
+				.userElementString1(record.getUserElementString1())
+				.userElementString2(record.getUserElementString2())
+				.userElementString3(record.getUserElementString3())
+				.userElementString4(record.getUserElementString4())
+				.userElementString5(record.getUserElementString5())
+				.userElementString6(record.getUserElementString6())
+				.userElementString7(record.getUserElementString7())
+				.user1_ID(record.getUser1_ID())
+				.user2_ID(record.getUser2_ID())
+				.build();
 	}
 
 	@Override
 	public void updateRecord(@NonNull final I_C_Invoice record, @NonNull final Dimension from)
 	{
-
+		// nothing here;
+		// TODO  discuss with Teo
 	}
 
 	@Override
 	public void updateRecordUserElements(@NonNull final I_C_Invoice record, @NonNull final Dimension from)
 	{
-
+		record.setUserElementString1(from.getUserElementString1());
+		record.setUserElementString2(from.getUserElementString2());
+		record.setUserElementString3(from.getUserElementString3());
+		record.setUserElementString4(from.getUserElementString4());
+		record.setUserElementString5(from.getUserElementString5());
+		record.setUserElementString6(from.getUserElementString6());
+		record.setUserElementString7(from.getUserElementString7());
+		record.setUser1_ID(from.getUser1_ID());
+		record.setUser2_ID(from.getUser2_ID());
 	}
 }
