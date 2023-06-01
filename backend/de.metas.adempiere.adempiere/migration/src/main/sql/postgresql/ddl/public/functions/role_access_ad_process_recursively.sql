@@ -22,7 +22,7 @@ DECLARE
     v_roleInfo record;
     v_rowcount integer;
 BEGIN
-    RAISE NOTICE 'role_access_add_process_recursively[%]: ScopeInfo=%, AD_Role_ID=%, AD_Process_IDs=%, IsReadWrite=%', p_AD_Role_ID, p_AD_Process_IDs,p_IsReadWrite;
+    RAISE NOTICE 'role_access_add_process_recursively[%]: ScopeInfo=%, AD_Role_ID=%, AD_Process_IDs=%, IsReadWrite=%', p_ScopeInfo, p_AD_Role_ID, p_AD_Process_IDs,p_IsReadWrite;
 
     --
     -- Get role info
