@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,10 @@
  * #L%
  */
 
-package de.metas.ui.web.pporder.util;
+package de.metas.handlingunits.picking.requests;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,6 +31,7 @@ import lombok.Value;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class ProcessPickingRequest
@@ -42,9 +42,8 @@ public class ProcessPickingRequest
 	@NonNull
 	ImmutableSet<HuId> huIds;
 
-	@NonNull
+	@Nullable
 	ShipmentScheduleId shipmentScheduleId;
 
-	@NonNull
-	OnOverDelivery onOverDelivery;
+	boolean shouldSplitHUIfOverDelivery;
 }

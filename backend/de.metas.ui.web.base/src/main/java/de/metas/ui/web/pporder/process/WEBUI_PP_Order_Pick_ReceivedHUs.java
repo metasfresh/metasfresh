@@ -28,6 +28,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -43,7 +44,6 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick_ParametersFiller;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.util.HURow;
-import de.metas.ui.web.pporder.util.ProcessPickingRequest;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -155,18 +155,18 @@ public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template imp
 					.pickingSlotId(pickingSlotId)
 					.build();
 
-			WEBUI_PP_Order_ProcessHelper.pickHU(pickRequest);
+			pickingCandidateService.pickHU(pickRequest);
 
 			huIds.add(huId);
 			qtyLeftToPick = qtyLeftToPick.subtract(qtyToPick);
 
 		}
 
-		WEBUI_PP_Order_ProcessHelper.processHUs(ProcessPickingRequest.builder()
+		pickingCandidateService.processForHUIds(ProcessPickingRequest.builder()
 														.huIds(ImmutableSet.copyOf(huIds))
 														.shipmentScheduleId(shipmentScheduleId)
 														.ppOrderId(ppOrderId)
-														.onOverDelivery(pickingCandidateService.getOnOverDelivery(isTakeWholeHU))
+														.shouldSplitHUIfOverDelivery(!isTakeWholeHU)
 														.build());
 	}
 
