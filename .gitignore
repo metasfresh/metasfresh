@@ -60,3 +60,6 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 # Mac DS_Store files
 .DS_Store
+
+# this is ignored to prevent accidental git check-in of developer credentials
+**/mvn/local-settings.xml
