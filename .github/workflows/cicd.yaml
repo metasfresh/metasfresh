@@ -1,3 +1,4 @@
+#pipeline 0.1
 name: cicd
 on: [push, workflow_dispatch]
 jobs:
