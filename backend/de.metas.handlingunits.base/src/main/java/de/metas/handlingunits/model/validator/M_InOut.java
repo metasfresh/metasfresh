@@ -239,7 +239,7 @@ public class M_InOut
 		}
 
 		// make sure not a Service Repair
-		if(returnsServiceFacade.isServiceRepair(shipment))
+		if(returnsServiceFacade.isCustomerReturn(shipment) || returnsServiceFacade.isServiceRepair(shipment))
 		{
 			return;
 		}
