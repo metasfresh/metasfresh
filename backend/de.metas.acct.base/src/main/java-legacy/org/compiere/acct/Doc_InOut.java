@@ -210,7 +210,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
-		final Fact fact = newFacts(as);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
 		return ImmutableList.of(fact);
 	}
@@ -292,6 +292,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
+		dr.setQty(line.getQty().negate());
 
 		//
 		// CoGS CR
@@ -307,8 +308,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-		cr.setAD_Org_ID(line.getOrderOrgId());        // Revenue X-Org
-		cr.setQty(line.getQty().negate());
+		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
+		cr.setQty(line.getQty());
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
