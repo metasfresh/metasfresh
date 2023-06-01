@@ -467,18 +467,20 @@ jobs:
           docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
       - name: run-tests
         env:
-          refname: ${{ needs.init.outputs.tag-fixed }}
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
         timeout-minutes: 120
         run: |
           mkdir cucumber
-          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
+          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:$mfversion):/compose.yml" . && docker rm tempcopytainer
           docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
+          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber
           docker-compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results
         run: |
           find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
-          testspace "[cucumber]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code 
+          testspace "[cucumber]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber                                                          # upload database image containing post cucumber test state
       - name: assert success
         run: |
           if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi               # print cucumber log and exit if cucumber failed
@@ -490,6 +492,8 @@ jobs:
       - name: produce-summary
         run: |
           echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber' >> $GITHUB_STEP_SUMMARY
 
   redeploy:
     runs-on: ubuntu-latest
