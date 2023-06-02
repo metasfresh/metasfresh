@@ -1,73 +1,78 @@
-db:
-  build: db
-  container_name: ${BRANCH_NAME}_db
-  restart: always
-  volumes:
-    # Use a named volume for storing Postgres data.
-    #
-    # Even though a relative path (a host path) is nicer because we survive docker updates (when moby-vm is deleted along with all our docker data),
-    #   If we try to use a relative path, like `./volumes/db/data:/var/lib/postgresql/data`, we will not be able to start postgres.
-    # See: https://github.com/docker-library/postgres/issues/435
-    # Also google "FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership HINT:  The server must be started by the user that owns the data directory."
-    #
-    # To reset your local database, you can stop the db container and delete the volume with
-    # docker volume rm metasfresh_postgres
-    - ${BRANCH_NAME}_metasfresh_postgres:/var/lib/postgresql/data
-  environment:
-    - METASFRESH_USERNAME=metasfresh
-    - METASFRESH_PASSWORD=metasfresh
-    - METASFRESH_DBNAME=metasfresh
-    - DB_SYSPASS=System
-    - POSTGRES_PASSWORD=ip2LmNzXX8p8iXg9lZTWEJ9524kQDbXFudB7LR03T-xK9fLweX3TLMkA2AYcEiaS
-  ports:
-    - "${DB_PORT}:5432"
-rabbitmq:
-  build: rabbitmq
-  container_name: ${BRANCH_NAME}_rabbitmq
-  expose:
-    - "${RABBITMQ_PORT}"
-    - "${RABBITMQ_MGMT_PORT}"
-  restart: always
-  environment:
-    RABBITMQ_DEFAULT_USER: "guest"
-    RABBITMQ_DEFAULT_PASS: "guest"
-    RABBITMQ_DEFAULT_VHOST: "/"
-  ports:
-    - "${RABBITMQ_PORT}:5672"
-    - "${RABBITMQ_MGMT_PORT}:15672"
-search:
-  build: search
-  container_name: ${BRANCH_NAME}_search
-  ulimits:
-    memlock:
-      soft: -1
-      hard: -1
-    nofile:
-      soft: 65536
-      hard: 65536
-  cap_add:
-    - IPC_LOCK
-  ports:
-    - "${SEARCH_PORT}:9200"
-  volumes:
-    - ${BRANCH_NAME}_metasfresh_elasticsearch:/usr/share/elasticsearch/data
-  environment:
-    - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
-  restart: always
-postgrest:
-  build: postgrest
-  container_name: ${BRANCH_NAME}_postgrest
-  links:
-    - db:db
-  environment:
-    PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
-    PGRST_DB_SCHEMA: public
-    PGRST_DB_ANON_ROLE: metasfresh
-  ports:
-    - "${POSTGREST_PORT}:3000"
-papercut-smtp:
-  build: papercut-smtp
-  container_name: ${BRANCH_NAME}_papercut-smtp
-  ports:
-    - "${PAPERCUT_SMTP_PORT}:25"
-    - "${PAPERCUT_MGMT_PORT}:37408"
+version: '3.9'
+services:
+  db:
+    build: db
+    image: docker-db
+    container_name: ${BRANCH_NAME}_db
+    #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
+    volumes:
+      - ${BRANCH_NAME}_metasfresh_postgres:/var/lib/postgresql/data
+    environment:
+      - METASFRESH_USERNAME=metasfresh
+      - METASFRESH_PASSWORD=metasfresh
+      - METASFRESH_DBNAME=metasfresh
+      - DB_SYSPASS=System
+      - POSTGRES_PASSWORD=ip2LmNzXX8p8iXg9lZTWEJ9524kQDbXFudB7LR03T-xK9fLweX3TLMkA2AYcEiaS
+    ports:
+      - "${DB_PORT}:5432"
+
+  rabbitmq:
+    build: rabbitmq
+    image: rabbitmq
+    container_name: ${BRANCH_NAME}_rabbitmq
+    expose:
+      - "${RABBITMQ_PORT}"
+      - "${RABBITMQ_MGMT_PORT}"
+    #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MGMT_PORT}:15672"
+
+  search:
+    build: search
+    image: docker-search
+    container_name: ${BRANCH_NAME}_search
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "${SEARCH_PORT}:9200"
+    volumes:
+      - ${BRANCH_NAME}_metasfresh_elasticsearch:/usr/share/elasticsearch/data
+    environment:
+      - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
+    #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
+
+  postgrest:
+    build: postgrest
+    image: docker-postgrest
+    container_name: ${BRANCH_NAME}_postgrest
+    environment:
+      PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: metasfresh
+    ports:
+      - "${POSTGREST_PORT}:3000"
+    depends_on:
+      - db
+
+  papercut-smtp:
+    build: papercut-smtp
+    image: docker-papercut-smtp
+    container_name: ${BRANCH_NAME}_papercut-smtp
+    ports:
+      - "${PAPERCUT_SMTP_PORT}:25"
+      - "${PAPERCUT_MGMT_PORT}:37408"
+volumes:
+  main_metasfresh_postgres:
+  main_metasfresh_elasticsearch:
