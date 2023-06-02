@@ -60,7 +60,7 @@ public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentSchedule
 		attributeSegments = ImmutableSet.of(attributeSegment);
 	}
 
-	private final void loadIfNeeded()
+	private void loadIfNeeded()
 	{
 		if (loaded)
 		{
