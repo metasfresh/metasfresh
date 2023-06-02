@@ -40,8 +40,8 @@ Feature: Render invoice address
 
     # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_1                          | order_ref_12307 | S                   | I               | 1000002                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_1                          | order_ref_12307 | F                | S                   | I               | 1000002                    |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_1 | order_1               | test_product_26_02      | 1          |
@@ -79,8 +79,8 @@ Feature: Render invoice address
 
     # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_2                          | order_ref_23407 | S                   | I               | 1000002                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_2                          | order_ref_23407 | F                | S                   | I               | 1000002                    |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_1 | order_1               | test_product_26_02      | 1          |
@@ -131,8 +131,8 @@ Feature: Render invoice address
 
     # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.POReference | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_DE                         | bpLocation_CH                   | order_ref_45607 | S                   | I               | 1000002                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_DE                         | bpLocation_CH                   | order_ref_45607 | F                | S                   | I               | 1000002                    |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_1 | order_1               | test_product_26_02      | 1          |
