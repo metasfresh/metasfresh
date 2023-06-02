@@ -72,7 +72,7 @@ public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentSchedule
 		loaded = true;
 	}
 
-	private final void load()
+	private void load()
 	{
 		//
 		// Load the HU
