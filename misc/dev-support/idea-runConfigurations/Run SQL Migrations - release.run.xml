@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run SQL Migrations  - release-DB" type="Application" factoryName="Application">
+  <configuration default="false" name="Run SQL Migrations - release" type="Application" factoryName="Application">
     <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
     <option name="MAIN_CLASS_NAME" value="de.metas.migration.cli.workspace_migrate.Main" />
     <module name="de.metas.migration.cli" />
