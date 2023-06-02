@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: metasfresh/metas-db:${refname:-local}-preloaded
+    image: ${mfregistry:-metasfresh}/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
     healthcheck:
@@ -30,7 +30,7 @@ services:
       replicas: 1
 
   cucumber:
-    image: metasfresh/metas-cucumber:${refname:-local}
+    image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +39,10 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+    # uncomment and adjust 'command:' below to filter cucumber test runs
+    # make sure 'command:' is using the same indentation level as 'deploy:'
+    # for a complete list of available cucumber properties see: https://cucumber.io/docs/cucumber/api/?lang=java#list-configuration-options
+    # command: -Dcucumber.features=src/test/resources/de/metas/cucumber/features/apiaudit/apiAuditGET.feature
 
   bouncer:
     image: busybox
