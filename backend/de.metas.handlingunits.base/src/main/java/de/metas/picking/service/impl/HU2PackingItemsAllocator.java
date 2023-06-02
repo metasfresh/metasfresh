@@ -526,8 +526,9 @@ public class HU2PackingItemsAllocator
 				case FAIL:
 				{
 					throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
-							.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
-							.setParameter("qtyPacked to be Delivered", qtyPacked);
+							.appendParametersToMessage()
+							.setParameter("Shipment schedule qty to deliver", currentQtyToDeliver)
+							.setParameter("Qty intended to be delivered", qtyPacked);
 				}
 				default:
 				{
