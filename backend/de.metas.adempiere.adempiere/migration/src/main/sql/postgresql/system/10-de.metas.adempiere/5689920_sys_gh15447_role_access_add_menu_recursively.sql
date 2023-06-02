@@ -88,25 +88,6 @@ BEGIN
         );
 
     --
-    -- Document Actions
-    INSERT INTO ad_document_action_access (ad_role_id, c_doctype_id, ad_ref_list_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby)
-    SELECT p_AD_Role_ID             AS ad_role_id,
-           dt.c_doctype_id,
-           docaction.ad_ref_list_id AS ad_ref_list_id,
-           v_roleInfo.ad_client_id  AS ad_client_id,
-           0                        AS ad_org_id,
-           'Y'                      AS isactive,
-           NOW()                    AS created,
-           0                        AS createdby,
-           NOW()                    AS updated,
-           0                        AS updatedby
-    FROM c_doctype dt,
-         (SELECT rl.ad_ref_list_id, rl.value FROM ad_ref_list rl WHERE rl.ad_reference_id = 135 AND rl.isactive = 'Y') docaction
-    WHERE dt.isactive = 'Y'
-      AND NOT EXISTS (SELECT 1 FROM ad_document_action_access z WHERE z.ad_role_id = p_AD_Role_ID AND z.c_doctype_id = dt.c_doctype_id AND z.ad_ref_list_id = docaction.ad_ref_list_id);
-    --
-    GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'role_access_add_menu_recursively: Granted access to % document actions (ALL)', v_rowcount;
 
 END;
 $BODY$
