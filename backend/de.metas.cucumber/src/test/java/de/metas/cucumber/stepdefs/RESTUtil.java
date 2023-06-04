@@ -66,14 +66,15 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.Env;
-import org.springframework.http.MediaType;
 import org.slf4j.Logger;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 
@@ -117,8 +118,6 @@ public class RESTUtil
 
 	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
-		final CloseableHttpClient httpClient = HttpClients.createDefault();
-
 		final String appServerPort = System.getProperty("server.port");
 		final String url = "http://localhost:" + appServerPort + "/" + apiRequest.getEndpointPath();
 		final String verb = apiRequest.getVerb();
@@ -141,7 +140,12 @@ public class RESTUtil
 		}
 
 		setHeaders(request, authToken, apiRequest.getAdditionalHeaders());
-		final HttpResponse response = httpClient.execute(request);
+
+		final HttpResponse response;
+		try(final CloseableHttpClient httpClient = HttpClients.createDefault())
+		{
+			response = httpClient.execute(request);
+		}
 
 		final Header contentType = response.getEntity().getContentType();
 		final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
@@ -185,7 +189,12 @@ public class RESTUtil
 			apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 		}
 
-		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
+		assertThat(response.getStatusLine().getStatusCode())
+				.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
+															CoalesceUtil.coalesce(statusCode, 200),
+															response.getStatusLine().getStatusCode(),
+															apiResponseBuilder.build().getContent()))
+				.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
 		return apiResponseBuilder.build();
 	}
@@ -195,12 +204,20 @@ public class RESTUtil
 			@NonNull final String userAuthToken,
 			@Nullable final Map<String, String> additionalHeaders)
 	{
-		request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
 
-		if (additionalHeaders != null)
+		if (additionalHeaders == null)
 		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		}
+		else
+		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON_VALUE));
+			request.addHeader(HttpHeaders.ACCEPT,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.ACCEPT), MediaType.APPLICATION_JSON_VALUE));
+
 			additionalHeaders.forEach(request::addHeader);
 		}
 	}
