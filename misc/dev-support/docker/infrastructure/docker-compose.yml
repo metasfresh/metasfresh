@@ -6,7 +6,7 @@ services:
     container_name: ${BRANCH_NAME}_db
     #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
     volumes:
-      - main_metasfresh_postgres:/var/lib/postgresql/data
+      - metasfresh_postgres:/var/lib/postgresql/data
     environment:
       - METASFRESH_USERNAME=metasfresh
       - METASFRESH_PASSWORD=metasfresh
@@ -48,7 +48,7 @@ services:
     ports:
       - "${SEARCH_PORT}:9200"
     volumes:
-      - main_metasfresh_elasticsearch:/usr/share/elasticsearch/data
+      - metasfresh_elasticsearch:/usr/share/elasticsearch/data
     environment:
       - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
     #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
@@ -74,5 +74,7 @@ services:
       - "${PAPERCUT_SMTP_PORT}:25"
       - "${PAPERCUT_MGMT_PORT}:37408"
 volumes:
-  main_metasfresh_postgres:
-  main_metasfresh_elasticsearch:
+  metasfresh_postgres:
+    name: ${BRANCH_NAME}_metasfresh_postgres
+  metasfresh_elasticsearch:
+    name: ${BRANCH_NAME}_metasfresh_elasticsearch
