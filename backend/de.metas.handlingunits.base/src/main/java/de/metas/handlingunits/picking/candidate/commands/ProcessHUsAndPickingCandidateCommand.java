@@ -119,7 +119,7 @@ public class ProcessHUsAndPickingCandidateCommand
 			@Nullable final PPOrderId ppOrderId)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
-		for (PickingCandidate pickingCandidate : pickingCandidates)
+		for (final PickingCandidate pickingCandidate : pickingCandidates)
 		{
 			pickingCandidate.assertDraft();
 			if (!pickingCandidate.getPickFrom().isPickFromHU())
