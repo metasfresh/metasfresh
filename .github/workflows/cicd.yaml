@@ -472,12 +472,14 @@ jobs:
       max-parallel: 4
       fail-fast: false
       matrix:
-        profile: [bolle, zwolle]
+        profile: [bolle, zwolle, rest]
         include:
           - profile: bolle
             params: -Dcucumber.filter.tags="@bolle"
           - profile: zwolle
             params: -Dcucumber.filter.tags="@zwolle"        
+          - profile: rest
+            params: -Dcucumber.filter.tags="not @bolle and not @zwolle"        
     steps:
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
