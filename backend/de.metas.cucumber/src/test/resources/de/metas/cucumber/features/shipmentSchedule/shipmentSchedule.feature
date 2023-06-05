@@ -37,11 +37,11 @@ Feature: Shipment schedule updating
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
       | location_0601            | DE          | addr ship 10 | 123        | shipCity |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN              | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail         | OPT.BPartnerName | OPT.Phone |
-      | shipBPLocation_0601 | ship_location123 | customer_so_0601         | location_0601                | true         | true         | ship@location.com | shipBPName       | 321       |
+      | Identifier          | GLN                 | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail         | OPT.BPartnerName | OPT.Phone |
+      | shipBPLocation_0601 | ship_location_S0271 | customer_so_0601         | location_0601                | true         | true         | ship@location.com | shipBPName       | 321       |
 
 
-  @Id:
+  @Id:S0271_010
   Scenario: Create Inventory
 
     And metasfresh contains M_Inventories:

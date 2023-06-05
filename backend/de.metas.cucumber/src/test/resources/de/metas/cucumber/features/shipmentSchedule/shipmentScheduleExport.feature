@@ -39,9 +39,9 @@ Feature: Shipment schedule export rest-api
       | shipLocation             | DE          | addr ship 10 | 123        | shipCity |
       | billLocation             | DE          | addr bill 11 | 456        | billCity |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier     | GLN              | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail         | OPT.BPartnerName | OPT.Phone |
-      | shipBPLocation | ship_location123 | customer_so_25_02        | shipLocation                 | true         | false        | ship@location.com | shipBPName       | 321       |
-      | billBPLocation | bill_location123 | customer_so_25_02        | billLocation                 | false        | true         | bill@location.com | billBPName       | 654       |
+      | Identifier     | GLN                 | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail         | OPT.BPartnerName | OPT.Phone |
+      | shipBPLocation | ship_location_S0150 | customer_so_25_02        | shipLocation                 | true         | false        | ship@location.com | shipBPName       | 321       |
+      | billBPLocation | bill_location_S0150 | customer_so_25_02        | billLocation                 | false        | true         | bill@location.com | billBPName       | 654       |
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name     | OPT.EMail     | OPT.AD_Language | OPT.C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.Phone |
       | shipUser              | shipUser | ship@user.com | de_DE           | customer_so_25_02            | shipBPLocation               | 123       |
@@ -73,13 +73,13 @@ Feature: Shipment schedule export rest-api
     "externalLineId": 1111,
     "dataSource": "int-Shopware",
     "bpartner": {
-        "bpartnerIdentifier": "gln-ship_location123",
-        "bpartnerLocationIdentifier": "gln-ship_location123",
+        "bpartnerIdentifier": "gln-ship_location_S0150",
+        "bpartnerLocationIdentifier": "gln-ship_location_S0150",
         "contactIdentifier": "ext-Shopware6-shipUser_reference"
     },
     "billBPartner": {
-        "bpartnerIdentifier": "gln-bill_location123",
-        "bpartnerLocationIdentifier": "gln-bill_location123",
+        "bpartnerIdentifier": "gln-bill_location_S0150",
+        "bpartnerLocationIdentifier": "gln-bill_location_S0150",
         "contactIdentifier": "ext-Shopware6-billUser_reference"
     },
     "dateRequired": "2022-02-10",
@@ -167,13 +167,13 @@ Feature: Shipment schedule export rest-api
     "externalLineId": 2222,
     "dataSource": "int-Shopware",
     "bpartner": {
-        "bpartnerIdentifier": "gln-ship_location123",
-        "bpartnerLocationIdentifier": "gln-ship_location123",
+        "bpartnerIdentifier": "gln-ship_location_S0150",
+        "bpartnerLocationIdentifier": "gln-ship_location_S0150",
         "contactIdentifier": "ext-Shopware6-shipUser_reference"
     },
     "billBPartner": {
-        "bpartnerIdentifier": "gln-bill_location123",
-        "bpartnerLocationIdentifier": "gln-bill_location123",
+        "bpartnerIdentifier": "gln-bill_location_S0150",
+        "bpartnerLocationIdentifier": "gln-bill_location_S0150",
         "contactIdentifier": "ext-Shopware6-billUser_reference"
     },
     "dateRequired": "2022-02-10",
