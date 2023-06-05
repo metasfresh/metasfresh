@@ -21,6 +21,7 @@ CREATE VIEW Fact_Acct_Transactions_View
              gl_category_id,
              gl_budget_id,
              c_tax_id,
+             taxcode,
              m_locator_id,
              postingtype,
              c_currency_id,
@@ -90,6 +91,7 @@ SELECT fact.fact_acct_id,
        fact.gl_category_id,
        fact.gl_budget_id,
        fact.c_tax_id,
+       tax.taxcode,
        fact.m_locator_id,
        fact.postingtype,
        fact.c_currency_id,
@@ -139,5 +141,5 @@ SELECT fact.fact_acct_id,
        fact.c_bpartner2_id,
        fact.c_bpartner_location_id
 FROM fact_acct fact
+         LEFT JOIN c_tax tax ON fact.c_tax_id = tax.c_tax_id
 ;
-
