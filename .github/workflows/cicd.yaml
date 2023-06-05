@@ -1,6 +1,7 @@
-#pipeline 0.1.1
 name: cicd
 on: [push, workflow_dispatch]
+env:
+  PIPELINE_VERSION: '0.1.3'
 jobs:
 
   init:
@@ -45,7 +46,9 @@ jobs:
           echo -e "[sanitized refname]\n$OUT_REFNAME\n"
           echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
           echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
-          echo 'Artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`.' >> $GITHUB_STEP_SUMMARY
+          echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo 'artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
+          echo 'test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   java:
     runs-on: ubuntu-latest
@@ -362,7 +365,7 @@ jobs:
           docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
       - name: produce-summary
         run: |
-          echo 'Custom images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
+          echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo 'and can be deployed on any regular system via metasfresh instances rollout using the above tag as *Baseversion*.' >> $GITHUB_STEP_SUMMARY
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
@@ -421,9 +424,6 @@ jobs:
           testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
           testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
           testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
-      - name: produce-summary
-        run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -484,7 +484,6 @@ jobs:
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber                                                          # upload database image containing post cucumber test state
       - name: produce-summary
         run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber' >> $GITHUB_STEP_SUMMARY
       - name: assert success
