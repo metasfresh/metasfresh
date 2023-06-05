@@ -482,7 +482,7 @@ jobs:
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
-          cucumberparams: -Dcucumber.filter.tags=${{ matrix.cucumber-tag }}
+          cucumberparams: -Dcucumber.filter.tags="@${{ matrix.cucumber-tag }}"
         timeout-minutes: 120
         run: |
           mkdir cucumber
