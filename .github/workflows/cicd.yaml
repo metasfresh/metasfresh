@@ -471,9 +471,6 @@ jobs:
       matrix:
         cucumber-tag: [bolle, zwolle]
     steps:
-      - uses: actions/setup-node@v3
-        with:
-          cucumber-tag: ${{ matrix.cucumber-tag }}
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
         with:
