@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.1.2'
+  PIPELINE_VERSION: '0.1.3'
 jobs:
 
   init:
