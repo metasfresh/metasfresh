@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.1.2'
+  PIPELINE_VERSION: '0.2-wip'
 jobs:
 
   init:
@@ -481,7 +481,7 @@ jobs:
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
-          cucumberparams: cucumber.filter.tags=${{ matrix.cucumber-tag }}
+          cucumberparams: -Dcucumber.filter.tags=${{ matrix.cucumber-tag }}
         timeout-minutes: 120
         run: |
           mkdir cucumber
