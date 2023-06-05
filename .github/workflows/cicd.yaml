@@ -475,6 +475,10 @@ jobs:
         with:
           cucumber-tag: ${{ matrix.cucumber-tag }}
       - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
