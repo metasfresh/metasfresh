@@ -468,8 +468,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend, cucumber-build]
     strategy:
+      max-parallel: 4
+      fail-fast: false
       matrix:
-        cucumber-tag: [bolle, zwolle]
+        profile: [bolle, zwolle]
+        include:
+          - profile: bolle
+            params: -Dcucumber.filter.tags="@bolle"
+          - profile: zwolle
+            params: -Dcucumber.filter.tags="@zwolle"        
     steps:
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
@@ -482,22 +489,22 @@ jobs:
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
-          cucumberparams: -Dcucumber.filter.tags="@${{ matrix.cucumber-tag }}"
+          cucumberparams: ${{ matrix.params }}
         timeout-minutes: 120
         run: |
           mkdir cucumber
           docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
           docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
-          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber
+          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker-compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       # post cucumber database will not work as is with matrix strategy
       - name: push-results
         run: |
-          find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
-          testspace "[cucumber]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
-          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber                                                          # upload database image containing post cucumber test state
+          find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
+          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
