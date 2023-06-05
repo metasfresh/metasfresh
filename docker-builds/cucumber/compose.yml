@@ -42,7 +42,7 @@ services:
     # uncomment and adjust 'command:' below to filter cucumber test runs
     # make sure 'command:' is using the same indentation level as 'deploy:'
     # for a complete list of available cucumber properties see: https://cucumber.io/docs/cucumber/api/?lang=java#list-configuration-options
-    command: ${cucumberparams:}
+    command: ${cucumberparams:-}
 
   bouncer:
     image: busybox

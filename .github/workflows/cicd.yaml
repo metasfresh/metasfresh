@@ -435,25 +435,16 @@ jobs:
           name: junit-logs
           path: junit/**/junit.log
 
-  cucumber:
-    name: test (cucumber)
+  cucumber-build:
+    name: build (cucumber)
     runs-on: ubuntu-latest
-    needs: [init, backend, frontend]
-    strategy:
-      matrix:
-        cucumber-tag: [bolle, zwolle]
+    needs: [init, java]
     steps:
-      - uses: actions/setup-node@v3
-        with:
-          cucumber-tag: ${{ matrix.cucumber-tag }}
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        with:
-          domain: metasfresh
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -472,6 +463,21 @@ jobs:
         run: |
           docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+  cucumber-run:
+    name: test (cucumber)
+    runs-on: ubuntu-latest
+    needs: [init, backend, frontend, cucumber-build]
+    strategy:
+      matrix:
+        cucumber-tag: [bolle, zwolle]
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          cucumber-tag: ${{ matrix.cucumber-tag }}
+      - uses: actions/checkout@v3
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -484,6 +490,7 @@ jobs:
           docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber
           docker-compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
+      # post cucumber database will not work as is with matrix strategy
       - name: push-results
         run: |
           find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
