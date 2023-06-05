@@ -187,12 +187,21 @@ public class RESTUtil
 				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 			}
 
+<<<<<<< HEAD
 		assertThat(response.getStatusLine().getStatusCode())
 				.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
 															CoalesceUtil.coalesce(statusCode, 200),
 															response.getStatusLine().getStatusCode(),
 															apiResponseBuilder.build().getContent()))
 				.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
+=======
+			assertThat(response.getStatusLine().getStatusCode())
+					.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
+																CoalesceUtil.coalesce(statusCode, 200),
+																response.getStatusLine().getStatusCode(),
+																apiResponseBuilder.build().getContent()))
+					.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
+>>>>>>> a22e5b8f990 (Update affected M_ShipmentSchedules after stock change (#15461))
 
 			return apiResponseBuilder.build();
 		}
