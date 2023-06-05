@@ -47,7 +47,7 @@ jobs:
           echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
           echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
           echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
-          echo '* more information under: https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds#readme'
+          echo '* more information under: https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
