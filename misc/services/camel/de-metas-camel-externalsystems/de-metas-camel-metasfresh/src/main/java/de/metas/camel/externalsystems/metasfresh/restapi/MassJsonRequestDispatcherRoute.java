@@ -81,7 +81,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 																						MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT);
 		//@formatter:off
 		from(file(massJsonRequestProcessingLocation + "?moveFailed=.error&antExclude=" + IN_PROGRESS_PREFIX + "*"))
-				.streamCaching()
+				// .streamCaching() no stream-caching required. We are streaming this stream just once
 				.doTry()
 					.routeId(MASS_JSON_REQUEST_ROUTE_ID).id(PARSE_MASS_JSON_REQUEST_PROCESSOR_ID)
 					.process(this::parseMassJsonRequest)

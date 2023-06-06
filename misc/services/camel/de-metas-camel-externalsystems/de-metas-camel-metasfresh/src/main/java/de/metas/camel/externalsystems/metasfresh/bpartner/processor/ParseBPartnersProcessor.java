@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.metasfresh.bpartner.processor;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
@@ -34,6 +35,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
 
 import java.io.IOException;
 
@@ -65,11 +67,16 @@ public class ParseBPartnersProcessor implements Processor
 					.sharedJsonObjectMapper()
 					.readValue(parser, JsonRequestBPartnerUpsertItem.class);
 		}
+		catch (final ValueInstantiationException e)
+		{
+			exchange.getIn().setBody(null);
+			throw new RuntimeCamelException("Unable to create JSON-Object at location " + e.getLocation(), e);
+		}
 		catch (final Exception exception)
 		{
-			exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, false);
+			//exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, false); don't stop parsing because of this one error
+			//parser.close();
 			exchange.getIn().setBody(null);
-			parser.close();
 			throw exception;
 		}
 

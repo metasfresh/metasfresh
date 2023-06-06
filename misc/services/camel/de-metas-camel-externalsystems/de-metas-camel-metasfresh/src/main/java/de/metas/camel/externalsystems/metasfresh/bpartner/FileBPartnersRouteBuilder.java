@@ -78,6 +78,7 @@ public class FileBPartnersRouteBuilder extends RouteBuilder
 					.endDoTry()
 					.doCatch(Exception.class)
 						.process(this::collectError)
+						.to(direct(MF_ERROR_ROUTE_ID)) // also notify metasfresh!
 					.end()
 				.end()
 				.to(direct(MASS_UPSERT_FEEDBACK_ROUTE_ID));
