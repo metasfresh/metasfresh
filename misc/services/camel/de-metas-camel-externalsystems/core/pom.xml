@@ -358,7 +358,7 @@
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <image>eclipse-temurin:17.0.5_8-jdk</image>
+                        <image>eclipse-temurin:17.0.7_7-jdk</image>
                         <auth>
                             <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
                             <!-- we authenticate on pulls to avoid the rate limit -->
