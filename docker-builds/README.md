@@ -2,10 +2,10 @@
 ## Build
 
 ### CICD (github actions)
-pipeline is located under _.github\workflows\cicd.yaml_ and gets executed on push<br>
+pipeline is located under *.github\workflows\cicd.yaml* and gets executed on push<br>
 executions can be followed under: https://github.com/metasfresh/metasfresh/actions<br>
 junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
-images will get pushed to our docker hub registries with _{branch-name}.{build-number}_ tags<br>
+images will get pushed to our docker hub registries with `<mf-version>-<branch-name>.<build-number>` tags<br>
 
 #### Further reading about github related topics
 
@@ -18,7 +18,8 @@ Build all docker images on a local windows machine by executing ```build.cmd``` 
 The resulting docker images will not get pushed to any registry and just sit on your local system with _:local_ or _:local-compat_ tags<br>
 <br>
 The java builds need some third party maven packages. Since we now get them from github (instead of nexus) and github packages currently only supports access to maven repositories when you are logged in, you need to supply credentials for the local build to work.<br>
-Otherwise local java builds will encounter an error similar to: `[ERROR] Failed to execute goal on project metasfresh-assemblies` [...] `401 Unauthorized`.<br>
+Otherwise local java builds will encounter an error similar to:<bt>
+`[ERROR] Failed to execute goal on project metasfresh-assemblies` [...] `401 Unauthorized`.<br>
 <br>
 Do the following
 * create a classic PAT: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
@@ -55,9 +56,9 @@ the generated *build-info.properties* will specify the version containing an add
 `<mfversion>.<discriminator>-<qualifier>.<buildnr>`
 
 discriminators values are
-* `1` for classic metasfresh/master builds
-* `2` for classic metasfresh/<customer-branch> builds
-* `3` for github actions metasfresh builds
+* `1` for classic `metasfresh/master` builds
+* `2` for classic `metasfresh/<customer-branch>` builds
+* `3` for all github actions `metasfresh` builds
 
 so in fact for github actions builds the *build-info.properties* will always contain a version of the form
 `<mfversion>.3-<qualifier>.<buildnr>`
@@ -89,6 +90,7 @@ an overview of existing tags can be found here: https://hub.docker.com/repositor
 junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
 in addition to that, a database image with the post cucumber run state is available for every cucumber run as:<br>
 `metasfresh/metas-db:<tag>-postcucumber`<br>
+<br>
 which can be run like this: ```docker run -it --rm -p 15432:5432 metasfresh/metas-db:<tag>-postcucumber```
 
 ### local
@@ -120,6 +122,6 @@ this can be adjusted by modifying the *cucumber.command* section in _docker-buil
 <br>
 
 #### Cypress
-to run cypress tests, go to _\docker-builds\e2e and execute ```run.cmd```<br>
+to run cypress tests, go to *\docker-builds\e2e* and execute ```run.cmd```<br>
 should take about 120 minutes localy<br>
 cypress tests are currently not run on github actions<br>
