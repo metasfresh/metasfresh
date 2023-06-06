@@ -22,6 +22,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.forex.ForexContractRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
@@ -38,7 +39,6 @@ import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -121,7 +121,7 @@ public final class AggregationEngine
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
 	private final MatchInvoiceService matchInvoiceService;
-	private final transient InvoiceCandidateDimensionFactory invoiceCandidateDimensionFactory;
+	private final DimensionService dimensionService;
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
@@ -146,11 +146,11 @@ public final class AggregationEngine
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@Nullable final ForexContractRef forexContractRef,
-			@Nullable final InvoiceCandidateDimensionFactory invoiceCandidateDimensionFactory)
+			@Nullable final DimensionService dimensionService)
 	{
 		this.bpartnerBL = coalesceNotNull(bpartnerBL, () -> Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, () -> SpringContextHolder.instance.getBean(MatchInvoiceService.class));
-		this.invoiceCandidateDimensionFactory = coalesceNotNull(invoiceCandidateDimensionFactory, () -> SpringContextHolder.instance.getBean(InvoiceCandidateDimensionFactory.class));
+		this.dimensionService = coalesceNotNull(dimensionService, () -> SpringContextHolder.instance.getBean(DimensionService.class));
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
@@ -500,7 +500,7 @@ public final class AggregationEngine
 
 			invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(icRecord, headerAggregationId)));
 
-			final Dimension invoiceCandidateDimension = invoiceCandidateDimensionFactory.getFromRecord(icRecord);
+			final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(icRecord);
 			invoiceHeader.setDimension(invoiceCandidateDimension);
 
 			//orderLineDimensionFactory.getFromRecord(fromOrderLine)

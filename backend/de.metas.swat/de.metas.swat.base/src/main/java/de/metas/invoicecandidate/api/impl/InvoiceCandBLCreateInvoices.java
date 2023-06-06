@@ -451,6 +451,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
 
 
+
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

@@ -1,12 +1,16 @@
 package de.metas.invoicecandidate.document.dimension;
 
 import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionTest;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,6 +20,9 @@ class InvoiceCandidateDimensionFactoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 	}
 
 	@Test
@@ -26,6 +33,7 @@ class InvoiceCandidateDimensionFactoryTest
 		final I_C_Invoice_Candidate record = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
+		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
 		final Dimension dimensionFromRecordExpected = dimension.toBuilder()

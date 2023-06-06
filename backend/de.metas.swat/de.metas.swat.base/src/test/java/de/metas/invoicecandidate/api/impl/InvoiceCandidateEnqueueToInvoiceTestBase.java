@@ -8,6 +8,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -45,7 +47,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -91,6 +93,9 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		this.helper = new Helper();
 
 		this.bpartner1 = icTestSupport.bpartner("test-bp");
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InvoiceDimensionFactory());
 	}
 
 	@Test

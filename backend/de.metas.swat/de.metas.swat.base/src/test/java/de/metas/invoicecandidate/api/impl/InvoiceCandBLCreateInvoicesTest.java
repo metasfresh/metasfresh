@@ -79,7 +79,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceCandBLCreateInvoicesTest
@@ -454,11 +454,18 @@ public class InvoiceCandBLCreateInvoicesTest
 				.setSOTrx(true)
 				.build(); // priceEntered, qty, discount
 
-		new InvoiceCandidateDimensionFactory().updateRecord(
+		final InvoiceCandidateDimensionFactory invoiceCandidateDimensionFactory = new InvoiceCandidateDimensionFactory();
+		final Dimension dimension = DimensionTest.newFullyPopulatedDimension().toBuilder()
+				.productId(icTestSupport.getProductId())
+				.build();
+
+		invoiceCandidateDimensionFactory.updateRecord(
 				ic,
-				DimensionTest.newFullyPopulatedDimension().toBuilder()
-						.productId(icTestSupport.getProductId())
-						.build());
+				dimension);
+
+		invoiceCandidateDimensionFactory.updateRecordUserElements(
+				ic,
+				dimension);
 		InterfaceWrapperHelper.save(ic);
 
 		icTestSupport.updateInvalid(ImmutableList.of(ic));
