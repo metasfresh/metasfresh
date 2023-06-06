@@ -456,6 +456,8 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
 
+		dimensionService.updateRecordUserElements(deliveryInstructionRecord, request.getDimension());
+
 		save(deliveryInstructionRecord);
 
 		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
@@ -483,7 +485,6 @@ public class DeliveryPlanningRepository
 
 		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 
-		dimensionService.updateRecordUserElements(shippingPackageRecord, request.getDimension());
 		saveRecord(shippingPackageRecord);
 
 		return deliveryInstructionRecord;
