@@ -24,8 +24,10 @@ class InOutLineDimensionFactoryTest
 
 		final I_M_InOutLine record = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		record.setM_Product_ID(9000002);
+
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
+		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
 		final Dimension dimensionFromRecordExpected = dimension.toBuilder()
@@ -46,7 +48,9 @@ class InOutLineDimensionFactoryTest
 		record.setC_Order_ID(9000001);
 		record.setM_Product_ID(9000002);
 
-		dimensionFactory.updateRecord(record, DimensionTest.newFullyPopulatedDimension());
+		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
+		dimensionFactory.updateRecord(record, dimension);
+		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		assertThat(record.getC_Order_ID()).isEqualTo(9000001);
 		assertThat(record.getM_Product_ID()).isEqualTo(9000002);
