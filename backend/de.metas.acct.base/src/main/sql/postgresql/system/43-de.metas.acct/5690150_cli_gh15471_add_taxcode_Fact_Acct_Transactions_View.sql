@@ -143,3 +143,4 @@ SELECT fact.fact_acct_id,
 FROM fact_acct fact
          LEFT JOIN c_tax tax ON fact.c_tax_id = tax.c_tax_id
 ;
+
