@@ -1,6 +1,7 @@
-#pipeline 0.1.1
 name: cicd
 on: [push, workflow_dispatch]
+env:
+  PIPELINE_VERSION: '0.2'
 jobs:
 
   init:
@@ -45,7 +46,10 @@ jobs:
           echo -e "[sanitized refname]\n$OUT_REFNAME\n"
           echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
           echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
-          echo 'Artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`.' >> $GITHUB_STEP_SUMMARY
+          echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
+          echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
+          echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   java:
     runs-on: ubuntu-latest
@@ -362,7 +366,7 @@ jobs:
           docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
       - name: produce-summary
         run: |
-          echo 'Custom images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
+          echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo 'and can be deployed on any regular system via metasfresh instances rollout using the above tag as *Baseversion*.' >> $GITHUB_STEP_SUMMARY
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
@@ -422,9 +426,6 @@ jobs:
           testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
           testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
           testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
-      - name: produce-summary
-        run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -436,19 +437,16 @@ jobs:
           name: junit-logs
           path: junit/**/junit.log
 
-  cucumber:
-    name: test (cucumber)
+  cucumber-build:
+    name: build (cucumber)
     runs-on: ubuntu-latest
-    needs: [init, backend, frontend]
+    needs: [init, java]
     steps:
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        with:
-          domain: metasfresh
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -467,30 +465,57 @@ jobs:
         run: |
           docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+  cucumber-run:
+    name: test (cucumber)
+    runs-on: ubuntu-latest
+    needs: [init, backend, frontend, cucumber-build]
+    strategy:
+      max-parallel: 4
+      fail-fast: false
+      matrix:
+        profile: [profile1, profile2, catchall]
+        include:
+          - profile: profile1
+            params: -Dcucumber.filter.tags="@tag1"
+          - profile: profile2
+            params: -Dcucumber.filter.tags="@tag2"        
+          - profile: catchall
+            params: -Dcucumber.filter.tags="not @tag1 and not @tag2"        
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
+          cucumberparams: ${{ matrix.params }}
         timeout-minutes: 120
         run: |
           mkdir cucumber
-          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:$mfversion):/compose.yml" . && docker rm tempcopytainer
+          docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
           docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
-          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber
+          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker-compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
+      # post cucumber database will not work as is with matrix strategy
       - name: push-results
         run: |
-          find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
-          testspace "[cucumber]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
-          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber                                                          # upload database image containing post cucumber test state
+          find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
+          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
         run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
           echo '#### images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         run: |
-          if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi               # print cucumber log and exit if cucumber failed
+          if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi                                     # print cucumber log and exit if cucumber failed
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
