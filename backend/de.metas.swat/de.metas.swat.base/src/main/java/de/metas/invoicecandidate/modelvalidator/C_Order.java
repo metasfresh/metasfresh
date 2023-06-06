@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -10,14 +11,21 @@ import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -30,6 +38,9 @@ import org.compiere.util.DisplayType;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
@@ -46,8 +57,28 @@ public class C_Order
 	final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-	private IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
+	final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+	private final static String SYS_CONFIG_UserStringElement1_DirectUpdateOrderToInvoiceCandidate = "UserStringElement1.DirectUpdateOrderToInvoiceCandidate";
+	private final static String SYS_CONFIG_UserStringElement2_DirectUpdateOrderToInvoiceCandidate = "UserStringElement2.DirectUpdateOrderToInvoiceCandidate";
+	private final static String SYS_CONFIG_UserStringElement3_DirectUpdateOrderToInvoiceCandidate = "UserStringElement3.DirectUpdateOrderToInvoiceCandidate";
+	private final static String SYS_CONFIG_UserStringElement4_DirectUpdateOrderToInvoiceCandidate = "UserStringElement4.DirectUpdateOrderToInvoiceCandidate";
+	private final static String SYS_CONFIG_UserStringElement5_DirectUpdateOrderToInvoiceCandidate = "UserStringElement5.DirectUpdateOrderToInvoiceCandidate";
+	private final static String SYS_CONFIG_UserStringElement6_DirectUpdateOrderToInvoiceCandidate = "UserStringElement6.DirectUpdateOrderToInvoiceCandidate";
+	private final static String SYS_CONFIG_UserStringElement7_DirectUpdateOrderToInvoiceCandidate = "UserStringElement7.DirectUpdateOrderToInvoiceCandidate";
+
+	private final static String SYS_CONFIG_UserStringElement1_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement1.DirectUpdateOrderToInvoice.IfReversed";
+	private final static String SYS_CONFIG_UserStringElement2_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement2.DirectUpdateOrderToInvoice.IfReversed";
+	private final static String SYS_CONFIG_UserStringElement3_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement3.DirectUpdateOrderToInvoice.IfReversed";
+	private final static String SYS_CONFIG_UserStringElement4_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement4.DirectUpdateOrderToInvoice.IfReversed";
+	private final static String SYS_CONFIG_UserStringElement5_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement5.DirectUpdateOrderToInvoice.IfReversed";
+	private final static String SYS_CONFIG_UserStringElement6_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement6.DirectUpdateOrderToInvoice.IfReversed";
+	private final static String SYS_CONFIG_UserStringElement7_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement7.DirectUpdateOrderToInvoice.IfReversed";
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void checkCreditLimit(@NonNull final I_C_Order order)
@@ -139,4 +170,118 @@ public class C_Order
 
 		return true;
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_UserElementString1,
+					I_C_Order.COLUMNNAME_UserElementString2,
+					I_C_Order.COLUMNNAME_UserElementString3,
+					I_C_Order.COLUMNNAME_UserElementString4,
+					I_C_Order.COLUMNNAME_UserElementString5,
+					I_C_Order.COLUMNNAME_UserElementString6,
+					I_C_Order.COLUMNNAME_UserElementString7 }
+
+	)
+
+	public void updateInvoiceCandidatesUserElementStrings(@NonNull final I_C_Order order)
+	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
+
+		final boolean use1_orderToIc = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement1_DirectUpdateOrderToInvoiceCandidate, false, clientAndOrgId);
+		final boolean use2_orderToIc = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement2_DirectUpdateOrderToInvoiceCandidate, false, clientAndOrgId);
+		final boolean use3_orderToIc = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement3_DirectUpdateOrderToInvoiceCandidate, false, clientAndOrgId);
+		final boolean use4_orderToIc = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement4_DirectUpdateOrderToInvoiceCandidate, false, clientAndOrgId);
+		final boolean use5_orderToIc = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement5_DirectUpdateOrderToInvoiceCandidate, false, clientAndOrgId);
+		final boolean use6_orderToIc = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement6_DirectUpdateOrderToInvoiceCandidate, false, clientAndOrgId);
+		final boolean use7_orderToIc = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement7_DirectUpdateOrderToInvoiceCandidate, false, clientAndOrgId);
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			if (use1_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString1(), order.getUserElementString1()))
+			{
+				invoiceCandidate.setUserElementString1(order.getUserElementString1());
+			}
+			if (use2_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString2(), order.getUserElementString2()))
+			{
+				invoiceCandidate.setUserElementString2(order.getUserElementString2());
+			}
+			if (use3_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString3(), order.getUserElementString3()))
+			{
+				invoiceCandidate.setUserElementString3(order.getUserElementString3());
+			}
+			if (use4_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString4(), order.getUserElementString4()))
+			{
+				invoiceCandidate.setUserElementString4(order.getUserElementString4());
+			}
+			if (use5_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString5(), order.getUserElementString5()))
+			{
+				invoiceCandidate.setUserElementString5(order.getUserElementString5());
+			}
+			if (use6_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString6(), order.getUserElementString6()))
+			{
+				invoiceCandidate.setUserElementString6(order.getUserElementString6());
+			}
+			if (use7_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString7(), order.getUserElementString7()))
+			{
+				invoiceCandidate.setUserElementString7(order.getUserElementString7());
+			}
+
+			invoiceCandDAO.save(invoiceCandidate);
+		}
+	}
+
+	public void updateReversedInvoicessUserElementStrings(@NonNull final I_C_Order order)
+	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
+
+		final boolean use1_orderToReversedInvoice = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement1_DirectUpdateOrderToInvoice_IfReversed, false, clientAndOrgId);
+		final boolean use2_orderToReversedInvoice = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement2_DirectUpdateOrderToInvoice_IfReversed, false, clientAndOrgId);
+		final boolean use3_orderToReversedInvoice = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement3_DirectUpdateOrderToInvoice_IfReversed, false, clientAndOrgId);
+		final boolean use4_orderToReversedInvoice = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement4_DirectUpdateOrderToInvoice_IfReversed, false, clientAndOrgId);
+		final boolean use5_orderToReversedInvoice = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement5_DirectUpdateOrderToInvoice_IfReversed, false, clientAndOrgId);
+		final boolean use6_orderToReversedInvoice = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement6_DirectUpdateOrderToInvoice_IfReversed, false, clientAndOrgId);
+		final boolean use7_orderToReversedInvoice = sysConfigBL.getBooleanValue(SYS_CONFIG_UserStringElement7_DirectUpdateOrderToInvoice_IfReversed, false, clientAndOrgId);
+
+		final List<I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(Collections.singletonList(OrderId.ofRepoId(order.getC_Order_ID())));
+
+		for (final I_C_Invoice invoice : invoices)
+		{
+			if (!invoiceBL.isReversal(invoice))
+			{
+				continue;
+			}
+
+			if (use1_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString1(), order.getUserElementString1()))
+			{
+				invoice.setUserElementString1(order.getUserElementString1());
+			}
+			if (use2_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString2(), order.getUserElementString2()))
+			{
+				invoice.setUserElementString2(order.getUserElementString2());
+			}
+			if (use3_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString3(), order.getUserElementString3()))
+			{
+				invoice.setUserElementString3(order.getUserElementString3());
+			}
+			if (use4_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString4(), order.getUserElementString4()))
+			{
+				invoice.setUserElementString4(order.getUserElementString4());
+			}
+			if (use5_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString5(), order.getUserElementString5()))
+			{
+				invoice.setUserElementString5(order.getUserElementString5());
+			}
+			if (use6_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString6(), order.getUserElementString6()))
+			{
+				invoice.setUserElementString6(order.getUserElementString6());
+			}
+			if (use7_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString7(), order.getUserElementString7()))
+			{
+				invoice.setUserElementString7(order.getUserElementString7());
+			}
+
+			invoiceDAO.save(invoice);
+		}
+	}
+
 }
