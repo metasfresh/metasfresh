@@ -181,7 +181,6 @@ public class C_Order
 					I_C_Order.COLUMNNAME_UserElementString7 }
 
 	)
-
 	public void updateInvoiceCandidatesUserElementStrings(@NonNull final I_C_Order order)
 	{
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
@@ -230,7 +229,17 @@ public class C_Order
 		}
 	}
 
-	public void updateReversedInvoicessUserElementStrings(@NonNull final I_C_Order order)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_UserElementString1,
+					I_C_Order.COLUMNNAME_UserElementString2,
+					I_C_Order.COLUMNNAME_UserElementString3,
+					I_C_Order.COLUMNNAME_UserElementString4,
+					I_C_Order.COLUMNNAME_UserElementString5,
+					I_C_Order.COLUMNNAME_UserElementString6,
+					I_C_Order.COLUMNNAME_UserElementString7 }
+
+	)
+	public void updateReversedInvoicesUserElementStrings(@NonNull final I_C_Order order)
 	{
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
 
