@@ -5,6 +5,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -44,19 +46,26 @@ public class GenerateOutgoingDeliveryPlanningCommand
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
-	@NonNull private final I_M_ShipmentSchedule shipmentSchedule;
-	@NonNull private final DeliveryStatusColorPalette colorPalette;
+	@NonNull
+	private final I_M_ShipmentSchedule shipmentSchedule;
+	@NonNull
+	private final DeliveryStatusColorPalette colorPalette;
+
+	@NonNull
+	private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateOutgoingDeliveryPlanningCommand(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final DeliveryStatusColorPalette colorPalette)
+			@NonNull final DeliveryStatusColorPalette colorPalette,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 
 		this.shipmentSchedule = shipmentSchedule;
 		this.colorPalette = colorPalette;
+		this.dimensionService = dimensionService;
 	}
 
 	public void execute()
@@ -136,6 +145,10 @@ public class GenerateOutgoingDeliveryPlanningCommand
 			}
 
 			requestBuilder.shipperId(ShipperId.ofRepoIdOrNull(orderLine.getM_Shipper_ID()));
+
+			final Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
+			requestBuilder.dimension(orderLineDimension);
+
 		}
 
 		return requestBuilder.build();
