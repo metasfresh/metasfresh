@@ -125,6 +125,7 @@ public class CampaignPriceRepository
 				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(record.getM_PricingSystem_ID()))
 				.countryId(CountryId.ofRepoId(record.getC_Country_ID()))
 				.validRange(Range.closed(validFrom, validTo))
+				.priceList(record.getPriceList())
 				//
 				.priceStd(Money.of(record.getPriceStd(), currencyId))
 				.priceUomId(extractProductPriceUomId(record))

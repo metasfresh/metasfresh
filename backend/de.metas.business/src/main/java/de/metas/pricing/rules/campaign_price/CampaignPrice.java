@@ -1,5 +1,6 @@
 package de.metas.pricing.rules.campaign_price;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
@@ -63,6 +64,9 @@ public class CampaignPrice
 
 	@NonNull
 	Range<LocalDate> validRange;
+
+	@NonNull
+	BigDecimal priceList;
 
 	@NonNull
 	Money priceStd;
