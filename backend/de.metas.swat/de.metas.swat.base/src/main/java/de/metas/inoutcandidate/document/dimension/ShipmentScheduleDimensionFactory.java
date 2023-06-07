@@ -35,6 +35,8 @@ public class ShipmentScheduleDimensionFactory implements DimensionFactory<I_M_Sh
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
 		//record.setM_Product_ID(ProductId.toRepoId(from.getProductId())); // don't override the product
 		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
+
+		updateRecordUserElements(record, from);
 	}
 
 	@Override
