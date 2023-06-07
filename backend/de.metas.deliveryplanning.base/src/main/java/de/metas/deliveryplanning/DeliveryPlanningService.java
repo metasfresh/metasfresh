@@ -187,6 +187,7 @@ public class DeliveryPlanningService
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.receiptSchedule(receiptScheduleRecord)
 				.colorPalette(getColorPalette())
+				.dimensionService(dimensionService)
 				.build()
 				.execute();
 	}
