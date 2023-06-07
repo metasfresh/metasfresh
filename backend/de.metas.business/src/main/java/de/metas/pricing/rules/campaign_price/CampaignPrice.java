@@ -1,12 +1,6 @@
 package de.metas.pricing.rules.campaign_price;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Range;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
@@ -21,6 +15,9 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -65,8 +62,8 @@ public class CampaignPrice
 	@NonNull
 	Range<LocalDate> validRange;
 
-	@NonNull
-	BigDecimal priceList;
+	@Nullable
+	Money priceList;
 
 	@NonNull
 	Money priceStd;
