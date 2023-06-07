@@ -184,9 +184,9 @@ public class I_Invoice_Candidate_StepDef
 		final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(billBPartnerLocationIdentifier);
 		softly.assertThat(invoiceCandidate.getBill_Location_ID()).as("C_BPartnerLocation_ID").isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
 
-		final String billBPartnerContactIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_AD_User contact = contactTable.get(billBPartnerContactIdentifier);
-		softly.assertThat(invoiceCandidate.getBill_User_ID()).as("invoiceCandidate.Bill_User_ID").isEqualTo(contact.getAD_User_ID());
+		final String billBPartnerContactIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_AD_User contact = billBPartnerContactIdentifier == null ? null : contactTable.get(billBPartnerContactIdentifier);
+		softly.assertThat(invoiceCandidate.getBill_User_ID()).as("invoiceCandidate.Bill_User_ID").isEqualTo(contact == null ? 0 : contact.getAD_User_ID());
 
 		final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_AD_Org org = orgTable.get(orgIdentifier);

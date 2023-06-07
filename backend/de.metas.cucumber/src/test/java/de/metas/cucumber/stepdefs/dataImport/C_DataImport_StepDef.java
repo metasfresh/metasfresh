@@ -96,10 +96,6 @@ public class C_DataImport_StepDef
 		final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(billBPartnerLocationIdentifier);
 		assertThat(bPartnerLocation).isNotNull();
 
-		final String billBPartnerContactIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_AD_User contact = contactTable.get(billBPartnerContactIdentifier);
-		assertThat(contact).isNotNull();
-
 		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final String productValue;
 		if (Check.isNotBlank(productIdentifier))
@@ -115,6 +111,9 @@ public class C_DataImport_StepDef
 
 		final String qtyOrdered = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_QtyOrdered);
 		final String isSOTrx = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_IsSOTrx);
+
+		final String billBPartnerContactIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int contact = billBPartnerContactIdentifier == null ? 0 : contactTable.get(billBPartnerContactIdentifier).getAD_User_ID();
 
 		final String qtyDelivered = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_QtyDelivered);
 		final String dateOrdered = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_DateOrdered);
@@ -143,7 +142,7 @@ public class C_DataImport_StepDef
 
 		final String payload = bpartnerValue + ";"
 				+ bPartnerLocation.getC_BPartner_Location_ID() + ";"
-				+ contact.getAD_User_ID() + ";"
+				+ (contact == 0 ? "" : contact) + ";"
 				+ productValue + ";"
 				+ TimeUtil.asLocalDate(dateOrdered) + ";"
 				+ qtyOrdered + ";"

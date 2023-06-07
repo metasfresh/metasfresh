@@ -348,6 +348,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
 				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Provided " + COLUMNNAME_Bill_User_ID + " not found for " + COLUMNNAME_Bill_BPartner_ID + "!" + ", '"
 				+ " WHERE i." + COLUMNNAME_Bill_BPartner_ID + " NOT IN ( " + sqlBillBPartnerIdForProvidedBillUser + " ) "
+				+ " AND i." + COLUMNNAME_Bill_User_ID + " is not null "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
