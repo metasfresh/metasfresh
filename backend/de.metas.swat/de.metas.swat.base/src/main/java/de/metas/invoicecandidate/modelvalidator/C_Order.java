@@ -10,6 +10,7 @@ import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -255,7 +256,8 @@ public class C_Order
 
 		for (final I_C_Invoice invoice : invoices)
 		{
-			if (!invoiceBL.isReversal(invoice))
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
+			if (!docStatus.isReversed())
 			{
 				continue;
 			}
