@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
@@ -45,7 +43,9 @@ public class HUDescriptor
 	int huId;
 	boolean isExternalProperty;
 
-	/** all quantities are in the product's stocking-UOM */
+	/**
+	 * all quantities are in the product's stocking-UOM
+	 */
 	BigDecimal quantity;
 
 	@JsonCreator
@@ -53,12 +53,12 @@ public class HUDescriptor
 	private HUDescriptor(
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("huId") final int huId,
-			@JsonProperty("isExternalProperty") @Nullable final Boolean isExternalProperty,
+			@JsonProperty("isExternalProperty") final boolean isExternalProperty,
 			@JsonProperty("quantity") @NonNull final BigDecimal quantity)
 	{
 		this.huId = checkIdGreaterThanZero("huId", huId);
 		this.productDescriptor = productDescriptor;
-		this.isExternalProperty = CoalesceUtil.coalesceNotNull(isExternalProperty, false);
+		this.isExternalProperty = isExternalProperty;
 
 		Check.errorIf(quantity.signum() < 0, "quantity may not be less than zero");
 		this.quantity = quantity;
