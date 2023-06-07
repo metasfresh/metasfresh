@@ -626,7 +626,7 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getM_SectionCode_ID()).as("M_SectionCode_ID").isEqualTo(sectionCode.getM_SectionCode_ID());
 		}
 
-		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_UserElementString2);
+		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_UserElementString2);
 		if (Check.isNotBlank(userElementString2))
 		{
 			softly.assertThat(invoice.getUserElementString2()).as("UserElementString2").isEqualTo(userElementString2);

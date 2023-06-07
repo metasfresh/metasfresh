@@ -258,7 +258,7 @@ public class C_InvoiceLine_StepDef
 		}
 
 
-		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_UserElementString2);
+		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_UserElementString2);
 		if (de.metas.util.Check.isNotBlank(userElementString2))
 		{
 			softly.assertThat(invoiceLine.getUserElementString2()).as("UserElementString2").isEqualTo(userElementString2);

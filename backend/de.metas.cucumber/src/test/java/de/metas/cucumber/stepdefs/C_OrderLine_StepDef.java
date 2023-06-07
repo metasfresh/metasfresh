@@ -533,7 +533,7 @@ public class C_OrderLine_StepDef
 		}
 
 
-		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_UserElementString2);
+		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_UserElementString2);
 		if (de.metas.util.Check.isNotBlank(userElementString2))
 		{
 			assertThat(orderLine.getUserElementString2()).isEqualTo(userElementString2);
