@@ -363,7 +363,7 @@ public class PurchaseCandidateRepository
 
 		if (purchaseCandidate.getDimension() != null)
 		{
-			dimensionService.updateRecordIncludingUserElements(record, purchaseCandidate.getDimension());
+			dimensionService.updateRecord(record, purchaseCandidate.getDimension());
 		}
 
 		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfoOrNull());

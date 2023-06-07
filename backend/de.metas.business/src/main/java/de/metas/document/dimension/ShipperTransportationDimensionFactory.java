@@ -22,6 +22,12 @@
 
 package de.metas.document.dimension;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -54,7 +60,7 @@ public class ShipperTransportationDimensionFactory implements DimensionFactory<I
 	@Override
 	public void updateRecord(@NonNull final I_M_ShipperTransportation record, @NonNull final Dimension from)
 	{
-		// nothing here yet
+		updateRecordUserElements(record, from);
 	}
 
 	@Override

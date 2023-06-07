@@ -72,6 +72,6 @@ public class M_InOutLine
 			return;
 		}
 
-		dimensionService.updateRecordIncludingUserElements(inOutLine, orderLineDimension.withActivityId(productActivityId));
+		dimensionService.updateRecord(inOutLine, orderLineDimension.withActivityId(productActivityId));
 	}
 }

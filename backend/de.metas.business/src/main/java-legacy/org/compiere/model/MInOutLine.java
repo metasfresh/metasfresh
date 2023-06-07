@@ -186,7 +186,7 @@ public class MInOutLine extends X_M_InOutLine
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
 
 		final Dimension orderLineDimensions = dimensionService.getFromRecord(oLine);
-		dimensionService.updateRecordIncludingUserElements(this, orderLineDimensions);
+		dimensionService.updateRecord(this, orderLineDimensions);
 	}	// setOrderLine
 
 	/**
@@ -235,7 +235,7 @@ public class MInOutLine extends X_M_InOutLine
 		setAD_OrgTrx_ID(iLine.getAD_OrgTrx_ID());
 
 		final Dimension invoiceLineDimension = dimensionService.getFromRecord(iLine);
-		dimensionService.updateRecordIncludingUserElements(this,invoiceLineDimension);
+		dimensionService.updateRecord(this, invoiceLineDimension);
 
 	}	// setInvoiceLine
 

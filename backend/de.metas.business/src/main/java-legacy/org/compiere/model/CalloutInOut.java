@@ -417,7 +417,7 @@ public class CalloutInOut extends CalloutEngine
 			inoutLine.setAD_OrgTrx_ID(ol.getAD_OrgTrx_ID());
 
 			final Dimension orderLineDimensions = dimensionService.getFromRecord(ol);
-			dimensionService.updateRecordIncludingUserElements(inoutLine, orderLineDimensions);
+			dimensionService.updateRecord(inoutLine, orderLineDimensions);
 		}
 
 		return NO_ERROR;

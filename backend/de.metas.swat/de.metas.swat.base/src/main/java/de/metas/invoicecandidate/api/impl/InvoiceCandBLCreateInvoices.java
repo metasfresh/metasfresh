@@ -728,7 +728,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
-				dimensionService.updateRecordIncludingUserElements(invoiceLine, dimensionService.getFromRecord(cand));
+				dimensionService.updateRecord(invoiceLine, dimensionService.getFromRecord(cand));
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it

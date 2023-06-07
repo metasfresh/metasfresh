@@ -64,6 +64,7 @@ public class ForecastLineDimensionFactory implements DimensionFactory<I_M_Foreca
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
 		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		updateRecordUserElements(record, from);
 	}
 	@Override
 	public void updateRecordUserElements(@NonNull final I_M_ForecastLine record, @NonNull final Dimension from)

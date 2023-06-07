@@ -399,7 +399,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
 		}
 
-		dimensionService.updateRecordIncludingUserElements(icRecord, inOutLineDimension);
+		dimensionService.updateRecord(icRecord, inOutLineDimension);
 
 		//DocType
 		final DocTypeId invoiceDocTypeId = extractDocTypeId(inOutLineRecord);

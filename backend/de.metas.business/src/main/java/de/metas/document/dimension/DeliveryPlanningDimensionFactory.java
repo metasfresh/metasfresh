@@ -22,6 +22,8 @@
 
 package de.metas.document.dimension;
 
+import de.metas.product.ProductId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.stereotype.Component;
@@ -40,6 +42,8 @@ public class DeliveryPlanningDimensionFactory implements DimensionFactory<I_M_De
 	public Dimension getFromRecord(@NonNull final I_M_Delivery_Planning record)
 	{
 		return Dimension.builder()
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -54,7 +58,8 @@ public class DeliveryPlanningDimensionFactory implements DimensionFactory<I_M_De
 	@Override
 	public void updateRecord(@NonNull final I_M_Delivery_Planning record, @NonNull final Dimension from)
 	{
-		// nothing here yet
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+		updateRecordUserElements(record, from);
 	}
 
 	@Override

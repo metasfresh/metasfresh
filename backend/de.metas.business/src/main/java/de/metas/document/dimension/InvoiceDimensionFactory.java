@@ -22,6 +22,12 @@
 
 package de.metas.document.dimension;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -40,6 +46,10 @@ public class InvoiceDimensionFactory implements DimensionFactory<I_C_Invoice>
 	public Dimension getFromRecord(@NonNull final I_C_Invoice record)
 	{
 		return Dimension.builder()
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
+				.campaignId(record.getC_Campaign_ID())
+				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -55,8 +65,12 @@ public class InvoiceDimensionFactory implements DimensionFactory<I_C_Invoice>
 	@Override
 	public void updateRecord(@NonNull final I_C_Invoice record, @NonNull final Dimension from)
 	{
-		// nothing here;
-		// TODO  discuss with Teo
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
+		record.setC_Campaign_ID(from.getCampaignId());
+		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
+
+		updateRecordUserElements(record, from);
 	}
 
 	@Override

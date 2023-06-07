@@ -624,7 +624,7 @@ public class InOutProducer implements IInOutProducer
 		// Contract
 		line.setC_Flatrate_Term_ID(rs.getC_Flatrate_Term_ID());
 
-		dimensionService.updateRecordIncludingUserElements(line, dimensionService.getFromRecord(rs));
+		dimensionService.updateRecord(line, dimensionService.getFromRecord(rs));
 	}
 
 	/**

@@ -209,7 +209,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Dimension
 		final Dimension orderLineDimension = extractDimension(orderLine);
-		dimensionService.updateRecordIncludingUserElements(icRecord, orderLineDimension);
+		dimensionService.updateRecord(icRecord, orderLineDimension);
 
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(

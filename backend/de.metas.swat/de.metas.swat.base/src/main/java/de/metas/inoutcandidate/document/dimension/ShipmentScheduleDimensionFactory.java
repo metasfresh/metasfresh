@@ -40,6 +40,6 @@ public class ShipmentScheduleDimensionFactory implements DimensionFactory<I_M_Sh
 	@Override
 	public void updateRecordUserElements(@NonNull final I_M_ShipmentSchedule record, @NonNull final Dimension from)
 	{
-		//no user elements here
+		// the shipment schedule doesn't have user elements yet
 	}
 }

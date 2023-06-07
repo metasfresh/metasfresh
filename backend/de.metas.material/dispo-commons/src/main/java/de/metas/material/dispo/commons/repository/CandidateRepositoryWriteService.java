@@ -396,7 +396,7 @@ public class CandidateRepositoryWriteService
 				final I_M_ForecastLine forecastLine = forecastDAO.getForecastLineById(forecastLineId);
 
 				final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
-				dimensionService.updateRecordIncludingUserElements(candidateRecord, forecastLineDimension);
+				dimensionService.updateRecord(candidateRecord, forecastLineDimension);
 			}
 		}
 

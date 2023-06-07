@@ -50,23 +50,16 @@ public class DimensionService
 		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
 		return getFactory(tableName).getFromRecord(record);
 	}
-
-	public void updateRecord(@NonNull final Object record, @NonNull final Dimension from)
-	{
-		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
-		getFactory(tableName).updateRecord(record, from);
-	}
-
 	public void updateRecordUserElements(@NonNull final Object record, @NonNull final Dimension from)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
 		getFactory(tableName).updateRecordUserElements(record, from);
 	}
 
-	public void updateRecordIncludingUserElements(@NonNull final Object record, @NonNull final Dimension from)
+	public void updateRecord(@NonNull final Object record, @NonNull final Dimension from)
 	{
-		updateRecord(record, from);
-		updateRecordUserElements(record, from);
+		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
+		getFactory(tableName).updateRecord(record, from);
 	}
 
 	@NonNull

@@ -148,11 +148,11 @@ public class HandlerTools
 
 			if (orderLineDimension.getActivityId() == null)
 			{
-				dimensionService.updateRecordIncludingUserElements(ic, orderLineDimension.withActivityId(activityId));
+				dimensionService.updateRecord(ic, orderLineDimension.withActivityId(activityId));
 			}
 			else
 			{
-				dimensionService.updateRecordIncludingUserElements(ic, orderLineDimension);
+				dimensionService.updateRecord(ic, orderLineDimension);
 			}
 		}
 

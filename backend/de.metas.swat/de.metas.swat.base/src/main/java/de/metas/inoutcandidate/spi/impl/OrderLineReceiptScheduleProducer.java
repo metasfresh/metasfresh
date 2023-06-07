@@ -244,7 +244,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
 
 		final Dimension orderLineDimension = dimensionService.getFromRecord(line);
-		dimensionService.updateRecordIncludingUserElements(receiptSchedule, orderLineDimension);
+		dimensionService.updateRecord(receiptSchedule, orderLineDimension);
 
 		//
 		// Save & return

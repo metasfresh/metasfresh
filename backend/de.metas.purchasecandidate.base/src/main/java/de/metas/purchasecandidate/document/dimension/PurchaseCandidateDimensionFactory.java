@@ -49,6 +49,8 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
 		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
 		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+
+		updateRecordUserElements(record, from);
 	}
 
 	@Override

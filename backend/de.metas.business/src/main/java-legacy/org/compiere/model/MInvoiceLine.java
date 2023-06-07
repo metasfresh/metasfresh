@@ -18,7 +18,6 @@ package org.compiere.model;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
@@ -319,7 +318,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		Dimension orderlineDimension = dimensionService.getFromRecord(oLine);
 		orderlineDimension = orderlineDimension.withActivityId(ActivityId.ofRepoIdOrNull(activityId));
 
-		dimensionService.updateRecordIncludingUserElements(this, orderlineDimension);
+		dimensionService.updateRecord(this, orderlineDimension);
 
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
 		//
@@ -415,7 +414,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			{
 				sLineDimension = sLineDimension.withProjectId(ProjectId.ofRepoIdOrNull(oLine.getC_Project_ID()));
 			}
-			dimensionService.updateRecordIncludingUserElements(this, sLineDimension);
+			dimensionService.updateRecord(this, sLineDimension);
 		}
 		// Check if shipment line is based on RMA
 		else if (sLine.getM_RMALine_ID() != 0)

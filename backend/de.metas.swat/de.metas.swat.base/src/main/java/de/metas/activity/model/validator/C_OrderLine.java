@@ -98,7 +98,7 @@ public class C_OrderLine
 			return;
 		}
 
-		dimensionService.updateRecordIncludingUserElements(orderLine, orderLineDimension.withActivityId(productActivityId));
+		dimensionService.updateRecord(orderLine, orderLineDimension.withActivityId(productActivityId));
 	}
 
 	private ActivityId getGroupActivityId(final I_C_OrderLine orderLine)
