@@ -475,11 +475,11 @@ jobs:
         profile: [profile1, profile2, catchall]
         include:
           - profile: profile1
-            params: -Dcucumber.filter.tags="@tag1"
+            params: -Dcucumber.filter.tags="@tag1 and not @ignore"
           - profile: profile2
-            params: -Dcucumber.filter.tags="@tag2"        
+            params: -Dcucumber.filter.tags="@tag2 and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @tag1 and not @tag2"        
+            params: -Dcucumber.filter.tags="not @tag1 and not @tag2 and not @ignore"
     steps:
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
