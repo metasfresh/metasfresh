@@ -18,7 +18,7 @@ public interface I_C_Tax
 
 
 	/**
-	 * Set Boiler Plate.
+	 * Set Text Snippet.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -27,7 +27,7 @@ public interface I_C_Tax
 	void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
 
 	/**
-	 * Get Boiler Plate.
+	 * Get Text Snippet.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -356,6 +356,27 @@ public interface I_C_Tax
 
 	ModelColumn<I_C_Tax, Object> COLUMN_IsFiscalRepresentation = new ModelColumn<>(I_C_Tax.class, "IsFiscalRepresentation", null);
 	String COLUMNNAME_IsFiscalRepresentation = "IsFiscalRepresentation";
+
+	/**
+	 * Set Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReverseCharge (boolean IsReverseCharge);
+
+	/**
+	 * Get Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReverseCharge();
+
+	ModelColumn<I_C_Tax, Object> COLUMN_IsReverseCharge = new ModelColumn<>(I_C_Tax.class, "IsReverseCharge", null);
+	String COLUMNNAME_IsReverseCharge = "IsReverseCharge";
 
 	/**
 	 * Set Sales Tax.

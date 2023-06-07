@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: $mfregistry/metas-db:$mfversion-preloaded
+    image: $mfregistry/metas-db:$mfversion-$dbqualifier
     ports:
       - "15432:5432"
     healthcheck:

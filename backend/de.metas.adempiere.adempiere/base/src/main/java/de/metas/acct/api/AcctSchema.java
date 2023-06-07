@@ -68,6 +68,8 @@ public class AcctSchema
 	boolean postTradeDiscount;
 	boolean postServices;
 	boolean postIfSameClearingAccounts;
+	boolean isAllowMultiDebitAndCredit;
+
 	boolean isAutoSetDebtoridAndCreditorid;
 	int debtorIdPrefix;
 	int creditorIdPrefix;
