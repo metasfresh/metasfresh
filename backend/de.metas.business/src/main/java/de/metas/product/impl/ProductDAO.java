@@ -66,6 +66,9 @@ import org.adempiere.service.ClientId;
 import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_SupplierApproval_Norm;
@@ -722,6 +725,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+<<<<<<< HEAD
 	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
 	{
 		return queryBL
@@ -769,4 +773,30 @@ public class ProductDAO implements IProductDAO
 			throw new AdempiereException("Unknown valueType: " + valueType);
 		}
 	}
+=======
+	public boolean isProductUsed(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch();
+	}
+
+>>>>>>> ea01120e162 (#15452 prevent changing UOM of a used product (#15483))
 }
