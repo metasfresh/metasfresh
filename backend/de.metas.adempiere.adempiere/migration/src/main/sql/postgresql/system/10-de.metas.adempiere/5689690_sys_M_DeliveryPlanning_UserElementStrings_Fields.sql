@@ -230,3 +230,17 @@ UPDATE AD_Field SET DisplayLogic='@$Element_S6/X@=Y',Updated=TO_TIMESTAMP('2023-
 UPDATE AD_Field SET DisplayLogic='@$Element_S7/X@=Y',Updated=TO_TIMESTAMP('2023-05-29 18:25:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=716058
 ;
 
+
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Ship-from
+-- Column: M_Delivery_Planning.UserElementString2
+-- 2023-06-07T13:44:02.149Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-06-07 16:44:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=716053
+;
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Ship-to
+-- Column: M_Delivery_Planning.UserElementString3
+-- 2023-06-07T13:44:07.316Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-06-07 16:44:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=716054
+;
+
