@@ -25,7 +25,6 @@ class InvoiceLineDimensionFactoryTest
 
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
-		dimensionFactory.updateRecordUserElements(record, dimension);
 
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
@@ -47,7 +46,6 @@ class InvoiceLineDimensionFactoryTest
 
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
-		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		assertThat(record.getC_Order_ID()).isEqualTo(12345);
 	}

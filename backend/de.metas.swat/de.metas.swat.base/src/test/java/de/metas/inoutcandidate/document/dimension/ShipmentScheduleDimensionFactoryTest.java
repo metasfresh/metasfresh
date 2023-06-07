@@ -63,7 +63,6 @@ class ShipmentScheduleDimensionFactoryTest
 		record.setM_Product_ID(900002);
 
 		dimensionFactory.updateRecord(record, DimensionTest.newFullyPopulatedDimension());
-		dimensionFactory.updateRecordUserElements(record, DimensionTest.newFullyPopulatedDimension());
 
 		assertThat(record.getC_Order_ID()).isEqualTo(900001);
 		assertThat(record.getM_Product_ID()).isEqualTo(900002);

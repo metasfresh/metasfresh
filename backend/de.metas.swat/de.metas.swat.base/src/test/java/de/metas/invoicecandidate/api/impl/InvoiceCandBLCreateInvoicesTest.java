@@ -463,11 +463,6 @@ public class InvoiceCandBLCreateInvoicesTest
 				ic,
 				dimension);
 
-		invoiceCandidateDimensionFactory.updateRecordUserElements(
-				ic,
-				dimension);
-		InterfaceWrapperHelper.save(ic);
-
 		icTestSupport.updateInvalid(ImmutableList.of(ic));
 
 		final IInvoiceGenerateResult result = invoiceCandBL.createInvoiceGenerateResult(true); // shallStoreInvoices=true

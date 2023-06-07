@@ -28,7 +28,6 @@ class ReceiptScheduleDimensionFactoryTest
 		record.setM_Product_ID(900002);
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
-		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
 		final Dimension dimensionFromRecordExpected = dimension.toBuilder()
@@ -52,7 +51,6 @@ class ReceiptScheduleDimensionFactoryTest
 		record.setM_Product_ID(900002);
 
 		dimensionFactory.updateRecord(record, DimensionTest.newFullyPopulatedDimension());
-		dimensionFactory.updateRecordUserElements(record, DimensionTest.newFullyPopulatedDimension());
 
 		assertThat(record.getC_Order_ID()).isEqualTo(900001);
 		assertThat(record.getM_Product_ID()).isEqualTo(900002);

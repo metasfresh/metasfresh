@@ -27,7 +27,6 @@ class InOutLineDimensionFactoryTest
 
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
-		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
 		final Dimension dimensionFromRecordExpected = dimension.toBuilder()
@@ -50,7 +49,6 @@ class InOutLineDimensionFactoryTest
 
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
-		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		assertThat(record.getC_Order_ID()).isEqualTo(9000001);
 		assertThat(record.getM_Product_ID()).isEqualTo(9000002);

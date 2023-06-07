@@ -33,7 +33,6 @@ class InvoiceCandidateDimensionFactoryTest
 		final I_C_Invoice_Candidate record = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
-		dimensionFactory.updateRecordUserElements(record, dimension);
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
 		final Dimension dimensionFromRecordExpected = dimension.toBuilder()

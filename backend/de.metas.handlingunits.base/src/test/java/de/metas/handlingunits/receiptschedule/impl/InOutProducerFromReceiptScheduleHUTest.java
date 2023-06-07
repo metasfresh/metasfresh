@@ -552,7 +552,6 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	{
 		final ReceiptScheduleDimensionFactory receiptScheduleDimensionFactory = new ReceiptScheduleDimensionFactory();
 		receiptScheduleDimensionFactory.updateRecord(receiptSchedule, DimensionTest.newFullyPopulatedDimension());
-		receiptScheduleDimensionFactory.updateRecordUserElements(receiptSchedule,DimensionTest.newFullyPopulatedDimension() );
 		InterfaceWrapperHelper.save(receiptSchedule);
 		final Dimension receiptScheduleDimension = new ReceiptScheduleDimensionFactory().getFromRecord(receiptSchedule);
 
