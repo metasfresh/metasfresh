@@ -1,12 +1,15 @@
 package de.metas.forex.webui.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.forex.ForexContract;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractService;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -24,9 +27,10 @@ import org.compiere.model.I_C_ForeignExchangeContract;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class C_Order_AllocateToForexContract extends JavaProcess
-		implements IProcessPrecondition, IProcessDefaultParametersProvider
+		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
 	private final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
 	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
@@ -38,6 +42,10 @@ public class C_Order_AllocateToForexContract extends JavaProcess
 	private static final String PARAM_Amount = "Amount";
 	@Param(parameterName = PARAM_Amount, mandatory = true)
 	private BigDecimal p_AmountBD;
+
+	private static final String PARAM_FEC_RemainingAmount = "FEC_RemainingAmount";
+	@Param(parameterName = PARAM_FEC_RemainingAmount)
+	private BigDecimal p_RemainingAmount;
 
 	private ImmutableSet<ForexContractId> _eligibleForexContractIds;
 
@@ -74,6 +82,17 @@ public class C_Order_AllocateToForexContract extends JavaProcess
 		}
 	}
 
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		if (!PARAM_C_ForeignExchangeContract_ID.equals(parameterName))
+		{
+			return;
+		}
+
+		p_RemainingAmount = getForexContractOpenAmount();
+	}
+
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
 	public LookupValuesList getEligibleForexContracts()
 	{
@@ -94,6 +113,15 @@ public class C_Order_AllocateToForexContract extends JavaProcess
 	private OrderId getSelectedOrderId()
 	{
 		return OrderId.ofRepoId(getRecord_ID());
+	}
+
+	private BigDecimal getForexContractOpenAmount()
+	{
+		return Optional.ofNullable(p_forexContractId)
+				.map(forexContractService::getById)
+				.map(ForexContract::getOpenAmount)
+				.map(Money::toBigDecimal)
+				.orElse(null);
 	}
 
 	@Override
