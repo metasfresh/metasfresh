@@ -252,5 +252,9 @@ public interface IBPartnerBL extends ISingletonService
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
 
 	@NonNull
+<<<<<<< HEAD
 	Optional<String> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
+=======
+	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 }

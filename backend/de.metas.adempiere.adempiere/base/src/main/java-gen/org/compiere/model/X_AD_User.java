@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_User
  *  @author metasfresh (generated) 
@@ -12,7 +12,11 @@ import java.util.Properties;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -1013314438L;
+=======
+	private static final long serialVersionUID = -190914136L;
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 
 	/** Standard Constructor */
 	public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -406,6 +410,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setCopyInvoice (final boolean CopyInvoice)
+	{
+		set_Value (COLUMNNAME_CopyInvoice, CopyInvoice);
+	}
+
+	@Override
+	public boolean isCopyInvoice()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_CopyInvoice);
+	}
+
+	@Override
 	public void setDelDate (final @Nullable java.sql.Timestamp DelDate)
 	{
 		set_Value (COLUMNNAME_DelDate, DelDate);
@@ -415,6 +431,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.sql.Timestamp getDelDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DelDate);
+	}
+
+	@Override
+	public void setDepartment (final @Nullable java.lang.String Department)
+	{
+		set_Value (COLUMNNAME_Department, Department);
+	}
+
+	@Override
+	public java.lang.String getDepartment()
+	{
+		return get_ValueAsString(COLUMNNAME_Department);
 	}
 
 	@Override
@@ -439,6 +467,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getEMail()
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
+	public void setEmail_private (final @Nullable java.lang.String Email_private)
+	{
+		set_Value (COLUMNNAME_Email_private, Email_private);
+	}
+
+	@Override
+	public java.lang.String getEmail_private()
+	{
+		return get_ValueAsString(COLUMNNAME_Email_private);
 	}
 
 	@Override
@@ -637,6 +677,22 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
 	}
 
+<<<<<<< HEAD
+=======
+	/**
+	 * Gender AD_Reference_ID=541317
+	 * Reference name: Gender_List
+	 */
+	public static final int GENDER_AD_Reference_ID=541317;
+	/** Unbekannt = 0 */
+	public static final String GENDER_Unbekannt = "0";
+	/** Weiblich = 1 */
+	public static final String GENDER_Weiblich = "1";
+	/** Männlich = 2 */
+	public static final String GENDER_Maennlich = "2";
+	/** Divers = 3 */
+	public static final String GENDER_Divers = "3";
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 	@Override
 	public void setHobbies_interests (final @Nullable java.lang.String Hobbies_interests)
 	{
@@ -744,13 +800,32 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setIsDunningContact (final boolean IsDunningContact)
+	{
+		set_Value (COLUMNNAME_IsDunningContact, IsDunningContact);
+	}
+
+	@Override
+	public boolean isDunningContact()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
+	}
+
+	@Override
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 	public void setIsDunningDefault (final boolean IsDunningDefault)
 	{
 		set_Value (COLUMNNAME_IsDunningDefault, IsDunningDefault);
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean IsDunningDefault()
+=======
+	public boolean isDunningDefault()
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
 	}

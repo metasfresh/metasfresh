@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_User
  *  @author metasfresh (generated) 
@@ -523,6 +522,27 @@ public interface I_AD_User
 	String COLUMNNAME_ContactLimitationReason = "ContactLimitationReason";
 
 	/**
+	 * Set Copy Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyInvoice (boolean CopyInvoice);
+
+	/**
+	 * Get Copy Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isCopyInvoice();
+
+	ModelColumn<I_AD_User, Object> COLUMN_CopyInvoice = new ModelColumn<>(I_AD_User.class, "CopyInvoice", null);
+	String COLUMNNAME_CopyInvoice = "CopyInvoice";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -594,6 +614,27 @@ public interface I_AD_User
 	String COLUMNNAME_DelDate = "DelDate";
 
 	/**
+	 * Set Department.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDepartment (@Nullable java.lang.String Department);
+
+	/**
+	 * Get Department.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDepartment();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Department = new ModelColumn<>(I_AD_User.class, "Department", null);
+	String COLUMNNAME_Department = "Department";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -634,6 +675,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_EMail = new ModelColumn<>(I_AD_User.class, "EMail", null);
 	String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set eMail Private.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEmail_private (@Nullable java.lang.String Email_private);
+
+	/**
+	 * Get eMail Private.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEmail_private();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Email_private = new ModelColumn<>(I_AD_User.class, "Email_private", null);
+	String COLUMNNAME_Email_private = "Email_private";
 
 	/**
 	 * Set Alternative eMail.
@@ -680,6 +742,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMail3 = "EMail3";
 
 	/**
+<<<<<<< HEAD
 	 * Set eMail Private.
 	 *
 	 * <br>Type: String
@@ -702,6 +765,8 @@ public interface I_AD_User
 
 
 	/**
+=======
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
@@ -1108,6 +1173,30 @@ public interface I_AD_User
 	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsDunningContact (boolean IsDunningContact);
+
+	/**
+	 * Get Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isDunningContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
+	String COLUMNNAME_IsDunningContact = "IsDunningContact";
+
+	/**
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 	 * Set Dunning Default.
 	 * Dunning Default
 	 *
@@ -1125,7 +1214,11 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+<<<<<<< HEAD
 	boolean IsDunningDefault();
+=======
+	boolean isDunningDefault();
+>>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
 	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
