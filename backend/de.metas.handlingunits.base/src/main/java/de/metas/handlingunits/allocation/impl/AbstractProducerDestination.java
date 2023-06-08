@@ -268,12 +268,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
-<<<<<<< HEAD
 		huBuilder.setHUClearanceStatusInfo(CoalesceUtil.coalesce(getHUClearanceStatusInfo(), request.getClearanceStatusInfo()));
-=======
-		huBuilder.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
 		huBuilder.setIsExternalProperty(isExternalProperty());
->>>>>>> 465d4e1ac1e (Allow propagation of M_HU.IsExternalProperty when splitting HUs (#15524))
 
 		return huBuilder;
 	}
