@@ -910,6 +910,7 @@ public class HUTransformService
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
 					.setHUClearanceStatusInfo(ClearanceStatusInfo.ofHU(sourceTuHU))
+					.setIsExternalProperty(sourceTuHU.isExternalProperty())
 					.create(luPIItem.getM_HU_PI_Version());
 
 			// get or create the new parent item
