@@ -31,7 +31,8 @@ public class M_HU
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final HUUniqueAttributesService huUniqueAttributesService;
-
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public M_HU(@NonNull final HUUniqueAttributesService huUniqueAttributesService)
 	{
@@ -82,14 +83,12 @@ public class M_HU
 	public void validateStatusChange(@NonNull final I_M_HU hu)
 	{
 		final I_M_HU oldHu = InterfaceWrapperHelper.createOld(hu, I_M_HU.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		huStatusBL.assertStatusChangeIsAllowed(hu, oldHu.getHUStatus(), hu.getHUStatus());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_HUStatus)
 	public void handleHUUniqueAttributes(@NonNull final I_M_HU hu)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
 		{
@@ -105,7 +104,6 @@ public class M_HU
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID)
 	public void validateLocatorChange(@NonNull final I_M_HU hu)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		huStatusBL.assertLocatorChangeIsAllowed(hu, hu.getHUStatus());
 	}
 
@@ -142,20 +140,22 @@ public class M_HU
 		final int parentBPartnerId = hu.getC_BPartner_ID();
 		final int parentBPLocationId = hu.getC_BPartner_Location_ID();
 		final int parentLocatorId = hu.getM_Locator_ID();
+		final boolean parentIsExternalProperty = hu.isExternalProperty();
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(hu);
-		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
 		//
 		// Iterate children and update relevant fields from parent
 		for (final I_M_HU childHU : childHUs)
 		{
-			Services.get(IHUStatusBL.class).setHUStatus(huContext, childHU, parentHUStatus);
+			huStatusBL.setHUStatus(huContext, childHU, parentHUStatus);
 
 			childHU.setIsActive(parentIsActive);
 			childHU.setC_BPartner_ID(parentBPartnerId);
 			childHU.setC_BPartner_Location_ID(parentBPLocationId);
 			childHU.setM_Locator_ID(parentLocatorId);
+			childHU.setIsExternalProperty(parentIsExternalProperty);
 			handlingUnitsDAO.saveHU(childHU);
 		}
 	}
