@@ -101,8 +101,14 @@ import java.util.stream.Collectors;
 	@Nullable
 	private ClearanceStatusInfo _huClearanceStatusInfo;
 
+<<<<<<< HEAD
 	@Nullable
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+=======
+	private boolean _isExternalProperty = false;
+
+	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+>>>>>>> 465d4e1ac1e (Allow propagation of M_HU.IsExternalProperty when splitting HUs (#15524))
 
 	public HUBuilder(@NonNull final IHUContext huContext)
 	{
@@ -185,6 +191,18 @@ import java.util.stream.Collectors;
 	protected String getHUStatus()
 	{
 		return _huStatus;
+	}
+
+	@Override
+	public IHUBuilder setIsExternalProperty(final boolean isExternalProperty)
+	{
+		_isExternalProperty = isExternalProperty;
+		return this;
+	}
+
+	protected boolean isExternalProperty()
+	{
+		return _isExternalProperty;
 	}
 
 	@Override
@@ -441,6 +459,7 @@ import java.util.stream.Collectors;
 		// fresh 08162: Set M_HU.HUPlanningReceiptOwnerPM
 		final boolean huPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
+		hu.setIsExternalProperty(isExternalProperty());
 
 		setClearanceStatus(hu, parentHU, getHUClearanceStatusInfo());
 
