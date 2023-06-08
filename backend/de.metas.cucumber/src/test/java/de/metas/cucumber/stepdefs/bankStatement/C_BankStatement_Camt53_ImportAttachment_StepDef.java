@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.bankStatement;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.BankStatementCamt53Service;
 import de.metas.banking.camt53.ImportBankStatementRequest;
@@ -37,8 +38,6 @@ import org.adempiere.banking.model.I_C_BankStatement_Import_File;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Iterator;
 
 import static org.assertj.core.api.Assertions.*;
@@ -62,13 +61,14 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 		InterfaceWrapperHelper.saveRecord(importFileRecord);
 
 		final ImmutableList<String> bankStatementIdentifiers = StepDefUtil.extractIdentifiers(identifier);
-		final InputStream documentIS = new ByteArrayInputStream(fileContent.getBytes());
-		assertThat(documentIS).isNotNull();
 
 		final ImmutableSet<BankStatementId> bankStatementIds = bankStatementCamt53Service
 				.importBankToCustomerStatement(ImportBankStatementRequest
 													   .builder()
-													   .camt53File(documentIS)
+													   .camt53File(AttachmentEntryDataResource.builder()
+																		   .source(fileContent.getBytes())
+																		   .filename("does_not_matter.xml")
+																		   .build())
 													   .isMatchAmounts(true)
 													   .bankStatementImportFileId(BankStatementImportFileId.ofRepoId(importFileRecord.getC_BankStatement_Import_File_ID()))
 													   .build());

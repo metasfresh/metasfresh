@@ -1,8 +1,8 @@
 /*
  * #%L
- * camt53
+ * de.metas.banking.camt53
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,25 @@
  * #L%
  */
 
-package de.metas.banking.camt53.wrapper;
+package de.metas.banking.camt53.wrapper.v02;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.banking.BankAccountId;
-import de.metas.banking.BankId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.BalanceType12Code;
 import de.metas.banking.camt53.jaxb.camt053_001_02.CashBalance3;
 import de.metas.banking.camt53.jaxb.camt053_001_02.GenericAccountIdentification1;
+import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.camt53.wrapper.AccountStatementWrapper;
+import de.metas.banking.camt53.wrapper.IStatementLineWrapper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
-import org.slf4j.Logger;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
@@ -54,81 +50,25 @@ import java.util.Optional;
 import static de.metas.banking.camt53.jaxb.camt053_001_02.CreditDebitCode.CRDT;
 
 @Value
-public class AccountStatement2Wrapper
+@EqualsAndHashCode(callSuper = true)
+public class AccountStatement2Wrapper extends AccountStatementWrapper
 {
-	private static final Logger logger = LogManager.getLogger(AccountStatement2Wrapper.class);
-
-	private static final AdMessageKey MSG_MISSING_MF_BANK_ACCT_WITH_IBAN = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithIBAN");
-	private static final AdMessageKey MSG_MISSING_BANK_STMT_SWIFT_CODE = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementSwiftCode");
-	private static final AdMessageKey MSG_MISSING_MF_BANK_ACCT_WITH_SWIFT_CODE = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithSwiftCode");
-	private static final AdMessageKey MSG_MISSING_MF_BANK_ACCT_WITH_ACCOUNT_NO = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithAccountNo");
-	private static final AdMessageKey MSG_MISSING_BANK_STMT_ACCOUNT_NO = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementAccountNo");
-
-	@NonNull
-	IOrgDAO orgDAO;
-
 	@NonNull
 	AccountStatement2 accountStatement2;
 
-	@NonNull
-	BankAccountService bankAccountService;
-
-	@NonNull
-	CurrencyRepository currencyRepository;
-
-	@NonNull
-	IMsgBL msgBL;
-
 	@Builder
 	private AccountStatement2Wrapper(
-			@NonNull final IOrgDAO orgDAO,
 			@NonNull final AccountStatement2 accountStatement2,
 			@NonNull final BankAccountService bankAccountService,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final IMsgBL msgBL)
 	{
-		this.orgDAO = orgDAO;
+		super(bankAccountService, currencyRepository, msgBL);
+
 		this.accountStatement2 = accountStatement2;
-		this.bankAccountService = bankAccountService;
-		this.currencyRepository = currencyRepository;
-		this.msgBL = msgBL;
 	}
 
-	@NonNull
-	public ExplainedOptional<BankAccountId> getBPartnerBankAccountId()
-	{
-		final Optional<String> accountIBANOpt = getAccountIBAN();
-		if (accountIBANOpt.isPresent())
-		{
-			final String iban = accountIBANOpt.get();
-			final Optional<BankAccountId> bankAccountIdByIBAN = bankAccountService.getBankAccountIdByIBAN(iban);
-			return bankAccountIdByIBAN
-					.map(ExplainedOptional::of)
-					.orElseGet(() -> {
-						final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_IBAN, accountStatement2.getId(), iban);
-						return ExplainedOptional.emptyBecause(msg);
-					});
-		}
-
-		final ExplainedOptional<BankId> bankIdOpt = getBankId();
-		if (!bankIdOpt.isPresent())
-		{
-			return ExplainedOptional.emptyBecause(bankIdOpt.getExplanation());
-		}
-
-		final Optional<String> accountNoOpt = getAccountNo();
-		return accountNoOpt.map(accountNoCandidate -> bankAccountService.getBankAccountId(bankIdOpt.get(), accountNoCandidate)
-				.map(ExplainedOptional::of)
-				.orElseGet(() -> {
-					final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_ACCOUNT_NO, accountStatement2.getId(), bankIdOpt.get().getRepoId(), accountNoCandidate);
-					return ExplainedOptional.emptyBecause(msg);
-				}))
-				.orElseGet(() -> {
-					final String msg = getMsg(MSG_MISSING_BANK_STMT_ACCOUNT_NO, accountStatement2.getId());
-					return ExplainedOptional.emptyBecause(msg);
-				});
-	}
-
+	@Override
 	@NonNull
 	public ZonedDateTime getStatementDate(@NonNull final ZoneId timeZone)
 	{
@@ -138,6 +78,7 @@ public class AccountStatement2Wrapper
 				.atZone(timeZone);
 	}
 
+	@Override
 	@NonNull
 	public BigDecimal getBeginningBalance()
 	{
@@ -152,16 +93,68 @@ public class AccountStatement2Wrapper
 				.orElse(BigDecimal.ZERO);
 	}
 
-	public OrgId getOrgId(@NonNull final BankAccountId bankAccountId)
-	{
-		return bankAccountService.getById(bankAccountId).getOrgId();
-	}
-
+	@Override
 	@NonNull
 	public Optional<CurrencyCode> getStatementCurrencyCode()
 	{
 		return Optional.ofNullable(accountStatement2.getAcct().getCcy())
 				.map(CurrencyCode::ofThreeLetterCode);
+	}
+
+	@Override
+	@NonNull
+	public String getId()
+	{
+		return accountStatement2.getId();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<IStatementLineWrapper> getStatementLines()
+	{
+		return accountStatement2.getNtry()
+				.stream()
+				.map(this::buildNoBatchReportEntryWrapper)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public boolean hasNoBankStatementLines()
+	{
+		return accountStatement2.getNtry().isEmpty();
+	}
+
+	@Override
+	@NonNull
+	protected Optional<String> getAccountIBAN()
+	{
+		return Optional.ofNullable(accountStatement2.getAcct().getId().getIBAN());
+	}
+
+	@Override
+	@NonNull
+	protected Optional<String> getSwiftCode()
+	{
+		return Optional.ofNullable(accountStatement2.getAcct().getSvcr())
+				.map(branchAndFinancialInstitutionIdentification4 -> branchAndFinancialInstitutionIdentification4.getFinInstnId().getBIC())
+				.filter(Check::isNotBlank);
+	}
+
+	@Override
+	@NonNull
+	protected Optional<String> getAccountNo()
+	{
+		return Optional.ofNullable(accountStatement2.getAcct().getId().getOthr())
+				.map(GenericAccountIdentification1::getId);
+	}
+
+	@NonNull
+	private IStatementLineWrapper buildNoBatchReportEntryWrapper(@NonNull final ReportEntry2 reportEntry)
+	{
+		return NoBatchReportEntry2Wrapper.builder()
+				.currencyRepository(getCurrencyRepository())
+				.entry(reportEntry)
+				.build();
 	}
 
 	@NonNull
@@ -180,24 +173,6 @@ public class AccountStatement2Wrapper
 				.stream()
 				.filter(AccountStatement2Wrapper::isPRCDCashBalance)
 				.findFirst();
-	}
-
-	@NonNull
-	private ExplainedOptional<BankId> getBankId()
-	{
-		if (!getSwiftCode().isPresent())
-		{
-			final String msg = getMsg(MSG_MISSING_BANK_STMT_SWIFT_CODE, accountStatement2.getId());
-			return ExplainedOptional.emptyBecause(msg);
-		}
-		final String swiftCode = getSwiftCode().get();
-
-		return bankAccountService.getBankIdBySwiftCode(swiftCode)
-				.map(ExplainedOptional::of)
-				.orElseGet(() -> {
-					final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_SWIFT_CODE, accountStatement2.getId(), swiftCode);
-					return ExplainedOptional.emptyBecause(msg);
-				});
 	}
 
 	private static boolean isPRCDCashBalance(@NonNull final CashBalance3 cashBalance)
