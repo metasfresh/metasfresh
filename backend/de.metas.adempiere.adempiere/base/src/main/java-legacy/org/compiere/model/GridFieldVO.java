@@ -381,6 +381,10 @@ public class GridFieldVO implements Serializable
 				{
 					vo.AD_Sequence_ID = rs.getInt(i);
 				}
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsForbidNewRecordCreation))
+				{
+					vo.forbidNewRecordCreation = DisplayType.toBoolean(rs.getString(i));
+				}
 			}
 
 			//
@@ -864,6 +868,8 @@ public class GridFieldVO implements Serializable
 
 	private int AD_Sequence_ID = 0;
 
+	private boolean forbidNewRecordCreation = false;
+
 	/**
 	 * Set Context including contained elements
 	 *
@@ -1068,6 +1074,7 @@ public class GridFieldVO implements Serializable
 		clone.isHiddenFromUI = isHiddenFromUI;
 
 		clone.AD_Sequence_ID = AD_Sequence_ID;
+		clone.forbidNewRecordCreation = forbidNewRecordCreation;
 
 		return clone;
 	}    // clone
@@ -1315,6 +1322,11 @@ public class GridFieldVO implements Serializable
 	public boolean isCalculated()
 	{
 		return IsCalculated;
+	}
+
+	public boolean isForbidNewRecordCreation()
+	{
+		return forbidNewRecordCreation;
 	}
 
 	public FieldGroupVO getFieldGroup()

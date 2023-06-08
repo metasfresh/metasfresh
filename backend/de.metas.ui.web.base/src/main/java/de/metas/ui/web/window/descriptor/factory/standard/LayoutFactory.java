@@ -742,7 +742,8 @@ public class LayoutFactory
 				.setLookupInfos(field.getLookupDescriptor().orElse(null))
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
 				.setSupportZoomInto(field.isSupportZoomInto())
-				.trackField(field);
+				.trackField(field)
+				.setForbidNewRecordCreation(field.isForbidNewRecordCreation());
 
 		if (!Check.isEmpty(field.getTooltipIconName()))
 		{

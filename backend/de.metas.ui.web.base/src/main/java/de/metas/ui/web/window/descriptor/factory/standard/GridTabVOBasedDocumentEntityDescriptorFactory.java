@@ -495,6 +495,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setValueClass(fieldBinding.getValueClass())
 				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setCalculated(gridFieldVO.isCalculated())
+				.setForbidNewRecordCreation(gridFieldVO.isForbidNewRecordCreation())
 				//
 				.setDefaultValueExpression(defaultValueExpression)
 				//
