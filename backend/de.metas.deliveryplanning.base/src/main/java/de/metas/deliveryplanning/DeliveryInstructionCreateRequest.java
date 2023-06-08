@@ -25,6 +25,7 @@ package de.metas.deliveryplanning;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
+import de.metas.document.dimension.Dimension;
 import de.metas.incoterms.IncotermsId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -57,34 +58,25 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull BPartnerLocationId deliveryPartnerLocationId;
 
-	@Nullable
-	IncotermsId incotermsId;
+	@Nullable IncotermsId incotermsId;
 
-	@Nullable
-	String incotermLocation;
+	@Nullable String incotermLocation;
 
-	@Nullable
-	Instant loadingDate;
+	@Nullable Instant loadingDate;
 
-	@Nullable
-	String loadingTime;
+	@Nullable String loadingTime;
 
-	@Nullable
-	Instant deliveryDate;
+	@Nullable Instant deliveryDate;
 
-	@Nullable
-	String deliveryTime;
+	@Nullable String deliveryTime;
 
-	@NonNull
-	Instant dateDoc;
+	@NonNull Instant dateDoc;
 
-	@NonNull
-	ShipperId shipperId;
+	@NonNull ShipperId shipperId;
 
 	@NonNull DocTypeId docTypeId;
 
-	@Nullable
-	MeansOfTransportationId meansOfTransportationId;
+	@Nullable MeansOfTransportationId meansOfTransportationId;
 
 	boolean processed;
 
@@ -92,11 +84,9 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull ProductId productId;
 
-	@Nullable
-	String batchNo;
+	@Nullable String batchNo;
 
-	@Nullable
-	LocatorId locatorId;
+	@Nullable LocatorId locatorId;
 
 	@NonNull Quantity qtyLoaded;
 
@@ -104,9 +94,10 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull I_C_UOM uom;
 
-	@Nullable
-	OrderLineId orderLineId;
+	@Nullable OrderLineId orderLineId;
 
 	@NonNull DeliveryPlanningId deliveryPlanningId;
+
+	@Nullable Dimension dimension;
 
 }

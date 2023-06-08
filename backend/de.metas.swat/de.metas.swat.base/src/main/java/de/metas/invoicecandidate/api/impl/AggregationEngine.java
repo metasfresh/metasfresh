@@ -21,11 +21,17 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
+<<<<<<< HEAD
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPool;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+=======
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 import de.metas.forex.ForexContractRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
@@ -135,19 +141,26 @@ public final class AggregationEngine
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
 	private final MatchInvoiceService matchInvoiceService;
+	private final DimensionService dimensionService;
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
 	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
+<<<<<<< HEAD
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
 	@Nullable private final ForexContractRef forexContractRef;
+=======
+	@Nullable
+	private final ForexContractRef forexContractRef;
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+
 	@Builder
 	private AggregationEngine(
 			@Nullable final MatchInvoiceService matchInvoiceService,
@@ -158,10 +171,15 @@ public final class AggregationEngine
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@Nullable final ForexContractRef forexContractRef,
+<<<<<<< HEAD
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService)
+=======
+			@Nullable final DimensionService dimensionService)
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 	{
 		this.bpartnerBL = coalesceNotNull(bpartnerBL, () -> Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, () -> SpringContextHolder.instance.getBean(MatchInvoiceService.class));
+		this.dimensionService = coalesceNotNull(dimensionService, () -> SpringContextHolder.instance.getBean(DimensionService.class));
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
@@ -324,10 +342,10 @@ public final class AggregationEngine
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-							+ " ic's own headerAggregationKey = {};\n"
-							+ " new headerAndAggregators = {}",
-					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
+									+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
+									+ " ic's own headerAggregationKey = {};\n"
+									+ " new headerAndAggregators = {}",
+							key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
 		{
@@ -477,8 +495,8 @@ public final class AggregationEngine
 				{
 					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-							pricingSystemName,
-							invoiceHeader.getBillTo())
+												 pricingSystemName,
+												 invoiceHeader.getBillTo())
 							.appendParametersToMessage()
 							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
 							.setParameter("C_Invoice_Candidate", icRecord);
@@ -530,6 +548,14 @@ public final class AggregationEngine
 			// 06630: set shipment id to header
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 
+<<<<<<< HEAD
+=======
+			invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(icRecord, headerAggregationId)));
+
+			final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(icRecord);
+			invoiceHeader.setDimension(invoiceCandidateDimension);
+
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
 			invoiceHeader.setC_PaymentInstruction_ID(icRecord.getC_PaymentInstruction_ID());
@@ -686,12 +712,12 @@ public final class AggregationEngine
 		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
 			final User defaultBillContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-					.onlyActive(true)
-					.contactType(ContactType.BILL_TO_DEFAULT)
-					.bpartnerId(billBPLocationId.getBpartnerId())
-					.bPartnerLocationId(billBPLocationId)
-					.ifNotFound(IfNotFound.RETURN_NULL)
-					.build());
+																					 .onlyActive(true)
+																					 .contactType(ContactType.BILL_TO_DEFAULT)
+																					 .bpartnerId(billBPLocationId.getBpartnerId())
+																					 .bPartnerLocationId(billBPLocationId)
+																					 .ifNotFound(IfNotFound.RETURN_NULL)
+																					 .build());
 			if (defaultBillContact != null)
 			{
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
@@ -941,6 +967,7 @@ public final class AggregationEngine
 			return Optional.empty();
 		}
 
+<<<<<<< HEAD
 		return Optional.of(aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
 															  headerAggregationId.getRepoId()));
 	}
@@ -954,6 +981,11 @@ public final class AggregationEngine
 
 		final Optional<DocTypeId> docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId();
 		if (docTypeInvoiceId.isPresent() && !isTakeDocTypeFromPool)
+=======
+		final Aggregation icHeaderAggregation = aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
+																				   headerAggregationId.getRepoId());
+		if (icHeaderAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 		{
 			docTypeIdToBeUsed = docTypeInvoiceId.get();
 

@@ -84,6 +84,8 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
 public class C_Order
@@ -578,7 +580,7 @@ public class C_Order
 			I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void handleDropShipRelatedColumns(@NonNull final I_C_Order order)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_M_Warehouse_ID))
+		if (isValueChanged(order, I_C_Order.COLUMNNAME_M_Warehouse_ID))
 		{
 			setDropShipFlag(order);
 		}
@@ -649,6 +651,83 @@ public class C_Order
 		if (billToLocation != null)
 		{
 			order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_UserElementString1,
+					I_C_Order.COLUMNNAME_UserElementString2,
+					I_C_Order.COLUMNNAME_UserElementString3,
+					I_C_Order.COLUMNNAME_UserElementString4,
+					I_C_Order.COLUMNNAME_UserElementString5,
+					I_C_Order.COLUMNNAME_UserElementString6,
+					I_C_Order.COLUMNNAME_UserElementString7,
+					I_C_Order.COLUMNNAME_M_SectionCode_ID
+			})
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_UserElementString1,
+			I_C_Order.COLUMNNAME_UserElementString2,
+			I_C_Order.COLUMNNAME_UserElementString3,
+			I_C_Order.COLUMNNAME_UserElementString4,
+			I_C_Order.COLUMNNAME_UserElementString5,
+			I_C_Order.COLUMNNAME_UserElementString6,
+			I_C_Order.COLUMNNAME_UserElementString7,
+			I_C_Order.COLUMNNAME_M_SectionCode_ID
+	})
+	public void copyDimensionToLines(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
+		if (orderLines.isEmpty())
+		{
+			return;
+		}
+
+		final boolean userElementString1Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString1);
+		final boolean userElementString2Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString2);
+		final boolean userElementString3Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString3);
+		final boolean userElementString4Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString4);
+		final boolean userElementString5Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString5);
+		final boolean userElementString6Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString6);
+		final boolean userElementString7Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString7);
+		final boolean sectionCodeChanged = isValueChanged(order, I_C_Order.COLUMNNAME_M_SectionCode_ID);
+
+		for (final I_C_OrderLine line : orderLines)
+		{
+			if (userElementString1Changed)
+			{
+				line.setUserElementString1(order.getUserElementString1());
+			}
+			if (userElementString2Changed)
+			{
+				line.setUserElementString2(order.getUserElementString2());
+			}
+			if (userElementString3Changed)
+			{
+				line.setUserElementString3(order.getUserElementString3());
+			}
+			if (userElementString4Changed)
+			{
+				line.setUserElementString4(order.getUserElementString4());
+			}
+			if (userElementString5Changed)
+			{
+				line.setUserElementString5(order.getUserElementString5());
+			}
+			if (userElementString6Changed)
+			{
+				line.setUserElementString6(order.getUserElementString6());
+			}
+			if (userElementString7Changed)
+			{
+				line.setUserElementString7(order.getUserElementString7());
+			}
+			if (sectionCodeChanged)
+			{
+				line.setM_SectionCode_ID(order.getM_SectionCode_ID());
+			}
+
+			orderBL.save(line);
 		}
 	}
 }

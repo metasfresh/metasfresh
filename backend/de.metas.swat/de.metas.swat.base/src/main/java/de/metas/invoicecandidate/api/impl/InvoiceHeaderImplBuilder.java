@@ -4,8 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+<<<<<<< HEAD
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+=======
+import de.metas.document.dimension.Dimension;
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
@@ -100,17 +104,27 @@ public class InvoiceHeaderImplBuilder
 
 	private int M_SectionCode_ID;
 
+<<<<<<< HEAD
 	private int C_Project_ID;
 
 	private int C_Activity_ID;
 
 	@Nullable private ForexContractRef forexContractRef;
+=======
+	@Nullable
+	private ForexContractRef forexContractRef;
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 
 	private String invoiceAdditionalText;
 	private boolean notShowOriginCountry;
 
 	private int C_PaymentInstruction_ID;
 
+<<<<<<< HEAD
+=======
+	private Dimension dimension;
+
+>>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 	InvoiceHeaderImplBuilder()
 	{
 	}
@@ -173,6 +187,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+
+		invoiceHeader.setDimension(this.dimension);
 
 		return invoiceHeader;
 	}
@@ -698,6 +714,11 @@ public class InvoiceHeaderImplBuilder
 	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
 	{
 		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setDimension(@NonNull final Dimension dimension)
+	{
+		this.dimension = dimension;
 	}
 
 	public void setNotShowOriginCountry(final boolean notShowOriginCountry)

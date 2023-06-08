@@ -24,6 +24,7 @@ class InOutLineDimensionFactoryTest
 
 		final I_M_InOutLine record = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		record.setM_Product_ID(9000002);
+
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
 

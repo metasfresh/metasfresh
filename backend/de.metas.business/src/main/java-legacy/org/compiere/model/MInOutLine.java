@@ -235,7 +235,7 @@ public class MInOutLine extends X_M_InOutLine
 		setAD_OrgTrx_ID(iLine.getAD_OrgTrx_ID());
 
 		final Dimension invoiceLineDimension = dimensionService.getFromRecord(iLine);
-		dimensionService.updateRecord(this,invoiceLineDimension);
+		dimensionService.updateRecord(this, invoiceLineDimension);
 
 	}	// setInvoiceLine
 
