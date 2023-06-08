@@ -12,11 +12,7 @@ import java.util.Properties;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-<<<<<<< HEAD
-	private static final long serialVersionUID = -1836855192L;
-=======
 	private static final long serialVersionUID = -1070501090L;
->>>>>>> 702845943d0 (introduced m_hu.isExternalProperty (#15486))
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -193,7 +189,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public boolean isExternalProperty() 
+	public boolean isExternalProperty()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExternalProperty);
 	}
