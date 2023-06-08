@@ -1,18 +1,44 @@
--- NOTE: keep in sync with ad_field_vt
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.migration-sql
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-DROP VIEW IF EXISTS ad_field_v
+-- NOTE: keep in sync with ad_field_v
+
+DROP VIEW IF EXISTS ad_field_vt
 ;
 
-CREATE OR REPLACE VIEW ad_field_v AS
-SELECT t.ad_window_id
+CREATE OR REPLACE VIEW ad_field_vt AS
+SELECT c_trl.ad_language
+     , t.ad_window_id
      , f.colorlogic
      , t.ad_tab_id
      , f.ad_field_id
      , tbl.ad_table_id
      , c.ad_column_id
-     , COALESCE(f.name, c.name)                                   AS name
-     , COALESCE(f.description, c.description)                     AS description
-     , COALESCE(f.help, t.help)                                   AS help
+     , COALESCE(f.name, c.name)                                   AS name_BaseLang
+     , COALESCE(f_trl.name, f.name, c_trl.name, c.name)           AS name
+     , COALESCE(f.description, c.description)                     AS description_BaseLang
+     , COALESCE(f.help, t.help)                                   AS help_BaseLang
+     , COALESCE(f_trl.description, f.description, c.description)  AS description
+     , COALESCE(f_trl.help, f.help, t.help)                       AS help
      , f.isdisplayed
      , f.isdisplayedgrid
      , f.displaylogic
@@ -45,7 +71,7 @@ SELECT t.ad_window_id
      , COALESCE(f.ad_reference_id, c.ad_reference_id)             AS ad_reference_id
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)               AS ad_val_rule_id
      , c.ad_process_id
-     , COALESCE(NULLIF(f.isalwaysupdateable, ''), c.isalwaysupdateable)       AS isalwaysupdateable
+     , COALESCE(NULLIF(f.isalwaysupdateable, ''),  c.isalwaysupdateable)       AS isalwaysupdateable
      , COALESCE(f.readonlylogic, c.readonlylogic)                 AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
@@ -53,7 +79,8 @@ SELECT t.ad_window_id
      , tbl.tablename
      , c.valuemin
      , c.valuemax
-     , fg.name                                                    AS fieldgroup
+     , fg.name                                                    AS fieldgroup_BaseLang
+     , COALESCE(fg_trl.name, fg.name)                             AS fieldgroup
      , vr.code                                                    AS validationcode
      , f.included_tab_id
      , fg.fieldgrouptype
@@ -83,8 +110,11 @@ SELECT t.ad_window_id
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
          JOIN ad_column c ON c.ad_table_id = t.ad_table_id
+         JOIN ad_column_trl c_trl ON c_trl.ad_column_id = c.ad_column_id
          LEFT JOIN ad_field f ON f.ad_tab_id = t.ad_tab_id AND f.ad_column_id = c.ad_column_id
+         LEFT JOIN ad_field_trl f_trl ON f_trl.ad_field_id = f.ad_field_id AND f_trl.ad_language::text = c_trl.ad_language::text
          LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
+         LEFT JOIN ad_fieldgroup_trl fg_trl ON fg_trl.ad_fieldgroup_id = f.ad_fieldgroup_id AND fg_trl.ad_language::text = c_trl.ad_language::text
          LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
 WHERE (f.isactive = 'Y' OR f.AD_Field_ID IS NULL)
   AND c.isactive = 'Y'

@@ -1,11 +1,12 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 /** Generated Interface for AD_Field
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
 public interface I_AD_Field 
@@ -108,6 +109,7 @@ public interface I_AD_Field
 
 	/**
 	 * Set AD_Name_ID.
+	 * This is an AD_Element_ID that can does not need to have a ColumnName and can be used to name things
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -117,6 +119,7 @@ public interface I_AD_Field
 
 	/**
 	 * Get AD_Name_ID.
+	 * This is an AD_Element_ID that can does not need to have a ColumnName and can be used to name things
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -498,6 +501,27 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, org.compiere.model.I_AD_Val_Rule> COLUMN_Filter_Val_Rule_ID = new ModelColumn<>(I_AD_Field.class, "Filter_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
 	String COLUMNNAME_Filter_Val_Rule_ID = "Filter_Val_Rule_ID";
+
+	/**
+	 * Set IsForbidNewRecordCreation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsForbidNewRecordCreation (boolean IsForbidNewRecordCreation);
+
+	/**
+	 * Get IsForbidNewRecordCreation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isForbidNewRecordCreation();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsForbidNewRecordCreation = new ModelColumn<>(I_AD_Field.class, "IsForbidNewRecordCreation", null);
+	String COLUMNNAME_IsForbidNewRecordCreation = "IsForbidNewRecordCreation";
 
 	/**
 	 * Set Help.
