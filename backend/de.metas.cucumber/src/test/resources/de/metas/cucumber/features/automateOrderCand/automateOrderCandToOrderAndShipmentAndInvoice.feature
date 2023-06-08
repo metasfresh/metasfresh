@@ -99,6 +99,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName | OPT.M_SectionCode_ID.Identifier |
       | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | po_ref_mock     | true      | CO        | Shopware                               | testSection_S0150_100           |
+
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine_1            | shipment_1            | product_1               | 10          | true      |
@@ -132,6 +133,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And validate C_DunningDoc:
       | C_BPartner_ID.Identifier | C_DunningLevel_ID.Identifier | OPT.M_SectionCode_ID.Identifier | Processed |
       | bpartner_1               | dunningLevel_S0150_100       | testSection_S0150_100           | N         |
+
     And metasfresh contains C_BP_BankAccount
       | Identifier       | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
       | bp_bank_account1 | bpartner_1               | EUR                 |
