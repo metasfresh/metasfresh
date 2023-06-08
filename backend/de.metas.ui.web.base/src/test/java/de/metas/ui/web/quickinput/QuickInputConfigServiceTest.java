@@ -17,6 +17,7 @@ class QuickInputConfigServiceTest
 		void standardCase()
 		{
 			assertThat(QuickInputConfigService.parseLayoutFromSysconfigValue("Field1,Field2,Field3?,Field4"))
+					.get()
 					.usingRecursiveComparison()
 					.isEqualTo(QuickInputConfigLayout.builder()
 							.fields(ImmutableList.of(
