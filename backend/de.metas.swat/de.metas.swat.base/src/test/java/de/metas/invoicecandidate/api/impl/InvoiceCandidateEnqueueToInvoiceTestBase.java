@@ -8,8 +8,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
-import de.metas.document.dimension.DimensionFactory;
-import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;

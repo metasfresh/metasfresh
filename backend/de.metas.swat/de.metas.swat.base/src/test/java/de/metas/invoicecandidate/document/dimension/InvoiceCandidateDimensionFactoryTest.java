@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.document.dimension;
 
 import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionTest;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -9,10 +8,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class InvoiceCandidateDimensionFactoryTest
 {
