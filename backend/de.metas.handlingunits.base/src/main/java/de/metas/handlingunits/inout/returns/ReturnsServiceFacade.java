@@ -41,6 +41,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -107,6 +108,11 @@ public class ReturnsServiceFacade
 		for (final I_M_InOutLine customerReturnLine : customerReturnLines)
 		{
 			final List<I_M_HU> currentHUs = CustomerReturnLineHUGenerator.generateForReturnLine(customerReturnLine);
+			if (isServiceRepair(customerReturn))
+			{
+				currentHUs.forEach(hu -> hu.setIsExternalProperty(true));
+				InterfaceWrapperHelper.saveAll(currentHUs);
+			}
 			husByLineId.putAll(InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()), currentHUs);
 		}
 
@@ -115,13 +121,6 @@ public class ReturnsServiceFacade
 				.husByLineId(husByLineId)
 				.build()
 				.create();
-	}
-
-	public List<I_M_HU> createHUsForCustomerReturnLine(@NonNull final I_M_InOutLine customerReturnLine)
-	{
-		final List<I_M_HU> hus = CustomerReturnLineHUGenerator.generateForReturnLine(customerReturnLine);
-		assignHandlingUnitsToHeaderAndLine(customerReturnLine, hus);
-		return hus;
 	}
 
 	public void createVendorReturnInOutForHUs(final List<I_M_HU> hus, final Timestamp movementDate)

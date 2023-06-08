@@ -87,6 +87,7 @@ public class HUDescriptorService
 					.huId(huRecord.getM_HU_ID())
 					.productDescriptor(productDescriptor)
 					.quantity(deleted ? BigDecimal.ZERO : quantity)
+					.isExternalProperty(huRecord.isExternalProperty())
 					.build();
 			descriptors.add(descriptor);
 		}
