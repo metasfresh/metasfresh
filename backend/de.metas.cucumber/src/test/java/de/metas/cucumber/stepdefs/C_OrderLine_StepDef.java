@@ -77,7 +77,6 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_Order.COLUMNNAME_UserElementString2;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
