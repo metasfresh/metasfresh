@@ -146,7 +146,7 @@ public class HUDescriptorsFromHUAssignmentService
 			final ProductDescriptor productDescriptor = entry.getKey();
 			final Collection<HUDescriptor> huDescriptorsForCurrentProduct = entry.getValue();
 
-			final BigDecimal quantity = huDescriptorsForCurrentProduct
+			final BigDecimal qtyOnHand = huDescriptorsForCurrentProduct
 					.stream()
 					.filter(huDescriptor -> !huDescriptor.isExternalProperty())
 					.map(HUDescriptor::getQuantity)
@@ -159,7 +159,7 @@ public class HUDescriptorsFromHUAssignmentService
 					.productDescriptor(productDescriptor)
 					.customerId(customerId)
 					.vendorId(vendorId)
-					.quantity(quantity)
+					.quantity(qtyOnHand)
 					.build();
 
 			result.put(materialDescriptor, huDescriptorsForCurrentProduct);
