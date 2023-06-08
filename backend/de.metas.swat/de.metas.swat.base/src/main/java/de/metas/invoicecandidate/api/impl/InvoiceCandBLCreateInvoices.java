@@ -447,6 +447,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
+
+			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
+
+
+
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

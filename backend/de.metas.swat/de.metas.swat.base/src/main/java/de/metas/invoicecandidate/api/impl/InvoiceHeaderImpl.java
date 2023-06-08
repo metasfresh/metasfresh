@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.dimension.Dimension;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -18,6 +19,7 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.model.I_C_DocType;
 
@@ -113,7 +115,9 @@ import java.util.List;
 
 	@Setter @Getter @Nullable ForexContractRef forexContractRef;
 
-	/* package */ InvoiceHeaderImpl()
+	@Setter @Getter @NonNull Dimension dimension;
+
+		/* package */ InvoiceHeaderImpl()
 	{
 	}
 

@@ -141,7 +141,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
@@ -390,7 +389,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(final OrderId orderId)
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)

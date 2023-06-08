@@ -73,7 +73,7 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 	}
 
 	@Override
-	public void updateRecord(final I_C_OrderLine record, final Dimension from)
+	public void updateRecord(@NonNull final I_C_OrderLine record, @NonNull final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
@@ -82,6 +82,12 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
 		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
+		updateRecordUserElements(record, from);
+	}
+
+	@Override
+	public void updateRecordUserElements(@NonNull final I_C_OrderLine record, @NonNull final Dimension from)
+	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
@@ -91,6 +97,5 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setUserElementString7(from.getUserElementString7());
 		record.setUser1_ID(from.getUser1_ID());
 		record.setUser2_ID(from.getUser2_ID());
-
 	}
 }
