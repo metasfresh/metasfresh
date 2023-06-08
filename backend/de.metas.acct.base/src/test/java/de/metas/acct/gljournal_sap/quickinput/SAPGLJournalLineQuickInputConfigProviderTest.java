@@ -58,9 +58,7 @@ class SAPGLJournalLineQuickInputConfigProviderTest
 		})
 		void not_valid(final String layoutConfigString)
 		{
-			Assertions.assertThatThrownBy(() -> {
-						configProvider.assertValidSysConfigValue(SAPGLJournalLineQuickInputConfigProvider.SYSCONFIG_LayoutConfig, layoutConfigString);
-					})
+			Assertions.assertThatThrownBy(() -> configProvider.assertValidSysConfigValue(SAPGLJournalLineQuickInputConfigProvider.SYSCONFIG_LayoutConfig, layoutConfigString))
 					.isInstanceOf(AdempiereException.class);
 
 		}

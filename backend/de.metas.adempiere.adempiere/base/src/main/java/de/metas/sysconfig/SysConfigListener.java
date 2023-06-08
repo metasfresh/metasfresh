@@ -1,5 +1,6 @@
 package de.metas.sysconfig;
 
+@SuppressWarnings("unused")
 public interface SysConfigListener
 {
 	default void assertValidSysConfigValue(String sysconfigName, String value) {}
