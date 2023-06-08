@@ -459,10 +459,4 @@ import java.util.List;
 	{
 		return C_PaymentInstruction_ID;
 	}
-
-	@Override
-	public Dimension getDimension()
-	{
-		return dimension;
-	}
 }

@@ -46,13 +46,9 @@ public class GenerateOutgoingDeliveryPlanningCommand
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
-	@NonNull
-	private final I_M_ShipmentSchedule shipmentSchedule;
-	@NonNull
-	private final DeliveryStatusColorPalette colorPalette;
-
-	@NonNull
-	private final DimensionService dimensionService;
+	@NonNull private final I_M_ShipmentSchedule shipmentSchedule;
+	@NonNull private final DeliveryStatusColorPalette colorPalette;
+	@NonNull private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateOutgoingDeliveryPlanningCommand(

@@ -45,13 +45,9 @@ public class GenerateIncomingDeliveryPlanningCommand
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
-	@NonNull
-	private final I_M_ReceiptSchedule receiptSchedule;
-	@NonNull
-	private final DeliveryStatusColorPalette colorPalette;
-
-	@NonNull
-	private final DimensionService dimensionService;
+	@NonNull private final I_M_ReceiptSchedule receiptSchedule;
+	@NonNull private final DeliveryStatusColorPalette colorPalette;
+	@NonNull private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateIncomingDeliveryPlanningCommand(

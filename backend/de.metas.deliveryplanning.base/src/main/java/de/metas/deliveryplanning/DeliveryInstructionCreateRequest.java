@@ -58,34 +58,25 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull BPartnerLocationId deliveryPartnerLocationId;
 
-	@Nullable
-	IncotermsId incotermsId;
+	@Nullable IncotermsId incotermsId;
 
-	@Nullable
-	String incotermLocation;
+	@Nullable String incotermLocation;
 
-	@Nullable
-	Instant loadingDate;
+	@Nullable Instant loadingDate;
 
-	@Nullable
-	String loadingTime;
+	@Nullable String loadingTime;
 
-	@Nullable
-	Instant deliveryDate;
+	@Nullable Instant deliveryDate;
 
-	@Nullable
-	String deliveryTime;
+	@Nullable String deliveryTime;
 
-	@NonNull
-	Instant dateDoc;
+	@NonNull Instant dateDoc;
 
-	@NonNull
-	ShipperId shipperId;
+	@NonNull ShipperId shipperId;
 
 	@NonNull DocTypeId docTypeId;
 
-	@Nullable
-	MeansOfTransportationId meansOfTransportationId;
+	@Nullable MeansOfTransportationId meansOfTransportationId;
 
 	boolean processed;
 
@@ -93,11 +84,9 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull ProductId productId;
 
-	@Nullable
-	String batchNo;
+	@Nullable String batchNo;
 
-	@Nullable
-	LocatorId locatorId;
+	@Nullable LocatorId locatorId;
 
 	@NonNull Quantity qtyLoaded;
 
@@ -105,12 +94,10 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull I_C_UOM uom;
 
-	@Nullable
-	OrderLineId orderLineId;
+	@Nullable OrderLineId orderLineId;
 
 	@NonNull DeliveryPlanningId deliveryPlanningId;
 
-	@Nullable
-	Dimension dimension;
+	@Nullable Dimension dimension;
 
 }

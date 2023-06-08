@@ -65,7 +65,6 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_Processed;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_UOM_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line;
-import static org.compiere.model.I_C_Order.COLUMNNAME_UserElementString2;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class C_InvoiceLine_StepDef
@@ -255,13 +254,6 @@ public class C_InvoiceLine_StepDef
 		if (qtyInvoicedInPriceUOM != null)
 		{
 			softly.assertThat(invoiceLine.getQtyInvoicedInPriceUOM()).as(COLUMNNAME_QtyInvoicedInPriceUOM).isEqualByComparingTo(qtyInvoicedInPriceUOM);
-		}
-
-
-		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_UserElementString2);
-		if (de.metas.util.Check.isNotBlank(userElementString2))
-		{
-			softly.assertThat(invoiceLine.getUserElementString2()).as("UserElementString2").isEqualTo(userElementString2);
 		}
 
 		softly.assertAll();

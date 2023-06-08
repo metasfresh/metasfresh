@@ -44,8 +44,7 @@ class InvoiceLineDimensionFactoryTest
 		final I_C_InvoiceLine record = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 		record.setC_Order_ID(12345);
 
-		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
-		dimensionFactory.updateRecord(record, dimension);
+		dimensionFactory.updateRecord(record, DimensionTest.newFullyPopulatedDimension());
 
 		assertThat(record.getC_Order_ID()).isEqualTo(12345);
 	}

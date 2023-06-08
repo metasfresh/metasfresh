@@ -197,31 +197,31 @@ public class C_Order
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
-			if (use1_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString1(), order.getUserElementString1()))
+			if (use1_orderToIc)
 			{
 				invoiceCandidate.setUserElementString1(order.getUserElementString1());
 			}
-			if (use2_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString2(), order.getUserElementString2()))
+			if (use2_orderToIc)
 			{
 				invoiceCandidate.setUserElementString2(order.getUserElementString2());
 			}
-			if (use3_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString3(), order.getUserElementString3()))
+			if (use3_orderToIc)
 			{
 				invoiceCandidate.setUserElementString3(order.getUserElementString3());
 			}
-			if (use4_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString4(), order.getUserElementString4()))
+			if (use4_orderToIc)
 			{
 				invoiceCandidate.setUserElementString4(order.getUserElementString4());
 			}
-			if (use5_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString5(), order.getUserElementString5()))
+			if (use5_orderToIc)
 			{
 				invoiceCandidate.setUserElementString5(order.getUserElementString5());
 			}
-			if (use6_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString6(), order.getUserElementString6()))
+			if (use6_orderToIc)
 			{
 				invoiceCandidate.setUserElementString6(order.getUserElementString6());
 			}
-			if (use7_orderToIc && !Objects.equals(invoiceCandidate.getUserElementString7(), order.getUserElementString7()))
+			if (use7_orderToIc)
 			{
 				invoiceCandidate.setUserElementString7(order.getUserElementString7());
 			}
@@ -262,31 +262,31 @@ public class C_Order
 				continue;
 			}
 
-			if (use1_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString1(), order.getUserElementString1()))
+			if (use1_orderToReversedInvoice)
 			{
 				invoice.setUserElementString1(order.getUserElementString1());
 			}
-			if (use2_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString2(), order.getUserElementString2()))
+			if (use2_orderToReversedInvoice)
 			{
 				invoice.setUserElementString2(order.getUserElementString2());
 			}
-			if (use3_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString3(), order.getUserElementString3()))
+			if (use3_orderToReversedInvoice)
 			{
 				invoice.setUserElementString3(order.getUserElementString3());
 			}
-			if (use4_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString4(), order.getUserElementString4()))
+			if (use4_orderToReversedInvoice)
 			{
 				invoice.setUserElementString4(order.getUserElementString4());
 			}
-			if (use5_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString5(), order.getUserElementString5()))
+			if (use5_orderToReversedInvoice)
 			{
 				invoice.setUserElementString5(order.getUserElementString5());
 			}
-			if (use6_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString6(), order.getUserElementString6()))
+			if (use6_orderToReversedInvoice)
 			{
 				invoice.setUserElementString6(order.getUserElementString6());
 			}
-			if (use7_orderToReversedInvoice && !Objects.equals(invoice.getUserElementString7(), order.getUserElementString7()))
+			if (use7_orderToReversedInvoice)
 			{
 				invoice.setUserElementString7(order.getUserElementString7());
 			}

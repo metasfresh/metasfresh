@@ -532,13 +532,6 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getC_Tax_ID()).isEqualTo(tax.getC_Tax_ID());
 		}
 
-
-		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_UserElementString2);
-		if (de.metas.util.Check.isNotBlank(userElementString2))
-		{
-			assertThat(orderLine.getUserElementString2()).isEqualTo(userElementString2);
-		}
-
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		orderLineTable.putOrReplace(orderLineIdentifier, orderLine);

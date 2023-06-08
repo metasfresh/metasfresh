@@ -107,6 +107,7 @@ public class C_InvoiceLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void copyDimensionFromHeader(final I_C_InvoiceLine invoiceLine)
 	{
+		// only update the section code and user elements. It's not specified if the other dimensions should be inherited from the invoice header to the lines
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 		invoiceLine.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
 

@@ -638,7 +638,6 @@ public class C_Order
 		}
 	}
 
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_UserElementString1,
@@ -648,7 +647,18 @@ public class C_Order
 					I_C_Order.COLUMNNAME_UserElementString5,
 					I_C_Order.COLUMNNAME_UserElementString6,
 					I_C_Order.COLUMNNAME_UserElementString7,
+					I_C_Order.COLUMNNAME_M_SectionCode_ID
 			})
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_UserElementString1,
+			I_C_Order.COLUMNNAME_UserElementString2,
+			I_C_Order.COLUMNNAME_UserElementString3,
+			I_C_Order.COLUMNNAME_UserElementString4,
+			I_C_Order.COLUMNNAME_UserElementString5,
+			I_C_Order.COLUMNNAME_UserElementString6,
+			I_C_Order.COLUMNNAME_UserElementString7,
+			I_C_Order.COLUMNNAME_M_SectionCode_ID
+	})
 	public void copyDimensionToLines(@NonNull final I_C_Order order)
 	{
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -664,6 +674,7 @@ public class C_Order
 		final boolean userElementString5Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString5);
 		final boolean userElementString6Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString6);
 		final boolean userElementString7Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString7);
+		final boolean sectionCodeChanged = isValueChanged(order, I_C_Order.COLUMNNAME_M_SectionCode_ID);
 
 		for (final I_C_OrderLine line : orderLines)
 		{
@@ -695,22 +706,12 @@ public class C_Order
 			{
 				line.setUserElementString7(order.getUserElementString7());
 			}
+			if (sectionCodeChanged)
+			{
+				line.setM_SectionCode_ID(order.getM_SectionCode_ID());
+			}
 
 			orderBL.save(line);
 		}
 	}
-
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = { org.compiere.model.I_C_Order.COLUMNNAME_M_SectionCode_ID })
-	@CalloutMethod(columnNames = org.compiere.model.I_C_Order.COLUMNNAME_M_SectionCode_ID)
-	public void updateSectionCode(@NonNull final org.compiere.model.I_C_Order order)
-	{
-		for (final org.compiere.model.I_C_OrderLine orderLine : orderDAO.retrieveOrderLines(order))
-		{
-			orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
-			orderDAO.save(orderLine);
-		}
-	}
-
 }

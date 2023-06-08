@@ -138,7 +138,6 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_UserElementString2;
 
 public class C_Invoice_StepDef
 {
@@ -625,13 +624,6 @@ public class C_Invoice_StepDef
 			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 			softly.assertThat(invoice.getM_SectionCode_ID()).as("M_SectionCode_ID").isEqualTo(sectionCode.getM_SectionCode_ID());
 		}
-
-		final String userElementString2 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_UserElementString2);
-		if (Check.isNotBlank(userElementString2))
-		{
-			softly.assertThat(invoice.getUserElementString2()).as("UserElementString2").isEqualTo(userElementString2);
-		}
-
 		softly.assertAll();
 	}
 

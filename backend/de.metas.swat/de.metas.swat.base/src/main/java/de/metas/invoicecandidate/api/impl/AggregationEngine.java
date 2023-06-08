@@ -503,8 +503,6 @@ public final class AggregationEngine
 			final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(icRecord);
 			invoiceHeader.setDimension(invoiceCandidateDimension);
 
-			//orderLineDimensionFactory.getFromRecord(fromOrderLine)
-
 			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
 			invoiceHeader.setC_PaymentInstruction_ID(icRecord.getC_PaymentInstruction_ID());

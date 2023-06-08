@@ -93,9 +93,6 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		this.helper = new Helper();
 
 		this.bpartner1 = icTestSupport.bpartner("test-bp");
-
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new InvoiceDimensionFactory());
 	}
 
 	@Test

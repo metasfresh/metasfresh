@@ -20,9 +20,6 @@ class InvoiceCandidateDimensionFactoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 	}
 
 	@Test

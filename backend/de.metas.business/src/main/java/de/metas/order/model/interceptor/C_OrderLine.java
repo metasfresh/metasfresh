@@ -488,6 +488,7 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void copyDimensionFromHeader(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		// only update the section code and user elements. It's not specified if the other dimensions should be inherited from the order header to the lines
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
 
