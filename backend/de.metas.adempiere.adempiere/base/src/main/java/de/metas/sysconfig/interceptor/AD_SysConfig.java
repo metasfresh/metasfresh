@@ -20,10 +20,11 @@
  * #L%
  */
 
-package org.adempiere.model.validator;
+package de.metas.sysconfig.interceptor;
 
 import de.metas.cache.CacheMgt;
 import de.metas.organization.OrgId;
+import de.metas.sysconfig.SysConfigListenersRegistry;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -36,19 +37,30 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_SysConfig;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
 @Interceptor(I_AD_SysConfig.class)
+@Component
 public class AD_SysConfig
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final SysConfigListenersRegistry listeners;
+
+	public AD_SysConfig(
+			@NonNull final SysConfigListenersRegistry listeners)
+	{
+		this.listeners = listeners;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_AD_SysConfig record)
 	{
+		listeners.assertValid(record.getName(), record.getValue());
+
 		final String configurationLevelEffective = computeEffectiveConfigLevel(
 				record.getName(),
 				ClientId.ofRepoId(record.getAD_Client_ID()),
@@ -126,6 +138,8 @@ public class AD_SysConfig
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(final I_AD_SysConfig record)
 	{
+		listeners.fireValueChanged(record.getName(), record.getValue());
+
 		// IMPORTANT: we have to reset the SysConfigs cache once again
 		// because cache is invalidated while saving, and it's also accessed before the trx which changed a give sysconfig gets committed,
 		// so at that time the sysconfigs cache is still stale.
