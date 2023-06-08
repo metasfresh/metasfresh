@@ -157,7 +157,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
 
-		invoiceHeader.setDimension(getDimension());
+		invoiceHeader.setDimension(this.dimension);
 
 		return invoiceHeader;
 	}
@@ -592,11 +592,6 @@ public class InvoiceHeaderImplBuilder
 	public void setDimension(@NonNull final Dimension dimension)
 	{
 		this.dimension = dimension;
-	}
-
-	public Dimension getDimension()
-	{
-		return dimension;
 	}
 
 	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
