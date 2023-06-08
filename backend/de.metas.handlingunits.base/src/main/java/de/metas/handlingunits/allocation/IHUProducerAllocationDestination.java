@@ -96,4 +96,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwsnerPM);
 
 	IHUProducerAllocationDestination setHUClearanceStatusInfo(ClearanceStatusInfo huClearanceStatusInfo);
+
+	IHUProducerAllocationDestination setIsExternalProperty(boolean isExternalProperty);
 }
