@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.banking.camt53
+ * camt53
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,8 @@
 package de.metas.banking.camt53.wrapper.v02;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.BankId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.BalanceType12Code;

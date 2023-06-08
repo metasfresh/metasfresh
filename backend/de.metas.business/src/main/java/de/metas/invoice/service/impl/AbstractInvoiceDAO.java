@@ -14,6 +14,7 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -490,7 +491,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		}
 		if (query.getExternalId() != null)
 		{
-			return getInvoiceIdByExternalIdIfExists(query);
+			return getInvoiceIdByExternalId(query);
 		}
 		if (!Check.isEmpty(query.getDocType()))
 		{
@@ -569,9 +570,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
 				.setLimit(query.getQueryLimit());
 
-		if (!query.getOnlyDocumentNos().isEmpty())
+		if (query.getAdditionalFilter() != null)
 		{
-			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, query.getOnlyDocumentNos());
+			queryBuilder.filter(query.getAdditionalFilter());
 		}
 
 		if (!query.getOnlyDocStatuses().isEmpty())
