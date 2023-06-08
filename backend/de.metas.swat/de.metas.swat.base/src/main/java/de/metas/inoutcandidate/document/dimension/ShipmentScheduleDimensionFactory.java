@@ -30,10 +30,18 @@ public class ShipmentScheduleDimensionFactory implements DimensionFactory<I_M_Sh
 	}
 
 	@Override
-	public void updateRecord(final I_M_ShipmentSchedule record, final Dimension from)
+	public void updateRecord(@NonNull final I_M_ShipmentSchedule record, @NonNull final Dimension from)
 	{
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
 		//record.setM_Product_ID(ProductId.toRepoId(from.getProductId())); // don't override the product
 		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
+
+		updateRecordUserElements(record, from);
+	}
+
+	@Override
+	public void updateRecordUserElements(@NonNull final I_M_ShipmentSchedule record, @NonNull final Dimension from)
+	{
+		// the shipment schedule doesn't have user elements yet
 	}
 }

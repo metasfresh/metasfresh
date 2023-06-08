@@ -77,10 +77,4 @@ public class C_OrderLine
 		final I_M_HU_PI_Item_Product noPackingItemProduct = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		orderLine.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPiItemProductId.orElse(HUPIItemProductId.ofRepoId(noPackingItemProduct.getM_HU_PI_Item_Product_ID()))));
 	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void updateSectionCode(final I_C_OrderLine orderLine)
-	{
-		orderLine.setM_SectionCode_ID(orderLine.getC_Order().getM_SectionCode_ID());
-	}
 }
