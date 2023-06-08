@@ -99,6 +99,7 @@ public final class DocumentFieldDescriptor
 	private final OptionalInt minPrecision;
 	private final int fieldMaxLength;
 	private final boolean allowShowPassword; // in case widgetType is Password
+	private final boolean forbidNewRecordCreation;
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 	private final BarcodeScannerType barcodeScannerType;
 
@@ -172,6 +173,7 @@ public final class DocumentFieldDescriptor
 
 		widgetSize = builder.getWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
+		forbidNewRecordCreation = builder.isForbidNewRecordCreation();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 		barcodeScannerType = builder.getBarcodeScannerType();
 		valueClass = builder.getValueClass();
@@ -281,6 +283,11 @@ public final class DocumentFieldDescriptor
 		return allowShowPassword;
 	}
 
+	public boolean isForbidNewRecordCreation()
+	{
+		return forbidNewRecordCreation;
+	}
+	
 	public BarcodeScannerType getBarcodeScannerType()
 	{
 		return barcodeScannerType;
@@ -423,6 +430,7 @@ public final class DocumentFieldDescriptor
 		private boolean virtualField;
 		private Optional<IDocumentFieldValueProvider> virtualFieldValueProvider = Optional.empty();
 		private boolean calculated;
+		private boolean forbidNewRecordCreation;
 
 		private DocumentFieldWidgetType _widgetType;
 		private WidgetSize _widgetSize;
@@ -705,6 +713,18 @@ public final class DocumentFieldDescriptor
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
+		}
+
+		public Builder setForbidNewRecordCreation(final boolean forbidNewRecordCreation)
+		{
+			assertNotBuilt();
+			this.forbidNewRecordCreation = forbidNewRecordCreation;
+			return this;
+		}
+
+		public boolean isForbidNewRecordCreation()
+		{
+			return forbidNewRecordCreation;
 		}
 
 		public Builder barcodeScannerType(final BarcodeScannerType barcodeScannerType)
