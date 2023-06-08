@@ -1,8 +1,8 @@
 /*
  * #%L
- * camt53
+ * de.metas.banking.camt53
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,21 @@
  * #L%
  */
 
-package de.metas.banking.camt53.wrapper;
+package de.metas.banking.camt53.wrapper.v02;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.BankToCustomerStatementV02;
 import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.camt53.wrapper.IAccountStatementWrapper;
+import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-
-import java.util.List;
 
 @Value(staticConstructor = "of")
 public class NoBatchBankToCustomerStatementV02Wrapper
@@ -51,9 +54,30 @@ public class NoBatchBankToCustomerStatementV02Wrapper
 	}
 
 	@NonNull
-	public List<AccountStatement2> getAccountStatements()
+	public ImmutableList<IAccountStatementWrapper> getAccountStatements(
+			@NonNull final BankAccountService bankAccountService,
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final IMsgBL msgBL)
 	{
-		return bankToCustomerStatementV02.getStmt();
+		return bankToCustomerStatementV02.getStmt()
+				.stream()
+				.map(stmt -> buildAccountStatementWrapper(stmt, bankAccountService, currencyRepository, msgBL))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static IAccountStatementWrapper buildAccountStatementWrapper(
+			@NonNull final AccountStatement2 accountStatement2,
+			@NonNull final BankAccountService bankAccountService,
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final IMsgBL msgBL)
+	{
+		return AccountStatement2Wrapper.builder()
+				.accountStatement2(accountStatement2)
+				.bankAccountService(bankAccountService)
+				.currencyRepository(currencyRepository)
+				.msgBL(msgBL)
+				.build();
 	}
 
 	/**
@@ -77,11 +101,11 @@ public class NoBatchBankToCustomerStatementV02Wrapper
 	 * Checks if there are any batched transactions within given {@link ReportEntry2};
 	 * Notes:
 	 * - there will be one {@link de.metas.banking.camt53.jaxb.camt053_001_02.EntryDetails1} for each batch of transactions included in the given {@link ReportEntry2}
-	 * - there will be one {@link EntryTransaction2} for each transaction included in a batch i.e. in a EntryDetails1 
+	 * - there will be one {@link EntryTransaction2} for each transaction included in a batch i.e. in a EntryDetails1
 	 */
 	private static boolean isBatchedTrxPresent(@NonNull final ReportEntry2 reportEntry)
 	{
-		return reportEntry.getNtryDtls().size() > 1 
+		return reportEntry.getNtryDtls().size() > 1
 				// dev-note: we consider batch with one trx non-batched as it doesn't make any difference
 				|| reportEntry.getNtryDtls().size() == 1 && reportEntry.getNtryDtls().get(0).getTxDtls().size() > 1;
 	}

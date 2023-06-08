@@ -99,7 +99,7 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 
 		final ImportBankStatementRequest request = ImportBankStatementRequest.builder()
 				.bankStatementImportFileId(bankStatementImportFileId)
-				.camt53File(data.getInputStream())
+				.camt53File(data)
 				.isMatchAmounts(selectedRecord.isMatchAmounts())
 				.build();
 

@@ -23,18 +23,22 @@
 package de.metas.invoice;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.engine.DocStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class UnpaidInvoiceQuery
 {
-	@NonNull
-	ImmutableSet<String> onlyDocumentNos;
+	@Nullable
+	IQueryFilter<I_C_Invoice> additionalFilter;
 
 	@NonNull
 	ImmutableSet<DocStatus> onlyDocStatuses;
