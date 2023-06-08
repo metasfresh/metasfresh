@@ -6,6 +6,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -20,6 +21,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_SectionCode;
@@ -33,9 +35,16 @@ import java.util.Set;
 public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final SAPGLJournalLineQuickInputConfigProvider configProvider;
 	private final LookupDescriptorProviders lookupDescriptorProviders;
 
-	public SAPGLJournalLineQuickInputDescriptorFactory(final LookupDescriptorProviders lookupDescriptorProviders) {this.lookupDescriptorProviders = lookupDescriptorProviders;}
+	public SAPGLJournalLineQuickInputDescriptorFactory(
+			@NonNull final SAPGLJournalLineQuickInputConfigProvider configProvider,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
+	{
+		this.configProvider = configProvider;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
+	}
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -50,8 +59,9 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 			final DetailId detailId,
 			@NonNull final Optional<SOTrx> soTrx)
 	{
-		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId, soTrx);
-		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.allFields(entityDescriptor);
+		final QuickInputConfigLayout layoutConfig = configProvider.getLayoutConfig();
+		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId, soTrx, layoutConfig);
+		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.onlyFields(entityDescriptor, layoutConfig.getFieldNamesInOrder());
 
 		return QuickInputDescriptor.of(entityDescriptor, layout, SAPGLJournalLineQuickInputProcessor.class);
 	}
@@ -69,28 +79,30 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 	private DocumentEntityDescriptor createEntityDescriptor(
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<SOTrx> soTrx)
+			@NonNull final Optional<SOTrx> soTrx,
+			@NonNull final QuickInputConfigLayout layoutConfig)
 	{
 		return createDescriptorBuilder(documentTypeId, detailId)
 				.setIsSOTrx(soTrx)
-				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_PostingSign)
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_PostingSign, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.List)
 						.setLookupDescriptorProvider(getPostingSignLookup())
 						.setWidgetSize(WidgetSize.Small))
-				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID)
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name))
 						.setWidgetSize(WidgetSize.Large))
-				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_Amount)
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_Amount, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Amount))
-				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_M_SectionCode_ID)
-								  .setWidgetType(DocumentFieldWidgetType.Lookup)
-								  .setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name))
-								  .setMandatoryLogic(true))
-				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Tax_ID)
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Activity_ID, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Tax.Table_Name))
-						.setMandatoryLogic(false))
+						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Activity.Table_Name)))
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_M_SectionCode_ID, layoutConfig)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name)))
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Tax_ID, layoutConfig)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Tax.Table_Name)))
 				.build();
 	}
 
@@ -103,11 +115,11 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 		return lookupDescriptorProviders.listByAD_Reference_Value_ID(postingSignReferenceId);
 	}
 
-	private DocumentFieldDescriptor.Builder prepareField(@NonNull final String fieldName)
+	private DocumentFieldDescriptor.Builder prepareField(@NonNull final String fieldName, @NonNull final QuickInputConfigLayout layoutConfig)
 	{
 		return DocumentFieldDescriptor.builder(fieldName)
 				.setCaption(msgBL.translatable(fieldName))
-				.setMandatoryLogic(true)
+				.setMandatoryLogic(layoutConfig.isMandatory(fieldName))
 				.setAlwaysUpdateable(true)
 				.addCharacteristic(DocumentFieldDescriptor.Characteristic.PublicField);
 	}
