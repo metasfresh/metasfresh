@@ -21,6 +21,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -53,6 +54,9 @@ import java.util.Set;
 
 public class OrderUserNotifications
 {
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private AdMessageKey MSG_C_Order_CreditLimitNotSufficient;
+
 	public static OrderUserNotifications newInstance()
 	{
 		return new OrderUserNotifications();
@@ -169,6 +173,20 @@ public class OrderUserNotifications
 
 		@Nullable
 		ADMessageAndParams adMessageAndParams;
+	}
+
+
+	public OrderUserNotifications notifyCreditLimitExceeded(@NonNull String partnerName, @NonNull String creditLimitDifference)
+	{
+		// don't send after commit, because the trx will very probably be rolled back if an error happened
+		notificationBL.send(newUserNotificationRequest()
+									.recipientUserId(Env.getLoggedUserId())
+									.contentADMessage(MSG_C_Order_CreditLimitNotSufficient)
+									.contentADMessageParam(partnerName)
+									.contentADMessageParam(creditLimitDifference)
+									.build());
+
+		return this;
 	}
 
 }

@@ -12,6 +12,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.event.OrderUserNotifications;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
@@ -52,6 +53,7 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void checkCreditLimit(@NonNull final I_C_Order order)
 	{
+
 		if (!isCheckCreditLimitNeeded(order))
 		{
 			return;
@@ -62,6 +64,20 @@ public class C_Order
 		final CreditStatus soCreditStatus = stats.getSoCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
+		final boolean doNotEnforceSOCreditstatus = false; // todo sys config
+		if(doNotEnforceSOCreditstatus)
+		{
+			final OrderUserNotifications orderUserNotifications = OrderUserNotifications.newInstance();
+
+			final String bpartnerName = null; // TODO
+			final String creditLimitDifferenceMessage = null; // TODO
+
+			// TODO: Build the message like the ones below are built
+			// I used de.metas.deliveryplanning.DeliveryInstructionUserNotificationsProducer.notifyDeliveryInstructionError for example
+
+			orderUserNotifications.notifyCreditLimitExceeded(bpartnerName, creditLimitDifferenceMessage);
+
+		}
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getBill_BPartner_ID(), dateOrdered);
 
 		if (CreditStatus.CreditStop.equals(soCreditStatus))
