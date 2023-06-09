@@ -44,7 +44,7 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered })
-	public void onDelete(@NonNull final I_C_OrderLine orderLine)
+	public void onQtyOrderedChange(@NonNull final I_C_OrderLine orderLine)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 		deliveryPlanningService.distributeLoadQty(orderLineId);
