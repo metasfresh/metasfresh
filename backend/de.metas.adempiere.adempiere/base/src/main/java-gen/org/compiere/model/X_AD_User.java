@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_User
  *  @author metasfresh (generated) 
@@ -12,7 +12,11 @@ import java.util.Properties;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -1013314438L;
+=======
+	private static final long serialVersionUID = -190914136L;
+>>>>>>> d8e345c1621 (Dunning Mails to seperate Mail address (#15534))
 
 	/** Standard Constructor */
 	public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -637,6 +641,22 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
 	}
 
+<<<<<<< HEAD
+=======
+	/**
+	 * Gender AD_Reference_ID=541317
+	 * Reference name: Gender_List
+	 */
+	public static final int GENDER_AD_Reference_ID=541317;
+	/** Unbekannt = 0 */
+	public static final String GENDER_Unbekannt = "0";
+	/** Weiblich = 1 */
+	public static final String GENDER_Weiblich = "1";
+	/** Männlich = 2 */
+	public static final String GENDER_Maennlich = "2";
+	/** Divers = 3 */
+	public static final String GENDER_Divers = "3";
+>>>>>>> d8e345c1621 (Dunning Mails to seperate Mail address (#15534))
 	@Override
 	public void setHobbies_interests (final @Nullable java.lang.String Hobbies_interests)
 	{
@@ -744,6 +764,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setIsDunningDefault (final boolean IsDunningDefault)
 	{
 		set_Value (COLUMNNAME_IsDunningDefault, IsDunningDefault);
@@ -753,6 +774,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean IsDunningDefault()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
+=======
+	public void setIsDunningContact (final boolean IsDunningContact)
+	{
+		set_Value (COLUMNNAME_IsDunningContact, IsDunningContact);
+	}
+
+	@Override
+	public boolean isDunningContact()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
+>>>>>>> d8e345c1621 (Dunning Mails to seperate Mail address (#15534))
 	}
 
 	@Override

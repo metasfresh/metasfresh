@@ -252,5 +252,9 @@ public interface IBPartnerBL extends ISingletonService
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
 
 	@NonNull
+<<<<<<< HEAD
 	Optional<String> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
+=======
+	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
+>>>>>>> d8e345c1621 (Dunning Mails to seperate Mail address (#15534))
 }
