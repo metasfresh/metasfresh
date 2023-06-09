@@ -518,9 +518,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
 				.setLimit(query.getQueryLimit());
 
-		if (!query.getOnlyDocumentNos().isEmpty())
+		if (query.getAdditionalFilter() != null)
 		{
-			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, query.getOnlyDocumentNos());
+			queryBuilder.filter(query.getAdditionalFilter());
 		}
 
 		if (!query.getOnlyDocStatuses().isEmpty())
