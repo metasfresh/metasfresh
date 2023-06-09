@@ -41,8 +41,8 @@ ALTER SEQUENCE CONTRACT_MODULE_LOG_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 214748364
 ;
 
 -- 2023-06-08T19:05:08.005643794Z
-ALTER TABLE Contract_Module_Log ADD COLUMN Contract_Module_Log_ID numeric(10,0)
-;
+-- ALTER TABLE Contract_Module_Log ADD COLUMN Contract_Module_Log_ID numeric(10,0)
+-- ;
 
 -- 2023-06-08T19:05:27.582121358Z
 /* DDL */ CREATE TABLE public.Contract_Module_Log (Contract_Module_Log_ID NUMERIC(10) NOT NULL, CONSTRAINT Contract_Module_Log_Key PRIMARY KEY (Contract_Module_Log_ID))
