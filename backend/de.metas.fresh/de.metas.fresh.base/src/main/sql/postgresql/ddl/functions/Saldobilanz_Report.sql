@@ -90,7 +90,11 @@ CREATE OR REPLACE FUNCTION report.saldobilanz_report(p_date                     
                 C_ElementValue_ID numeric,
 
                 ad_org_id         numeric,
-                currency          character(3)
+                currency          character(3),
+                OverallCount      bigint,
+                activityname      text,
+                productname       text,
+                level             text
             )
 AS
 $BODY$
@@ -99,6 +103,8 @@ DECLARE
     v_rowcount       numeric;
     v_AcctSchemaInfo record;
     v_periodInfo     record;
+    v_activityInfo   record;
+    v_productInfo    record;
 BEGIN
 
 
@@ -126,6 +132,21 @@ BEGIN
     WHERE TRUE
       -- Period: determine it by DateAcct
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_date);
+
+
+    --
+    -- Activity Info
+    SELECT a.c_activity_id, a.value, a.name
+    INTO v_activityInfo
+    FROM c_activity a;
+
+
+    --
+    -- Product Info
+    SELECT p.M_product_ID, p.value, p.name
+    INTO v_productInfo
+    FROM M_product p;
+
 
     DROP TABLE IF EXISTS tmp_accounts;
     CREATE TEMPORARY TABLE tmp_accounts AS
@@ -195,7 +216,7 @@ BEGIN
          , a.AccountType
          , a.IsConvertToEUR
 
-         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator               AS SameYearSum
+         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator                                  AS SameYearSum
          , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.period_LastYearEnd_EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator AS LastYearSum
 
     FROM tmp_accounts a;
@@ -203,9 +224,7 @@ BEGIN
     RAISE NOTICE 'Computed balances for % accounts', v_rowcount;
     CREATE UNIQUE INDEX ON tmp_balances (C_ElementValue_ID);
 
-
     DROP TABLE IF EXISTS tmp_report_balance;
-
     CREATE TEMPORARY TABLE tmp_report_balance
     AS
     SELECT p_date::Date                                                                                             AS RunDate,
@@ -251,11 +270,7 @@ BEGIN
            C_ElementValue_ID,
 
            p_ad_org_id                                                                                              AS ad_org_id,
-           a.iso_code,
-           NULL::numeric                                                                                            AS rolling_balance,
-           NULL::text                                                                                               AS productname,
-           NULL::text                                                                                               AS activityname,
-           NULL::text                                                                                               AS level
+           a.iso_code
     FROM (
              SELECT tb.ParentName1
                   , tb.ParentValue1
@@ -288,44 +303,301 @@ BEGIN
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Created tmp_reports with % rows', v_rowcount;
 
-    <<RESULT_TABLE>>
-    BEGIN
-        RETURN QUERY
-            SELECT b.parentname1,
-                   b.parentvalue1,
-                   b.parentname2,
-                   b.parentvalue2,
-                   b.parentname3,
-                   b.parentvalue3,
-                   b.parentname4,
-                   b.parentvalue4,
-                   b.name,
-                   b.value,
-                   b.AccountType,
 
-                   b.SameYearSum,
-                   b.LastYearSum,
-                   b.L4_euroSaldo,
-                   --
-                   b.L4_SameYearSum,
-                   b.L4_LastYearSum,
-                   b.L3_SameYearSum,
-                   b.L3_LastYearSum,
-                   b.L2_SameYearSum,
-                   b.L2_LastYearSum,
-                   b.L1_SameYearSum,
-                   b.L1_LastYearSum,
+    IF p_IsShowProductDetails = 'Y' OR p_IsShowActivityDetails = 'Y' THEN
 
-                   -- More info:
-                   b.C_Calendar_ID,
-                   b.C_ElementValue_ID,
+        -- compute balances per activity and product
+        DROP TABLE IF EXISTS tmp_Fact_Acct_Per_DateAcct;
+        CREATE TEMPORARY TABLE tmp_Fact_Acct_Per_DateAcct AS
+        SELECT fa.AD_Client_ID
+             , fa.Account_ID
+             , fa.c_activity_id
+             , fa.m_product_id
+             , fa.C_AcctSchema_ID
+             , fa.PostingType
+             , p.C_Period_ID
+             , p.C_Year_ID
+             , fa.DateAcct
+             -- Aggregated amounts
+             , COALESCE(SUM(AmtAcctDr), 0) AS AmtAcctDr
+             , COALESCE(SUM(AmtAcctCr), 0) AS AmtAcctCr
+             , COALESCE(SUM(Qty), 0)       AS Qty
+        FROM Fact_Acct fa
+                 LEFT OUTER JOIN C_Period p ON (p.C_Period_ID = fa.C_Period_ID)
+        WHERE fa.dateacct <= p_date
+          AND fa.ad_org_id = p_ad_org_id
+        GROUP BY fa.AD_Client_ID
+               , p.C_Period_ID
+               , fa.DateAcct
+               , fa.C_AcctSchema_ID
+               , fa.PostingType
+               , fa.Account_ID
+               , fa.c_activity_id
+               , fa.m_product_id;
 
-                   b.ad_org_id,
-                   b.iso_code
-            FROM tmp_report_balance b
-            ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, value;
+        GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+        RAISE NOTICE 'Sums  per activity and product for % dates', v_rowcount;
+        CREATE UNIQUE INDEX ON tmp_Fact_Acct_Per_DateAcct (DateAcct, Account_ID, M_Product_ID, C_Activity_ID);
 
-    END RESULT_TABLE;
+
+        DROP TABLE IF EXISTS tmp_activity_product_balances_todate;
+        CREATE TEMPORARY TABLE tmp_activity_product_balances_todate AS
+        WITH filteredAndOrdered AS (
+            SELECT ev.C_ElementValue_ID
+                 , fa.C_AcctSchema_ID
+                 , fa.PostingType
+                 , ev.AccountType
+                 , fa.DateAcct
+                 , fa.m_product_id
+                 , fa.c_activity_id
+                 , a.name                               AS activityName
+                 , p.name                               AS productName
+
+                 -- Aggregated amounts: (beginning) to Date
+                 , SUM(AmtAcctDr) OVER facts_ToDate     AS AmtAcctDr
+                 , SUM(AmtAcctCr) OVER facts_ToDate     AS AmtAcctCr
+                 -- Aggregated amounts: Year to Date
+                 , SUM(AmtAcctDr) OVER facts_YearToDate AS AmtAcctDr_YTD
+                 , SUM(AmtAcctCr) OVER facts_YearToDate AS AmtAcctCr_YTD
+            FROM tmp_Fact_Acct_Per_DateAcct fa
+                     INNER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID = fa.Account_ID) AND ev.isActive = 'Y'
+                     LEFT OUTER JOIN C_Activity a ON (fa.c_activity_id = a.c_activity_id)
+                     LEFT OUTER JOIN M_Product p ON (fa.m_product_id = p.m_product_id)
+                WINDOW
+                    facts_ToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID, fa.c_activity_id, fa.m_product_id ORDER BY fa.DateAcct, fa.c_activity_id, fa.m_product_id )
+                    , facts_YearToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID, fa.C_Year_ID ORDER BY fa.DateAcct)
+        )
+        SELECT t.C_ElementValue_ID
+             , a.parentname1
+             , a.parentvalue1
+             , a.parentname2
+             , a.parentvalue2
+             , a.parentname3
+             , a.parentvalue3
+             , a.parentname4
+             , a.parentvalue4
+             , a.name
+             , a.value
+             , a.AccountType
+             , m_product_id
+             , c_activity_id
+             , activityName
+             , productName
+             , (SUM((Balance::de_metas_acct.BalanceAmt).Balance), SUM((Balance::de_metas_acct.BalanceAmt).Debit), SUM((Balance::de_metas_acct.BalanceAmt).Credit))::de_metas_acct.BalanceAmt AS balanceToDate
+        FROM (
+                 -- Include posting type Actual
+                 (
+                     SELECT (CASE
+                         -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
+                                 WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= DATE_TRUNC('year', p_date) THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
+                                 WHEN fo.AccountType IN ('E', 'R')                                               THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
+                         -- For any other account => we consider from the beginning to Date amount
+                                                                                                                 ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
+                             END) AS Balance
+                          , C_ElementValue_ID
+                          , m_product_id
+                          , c_activity_id
+                          , activityName
+                          , productName
+                     FROM filteredAndOrdered fo
+                     WHERE TRUE
+                       AND fo.PostingType = 'A'
+                     ORDER BY fo.DateAcct DESC
+                 )
+                 -- Include posting type Year End
+                 UNION ALL
+                 (
+                     SELECT (CASE
+                         -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
+                                 WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= DATE_TRUNC('year', p_date) THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
+                                 WHEN fo.AccountType IN ('E', 'R')                                               THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
+                         -- For any other account => we consider from the beginning to Date amount
+                                                                                                                 ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
+                             END) AS Balance
+                          , C_ElementValue_ID
+                          , m_product_id
+                          , c_activity_id
+                          , activityName
+                          , productName
+                     FROM filteredAndOrdered fo
+                     WHERE TRUE
+                       AND p_ExcludePostingTypeYearEnd = 'N' -- p_ExcludePostingTypeYearEnd
+                       AND fo.PostingType = 'Y'
+                     ORDER BY fo.DateAcct DESC
+                 )
+                 -- Include posting type Statistical
+                 UNION ALL
+                 (
+                     SELECT (CASE
+                         -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
+                                 WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= DATE_TRUNC('year', p_date) THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
+                                 WHEN fo.AccountType IN ('E', 'R')                                               THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
+                         -- For any other account => we consider from the beginning to Date amount
+                                                                                                                 ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
+                             END) AS Balance
+                          , C_ElementValue_ID
+                          , m_product_id
+                          , c_activity_id
+                          , activityName
+                          , productName
+                     FROM filteredAndOrdered fo
+                     WHERE TRUE
+                       AND p_IncludePostingTypeStatistical = 'Y' -- p_IncludePostingTypeStatistical
+                       AND fo.PostingType = 'S'
+                     ORDER BY fo.DateAcct DESC
+                 )
+             ) AS t
+                 INNER JOIN tmp_accounts a ON a.C_ElementValue_ID = t.c_elementvalue_id
+        GROUP BY t.C_ElementValue_ID
+               , a.parentname1
+               , a.parentvalue1
+               , a.parentname2
+               , a.parentvalue2
+               , a.parentname3
+               , a.parentvalue3
+               , a.parentname4
+               , a.parentvalue4
+               , a.name
+               , a.value
+               , a.AccountType
+               , m_product_id
+               , c_activity_id
+               , activityName
+               , productName;
+
+        GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+        RAISE NOTICE 'Computed balances per activity and product for % tmp_activity_product_balances_todate', v_rowcount;
+        CREATE UNIQUE INDEX ON tmp_activity_product_balances_todate (C_ElementValue_ID, M_Product_ID, C_Activity_ID);
+
+
+        <<RESULT_TABLE>>
+        BEGIN
+            RETURN QUERY
+                SELECT b.parentname1,
+                       b.parentvalue1,
+                       b.parentname2,
+                       b.parentvalue2,
+                       b.parentname3,
+                       b.parentvalue3,
+                       b.parentname4,
+                       b.parentvalue4,
+                       b.name,
+                       b.value,
+                       b.AccountType,
+
+                       b.SameYearSum,
+                       b.LastYearSum,
+                       b.L4_euroSaldo,
+                       --
+                       b.L4_SameYearSum,
+                       b.L4_LastYearSum,
+                       b.L3_SameYearSum,
+                       b.L3_LastYearSum,
+                       b.L2_SameYearSum,
+                       b.L2_LastYearSum,
+                       b.L1_SameYearSum,
+                       b.L1_LastYearSum,
+
+                       -- More info:
+                       b.C_Calendar_ID,
+                       b.C_ElementValue_ID,
+
+                       b.ad_org_id,
+                       b.iso_code,
+                       COUNT(0) OVER () AS OverallCount,
+                       NULL::text       AS activityName,
+                       NULL::text       AS productName,
+                       '1'              AS level
+                FROM tmp_report_balance b
+
+                UNION ALL
+
+                SELECT tb.parentname1,
+                       tb.parentvalue1,
+                       tb.parentname2,
+                       tb.parentvalue2,
+                       tb.parentname3,
+                       tb.parentvalue3,
+                       tb.parentname4,
+                       tb.parentvalue4,
+                       tb.name,
+                       tb.value,
+                       tb.AccountType,
+
+                       (tb.balanceToDate::de_metas_acct.BalanceAmt).balance AS SameYearSum,
+                       NULL::numeric                                        AS LastYearSum,
+                       NULL::numeric                                        AS L4_euroSaldo,
+                       --
+                       NULL::numeric                                        AS L4_SameYearSum,
+                       NULL::numeric                                        AS L4_LastYearSum,
+                       NULL::numeric                                        AS L3_SameYearSum,
+                       NULL::numeric                                        AS L3_LastYearSum,
+                       NULL::numeric                                        AS L2_SameYearSum,
+                       NULL::numeric                                        AS L2_LastYearSum,
+                       NULL::numeric                                        AS L1_SameYearSum,
+                       NULL::numeric                                        AS L1_LastYearSum,
+
+                       -- More info:
+                       v_AcctSchemaInfo.C_Calendar_ID,
+                       tb.C_ElementValue_ID,
+
+                       NULL::numeric                                        AS ad_org_id,
+                       v_AcctSchemaInfo.iso_code,
+                       COUNT(0) OVER ()                                     AS OverallCount,
+                       tb.activityName,
+                       tb.productName,
+                       '2'                                                  AS level
+                FROM tmp_activity_product_balances_todate tb
+
+                ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, value, level;
+        END RESULT_TABLE;
+
+    ELSE
+
+        <<RESULT_TABLE>>
+        BEGIN
+            RETURN QUERY
+                SELECT b.parentname1,
+                       b.parentvalue1,
+                       b.parentname2,
+                       b.parentvalue2,
+                       b.parentname3,
+                       b.parentvalue3,
+                       b.parentname4,
+                       b.parentvalue4,
+                       b.name,
+                       b.value,
+                       b.AccountType,
+
+                       b.SameYearSum,
+                       b.LastYearSum,
+                       b.L4_euroSaldo,
+                       --
+                       b.L4_SameYearSum,
+                       b.L4_LastYearSum,
+                       b.L3_SameYearSum,
+                       b.L3_LastYearSum,
+                       b.L2_SameYearSum,
+                       b.L2_LastYearSum,
+                       b.L1_SameYearSum,
+                       b.L1_LastYearSum,
+
+                       -- More info:
+                       b.C_Calendar_ID,
+                       b.C_ElementValue_ID,
+
+                       b.ad_org_id,
+                       b.iso_code,
+                       COUNT(0) OVER () AS OverallCount,
+                       NULL::text       AS activityName,
+                       NULL::text       AS productName,
+                       '1'              AS level
+                FROM tmp_report_balance b
+
+                ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, value, level;
+
+        END RESULT_TABLE;
+    END IF;
 END;
 $BODY$
     LANGUAGE plpgsql VOLATILE
