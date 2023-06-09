@@ -62,29 +62,36 @@ CREATE OR REPLACE FUNCTION report.saldobilanz_report(p_date                     
 )
     RETURNS TABLE
             (
-                parentname1       text,
-                parentvalue1      text,
-                parentname2       TEXT,
-                parentvalue2      TEXT,
-                parentname3       TEXT,
-                parentvalue3      TEXT,
-                name              TEXT,
-                value             TEXT,
-                AccountType       TEXT,
-                L4_SameYearSum    numeric,
-                L4_LastYearSum    numeric,
-                L4_euroSaldo      numeric,
+				parentname1 character varying(60),
+				parentvalue1 character varying(60),
+				parentname2 character varying(60),
+				parentvalue2 character varying(60),
+				parentname3 character varying(60),
+				parentvalue3 character varying(60),
+				parentname4 character varying(60),
+				parentvalue4 character varying(60),
+				name character varying(60),
+				namevalue character varying(60),
+				AccountType char(1),
+				
+				sameyearsum numeric,
+				lastyearsum numeric,
+				euroSaldo numeric,
+				L4_sameyearsum numeric,
+				L4_lastyearsum numeric,
+				L3_sameyearsum numeric,
+				L3_lastyearsum numeric,
+				L2_sameyearsum numeric,
+				L2_lastyearsum numeric,
+				L1_sameyearsum numeric,
+				L1_lastyearsum numeric,
 
-                L3_SameYearSum    numeric,
-                L3_LastYearSum    numeric,
-                L2_SameYearSum    numeric,
-                L2_LastYearSum    numeric,
-                L1_SameYearSum    numeric,
-                L1_LastYearSum    numeric,
-                C_Calendar_ID     numeric,
-                C_ElementValue_ID numeric,
-                AD_Org_ID         numeric,
-                iso_code          text
+				-- More info
+				C_Calendar_ID numeric,
+				C_ElementValue_ID numeric,
+
+				ad_org_id numeric,
+				currency character(3)
             )
 AS
 $BODY$
@@ -202,8 +209,8 @@ BEGIN
            value,
            AccountType,
 
-           SameYearSum                                                                                              AS L4_SameYearSum,
-           LastYearSum                                                                                              AS L4_LastYearSum,
+           SameYearSum,
+           LastYearSum,
            (CASE
                 WHEN IsConvertToEUR
                     THEN currencyConvert(a.SameYearSum
@@ -279,12 +286,14 @@ BEGIN
                    parentvalue2,
                    parentname3,
                    parentvalue3,
+				   parentname4,
+                   parentvalue4,
                    name,
                    value,
                    AccountType,
 
-                   L4_SameYearSum,
-                   L4_LastYearSum,
+                   SameYearSum,
+                   LastYearSum,
                    L4_euroSaldo,
                    --
                    L3_SameYearSum,
