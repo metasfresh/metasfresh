@@ -21,7 +21,6 @@ CREATE VIEW Fact_Acct_Transactions_View
              gl_category_id,
              gl_budget_id,
              c_tax_id,
-             taxcode,
              m_locator_id,
              postingtype,
              c_currency_id,
