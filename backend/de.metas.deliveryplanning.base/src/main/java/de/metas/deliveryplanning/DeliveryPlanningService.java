@@ -101,7 +101,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -289,21 +288,16 @@ public class DeliveryPlanningService
 
 		final Quantity openQty = getOpenQty(deliveryPlanningId);
 
-		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
 
 		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines));
-		final DeliveryPlanningCreateRequest initialRequest = createRequest(deliveryPlanningId, fraction.add(remainder));
-		deliveryPlanningRepository.generateDeliveryPlanning(initialRequest);
+		deliveryPlanningRepository.setLoadQty(deliveryPlanningId, fraction.add(remainder));
 
-		for (int i = 1; i < additionalLines; i++)
+		for (int i = 0; i < additionalLines; i++)
 		{
 			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
-		}
-		if (initialRequest.getOrderLineId() != null)
-		{
-			distributeLoadQty(initialRequest.getOrderLineId());
 		}
 	}
 
@@ -324,6 +318,7 @@ public class DeliveryPlanningService
 		Quantity openQty = qtyOrdered;
 
 		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
+				.filter(deliveryPlanning -> deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
 				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
 				.reduce(Quantity::add)
 				.orElse(null);
@@ -651,7 +646,6 @@ public class DeliveryPlanningService
 				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
 				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
-		final Set<OrderLineId> orderLineIds = new HashSet<>();
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
 		{
@@ -664,9 +658,7 @@ public class DeliveryPlanningService
 			// then generate a new one
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
 			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
-			orderLineIds.add(OrderLineId.ofRepoId(deliveryPlanningRecord.getC_OrderLine_ID()));
 		}
-		orderLineIds.forEach(this::distributeLoadQty);
 	}
 
 	private void voidLinkedDeliveryInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -815,11 +807,4 @@ public class DeliveryPlanningService
 		}
 	}
 
-	public void distributeLoadQty(@NonNull final OrderLineId orderLineId)
-	{
-		final de.metas.interfaces.I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
-		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
-		deliveryPlanningRepository.distributeLoadQty(orderLineId, qtyOrdered);
-
-	}
 }
