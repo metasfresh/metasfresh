@@ -758,7 +758,6 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipTo(previousLocation.isShipTo());
 	}
 
-
 	@Override
 	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
 	{
@@ -819,5 +818,12 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		return Optional.empty();
+	}
+
+	@NonNull
+	@Override
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return userRepository.getDefaultDunningContact(bPartnerId);
 	}
 }

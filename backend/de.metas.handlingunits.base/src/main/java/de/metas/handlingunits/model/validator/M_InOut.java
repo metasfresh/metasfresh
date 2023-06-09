@@ -352,6 +352,10 @@ public class M_InOut
 		// the handling units are already created
 		if (!existingHandlingUnits.isEmpty())
 		{
+			if (returnsServiceFacade.isServiceRepair(customerReturn))
+			{
+				existingHandlingUnits.forEach(hu -> hu.setIsExternalProperty(true));
+			}
 			final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(customerReturn);
 
 			//make sure they all have status active

@@ -1222,27 +1222,6 @@ public interface I_Fact_Acct_Transactions_View
 	String COLUMNNAME_SubLine_ID = "SubLine_ID";
 
 	/**
-	 * Set Tax Code.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTaxCode (@Nullable java.lang.String TaxCode);
-
-	/**
-	 * Get Tax Code.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getTaxCode();
-
-	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_TaxCode = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "TaxCode", null);
-	String COLUMNNAME_TaxCode = "TaxCode";
-
-	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

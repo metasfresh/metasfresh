@@ -291,6 +291,27 @@ public interface I_M_HU
 	String COLUMNNAME_IsChildHU = "IsChildHU";
 
 	/**
+	 * Set External property.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExternalProperty (boolean IsExternalProperty);
+
+	/**
+	 * Get External property.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExternalProperty();
+
+	ModelColumn<I_M_HU, Object> COLUMN_IsExternalProperty = new ModelColumn<>(I_M_HU.class, "IsExternalProperty", null);
+	String COLUMNNAME_IsExternalProperty = "IsExternalProperty";
+
+	/**
 	 * Set Reserviert.
 	 *
 	 * <br>Type: YesNo

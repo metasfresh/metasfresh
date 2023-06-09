@@ -55,6 +55,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.payment.esr</groupId>
+            <artifactId>de.metas.payment.esr</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -70,9 +75,23 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema</schemaDirectory>
+                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_02</schemaDirectory>
                             <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_02</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                            <episode>false</episode>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-de.metas.banking.camt53.schema.camt053.001.04</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_04</schemaDirectory>
+                            <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_04</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                            <episode>false</episode>
                         </configuration>
                     </execution>
                 </executions>

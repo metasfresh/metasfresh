@@ -15,6 +15,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -119,5 +120,16 @@ public class UserRepository
 				.stream()
 				.map(this::ofRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDunningContact, true)
+				.create()
+				.firstIdOnlyOptional(UserId::ofRepoIdOrNull);
 	}
 }

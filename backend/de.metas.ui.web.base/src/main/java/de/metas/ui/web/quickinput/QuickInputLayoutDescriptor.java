@@ -1,16 +1,15 @@
 package de.metas.ui.web.quickinput;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.util.Check;
 import lombok.NonNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -41,7 +40,7 @@ public class QuickInputLayoutDescriptor
 		return new Builder();
 	}
 
-	public static QuickInputLayoutDescriptor build(
+	public static QuickInputLayoutDescriptor onlyFields(
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final String[][] fieldNames)
 	{
@@ -63,11 +62,41 @@ public class QuickInputLayoutDescriptor
 		return layoutBuilder.build();
 	}
 
+	/**
+	 * @deprecated please use {@link #onlyFields(DocumentEntityDescriptor, String[][])}
+	 */
+	@Deprecated
+	public static QuickInputLayoutDescriptor build(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final String[][] fieldNames) {return onlyFields(entityDescriptor, fieldNames);}
+
+	public static QuickInputLayoutDescriptor onlyFields(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final List<String> fieldNames)
+	{
+		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
+
+		final Builder layoutBuilder = builder();
+
+		for (final String fieldName : fieldNames)
+		{
+			if (Check.isBlank(fieldName))
+			{
+				continue;
+			}
+
+			DocumentLayoutElementDescriptor
+					.builderOrEmpty(entityDescriptor, fieldName)
+					.ifPresent(layoutBuilder::element);
+		}
+
+		return layoutBuilder.build();
+	}
+
+	@SuppressWarnings("unused")
 	public static QuickInputLayoutDescriptor allFields(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		final Builder layoutBuilder = builder();
 
-		for(final DocumentFieldDescriptor field : entityDescriptor.getFields())
+		for (final DocumentFieldDescriptor field : entityDescriptor.getFields())
 		{
 			final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor.builder(field);
 			layoutBuilder.element(element);
@@ -75,7 +104,6 @@ public class QuickInputLayoutDescriptor
 
 		return layoutBuilder.build();
 	}
-
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
