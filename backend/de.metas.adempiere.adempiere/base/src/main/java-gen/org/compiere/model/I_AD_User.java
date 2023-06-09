@@ -482,27 +482,6 @@ public interface I_AD_User
 	String COLUMNNAME_ContactLimitationReason = "ContactLimitationReason";
 
 	/**
-	 * Set Copy Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCopyInvoice (boolean CopyInvoice);
-
-	/**
-	 * Get Copy Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isCopyInvoice();
-
-	ModelColumn<I_AD_User, Object> COLUMN_CopyInvoice = new ModelColumn<>(I_AD_User.class, "CopyInvoice", null);
-	String COLUMNNAME_CopyInvoice = "CopyInvoice";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -547,27 +526,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_DelDate = new ModelColumn<>(I_AD_User.class, "DelDate", null);
 	String COLUMNNAME_DelDate = "DelDate";
-
-	/**
-	 * Set Department.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDepartment (@Nullable java.lang.String Department);
-
-	/**
-	 * Get Department.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDepartment();
-
-	ModelColumn<I_AD_User, Object> COLUMN_Department = new ModelColumn<>(I_AD_User.class, "Department", null);
-	String COLUMNNAME_Department = "Department";
 
 	/**
 	 * Set Description.
@@ -1058,29 +1016,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
 	String COLUMNNAME_IsDunningContact = "IsDunningContact";
-
-	/**
-	 * Set Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDunningDefault (boolean IsDunningDefault);
-
-	/**
-	 * Get Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDunningDefault();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
-	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
 
 	/**
 	 * Set Full BP Access.
