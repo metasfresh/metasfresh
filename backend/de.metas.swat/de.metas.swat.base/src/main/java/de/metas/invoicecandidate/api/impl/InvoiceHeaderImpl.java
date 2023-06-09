@@ -3,12 +3,9 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
-<<<<<<< HEAD
 import de.metas.document.DocTypeId;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
-=======
 import de.metas.document.dimension.Dimension;
->>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;

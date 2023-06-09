@@ -2,12 +2,9 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
-<<<<<<< HEAD
 import de.metas.document.DocTypeId;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
-=======
 import de.metas.document.dimension.Dimension;
->>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -20,10 +17,6 @@ import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import lombok.NonNull;
-<<<<<<< HEAD
-=======
-import org.compiere.model.I_C_DocType;
->>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;

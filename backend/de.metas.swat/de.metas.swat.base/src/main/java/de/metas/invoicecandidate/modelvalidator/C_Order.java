@@ -10,20 +10,16 @@ import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
-<<<<<<< HEAD
+import de.metas.document.engine.DocStatus;
 import de.metas.document.exception.DocumentActionException;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
-=======
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
->>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -46,14 +42,12 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
-import org.compiere.util.TimeUtil;
 
 import javax.naming.OperationNotSupportedException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -198,7 +192,6 @@ public class C_Order
 		return true;
 	}
 
-<<<<<<< HEAD
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
 			ModelValidator.TIMING_BEFORE_REACTIVATE,
@@ -213,7 +206,6 @@ public class C_Order
 			throw new DocumentActionException(OPERATION_NOT_SUPPORTED_APPROVED_FOR_INVOICE);
 		}
 	}
-=======
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_C_Order.COLUMNNAME_UserElementString1,
 					I_C_Order.COLUMNNAME_UserElementString2,
@@ -337,5 +329,4 @@ public class C_Order
 		}
 	}
 
->>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 }

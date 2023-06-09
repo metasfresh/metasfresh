@@ -18,11 +18,8 @@ package org.compiere.model;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-<<<<<<< HEAD
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-=======
->>>>>>> b54045c0ad1 (Add and propagate user element strings from order to invoice (#15440))
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
