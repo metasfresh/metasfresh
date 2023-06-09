@@ -129,7 +129,7 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
+		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
 				{ IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID } //
 				, { IEmptiesQuickInput.COLUMNNAME_Qty }
 		});
