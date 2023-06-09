@@ -615,7 +615,7 @@ public class DeliveryPlanningRepository
 				.orElse(null);
 	}
 
-	public void setLoadQty(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
 		deliveryPlanning.setPlannedLoadedQuantity(quantity.toBigDecimal());

@@ -291,7 +291,7 @@ public class DeliveryPlanningService
 		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
 
 		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines));
-		deliveryPlanningRepository.setLoadQty(deliveryPlanningId, fraction.add(remainder));
+		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 
 		for (int i = 0; i < additionalLines; i++)
 		{
