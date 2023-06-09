@@ -406,18 +406,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public void setCopyInvoice (final boolean CopyInvoice)
-	{
-		set_Value (COLUMNNAME_CopyInvoice, CopyInvoice);
-	}
-
-	@Override
-	public boolean isCopyInvoice()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_CopyInvoice);
-	}
-
-	@Override
 	public void setDelDate (final @Nullable java.sql.Timestamp DelDate)
 	{
 		set_Value (COLUMNNAME_DelDate, DelDate);
@@ -427,18 +415,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.sql.Timestamp getDelDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DelDate);
-	}
-
-	@Override
-	public void setDepartment (final @Nullable java.lang.String Department)
-	{
-		set_Value (COLUMNNAME_Department, Department);
-	}
-
-	@Override
-	public java.lang.String getDepartment()
-	{
-		return get_ValueAsString(COLUMNNAME_Department);
 	}
 
 	@Override
@@ -463,18 +439,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getEMail()
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
-	}
-
-	@Override
-	public void setEmail_private (final @Nullable java.lang.String Email_private)
-	{
-		set_Value (COLUMNNAME_Email_private, Email_private);
-	}
-
-	@Override
-	public java.lang.String getEmail_private()
-	{
-		return get_ValueAsString(COLUMNNAME_Email_private);
 	}
 
 	@Override
@@ -711,18 +675,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isDunningContact()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
-	}
-
-	@Override
-	public void setIsDunningDefault (final boolean IsDunningDefault)
-	{
-		set_Value (COLUMNNAME_IsDunningDefault, IsDunningDefault);
-	}
-
-	@Override
-	public boolean isDunningDefault()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
 	}
 
 	@Override
