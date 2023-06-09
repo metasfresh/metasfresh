@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -1013314438L;
+	private static final long serialVersionUID = -190914136L;
 
 	/** Standard Constructor */
 	public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -753,6 +753,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean IsDunningDefault()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
+	}
+
+	@Override
+	public void setIsDunningContact (final boolean IsDunningContact)
+	{
+		set_Value (COLUMNNAME_IsDunningContact, IsDunningContact);
+	}
+
+	@Override
+	public boolean isDunningContact()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
 	}
 
 	@Override
