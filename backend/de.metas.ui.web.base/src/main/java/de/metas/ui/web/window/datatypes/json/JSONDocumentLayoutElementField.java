@@ -242,7 +242,7 @@ public final class JSONDocumentLayoutElementField
 		clearValueText = fieldDescriptor.getListNullItemCaption(jsonOpts.getAdLanguage());
 		devices = JSONDeviceDescriptor.ofList(fieldDescriptor.getDevices(), jsonOpts.getAdLanguage());
 
-		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
+		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor, jsonOpts);
 		if (newRecordEntityDescriptor != null)
 		{
 			newRecordWindowId = newRecordEntityDescriptor.getDocumentTypeId().toJson();
@@ -338,9 +338,16 @@ public final class JSONDocumentLayoutElementField
 
 	@Nullable
 	private static DocumentEntityDescriptor findNewRecordEntityDescriptor(
-			@Nullable final String lookupTableName,
+			@NonNull final DocumentLayoutElementFieldDescriptor fieldDescriptor,
 			final JSONDocumentLayoutOptions jsonOpts)
 	{
+		if (fieldDescriptor.isForbidNewRecordCreation())
+		{
+			return null;
+		}
+
+		final String lookupTableName = fieldDescriptor.getLookupTableName().orElse(null);
+
 		if (lookupTableName == null)
 		{
 			return null;
