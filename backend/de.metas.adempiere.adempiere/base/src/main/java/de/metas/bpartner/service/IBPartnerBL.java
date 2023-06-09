@@ -253,4 +253,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	@NonNull
 	Optional<String> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@NonNull
+	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
 }
