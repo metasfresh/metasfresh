@@ -1,6 +1,9 @@
 package de.metas.user;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
+=======
+>>>>>>> 6bedcd1a648 (after merge fix)
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
@@ -14,7 +17,11 @@ import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+<<<<<<< HEAD
 import java.util.List;
+=======
+import java.util.Optional;
+>>>>>>> 6bedcd1a648 (after merge fix)
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -110,6 +117,7 @@ public class UserRepository
 	}
 
 	@NonNull
+<<<<<<< HEAD
 	public List<User> getByQuery(@NonNull final UserQuery query)
 	{
 		return queryBL.createQueryBuilder(I_AD_User.class)
@@ -119,5 +127,15 @@ public class UserRepository
 				.stream()
 				.map(this::ofRecord)
 				.collect(ImmutableList.toImmutableList());
+=======
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDunningContact, true)
+				.create()
+				.firstIdOnlyOptional(UserId::ofRepoIdOrNull);
+>>>>>>> 6bedcd1a648 (after merge fix)
 	}
 }

@@ -36,7 +36,6 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,7 +66,6 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
@@ -760,7 +758,6 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipTo(previousLocation.isShipTo());
 	}
 
-
 	@Override
 	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
 	{
@@ -807,6 +804,7 @@ public class BPartnerBL implements IBPartnerBL
 	@NonNull
 	@Override
 <<<<<<< HEAD
+<<<<<<< HEAD
 	public Optional<String> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
@@ -832,5 +830,10 @@ public class BPartnerBL implements IBPartnerBL
 				.create()
 				.firstIdOnlyOptional(UserId::ofRepoIdOrNull);
 >>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
+=======
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return userRepository.getDefaultDunningContact(bPartnerId);
+>>>>>>> 6bedcd1a648 (after merge fix)
 	}
 }
