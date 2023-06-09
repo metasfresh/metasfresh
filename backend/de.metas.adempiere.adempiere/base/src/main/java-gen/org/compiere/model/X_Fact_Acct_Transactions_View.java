@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO implements I_Fact_Acct_Transactions_View, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 615722263L;
+	private static final long serialVersionUID = -1919313793L;
 
     /** Standard Constructor */
     public X_Fact_Acct_Transactions_View (final Properties ctx, final int Fact_Acct_Transactions_View_ID, @Nullable final String trxName)
@@ -1041,18 +1041,6 @@ public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO impleme
 	public int getSubLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SubLine_ID);
-	}
-
-	@Override
-	public void setTaxCode (final @Nullable java.lang.String TaxCode)
-	{
-		set_Value (COLUMNNAME_TaxCode, TaxCode);
-	}
-
-	@Override
-	public java.lang.String getTaxCode() 
-	{
-		return get_ValueAsString(COLUMNNAME_TaxCode);
 	}
 
 	@Override
