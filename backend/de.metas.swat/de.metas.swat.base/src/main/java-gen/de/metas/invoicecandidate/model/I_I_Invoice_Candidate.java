@@ -1,21 +1,42 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for I_Invoice_Candidate
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_I_Invoice_Candidate
+public interface I_I_Invoice_Candidate 
 {
 
 	String Table_Name = "I_Invoice_Candidate";
 
-	//	/** AD_Table_ID=542207 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=542207 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -137,7 +158,7 @@ public interface I_I_Invoice_Candidate
 	 * Set Bill Contact.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setBill_User_ID (int Bill_User_ID);
@@ -146,7 +167,7 @@ public interface I_I_Invoice_Candidate
 	 * Get Bill Contact.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getBill_User_ID();
@@ -408,17 +429,17 @@ public interface I_I_Invoice_Candidate
 	 * Discount in percent
 	 *
 	 * <br>Type: Number
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDiscount (BigDecimal Discount);
+	void setDiscount (@Nullable BigDecimal Discount);
 
 	/**
 	 * Get Discount %.
 	 * Discount in percent
 	 *
 	 * <br>Type: Number
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getDiscount();
@@ -805,17 +826,17 @@ public interface I_I_Invoice_Candidate
 	 * Price
 	 *
 	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPrice (BigDecimal Price);
+	void setPrice (@Nullable BigDecimal Price);
 
 	/**
 	 * Get Price.
 	 * Price
 	 *
 	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getPrice();
@@ -933,27 +954,6 @@ public interface I_I_Invoice_Candidate
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set User In Charge.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setUser_InCharge (@Nullable java.lang.String User_InCharge);
-
-	/**
-	 * Get User In Charge.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getUser_InCharge();
-
-	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_User_InCharge = new ModelColumn<>(I_I_Invoice_Candidate.class, "User_InCharge", null);
-	String COLUMNNAME_User_InCharge = "User_InCharge";
 
 	/**
 	 * Set UOM Code.

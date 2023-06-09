@@ -50,8 +50,8 @@ Feature: Import Invoice Candidates via DataImportRestController
       | C_Activity_ID.Identifier | Value                | Name                |
       | activity                 | ActivityValue_210222 | ActivityName_210222 |
     And store DataImport string requestBody in context
-      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.OrgCode | OPT.X12DE355 | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | OPT.C_Activity_Value |
-      | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 2022-08-26             | DescriptionTest | PORef           | D               | ActivityValue_210222 |
+      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.OrgCode | OPT.X12DE355 | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | OPT.C_Activity_Value |
+      | billBpartner_1              | billBPLocation_1            | billBPUser_1                | product_1               | 2022-08-25      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 2022-08-26             | DescriptionTest | PORef           | D               | ActivityValue_210222 |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -99,12 +99,9 @@ Feature: Import Invoice Candidates via DataImportRestController
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
       | billBPLocation_2 | 1239977890123 | billBpartner_2           | true         | true         |
-    And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | billBPUser_2          | BillBPartnerContact_2 | billBpartner_2               | billBPLocation_2                      |
     And store DataImport string requestBody in context
-      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx |
-      | billBpartner_2              | billBPLocation_2            | billBPUser_2            | product_2               | 2          | true    |
+      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx |
+      | billBpartner_2              | billBPLocation_2            | product_2               | 2          | true    |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -115,8 +112,8 @@ Feature: Import Invoice Candidates via DataImportRestController
       | C_UOM_ID.Identifier | M_Product_ID.Identifier |
       | UOM_2               | product_2               |
     And I_Invoice_Candidate is found: searching by product value
-      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | OPT.InvoiceRule | I_IsImported |
-      | Product_Value_25_08_2022_2 | iInvoiceCandidate_2               | billBpartner_2              | billBPLocation_2            | billBPUser_2            | product_2               | 2          | importFormatOrg      | 0                | Y       | docType                     | UOM_2                   | I               | Y            |
+      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | OPT.InvoiceRule | I_IsImported |
+      | Product_Value_25_08_2022_2 | iInvoiceCandidate_2               | billBpartner_2              | billBPLocation_2            | product_2               | 2          | importFormatOrg      | 0                | Y       | docType                     | UOM_2                   | I               | Y            |
     And validate invoice candidates by record reference:
       | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | InvoiceRule |
       | I_Invoice_Candidate | iInvoiceCandidate_2               | invoiceCandidate_2                | billBpartner_2              | billBPLocation_2            | importFormatOrg      | billBPUser_2                | product_2                   | 2              | 0                | true    | docType                     | UOM_2                   | I           |
@@ -148,8 +145,8 @@ Feature: Import Invoice Candidates via DataImportRestController
       | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | billBPUser_3          | BillBPartnerContact_3 | billBpartner_3               | billBPLocation_3                      |
     And store DataImport string requestBody in context
-      | OPT.Bill_BPartner_Value       | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | OPT.M_Product_Value                | QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.OrgCode | OPT.X12DE355 | OPT.C_Activity_Value |
-      | someNonExistingBPValue_280822 | billBPLocation_3            | billBPUser_3            | someNonExistingProductValue_280822 | 2          | -2               | true    | ARI             | VI             | 005         | PCR          | SomeNonExistingValue |
+      | OPT.Bill_BPartner_Value       | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_Value                | QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.OrgCode | OPT.X12DE355 | OPT.C_Activity_Value |
+      | someNonExistingBPValue_280822 | billBPLocation_3            | billBPUser_3                | someNonExistingProductValue_280822 | 2          | -2               | true    | ARI             | VI             | 005         | PCR          | SomeNonExistingValue |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '400' status code
 
@@ -183,8 +180,8 @@ Feature: Import Invoice Candidates via DataImportRestController
       | billBPUser_4          | BillBPartnerContact_4     | billBpartner_4               | billBPLocation_4                      |
       | billBPUser_4_test     | BillBPartnerContactTest_4 | billBpartner_4_test          | billBPLocation_4_test                 |
     And store DataImport string requestBody in context
-      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx | OPT.DocBaseType |
-      | billBpartner_4              | billBPLocation_4_test       | billBPUser_4_test       | product_4               | 2          | true    | ARI             |
+      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx | OPT.DocBaseType |
+      | billBpartner_4              | billBPLocation_4_test       | billBPUser_4_test           | product_4               | 2          | true    | ARI             |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '400' status code
 
@@ -217,8 +214,8 @@ Feature: Import Invoice Candidates via DataImportRestController
       | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | billBPUser_5          | BillBPartnerContact_5 | billBpartner_5               | billBPLocation_5                      |
     And store DataImport string requestBody in context
-      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx | OPT.QtyDelivered | OPT.DateOrdered |
-      | billBpartner_5              | billBPLocation_5            | billBPUser_5            | product_5               | 4          | true    | 2                | 2022-08-25      |
+      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx | OPT.QtyDelivered | OPT.DateOrdered |
+      | billBpartner_5              | billBPLocation_5            | billBPUser_5                | product_5               | 4          | true    | 2                | 2022-08-25      |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
