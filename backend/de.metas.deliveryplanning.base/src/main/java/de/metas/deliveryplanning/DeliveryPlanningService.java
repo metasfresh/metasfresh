@@ -687,7 +687,6 @@ public class DeliveryPlanningService
 				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
-		final Set<OrderLineId> orderLineIds = new HashSet<>();
 
 		while (deliveryPlanningIterator.hasNext())
 		{
@@ -699,9 +698,7 @@ public class DeliveryPlanningService
 
 			// then cancel delivery planning
 			deliveryPlanningRepository.cancelSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
-			orderLineIds.add(OrderLineId.ofRepoId(deliveryPlanningRecord.getC_OrderLine_ID()));
 		}
-		orderLineIds.forEach(this::distributeLoadQty);
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)

@@ -23,7 +23,6 @@
 package de.metas.deliveryplanning.interceptor;
 
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -51,11 +50,6 @@ public class M_Delivery_Planning
 		if (isUIAction(deliveryPlanning))
 		{
 			deliveryPlanningService.validateDeletion(deliveryPlanning);
-			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID());
-			if (orderLineId != null)
-			{
-				deliveryPlanningService.distributeLoadQty(orderLineId);
-			}
 		}
 	}
 }
