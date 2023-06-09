@@ -25,7 +25,8 @@ SELECT c_trl.ad_language
      , f.seqno
      , f.seqnogrid
      , f.sortno
-     , f.ad_sequence_id AS AD_Sequence_ID
+     , f.ad_sequence_id                                           AS AD_Sequence_ID
+     , f.isforbidnewrecordcreation                                AS isforbidnewrecordcreation
      , COALESCE(f.issameline, 'N'::bpchar)                        AS issameline
      , COALESCE(f.isheading, 'N'::bpchar)                         AS isheading
      , COALESCE(f.isfieldonly, 'N'::bpchar)                       AS isfieldonly

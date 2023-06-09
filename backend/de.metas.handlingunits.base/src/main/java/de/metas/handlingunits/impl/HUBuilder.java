@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -56,9 +57,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -103,6 +102,7 @@ import java.util.stream.Collectors;
 
 	@Nullable
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+	private boolean _isExternalProperty = false;
 
 	public HUBuilder(@NonNull final IHUContext huContext)
 	{
@@ -185,6 +185,18 @@ import java.util.stream.Collectors;
 	protected String getHUStatus()
 	{
 		return _huStatus;
+	}
+
+	@Override
+	public IHUBuilder setIsExternalProperty(final boolean isExternalProperty)
+	{
+		_isExternalProperty = isExternalProperty;
+		return this;
+	}
+
+	protected boolean isExternalProperty()
+	{
+		return _isExternalProperty;
 	}
 
 	@Override
@@ -441,6 +453,7 @@ import java.util.stream.Collectors;
 		// fresh 08162: Set M_HU.HUPlanningReceiptOwnerPM
 		final boolean huPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
+		hu.setIsExternalProperty(isExternalProperty());
 
 		setClearanceStatus(hu, parentHU, getHUClearanceStatusInfo());
 

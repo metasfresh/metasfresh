@@ -689,6 +689,7 @@ public class LUTUProducerDestination
 		producer.setBPartnerId(getBPartnerId());
 		producer.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
 		producer.setIsHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
+		producer.setIsExternalProperty(isExternalProperty());
 
 		return producer;
 	}

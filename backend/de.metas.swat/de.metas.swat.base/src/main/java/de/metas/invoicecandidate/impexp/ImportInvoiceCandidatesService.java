@@ -164,7 +164,7 @@ public class ImportInvoiceCandidatesService
 
 		return BPartnerInfo.builder()
 				.bpartnerId(bPartnerId)
-				.contactId(BPartnerContactId.ofRepoId(bPartnerId, invoiceCandidateToImport.getBill_User_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bPartnerId, invoiceCandidateToImport.getBill_User_ID()))
 				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bPartnerId, invoiceCandidateToImport.getBill_Location_ID()))
 				.build();
 	}

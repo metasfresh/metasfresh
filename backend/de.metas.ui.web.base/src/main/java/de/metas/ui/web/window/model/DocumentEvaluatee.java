@@ -472,5 +472,4 @@ import java.util.Properties;
 			return new BigDecimal(valueStr);
 		}
 	}
-
 }
