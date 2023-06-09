@@ -46,7 +46,6 @@ DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                        
 )
 ;
 
-
 DROP TABLE IF EXISTS report.saldobilanz_Report
 ;
 
@@ -62,16 +61,16 @@ CREATE OR REPLACE FUNCTION report.saldobilanz_report(p_date                     
 )
     RETURNS TABLE
             (
-                parentname1       character varying(60),
-                parentvalue1      character varying(60),
-                parentname2       character varying(60),
-                parentvalue2      character varying(60),
-                parentname3       character varying(60),
-                parentvalue3      character varying(60),
-                parentname4       character varying(60),
-                parentvalue4      character varying(60),
-                name              character varying(60),
-                namevalue         character varying(60),
+                parentname1       varchar,
+                parentvalue1      varchar,
+                parentname2       varchar,
+                parentvalue2      varchar,
+                parentname3       varchar,
+                parentvalue3      varchar,
+                parentname4       varchar,
+                parentvalue4      varchar,
+                name              varchar,
+                namevalue         varchar,
                 AccountType       char(1),
 
                 sameyearsum       numeric,
@@ -95,6 +94,7 @@ CREATE OR REPLACE FUNCTION report.saldobilanz_report(p_date                     
             )
 AS
 $BODY$
+    # VARIABLE_CONFLICT USE_COLUMN
 DECLARE
     v_rowcount       numeric;
     v_AcctSchemaInfo record;
@@ -193,10 +193,10 @@ BEGIN
          , a.Name
          , a.Value
          , a.AccountType
-		 , a.IsConvertToEUR
+         , a.IsConvertToEUR
 
          , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator               AS SameYearSum
-         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator AS LastYearSum
+         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.period_LastYearEnd_EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator AS LastYearSum
 
     FROM tmp_accounts a;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -307,6 +307,8 @@ BEGIN
                    b.LastYearSum,
                    b.L4_euroSaldo,
                    --
+                   b.L4_SameYearSum,
+                   b.L4_LastYearSum,
                    b.L3_SameYearSum,
                    b.L3_LastYearSum,
                    b.L2_SameYearSum,
@@ -322,6 +324,7 @@ BEGIN
                    b.iso_code
             FROM tmp_report_balance b
             ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, value;
+
     END RESULT_TABLE;
 END;
 $BODY$
