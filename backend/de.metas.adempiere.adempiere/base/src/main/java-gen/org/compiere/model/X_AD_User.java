@@ -410,18 +410,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public void setCopyInvoice (final boolean CopyInvoice)
-	{
-		set_Value (COLUMNNAME_CopyInvoice, CopyInvoice);
-	}
-
-	@Override
-	public boolean isCopyInvoice()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_CopyInvoice);
-	}
-
-	@Override
 	public void setDelDate (final @Nullable java.sql.Timestamp DelDate)
 	{
 		set_Value (COLUMNNAME_DelDate, DelDate);
@@ -431,18 +419,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.sql.Timestamp getDelDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DelDate);
-	}
-
-	@Override
-	public void setDepartment (final @Nullable java.lang.String Department)
-	{
-		set_Value (COLUMNNAME_Department, Department);
-	}
-
-	@Override
-	public java.lang.String getDepartment()
-	{
-		return get_ValueAsString(COLUMNNAME_Department);
 	}
 
 	@Override
@@ -467,18 +443,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getEMail()
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
-	}
-
-	@Override
-	public void setEmail_private (final @Nullable java.lang.String Email_private)
-	{
-		set_Value (COLUMNNAME_Email_private, Email_private);
-	}
-
-	@Override
-	public java.lang.String getEmail_private()
-	{
-		return get_ValueAsString(COLUMNNAME_Email_private);
 	}
 
 	@Override
@@ -814,6 +778,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+<<<<<<< HEAD
 >>>>>>> e3584b8bda6 (refs : https://github.com/metasfresh/metasfresh/issues/15516)
 	public void setIsDunningDefault (final boolean IsDunningDefault)
 	{
@@ -831,6 +796,8 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+=======
+>>>>>>> 06c1b802a7f (after merge fix)
 	public void setIsFullBPAccess (final boolean IsFullBPAccess)
 	{
 		set_Value (COLUMNNAME_IsFullBPAccess, IsFullBPAccess);
