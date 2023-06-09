@@ -1,13 +1,5 @@
 package de.metas.user;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import org.compiere.model.I_AD_User;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
@@ -16,6 +8,16 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -42,6 +44,8 @@ import lombok.NonNull;
 @Repository
 public class UserRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public User getByIdInTrx(@NonNull final UserId userId)
 	{
 		final I_AD_User userRecord = load(userId.getRepoId(), I_AD_User.class);
@@ -102,5 +106,16 @@ public class UserRepository
 				.toBuilder()
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.build();
+	}
+
+	@NonNull
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDunningContact, true)
+				.create()
+				.firstIdOnlyOptional(UserId::ofRepoIdOrNull);
 	}
 }
