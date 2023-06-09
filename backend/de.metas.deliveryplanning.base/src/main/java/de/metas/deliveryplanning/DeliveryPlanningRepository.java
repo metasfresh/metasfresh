@@ -63,6 +63,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
@@ -614,5 +615,30 @@ public class DeliveryPlanningRepository
 				.stream()
 				.min(Timestamp::compareTo)
 				.orElse(null);
+	}
+
+	public void distributeLoadQty(@NonNull final OrderLineId orderLineId, @NonNull final BigDecimal qtyOrdered)
+	{
+		final ImmutableList<I_M_Delivery_Planning> validDeliveryPlannings = retrieveForOrderLine(orderLineId)
+				.filter(deliveryPlanning -> !deliveryPlanning.isClosed())
+				.collect(ImmutableList.toImmutableList());
+
+		final BigDecimal numberOfDeliveryPlannings = BigDecimal.valueOf(validDeliveryPlannings.size());
+		if (numberOfDeliveryPlannings.signum() < 1)
+		{
+			return;
+		}
+		final BigDecimal fraction = qtyOrdered.divide(numberOfDeliveryPlannings, 0, RoundingMode.DOWN);
+
+		final BigDecimal remainder = qtyOrdered.subtract(fraction.multiply(numberOfDeliveryPlannings));
+
+		validDeliveryPlannings.get(0).setPlannedLoadedQuantity(fraction.add(remainder));
+
+		for (int i = 1; i < numberOfDeliveryPlannings.intValue(); i++)
+		{
+			validDeliveryPlannings.get(i).setPlannedLoadedQuantity(fraction.add(remainder));
+		}
+		InterfaceWrapperHelper.saveAll(validDeliveryPlannings);
+
 	}
 }

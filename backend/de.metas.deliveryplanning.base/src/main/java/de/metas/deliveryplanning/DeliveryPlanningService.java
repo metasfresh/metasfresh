@@ -101,6 +101,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -300,6 +301,10 @@ public class DeliveryPlanningService
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
+		if (initialRequest.getOrderLineId() != null)
+		{
+			distributeLoadQty(initialRequest.getOrderLineId());
+		}
 	}
 
 	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId)
@@ -410,7 +415,7 @@ public class DeliveryPlanningService
 		}
 
 		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(deliveryInstructionRequest.getClientId(),
-																	   deliveryInstructionRequest.getOrgId());
+				deliveryInstructionRequest.getOrgId());
 
 		final Money creditUsedByDeliveryInstruction = computeCreditUsedByDeliveryInstruction(deliveryInstructionRequest, baseCurrencyId);
 
@@ -445,7 +450,7 @@ public class DeliveryPlanningService
 
 		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
-														orderLineCurrencyId);
+				orderLineCurrencyId);
 
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
@@ -646,6 +651,7 @@ public class DeliveryPlanningService
 				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
 				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
+		final Set<OrderLineId> orderLineIds = new HashSet<>();
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
 		{
@@ -658,7 +664,9 @@ public class DeliveryPlanningService
 			// then generate a new one
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
 			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
+			orderLineIds.add(OrderLineId.ofRepoId(deliveryPlanningRecord.getC_OrderLine_ID()));
 		}
+		orderLineIds.forEach(this::distributeLoadQty);
 	}
 
 	private void voidLinkedDeliveryInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -679,6 +687,7 @@ public class DeliveryPlanningService
 				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
+		final Set<OrderLineId> orderLineIds = new HashSet<>();
 
 		while (deliveryPlanningIterator.hasNext())
 		{
@@ -690,7 +699,9 @@ public class DeliveryPlanningService
 
 			// then cancel delivery planning
 			deliveryPlanningRepository.cancelSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+			orderLineIds.add(OrderLineId.ofRepoId(deliveryPlanningRecord.getC_OrderLine_ID()));
 		}
+		orderLineIds.forEach(this::distributeLoadQty);
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -805,5 +816,13 @@ public class DeliveryPlanningService
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_BlockedPartner);
 		}
+	}
+
+	public void distributeLoadQty(@NonNull final OrderLineId orderLineId)
+	{
+		final de.metas.interfaces.I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
+		deliveryPlanningRepository.distributeLoadQty(orderLineId, qtyOrdered);
+
 	}
 }
