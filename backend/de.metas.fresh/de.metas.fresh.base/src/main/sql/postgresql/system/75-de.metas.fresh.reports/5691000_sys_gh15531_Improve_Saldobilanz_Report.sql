@@ -1,3 +1,40 @@
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN            Date,
+                                                   IN defaultAcc character varying)
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                      Date,
+                                                   IN defaultAcc           character varying,
+                                                   IN showCurrencyExchange character varying)
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN p_IncludePostingTypeStatistical char(1))
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN p_IncludePostingTypeStatistical char(1),
+                                                   IN ad_org_id                       numeric(10, 0))
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN ad_org_id                       numeric(10, 0),
+                                                   IN p_IncludePostingTypeStatistical char(1))
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN ad_org_id                       numeric(10, 0),
+                                                   IN p_IncludePostingTypeStatistical char(1),
+                                                   IN p_ExcludePostingTypeYearEnd     char(1))
+;
+
 DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                          date,
                                                   p_defaultacc                    character varying,
                                                   p_showcurrencyexchange          character varying,
@@ -7,6 +44,9 @@ DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                        
                                                   p_IsShowProductDetails          character,
                                                   p_IsShowActivityDetails         character
 )
+;
+
+DROP TABLE IF EXISTS report.saldobilanz_Report
 ;
 
 
