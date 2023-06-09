@@ -570,27 +570,6 @@ public interface I_AD_User
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set eMail Private.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setEmail_private (@Nullable java.lang.String Email_private);
-
-	/**
-	 * Get eMail Private.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getEmail_private();
-
-	ModelColumn<I_AD_User, Object> COLUMN_Email_private = new ModelColumn<>(I_AD_User.class, "Email_private", null);
-	String COLUMNNAME_Email_private = "Email_private";
-
-	/**
 	 * Set Alternative eMail.
 	 * EMail-Adresse
 	 *
