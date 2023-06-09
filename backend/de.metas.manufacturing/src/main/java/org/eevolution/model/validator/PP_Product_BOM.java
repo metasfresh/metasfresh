@@ -1,5 +1,6 @@
 package org.eevolution.model.validator;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.product.ProductId;
@@ -12,7 +13,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.ProductBOMVersionsId;

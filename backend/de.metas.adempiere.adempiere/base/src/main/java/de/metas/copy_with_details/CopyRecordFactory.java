@@ -1,18 +1,15 @@
-package org.adempiere.model;
+package de.metas.copy_with_details;
 
+import de.metas.copy_with_details.CopyRecordSupport.IOnRecordCopiedListener;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordSupport.IOnRecordCopiedListener;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 
 import javax.annotation.concurrent.ThreadSafe;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -32,11 +29,11 @@ public final class CopyRecordFactory
 	private static final ConcurrentHashMap<String, Class<? extends CopyRecordSupport>> tableName2copyRecordSupportClass = new ConcurrentHashMap<>();
 
 	/**
-	 * List of table names for whom Copy With Details button is activated in Window toolbar
+	 * List of table names for whom Copy With Details action is enabled for the user
 	 */
 	private static final CopyOnWriteArraySet<String> enabledTableNames = new CopyOnWriteArraySet<>();
 
-	private static final List<IOnRecordCopiedListener> staticOnRecordCopiedListeners = new CopyOnWriteArrayList<>();
+	private static final CopyOnWriteArrayList<IOnRecordCopiedListener> staticOnRecordCopiedListeners = new CopyOnWriteArrayList<>();
 
 	/**
 	 * @return {@link CopyRecordSupport}; never returns null
@@ -61,10 +58,7 @@ public final class CopyRecordFactory
 			}
 		}
 
-		for (final IOnRecordCopiedListener listener : staticOnRecordCopiedListeners)
-		{
-			result.addOnRecordCopiedListener(listener);
-		}
+		result.onRecordCopied(staticOnRecordCopiedListeners);
 
 		return result;
 	}
@@ -81,7 +75,7 @@ public final class CopyRecordFactory
 	/**
 	 * @return true if copy-with-details functionality is enabled
 	 */
-	public static boolean isEnabled()
+	private static boolean isEnabled()
 	{
 		final boolean copyWithDetailsEnabledDefault = false;
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_ENABLE_COPY_WITH_DETAILS, copyWithDetailsEnabledDefault);
@@ -92,7 +86,7 @@ public final class CopyRecordFactory
 	 */
 	public static boolean isEnabledForTableName(final String tableName)
 	{
-		return enabledTableNames.contains(tableName);
+		return isEnabled() && enabledTableNames.contains(tableName);
 	}
 
 	public static void enableForTableName(final String tableName)
@@ -108,7 +102,14 @@ public final class CopyRecordFactory
 	 */
 	public static void addOnRecordCopiedListener(@NonNull final IOnRecordCopiedListener listener)
 	{
-		staticOnRecordCopiedListeners.add(listener);
-		logger.info("Registered listener: {}", listener);
+		final boolean added = staticOnRecordCopiedListeners.addIfAbsent(listener);
+		if (added)
+		{
+			logger.info("Registered listener: {}", listener);
+		}
+		else
+		{
+			logger.info("Skip registering listener because it was already registered: {}", listener);
+		}
 	}
 }

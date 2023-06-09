@@ -1,5 +1,6 @@
 package de.metas.materialtracking.model.validator;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.MaterialTrackingPOCopyRecordSupport;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -11,7 +12,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 
 import java.util.Optional;

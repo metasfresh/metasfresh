@@ -2,6 +2,8 @@ package org.adempiere.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderLineId;
@@ -56,24 +58,11 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	/**
 	 * @return true if the record shall be copied
 	 */
-	public static boolean isCopyRecord(final I_C_OrderLine orderLine)
-	{
-		return skipPredicates.isEmpty() || skipPredicates.test(orderLine);
-	}
-
 	@Override
-	public void copyRecord(final PO po, final String trxName)
+	protected boolean isCopyRecord(final PO fromPO)
 	{
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
-
-		// Check if we shall skip this record
-		if (!isCopyRecord(orderLine))
-		{
-			return;
-		}
-
-		// delegate to super
-		super.copyRecord(po, trxName);
+		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(fromPO, I_C_OrderLine.class);
+		return skipPredicates.isEmpty() || skipPredicates.test(fromOrderLine);
 	}
 
 	@Override
@@ -148,10 +137,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	}
 
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
-	{
-		return ImmutableList.of();
-	}
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po) {return ImmutableList.of();}
 
 	//
 	//

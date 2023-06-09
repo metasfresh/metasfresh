@@ -1,6 +1,6 @@
 package de.metas.pricing;
 
-import org.adempiere.model.GeneralCopyRecordSupport;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.PO;
 
@@ -29,7 +29,7 @@ import org.compiere.model.PO;
 public class M_ProductPrice_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
 	{
 		if (I_M_ProductPrice.COLUMNNAME_IsInvalidPrice.equals(columnName))
 		{
@@ -37,7 +37,7 @@ public class M_ProductPrice_POCopyRecordSupport extends GeneralCopyRecordSupport
 		}
 		else
 		{
-			return super.getValueToCopy(to, from, columnName);
+			return super.getCalculatedColumnValueToCopy(to, from, columnName);
 		}
 	}
 

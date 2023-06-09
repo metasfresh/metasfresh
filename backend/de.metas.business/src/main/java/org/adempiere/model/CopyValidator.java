@@ -25,7 +25,8 @@ package org.adempiere.model;
  * #L%
  */
 
-
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.invoice.service.MInvoicePOCopyRecordSupport;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
@@ -33,8 +34,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_EXP_Format;
-
-import de.metas.invoice.service.MInvoicePOCopyRecordSupport;
 
 /**
  * @author Cristina Ghita, METAS.RO

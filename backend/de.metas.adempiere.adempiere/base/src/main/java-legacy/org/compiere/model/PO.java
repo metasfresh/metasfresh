@@ -20,8 +20,8 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -57,7 +57,6 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -103,7 +102,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -1520,14 +1518,28 @@ public abstract class PO
 	 */
 	public static void copyValues(final PO from, final PO to)
 	{
-		// metas: begin
 		copyValues(from, to, false);
 	}
 
 	public static void copyValues(final PO from, final PO to, final boolean honorIsCalculated)
 	{
+		copyValues(from, to, honorIsCalculated, null);
+	}
+
+	@FunctionalInterface
+	public interface CalculatedColumnValueSupplier
+	{
+		Object getValueToCopy(PO to, PO from, String columnName);
+	}
+
+	public static void copyValues(
+			final PO from,
+			final PO to,
+			final boolean honorIsCalculated,
+			final CalculatedColumnValueSupplier calculatedColumnValueSupplier)
+	{
 		// metas: end
-		s_log.debug("Copy values: From ID={}, To ID={}", from.get_ID(), to.get_ID());
+		s_log.debug("Copy values: from={}, to={}, honorIsCalculated={}", from, to, honorIsCalculated);
 
 		//
 		// Make sure "from" and "to" objects are not stale (01537)
@@ -1540,131 +1552,130 @@ public abstract class PO
 		{
 			for (int fromColumnIndex = 0; fromColumnIndex < from.m_oldValues.length; fromColumnIndex++)
 			{
-				final String fromColumnName = from.p_info.getColumnName(fromColumnIndex); // metas: us215
+				final String fromColumnName = from.p_info.getColumnName(fromColumnIndex);
+				if (fromColumnName == null)
+				{
+					// shall not happen
+					continue;
+				}
 				if (from.p_info.isVirtualColumn(fromColumnIndex)
 						|| from.p_info.isKey(fromColumnIndex))        // KeyColumn
 				{
+					//noinspection UnnecessaryContinue
 					continue;
 				}
-				// metas: begin: us215
 				else if (honorIsCalculated && from.p_info.isCalculated(fromColumnIndex))
 				{
-					for (int toColumnIndex = 0; toColumnIndex < to.m_oldValues.length; toColumnIndex++)
+					if (calculatedColumnValueSupplier != null)
 					{
-						final String toColumnName = to.p_info.getColumnName(toColumnIndex);
-						if (toColumnName.equals(fromColumnName))
+						final int toColumnIndex = to.p_info.getColumnIndex(fromColumnName);
+						if (toColumnIndex >= 0)
 						{
-							if (to.getDynAttribute(PO.DYNATTR_CopyRecordSupport) != null)
-							{
-								final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(PO.DYNATTR_CopyRecordSupport);
-								to.m_newValues[toColumnIndex] = cps.getValueToCopy(to, from, fromColumnName);
-							}
-							break;
+							to.m_newValues[toColumnIndex] = calculatedColumnValueSupplier.getValueToCopy(to, from, fromColumnName);
 						}
 					}
 				}
-				// metas: end: us215
 				// Ignore Standard Values
-				else // metas: us215: use else
-					if (fromColumnName.startsWith("Created")
-							|| fromColumnName.startsWith("Updated")
-							|| fromColumnName.equals("IsActive")
-							// fresh 07896: skip copying org and client ONLY if it's calculated
-							|| (to.p_info.isCalculated(fromColumnIndex)
-							&& (fromColumnName.equals("AD_Client_ID") || fromColumnName.equals("AD_Org_ID")))
-							|| fromColumnName.equals("DocumentNo")
-							|| fromColumnName.equals("Processing")
-							|| fromColumnName.equals("Processed") // metas: tsa: us215
-					)
+				else if (fromColumnName.equals("Created")
+						|| fromColumnName.equals("CreatedBy")
+						|| fromColumnName.equals("Updated")
+						|| fromColumnName.equals("UpdatedBy")
+						|| fromColumnName.equals("IsActive")
+						// fresh 07896: skip copying org and client ONLY if it's calculated
+						|| (to.p_info.isCalculated(fromColumnIndex) && (fromColumnName.equals("AD_Client_ID") || fromColumnName.equals("AD_Org_ID")))
+						|| fromColumnName.equals("DocumentNo")
+						|| fromColumnName.equals("Processing")
+						|| fromColumnName.equals("Processed") // metas: tsa: us215
+				)
+				{
+					s_log.trace("Skip copying standard column: {}", fromColumnName);
+				}
+				else
+				{
+					final int toColumnIndex = to.p_info.getColumnIndex(fromColumnName);
+					if (toColumnIndex >= 0)
 					{
-						// ignore / skip this column
+						to.m_newValues[toColumnIndex] = from.m_oldValues[fromColumnIndex];
 					}
-					else
-					{
-						for (int toColumnIndex = 0; toColumnIndex < to.m_oldValues.length; toColumnIndex++)
-						{
-							final String toColumnName = to.p_info.getColumnName(toColumnIndex);
-							if (toColumnName.equals(fromColumnName))
-							{
-								to.m_newValues[toColumnIndex] = from.m_oldValues[fromColumnIndex];
-								break;
-							}
-						}
-					}
-			}    // from loop
+				}
+			} // end for fromColumnIndex
 		}
 		//
 		// Same class
 		else
 		{
-			for (int i = 0; i < from.m_oldValues.length; i++)
+			for (int columnIndex = 0; columnIndex < from.m_oldValues.length; columnIndex++)
 			{
-				final String colName = from.p_info.getColumnName(i); // metas
-				if (from.p_info.isVirtualColumn(i)
-						|| from.p_info.isKey(i))
+				final String columnName = from.p_info.getColumnName(columnIndex);
+				if (columnName == null)
 				{
+					// shall not happen
+					//noinspection UnnecessaryContinue
 					continue;
 				}
-				else if (honorIsCalculated && from.p_info.isCalculated(i))
+				else if (from.p_info.isVirtualColumn(columnIndex)
+						|| from.p_info.isKey(columnIndex))
 				{
-					final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(DYNATTR_CopyRecordSupport);
-					if (cps != null)
+					//noinspection UnnecessaryContinue
+					continue;
+				}
+				else if (honorIsCalculated && from.p_info.isCalculated(columnIndex))
+				{
+					if (calculatedColumnValueSupplier != null)
 					{
-						to.m_newValues[i] = cps.getValueToCopy(to, from, colName);
+						to.m_newValues[columnIndex] = calculatedColumnValueSupplier.getValueToCopy(to, from, columnName);
 					}
 					else
 					{
-						s_log.trace("Skip copying calculated column because there is no CopyRecordSupport advisor: {}", colName);
+						s_log.trace("Skip copying calculated column because there is no CopyRecordSupport advisor: {}", columnName);
 					}
 				}
-				// metas: end: us215
 				// Ignore Standard Values
-				else // metas: us215: use else
-					if (colName.startsWith("Created")
-							|| colName.startsWith("Updated")
-							|| colName.equals("IsActive")
-							// fresh 07896: skip copying org and client ONLY if it's calculated
-							|| (to.p_info.isCalculated(i)
-							&& (colName.equals("AD_Client_ID")
-							|| colName.equals("AD_Org_ID")))
-							|| colName.equals("DocumentNo")
-							|| colName.equals("Processing")
-							|| colName.equals("Processed") // metas: tsa: us215
-					)
+				else if (columnName.equals("Created")
+						|| columnName.equals("CreatedBy")
+						|| columnName.equals("Updated")
+						|| columnName.equals("UpdatedBy")
+						|| columnName.equals("IsActive")
+						// fresh 07896: skip copying org and client ONLY if it's calculated
+						|| (to.p_info.isCalculated(columnIndex) && (columnName.equals("AD_Client_ID") || columnName.equals("AD_Org_ID")))
+						|| columnName.equals("DocumentNo")
+						|| columnName.equals("Processing")
+						|| columnName.equals("Processed")
+				)
+				{
+					s_log.trace("Skip copying standard column: {}", columnName);
+				}
+				else
+				{
+					to.m_newValues[columnIndex] = from.m_oldValues[columnIndex];
+					// When dealing with new POs copy their new values because old values are all null
+					if (from.is_new())
 					{
-						s_log.trace("Skip copying standard column: {}", colName);
+						to.m_newValues[columnIndex] = from.m_newValues[columnIndex];
 					}
-					else
+
+					// Copy cached objects
+					// NOTE: it is important because sometimes we have set a new object which is present in PO cache but its ID is still zero.
+					// Without doing this copy, the object will be lost when copying
+					if (from.m_poCacheLocals != null)
 					{
-						to.m_newValues[i] = from.m_oldValues[i];
-						// metas: tsa: begin: when dealing with new POs copy their new values because old values are all null
-						if (from.is_new())
+						final POCacheLocal poCacheLocal = from.m_poCacheLocals.get(columnName);
+						if (poCacheLocal != null)
 						{
-							to.m_newValues[i] = from.m_newValues[i];
-						}
-						// metas: tsa: Copy cached objects
-						// NOTE: is is important because sometimes we have set a new object which is present in PO cache but it's ID is still zero.
-						// Without doing this copy, the object will be lost when copying
-						if (from.m_poCacheLocals != null)
-						{
-							final POCacheLocal poCacheLocal = from.m_poCacheLocals.get(colName);
-							if (poCacheLocal != null)
+							if (to.m_poCacheLocals == null)
 							{
-								if (to.m_poCacheLocals == null)
-								{
-									to.m_poCacheLocals = new HashMap<>();
-								}
-								final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
-								to.m_poCacheLocals.put(colName, poCacheLocalCopy);
+								to.m_poCacheLocals = new HashMap<>();
 							}
+							final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
+							to.m_poCacheLocals.put(columnName, poCacheLocalCopy);
 						}
-						// metas: tsa: end
 					}
+				}
 			}
 		}    // same class
 
-		// NOTE: don't copy the DynAttributes because this is how it is designed and some BLs are rellying on this (e.g. caching)
-	}    // copy
+		// NOTE: don't copy the DynAttributes because this is how it is designed and some BLs are relying on this (e.g. caching)
+	}
 
 	/**************************************************************************
 	 * Load record with ID
@@ -1714,7 +1725,6 @@ public abstract class PO
 	/**
 	 * Do the actual loading.
 	 *
-	 * @param trxName
 	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry.
 	 */
 	private final boolean load0(final String trxName, final boolean isRetry)
@@ -2033,9 +2043,9 @@ public abstract class PO
 	 * Load column if object is staled.
 	 *
 	 * @param requestedColumnIndex column index to load; if requestedColumnIndex is less then ZERO then object will be loaded anyway
-	 * @task 01537
+	 * @implSpec task 01537
 	 */
-	private final void loadIfStalled(final int requestedColumnIndex)
+	private void loadIfStalled(final int requestedColumnIndex)
 	{
 		// Object is not staled, nothing to do
 		if (!m_stale)
@@ -2934,7 +2944,7 @@ public abstract class PO
 
 		//
 		// Create cache invalidation request
-		if(p_info.isSingleKeyColumnName())
+		if (p_info.isSingleKeyColumnName())
 		{
 			try
 			{
@@ -2999,20 +3009,6 @@ public abstract class PO
 						MTree.updateTreeNode(this);
 					}
 				}
-
-				//
-				// Continue copying child records
-				// start: c.ghita@metas.ro
-				CopyRecordSupport copyRecordSupport = (CopyRecordSupport)getDynAttribute(DYNATTR_CopyRecordSupport);
-				if (copyRecordSupport != null && success)
-				{
-					copyRecordSupport.setParentPO(this);
-					copyRecordSupport.copyRecord(this, get_TrxName());
-
-					copyRecordSupport = null;
-					setDynAttribute(DYNATTR_CopyRecordSupport, null);
-				}
-				// end: c.ghita@metas.ro
 			}
 			catch (final Exception e)
 			{
@@ -3037,8 +3033,8 @@ public abstract class PO
 		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
 		final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
 		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
-						: null;
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
+				: null;
 
 		final int columnsCount = p_info.getColumnCount();
 
@@ -4131,7 +4127,6 @@ public abstract class PO
 				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
 				: null;
 
-
 		//
 		// Execute SQL DELETE
 		final StringBuilder sql = new StringBuilder("DELETE FROM ")
@@ -4297,7 +4292,7 @@ public abstract class PO
 	private void deleteTranslations()
 	{
 		final POTrlInfo trlInfo = p_info.getTrlInfo();
-		if(!trlInfo.isTranslated())
+		if (!trlInfo.isTranslated())
 		{
 			return;
 		}
@@ -5020,9 +5015,8 @@ public abstract class PO
 		}
 
 		//noinspection unchecked
-		return (T)m_dynAttrs.computeIfAbsent(name, k->supplier.get());
+		return (T)m_dynAttrs.computeIfAbsent(name, k -> supplier.get());
 	}
-
 
 	/**
 	 * Fire Model Change Event.
@@ -5067,13 +5061,10 @@ public abstract class PO
 	private ModelChangeType m_currentChangeType = null;
 
 	/**
-	 * DynAttr which holds the <code>CopyRecordSupport</code> class which handles this PO
+	 * Boolean DynAttr which is true while the record is copied-with-details
 	 */
-	public static final String DYNATTR_CopyRecordSupport = "CopyRecordSupport";
-	/**
-	 * DynAttr which holds the source PO from which this PO was copied
-	 */
-	public static final String DYNATTR_CopyRecordSupport_OldValue = "CopyRecordSupportOldValue";
+	private static final String DYNATTR_IsCopyWithDetailsInProgress = "IsCopyWithDetailsInProgress";
+	private static final String DYNATTR_CopiedFromRecordId = "CopyRecordSupport_CopiedFromRecordId";
 
 	@Override
 	public final boolean has_Variable(final String variableName)
@@ -5153,7 +5144,7 @@ public abstract class PO
 		return p_info;
 	}
 
-	private transient Map<String, POCacheLocal> m_poCacheLocals;
+	private transient HashMap<String, POCacheLocal> m_poCacheLocals;
 
 	private POCacheLocal get_POCacheLocal(final String columnName, final String refTableName)
 	{
@@ -5428,7 +5419,13 @@ public abstract class PO
 		return m_loadCount;
 	}
 
-	// metas: end
+	public boolean isCopying() {return isDynAttributeTrue(DYNATTR_IsCopyWithDetailsInProgress);}
+
+	public void setCopying(final boolean copying) {setDynAttribute(DYNATTR_IsCopyWithDetailsInProgress, copying ? Boolean.TRUE : null);}
+
+	public boolean isCopiedFromOtherRecord() {return getDynAttribute(DYNATTR_CopiedFromRecordId) != null;}
+
+	public void setCopiedFromRecordId(int fromRecordId) {setDynAttribute(DYNATTR_CopiedFromRecordId, fromRecordId);}
 
 	private class POReturningAfterInsertLoader implements ISqlUpdateReturnProcessor
 	{

@@ -1,17 +1,16 @@
 package de.metas.pricing.interceptor;
 
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
+import de.metas.pricing.service.ProductPrices;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
-import de.metas.pricing.service.ProductPrices;
-import lombok.NonNull;
 
 /*
  * #%L

@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.modelvalidator;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -9,7 +10,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;

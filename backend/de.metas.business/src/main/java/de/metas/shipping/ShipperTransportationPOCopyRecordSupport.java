@@ -23,8 +23,8 @@
 package de.metas.shipping;
 
 import com.google.common.collect.ImmutableList;
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.List;
 public class ShipperTransportationPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
 		//cloning without children
 		return ImmutableList.of();

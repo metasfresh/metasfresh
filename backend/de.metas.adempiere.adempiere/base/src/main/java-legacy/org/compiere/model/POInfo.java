@@ -180,7 +180,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 
 	private final POTrlInfo trlInfo;
 
-	private static POInfoMap getPOInfoMap()
+	public static POInfoMap getPOInfoMap()
 	{
 		return poInfoMapCache.getOrLoad(0, POInfo::retrievePOInfoMap);
 	}
@@ -677,7 +677,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return column
 	 */
-	// metas: making getColumn public to enable easier testing (was protected)
 	@Nullable
 	public POInfoColumn getColumn(final int index)
 	{
@@ -686,7 +685,14 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return null;
 		}
 		return m_columns.get(index);
-	}   // getColumn
+	}
+
+	@Nullable
+	public POInfoColumn getColumn(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return columnIndex >= 0 ? getColumn(columnIndex) : null;
+	}
 
 	/**
 	 * @return immutable set of all column names
@@ -978,6 +984,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return true if column is allowed to be logged
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isAllowLogging(final int index)
 	{
 		if (index < 0 || index >= m_columns.size())
@@ -1350,6 +1357,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return isRestAPICustomColumn(columnIndex);
 	}
 
+	public boolean isParentLinkColumn(final String columnName)
+	{
+		final POInfoColumn column = getColumn(columnName);
+		return column != null && column.isParent();
+	}
+
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{
@@ -1369,7 +1382,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		int webuiViewPageLength;
 	}
 
-	private static class POInfoMap
+	public static class POInfoMap
 	{
 		private final ImmutableMap<AdTableId, POInfo> byTableId;
 		private final ImmutableMap<String, POInfo> byTableNameUC;
@@ -1399,5 +1412,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return byTableNameUC.get(tableName.toUpperCase());
 		}
+
+		public Stream<POInfo> stream() {return byTableId.values().stream();}
 	}
 }   // POInfo

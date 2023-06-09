@@ -1,33 +1,32 @@
 package de.metas.security.model.interceptor;
 
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_AD_Role;
-import org.compiere.util.Env;
-
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.impl.AD_Role_POCopyRecordSupport;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_AD_Role;
+import org.compiere.util.Env;
 
 @Interceptor(I_AD_Role.class)
 public class AD_Role
 {
-	public static final transient AD_Role instance = new AD_Role();
+	public static final AD_Role instance = new AD_Role();
 
 	private AD_Role()
 	{

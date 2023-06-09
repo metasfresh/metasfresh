@@ -24,9 +24,9 @@ package de.metas.materialtracking;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 
 import java.util.List;
@@ -39,7 +39,7 @@ public class MaterialTrackingPOCopyRecordSupport extends GeneralCopyRecordSuppor
 
 
 	@Override
-	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
 	{
 		if (COLUMNS_TO_SUFFIX.contains(columnName))
 		{
@@ -47,11 +47,11 @@ public class MaterialTrackingPOCopyRecordSupport extends GeneralCopyRecordSuppor
 			return String.valueOf(oldValue).concat(CLONED_SUFFIX);
 		}
 
-		return super.getValueToCopy(to, from, columnName);
+		return super.getCalculatedColumnValueToCopy(to, from, columnName);
 	}
 
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
 		//cloning without children
 		return ImmutableList.of();

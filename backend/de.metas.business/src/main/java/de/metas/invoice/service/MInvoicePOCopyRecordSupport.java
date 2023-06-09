@@ -3,14 +3,13 @@
  */
 package de.metas.invoice.service;
 
-import java.util.List;
-
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
+import com.google.common.collect.ImmutableList;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.PO;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 /**
  * @author Cristina Ghita, METAS.RO
@@ -19,9 +18,9 @@ import com.google.common.collect.ImmutableList;
 public class MInvoicePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
+		return super.getSuggestedChildren(po)
 				.stream()
 				.filter(childTableInfo -> I_C_InvoiceLine.Table_Name.equals(childTableInfo.getTableName()))
 				.collect(ImmutableList.toImmutableList());

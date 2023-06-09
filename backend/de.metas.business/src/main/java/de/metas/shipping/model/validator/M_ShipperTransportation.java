@@ -22,15 +22,13 @@ package de.metas.shipping.model.validator;
  * #L%
  */
 
-
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.shipping.ShipperTransportationPOCopyRecordSupport;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.util.Services;
-import org.adempiere.model.CopyRecordFactory;
 
 @Validator(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation

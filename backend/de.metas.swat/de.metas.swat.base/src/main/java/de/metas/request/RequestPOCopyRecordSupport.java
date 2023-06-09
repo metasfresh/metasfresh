@@ -1,13 +1,12 @@
 package de.metas.request;
 
-import java.util.List;
-
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
+import com.google.common.collect.ImmutableSet;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.I_R_RequestUpdates;
 import org.compiere.model.PO;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 /*
  * #%L
@@ -34,11 +33,11 @@ import com.google.common.collect.ImmutableList;
 public class RequestPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
-				.stream()
-				.filter(childTableInfo -> I_R_RequestUpdates.Table_Name.equals(childTableInfo.getTableName()))
-				.collect(ImmutableList.toImmutableList());
+		return getSuggestedChildren(
+				po.getPOInfo(),
+				ImmutableSet.of(I_R_RequestUpdates.Table_Name)
+		);
 	}
 }

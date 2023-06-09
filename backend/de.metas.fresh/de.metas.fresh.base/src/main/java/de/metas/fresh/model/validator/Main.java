@@ -22,6 +22,7 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
 import de.metas.fresh.product.ProductPOCopyRecordSupport;
@@ -54,7 +55,6 @@ import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceInAusLandModelAttr
 import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAttributeSetInstanceListener;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_Product;
 
 import java.text.DateFormat;

@@ -1,18 +1,16 @@
 package de.metas.security.impl;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Properties;
-
-import org.adempiere.model.GeneralCopyRecordSupport;
-import org.compiere.model.GridField;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
-
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 
 /*
  * #%L
@@ -42,20 +40,7 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd:HH:mm:ss");
 
 	@Override
-	public Object getValueToCopy(final GridField gridField)
-	{
-		if (org.compiere.model.I_AD_Role.COLUMNNAME_Name.equals(gridField.getColumnName()))
-		{
-			return makeUniqueName();
-		}
-		else
-		{
-			return super.getValueToCopy(gridField);
-		}
-	}
-
-	@Override
-	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
 	{
 		if (org.compiere.model.I_AD_Role.COLUMNNAME_Name.equals(columnName))
 		{
@@ -63,11 +48,11 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 		}
 		else
 		{
-			return super.getValueToCopy(to, from, columnName);
+			return super.getCalculatedColumnValueToCopy(to, from, columnName);
 		}
 	}
 
-	private static final String makeUniqueName()
+	private static String makeUniqueName()
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -80,8 +65,6 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 		final String userName = userDAO.retrieveUserFullName(adUserId);
 
 		// Create the name using the text from the specific AD_Message.
-		final String nameUnique = msgBL.getMsg(adLanguage, MSG_AD_Role_Name_Unique, new String[] { userName, timestampStr });
-
-		return nameUnique;
+		return msgBL.getMsg(adLanguage, MSG_AD_Role_Name_Unique, new String[] { userName, timestampStr });
 	}
 }

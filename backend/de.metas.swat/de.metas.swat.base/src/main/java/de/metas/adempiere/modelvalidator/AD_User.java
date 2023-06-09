@@ -2,6 +2,7 @@ package de.metas.adempiere.modelvalidator;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.title.Title;
@@ -20,7 +21,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;

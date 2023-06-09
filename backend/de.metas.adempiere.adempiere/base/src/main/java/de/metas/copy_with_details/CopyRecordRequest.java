@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.adempiere.model.copy;
+package de.metas.copy_with_details;
 
 import de.metas.i18n.AdMessageKey;
 import lombok.Builder;

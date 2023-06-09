@@ -22,13 +22,13 @@
 
 package de.metas.fresh.product;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaArticle;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaBillableTherapy;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaPackagingUnit;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaTherapy;
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Allergen;
 import org.compiere.model.I_M_Product_Nutrition;
@@ -39,19 +39,20 @@ import java.util.List;
 public class ProductPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
-				.stream()
-				.filter(childTableInfo -> I_M_Product_Acct.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_Product_AlbertaArticle.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_Product_AlbertaBillableTherapy.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_Product_AlbertaTherapy.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_Product_AlbertaPackagingUnit.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_Product_Allergen.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_Product_Nutrition.Table_Name.equals(childTableInfo.getTableName())
+		return getSuggestedChildren(
+				po.getPOInfo(),
+				ImmutableSet.of(
+						I_M_Product_Acct.Table_Name,
+						I_M_Product_AlbertaArticle.Table_Name,
+						I_M_Product_AlbertaBillableTherapy.Table_Name,
+						I_M_Product_AlbertaTherapy.Table_Name,
+						I_M_Product_AlbertaPackagingUnit.Table_Name,
+						I_M_Product_Allergen.Table_Name,
+						I_M_Product_Nutrition.Table_Name
 				)
-				.collect(ImmutableList.toImmutableList());
+		);
 	}
 
 	/**

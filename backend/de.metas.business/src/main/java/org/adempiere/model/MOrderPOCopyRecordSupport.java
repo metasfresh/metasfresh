@@ -1,6 +1,9 @@
 package org.adempiere.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.OrderCostCloneMapper;
@@ -10,7 +13,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.MOrderLinePOCopyRecordSupport.ClonedOrderLinesInfo;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.GridField;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.PO;
@@ -30,16 +32,16 @@ public class MOrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 	);
 
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
-				.stream()
-				.filter(childTableInfo -> I_C_OrderLine.Table_Name.equals(childTableInfo.getTableName()))
-				.collect(ImmutableList.toImmutableList());
+		return getSuggestedChildren(
+				po.getPOInfo(),
+				ImmutableSet.of(I_C_OrderLine.Table_Name)
+		);
 	}
 
 	@Override
-	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
 	{
 		if (COLUMNNAMES_ToCopyDirectly.contains(columnName))
 		{
@@ -48,20 +50,7 @@ public class MOrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 
 		//
 		// Fallback to super:
-		return super.getValueToCopy(to, from, columnName);
-	}
-
-	@Override
-	public Object getValueToCopy(final GridField gridField)
-	{
-		if (COLUMNNAMES_ToCopyDirectly.contains(gridField.getColumnName()))
-		{
-			return gridField.getValue();
-		}
-
-		//
-		// Fallback to super:
-		return super.getValueToCopy(gridField);
+		return super.getCalculatedColumnValueToCopy(to, from, columnName);
 	}
 
 	@Override

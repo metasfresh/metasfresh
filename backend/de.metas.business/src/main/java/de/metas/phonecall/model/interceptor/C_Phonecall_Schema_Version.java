@@ -1,19 +1,6 @@
 package de.metas.phonecall.model.interceptor;
 
-import java.time.LocalDate;
-
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.compiere.model.I_C_Phonecall_Schema_Version;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -24,6 +11,18 @@ import de.metas.phonecall.PhonecallSchemaVersionId;
 import de.metas.phonecall.PhonecallSchemaVersionPOCopyRecordSupport;
 import de.metas.phonecall.service.PhonecallSchemaRepository;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Phonecall_Schema_Version;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 /*
  * #%L

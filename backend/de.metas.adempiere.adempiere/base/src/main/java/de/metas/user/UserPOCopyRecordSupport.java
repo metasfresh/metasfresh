@@ -1,12 +1,11 @@
 package de.metas.user;
 
-import java.util.List;
-
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
+import com.google.common.collect.ImmutableList;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 /*
  * #%L
@@ -33,7 +32,7 @@ import com.google.common.collect.ImmutableList;
 public class UserPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
 		// Do not copy any details
 		return ImmutableList.of();

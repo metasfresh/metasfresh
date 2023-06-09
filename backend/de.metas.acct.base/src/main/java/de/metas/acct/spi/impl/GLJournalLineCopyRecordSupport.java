@@ -25,7 +25,7 @@ package de.metas.acct.spi.impl;
 
 import java.util.List;
 
-import org.adempiere.model.GeneralCopyRecordSupport;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.PO;
 
@@ -43,7 +43,7 @@ public class GLJournalLineCopyRecordSupport extends GeneralCopyRecordSupport
 			);
 
 	@Override
-	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
 	{
 		if (COLUMNNAMES_ToCopyDirectly.contains(columnName))
 		{
@@ -52,7 +52,7 @@ public class GLJournalLineCopyRecordSupport extends GeneralCopyRecordSupport
 		
 		//
 		// Fallback to super:
-		return super.getValueToCopy(to, from, columnName);
+		return super.getCalculatedColumnValueToCopy(to, from, columnName);
 	}
 
 }

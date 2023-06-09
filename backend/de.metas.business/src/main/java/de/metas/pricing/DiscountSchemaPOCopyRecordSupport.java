@@ -1,14 +1,13 @@
 package de.metas.pricing;
 
-import java.util.List;
-
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
+import com.google.common.collect.ImmutableSet;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.PO;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 /*
  * #%L
@@ -35,12 +34,14 @@ import com.google.common.collect.ImmutableList;
 public class DiscountSchemaPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
-				.stream()
-				.filter(childTableInfo -> I_M_DiscountSchemaBreak.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_DiscountSchemaLine.Table_Name.equals(childTableInfo.getTableName()))
-				.collect(ImmutableList.toImmutableList());
+		return getSuggestedChildren(
+				po.getPOInfo(),
+				ImmutableSet.of(
+						I_M_DiscountSchemaBreak.Table_Name,
+						I_M_DiscountSchemaLine.Table_Name
+				)
+		);
 	}
 }

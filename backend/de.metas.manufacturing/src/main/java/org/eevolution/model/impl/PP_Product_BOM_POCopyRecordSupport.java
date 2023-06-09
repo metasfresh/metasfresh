@@ -1,13 +1,12 @@
 package org.eevolution.model.impl;
 
-import java.util.List;
-
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
+import com.google.common.collect.ImmutableList;
+import de.metas.copy_with_details.CopyRecordSupportTableInfo;
+import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 /*
  * #%L
@@ -40,9 +39,9 @@ import com.google.common.collect.ImmutableList;
 public class PP_Product_BOM_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
+		return super.getSuggestedChildren(po)
 				.stream()
 				// for the time being, PP_Product_BOMLine is the only accepted child.
 				.filter(childTableInfo -> I_PP_Product_BOMLine.Table_Name.equals(childTableInfo.getTableName()))
