@@ -36,6 +36,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,6 +67,7 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
@@ -800,5 +802,17 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		return bPartnerLocation;
+	}
+
+	@NonNull
+	@Override
+	public Optional<UserId> getDefaultDunningContact(final @NonNull BPartnerId bPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDunningContact, true)
+				.create()
+				.firstIdOnlyOptional(UserId::ofRepoIdOrNull);
 	}
 }
