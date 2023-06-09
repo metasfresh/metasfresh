@@ -1,40 +1,3 @@
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN            Date,
-                                                   IN defaultAcc character varying)
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                      Date,
-                                                   IN defaultAcc           character varying,
-                                                   IN showCurrencyExchange character varying)
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN p_IncludePostingTypeStatistical char(1))
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN p_IncludePostingTypeStatistical char(1),
-                                                   IN ad_org_id                       numeric(10, 0))
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN ad_org_id                       numeric(10, 0),
-                                                   IN p_IncludePostingTypeStatistical char(1))
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN ad_org_id                       numeric(10, 0),
-                                                   IN p_IncludePostingTypeStatistical char(1),
-                                                   IN p_ExcludePostingTypeYearEnd     char(1))
-;
-
 DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                          date,
                                                   p_defaultacc                    character varying,
                                                   p_showcurrencyexchange          character varying,
@@ -44,9 +7,6 @@ DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                        
                                                   p_IsShowProductDetails          character,
                                                   p_IsShowActivityDetails         character
 )
-;
-
-DROP TABLE IF EXISTS report.saldobilanz_Report
 ;
 
 
@@ -132,20 +92,6 @@ BEGIN
     WHERE TRUE
       -- Period: determine it by DateAcct
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_date);
-
-
-    --
-    -- Activity Info
-    SELECT a.c_activity_id, a.value, a.name
-    INTO v_activityInfo
-    FROM c_activity a;
-
-
-    --
-    -- Product Info
-    SELECT p.M_product_ID, p.value, p.name
-    INTO v_productInfo
-    FROM M_product p;
 
 
     DROP TABLE IF EXISTS tmp_accounts;

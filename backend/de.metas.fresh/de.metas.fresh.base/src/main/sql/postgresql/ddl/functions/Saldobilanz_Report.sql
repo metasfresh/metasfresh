@@ -94,20 +94,6 @@ BEGIN
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_date);
 
 
-    --
-    -- Activity Info
-    SELECT a.c_activity_id, a.value, a.name
-    INTO v_activityInfo
-    FROM c_activity a;
-
-
-    --
-    -- Product Info
-    SELECT p.M_product_ID, p.value, p.name
-    INTO v_productInfo
-    FROM M_product p;
-
-
     DROP TABLE IF EXISTS tmp_accounts;
     CREATE TEMPORARY TABLE tmp_accounts AS
     SELECT lvl.Lvl1_name  AS ParentName1
