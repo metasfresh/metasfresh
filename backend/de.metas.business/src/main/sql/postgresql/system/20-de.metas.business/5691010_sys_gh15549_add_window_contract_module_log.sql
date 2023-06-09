@@ -1200,3 +1200,38 @@ DELETE FROM  AD_Reference_Trl WHERE AD_Reference_ID=541741
 DELETE FROM AD_Reference WHERE AD_Reference_ID=541741
 ;
 
+-- Element: Contract_Module_Type_ID
+-- 2023-06-09T17:38:24.865560836Z
+UPDATE AD_Element_Trl SET Name='Vertragsbaustein Typ', PrintName='Vertragsbaustein Typ',Updated=TO_TIMESTAMP('2023-06-09 18:38:24.865','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582395 AND AD_Language='de_CH'
+;
+
+-- 2023-06-09T17:38:24.883885614Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582395,'de_CH')
+;
+
+-- Element: Contract_Module_Type_ID
+-- 2023-06-09T17:38:34.351057988Z
+UPDATE AD_Element_Trl SET Name='Vertragsbaustein Typ', PrintName='Vertragsbaustein Typ',Updated=TO_TIMESTAMP('2023-06-09 18:38:34.35','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582395 AND AD_Language='de_DE'
+;
+
+-- 2023-06-09T17:38:34.352004675Z
+UPDATE AD_Element SET Name='Vertragsbaustein Typ', PrintName='Vertragsbaustein Typ' WHERE AD_Element_ID=582395
+;
+
+-- 2023-06-09T17:38:34.712421419Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582395,'de_DE')
+;
+
+-- 2023-06-09T17:38:34.713267338Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582395,'de_DE')
+;
+
+-- Element: Contract_Module_Type_ID
+-- 2023-06-09T17:38:39.802638437Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-06-09 18:38:39.802','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582395 AND AD_Language='en_US'
+;
+
+-- 2023-06-09T17:38:39.807548823Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582395,'en_US')
+;
+
