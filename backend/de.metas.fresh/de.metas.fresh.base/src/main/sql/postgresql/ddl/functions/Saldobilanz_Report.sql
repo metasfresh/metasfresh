@@ -39,10 +39,10 @@ DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                        
                                                   p_defaultacc                    character varying,
                                                   p_showcurrencyexchange          character varying,
                                                   p_ad_org_id                     numeric,
-                                                  p_includepostingtypestatistical character DEFAULT 'N'::bpchar,
-                                                  p_excludepostingtypeyearend     character DEFAULT 'N'::bpchar,
-                                                  p_IsShowProductDetails          character DEFAULT 'N'::bpchar,
-                                                  p_IsShowActivityDetails         character DEFAULT 'N'::bpchar
+                                                  p_includepostingtypestatistical character,
+                                                  p_excludepostingtypeyearend     character,
+                                                  p_IsShowProductDetails          character,
+                                                  p_IsShowActivityDetails         character
 )
 ;
 
@@ -62,36 +62,36 @@ CREATE OR REPLACE FUNCTION report.saldobilanz_report(p_date                     
 )
     RETURNS TABLE
             (
-				parentname1 character varying(60),
-				parentvalue1 character varying(60),
-				parentname2 character varying(60),
-				parentvalue2 character varying(60),
-				parentname3 character varying(60),
-				parentvalue3 character varying(60),
-				parentname4 character varying(60),
-				parentvalue4 character varying(60),
-				name character varying(60),
-				namevalue character varying(60),
-				AccountType char(1),
-				
-				sameyearsum numeric,
-				lastyearsum numeric,
-				euroSaldo numeric,
-				L4_sameyearsum numeric,
-				L4_lastyearsum numeric,
-				L3_sameyearsum numeric,
-				L3_lastyearsum numeric,
-				L2_sameyearsum numeric,
-				L2_lastyearsum numeric,
-				L1_sameyearsum numeric,
-				L1_lastyearsum numeric,
+                parentname1       character varying(60),
+                parentvalue1      character varying(60),
+                parentname2       character varying(60),
+                parentvalue2      character varying(60),
+                parentname3       character varying(60),
+                parentvalue3      character varying(60),
+                parentname4       character varying(60),
+                parentvalue4      character varying(60),
+                name              character varying(60),
+                namevalue         character varying(60),
+                AccountType       char(1),
 
-				-- More info
-				C_Calendar_ID numeric,
-				C_ElementValue_ID numeric,
+                sameyearsum       numeric,
+                lastyearsum       numeric,
+                euroSaldo         numeric,
+                L4_sameyearsum    numeric,
+                L4_lastyearsum    numeric,
+                L3_sameyearsum    numeric,
+                L3_lastyearsum    numeric,
+                L2_sameyearsum    numeric,
+                L2_lastyearsum    numeric,
+                L1_sameyearsum    numeric,
+                L1_lastyearsum    numeric,
 
-				ad_org_id numeric,
-				currency character(3)
+                -- More info
+                C_Calendar_ID     numeric,
+                C_ElementValue_ID numeric,
+
+                ad_org_id         numeric,
+                currency          character(3)
             )
 AS
 $BODY$
@@ -129,16 +129,16 @@ BEGIN
 
     DROP TABLE IF EXISTS tmp_accounts;
     CREATE TEMPORARY TABLE tmp_accounts AS
-    SELECT lvl.Lvl1_name
-         , lvl.Lvl1_value
-         , lvl.Lvl2_name
-         , lvl.Lvl2_value
-         , lvl.Lvl3_name
-         , lvl.Lvl3_value
-         , lvl.Lvl4_name
-         , lvl.Lvl4_value
-         , lvl.Name
-         , lvl.Value
+    SELECT lvl.Lvl1_name  AS ParentName1
+         , lvl.Lvl1_value AS ParentValue1
+         , lvl.Lvl2_name  AS ParentName2
+         , lvl.Lvl2_value AS ParentValue2
+         , lvl.Lvl3_name  AS ParentName3
+         , lvl.Lvl3_value AS ParentValue3
+         , lvl.Lvl4_value AS ParentValue4
+         , lvl.Lvl4_name  AS ParentName4
+         , lvl.Name       AS Name
+         , lvl.Value      AS Value
          , ev.AccountType
          , ev.C_ElementValue_ID
          , ev.Multiplicator
@@ -150,7 +150,7 @@ BEGIN
                         EXISTS
                             (SELECT 1 FROM C_ElementValue elv WHERE lvl.C_ElementValue_ID = elv.C_ElementValue_ID AND elv.ShowIntCurrency = 'Y' AND elv.Foreign_Currency_ID = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') AND elv.isActive = 'Y')
                         )
-            END) AS IsConvertToEUR
+            END)          AS IsConvertToEUR
 
     FROM C_Element_Levels lvl
              INNER JOIN (
@@ -182,13 +182,25 @@ BEGIN
     DROP TABLE IF EXISTS tmp_balances;
     CREATE TEMPORARY TABLE tmp_balances AS
     SELECT a.C_ElementValue_ID
+         , a.ParentName1
+         , a.ParentValue1
+         , a.ParentName2
+         , a.ParentValue2
+         , a.ParentName3
+         , a.ParentValue3
+         , a.ParentValue4
+         , a.ParentName4
+         , a.Name
+         , a.Value
+         , a.AccountType
+		 , a.IsConvertToEUR
 
-         , (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator               AS SameYearSum
-         , (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator AS LastYearSum
+         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator               AS SameYearSum
+         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator AS LastYearSum
 
     FROM tmp_accounts a;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'Computed beginning balances for % accounts', v_rowcount;
+    RAISE NOTICE 'Computed balances for % accounts', v_rowcount;
     CREATE UNIQUE INDEX ON tmp_balances (C_ElementValue_ID);
 
 
@@ -245,33 +257,32 @@ BEGIN
            NULL::text                                                                                               AS activityname,
            NULL::text                                                                                               AS level
     FROM (
-             SELECT ta.Lvl1_name  AS ParentName1
-                  , ta.Lvl1_value AS ParentValue1
-                  , ta.Lvl2_name  AS ParentName2
-                  , ta.Lvl2_value AS ParentValue2
-                  , ta.Lvl3_name  AS ParentName3
-                  , ta.Lvl3_value AS ParentValue3
-                  , ta.Lvl4_value AS ParentValue4
-                  , ta.Lvl4_name  AS ParentName4
-                  , ta.Name       AS Name
-                  , ta.Value      AS Value
-                  , ta.AccountType
+             SELECT tb.ParentName1
+                  , tb.ParentValue1
+                  , tb.ParentName2
+                  , tb.ParentValue2
+                  , tb.ParentName3
+                  , tb.ParentValue3
+                  , tb.ParentValue4
+                  , tb.ParentName4
+                  , tb.Name
+                  , tb.Value
+                  , tb.AccountType
 
                   , tb.SameYearSum
                   , tb.LastYearSum
 
 
-                  , ta.IsConvertToEUR
+                  , tb.IsConvertToEUR
 
                   --
                   , v_AcctSchemaInfo.C_Currency_ID -- Accounting currency
                   , v_AcctSchemaInfo.AD_Client_ID
 
                   , v_AcctSchemaInfo.C_Calendar_ID
-                  , ta.C_ElementValue_ID
+                  , tb.C_ElementValue_ID
                   , v_AcctSchemaInfo.iso_code
-             FROM tmp_accounts ta
-                      INNER JOIN tmp_balances tb ON ta.C_ElementValue_ID = tb.C_ElementValue_ID
+             FROM tmp_balances tb
          ) a;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -280,36 +291,36 @@ BEGIN
     <<RESULT_TABLE>>
     BEGIN
         RETURN QUERY
-            SELECT parentname1,
-                   parentvalue1,
-                   parentname2,
-                   parentvalue2,
-                   parentname3,
-                   parentvalue3,
-				   parentname4,
-                   parentvalue4,
-                   name,
-                   value,
-                   AccountType,
+            SELECT b.parentname1,
+                   b.parentvalue1,
+                   b.parentname2,
+                   b.parentvalue2,
+                   b.parentname3,
+                   b.parentvalue3,
+                   b.parentname4,
+                   b.parentvalue4,
+                   b.name,
+                   b.value,
+                   b.AccountType,
 
-                   SameYearSum,
-                   LastYearSum,
-                   L4_euroSaldo,
+                   b.SameYearSum,
+                   b.LastYearSum,
+                   b.L4_euroSaldo,
                    --
-                   L3_SameYearSum,
-                   L3_LastYearSum,
-                   L2_SameYearSum,
-                   L2_LastYearSum,
-                   L1_SameYearSum,
-                   L1_LastYearSum,
+                   b.L3_SameYearSum,
+                   b.L3_LastYearSum,
+                   b.L2_SameYearSum,
+                   b.L2_LastYearSum,
+                   b.L1_SameYearSum,
+                   b.L1_LastYearSum,
 
                    -- More info:
-                   C_Calendar_ID,
-                   C_ElementValue_ID,
+                   b.C_Calendar_ID,
+                   b.C_ElementValue_ID,
 
-                   ad_org_id,
-                   iso_code
-            FROM tmp_report_balance
+                   b.ad_org_id,
+                   b.iso_code
+            FROM tmp_report_balance b
             ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, value;
     END RESULT_TABLE;
 END;
