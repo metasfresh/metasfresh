@@ -22,7 +22,6 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -350,7 +349,9 @@ public abstract class PO
 	/**
 	 * Zero Integer
 	 */
+	@SuppressWarnings("UnnecessaryBoxing")
 	protected static final Integer I_ZERO = new Integer(0);
+	@SuppressWarnings("UnnecessaryBoxing")
 	private static final Integer I_ZERO_NATIVESEQUENCE = new Integer(0);
 
 	/**
@@ -580,7 +581,7 @@ public abstract class PO
 		}
 
 		final Object oo = m_IDs[0];
-		if (oo != null && oo instanceof Integer)
+		if (oo instanceof Integer)
 		{
 			return ((Integer)oo).intValue();
 		}
@@ -612,7 +613,6 @@ public abstract class PO
 	 * <p>
 	 * WARNING: use it only if u really know what are you doing.
 	 *
-	 * @param ctx
 	 */
 	public final void setCtx(@NonNull final Properties ctx)
 	{
@@ -710,17 +710,6 @@ public abstract class PO
 		}
 		return get_Value(index);
 	}   // get_Value
-
-	/**
-	 * Get Encrypted Value
-	 *
-	 * @param columnName column name
-	 * @return value or null
-	 */
-	protected final Object get_ValueE(final String columnName)
-	{
-		return get_Value(columnName);
-	}   // get_ValueE
 
 	@Override
 	public <T> T get_ValueAsObject(final String variableName)
@@ -839,7 +828,7 @@ public abstract class PO
 		}
 		if (value instanceof Integer)
 		{
-			return ((Integer)value).intValue();
+			return (Integer)value;
 		}
 		try
 		{
@@ -919,80 +908,6 @@ public abstract class PO
 		return is_ValueChanged(index);
 	}   // is_ValueChanged
 
-	/**
-	 * Return new - old.
-	 * - New Value if Old Value is null
-	 * - New Value - Old Value if Number
-	 * - otherwise null
-	 *
-	 * @param index index
-	 * @return new - old or null if not appropriate or not changed
-	 */
-	public final Object get_ValueDifference(final int index)
-	{
-		if (index < 0 || index >= get_ColumnCount())
-		{
-			log.warn("Index invalid - " + index);
-			return null;
-		}
-
-		//
-		// Check if object is stalled
-		// In case is stalled then there is no change so we return null
-		// because it's the same as having m_newValues[index] == null
-		if (m_stale)  // metas: 01537
-		{
-			return null;
-		}
-
-		final Object nValue = m_newValues[index];
-		// No new Value or NULL
-		if (nValue == null || nValue == Null.NULL)
-		{
-			return null;
-		}
-		//
-		final Object oValue = m_oldValues[index];
-		if (oValue == null || oValue == Null.NULL)
-		{
-			return nValue;
-		}
-		if (nValue instanceof BigDecimal)
-		{
-			final BigDecimal obd = (BigDecimal)oValue;
-			return ((BigDecimal)nValue).subtract(obd);
-		}
-		else if (nValue instanceof Integer)
-		{
-			int result = ((Integer)nValue).intValue();
-			result -= ((Integer)oValue).intValue();
-			return result;
-		}
-		//
-		log.warn("Invalid type - New=" + nValue);
-		return null;
-	}   // get_ValueDifference
-
-	/**
-	 * Return new - old.
-	 * - New Value if Old Value is null
-	 * - New Value - Old Value if Number
-	 * - otherwise null
-	 *
-	 * @param columnName column name
-	 * @return new - old or null if not appropriate or not changed
-	 */
-	public final Object get_ValueDifference(final String columnName)
-	{
-		final int index = get_ColumnIndex(columnName);
-		if (index < 0)
-		{
-			log.warn("Column {} not found in method PO.get_ValueDifference", columnName);
-			return null;
-		}
-		return get_ValueDifference(index);
-	}   // get_ValueDifference
-
 	/**************************************************************************
 	 * Set Value
 	 *
@@ -1003,7 +918,7 @@ public abstract class PO
 	protected final boolean set_Value(final String ColumnName, @Nullable Object value)
 	{
 		if (value instanceof String && ColumnName.equals("WhereClause")
-				&& value.toString().toUpperCase().indexOf("=NULL") != -1)
+				&& value.toString().toUpperCase().contains("=NULL"))
 		{
 			log.warn("Invalid Null Value - " + ColumnName + "=" + value);
 		}
@@ -1036,7 +951,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	private final boolean set_Value(final int index, final Object value)
+	private boolean set_Value(final int index, final Object value)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -1170,16 +1085,16 @@ public abstract class PO
 				catch (final NumberFormatException e)
 				{
 					log.warn(ColumnName
-							+ " - Class invalid(1): " + valueToUse.getClass().toString()
-							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
+							+ " - Class invalid(1): " + valueToUse.getClass()
+							+ ", Should be " + Objects.requireNonNull(p_info.getColumnClass(index)) + ": " + valueToUse, new Exception("stacktrace"));
 					return false;
 				}
 			}
 			else
 			{
 				log.warn(ColumnName
-						+ " - Class invalid(2): " + valueToUse.getClass().toString()
-						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
+						+ " - Class invalid(2): " + valueToUse.getClass()
+						+ ", Should be " + p_info.getColumnClass(index) + ": " + valueToUse, new Exception("stacktrace"));
 				return false;
 			}
 			// Validate (Min/Max)
@@ -1242,7 +1157,7 @@ public abstract class PO
 		return set_ValueNoCheck(index, value);
 	}
 
-	private final boolean set_ValueNoCheck(final int index, final Object value)
+	private boolean set_ValueNoCheck(final int index, final Object value)
 	{
 		final Object valueToUse = POUtils.stripZerosAndLogIssueIfBigDecimalScaleTooBig(value, this);
 
@@ -1280,21 +1195,21 @@ public abstract class PO
 				try
 				{
 					final int intValue = Integer.parseInt((String)valueToUse);
-					m_newValues[index] = Integer.valueOf(intValue);
+					m_newValues[index] = intValue;
 				}
 				catch (final Exception e)
 				{
 					log.warn(get_ColumnName(index)
-							+ " - Class invalid(3): " + valueToUse.getClass().toString()
-							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
+							+ " - Class invalid(3): " + valueToUse.getClass()
+							+ ", Should be " + p_info.getColumnClass(index) + ": " + valueToUse, new Exception("stacktrace"));
 					m_newValues[index] = null;
 				}
 			}
 			else
 			{
 				log.warn(get_ColumnName(index)
-						+ " - Class invalid(4): " + valueToUse.getClass().toString()
-						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
+						+ " - Class invalid(4): " + valueToUse.getClass()
+						+ ", Should be " + p_info.getColumnClass(index) + ": " + valueToUse, new Exception("stacktrace"));
 				m_newValues[index] = valueToUse;     // correct
 			}
 
@@ -1330,9 +1245,7 @@ public abstract class PO
 	/**
 	 * Set value of Column returning boolean
 	 *
-	 * @param columnName
-	 * @param value
-	 * @returns boolean indicating success or failure
+	 * @return boolean indicating success or failure
 	 */
 	public final boolean set_ValueOfColumn(final String columnName, @Nullable final Object value)
 	{
@@ -1346,7 +1259,7 @@ public abstract class PO
 		return set_ValueReturningBoolean(columnIndex, value);
 	}
 
-	private final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
+	private boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
 	{
 		final String columnName = p_info.getColumnName(columnIndex);
 		if (COLUMNNAME_IsApproved.equals(columnName))
@@ -1375,7 +1288,7 @@ public abstract class PO
 	 *
 	 * @param columnName column
 	 * @param value      value
-	 * @returns boolean indicating success or failure
+	 * @return boolean indicating success or failure
 	 */
 	public final boolean set_CustomColumnReturningBoolean(final String columnName, final Object value)
 	{
@@ -1457,28 +1370,6 @@ public abstract class PO
 	{
 		return p_info.getColumnName(index);
 	}   // getColumnName
-
-	/**
-	 * Is Column Mandatory
-	 *
-	 * @param index index
-	 * @return true if column mandatory
-	 */
-	protected final boolean isColumnMandatory(final int index)
-	{
-		return p_info.isColumnMandatory(index);
-	}   // isColumnNandatory
-
-	/**
-	 * Is Column Updateable
-	 *
-	 * @param index index
-	 * @return true if column updateable
-	 */
-	protected final boolean isColumnUpdateable(final int index)
-	{
-		return p_info.isColumnUpdateable(index);
-	}    // isColumnUpdateable
 
 	/**
 	 * Get Column Index
@@ -1727,7 +1618,7 @@ public abstract class PO
 	 *
 	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry.
 	 */
-	private final boolean load0(final String trxName, final boolean isRetry)
+	private boolean load0(final String trxName, final boolean isRetry)
 	{
 		m_trxName = trxName;
 		boolean success = true;
@@ -1775,10 +1666,9 @@ public abstract class PO
 			// else it's a programatic or application dictionary configuration error (i.e. Key IDs are not unique)
 			if (rs.next())
 			{
-				final AdempiereException ex = new AdempiereException("More then one records were found while loading " + this + "."
+				throw new AdempiereException("More then one records were found while loading " + this + "."
 						+ " Please make sure key columns are unique."
 						+ "\n WhereClause: " + get_WhereClause(true));
-				throw ex;
 			}
 
 			m_createNew = false;
@@ -1801,7 +1691,7 @@ public abstract class PO
 					// + ", Index=" + index
 					// + ", Column=" + get_ColumnName(index)
 					// + ", " + p_info.toString(index)
-					+ ", SQL=" + sql.toString();
+					+ ", SQL=" + sql;
 			success = false;
 			m_IDs = new Object[] { I_ZERO };
 			log.warn(msg, e);
@@ -1811,8 +1701,6 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 
 		loadComplete(success);
@@ -1850,7 +1738,7 @@ public abstract class PO
 		return success;
 	}    // load
 
-	private final boolean loadColumn(final int index, final ResultSet rs)
+	private boolean loadColumn(final int index, final ResultSet rs)
 	{
 		boolean success = true;
 		final String columnName = p_info.getColumnName(index);
@@ -1900,7 +1788,7 @@ public abstract class PO
 			//
 			if (log.isTraceEnabled())
 			{
-				log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+				log.trace(index + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 			}
 		}
 		catch (final SQLException e)
@@ -1911,7 +1799,7 @@ public abstract class PO
 			}
 			else
 			{
-				log.warn("(rs) - " + String.valueOf(index)
+				log.warn("(rs) - " + index
 						+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 						+ " (" + p_info.getColumnClass(index) + ") - " + e);
 				success = false;
@@ -1950,8 +1838,6 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		return success;
 	}
@@ -2012,7 +1898,7 @@ public abstract class PO
 				//
 				if (log.isTraceEnabled())
 				{
-					log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+					log.trace(index + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 				}
 			}
 			catch (final Exception e)
@@ -2023,7 +1909,7 @@ public abstract class PO
 				}
 				else
 				{
-					log.warn("(ht) - " + String.valueOf(index)
+					log.warn("(ht) - " + index
 							+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 							+ " (" + p_info.getColumnClass(index) + ") - " + e);
 					success = false;
@@ -2099,94 +1985,12 @@ public abstract class PO
 	}
 
 	/**
-	 * Create Hashmap with data as Strings
-	 *
-	 * @return HashMap
-	 */
-	protected final HashMap<String, String> get_HashMap()
-	{
-		final HashMap<String, String> hmOut = new HashMap<>();
-		final int size = get_ColumnCount();
-		for (int i = 0; i < size; i++)
-		{
-			final Object value = get_Value(i);
-			// Don't insert NULL values (allows Database defaults)
-			if (value == null
-					|| p_info.isVirtualColumn(i))
-			{
-				continue;
-			}
-			// Display Type
-			final int dt = p_info.getColumnDisplayType(i);
-			// Based on class of definition, not class of value
-			final Class<?> c = p_info.getColumnClass(i);
-			String stringValue = null;
-			if (c == Object.class)
-			{
-				// saveNewSpecial (value, i));
-			}
-			else if (value == null || value.equals(Null.NULL))
-			{
-
-			}
-			else if (value instanceof Integer || value instanceof BigDecimal)
-			{
-				stringValue = value.toString();
-			}
-			else if (c == Boolean.class)
-			{
-				final boolean bValue = StringUtils.toBoolean(value);
-				stringValue = Env.toString(bValue);
-			}
-			else if (value instanceof Timestamp)
-			{
-				stringValue = value.toString();
-			}
-			else if (c == String.class)
-			{
-				stringValue = (String)value;
-			}
-			else if (DisplayType.isLOB(dt))
-			{
-
-			}
-			else
-			{
-				// saveNewSpecial (value, i));
-			}
-			//
-			if (stringValue != null)
-			{
-				hmOut.put(p_info.getColumnName(i), stringValue);
-			}
-		}
-		// Custom Columns
-		if (m_custom != null)
-		{
-			final Iterator<String> it = m_custom.keySet().iterator();
-			while (it.hasNext())
-			{
-				final String column = it.next();
-				// int index = p_info.getColumnIndex(column);
-				final String value = m_custom.get(column);
-				if (value != null)
-				{
-					hmOut.put(column, value);
-				}
-			}
-			m_custom = null;
-		}
-		return hmOut;
-	}   // get_HashMap
-
-	/**
 	 * Load Special data (images, ..).
 	 * To be extended by sub-classes
 	 *
 	 * @param rs    result set
 	 * @param index zero based index
 	 * @return value value
-	 * @throws SQLException
 	 */
 	protected Object loadSpecial(final ResultSet rs, final int index) throws SQLException
 	{
@@ -2203,7 +2007,7 @@ public abstract class PO
 	 *
 	 * @param success success
 	 */
-	private final void loadComplete(final boolean success)
+	private void loadComplete(final boolean success)
 	{
 		this.m_loadCount++;
 
@@ -2226,11 +2030,6 @@ public abstract class PO
 	protected final void loadDefaults()
 	{
 		setStandardDefaults();
-		//
-		/**
-		 * @todo defaults from Field
-		 */
-		// MField.getDefault(p_info.getDefaultLogic(i));
 	}
 
 	/**
@@ -2332,33 +2131,6 @@ public abstract class PO
 	}    // setKeyInfo
 
 	/**************************************************************************
-	 * Are all mandatory Fields filled (i.e. can we save)?.
-	 * Stops at first null mandatory field
-	 *
-	 * @return true if all mandatory fields are ok
-	 */
-	protected final boolean isMandatoryOK()
-	{
-		final int size = get_ColumnCount();
-		for (int i = 0; i < size; i++)
-		{
-			if (p_info.isColumnMandatory(i))
-			{
-				if (p_info.isVirtualColumn(i))
-				{
-					continue;
-				}
-				if (get_Value(i) == null || get_Value(i).equals(Null.NULL))
-				{
-					// log.info(p_info.getColumnName(i));
-					return false;
-				}
-			}
-		}
-		return true;
-	}   // isMandatoryOK
-
-	/**************************************************************************
 	 * Set AD_Client
 	 *
 	 * @param AD_Client_ID client
@@ -2377,11 +2149,7 @@ public abstract class PO
 	public final int getAD_Client_ID()
 	{
 		final Integer ii = (Integer)get_Value("AD_Client_ID");
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return ii == null ? 0 : ii;
 	}    // getAD_Client_ID
 
 	/**
@@ -2404,11 +2172,7 @@ public abstract class PO
 	public int getAD_Org_ID()
 	{
 		final Integer ii = (Integer)get_Value("AD_Org_ID");
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return ii == null ? 0 : ii;
 	}    // getAD_Org_ID
 
 	/**
@@ -2465,11 +2229,7 @@ public abstract class PO
 	public final boolean isActive()
 	{
 		final Boolean bb = (Boolean)get_Value("IsActive");
-		if (bb != null)
-		{
-			return bb.booleanValue();
-		}
-		return false;
+		return bb != null && bb;
 	}    // isActive
 
 	/**
@@ -2504,7 +2264,7 @@ public abstract class PO
 		{
 			return 0;
 		}
-		return ii.intValue();
+		return ii;
 	}    // getCreateddBy
 
 	/**
@@ -2519,7 +2279,7 @@ public abstract class PO
 		{
 			return 0;
 		}
-		return ii.intValue();
+		return ii;
 	}    // getUpdatedBy
 
 	/**
@@ -2527,8 +2287,6 @@ public abstract class PO
 	 * It checks if the base language is used or the column is not translated.
 	 * If there is no translation then it fallback to original value.
 	 *
-	 * @param columnName
-	 * @param AD_Language
 	 * @return translated string
 	 * @throws IllegalArgumentException if columnName or AD_Language is null or model has multiple PK
 	 */
@@ -2569,6 +2327,7 @@ public abstract class PO
 	/**
 	 * Get Translation of column
 	 */
+	@Deprecated
 	public final String get_Translation(final String columnName)
 	{
 		return get_Translation(columnName, Env.getAD_Language(getCtx()));
@@ -2604,7 +2363,7 @@ public abstract class PO
 		return m_wasJustCreated;
 	}
 
-	private final void createChangeLog(final String changeLogType)
+	private void createChangeLog(final String changeLogType)
 	{
 		//
 		// Don't create change logs if is not activated on table level
@@ -2766,7 +2525,7 @@ public abstract class PO
 		}
 	}
 
-	private final void logMigration(final String actionType)
+	private void logMigration(final String actionType)
 	{
 		if (!Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
 		{
@@ -2825,7 +2584,6 @@ public abstract class PO
 	/**
 	 * Update Value or create new record.
 	 *
-	 * @throws AdempiereException
 	 * @see #save()
 	 */
 	public final void saveEx() throws AdempiereException
@@ -2873,7 +2631,7 @@ public abstract class PO
 	 *
 	 * @return <code>true</code> if save is needed; <code>false</code> if no save is needed
 	 */
-	private final boolean savePrepare()
+	private boolean savePrepare()
 	{
 		MetasfreshLastError.resetLast();
 		final boolean newRecord = is_new();    // save locally as load resets
@@ -2926,7 +2684,7 @@ public abstract class PO
 		return true; // save is needed
 	}
 
-	private final void save0() throws Exception
+	private void save0() throws Exception
 	{
 		final boolean newRecord = is_new();    // save locally as load resets
 
@@ -2935,7 +2693,7 @@ public abstract class PO
 		{
 			if (!beforeSave(newRecord))
 			{
-				throw new AdempiereException("beforeSave failed - " + toString());
+				throw new AdempiereException("beforeSave failed - " + this);
 			}
 		}
 
@@ -2984,7 +2742,7 @@ public abstract class PO
 	 * @param success   success
 	 * @return true if saved
 	 */
-	private boolean saveFinish(final boolean newRecord, boolean success) throws Exception
+	private boolean saveFinish(final boolean newRecord, boolean success)
 	{
 		// Translations
 		if (success)
@@ -3130,7 +2888,6 @@ public abstract class PO
 	 * Sets given trxName and save it.
 	 *
 	 * @param trxName transaction
-	 * @throws AdempiereException
 	 * @see #saveEx(String)
 	 */
 	public final void saveEx(final String trxName) throws AdempiereException
@@ -3142,8 +2899,6 @@ public abstract class PO
 	/**
 	 * Set <code>isReplica=true</code>. Calls {@link #saveEx()} afterwards.
 	 *
-	 * @param isFromReplication
-	 * @throws AdempiereException
 	 */
 	public final void saveExReplica(final boolean isFromReplication) throws AdempiereException
 	{
@@ -3202,7 +2957,7 @@ public abstract class PO
 	 *
 	 * @return true if updated
 	 */
-	private final boolean saveUpdate() throws Exception
+	private boolean saveUpdate() throws Exception
 	{
 		final String where = get_WhereClause(true);
 		//
@@ -3381,9 +3136,6 @@ public abstract class PO
 				sql.append(",UpdatedBy=").append(loggedUserId.getRepoId());
 			}
 			sql.append(" WHERE ").append(where);
-			/**
-			 * @todo status locking goes here
-			 */
 
 			//
 			// Execute UPDATE SQL
@@ -3423,7 +3175,7 @@ public abstract class PO
 		return saveFinish(false, true);  // newRecord=false, success=true
 	}   // saveUpdate
 
-	private final boolean isUseTimeoutForUpdate()
+	private boolean isUseTimeoutForUpdate()
 	{
 		return "true".equalsIgnoreCase(System.getProperty(USE_TIMEOUT_FOR_UPDATE, "false"))
 				&& DB.getDatabase().isQueryTimeoutSupported();
@@ -3435,7 +3187,7 @@ public abstract class PO
 	 * @param id new id
 	 * @return old id
 	 */
-	private final Object set_ID(final Object id)
+	private Object set_ID(final Object id)
 	{
 		final Object idOld = m_IDs[0];
 		m_IDs[0] = id;
@@ -3448,7 +3200,7 @@ public abstract class PO
 	 *
 	 * @return true if succeed (even if it does nothing); false ONLY if failed
 	 */
-	private final boolean retrieveAndSetIds()
+	private boolean retrieveAndSetIds()
 	{
 		// ID was assigned externally. Nothing to do
 		if (isAssignedID)
@@ -3516,7 +3268,7 @@ public abstract class PO
 	 *
 	 * @return true if new record inserted
 	 */
-	private boolean saveNew() throws Exception
+	private boolean saveNew()
 	{
 		//
 		// Generate and set new IDs
@@ -4005,7 +3757,6 @@ public abstract class PO
 	 * Delete Current Record
 	 *
 	 * @param force delete also processed records
-	 * @throws AdempiereException
 	 * @see #delete(boolean)
 	 */
 	public final void deleteEx(final boolean force) throws AdempiereException
@@ -4052,7 +3803,7 @@ public abstract class PO
 	 * @param force force delete (i.e. delete even if the record is processed)
 	 * @return <code>true</code> if delete is needed; <code>false</code> if delete is not needed
 	 */
-	private final boolean deletePrepare(final boolean force)
+	private boolean deletePrepare(final boolean force)
 	{
 		MetasfreshLastError.resetLast();
 		if (is_new())
@@ -4085,7 +3836,7 @@ public abstract class PO
 		return true; // delete is needed
 	}
 
-	private final void delete0()
+	private void delete0()
 	{
 		final int AD_Table_ID = p_info.getAD_Table_ID();
 		final int Record_ID = get_ID();
@@ -4214,7 +3965,6 @@ public abstract class PO
 	 *
 	 * @param force   delete also processed records
 	 * @param trxName transaction
-	 * @throws AdempiereException
 	 * @see {@link #deleteEx(boolean)}
 	 */
 	public final void deleteEx(final boolean force, final String trxName) throws AdempiereException
@@ -4918,7 +4668,6 @@ public abstract class PO
 	/**
 	 * Get Integer Value
 	 *
-	 * @param columnName
 	 * @return int value
 	 */
 	public final int get_ValueAsInt(final String columnName)
@@ -4939,7 +4688,6 @@ public abstract class PO
 	/**
 	 * Get value as Boolean
 	 *
-	 * @param columnName
 	 * @return boolean value
 	 */
 	// metas: tsa: changed and introduced get_ValueAsBoolean(int)
@@ -4975,8 +4723,6 @@ public abstract class PO
 	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this
 	 * PO instance is not destroyed.
 	 *
-	 * @param name
-	 * @param value
 	 */
 	public final Object setDynAttribute(final String name, @Nullable final Object value)
 	{
@@ -5024,10 +4770,9 @@ public abstract class PO
 	 * After event is fired, if the event was about replication, the replication flag will also be set to <code>false</code>.
 	 *
 	 * @param type see ModelValidator.TYPE_* events
-	 * @return error or null
-	 * @task 01512
+	 * @implSpec task 01512
 	 */
-	private final void fireModelChange(final ModelChangeType type)
+	private void fireModelChange(final ModelChangeType type)
 	{
 		if (type == null)
 		{
@@ -5097,7 +4842,6 @@ public abstract class PO
 	/**
 	 * Get/Load translation map for a given language
 	 *
-	 * @param AD_Language
 	 * @return map of columnName->translatedValue pairs
 	 */
 	private IModelTranslation get_ModelTranslation(final String AD_Language)
@@ -5188,16 +4932,6 @@ public abstract class PO
 		poCache.set(obj);
 	}
 
-	protected final <RecordType> RecordType getReferencedRecord(final Class<RecordType> recordType)
-	{
-		return TableRecordCacheLocal.getReferencedValue(this, recordType);
-	}
-
-	protected final <RecordType> void setReferencedRecord(final RecordType record)
-	{
-		TableRecordCacheLocal.setReferencedValue(this, record);
-	}
-
 	private boolean m_isManualUserAction = false;
 	private int m_windowNo = 0;
 
@@ -5257,7 +4991,7 @@ public abstract class PO
 	 * @return session or null
 	 */
 	// metas
-	private final MFSession get_Session()
+	private MFSession get_Session()
 	{
 		if (I_AD_Session.Table_Name.equals(get_TableName()))
 		{
@@ -5285,8 +5019,7 @@ public abstract class PO
 
 	public final Timestamp get_ValueAsTimestamp(final int index)
 	{
-		final Timestamp ts = (Timestamp)get_Value(index);
-		return ts;
+		return (Timestamp)get_Value(index);
 	}
 
 	/**
