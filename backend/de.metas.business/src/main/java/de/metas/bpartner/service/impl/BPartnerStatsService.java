@@ -71,7 +71,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class BPartnerStatsService
 {
-	public static final String SYS_CONFIG_C_Order_EnforceSOCreditStatus = "de.metas.bpartner.service.impl.BPartnerStatsService.C_Order_EnforceSOCreditStatus";
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
@@ -80,6 +79,7 @@ public class BPartnerStatsService
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final BPartnerCreditLimitRepository creditLimitRepo;
 	private final MoneyService moneyService;
+	public static final String SYS_CONFIG_C_Order_EnforceSOCreditStatus = "de.metas.bpartner.service.impl.BPartnerStatsService.C_Order_EnforceSOCreditStatus";
 
 	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo,
 			@NonNull final MoneyService moneyService)
