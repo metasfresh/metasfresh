@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor2
 Feature: ZInvoice candidate separation based on header aggregation key
 
   Background:
