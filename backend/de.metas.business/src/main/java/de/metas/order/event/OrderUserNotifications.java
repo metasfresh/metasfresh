@@ -6,6 +6,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -55,7 +56,7 @@ import java.util.Set;
 public class OrderUserNotifications
 {
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private AdMessageKey MSG_C_Order_CreditLimitNotSufficient;// TODO
+	private AdMessageKey MSG_C_Order_CreditLimitNotSufficient = AdMessageKey.of("C_Order_NorifyUserAboutCreditLimit");
 
 	public static OrderUserNotifications newInstance()
 	{
@@ -176,14 +177,15 @@ public class OrderUserNotifications
 	}
 
 
-	public OrderUserNotifications notifyCreditLimitExceeded(@NonNull String partnerName, @NonNull String creditLimitDifference)
+	public OrderUserNotifications notifyCreditLimitExceeded(@NonNull I_C_Order order, @NonNull ITranslatableString creditLimitDifference)
 	{
-		// don't send after commit, because the trx will very probably be rolled back if an error happened
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
 		notificationBL.send(newUserNotificationRequest()
 									.recipientUserId(Env.getLoggedUserId())
 									.contentADMessage(MSG_C_Order_CreditLimitNotSufficient)
-									.contentADMessageParam(partnerName)
-									.contentADMessageParam(creditLimitDifference)
+									.contentADMessageParam(creditLimitDifference.translate(adLanguage))
+									.targetAction(TargetRecordAction.of(TableRecordReference.of(order)))
 									.build());
 
 		return this;

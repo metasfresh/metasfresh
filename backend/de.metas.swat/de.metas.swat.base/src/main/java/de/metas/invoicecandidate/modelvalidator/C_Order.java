@@ -4,6 +4,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
@@ -11,16 +12,16 @@ import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.order.event.OrderUserNotifications;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
@@ -33,6 +34,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
@@ -42,7 +44,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
@@ -54,18 +55,6 @@ public class C_Order
 	// 	invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
 	// }
 
-	final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
-
-	final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-	final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-
 	private final static String SYS_CONFIG_UserStringElement1_DirectUpdateOrderToInvoiceCandidate = "UserStringElement1.DirectUpdateOrderToInvoiceCandidate";
 	private final static String SYS_CONFIG_UserStringElement2_DirectUpdateOrderToInvoiceCandidate = "UserStringElement2.DirectUpdateOrderToInvoiceCandidate";
 	private final static String SYS_CONFIG_UserStringElement3_DirectUpdateOrderToInvoiceCandidate = "UserStringElement3.DirectUpdateOrderToInvoiceCandidate";
@@ -73,7 +62,6 @@ public class C_Order
 	private final static String SYS_CONFIG_UserStringElement5_DirectUpdateOrderToInvoiceCandidate = "UserStringElement5.DirectUpdateOrderToInvoiceCandidate";
 	private final static String SYS_CONFIG_UserStringElement6_DirectUpdateOrderToInvoiceCandidate = "UserStringElement6.DirectUpdateOrderToInvoiceCandidate";
 	private final static String SYS_CONFIG_UserStringElement7_DirectUpdateOrderToInvoiceCandidate = "UserStringElement7.DirectUpdateOrderToInvoiceCandidate";
-
 	private final static String SYS_CONFIG_UserStringElement1_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement1.DirectUpdateOrderToInvoice.IfReversed";
 	private final static String SYS_CONFIG_UserStringElement2_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement2.DirectUpdateOrderToInvoice.IfReversed";
 	private final static String SYS_CONFIG_UserStringElement3_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement3.DirectUpdateOrderToInvoice.IfReversed";
@@ -81,6 +69,15 @@ public class C_Order
 	private final static String SYS_CONFIG_UserStringElement5_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement5.DirectUpdateOrderToInvoice.IfReversed";
 	private final static String SYS_CONFIG_UserStringElement6_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement6.DirectUpdateOrderToInvoice.IfReversed";
 	private final static String SYS_CONFIG_UserStringElement7_DirectUpdateOrderToInvoice_IfReversed = "UserStringElement7.DirectUpdateOrderToInvoice.IfReversed";
+	final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
+	final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void checkCreditLimit(@NonNull final I_C_Order order)
@@ -97,37 +94,30 @@ public class C_Order
 
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getBill_BPartner_ID(), dateOrdered);
 
-
-		final boolean isEnforceSOCreditstatus = false; // todo sys config
-		if(!isEnforceSOCreditstatus)
-		{
-			final OrderUserNotifications orderUserNotifications = OrderUserNotifications.newInstance();
-
-			final String bpartnerName = null; // TODO
-			final String creditLimitDifferenceMessage = null; // TODO
-
-			// TODO: Build the message like the ones below are built
-			// I used de.metas.deliveryplanning.DeliveryInstructionUserNotificationsProducer.notifyDeliveryInstructionError for example
-
-			orderUserNotifications.notifyCreditLimitExceeded(bpartnerName, creditLimitDifferenceMessage);
-
-		}
-
 		if (CreditStatus.CreditStop.equals(soCreditStatus))
 		{
-			throw new AdempiereException(TranslatableStrings.builder()
-												 .appendADElement("BPartnerCreditStop").append(":")
-												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
-												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
-												 .build());
+			final ITranslatableString errorMessage = TranslatableStrings.builder()
+					.appendADElement("BPartnerCreditStop").append(":")
+					.append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
+					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+					.build();
+
+			notifyUserOrThrowException(order, errorMessage);
+
+			return;
+
 		}
-		if (CreditStatus.CreditHold.equals(soCreditStatus))
+		else if (CreditStatus.CreditHold.equals(soCreditStatus))
 		{
-			throw new AdempiereException(TranslatableStrings.builder()
-												 .appendADElement("BPartnerCreditHold").append(":")
-												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
-												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
-												 .build());
+			final ITranslatableString errorMessage = TranslatableStrings.builder()
+					.appendADElement("BPartnerCreditHold").append(":")
+					.append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
+					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+					.build();
+
+			notifyUserOrThrowException(order, errorMessage);
+
+			return;
 		}
 
 		final BigDecimal grandTotal = currencyBL.convertBase(
@@ -147,12 +137,31 @@ public class C_Order
 
 		if (CreditStatus.CreditHold.equals(calculatedSOCreditStatus))
 		{
-			throw new AdempiereException(TranslatableStrings.builder()
-												 .appendADElement("BPartnerOverOCreditHold").append(":")
-												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
-												 .append(", ").appendADElement("GrandTotal").append("=").append(grandTotal, DisplayType.Amount)
-												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
-												 .build());
+			final ITranslatableString errorMessage = TranslatableStrings.builder()
+					.appendADElement("BPartnerOverOCreditHold").append(":")
+					.append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
+					.append(", ").appendADElement("GrandTotal").append("=").append(grandTotal, DisplayType.Amount)
+					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+					.build();
+			notifyUserOrThrowException(order, errorMessage);
+		}
+	}
+
+	private void notifyUserOrThrowException(final @NonNull I_C_Order order, final @NonNull ITranslatableString errorMessage)
+	{
+		final boolean isEnforceSOCreditStatus = bPartnerStatsService.isEnforceCreditStatus(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
+		if (!isEnforceSOCreditStatus)
+		{
+			final OrderUserNotifications orderUserNotifications = OrderUserNotifications.newInstance();
+
+			final I_C_BPartner partner = partnerDAO.getById(order.getC_BPartner_ID());
+			final String bpartnerName = partner.getName();
+
+			orderUserNotifications.notifyCreditLimitExceeded(order, errorMessage);
+		}
+		else
+		{
+			throw new AdempiereException(errorMessage);
 		}
 	}
 

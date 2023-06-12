@@ -34,6 +34,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -45,6 +46,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
@@ -69,13 +71,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class BPartnerStatsService
 {
+	public static final String SYS_CONFIG_C_Order_EnforceSOCreditStatus = "de.metas.bpartner.service.impl.BPartnerStatsService.C_Order_EnforceSOCreditStatus";
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final BPartnerCreditLimitRepository creditLimitRepo;
-
 	private final MoneyService moneyService;
 
 	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo,
@@ -378,8 +381,8 @@ public class BPartnerStatsService
 	{
 		final I_C_Payment payment = paymentBL.getById(paymentId);
 
-		final boolean isEnforceSOCreditstatus = false; // todo sys config
-		if(!isEnforceSOCreditstatus)
+		final boolean isEnforceCreditStatus = isEnforceCreditStatus(ClientAndOrgId.ofClientAndOrg(payment.getAD_Client_ID(), payment.getAD_Org_ID()));
+		if (!isEnforceCreditStatus)
 		{
 			// nothing to do
 			return;
@@ -459,6 +462,11 @@ public class BPartnerStatsService
 	{
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerStats.getBpartnerId().getRepoId(), TimeUtil.asTimestamp(date));
 		return creditLimit.subtract(bPartnerStats.getDeliveryCreditUsed());
+	}
+
+	public boolean isEnforceCreditStatus(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_C_Order_EnforceSOCreditStatus, true, clientAndOrgId);
 	}
 
 }
