@@ -378,6 +378,13 @@ public class BPartnerStatsService
 	{
 		final I_C_Payment payment = paymentBL.getById(paymentId);
 
+		final boolean isEnforceSOCreditstatus = false; // todo sys config
+		if(!isEnforceSOCreditstatus)
+		{
+			// nothing to do
+			return;
+		}
+
 		if (payment.isReceipt())
 		{
 			return;

@@ -55,7 +55,7 @@ import java.util.Set;
 public class OrderUserNotifications
 {
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private AdMessageKey MSG_C_Order_CreditLimitNotSufficient;
+	private AdMessageKey MSG_C_Order_CreditLimitNotSufficient;// TODO
 
 	public static OrderUserNotifications newInstance()
 	{

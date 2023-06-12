@@ -1248,6 +1248,12 @@ public class MInOut extends X_M_InOut implements IDocument
 
 	private void checkCreditLimit()
 	{
+		final boolean isEnforceSOCreditstatus = false; // todo sys config
+		if(!isEnforceSOCreditstatus)
+		{
+			// nothing to do
+			return;
+		}
 
 		// Services
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);

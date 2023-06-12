@@ -95,8 +95,11 @@ public class C_Order
 		final CreditStatus soCreditStatus = stats.getSoCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
-		final boolean doNotEnforceSOCreditstatus = false; // todo sys config
-		if(doNotEnforceSOCreditstatus)
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getBill_BPartner_ID(), dateOrdered);
+
+
+		final boolean isEnforceSOCreditstatus = false; // todo sys config
+		if(!isEnforceSOCreditstatus)
 		{
 			final OrderUserNotifications orderUserNotifications = OrderUserNotifications.newInstance();
 
@@ -109,7 +112,6 @@ public class C_Order
 			orderUserNotifications.notifyCreditLimitExceeded(bpartnerName, creditLimitDifferenceMessage);
 
 		}
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getBill_BPartner_ID(), dateOrdered);
 
 		if (CreditStatus.CreditStop.equals(soCreditStatus))
 		{
