@@ -50,8 +50,8 @@ Feature: Delivery planning processes interaction
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanningAdd_1              | orderLineAdd              |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.PlannedDeliveryDate |
-      | deliveryPlanningAdd_1             | 5          | 5            | Outgoing                 | orderAdd                  | orderLineAdd                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.PlannedDeliveryDate | OPT.PlannedLoadedQuantity |
+      | deliveryPlanningAdd_1             | 5          | 5            | Outgoing                 | orderAdd                  | orderLineAdd                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | 5                         |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
@@ -124,13 +124,13 @@ Feature: Delivery planning processes interaction
 
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.IsClosed | OPT.Processed | OPT.PlannedLoadedQuantity |
-      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | true         | true          | 5                         |
+      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | true         | true          | 2                         |
 
     When M_Delivery_Planning identified by deliveryPlanning_2 is opened
 
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.IsClosed | OPT.Processed | OPT.PlannedLoadedQuantity |
-      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | false        | false         | 5                         |
+      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | false        | false         | 2                         |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
@@ -150,13 +150,13 @@ Feature: Delivery planning processes interaction
       | shippingPackage                 | package                 | deliveryInstruction                   |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackage                 | package                 | deliveryInstruction                   | customerLocation                  | 5             | customer                     | product                     | orderLine                     |
+      | shippingPackage                 | package                 | deliveryInstruction                   | customerLocation                  | 2             | customer                     | product                     | orderLine                     |
 
     When M_Delivery_Planning identified by deliveryPlanning_2 is canceled
 
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.IsClosed | OPT.Processed | OPT.PlannedLoadedQuantity | OPT.OrderStatus |
-      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | true         | true          | 0                         | Canceled        |
+      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | true         | true          | 2                         | Canceled        |
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstruction                   | shipper_DHL             | customer                       | customerLocation               | 2023-02-10       | VO            |
