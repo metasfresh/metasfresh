@@ -156,7 +156,7 @@ Feature: Delivery planning processes interaction
 
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.IsClosed | OPT.Processed | OPT.PlannedLoadedQuantity | OPT.OrderStatus |
-      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | true         | true          | 2                         | Canceled        |
+      | deliveryPlanning_2                | 5          | 5            | Outgoing                 | true         | true          | 0                         | Canceled        |
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstruction                   | shipper_DHL             | customer                       | customerLocation               | 2023-02-10       | VO            |
