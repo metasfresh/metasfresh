@@ -42,7 +42,7 @@ select ('SPC' || E'\n' || --QRType
         'K' || E'\n' || -- UD– AdressTyp = Combined address
         (case
              when bp.IsCompany = 'Y' then bp.companyname
-             else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end)
+                                     else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end)
             || E'\n' || --UD – Name
         coalesce(l.address1, '') || E'\n' || --UD –Street and building number of P.O. Box
         coalesce(l.postal, '') || ' ' || coalesce(l.city, '') || E'\n' || -- UD Postal code and town
@@ -53,16 +53,16 @@ select ('SPC' || E'\n' || --QRType
              when nullif(trim(orgbpb.qr_iban), '') is not null and rn.referenceNo is not null then 'QRR'
              when nullif(trim(orgbpb.iban), '') is not null and
                   nullif(trim(orgbpb.sepa_creditoridentifier), '') is not null
-                 then 'SCOR'
-             else 'NON'
-            end) || E'\n' || --ReferenceType
+                                                                                              then 'SCOR'
+                                                                                              else 'NON'
+         end) || E'\n' || --ReferenceType
         (case
              when nullif(trim(orgbpb.qr_iban), '') is not null and rn.referenceNo is not null then rn.ReferenceNo
              when nullif(trim(orgbpb.iban), '') is not null and
                   nullif(trim(orgbpb.sepa_creditoridentifier), '') is not null
-                 then 'RF' || orgbpb.sepa_creditoridentifier
-             else ''
-            end) || E'\n' || --Reference
+                                                                                              then 'RF' || orgbpb.sepa_creditoridentifier
+                                                                                              else ''
+         end) || E'\n' || --Reference
         coalesce(i.description, '') || E'\n' ||--Unstructured message
         'EPD' || E'\n' || --Trailer
 
@@ -77,21 +77,21 @@ select ('SPC' || E'\n' || --QRType
 
        (case
             when nullif(trim(qr_iban), '') is not null and rn.referenceNo is not null then
-                                                    substring(rn.referenceNo, 1, 2) || ' ' ||
-                                                    substring(rn.referenceNo, 3, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 8, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 13, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 18, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 23, 7)
+                                                        substring(rn.referenceNo, 1, 2) || ' ' ||
+                                                        substring(rn.referenceNo, 3, 5) || ' ' ||
+                                                        substring(rn.referenceNo, 8, 5) || ' ' ||
+                                                        substring(rn.referenceNo, 13, 5) || ' ' ||
+                                                        substring(rn.referenceNo, 18, 5) || ' ' ||
+                                                        substring(rn.referenceNo, 23, 7)
             when nullif(trim(iban), '') is not null and nullif(trim(orgbpb.sepa_creditoridentifier), '') is not null
-                then 'RF' || orgbpb.sepa_creditoridentifier
-            else ''
-           end)
+                                                                                      then 'RF' || orgbpb.sepa_creditoridentifier
+                                                                                      else ''
+        end)
                                                                                     AS referenceno,
 
        ((case
              when bp.IsCompany = 'Y' then bp.companyname
-             else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end) || E'\n' ||
+                                     else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end) || E'\n' ||
         coalesce(l.address1, '') || E'\n' ||
         coalesce(l.postal, '') || ' ' || coalesce(l.city, ''))                      as DR_Address,
        i.grandtotal - coalesce(y.zuordnung, 0)                                      as Amount,
@@ -102,7 +102,11 @@ select ('SPC' || E'\n' || --QRType
        i.DocumentNo,
        y.zuordnung
 
-from C_Invoice i
+from C_DunningDoc dd
+         INNER JOIN C_DunningDoc_line dl ON dl.C_DunningDoc_ID = dd.C_DunningDoc_ID
+         INNER JOIN C_DunningDoc_Line_Source dls ON dls.C_DunningDoc_Line_ID = dl.C_DunningDoc_Line_ID
+         INNER JOIN C_Dunning_Candidate cand ON cand.C_Dunning_Candidate_ID = dls.C_Dunning_Candidate_ID
+         INNER JOIN C_Invoice i ON i.C_Invoice_ID = cand.Record_ID AND cand.AD_Table_ID = Get_Table_ID('C_Invoice')
          JOIN C_BPartner bp
               ON i.C_BPartner_ID = bp.C_BPartner_ID
          LEFT JOIN AD_User u on i.AD_User_ID = u.AD_user_ID
@@ -141,22 +145,14 @@ from C_Invoice i
       AND rnd.isActive = 'Y'
 ) cl ON i.C_Invoice_ID = cl.Record_ID
 
--- check allocated amount
+    -- check allocated amount
          LEFT JOIN LATERAL (select sum(al.amount) AS zuordnung, al.c_invoice_id
                             from c_allocationline al
                             where al.C_Invoice_ID = i.C_Invoice_ID
                             GROUP BY al.c_invoice_id) y on y.c_invoice_id = i.c_invoice_id
 
-
-         LEFT JOIN C_Dunning_Candidate cand
-                   ON i.C_Invoice_ID = cand.Record_ID AND cand.AD_Table_ID = Get_Table_ID('C_Invoice')
-         LEFT JOIN C_DunningDoc_Line_Source dls ON cand.C_Dunning_Candidate_ID = dls.C_Dunning_Candidate_ID
-         LEFT JOIN C_DunningDoc_line dl ON dls.C_DunningDoc_Line_ID = dl.C_DunningDoc_Line_ID
-         LEFT JOIN C_DunningDoc dd ON dl.C_DunningDoc_ID = dd.C_DunningDoc_ID
 WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 
 $$
     LANGUAGE sql STABLE
 ;
-
-
