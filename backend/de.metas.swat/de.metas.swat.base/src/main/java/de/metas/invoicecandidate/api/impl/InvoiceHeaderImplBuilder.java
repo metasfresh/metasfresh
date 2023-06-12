@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
@@ -111,6 +112,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_PaymentInstruction_ID;
 
+	private Dimension dimension;
 	InvoiceHeaderImplBuilder()
 	{
 	}
@@ -173,6 +175,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+
+		invoiceHeader.setDimension(this.dimension);
 
 		return invoiceHeader;
 	}
@@ -698,6 +702,11 @@ public class InvoiceHeaderImplBuilder
 	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
 	{
 		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setDimension(@NonNull final Dimension dimension)
+	{
+		this.dimension = dimension;
 	}
 
 	public void setNotShowOriginCountry(final boolean notShowOriginCountry)

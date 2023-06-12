@@ -22,8 +22,10 @@ class InvoiceLineDimensionFactoryTest
 		final InvoiceLineDimensionFactory dimensionFactory = new InvoiceLineDimensionFactory();
 
 		final I_C_InvoiceLine record = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
+
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
+
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
 		final Dimension dimensionFromRecordExpected = dimension.toBuilder()

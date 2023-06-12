@@ -391,7 +391,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(final OrderId orderId)
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)

@@ -50,6 +50,11 @@ public class DimensionService
 		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
 		return getFactory(tableName).getFromRecord(record);
 	}
+	public void updateRecordUserElements(@NonNull final Object record, @NonNull final Dimension from)
+	{
+		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
+		getFactory(tableName).updateRecordUserElements(record, from);
+	}
 
 	public void updateRecord(@NonNull final Object record, @NonNull final Dimension from)
 	{
@@ -60,7 +65,8 @@ public class DimensionService
 	@NonNull
 	private DimensionFactory<Object> getFactory(final String tableName)
 	{
-		@SuppressWarnings("unchecked") final DimensionFactory<Object> factory = (DimensionFactory<Object>)factoriesByTableName.get(tableName);
+		@SuppressWarnings("unchecked")
+		final DimensionFactory<Object> factory = (DimensionFactory<Object>)factoriesByTableName.get(tableName);
 		if (factory == null)
 		{
 			throw new AdempiereException("No " + DimensionFactory.class.getSimpleName() + " found for " + tableName);

@@ -71,5 +71,6 @@ public class C_InvoiceLine
 			return;
 		}
 		dimensionService.updateRecord(invoiceLine, orderLineDimension.withActivityId(productActivityId));
+
 	}
 }
