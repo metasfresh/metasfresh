@@ -1235,3 +1235,108 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-06-09 18:3
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582395,'en_US')
 ;
 
+
+-- 2023-06-12T10:47:15.417067241Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582421,0,TO_TIMESTAMP('2023-06-12 11:47:14.062','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Transaktionsdatum','Transaktionsdatum',TO_TIMESTAMP('2023-06-12 11:47:14.062','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-06-12T10:47:15.424094382Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582421 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2023-06-12T10:47:30.735334245Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Transaction Date', PrintName='Transaction Date',Updated=TO_TIMESTAMP('2023-06-12 11:47:30.734','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582421 AND AD_Language='en_US'
+;
+
+-- 2023-06-12T10:47:30.782504431Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582421,'en_US')
+;
+
+-- Element: null
+-- 2023-06-12T10:47:45.117930824Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Date Transaction ', PrintName='Date Transaction ',Updated=TO_TIMESTAMP('2023-06-12 11:47:45.117','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582421 AND AD_Language='fr_CH'
+;
+
+-- 2023-06-12T10:47:45.119119697Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582421,'fr_CH')
+;
+
+-- Field: Vertragsbaustein Log(541711,D) -> Contract Module Log(547012,D) -> Transaktionsdatum
+-- Column: Contract_Module_Log.DateTrx
+-- 2023-06-12T10:48:23.336978180Z
+UPDATE AD_Field SET AD_Name_ID=582421, Description=NULL, Help=NULL, Name='Transaktionsdatum',Updated=TO_TIMESTAMP('2023-06-12 11:48:23.336','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=716329
+;
+
+-- 2023-06-12T10:48:23.340004745Z
+UPDATE AD_Field_Trl trl SET Description=NULL,Help=NULL,Name='Transaktionsdatum' WHERE AD_Field_ID=716329 AND AD_Language='de_DE'
+;
+
+-- 2023-06-12T10:48:23.341668171Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582421)
+;
+
+-- 2023-06-12T10:48:23.348573528Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=716329
+;
+
+-- 2023-06-12T10:48:23.352649275Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(716329)
+;
+
+-- 2023-06-12T10:49:39.439443650Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582422,0,TO_TIMESTAMP('2023-06-12 11:49:39.131','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Vertragsperiode','Vertragsperiode',TO_TIMESTAMP('2023-06-12 11:49:39.131','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-06-12T10:49:39.442672874Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582422 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2023-06-12T10:49:51.399311221Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Contract Period', PrintName='Contract Period',Updated=TO_TIMESTAMP('2023-06-12 11:49:51.399','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582422 AND AD_Language='en_US'
+;
+
+-- 2023-06-12T10:49:51.400661630Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582422,'en_US')
+;
+
+-- Element: null
+-- 2023-06-12T10:50:08.586385494Z
+UPDATE AD_Element_Trl SET Name='Periode ontract ', PrintName='Periode Contract',Updated=TO_TIMESTAMP('2023-06-12 11:50:08.586','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582422 AND AD_Language='fr_CH'
+;
+
+-- 2023-06-12T10:50:08.588044321Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582422,'fr_CH')
+;
+
+-- Element: null
+-- 2023-06-12T10:50:11.792983817Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-06-12 11:50:11.792','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582422 AND AD_Language='fr_CH'
+;
+
+-- 2023-06-12T10:50:11.794587414Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582422,'fr_CH')
+;
+
+-- Field: Vertragsbaustein Log(541711,D) -> Contract Module Log(547012,D) -> Vertragsperiode
+-- Column: Contract_Module_Log.C_Flatrate_Term_ID
+-- 2023-06-12T10:50:44.087034782Z
+UPDATE AD_Field SET AD_Name_ID=582422, Description=NULL, Help=NULL, Name='Vertragsperiode',Updated=TO_TIMESTAMP('2023-06-12 11:50:44.086','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=716335
+;
+
+-- 2023-06-12T10:50:44.087811820Z
+UPDATE AD_Field_Trl trl SET Name='Vertragsperiode' WHERE AD_Field_ID=716335 AND AD_Language='de_DE'
+;
+
+-- 2023-06-12T10:50:44.089072769Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582422)
+;
+
+-- 2023-06-12T10:50:44.092688166Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=716335
+;
+
+-- 2023-06-12T10:50:44.093272816Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(716335)
+;
