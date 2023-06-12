@@ -71,7 +71,7 @@ Feature: Delivery planning processes interaction
       | shippingPackageAdd              | packageAdd              | deliveryInstructionAdd                |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageAdd              | packageAdd              | deliveryInstructionAdd                | customerLocation                  | 0             | customer                     | product                     | orderLineAdd                  |
+      | shippingPackageAdd              | packageAdd              | deliveryInstructionAdd                | customerLocation                  | 5             | customer                     | product                     | orderLineAdd                  |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.PlannedDeliveryDate | OPT.M_ShipperTransportation_ID.Identifier | OPT.PlannedLoadedQuantity |
       | deliveryPlanningAdd_1             | 5          | 5            | Outgoing                 | orderAdd                  | orderLineAdd                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | deliveryInstructionAdd                    | 5                         |

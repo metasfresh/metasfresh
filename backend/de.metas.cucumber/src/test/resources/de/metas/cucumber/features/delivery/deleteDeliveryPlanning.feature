@@ -84,7 +84,7 @@ Feature: Delete delivery planning
       | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             | customerLocation                  | 0             | customer                     | product                     | orderLineDelete               |
+      | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             | customerLocation                  | 3             | customer                     | product                     | orderLineDelete               |
     And delete M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | OPT.ErrorMessage                                                 |
       | deliveryPlanningDelete_1          | Line can not be deleted as it is referenced to another document. |
