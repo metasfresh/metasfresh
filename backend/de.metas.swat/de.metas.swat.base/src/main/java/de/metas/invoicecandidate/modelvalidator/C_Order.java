@@ -34,11 +34,11 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -107,7 +107,8 @@ public class C_Order
 			return;
 
 		}
-		else if (CreditStatus.CreditHold.equals(soCreditStatus))
+
+		if (CreditStatus.CreditHold.equals(soCreditStatus))
 		{
 			final ITranslatableString errorMessage = TranslatableStrings.builder()
 					.appendADElement("BPartnerCreditHold").append(":")
@@ -153,11 +154,8 @@ public class C_Order
 		if (!isEnforceSOCreditStatus)
 		{
 			final OrderUserNotifications orderUserNotifications = OrderUserNotifications.newInstance();
-
-			final I_C_BPartner partner = partnerDAO.getById(order.getC_BPartner_ID());
-			final String bpartnerName = partner.getName();
-
-			orderUserNotifications.notifyCreditLimitExceeded(order, errorMessage);
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			orderUserNotifications.notifyAboutCreditLimit(order, errorMessage.translate(adLanguage));
 		}
 		else
 		{

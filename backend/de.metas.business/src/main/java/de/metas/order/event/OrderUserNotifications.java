@@ -56,7 +56,7 @@ import java.util.Set;
 public class OrderUserNotifications
 {
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private AdMessageKey MSG_C_Order_CreditLimitNotSufficient = AdMessageKey.of("C_Order_NorifyUserAboutCreditLimit");
+	private AdMessageKey MSG_C_Order_NotifyUserAboutCreditLimitStatus = AdMessageKey.of("C_Order_NotifyUserAboutCreditLimitStatus");
 
 	public static OrderUserNotifications newInstance()
 	{
@@ -177,14 +177,12 @@ public class OrderUserNotifications
 	}
 
 
-	public OrderUserNotifications notifyCreditLimitExceeded(@NonNull I_C_Order order, @NonNull ITranslatableString creditLimitDifference)
+	public OrderUserNotifications notifyAboutCreditLimit(@NonNull I_C_Order order, @NonNull String creditLimitMessage)
 	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-
 		notificationBL.send(newUserNotificationRequest()
 									.recipientUserId(Env.getLoggedUserId())
-									.contentADMessage(MSG_C_Order_CreditLimitNotSufficient)
-									.contentADMessageParam(creditLimitDifference.translate(adLanguage))
+									.contentADMessage(MSG_C_Order_NotifyUserAboutCreditLimitStatus)
+									.contentADMessageParam(creditLimitMessage)
 									.targetAction(TargetRecordAction.of(TableRecordReference.of(order)))
 									.build());
 
