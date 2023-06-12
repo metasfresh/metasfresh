@@ -676,6 +676,10 @@ public class M_ShipmentSchedule_StepDef
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override, qtyToDeliverOverride);
 			}
+			if (qtyOnHand != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand, qtyOnHand);
+			}
 			return queryBuilder
 					.create()
 					.firstOnlyOptional(I_M_ShipmentSchedule.class)
