@@ -24,6 +24,7 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.dimension.Dimension;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -151,5 +152,7 @@ public class DeliveryPlanningCreateRequest
 
 	@Nullable
 	String transportDetails;
+
+	@Nullable Dimension dimension;
 
 }

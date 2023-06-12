@@ -75,6 +75,13 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		//record.setM_Product_ID((ProductId.toRepoId(from.getProductId())));
 		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+
+		updateRecordUserElements(record, from);
+	}
+
+	@Override
+	public void updateRecordUserElements(final I_M_InOutLine record, final Dimension from)
+	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

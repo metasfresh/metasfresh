@@ -6,6 +6,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -95,17 +97,20 @@ public class C_OrderLine
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
+
+	private final DimensionService dimensionService;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
-			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService
-			)
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
+		this.dimensionService = dimensionService;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -460,7 +465,6 @@ public class C_OrderLine
 		orderLineBL.updateIsOnConsignmentNoSave(orderLine);
 	}
 
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsOnConsignment })
 	public void updateIsOnConsignmentOrder(final I_C_OrderLine orderLine)
@@ -482,8 +486,15 @@ public class C_OrderLine
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void copyDimensionFromHeader(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		// only update the section code and user elements. It's not specified if the other dimensions should be inherited from the order header to the lines
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
 
-
-
+		final Dimension orderDimension = dimensionService.getFromRecord(order);
+		dimensionService.updateRecordUserElements(orderLine, orderDimension);
+	}
 
 }
