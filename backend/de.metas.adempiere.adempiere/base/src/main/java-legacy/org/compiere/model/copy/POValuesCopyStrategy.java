@@ -1,9 +1,9 @@
 package org.compiere.model.copy;
 
-import org.compiere.model.PO;
+import lombok.NonNull;
 
 @FunctionalInterface
 public interface POValuesCopyStrategy
 {
-	ValueToCopy getValueToCopy(final PO to, final PO from, final String columnName);
+	ValueToCopyResolved getValueToCopy(@NonNull final ValueToCopyResolveContext context);
 }

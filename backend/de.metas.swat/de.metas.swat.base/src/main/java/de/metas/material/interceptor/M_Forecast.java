@@ -63,7 +63,6 @@ public class M_Forecast
 	public M_Forecast()
 	{
 		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
 	}
 
 	@DocValidate(timings = {

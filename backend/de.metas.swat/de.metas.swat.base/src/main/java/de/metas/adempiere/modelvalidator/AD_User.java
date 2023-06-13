@@ -9,7 +9,6 @@ import de.metas.title.Title;
 import de.metas.title.TitleId;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
-import de.metas.user.UserPOCopyRecordSupport;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -51,7 +50,6 @@ public class AD_User
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 
 		CopyRecordFactory.enableForTableName(org.compiere.model.I_AD_User.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(org.compiere.model.I_AD_User.Table_Name, UserPOCopyRecordSupport.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //

@@ -21,7 +21,6 @@ import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.callout.PP_Product_BOM_TabCallout;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
-import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 
 /*
  * #%L
@@ -66,7 +65,6 @@ public class PP_Product_BOM
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_PP_Product_BOM.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_PP_Product_BOM.Table_Name, PP_Product_BOM_POCopyRecordSupport.class);
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOM(bomVersionsDAO));
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Product_BOM.Table_Name, PP_Product_BOM_TabCallout.class);

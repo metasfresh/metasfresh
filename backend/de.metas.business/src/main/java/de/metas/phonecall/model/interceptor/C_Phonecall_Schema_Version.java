@@ -8,7 +8,6 @@ import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaId;
 import de.metas.phonecall.PhonecallSchemaVersion;
 import de.metas.phonecall.PhonecallSchemaVersionId;
-import de.metas.phonecall.PhonecallSchemaVersionPOCopyRecordSupport;
 import de.metas.phonecall.service.PhonecallSchemaRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -59,8 +58,6 @@ public class C_Phonecall_Schema_Version
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_C_Phonecall_Schema_Version.Table_Name);
-
-		CopyRecordFactory.registerCopyRecordSupport(I_C_Phonecall_Schema_Version.Table_Name, PhonecallSchemaVersionPOCopyRecordSupport.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Phonecall_Schema_Version.COLUMNNAME_ValidFrom })

@@ -1,17 +1,13 @@
 package org.adempiere.model;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.copy_with_details.CopyRecordSupportTableInfo;
 import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderLineId;
 import de.metas.util.Check;
-import de.metas.util.collections.CompositePredicate;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -19,41 +15,19 @@ import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
+	private final OrderFreightCostsService ordersFreightCostService = SpringContextHolder.instance.getBean(OrderFreightCostsService.class);
+
 	private static final String DYNATTR_OrderCompensationGroupIdsMap = "OrderCompensationGroupIdsMap";
 	private static final String DYNATTR_ClonedOrderLinesInfo = "ClonedOrderLinesInfo";
 
 	private final OrderLineDimensionFactory orderLineDimensionFactory = SpringContextHolder.instance.getBean(OrderLineDimensionFactory.class);
-
-	/**
-	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
-	 */
-	private static final CompositePredicate<I_C_OrderLine> skipPredicates = new CompositePredicate<I_C_OrderLine>()
-			.addPredicate(MOrderLinePOCopyRecordSupport::isNotFreightCost);
-
-	private static boolean isNotFreightCost(final @NonNull I_C_OrderLine orderLine)
-	{
-		final OrderFreightCostsService ordersFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
-		return !ordersFreightCostService.isFreightCostOrderLine(orderLine);
-	}
-
-	/**
-	 * Add a skip filter.
-	 * <p>
-	 * In case given skip filter evaluates the order line as true (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
-	 */
-	public static void addSkipPredicate(final Predicate<I_C_OrderLine> skipPredicate)
-	{
-		skipPredicates.addPredicate(skipPredicate);
-	}
 
 	/**
 	 * @return true if the record shall be copied
@@ -62,7 +36,9 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	protected boolean isCopyRecord(final PO fromPO)
 	{
 		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(fromPO, I_C_OrderLine.class);
-		return skipPredicates.isEmpty() || skipPredicates.test(fromOrderLine);
+
+		return !fromOrderLine.isPackagingMaterial()
+				&& !ordersFreightCostService.isFreightCostOrderLine(fromOrderLine);
 	}
 
 	@Override
@@ -98,7 +74,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	}
 
 	@Nullable
-	public static ClonedOrderLinesInfo getClonedOrderLinesInfo(final org.compiere.model.I_C_Order targetOrder)
+	static ClonedOrderLinesInfo getClonedOrderLinesInfo(final org.compiere.model.I_C_Order targetOrder)
 	{
 		return InterfaceWrapperHelper.getDynAttribute(targetOrder, DYNATTR_ClonedOrderLinesInfo);
 	}
@@ -135,9 +111,6 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		InterfaceWrapperHelper.save(orderCompensationGroupNew);
 		return orderCompensationGroupNew.getC_Order_CompensationGroup_ID();
 	}
-
-	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po) {return ImmutableList.of();}
 
 	//
 	//

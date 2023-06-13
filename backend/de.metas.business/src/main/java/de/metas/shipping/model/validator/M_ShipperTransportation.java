@@ -23,7 +23,6 @@ package de.metas.shipping.model.validator;
  */
 
 import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.shipping.ShipperTransportationPOCopyRecordSupport;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -40,6 +39,5 @@ public class M_ShipperTransportation
 		calloutProvider.registerAnnotatedCallout(new de.metas.shipping.callout.M_ShipperTransportation());
 
 		CopyRecordFactory.enableForTableName(I_M_ShipperTransportation.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_ShipperTransportation.Table_Name, ShipperTransportationPOCopyRecordSupport.class);
 	}
 }

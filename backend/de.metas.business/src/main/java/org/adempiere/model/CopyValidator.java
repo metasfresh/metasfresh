@@ -26,7 +26,6 @@ package org.adempiere.model;
  */
 
 import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.invoice.service.MInvoicePOCopyRecordSupport;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
@@ -46,7 +45,6 @@ public class CopyValidator extends AbstractModelInterceptor
 	{
 		CopyRecordFactory.registerCopyRecordSupport(I_C_Order.Table_Name, MOrderPOCopyRecordSupport.class);
 		CopyRecordFactory.registerCopyRecordSupport(I_C_OrderLine.Table_Name, MOrderLinePOCopyRecordSupport.class);
-		CopyRecordFactory.registerCopyRecordSupport(I_C_Invoice.Table_Name, MInvoicePOCopyRecordSupport.class);
 
 		// Backward compatibility
 		CopyRecordFactory.enableForTableName(I_C_Invoice.Table_Name);

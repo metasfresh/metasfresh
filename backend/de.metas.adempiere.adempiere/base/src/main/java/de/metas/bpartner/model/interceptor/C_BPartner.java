@@ -2,7 +2,6 @@ package de.metas.bpartner.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerPOCopyRecordSupport;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
@@ -76,7 +75,7 @@ public class C_BPartner
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 
-	private final static transient Logger logger = LogManager.getLogger(C_BPartner.class);
+	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	private final RecordAccessConfigService recordAccessConfigService = SpringContextHolder.instance.getBean(RecordAccessConfigService.class);
 	private final RecordAccessService recordAccessService = SpringContextHolder.instance.getBean(RecordAccessService.class);
@@ -85,7 +84,6 @@ public class C_BPartner
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_C_BPartner.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_C_BPartner.Table_Name, BPartnerPOCopyRecordSupport.class);
 
 		Services.get(ITabCalloutFactory.class)
 				.registerTabCalloutForTable(I_C_BPartner.Table_Name, de.metas.bpartner.callout.C_BPartner_TabCallout.class);

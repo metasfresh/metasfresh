@@ -73,7 +73,6 @@ public class PP_Order
 		materialTrackingBL.addModelTrackingListener(I_PP_Order.Table_Name, PPOrderMaterialTrackingListener.instance);
 
 		CopyRecordFactory.enableForTableName(I_PP_Order.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_PP_Order.Table_Name, PP_OrderPOCopyRecordSupport.class);
 	}
 
 	@DocValidate(timings = {

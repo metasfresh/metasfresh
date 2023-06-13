@@ -61,7 +61,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.copy.POValuesCopyStrategies;
 import org.compiere.model.copy.POValuesCopyStrategy;
-import org.compiere.model.copy.ValueToCopy;
+import org.compiere.model.copy.ValueToCopyResolveContext;
+import org.compiere.model.copy.ValueToCopyResolved;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
@@ -1395,7 +1396,7 @@ public abstract class PO
 	 */
 	protected static void copyValues(final PO from, final PO to, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		copyValues(from, to, POValuesCopyStrategies.STANDARD);
+		copyValues(from, to);
 		to.setAD_Client_ID(AD_Client_ID);
 		to.setAD_Org_ID(AD_Org_ID);
 	}    // copyValues
@@ -1411,12 +1412,12 @@ public abstract class PO
 	 */
 	public static void copyValues(final PO from, final PO to)
 	{
-		copyValues(from, to, POValuesCopyStrategies.STANDARD);
+		copyValues(from, to, POValuesCopyStrategies.standard(false));
 	}
 
 	public static void copyValues(final PO from, final PO to, final boolean honorIsCalculated)
 	{
-		copyValues(from, to, honorIsCalculated ? POValuesCopyStrategies.SKIP_CALCULATED_COLUMNS : POValuesCopyStrategies.STANDARD);
+		copyValues(from, to, POValuesCopyStrategies.standard(honorIsCalculated));
 	}
 
 	public static void copyValues(
@@ -1433,41 +1434,31 @@ public abstract class PO
 
 		for (int toColumnIndex = 0, toColumnsCount = to.p_info.getColumnCount(); toColumnIndex < toColumnsCount; toColumnIndex++)
 		{
-			final String columnName = to.p_info.getColumnName(toColumnIndex);
-			if (columnName == null
-					|| to.p_info.isVirtualColumn(toColumnIndex)
-					|| to.p_info.isKey(toColumnIndex))
+			final String columnName = to.p_info.getColumnNameNotNull(toColumnIndex);
+			if (to.p_info.isVirtualColumn(toColumnIndex) || to.p_info.isKey(toColumnIndex))
+			{
+				continue;
+			}
+			if (!from.p_info.hasColumnName(columnName))
 			{
 				continue;
 			}
 
-			final int fromColumnIndex = from.p_info.getColumnIndex(columnName);
-			if (fromColumnIndex < 0)
+			final ValueToCopyResolved valueToCopy = valueCopyStrategy.getValueToCopy(
+					ValueToCopyResolveContext.builder()
+							.to(to)
+							.from(from)
+							.columnName(columnName)
+							.build());
+
+			if (!valueToCopy.isSkip())
 			{
-				continue;
-			}
+				to.m_newValues[toColumnIndex] = valueToCopy.getValue();
 
-			final ValueToCopy valueToCopy = valueCopyStrategy.getValueToCopy(to, from, columnName)
-					.ifNotSpecifiedThen(() -> POValuesCopyStrategies.SKIP_STANDARD_COLUMNS.getValueToCopy(to, from, columnName))
-					.ifNotSpecifiedThenDirectCopy()
-					.ifDirectCopyThenSetExplicitValue(() -> from.get_Value(fromColumnIndex));
-
-			switch (valueToCopy.getType())
-			{
-				case SET_EXPLICIT_VALUE:
-					to.m_newValues[toColumnIndex] = valueToCopy.getExplicitValueToSet();
-
-					// Copy cached objects
-					// NOTE: it is important because sometimes we have set a new object which is present in PO cache but its ID is still zero.
-					// Without doing this copy, the object will be lost when copying
-					copyPOCacheLocalIfApplies(from, to, columnName);
-					break;
-				case SKIP:
-				case NOT_SPECIFIED:
-					// do nothing
-					break;
-				default:
-					throw new IllegalStateException("Value to copy type not supported here: " + valueToCopy);
+				// Copy cached objects
+				// NOTE: it is important because sometimes we have set a new object which is present in PO cache but its ID is still zero.
+				// Without doing this copy, the object will be lost when copying
+				copyPOCacheLocalIfApplies(from, to, columnName);
 			}
 		}
 

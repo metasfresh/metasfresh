@@ -49,8 +49,6 @@ class DD_Order
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_DD_Order.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_DD_Order.Table_Name, DDOrderPOCopyRecordSupport.class);
-		CopyRecordFactory.registerCopyRecordSupport(I_DD_OrderLine.Table_Name, DDOrderLinePOCopyRecordSupport.class);
 	}
 
 	/**

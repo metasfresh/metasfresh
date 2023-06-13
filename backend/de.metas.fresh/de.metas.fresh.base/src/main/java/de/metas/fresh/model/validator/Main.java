@@ -25,7 +25,6 @@ package de.metas.fresh.model.validator;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
-import de.metas.fresh.product.ProductPOCopyRecordSupport;
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.util.Services;
@@ -120,7 +119,6 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// register ProductPOCopyRecordSupport, which needs to know about many different tables
 		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
 	}
 
 	@Override

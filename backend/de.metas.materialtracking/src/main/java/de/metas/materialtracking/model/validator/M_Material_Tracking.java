@@ -2,7 +2,6 @@ package de.metas.materialtracking.model.validator;
 
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
-import de.metas.materialtracking.MaterialTrackingPOCopyRecordSupport;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -46,9 +45,7 @@ public class M_Material_Tracking
 	@Init
 	public void setupCallouts()
 	{
-
 		CopyRecordFactory.enableForTableName(I_M_Material_Tracking.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_Material_Tracking.Table_Name, MaterialTrackingPOCopyRecordSupport.class);
 
 		// Setup callout M_Material_Tracking
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -73,8 +70,6 @@ public class M_Material_Tracking
 
 	/**
 	 * After a new material tracking is saved, we need to make sure M_AttributeValue.Value is correct
-	 *
-	 * @param materialTracking
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void updateMaterialTrackingAttributeValue_Value(final I_M_Material_Tracking materialTracking)

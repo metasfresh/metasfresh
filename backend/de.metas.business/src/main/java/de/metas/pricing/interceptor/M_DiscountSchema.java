@@ -1,7 +1,6 @@
 package de.metas.pricing.interceptor;
 
 import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.pricing.DiscountSchemaPOCopyRecordSupport;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -37,7 +36,5 @@ public class M_DiscountSchema
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_M_DiscountSchema.Table_Name);
-
-		CopyRecordFactory.registerCopyRecordSupport(I_M_DiscountSchema.Table_Name, DiscountSchemaPOCopyRecordSupport.class);
 	}
 }

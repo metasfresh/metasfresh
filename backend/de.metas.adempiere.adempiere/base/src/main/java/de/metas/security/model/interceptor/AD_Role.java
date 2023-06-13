@@ -9,7 +9,6 @@ import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
-import de.metas.security.impl.AD_Role_POCopyRecordSupport;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -36,9 +35,7 @@ public class AD_Role
 	@Init
 	public void init(final IModelValidationEngine engine)
 	{
-
 		CopyRecordFactory.enableForTableName(I_AD_Role.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_AD_Role.Table_Name, AD_Role_POCopyRecordSupport.class);
 
 		final IModelCacheService cachingService = Services.get(IModelCacheService.class);
 		cachingService.createTableCacheConfigBuilder(I_AD_Role.class)

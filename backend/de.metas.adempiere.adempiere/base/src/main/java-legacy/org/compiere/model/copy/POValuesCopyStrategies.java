@@ -1,62 +1,56 @@
 package org.compiere.model.copy;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.compiere.model.PO;
 
 @UtilityClass
 public class POValuesCopyStrategies
 {
-	public static final POValuesCopyStrategy SKIP_CALCULATED_COLUMNS = new SkipCalculatedColumns();
-	public static final POValuesCopyStrategy SKIP_STANDARD_COLUMNS = new SkipStandardColumns();
-	public static final POValuesCopyStrategy STANDARD = new Standard();
-
-	private static class SkipCalculatedColumns implements POValuesCopyStrategy
+	public static POValuesCopyStrategy standard(boolean skipCalculatedColumns)
 	{
-		@Override
-		public ValueToCopy getValueToCopy(final PO to, final PO from, final String columnName)
-		{
-			final boolean isCalculated = to.getPOInfo().isCalculated(columnName);
-			return isCalculated ? ValueToCopy.SKIP : ValueToCopy.NOT_SPECIFIED;
-		}
+		return new Standard(skipCalculatedColumns);
 	}
 
-	private static class SkipStandardColumns implements POValuesCopyStrategy
+	public static boolean isSkipStandardColumn(final String columnName, final boolean isCalculated)
 	{
-		@Override
-		public ValueToCopy getValueToCopy(final PO to, final PO from, final String columnName)
-		{
-			final boolean isCalculated = to.getPOInfo().isCalculated(columnName);
-
-			// Ignore Standard Values
-			if (columnName.equals("Created")
-					|| columnName.equals("CreatedBy")
-					|| columnName.equals("Updated")
-					|| columnName.equals("UpdatedBy")
-					|| columnName.equals("IsActive")
-					// fresh 07896: skip copying org and client ONLY if it's calculated
-					|| (isCalculated && columnName.equals("AD_Client_ID"))
-					|| (isCalculated && columnName.equals("AD_Org_ID"))
-					|| columnName.equals("DocumentNo")
-					|| columnName.equals("Processing")
-					|| columnName.equals("Processed")
-			)
-			{
-				return ValueToCopy.SKIP;
-			}
-			else
-			{
-				return ValueToCopy.NOT_SPECIFIED;
-			}
-		}
+		return columnName.equals("Created")
+				|| columnName.equals("CreatedBy")
+				|| columnName.equals("Updated")
+				|| columnName.equals("UpdatedBy")
+				|| columnName.equals("IsActive")
+				// fresh 07896: skip copying org and client ONLY if it's calculated
+				|| (isCalculated && columnName.equals("AD_Client_ID"))
+				|| (isCalculated && columnName.equals("AD_Org_ID"))
+				|| columnName.equals("DocumentNo")
+				|| columnName.equals("Processing")
+				|| columnName.equals("Processed");
 	}
 
 	private static class Standard implements POValuesCopyStrategy
 	{
+		private final boolean skipCalculatedColumns;
+
+		private Standard(final boolean skipCalculatedColumns)
+		{
+			this.skipCalculatedColumns = skipCalculatedColumns;
+		}
 
 		@Override
-		public ValueToCopy getValueToCopy(final PO to, final PO from, final String columnName)
+		public ValueToCopyResolved getValueToCopy(@NonNull final ValueToCopyResolveContext context)
 		{
-			return ValueToCopy.NOT_SPECIFIED;
+			final boolean isCalculated = context.isToColumnCalculated();
+			if (skipCalculatedColumns && isCalculated)
+			{
+				return ValueToCopyResolved.SKIP;
+			}
+			else if (isSkipStandardColumn(context.getColumnName(), isCalculated))
+			{
+				return ValueToCopyResolved.SKIP;
+			}
+			else
+			{
+				return ValueToCopy.DIRECT_COPY.resolve(context);
+			}
 		}
 	}
 }

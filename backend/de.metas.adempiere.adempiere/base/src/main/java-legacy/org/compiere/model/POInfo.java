@@ -716,6 +716,16 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return null;
 		}
 		return m_columns.get(index).getColumnName();
+	}
+
+	@NonNull
+	public String getColumnNameNotNull(final int index)
+	{
+		if (index < 0 || index >= m_columns.size())
+		{
+			throw new AdempiereException("index out of bound");
+		}
+		return m_columns.get(index).getColumnName();
 	}   // getColumnName
 
 	/**
@@ -1210,6 +1220,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return false;
 		}
 		return m_columns.get(index).IsUseDocumentSequence;
+	}
+
+	public boolean isUseDocSequence(final String columnName)
+	{
+		return isUseDocSequence(getColumnIndex(columnName));
 	}
 
 	/**
