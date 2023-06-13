@@ -888,8 +888,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		createPaySchedule();
 
+		final boolean isEnforceSOCreditStatus = bPartnerStatsService.isEnforceCreditStatus(ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID()));
 		// Credit Status
-		if (isSOTrx() && !isReversal())
+		if (isSOTrx() && !isReversal() && isEnforceSOCreditStatus)
 		{
 			// task FRESH-152
 			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
