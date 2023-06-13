@@ -87,9 +87,8 @@ BEGIN
             p_IsReadWrite := role_access_add_menu_recursively.p_IsReadWrite
         );
 
-    -- Document Actions: Complete add Reverse_Correct would be added to all
-    -- Close would be added only to PP_Order
-    -- Reactivate only to C_Order
+    -- Document Actions:
+    -- Complete add Reverse_Correct would be added to all
     INSERT INTO ad_document_action_access (ad_role_id, c_doctype_id, ad_ref_list_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby)
     SELECT p_AD_Role_ID             AS ad_role_id,
            dt.c_doctype_id,
@@ -105,7 +104,7 @@ BEGIN
          (SELECT rl.ad_ref_list_id, rl.value FROM ad_ref_list rl WHERE rl.ad_reference_id = 135 AND rl.value IN ('CO', 'RC') AND rl.isactive = 'Y') docaction
     WHERE dt.isactive = 'Y'
       AND NOT EXISTS (SELECT 1 FROM ad_document_action_access z WHERE z.ad_role_id = p_AD_Role_ID AND z.c_doctype_id = dt.c_doctype_id AND z.ad_ref_list_id = docaction.ad_ref_list_id);
-    --
+    -- Close would be added only to PP_Order
     INSERT INTO ad_document_action_access (ad_role_id, c_doctype_id, ad_ref_list_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby)
     SELECT p_AD_Role_ID             AS ad_role_id,
            dt.c_doctype_id,
@@ -122,7 +121,7 @@ BEGIN
     WHERE dt.isactive = 'Y'
       AND dt.docbasetype = 'MOP'
       AND NOT EXISTS (SELECT 1 FROM ad_document_action_access z WHERE z.ad_role_id = p_AD_Role_ID AND z.c_doctype_id = dt.c_doctype_id AND z.ad_ref_list_id = docaction.ad_ref_list_id);
-    --
+    -- Reactivate only to C_Order
     INSERT INTO ad_document_action_access (ad_role_id, c_doctype_id, ad_ref_list_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby)
     SELECT p_AD_Role_ID             AS ad_role_id,
            dt.c_doctype_id,
