@@ -53,8 +53,8 @@ Feature: Delete delivery planning
       | deliveryPlanningDelete_1          | 5          | 5            | Outgoing                 | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | 5                         |
 
     And delete M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.ErrorMessage                                                             |
-      | deliveryPlanningDelete_1          | Pro Auftragsposition muss mindestens eine Lieferplanposition vorhanden sein. |
+      | M_Delivery_Planning_ID.Identifier | OPT.ErrorMessage                                                               |
+      | deliveryPlanningDelete_1          | Line can not be deleted as it is the last delivery planning for this Orderline |
 
     When generate 1 additional M_Delivery_Planning records for: deliveryPlanningDelete_1
 
