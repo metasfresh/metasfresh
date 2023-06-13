@@ -619,6 +619,7 @@ public class DeliveryPlanningRepository
 	{
 		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
 		deliveryPlanning.setPlannedLoadedQuantity(quantity.toBigDecimal());
+		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
 		save(deliveryPlanning);
 	}
 
