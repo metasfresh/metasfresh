@@ -111,7 +111,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			return;
 		}
 
-		for (final CopyTemplate childTemplate : copyTemplateService.getChildTemplates(template))
+		for (final CopyTemplate childTemplate : template.getChildTemplates())
 		{
 			final String parentLinkColumnName = Check.assumeNotNull(childTemplate.getLinkColumnName(), "linkColumnName is set: {}", childTemplate);
 
@@ -128,7 +128,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			}
 		}
 
-		fireOnRecordAndChildrenCopied(toPO, fromPO);
+		fireOnRecordAndChildrenCopied(toPO, fromPO, template);
 	}
 
 	/**
@@ -148,12 +148,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		// nothing on this level
 	}
 
-	private void fireOnRecordAndChildrenCopied(final PO to, final PO from)
+	private void fireOnRecordAndChildrenCopied(final PO to, final PO from, final CopyTemplate template)
 	{
-		onRecordAndChildrenCopied(to, from);
+		onRecordAndChildrenCopied(to, from, template);
 	}
 
-	protected void onRecordAndChildrenCopied(final PO to, final PO from)
+	protected void onRecordAndChildrenCopied(final PO to, final PO from, final CopyTemplate template)
 	{
 		// nothing on this level
 	}

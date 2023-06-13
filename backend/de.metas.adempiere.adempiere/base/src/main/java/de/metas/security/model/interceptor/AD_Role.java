@@ -70,7 +70,7 @@ public class AD_Role
 
 		//
 		// Automatically assign new role to SuperUser and to the user who created it.
-		if (changeType.isNew())
+		if (changeType.isNew() && !InterfaceWrapperHelper.isCopying(role))
 		{
 			// Add Role to SuperUser
 			roleDAO.createUserRoleAssignmentIfMissing(UserId.METASFRESH, roleId);
@@ -96,13 +96,13 @@ public class AD_Role
 		// Reset the cached role permissions after the transaction is commited.
 		// NOTE: not needed because it's performed automatically
 		// Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
-	}	// afterSave
+	}    // afterSave
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteAccessRecords(final I_AD_Role role)
 	{
 		final RoleId roleId = RoleId.ofRepoId(role.getAD_Role_ID());
 		Services.get(IUserRolePermissionsDAO.class).deleteAccessRecords(roleId);
-	} 	// afterDelete
+	}    // afterDelete
 
 }

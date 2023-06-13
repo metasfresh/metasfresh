@@ -23,6 +23,8 @@ public final class CopyTemplate
 	@Getter @Nullable private final String keyColumnName;
 	@NonNull private final ImmutableMap<String, CopyTemplateColumn> columnsByColumnName;
 
+	@Getter @NonNull private final ImmutableList<CopyTemplate> childTemplates;
+
 	//
 	// Child/included template specific properties
 	@Getter @Nullable private final String linkColumnName;
@@ -33,12 +35,14 @@ public final class CopyTemplate
 			@NonNull final String tableName,
 			@Nullable final String keyColumnName,
 			@NonNull @Singular final ImmutableList<CopyTemplateColumn> columns,
+			@NonNull @Singular final ImmutableList<CopyTemplate> childTemplates,
 			//
 			@Nullable final String linkColumnName,
 			@NonNull @Singular final ImmutableList<String> orderByColumnNames)
 	{
 		this.tableName = tableName;
 		this.keyColumnName = keyColumnName;
+		this.childTemplates = childTemplates;
 		this.linkColumnName = linkColumnName;
 		this.orderByColumnNames = orderByColumnNames;
 		this.columnsByColumnName = Maps.uniqueIndex(columns, CopyTemplateColumn::getColumnName);
@@ -58,4 +62,10 @@ public final class CopyTemplate
 	{
 		return getColumn(context.getColumnName()).getValueToCopy().resolve(context);
 	}
+
+	public boolean hasChildTableName(@NonNull final String tableName)
+	{
+		return childTemplates.stream().anyMatch(childTemplate -> childTemplate.getTableName().equals(tableName));
+	}
+
 }

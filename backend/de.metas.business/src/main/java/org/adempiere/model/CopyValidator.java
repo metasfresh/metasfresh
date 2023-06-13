@@ -26,12 +26,16 @@ package org.adempiere.model;
  */
 
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.order.copy.C_OrderLine_CopyRecordSupport;
+import de.metas.order.copy.C_Order_CopyRecordSupport;
+import de.metas.order.copy.C_Order_Cost_CopyRecordSupport;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_Cost;
 import org.compiere.model.I_EXP_Format;
 
 /**
@@ -43,8 +47,9 @@ public class CopyValidator extends AbstractModelInterceptor
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		CopyRecordFactory.registerCopyRecordSupport(I_C_Order.Table_Name, MOrderPOCopyRecordSupport.class);
-		CopyRecordFactory.registerCopyRecordSupport(I_C_OrderLine.Table_Name, MOrderLinePOCopyRecordSupport.class);
+		CopyRecordFactory.registerCopyRecordSupport(I_C_Order.Table_Name, C_Order_CopyRecordSupport.class);
+		CopyRecordFactory.registerCopyRecordSupport(I_C_OrderLine.Table_Name, C_OrderLine_CopyRecordSupport.class);
+		CopyRecordFactory.registerCopyRecordSupport(I_C_Order_Cost.Table_Name, C_Order_Cost_CopyRecordSupport.class);
 
 		// Backward compatibility
 		CopyRecordFactory.enableForTableName(I_C_Invoice.Table_Name);

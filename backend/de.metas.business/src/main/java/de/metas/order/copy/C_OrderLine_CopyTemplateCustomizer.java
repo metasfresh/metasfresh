@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package de.metas.order.copy;
 
 import de.metas.copy_with_details.template.CopyTemplateCustomizer;
 import de.metas.util.InSetPredicate;

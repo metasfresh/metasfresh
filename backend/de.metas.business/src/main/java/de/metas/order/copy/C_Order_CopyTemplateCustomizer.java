@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package de.metas.order.copy;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.copy_with_details.template.CopyTemplateCustomizer;
@@ -6,6 +6,7 @@ import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_Cost;
 import org.compiere.model.POInfo;
 import org.compiere.model.copy.ValueToCopy;
 import org.springframework.stereotype.Component;
@@ -28,5 +29,11 @@ public class C_Order_CopyTemplateCustomizer implements CopyTemplateCustomizer
 	}
 
 	@Override
-	public @NonNull InSetPredicate<String> getChildTableNames() {return InSetPredicate.only(I_C_OrderLine.Table_Name);}
+	public @NonNull InSetPredicate<String> getChildTableNames()
+	{
+		return InSetPredicate.only(
+				I_C_OrderLine.Table_Name
+				, I_C_Order_Cost.Table_Name
+		);
+	}
 }

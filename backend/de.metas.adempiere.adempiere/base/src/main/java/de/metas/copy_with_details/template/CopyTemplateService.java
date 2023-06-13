@@ -14,6 +14,7 @@ import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,10 +44,13 @@ public class CopyTemplateService
 
 	public CopyTemplate getCopyTemplate(final POInfo poInfo)
 	{
+		final String tableName = poInfo.getTableName();
+		final String keyColumnName = poInfo.getKeyColumnName();
 		return CopyTemplate.builder()
-				.tableName(poInfo.getTableName())
-				.keyColumnName(poInfo.getKeyColumnName())
+				.tableName(tableName)
+				.keyColumnName(keyColumnName)
 				.columns(extractCopyTemplateColumns(poInfo))
+				.childTemplates(getChildTemplates(tableName, keyColumnName))
 				.build();
 	}
 
@@ -109,18 +113,17 @@ public class CopyTemplateService
 		}
 	}
 
-	public List<CopyTemplate> getChildTemplates(@NonNull final CopyTemplate template)
+	private List<CopyTemplate> getChildTemplates(@NonNull final String tableName, @Nullable final String keyColumnName)
 	{
 		//
 		// If we have multiple keys return empty list because there are no children for sure...
-		final String keyColumnName = template.getKeyColumnName();
 		if (keyColumnName == null)
 		{
 			return ImmutableList.of();
 		}
 
 		final ArrayList<CopyTemplate> result = new ArrayList<>();
-		for (final String childTableName : getChildTableNames(template))
+		for (final String childTableName : getChildTableNames(tableName, keyColumnName))
 		{
 			final POInfo childPOInfo = POInfo.getPOInfoNotNull(childTableName);
 			if (!childPOInfo.hasColumnName(keyColumnName))
@@ -140,9 +143,9 @@ public class CopyTemplateService
 		return result;
 	}
 
-	private Set<String> getChildTableNames(@NonNull final CopyTemplate template)
+	private Set<String> getChildTableNames(@NonNull final String tableName, @Nullable String keyColumnName)
 	{
-		final InSetPredicate<String> onlyChildTableNames = getCustomizer(template.getTableName())
+		final InSetPredicate<String> onlyChildTableNames = getCustomizer(tableName)
 				.map(CopyTemplateCustomizer::getChildTableNames)
 				.orElse(InSetPredicate.any());
 
@@ -152,7 +155,6 @@ public class CopyTemplateService
 		}
 		else if (onlyChildTableNames.isAny())
 		{
-			final String keyColumnName = template.getKeyColumnName();
 			if (keyColumnName == null)
 			{
 				return ImmutableSet.of();
@@ -161,18 +163,18 @@ public class CopyTemplateService
 			return POInfo.getPOInfoMap().stream()
 					.filter(childPOInfo -> !childPOInfo.isView() && childPOInfo.isParentLinkColumn(keyColumnName) && !childPOInfo.hasColumnName("Processed"))
 					.map(POInfo::getTableName)
-					.filter(tableName -> {
-						final String tableNameUC = tableName.toUpperCase();
-						return !tableNameUC.endsWith("_ACCT") // acct table
-								&& !tableNameUC.startsWith("I_") // import tables
-								&& !tableNameUC.endsWith("_TRL") // translation tables
-								&& !tableNameUC.startsWith("M_COST") // cost tables
-								&& !tableNameUC.startsWith("T_") // temporary tables
-								&& !tableNameUC.equals("M_PRODUCT_COSTING") // product costing
-								&& !tableNameUC.equals("M_STORAGE") // storage table
-								&& !tableNameUC.equals("C_BP_WITHHOLDING") // at Patrick's request, this was removed, because is not used
-								&& !(tableNameUC.startsWith("M_")
-								&& tableNameUC.endsWith("MA"));
+					.filter(childTableName -> {
+						final String childTableNameUC = childTableName.toUpperCase();
+						return !childTableNameUC.endsWith("_ACCT") // acct table
+								&& !childTableNameUC.startsWith("I_") // import tables
+								&& !childTableNameUC.endsWith("_TRL") // translation tables
+								&& !childTableNameUC.startsWith("M_COST") // cost tables
+								&& !childTableNameUC.startsWith("T_") // temporary tables
+								&& !childTableNameUC.equals("M_PRODUCT_COSTING") // product costing
+								&& !childTableNameUC.equals("M_STORAGE") // storage table
+								&& !childTableNameUC.equals("C_BP_WITHHOLDING") // at Patrick's request, this was removed, because is not used
+								&& !(childTableNameUC.startsWith("M_")
+								&& childTableNameUC.endsWith("MA"));
 					})
 					.collect(ImmutableSet.toImmutableSet());
 		}
