@@ -1,6 +1,5 @@
 package de.metas.copy_with_details;
 
-import de.metas.copy_with_details.CopyRecordSupport.IOnRecordCopiedListener;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,7 +32,7 @@ public final class CopyRecordFactory
 	 */
 	private static final CopyOnWriteArraySet<String> enabledTableNames = new CopyOnWriteArraySet<>();
 
-	private static final CopyOnWriteArrayList<IOnRecordCopiedListener> staticOnRecordCopiedListeners = new CopyOnWriteArrayList<>();
+	private static final CopyOnWriteArrayList<OnRecordCopiedListener> staticOnRecordCopiedListeners = new CopyOnWriteArrayList<>();
 
 	/**
 	 * @return {@link CopyRecordSupport}; never returns null
@@ -100,7 +99,7 @@ public final class CopyRecordFactory
 	 * Allows other modules to install customer code to be executed each time a record was copied.
 	 * Add a listener here, and it will automatically be added to each {@link CopyRecordSupport} instance that is returned by {@link #getCopyRecordSupport(String)}.
 	 */
-	public static void addOnRecordCopiedListener(@NonNull final IOnRecordCopiedListener listener)
+	public static void addOnRecordCopiedListener(@NonNull final OnRecordCopiedListener listener)
 	{
 		final boolean added = staticOnRecordCopiedListeners.addIfAbsent(listener);
 		if (added)

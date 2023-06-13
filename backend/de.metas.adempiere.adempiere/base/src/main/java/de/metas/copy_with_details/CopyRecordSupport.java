@@ -30,9 +30,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * @author Cristina Ghita, METAS.RO
- */
 public interface CopyRecordSupport
 {
 	/**
@@ -47,7 +44,6 @@ public interface CopyRecordSupport
 	 */
 	void copyChildren(@NonNull PO toPO, @NonNull PO fromPO);
 
-
 	CopyRecordSupport setParentLink(@NonNull PO parentPO, @NonNull String parentLinkColumnName);
 
 	CopyRecordSupport setAdWindowId(@Nullable AdWindowId adWindowId);
@@ -59,28 +55,19 @@ public interface CopyRecordSupport
 	 * A listener that is registered there will be added to each CopyRecordSupport instance created by that factory.
 	 */
 	@SuppressWarnings("UnusedReturnValue")
-	CopyRecordSupport onRecordCopied(IOnRecordCopiedListener listener);
+	CopyRecordSupport onRecordCopied(OnRecordCopiedListener listener);
 
-	default CopyRecordSupport onRecordCopied(List<IOnRecordCopiedListener> listeners)
+	default CopyRecordSupport onRecordCopied(final List<OnRecordCopiedListener> listeners)
 	{
 		listeners.forEach(this::onRecordCopied);
 		return this;
 	}
 
-	CopyRecordSupport onChildRecordCopied(IOnRecordCopiedListener listener);
+	CopyRecordSupport onChildRecordCopied(OnRecordCopiedListener listener);
 
-	default CopyRecordSupport oChildRecordCopied(List<IOnRecordCopiedListener> listeners)
+	default CopyRecordSupport oChildRecordCopied(final List<OnRecordCopiedListener> listeners)
 	{
 		listeners.forEach(this::onChildRecordCopied);
 		return this;
-	}
-
-	@FunctionalInterface
-	interface IOnRecordCopiedListener
-	{
-		/**
-		 * Called after the record was copied, right before saving it (and before it's children are copied)
-		 */
-		void onRecordCopied(final PO to, final PO from);
 	}
 }

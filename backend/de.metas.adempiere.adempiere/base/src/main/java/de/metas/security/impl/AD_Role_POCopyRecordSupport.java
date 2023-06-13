@@ -5,7 +5,10 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.model.I_AD_Role;
 import org.compiere.model.PO;
+import org.compiere.model.copy.ValueToCopy;
 import org.compiere.util.Env;
 
 import java.time.LocalDateTime;
@@ -40,16 +43,9 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd:HH:mm:ss");
 
 	@Override
-	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
+	protected ValueToCopy getValueToCopy_Before(@NonNull final PO to, @NonNull final PO from, @NonNull final String columnName)
 	{
-		if (org.compiere.model.I_AD_Role.COLUMNNAME_Name.equals(columnName))
-		{
-			return makeUniqueName();
-		}
-		else
-		{
-			return super.getCalculatedColumnValueToCopy(to, from, columnName);
-		}
+		return I_AD_Role.COLUMNNAME_Name.equals(columnName) ? ValueToCopy.explicitValueToSet(makeUniqueName()) : ValueToCopy.NOT_SPECIFIED;
 	}
 
 	private static String makeUniqueName()

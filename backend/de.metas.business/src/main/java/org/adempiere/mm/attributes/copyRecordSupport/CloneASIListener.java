@@ -1,6 +1,6 @@
 package org.adempiere.mm.attributes.copyRecordSupport;
 
-import de.metas.copy_with_details.CopyRecordSupport.IOnRecordCopiedListener;
+import de.metas.copy_with_details.OnRecordCopiedListener;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.PO;
@@ -33,7 +33,7 @@ import org.compiere.model.PO;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CloneASIListener implements IOnRecordCopiedListener
+public class CloneASIListener implements OnRecordCopiedListener
 {
 	@Override
 	public void onRecordCopied(PO to, PO from)

@@ -1,8 +1,10 @@
 package de.metas.pricing;
 
 import de.metas.copy_with_details.GeneralCopyRecordSupport;
+import lombok.NonNull;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.PO;
+import org.compiere.model.copy.ValueToCopy;
 
 /*
  * #%L
@@ -29,15 +31,15 @@ import org.compiere.model.PO;
 public class M_ProductPrice_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
+	protected ValueToCopy getValueToCopy_Before(@NonNull final PO to, @NonNull final PO from, @NonNull final String columnName)
 	{
 		if (I_M_ProductPrice.COLUMNNAME_IsInvalidPrice.equals(columnName))
 		{
-			return Boolean.TRUE;
+			return ValueToCopy.explicitValueToSet(Boolean.TRUE);
 		}
 		else
 		{
-			return super.getCalculatedColumnValueToCopy(to, from, columnName);
+			return ValueToCopy.NOT_SPECIFIED;
 		}
 	}
 

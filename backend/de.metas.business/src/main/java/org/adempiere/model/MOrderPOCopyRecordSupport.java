@@ -1,6 +1,5 @@
 package org.adempiere.model;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.copy_with_details.CopyRecordSupportTableInfo;
 import de.metas.copy_with_details.GeneralCopyRecordSupport;
@@ -16,6 +15,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.PO;
+import org.compiere.model.copy.ValueToCopy;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class MOrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
-	private static final List<String> COLUMNNAMES_ToCopyDirectly = ImmutableList.of(
+	private static final ImmutableSet<String> COLUMNNAMES_ToCopyDirectly = ImmutableSet.of(
 			I_C_Order.COLUMNNAME_PreparationDate, // task 09000
 			I_C_Order.COLUMNNAME_FreightAmt
 	);
@@ -41,16 +41,9 @@ public class MOrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 	}
 
 	@Override
-	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
+	protected ValueToCopy getValueToCopy_Before(@NonNull final PO to, @NonNull final PO from, @NonNull final String columnName)
 	{
-		if (COLUMNNAMES_ToCopyDirectly.contains(columnName))
-		{
-			return from.get_Value(columnName);
-		}
-
-		//
-		// Fallback to super:
-		return super.getCalculatedColumnValueToCopy(to, from, columnName);
+		return COLUMNNAMES_ToCopyDirectly.contains(columnName) ? ValueToCopy.DIRECT_COPY : ValueToCopy.NOT_SPECIFIED;
 	}
 
 	@Override

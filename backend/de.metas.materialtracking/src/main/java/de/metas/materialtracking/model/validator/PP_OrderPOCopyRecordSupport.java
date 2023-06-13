@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.copy_with_details.CopyRecordSupportTableInfo;
 import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.materialtracking.model.I_PP_Order;
+import lombok.NonNull;
 import org.compiere.model.PO;
+import org.compiere.model.copy.ValueToCopy;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -45,16 +47,18 @@ public class PP_OrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 	 * 2. QtyOrdered is updated when Closing the Order to QtyDelivered, see {@link org.eevolution.api.impl.PPOrderBL#closeQtyOrdered(org.eevolution.model.I_PP_Order)}
 	 */
 	@Override
-	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
+	protected ValueToCopy getValueToCopy_Before(@NonNull final PO to, @NonNull final PO from, @NonNull final String columnName)
 	{
 		if (I_PP_Order.COLUMNNAME_QtyOrdered.equals(columnName))
 		{
 			final BigDecimal qtyOrderedBeforeOrderClose = from.get_ValueAsBigDecimal(I_PP_Order.COLUMNNAME_QtyBeforeClose);
 			final BigDecimal qtyEntered = from.get_ValueAsBigDecimal(I_PP_Order.COLUMNNAME_QtyEntered);
 
-			return qtyOrderedBeforeOrderClose == null || qtyOrderedBeforeOrderClose.signum() == 0 ? qtyEntered : qtyOrderedBeforeOrderClose;
+			return ValueToCopy.explicitValueToSet(qtyOrderedBeforeOrderClose == null || qtyOrderedBeforeOrderClose.signum() == 0 ? qtyEntered : qtyOrderedBeforeOrderClose);
 		}
-
-		return super.getCalculatedColumnValueToCopy(to, from, columnName);
+		else
+		{
+			return ValueToCopy.NOT_SPECIFIED;
+		}
 	}
 }

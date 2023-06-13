@@ -27,27 +27,29 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.copy_with_details.CopyRecordSupportTableInfo;
 import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import lombok.NonNull;
 import org.compiere.model.PO;
+import org.compiere.model.copy.ValueToCopy;
 
 import java.util.List;
-import java.util.Set;
 
 public class MaterialTrackingPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
-	private final static Set<String> COLUMNS_TO_SUFFIX = ImmutableSet.of(I_M_Material_Tracking.COLUMNNAME_Lot);
+	private final static ImmutableSet<String> COLUMNS_TO_SUFFIX = ImmutableSet.of(I_M_Material_Tracking.COLUMNNAME_Lot);
 	private final static String CLONED_SUFFIX = "_cloned";
 
-
 	@Override
-	public Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
+	protected ValueToCopy getValueToCopy_Before(@NonNull final PO to, @NonNull final PO from, @NonNull final String columnName)
 	{
 		if (COLUMNS_TO_SUFFIX.contains(columnName))
 		{
 			final String oldValue = String.valueOf(from.get_Value(columnName));
-			return String.valueOf(oldValue).concat(CLONED_SUFFIX);
+			return ValueToCopy.explicitValueToSet(oldValue.concat(CLONED_SUFFIX));
 		}
-
-		return super.getCalculatedColumnValueToCopy(to, from, columnName);
+		else
+		{
+			return ValueToCopy.NOT_SPECIFIED;
+		}
 	}
 
 	@Override

@@ -59,6 +59,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.copy.POValuesCopyStrategies;
+import org.compiere.model.copy.POValuesCopyStrategy;
+import org.compiere.model.copy.ValueToCopy;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
@@ -612,7 +615,6 @@ public abstract class PO
 	 * Sets PO's context.
 	 * <p>
 	 * WARNING: use it only if u really know what are you doing.
-	 *
 	 */
 	public final void setCtx(@NonNull final Properties ctx)
 	{
@@ -1393,7 +1395,7 @@ public abstract class PO
 	 */
 	protected static void copyValues(final PO from, final PO to, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		copyValues(from, to);
+		copyValues(from, to, POValuesCopyStrategies.STANDARD);
 		to.setAD_Client_ID(AD_Client_ID);
 		to.setAD_Org_ID(AD_Org_ID);
 	}    // copyValues
@@ -1409,163 +1411,96 @@ public abstract class PO
 	 */
 	public static void copyValues(final PO from, final PO to)
 	{
-		copyValues(from, to, false);
+		copyValues(from, to, POValuesCopyStrategies.STANDARD);
 	}
 
 	public static void copyValues(final PO from, final PO to, final boolean honorIsCalculated)
 	{
-		copyValues(from, to, honorIsCalculated, null);
-	}
-
-	@FunctionalInterface
-	public interface CalculatedColumnValueSupplier
-	{
-		Object getValueToCopy(PO to, PO from, String columnName);
+		copyValues(from, to, honorIsCalculated ? POValuesCopyStrategies.SKIP_CALCULATED_COLUMNS : POValuesCopyStrategies.STANDARD);
 	}
 
 	public static void copyValues(
-			final PO from,
-			final PO to,
-			final boolean honorIsCalculated,
-			final CalculatedColumnValueSupplier calculatedColumnValueSupplier)
+			@NonNull final PO from,
+			@NonNull final PO to,
+			@NonNull final POValuesCopyStrategy valueCopyStrategy)
 	{
-		// metas: end
-		s_log.debug("Copy values: from={}, to={}, honorIsCalculated={}", from, to, honorIsCalculated);
+		s_log.debug("Copy values: from={}, to={}, valueCopyStrategy={}", from, to, valueCopyStrategy);
 
 		//
 		// Make sure "from" and "to" objects are not stale (01537)
 		from.loadIfStalled(-1);
 		to.loadIfStalled(-1);
 
-		//
-		// Different Classes
-		if (from.getClass() != to.getClass())
+		for (int toColumnIndex = 0, toColumnsCount = to.p_info.getColumnCount(); toColumnIndex < toColumnsCount; toColumnIndex++)
 		{
-			for (int fromColumnIndex = 0; fromColumnIndex < from.m_oldValues.length; fromColumnIndex++)
+			final String columnName = to.p_info.getColumnName(toColumnIndex);
+			if (columnName == null
+					|| to.p_info.isVirtualColumn(toColumnIndex)
+					|| to.p_info.isKey(toColumnIndex))
 			{
-				final String fromColumnName = from.p_info.getColumnName(fromColumnIndex);
-				if (fromColumnName == null)
-				{
-					// shall not happen
-					continue;
-				}
-				if (from.p_info.isVirtualColumn(fromColumnIndex)
-						|| from.p_info.isKey(fromColumnIndex))        // KeyColumn
-				{
-					//noinspection UnnecessaryContinue
-					continue;
-				}
-				else if (honorIsCalculated && from.p_info.isCalculated(fromColumnIndex))
-				{
-					if (calculatedColumnValueSupplier != null)
-					{
-						final int toColumnIndex = to.p_info.getColumnIndex(fromColumnName);
-						if (toColumnIndex >= 0)
-						{
-							to.m_newValues[toColumnIndex] = calculatedColumnValueSupplier.getValueToCopy(to, from, fromColumnName);
-						}
-					}
-				}
-				// Ignore Standard Values
-				else if (fromColumnName.equals("Created")
-						|| fromColumnName.equals("CreatedBy")
-						|| fromColumnName.equals("Updated")
-						|| fromColumnName.equals("UpdatedBy")
-						|| fromColumnName.equals("IsActive")
-						// fresh 07896: skip copying org and client ONLY if it's calculated
-						|| (to.p_info.isCalculated(fromColumnIndex) && (fromColumnName.equals("AD_Client_ID") || fromColumnName.equals("AD_Org_ID")))
-						|| fromColumnName.equals("DocumentNo")
-						|| fromColumnName.equals("Processing")
-						|| fromColumnName.equals("Processed") // metas: tsa: us215
-				)
-				{
-					s_log.trace("Skip copying standard column: {}", fromColumnName);
-				}
-				else
-				{
-					final int toColumnIndex = to.p_info.getColumnIndex(fromColumnName);
-					if (toColumnIndex >= 0)
-					{
-						to.m_newValues[toColumnIndex] = from.m_oldValues[fromColumnIndex];
-					}
-				}
-			} // end for fromColumnIndex
-		}
-		//
-		// Same class
-		else
-		{
-			for (int columnIndex = 0; columnIndex < from.m_oldValues.length; columnIndex++)
+				continue;
+			}
+
+			final int fromColumnIndex = from.p_info.getColumnIndex(columnName);
+			if (fromColumnIndex < 0)
 			{
-				final String columnName = from.p_info.getColumnName(columnIndex);
-				if (columnName == null)
-				{
-					// shall not happen
-					//noinspection UnnecessaryContinue
-					continue;
-				}
-				else if (from.p_info.isVirtualColumn(columnIndex)
-						|| from.p_info.isKey(columnIndex))
-				{
-					//noinspection UnnecessaryContinue
-					continue;
-				}
-				else if (honorIsCalculated && from.p_info.isCalculated(columnIndex))
-				{
-					if (calculatedColumnValueSupplier != null)
-					{
-						to.m_newValues[columnIndex] = calculatedColumnValueSupplier.getValueToCopy(to, from, columnName);
-					}
-					else
-					{
-						s_log.trace("Skip copying calculated column because there is no CopyRecordSupport advisor: {}", columnName);
-					}
-				}
-				// Ignore Standard Values
-				else if (columnName.equals("Created")
-						|| columnName.equals("CreatedBy")
-						|| columnName.equals("Updated")
-						|| columnName.equals("UpdatedBy")
-						|| columnName.equals("IsActive")
-						// fresh 07896: skip copying org and client ONLY if it's calculated
-						|| (to.p_info.isCalculated(columnIndex) && (columnName.equals("AD_Client_ID") || columnName.equals("AD_Org_ID")))
-						|| columnName.equals("DocumentNo")
-						|| columnName.equals("Processing")
-						|| columnName.equals("Processed")
-				)
-				{
-					s_log.trace("Skip copying standard column: {}", columnName);
-				}
-				else
-				{
-					to.m_newValues[columnIndex] = from.m_oldValues[columnIndex];
-					// When dealing with new POs copy their new values because old values are all null
-					if (from.is_new())
-					{
-						to.m_newValues[columnIndex] = from.m_newValues[columnIndex];
-					}
+				continue;
+			}
+
+			final ValueToCopy valueToCopy = valueCopyStrategy.getValueToCopy(to, from, columnName)
+					.ifNotSpecifiedThen(() -> POValuesCopyStrategies.SKIP_STANDARD_COLUMNS.getValueToCopy(to, from, columnName))
+					.ifNotSpecifiedThenDirectCopy()
+					.ifDirectCopyThenSetExplicitValue(() -> from.get_Value(fromColumnIndex));
+
+			switch (valueToCopy.getType())
+			{
+				case SET_EXPLICIT_VALUE:
+					to.m_newValues[toColumnIndex] = valueToCopy.getExplicitValueToSet();
 
 					// Copy cached objects
 					// NOTE: it is important because sometimes we have set a new object which is present in PO cache but its ID is still zero.
 					// Without doing this copy, the object will be lost when copying
-					if (from.m_poCacheLocals != null)
-					{
-						final POCacheLocal poCacheLocal = from.m_poCacheLocals.get(columnName);
-						if (poCacheLocal != null)
-						{
-							if (to.m_poCacheLocals == null)
-							{
-								to.m_poCacheLocals = new HashMap<>();
-							}
-							final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
-							to.m_poCacheLocals.put(columnName, poCacheLocalCopy);
-						}
-					}
-				}
+					copyPOCacheLocalIfApplies(from, to, columnName);
+					break;
+				case SKIP:
+				case NOT_SPECIFIED:
+					// do nothing
+					break;
+				default:
+					throw new IllegalStateException("Value to copy type not supported here: " + valueToCopy);
 			}
-		}    // same class
+		}
 
 		// NOTE: don't copy the DynAttributes because this is how it is designed and some BLs are relying on this (e.g. caching)
+	}
+
+	private static void copyPOCacheLocalIfApplies(
+			@NonNull final PO from,
+			@NonNull final PO to,
+			@NonNull final String columnName)
+	{
+		if (from.m_poCacheLocals == null)
+		{
+			return;
+		}
+
+		final POCacheLocal poCacheLocal = from.m_poCacheLocals.get(columnName);
+		if (poCacheLocal == null)
+		{
+			return;
+		}
+
+		if (!Objects.equals(from.get_Value(columnName), to.get_Value(columnName)))
+		{
+			return;
+		}
+
+		if (to.m_poCacheLocals == null)
+		{
+			to.m_poCacheLocals = new HashMap<>();
+		}
+		final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
+		to.m_poCacheLocals.put(columnName, poCacheLocalCopy);
 	}
 
 	/**************************************************************************
@@ -2898,7 +2833,6 @@ public abstract class PO
 
 	/**
 	 * Set <code>isReplica=true</code>. Calls {@link #saveEx()} afterwards.
-	 *
 	 */
 	public final void saveExReplica(final boolean isFromReplication) throws AdempiereException
 	{
@@ -4722,7 +4656,6 @@ public abstract class PO
 	 * Set Dynamic Attribute.
 	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this
 	 * PO instance is not destroyed.
-	 *
 	 */
 	public final Object setDynAttribute(final String name, @Nullable final Object value)
 	{

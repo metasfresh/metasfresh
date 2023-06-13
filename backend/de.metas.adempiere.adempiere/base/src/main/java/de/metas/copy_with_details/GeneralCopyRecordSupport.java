@@ -44,6 +44,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
+import org.compiere.model.copy.ValueToCopy;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -54,7 +55,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,13 +63,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-/**
- * @author Cristina Ghita, METAS.RO
- */
 public class GeneralCopyRecordSupport implements CopyRecordSupport
 {
 	private static final Logger log = LogManager.getLogger(GeneralCopyRecordSupport.class);
@@ -79,17 +75,17 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private static final String COLUMNNAME_Value = "Value";
 	private static final String COLUMNNAME_Name = "Name";
 	private static final String COLUMNNAME_IsActive = "IsActive";
+	private static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	private static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	private static final AdMessageKey MSG_CopiedOn = AdMessageKey.of("CopiedOn");
 
-	private String parentLinkColumnName = null;
-	private PO parentPO = null;
+	@Nullable private String parentLinkColumnName = null;
+	@Nullable private PO parentPO = null;
+	@Nullable private AdWindowId adWindowId = null;
 
-	@Nullable
-	private AdWindowId _adWindowId = null;
-
-	private final ArrayList<IOnRecordCopiedListener> recordCopiedListeners = new ArrayList<>();
-	private final ArrayList<IOnRecordCopiedListener> childRecordCopiedListeners = new ArrayList<>();
+	private final ArrayList<OnRecordCopiedListener> recordCopiedListeners = new ArrayList<>();
+	private final ArrayList<OnRecordCopiedListener> childRecordCopiedListeners = new ArrayList<>();
 
 	@Override
 	public final Optional<PO> copyToNew(@NonNull PO fromPO)
@@ -101,27 +97,13 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 		final PO toPO = TableModelLoader.instance.newPO(fromPO.get_TableName());
 		toPO.setCopying(true); // needed in case the is some before/after save logic which relies on this
-		PO.copyValues(
-				fromPO,
-				toPO,
-				true,
-				this::getCalculatedColumnValueToCopy);
-
-		// needs refresh
-		// NOTE: not sure if this is still needed
-		for (final String columnName : toPO.get_KeyColumns())
-		{
-			toPO.set_CustomColumn(columnName, toPO.get_Value(columnName));
-		}
+		PO.copyValues(fromPO, toPO, this::getValueToCopy);
 
 		// needs to set IsActive because is not copied
 		if (toPO.get_ColumnIndex(COLUMNNAME_IsActive) >= 0)
 		{
 			toPO.set_CustomColumn(COLUMNNAME_IsActive, fromPO.get_Value(COLUMNNAME_IsActive));
 		}
-
-		// Make sure the columns which are required to be unique they have unique values.
-		updateSpecialColumnsName(toPO);
 
 		// Notify listeners
 		fireOnRecordCopied(toPO, fromPO);
@@ -144,6 +126,39 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return Optional.of(toPO);
 	}
 
+	private ValueToCopy getValueToCopy(@NonNull final PO to, @NonNull final PO from, @NonNull final String columnName)
+	{
+		final ValueToCopy valueToCopy = getValueToCopy_Before(to, from, columnName);
+		if (valueToCopy.isSpecified())
+		{
+			return valueToCopy;
+		}
+
+		final POInfo poInfo = to.getPOInfo();
+		if (poInfo.isCalculated(columnName))
+		{
+			return ValueToCopy.explicitValueToSet(computeDefaultValue(to, columnName, parentPO, adWindowId));
+		}
+		else if (COLUMNNAME_IsActive.equals(columnName))
+		{
+			return ValueToCopy.DIRECT_COPY;
+		}
+		else if ((COLUMNNAME_Name.equals(columnName) || COLUMNNAME_Value.equals(columnName))
+				&& DisplayType.isText(poInfo.getColumnDisplayType(columnName)))
+		{
+			return makeUnique(to, columnName, from.get_ValueAsString(columnName));
+		}
+		else
+		{
+			return ValueToCopy.NOT_SPECIFIED;
+		}
+	}
+
+	protected ValueToCopy getValueToCopy_Before(@NonNull final PO to, @NonNull final PO from, @NonNull final String columnName)
+	{
+		return ValueToCopy.NOT_SPECIFIED;
+	}
+
 	@Override
 	public final void copyChildren(@NonNull final PO toPO, @NonNull final PO fromPO)
 	{
@@ -160,7 +175,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 				CopyRecordFactory.getCopyRecordSupport(childTableInfo.getTableName())
 						.setParentLink(toPO, childTableInfo.getLinkColumnName())
-						.setAdWindowId(getAdWindowId())
+						.setAdWindowId(adWindowId)
 						.onRecordCopied(childRecordCopiedListeners)
 						.oChildRecordCopied(childRecordCopiedListeners)
 						.copyToNew(childPO);
@@ -180,11 +195,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private void fireOnRecordCopied(final PO to, final PO from)
 	{
 		onRecordCopied(to, from);
-
-		for (final IOnRecordCopiedListener listener : recordCopiedListeners)
-		{
-			listener.onRecordCopied(to, from);
-		}
+		recordCopiedListeners.forEach(listener -> listener.onRecordCopied(to, from));
 	}
 
 	protected void onRecordCopied(final PO to, final PO from)
@@ -202,39 +213,27 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		// nothing on this level
 	}
 
-	/**
-	 * Updates given <code>po</code> and sets the right values for columns that needs special handling.
-	 * <p>
-	 * e.g. this method makes sure columns like Name or Value have a unique value (to not trigger the unique index).
-	 */
-	private void updateSpecialColumnsName(final PO po)
+	private ValueToCopy makeUnique(@NonNull final PO to, @NonNull final String columnName, @Nullable final String value)
 	{
-		final POInfo poInfo = po.getPOInfo();
-		if (poInfo.hasColumnName(COLUMNNAME_Name) && DisplayType.isText(poInfo.getColumnDisplayType(COLUMNNAME_Name)))
-		{
-			makeUnique(po, COLUMNNAME_Name);
-		}
+		final POInfo poInfo = to.getPOInfo();
+		final int columnIndex = poInfo.getColumnIndex(columnName);
 
-		if (poInfo.hasColumnName(COLUMNNAME_Value))
+		//
+		// Only String columns are handled
+		if (!DisplayType.isText(poInfo.getColumnDisplayType(columnIndex)))
 		{
-			makeUnique(po, COLUMNNAME_Value);
+			return ValueToCopy.SKIP;
 		}
-	}
-
-	private void makeUnique(final PO to, final String columnName)
-	{
-		final String oldValue = (String)to.get_Value(columnName);
 
 		//
 		// If the values is not set but is generated, then just let the system generating it
-		final POInfo poInfo = to.getPOInfo();
-		if (oldValue == null && poInfo.isUseDocSequence(poInfo.getColumnIndex(columnName)))
+		if (value == null && poInfo.isUseDocSequence(columnIndex))
 		{
-			return;
+			return ValueToCopy.SKIP;
 		}
 
-		final String newValue = TranslatableStrings.builder()
-				.append(StringUtils.nullToEmpty(oldValue))
+		String valueUnique = TranslatableStrings.builder()
+				.append(StringUtils.nullToEmpty(value))
 				.append("(")
 				.appendADMessage(MSG_CopiedOn, TranslatableStrings.date(SystemTime.asZonedDateTime(), DisplayType.DateTime))
 				.append(" ")
@@ -243,12 +242,18 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				.build()
 				.translate(Env.getADLanguageOrBaseLanguage());
 
-		to.set_CustomColumn(columnName, newValue);
+		final int fieldLength = poInfo.getFieldLength(columnIndex);
+		if (fieldLength > 0 && valueUnique.length() > fieldLength)
+		{
+			valueUnique = valueUnique.substring(0, fieldLength);
+		}
+
+		return ValueToCopy.explicitValueToSet(valueUnique);
 	}
 
 	private Iterator<Object> retrieveChildPOsForParent(final CopyRecordSupportTableInfo childInfo, final PO parentPO)
 	{
-		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(childInfo.getTableName(), getCtx(), ITrx.TRXNAME_None)
+		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(childInfo.getTableName())
 				.addEqualsFilter(childInfo.getLinkColumnName(), parentPO.get_ID());
 
 		childInfo.getOrderByColumnNames().forEach(queryBuilder::orderBy);
@@ -355,98 +360,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return true;
 	}
 
-	private Properties getCtx() {return Env.getCtx();}
-
 	@Override
 	public final GeneralCopyRecordSupport setParentLink(@NonNull final PO parentPO, @NonNull final String parentLinkColumnName)
 	{
 		this.parentPO = parentPO;
 		this.parentLinkColumnName = parentLinkColumnName;
 		return this;
-	}
-
-	/**
-	 * metas: same method in GridField. TODO: refactoring
-	 */
-	@Nullable
-	private static Object createDefault(final String value, final PO po, final String columnName)
-	{
-		// true NULL
-		if (value == null || value.isEmpty())
-		{
-			return null;
-		}
-		// see also MTable.readData
-		final int index = po.get_ColumnIndex(columnName);
-		final int displayType = po.getPOInfo().getColumnDisplayType(index);
-
-		try
-		{
-			// IDs & Integer & CreatedBy/UpdatedBy
-			if (columnName.equals("CreatedBy")
-					|| columnName.equals("UpdatedBy")
-					|| (columnName.endsWith("_ID") && DisplayType.isID(displayType))) // teo_sarca [ 1672725 ] Process
-			// parameter that ends with _ID
-			// but is boolean
-			{
-				try
-				// defaults -1 => null
-				{
-					final int ii = Integer.parseInt(value);
-					if (ii < 0)
-					{
-						return null;
-					}
-					return ii;
-				}
-				catch (final Exception e)
-				{
-					log.warn("Cannot parse: " + value + " - " + e.getMessage());
-				}
-				return 0;
-			}
-			// Integer
-			if (DisplayType.Integer == displayType)
-			{
-				return new Integer(value);
-			}
-
-			// Number
-			if (DisplayType.isNumeric(displayType))
-			{
-				return new BigDecimal(value);
-			}
-
-			// Timestamps
-			if (DisplayType.isDate(displayType))
-			{
-				// try timestamp format - then date format -- [ 1950305 ]
-				java.util.Date date;
-				try
-				{
-					date = DisplayType.getTimestampFormat_Default().parse(value);
-				}
-				catch (final java.text.ParseException e)
-				{
-					date = DisplayType.getDateFormat_JDBC().parse(value);
-				}
-				return new Timestamp(date.getTime());
-			}
-
-			// Boolean
-			if (DisplayType.YesNo == displayType)
-			{
-				return StringUtils.toBoolean(value);
-			}
-
-			// Default
-			return value;
-		}
-		catch (final Exception e)
-		{
-			log.error("Failed creating default for {}. Returning null.", columnName, e);
-			return null;
-		}
 	}
 
 	/**
@@ -467,7 +386,11 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @return default value or null
 	 */
 	@Nullable
-	private Object getDefault(final PO po, final String columnName)
+	private static Object computeDefaultValue(
+			@NonNull final PO po,
+			@NonNull final String columnName,
+			@Nullable final PO parentPO,
+			@Nullable final AdWindowId adWindowId)
 	{
 		// TODO: until refactoring, keep in sync with org.compiere.model.GridField.getDefaultNoCheck()
 		// Object defaultValue = null;
@@ -492,7 +415,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			return null;
 		}
 		// Always Active
-		if (columnName.equals("IsActive"))
+		if (columnName.equals(COLUMNNAME_IsActive))
 		{
 			log.debug("[IsActive] {}=Y", columnName);
 			return StringUtils.ofBoolean(true);
@@ -508,14 +431,14 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			// Set Client & Org to System, if System access
 			final TableAccessLevel accessLevel = poInfo.getAccessLevel();
 			if (accessLevel.isSystemOnly()
-					&& (columnName.equals("AD_Client_ID") || columnName.equals("AD_Org_ID")))
+					&& (columnName.equals(COLUMNNAME_AD_Client_ID) || columnName.equals(COLUMNNAME_AD_Org_ID)))
 			{
 				log.debug("[SystemAccess] {}=0", columnName);
 				return 0;
 			}
 			// Set Org to System, if Client access
 			else if (accessLevel == TableAccessLevel.SystemPlusClient
-					&& columnName.equals("AD_Org_ID"))
+					&& columnName.equals(COLUMNNAME_AD_Org_ID))
 			{
 				log.debug("[ClientAccess] {}=0", columnName);
 				return 0;
@@ -571,7 +494,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			if (defStr != null && defStr.length() > 0)
 			{
 				log.debug("[SQL] {}={}", columnName, defStr);
-				return createDefault(defStr, po, columnName);
+				return convertToPOValue(defStr, po, columnName);
 			}
 		} // SQL Statement
 
@@ -602,7 +525,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				if (!defStr.equals(""))
 				{
 					log.debug("[DefaultValue] {}={}", columnName, defStr);
-					return createDefault(defStr, po, columnName);
+					return convertToPOValue(defStr, po, columnName);
 				}
 			} // while more Tokens
 		} // Default value
@@ -610,21 +533,21 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		//
 		//(d) Preference (user) - P|
 		//
-		defStr = Env.getPreference(po.getCtx(), getAdWindowId(), columnName, false);
+		defStr = Env.getPreference(po.getCtx(), adWindowId, columnName, false);
 		if (!defStr.equals(""))
 		{
 			log.debug("[UserPreference] {}={}", columnName, defStr);
-			return createDefault(defStr, po, columnName);
+			return convertToPOValue(defStr, po, columnName);
 		}
 
 		//
 		//(e) Preference (System) - # $
 		//
-		defStr = Env.getPreference(po.getCtx(), getAdWindowId(), columnName, true);
+		defStr = Env.getPreference(po.getCtx(), adWindowId, columnName, true);
 		if (!defStr.equals(""))
 		{
 			log.debug("[SystemPreference] {}={}", columnName, defStr);
-			return createDefault(defStr, po, columnName);
+			return convertToPOValue(defStr, po, columnName);
 		}
 
 		//
@@ -653,31 +576,28 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		if (DisplayType.isNumeric(displayType))
 		{
 			log.debug("[Number=0] " + columnName);
-			return createDefault("0", po, columnName);
+			return convertToPOValue("0", po, columnName);
 		}
 
 		if (parentPO != null)
 		{
 			return parentPO.get_Value(columnName);
 		}
+
 		return null;
 	}
 
-	protected Object getCalculatedColumnValueToCopy(final PO to, final PO from, final String columnName)
-	{
-		return getDefault(to, columnName);
-	}
-
 	@Nullable
-	private AdWindowId getAdWindowId()
+	private static Object convertToPOValue(final String value, final PO po, final String columnName)
 	{
-		return _adWindowId;
+		final int displayType = po.getPOInfo().getColumnDisplayType(po.get_ColumnIndex(columnName));
+		return DisplayType.convertToDisplayType(value, columnName, displayType);
 	}
 
 	@Override
 	public final GeneralCopyRecordSupport setAdWindowId(final @Nullable AdWindowId adWindowId)
 	{
-		this._adWindowId = adWindowId;
+		this.adWindowId = adWindowId;
 		return this;
 	}
 
@@ -697,7 +617,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * Allows other modules to install customer code to be executed each time a record was copied.
 	 */
 	@Override
-	public final GeneralCopyRecordSupport onRecordCopied(@NonNull final IOnRecordCopiedListener listener)
+	public final GeneralCopyRecordSupport onRecordCopied(@NonNull final OnRecordCopiedListener listener)
 	{
 		if (!recordCopiedListeners.contains(listener))
 		{
@@ -708,7 +628,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	public CopyRecordSupport onChildRecordCopied(@NonNull final IOnRecordCopiedListener listener)
+	public CopyRecordSupport onChildRecordCopied(@NonNull final OnRecordCopiedListener listener)
 	{
 		if (!childRecordCopiedListeners.contains(listener))
 		{
