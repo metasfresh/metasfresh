@@ -246,7 +246,7 @@ final class DataImportCommand
 		{
 			return resource.getURI();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			return null;
 		}
@@ -272,7 +272,7 @@ final class DataImportCommand
 			_recordsToImportSelectionId = query.createSelection();
 			if (_recordsToImportSelectionId == null)
 			{
-				throw new AdempiereException("No records to import for " + query);
+				throw new AdempiereException("No records to import for " + query + " Errors on import: " + insertIntoImportTableResult.getErrors());
 			}
 		}
 
