@@ -1248,11 +1248,18 @@ public class MInOut extends X_M_InOut implements IDocument
 
 	private void checkCreditLimit()
 	{
-
 		// Services
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
+
+		final boolean isEnforceSOCreditStatus = bPartnerStatsService.isEnforceCreditStatus(ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID()));
+		if(!isEnforceSOCreditStatus)
+		{
+			// nothing to do
+			return;
+		}
+
 
 		if (!isCheckCreditLimitNeeded())
 		{
