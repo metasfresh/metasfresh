@@ -115,6 +115,8 @@ public class C_Order_AllocateToForexContract extends JavaProcess
 		return OrderId.ofRepoId(getRecord_ID());
 	}
 
+
+        @Nullable
 	private BigDecimal getForexContractOpenAmount()
 	{
 		return Optional.ofNullable(p_forexContractId)
