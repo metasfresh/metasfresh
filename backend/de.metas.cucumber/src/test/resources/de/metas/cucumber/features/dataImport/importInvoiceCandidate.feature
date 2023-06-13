@@ -51,7 +51,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | activity                 | ActivityValue_210222 | ActivityName_210222 |
     And store DataImport string requestBody in context
       | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.OrgCode | OPT.X12DE355 | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | OPT.C_Activity_Value |
-      | billBpartner_1              | billBPLocation_1            | billBPUser_1                | product_1               | 2022-08-25      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 2022-08-26             | DescriptionTest | PORef           | D               | ActivityValue_210222 |
+      | billBpartner_1              | billBPLocation_1            | billBPUser_1                | product_1               | 25.08.2022      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 26.08.2022             | DescriptionTest | PORef           | D               | ActivityValue_210222 |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -215,7 +215,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | billBPUser_5          | BillBPartnerContact_5 | billBpartner_5               | billBPLocation_5                      |
     And store DataImport string requestBody in context
       | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx | OPT.QtyDelivered | OPT.DateOrdered |
-      | billBpartner_5              | billBPLocation_5            | billBPUser_5                | product_5               | 4          | true    | 2                | 2022-08-25      |
+      | billBpartner_5              | billBPLocation_5            | billBPUser_5                | product_5               | 4          | true    | 2                | 25.08.2022      |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
