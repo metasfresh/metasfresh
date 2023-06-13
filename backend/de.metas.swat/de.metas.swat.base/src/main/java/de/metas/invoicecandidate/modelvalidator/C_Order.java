@@ -12,12 +12,9 @@ import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
-<<<<<<< HEAD
 import de.metas.document.exception.DocumentActionException;
 import de.metas.i18n.AdMessageKey;
-=======
 import de.metas.i18n.ITranslatableString;
->>>>>>> 79df5a33815 (Order Based Credit Limit shall not prevent order creation and completion (#15533))
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -46,11 +43,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
-<<<<<<< HEAD
-import org.springframework.stereotype.Component;
-=======
 import org.compiere.util.Env;
->>>>>>> 79df5a33815 (Order Based Credit Limit shall not prevent order creation and completion (#15533))
+import org.springframework.stereotype.Component;
 
 import javax.naming.OperationNotSupportedException;
 import java.math.BigDecimal;
