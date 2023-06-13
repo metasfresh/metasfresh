@@ -188,6 +188,7 @@ import java.util.Set;
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+					.sectionCodeParamName(I_C_Order.COLUMNNAME_M_SectionCode_ID)
 					.hideDiscontinued(true)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
 					.availableToPromiseAdapter(availableToPromiseAdapter)
