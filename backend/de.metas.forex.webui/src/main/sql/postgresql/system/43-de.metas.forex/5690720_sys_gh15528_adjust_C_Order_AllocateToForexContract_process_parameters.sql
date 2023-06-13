@@ -49,32 +49,6 @@ UPDATE AD_Process_Para_Trl trl SET Description='Amount allocated to this documen
 /* DDL */  select update_Process_Para_Translation_From_AD_Element(2677) 
 ;
 
-
-
-/*
- * #%L
- * de.metas.forex.webui
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-
 -- Column: C_ForeignExchangeContract.FEC_ValidityDate
 -- 2023-06-08T10:30:59.896Z
 UPDATE AD_Column SET IsIdentifier='Y', SeqNo=40,Updated=TO_TIMESTAMP('2023-06-08 13:30:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585546
