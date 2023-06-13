@@ -105,9 +105,6 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			toPO.set_CustomColumn(COLUMNNAME_IsActive, fromPO.get_Value(COLUMNNAME_IsActive));
 		}
 
-		// Notify listeners
-		fireOnRecordCopied(toPO, fromPO);
-
 		//
 		toPO.setCopiedFromRecordId(fromPO.get_ID()); // need this for changelog
 
@@ -117,6 +114,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		{
 			toPO.set_CustomColumn(parentLinkColumnName, parentId);
 		}
+
+		// Notify listeners
+		fireOnRecordCopied(toPO, fromPO);
 
 		toPO.saveEx(ITrx.TRXNAME_ThreadInherited);
 		toPO.setCopying(false);
