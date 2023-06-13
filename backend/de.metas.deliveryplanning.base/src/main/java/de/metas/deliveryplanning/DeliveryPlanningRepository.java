@@ -349,7 +349,6 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.create()
 				.stream();
-
 	}
 
 	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -615,4 +614,13 @@ public class DeliveryPlanningRepository
 				.min(Timestamp::compareTo)
 				.orElse(null);
 	}
+
+	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
+		deliveryPlanning.setPlannedLoadedQuantity(quantity.toBigDecimal());
+		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
+		save(deliveryPlanning);
+	}
+
 }

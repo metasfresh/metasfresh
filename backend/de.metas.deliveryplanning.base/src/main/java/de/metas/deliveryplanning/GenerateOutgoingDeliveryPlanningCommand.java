@@ -107,7 +107,7 @@ public class GenerateOutgoingDeliveryPlanningCommand
 				.qtyOrdered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(shipmentScheduleBL.getQtyDelivered(shipmentSchedule)))
 				.actualLoadedQty(Quantity.zero(uomOfProduct))
-				.plannedLoadedQty(Quantity.zero(uomOfProduct))
+				.plannedLoadedQty(qtyOrdered)
 				.plannedDischargeQty(Quantity.zero(uomOfProduct))
 				.actualDischargeQty(Quantity.zero(uomOfProduct))
 				.uom(uomOfProduct)
