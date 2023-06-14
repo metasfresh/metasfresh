@@ -4,10 +4,13 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
-import org.compiere.util.Env;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.table.api.TableName;
+import org.adempiere.ad.validationRule.AdValRuleId;
+import org.compiere.util.DisplayType;
+import de.metas.util.StringUtils;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -52,7 +55,8 @@ public final class POInfoColumn implements Serializable
 			final boolean isTranslated,
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn)
+			final boolean isRestAPICustomColumn,
+			@NonNull final ColumnCloningStrategy cloningStrategy)
 	{
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
@@ -111,6 +115,9 @@ public final class POInfoColumn implements Serializable
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
+		this.cloningStrategy = cloningStrategy;
+
+		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
 	}   // Column
 
 	private static boolean isString(
@@ -259,6 +266,7 @@ public final class POInfoColumn implements Serializable
 	final BigDecimal ValueMax_BD;
 
 	final boolean IsRestAPICustomColumn;
+	@Getter private final ColumnCloningStrategy cloningStrategy;
 
 	/* package */ boolean IsCalculated = false;
 	// metas: us215

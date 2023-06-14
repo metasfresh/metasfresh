@@ -570,7 +570,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param fromLine
 	 * @return <code>1</code>
 	 */
-	public int copyLineFrom(
+	private int copyLineFrom(
 			final boolean counter,
 			final boolean copyASI,
 			final MOrderLine fromLine)

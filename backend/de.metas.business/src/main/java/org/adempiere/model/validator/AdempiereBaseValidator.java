@@ -12,7 +12,6 @@ import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
-import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;

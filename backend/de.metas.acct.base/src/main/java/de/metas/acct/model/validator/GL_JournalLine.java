@@ -1,5 +1,12 @@
 package de.metas.acct.model.validator;
 
+import de.metas.acct.gljournal.IGLJournalBL;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.spi.impl.GLJournalLineCopyRecordSupport;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -31,7 +38,6 @@ public class GL_JournalLine
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_GL_JournalLine.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_GL_JournalLine.Table_Name, GLJournalLineCopyRecordSupport.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })

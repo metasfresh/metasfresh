@@ -345,8 +345,7 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
+		@SuppressWarnings("UnnecessaryLocalVariable") final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
@@ -802,7 +801,10 @@ public class DocumentCollection
 		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
 	}
 
-	public void duplicateTabRowInTrx(@NonNull final TableRecordReference parentRef, @NonNull final TableRecordReference fromRecordRef, @NonNull final AdWindowId windowId)
+	public void duplicateTabRowInTrx(
+			@NonNull final TableRecordReference parentRef,
+			@NonNull final TableRecordReference fromRecordRef,
+			@NonNull final AdWindowId windowId)
 	{
 		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
 		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);

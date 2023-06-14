@@ -1,13 +1,11 @@
 package de.metas.order.voidorderandrelateddocs;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IPair;
@@ -16,10 +14,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -76,11 +74,10 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 			saveRecord(copiedOrderRecord);
 
 			// copy-with-details, set orderRecord's previous DocumentNo
-			CopyRecordFactory
-					.getCopyRecordSupport(I_C_Order.Table_Name)
-					.setParentPO(LegacyAdapters.convertToPO(copiedOrderRecord))
-					.setBase(true)
-					.copyRecord(LegacyAdapters.convertToPO(orderRecord), ITrx.TRXNAME_ThreadInherited);
+			CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name)
+					.copyChildren(
+							LegacyAdapters.convertToPO(copiedOrderRecord),
+							LegacyAdapters.convertToPO(orderRecord));
 
 			documentBL.processEx(orderRecord, IDocument.ACTION_Void);
 			saveRecord(orderRecord);

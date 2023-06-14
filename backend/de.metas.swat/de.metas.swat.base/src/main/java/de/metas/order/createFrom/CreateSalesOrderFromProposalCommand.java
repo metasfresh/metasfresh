@@ -22,6 +22,7 @@
 
 package de.metas.order.createFrom;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -34,9 +35,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -53,7 +52,6 @@ public class CreateSalesOrderFromProposalCommand
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
-
 	private final OrderId fromProposalId;
 	private final DocTypeId newOrderDocTypeId;
 	private final Timestamp newOrderDateOrdered;
@@ -69,7 +67,7 @@ public class CreateSalesOrderFromProposalCommand
 			@Nullable final String poReference,
 			final boolean completeIt,
 			final boolean isKeepProposalPrices
-			)
+	)
 	{
 		this.fromProposalId = fromProposalId;
 		this.newOrderDocTypeId = newOrderDocTypeId;
@@ -130,9 +128,10 @@ public class CreateSalesOrderFromProposalCommand
 			@NonNull final I_C_Order newSalesOrder)
 	{
 		CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name)
-				.setParentPO(InterfaceWrapperHelper.getPO(newSalesOrder))
-				.addChildRecordCopiedListener(this::onRecordCopied)
-				.copyRecord(InterfaceWrapperHelper.getPO(fromProposal), ITrx.TRXNAME_ThreadInherited);
+				.onChildRecordCopied(this::onRecordCopied)
+				.copyChildren(
+						InterfaceWrapperHelper.getPO(newSalesOrder),
+						InterfaceWrapperHelper.getPO(fromProposal));
 	}
 
 	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from)
