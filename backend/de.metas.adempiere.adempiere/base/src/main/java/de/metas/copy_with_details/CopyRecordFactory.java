@@ -6,6 +6,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.POInfo;
+import org.compiere.model.copy.TableCloningEnabled;
 import org.slf4j.Logger;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -85,7 +87,30 @@ public final class CopyRecordFactory
 	 */
 	public static boolean isEnabledForTableName(final String tableName)
 	{
-		return isEnabled() && enabledTableNames.contains(tableName);
+		if (!isEnabled())
+		{
+			return false;
+		}
+
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		if (poInfo == null)
+		{
+			return false;
+		}
+
+		final TableCloningEnabled cloningEnabled = poInfo.getCloningEnabled();
+		switch (cloningEnabled)
+		{
+			case Auto:
+				return enabledTableNames.contains(tableName);
+			case Enabled:
+				return true;
+			case Disabled:
+				return false;
+			default:
+				logger.warn("CloningEnabled case `{}` not handled. Considering cloning disabled.", cloningEnabled);
+				return false;
+		}
 	}
 
 	public static void enableForTableName(final String tableName)
