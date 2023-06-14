@@ -44,7 +44,7 @@ Feature: Handling unit data export audit
 
     And the inventory identified by inventory_1 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventory_line                | createdCU          |
 

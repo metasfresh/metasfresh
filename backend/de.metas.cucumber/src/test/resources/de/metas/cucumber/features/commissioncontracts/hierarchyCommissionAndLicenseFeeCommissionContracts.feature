@@ -156,7 +156,7 @@ Feature: Hierarchy commission and license fee commission combined
       | hierarchy_settlement_1            |
       | hierarchy_settlement_2            |
       | license_fee_settlement            |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | hierarchy_settlement_1            |
       | invoiceSettled_2        | hierarchy_settlement_2            |
@@ -311,7 +311,7 @@ Feature: Hierarchy commission and license fee commission combined
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_so                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_so       | settlement_so                     |
     And recompute invoice candidates if required

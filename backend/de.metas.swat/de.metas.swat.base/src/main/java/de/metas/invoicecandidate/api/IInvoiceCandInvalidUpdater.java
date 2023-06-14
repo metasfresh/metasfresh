@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,7 +44,7 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Updates invoice candidates (which were scheduled to be recomputed)
-	 *
+	 * <p>
 	 * NOTEs:
 	 * <ul>
 	 * <li>only those candidates will be updated that were previously invalidated
@@ -75,7 +74,7 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Consider any invalid invoice candidate, no matter if they are tagged or not.
-	 *
+	 * <p>
 	 * NOTE:
 	 * <ul>
 	 * <li>this is the default behavior if no setTaggedWith methods are called.
@@ -93,7 +92,7 @@ public interface IInvoiceCandInvalidUpdater
 	 */
 	IInvoiceCandInvalidUpdater setRecomputeTagToUse(InvoiceCandRecomputeTag tag);
 
-	IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection onlyInvoiceCandidateIds);
+	IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(@NonNull InvoiceCandidateIdsSelection onlyInvoiceCandidateIds);
 
 	// TODO: find a better place for this method
 	static void updatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic, @NonNull final PriceAndTax priceAndTax)
