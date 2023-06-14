@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Date" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -37,7 +37,9 @@ $P{IncludePostingTypeStatistical},
 $P{ExcludeYearEndBooking},
 $P{IsShowProductDetails},
 $P{IsShowActivityDetails}
-);]]>
+)
+order by parentValue1, parentValue2, parentValue3, parentValue4, namevalue, level, activityname, productname;
+;]]>
 	</queryString>
 	<field name="parentname1" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="parentname1"/>
@@ -341,6 +343,35 @@ $P{IsShowActivityDetails}
 			</band>
 		</groupHeader>
 	</group>
+	<group name="Activity">
+		<groupExpression><![CDATA[$F{activityname}]]></groupExpression>
+		<groupHeader>
+			<band height="16">
+				<printWhenExpression><![CDATA[$F{level}.equals("2") 
+&& $P{IsShowActivityDetails}.equals("Y")
+
+]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="95" y="2" width="212" height="12" isRemoveLineWhenBlank="true" uuid="952e1d51-4c2f-40d3-80d5-206a6f2f9cbe">
+						<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{activityname}.equals("NA") ? $R{NoActivity} : ($R{Activity}+" :  "+ $F{activityname})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="353" y="2" width="102" height="12" isRemoveLineWhenBlank="true" uuid="1b236043-c112-47eb-9b90-f50d740d2e2b">
+						<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sameyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -406,7 +437,8 @@ $P{IsShowActivityDetails}
 	</pageHeader>
 	<detail>
 		<band height="14" splitType="Stretch">
-			<printWhenExpression><![CDATA[$F{level}.equals("2")]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{level}.equals("2")
+&&$P{IsShowProductDetails}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="353" y="2" width="102" height="12" isRemoveLineWhenBlank="true" uuid="d1a2c83b-569a-44b3-9560-4c53201c9c5c">
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
@@ -417,14 +449,13 @@ $P{IsShowActivityDetails}
 				<textFieldExpression><![CDATA[$F{sameyearsum}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="87" y="2" width="226" height="12" isRemoveLineWhenBlank="true" uuid="cd53ea4e-34c1-4beb-aad6-4f585334166a">
-					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue})) && ($F{productname}!=null || $F{activityname}!=null)]]></printWhenExpression>
+				<reportElement x="102" y="2" width="218" height="12" isRemoveLineWhenBlank="true" uuid="cd53ea4e-34c1-4beb-aad6-4f585334166a">
+					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue})) ]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{activityname} !=null ? ($F{activityname} + "          " + ($F{productname}!=null ? $F{productname} : "")) 
-: ($F{productname}!=null ? $F{productname} : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[ $F{productname}.equals("NA") ? $R{NoProduct} : ($R{Product}+" :  "+  $F{productname})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
