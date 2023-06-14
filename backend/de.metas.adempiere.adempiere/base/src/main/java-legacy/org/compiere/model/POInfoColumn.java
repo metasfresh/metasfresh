@@ -10,6 +10,7 @@ import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.compiere.model.copy.ColumnCloningStrategy;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -57,7 +58,11 @@ public final class POInfoColumn implements Serializable
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
 			final boolean isRestAPICustomColumn,
+<<<<<<< HEAD
 			final int adSequenceID)
+=======
+			@NonNull final ColumnCloningStrategy cloningStrategy)
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 	{
 		this.AD_Column_ID = AD_Column_ID;
 		ColumnName = columnName;
@@ -116,8 +121,12 @@ public final class POInfoColumn implements Serializable
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
+<<<<<<< HEAD
 		AD_Sequence_ID = adSequenceID;
 		AD_Reference_Value_KeyColumn_DisplayType = ad_Reference_Value_KeyColumn_DisplayType;
+=======
+		this.cloningStrategy = cloningStrategy;
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 
 		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
 	}   // Column
@@ -263,6 +272,7 @@ public final class POInfoColumn implements Serializable
 	final BigDecimal ValueMax_BD;
 
 	final boolean IsRestAPICustomColumn;
+	@Getter private final ColumnCloningStrategy cloningStrategy;
 
 	/* package */ boolean IsCalculated = false;
 	// metas: us215

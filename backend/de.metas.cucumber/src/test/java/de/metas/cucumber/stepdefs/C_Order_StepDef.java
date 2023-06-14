@@ -25,7 +25,12 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
+=======
+import de.metas.copy_with_details.CopyRecordRequest;
+import de.metas.copy_with_details.CopyRecordService;
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -60,8 +65,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.copy.CopyRecordRequest;
-import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -96,8 +99,12 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;

@@ -22,9 +22,16 @@
 
 package de.metas.material.interceptor;
 
+<<<<<<< HEAD
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
+=======
+import de.metas.calendar.CalendarId;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.copy_with_details.CopyRecordFactory;
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.mforecast.IForecastDAO;
@@ -37,7 +44,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -65,7 +71,6 @@ public class M_Forecast
 	public M_Forecast()
 	{
 		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
 	}
 
 	@DocValidate(timings = {

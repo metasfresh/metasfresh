@@ -70,7 +70,6 @@ public interface IInvoiceBL extends ISingletonService
 			boolean isCopyLines,
 			boolean isFixedInvoice);
 
-	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef);
 
 	/**
 	 * Load and iterate the invoice lines from the given <code>fromInvoice</code> and create new invoice lines for the given <code>toInvoice</code>.

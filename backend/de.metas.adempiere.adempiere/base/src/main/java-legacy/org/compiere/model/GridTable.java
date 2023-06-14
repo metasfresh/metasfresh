@@ -16,9 +16,32 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.compiere.model.GridTableUtils.isValueChanged;
-import static org.compiere.model.GridTableUtils.readData;
+import de.metas.cache.CacheMgt;
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.GridRowCtx;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.GridTab.DataNewCopyMode;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.MSort;
+import org.compiere.util.Trx;
+import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
@@ -36,6 +59,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
+<<<<<<< HEAD
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
@@ -65,6 +89,10 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+=======
+import static org.compiere.model.GridTableUtils.isValueChanged;
+import static org.compiere.model.GridTableUtils.readData;
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 
 /**
  * Grid Table Model for JDBC access including buffering.
@@ -1669,19 +1697,10 @@ public class GridTable extends AbstractTableModel
 
 		//
 		// Copy-with-details
-		// start: c.ghita@metas.ro
 		if (isCopyWithDetails())
 		{
-			final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(m_tableName);
-			childCRS.setSuggestedChildrenToCopy(m_gridTab.getSuggestedCopyWithDetailsList());
-			childCRS.setFromPO_ID(m_oldPO_id);
-			childCRS.setParentKeyColumn(null);
-			childCRS.setBase(true);
-			childCRS.updateSpecialColumnsName(po);
-
-			po.setDynAttribute(PO.DYNATTR_CopyRecordSupport, childCRS);
+			throw new UnsupportedOperationException();
 		}
-		// end: c.ghita@metas.ro
 
 		try
 		{
@@ -1693,14 +1712,12 @@ public class GridTable extends AbstractTableModel
 			return SAVE_ERROR;
 		}
 
-		//
-		// Copy-with-details: reset status on GridTab level
-		// start: c.ghita@metas.ro
-		if (isRecordCopyingMode() && m_gridTab != null)
-		{
-			m_gridTab.resetSuggestedCopyWithDetailsList();
-		}
-		// end: c.ghita@metas.ro
+		// //
+		// // Copy-with-details: reset status on GridTab level
+		// if (isRecordCopyingMode() && m_gridTab != null)
+		// {
+		// 	m_gridTab.resetSuggestedCopyWithDetailsList();
+		// }
 
 		m_oldValue = null;
 
@@ -1863,9 +1880,6 @@ public class GridTable extends AbstractTableModel
 	/**************************************************************************
 	 * New Record after current Row
 	 *
-	 * @param currentRow row
-	 * @param copyCurrent copy
-	 * @param copyWithDetails true if we are also copying the details rows (metas)
 	 * @return true if success -
 	 *         Error info (Access*, AccessCannotInsert) is saved in the log
 	 */
@@ -1878,8 +1892,7 @@ public class GridTable extends AbstractTableModel
 		final Function<GridField, Object> fieldCalculatedValueSupplier;
 		if (DataNewCopyMode.isCopyWithDetails(copyMode))
 		{
-			final CopyRecordSupport crs = CopyRecordFactory.getCopyRecordSupport(getTableName());
-			fieldCalculatedValueSupplier = gridField -> crs.getValueToCopy(gridField);
+			throw new UnsupportedOperationException();
 		}
 		else
 		{
@@ -3483,16 +3496,16 @@ public class GridTable extends AbstractTableModel
 	{
 		this._dataNewCopyMode = null;
 
-		// Make sure the suggested child tables to be copied list is reset
-		if (m_gridTab != null)
-		{
-			m_gridTab.resetSuggestedCopyWithDetailsList();
-		}
+		// // Make sure the suggested child tables to be copied list is reset
+		// if (m_gridTab != null)
+		// {
+		// 	m_gridTab.resetSuggestedCopyWithDetailsList();
+		// }
 	}
 
 	/**
 	 * Checks if we are currenty copying the current row <b>with details</b>.
-	 *
+	 * <p>
 	 * NOTE: this information will be available even after {@link #dataNew(int, DataNewCopyMode)} until the record is saved or discarded.
 	 *
 	 * @return true if we are currenty copying the current row <b>with details</b>

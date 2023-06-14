@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Column
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1882423707L;
+	private static final long serialVersionUID = 700464776L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -227,6 +227,33 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
 	}
 
+	/** 
+	 * CloningStrategy AD_Reference_ID=541754
+	 * Reference name: AD_Column_CloningStrategy
+	 */
+	public static final int CLONINGSTRATEGY_AD_Reference_ID=541754;
+	/** DirectCopy = DC */
+	public static final String CLONINGSTRATEGY_DirectCopy = "DC";
+	/** UseDefaultValue = DV */
+	public static final String CLONINGSTRATEGY_UseDefaultValue = "DV";
+	/** MakeUnique = UQ */
+	public static final String CLONINGSTRATEGY_MakeUnique = "UQ";
+	/** Skip = SK */
+	public static final String CLONINGSTRATEGY_Skip = "SK";
+	/** Auto = XX */
+	public static final String CLONINGSTRATEGY_Auto = "XX";
+	@Override
+	public void setCloningStrategy (final java.lang.String CloningStrategy)
+	{
+		set_Value (COLUMNNAME_CloningStrategy, CloningStrategy);
+	}
+
+	@Override
+	public java.lang.String getCloningStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_CloningStrategy);
+	}
+
 	@Override
 	public void setColumnName (final java.lang.String ColumnName)
 	{
@@ -329,6 +356,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
+<<<<<<< HEAD
 	public org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule()
 	{
 		return get_ValueAsPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
@@ -356,6 +384,8 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
+=======
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 	public void setFilterDefaultValue (final @Nullable java.lang.String FilterDefaultValue)
 	{
 		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
@@ -388,6 +418,33 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public java.lang.String getFilterOperator() 
 	{
 		return get_ValueAsString(COLUMNNAME_FilterOperator);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule()
+	{
+		return get_ValueAsPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
+	}
+
+	@Override
+	public void setFilter_Val_Rule(final org.compiere.model.I_AD_Val_Rule Filter_Val_Rule)
+	{
+		set_ValueFromPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, Filter_Val_Rule);
+	}
+
+	@Override
+	public void setFilter_Val_Rule_ID (final int Filter_Val_Rule_ID)
+	{
+		if (Filter_Val_Rule_ID < 1) 
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, null);
+		else 
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, Filter_Val_Rule_ID);
+	}
+
+	@Override
+	public int getFilter_Val_Rule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Filter_Val_Rule_ID);
 	}
 
 	@Override

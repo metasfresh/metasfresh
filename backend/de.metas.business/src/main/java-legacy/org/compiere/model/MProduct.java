@@ -21,6 +21,7 @@
  */
 package org.compiere.model;
 
+<<<<<<< HEAD
 import de.metas.common.util.CoalesceUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -28,6 +29,11 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceGroupId;
+=======
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
@@ -36,7 +42,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 
+<<<<<<< HEAD
 import javax.annotation.Nullable;
+=======
+>>>>>>> 4095b01edda (Configurable Cloning Feature (#15586))
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -241,7 +250,7 @@ public class MProduct extends X_M_Product
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			if (this.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			if(!this.isCopying())
 			{
 				insert_Accounting(I_M_Product_Acct.Table_Name,
 						I_M_Product_Category_Acct.Table_Name,
