@@ -440,3 +440,46 @@ UPDATE AD_RelationType SET AD_Reference_Target_ID=541752,Updated=TO_TIMESTAMP('2
 UPDATE AD_RelationType SET AD_Reference_Target_ID=541749,Updated=TO_TIMESTAMP('2023-06-14 00:13:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540390
 ;
 
+-- Name: M_Delivery_Planning (PO) => M_Inventory
+-- 2023-06-14T10:51:11.235Z
+UPDATE AD_Reference SET Name='M_Delivery_Planning (PO) => M_Inventory',Updated=TO_TIMESTAMP('2023-06-14 13:51:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541753
+;
+
+-- 2023-06-14T10:51:11.237Z
+UPDATE AD_Reference_Trl trl SET Name='M_Delivery_Planning (PO) => M_Inventory' WHERE AD_Reference_ID=541753 AND AD_Language='en_US'
+;
+
+-- 2023-06-14T10:51:25.470Z
+UPDATE AD_RelationType SET Name='M_Delivery_Planning (PO) => M_Inventory',Updated=TO_TIMESTAMP('2023-06-14 13:51:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540393
+;
+
+-- 2023-06-14T10:52:26.960Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541707,540394,TO_TIMESTAMP('2023-06-14 13:52:26','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','M_Delivery_Planning (SO) => M_Inventory',TO_TIMESTAMP('2023-06-14 13:52:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Name: M_Delivery_Planning (SO) => M_Inventory
+-- 2023-06-14T10:53:02.566Z
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541758,TO_TIMESTAMP('2023-06-14 13:53:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','M_Delivery_Planning (SO) => M_Inventory',TO_TIMESTAMP('2023-06-14 13:53:02','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2023-06-14T10:53:02.571Z
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Reference_ID=541758 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- Reference: M_Delivery_Planning (SO) => M_Inventory
+-- Table: M_Inventory
+-- Key: M_Inventory.M_Inventory_ID
+-- 2023-06-14T10:54:39.298Z
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,3542,0,541758,321,TO_TIMESTAMP('2023-06-14 13:54:39','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','N',TO_TIMESTAMP('2023-06-14 13:54:39','YYYY-MM-DD HH24:MI:SS'),100,'M_Inventory_ID IN (SELECT i.m_inventory_id from m_inventory i     inner join c_order o on o.c_order_id=i.c_po_order_id     inner join m_delivery_planning d on c.link_order_id=d.c_order_id     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)')
+;
+
+-- 2023-06-14T10:55:05.485Z
+UPDATE AD_RelationType SET AD_Reference_Target_ID=541758,Updated=TO_TIMESTAMP('2023-06-14 13:55:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540394
+;
+
+-- Reference: M_Delivery_Planning (SO) => M_Inventory
+-- Table: M_Inventory
+-- Key: M_Inventory.M_Inventory_ID
+-- 2023-06-14T10:57:05.945Z
+UPDATE AD_Ref_Table SET WhereClause='M_Inventory_ID IN (SELECT i.m_inventory_id from m_inventory i     inner join c_order o on o.c_order_id=i.c_po_order_id     inner join m_delivery_planning d on o.link_order_id=d.c_order_id     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-14 13:57:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541758
+;
