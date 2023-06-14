@@ -358,7 +358,7 @@ order by parentValue1, parentValue2, parentValue3, parentValue4, namevalue, leve
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{activityname}.equals("NA") ? $R{NoActivity} : ($R{Activity}+" :  "+ $F{activityname})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{activityname}==null ? $R{NoActivity} : ($R{Activity}+" :  "+ $F{activityname})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="353" y="2" width="102" height="12" isRemoveLineWhenBlank="true" uuid="1b236043-c112-47eb-9b90-f50d740d2e2b">
@@ -455,7 +455,7 @@ order by parentValue1, parentValue2, parentValue3, parentValue4, namevalue, leve
 				<textElement>
 					<font fontName="Arial" size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[ $F{productname}.equals("NA") ? $R{NoProduct} : ($R{Product}+" :  "+  $F{productname})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[ $F{productname} == null ? $R{NoProduct} : ($R{Product}+" :  "+  $F{productname})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

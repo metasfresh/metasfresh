@@ -1,40 +1,3 @@
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN            Date,
-                                                   IN defaultAcc character varying)
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                      Date,
-                                                   IN defaultAcc           character varying,
-                                                   IN showCurrencyExchange character varying)
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN p_IncludePostingTypeStatistical char(1))
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN p_IncludePostingTypeStatistical char(1),
-                                                   IN ad_org_id                       numeric(10, 0))
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN ad_org_id                       numeric(10, 0),
-                                                   IN p_IncludePostingTypeStatistical char(1))
-;
-
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
-                                                   IN defaultAcc                      character varying,
-                                                   IN showCurrencyExchange            character varying,
-                                                   IN ad_org_id                       numeric(10, 0),
-                                                   IN p_IncludePostingTypeStatistical char(1),
-                                                   IN p_ExcludePostingTypeYearEnd     char(1))
-;
-
 DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                          date,
                                                   p_defaultacc                    character varying,
                                                   p_showcurrencyexchange          character varying,
@@ -45,10 +8,6 @@ DROP FUNCTION IF EXISTS report.saldobilanz_report(p_date                        
                                                   p_IsShowActivityDetails         character
 )
 ;
-
-DROP TABLE IF EXISTS report.saldobilanz_Report
-;
-
 
 CREATE OR REPLACE FUNCTION report.saldobilanz_report(p_date                          date,
                                                      p_defaultacc                    character varying,
@@ -386,8 +345,8 @@ BEGIN
                  , fa.m_product_id
                  , fa.c_activity_id
 				 , fa.DateAcct
-                 , coalesce(a.name, 'NA')                               AS activityName
-                 , coalesce(p.name,'NA')                               AS productName
+                 , a.name                               AS activityName
+                 , p.name                               AS productName
 
                  -- Aggregated amounts: (beginning) to Date
                  , SUM(AmtAcctDr) OVER facts_ToDate     AS AmtAcctDr
@@ -400,8 +359,8 @@ BEGIN
                      LEFT OUTER JOIN C_Activity a ON (fa.c_activity_id = a.c_activity_id)
                      LEFT OUTER JOIN M_Product p ON (fa.m_product_id = p.m_product_id)
                 WINDOW
-                    facts_ToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID,  coalesce(a.name, 'NA'), coalesce(p.name,'NA') ORDER BY fa.DateAcct)
-                    , facts_YearToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID, fa.C_Year_ID, coalesce(a.name, 'NA'), coalesce(p.name,'NA') ORDER BY fa.DateAcct)
+                    facts_ToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID, fa.c_activity_id, fa.m_product_id  ORDER BY fa.DateAcct)
+                    , facts_YearToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID, fa.C_Year_ID, fa.c_activity_id, fa.m_product_id ORDER BY fa.DateAcct)
         )
         SELECT t.C_ElementValue_ID
              , a.parentname1
