@@ -22,13 +22,13 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
  * #L%
  */
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
