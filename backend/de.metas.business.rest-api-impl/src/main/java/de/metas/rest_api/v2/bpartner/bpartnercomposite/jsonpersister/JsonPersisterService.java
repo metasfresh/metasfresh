@@ -1824,7 +1824,7 @@ public class JsonPersisterService
 		}
 
 		// bpartnerName
-		if (jsonBPartnerLocation.isNameSet())
+		if (jsonBPartnerLocation.isBpartnerNameSet())
 		{
 			location.setBpartnerName(StringUtils.trim(jsonBPartnerLocation.getBpartnerName()));
 		}
