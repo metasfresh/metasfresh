@@ -288,13 +288,12 @@ public class DeliveryPlanningService
 
 		final Quantity openQty = getOpenQty(deliveryPlanningId);
 
-		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
 
-		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines));
-		final DeliveryPlanningCreateRequest initialRequest = createRequest(deliveryPlanningId, fraction.add(remainder));
-		deliveryPlanningRepository.generateDeliveryPlanning(initialRequest);
+		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
+		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 
-		for (int i = 1; i < additionalLines; i++)
+		for (int i = 0; i < additionalLines; i++)
 		{
 			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction);
 
@@ -319,6 +318,7 @@ public class DeliveryPlanningService
 		Quantity openQty = qtyOrdered;
 
 		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
+				.filter(deliveryPlanning -> deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
 				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
 				.reduce(Quantity::add)
 				.orElse(null);
@@ -410,7 +410,7 @@ public class DeliveryPlanningService
 		}
 
 		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(deliveryInstructionRequest.getClientId(),
-																	   deliveryInstructionRequest.getOrgId());
+				deliveryInstructionRequest.getOrgId());
 
 		final Money creditUsedByDeliveryInstruction = computeCreditUsedByDeliveryInstruction(deliveryInstructionRequest, baseCurrencyId);
 
@@ -445,7 +445,7 @@ public class DeliveryPlanningService
 
 		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
-														orderLineCurrencyId);
+				orderLineCurrencyId);
 
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
@@ -806,4 +806,5 @@ public class DeliveryPlanningService
 			throw new AdempiereException(MSG_M_Delivery_Planning_BlockedPartner);
 		}
 	}
+
 }
