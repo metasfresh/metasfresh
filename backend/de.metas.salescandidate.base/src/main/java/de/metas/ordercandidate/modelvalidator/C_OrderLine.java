@@ -43,12 +43,6 @@ public class C_OrderLine
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-	@Init
-	public void init()
-	{
-		CopyRecordFactory.enableForTableName(I_C_OrderLine.Table_Name);
-	}
-
 	/**
 	 * Method is fired before an order line is deleted. It deletes all {@link I_C_Order_Line_Alloc} records referencing the order line and sets <code>Processed='N'</code> for all {@link I_C_OLCand}s
 	 * that were originally aggregated into the order line.

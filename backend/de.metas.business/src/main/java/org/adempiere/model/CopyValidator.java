@@ -53,7 +53,6 @@ public class CopyValidator extends AbstractModelInterceptor
 
 		// Backward compatibility
 		CopyRecordFactory.enableForTableName(I_C_Invoice.Table_Name);
-		CopyRecordFactory.enableForTableName(I_C_Order.Table_Name);
 		CopyRecordFactory.enableForTableName(I_EXP_Format.Table_Name);
 		// NOTE: Please don't add more tables here, but add them in coresponding projects/model interceptors.
 	}
