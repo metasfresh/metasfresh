@@ -539,7 +539,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private void appendFilterSectionCodeNotNull(final StringBuilder sqlWhereClause)
 	{
-		if (filterOutProductsWithoutSectionCode())
+		if (filterOutProductsWithoutSectionCode() && param_M_SectionCode_ID != null)
 		{
 			sqlWhereClause.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID + " IS NOT NULL");
 		}

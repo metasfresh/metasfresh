@@ -8,7 +8,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -182,6 +181,17 @@ public class C_Invoice
 	{
 		documentLocationBL.updateCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 
+	}
+
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_C_BPartner_ID)
+	public void setInvoiceSectionCodeFromBPartner(final I_C_Invoice invoice)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_ID());
+		if (bPartnerId != null)
+		{
+			final I_C_BPartner bPartner = bpartnerDAO.getById(bPartnerId);
+			invoice.setM_SectionCode_ID(bPartner.getM_SectionCode_ID());
+		}
 	}
 
 }
