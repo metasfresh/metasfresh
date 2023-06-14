@@ -2,6 +2,7 @@ package de.metas.order.copy;
 
 import de.metas.copy_with_details.CopyRecordSupport;
 import de.metas.copy_with_details.OnRecordCopiedListener;
+import de.metas.copy_with_details.template.CopyTemplate;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.PO;
@@ -17,7 +18,7 @@ import java.util.Optional;
 public class C_Order_Cost_CopyRecordSupport implements CopyRecordSupport
 {
 	@Override
-	public Optional<PO> copyToNew(@NonNull final PO fromPO) {return Optional.empty();}
+	public Optional<PO> copyToNew(@NonNull final PO fromPO, @Nullable CopyTemplate template) {return Optional.empty();}
 
 	@Override
 	public void copyChildren(@NonNull final PO toPO, @NonNull final PO fromPO) {}

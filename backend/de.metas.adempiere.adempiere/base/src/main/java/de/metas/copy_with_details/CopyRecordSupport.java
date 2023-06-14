@@ -22,6 +22,7 @@ package de.metas.copy_with_details;
  * #L%
  */
 
+import de.metas.copy_with_details.template.CopyTemplate;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.PO;
@@ -32,12 +33,14 @@ import java.util.Optional;
 
 public interface CopyRecordSupport
 {
+	default Optional<PO> copyToNew(@NonNull PO fromPO) {return copyToNew(fromPO, null);}
+
 	/**
 	 * Recursively copy given PO and it's children
 	 *
 	 * @return copied PO or empty if given PO shall not be copied for some reason
 	 */
-	Optional<PO> copyToNew(@NonNull PO fromPO);
+	Optional<PO> copyToNew(@NonNull PO fromPO, @Nullable CopyTemplate template);
 
 	/**
 	 * Recursively copy all childrens of <code>fromPO</code> to given <code>toPO</code>

@@ -37,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -58,16 +59,16 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private final ArrayList<OnRecordCopiedListener> childRecordCopiedListeners = new ArrayList<>();
 
 	@Override
-	public final Optional<PO> copyToNew(@NonNull PO fromPO)
+	public final Optional<PO> copyToNew(@NonNull final PO fromPO, @Nullable final CopyTemplate explicitTemplate)
 	{
 		if (!isCopyRecord(fromPO))
 		{
 			return Optional.empty();
 		}
 
-		final CopyTemplate template = copyTemplateService.getCopyTemplate(fromPO.getPOInfo());
+		final CopyTemplate template = determineTemplate(explicitTemplate, fromPO.getPOInfo());
 
-		final PO toPO = TableModelLoader.instance.newPO(fromPO.get_TableName());
+		final PO toPO = TableModelLoader.instance.newPO(template.getTableName());
 		toPO.setCopying(true); // needed in case the is some before/after save logic which relies on this
 		PO.copyValues(
 				fromPO,
@@ -97,19 +98,33 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return Optional.of(toPO);
 	}
 
+	private CopyTemplate determineTemplate(final @Nullable CopyTemplate explicitTemplate, final @NonNull POInfo poInfo)
+	{
+		if (explicitTemplate != null)
+		{
+			Check.assumeEquals(explicitTemplate.getTableName(), poInfo.getTableName());
+			return explicitTemplate;
+		}
+		else
+		{
+			return copyTemplateService.getCopyTemplate(poInfo);
+		}
+	}
+
 	@Override
 	public final void copyChildren(@NonNull final PO toPO, @NonNull final PO fromPO)
 	{
-		final CopyTemplate template = copyTemplateService.getCopyTemplate(toPO.getPOInfo());
-		copyChildren(toPO, fromPO, template);
+		copyChildren(toPO, fromPO, null);
 	}
 
-	private void copyChildren(@NonNull final PO toPO, @NonNull final PO fromPO, @NonNull CopyTemplate template)
+	private void copyChildren(@NonNull final PO toPO, @NonNull final PO fromPO, @Nullable final CopyTemplate explicitTemplate)
 	{
 		if (!isCopyRecord(fromPO))
 		{
 			return;
 		}
+
+		final CopyTemplate template = determineTemplate(explicitTemplate, toPO.getPOInfo());
 
 		for (final CopyTemplate childTemplate : template.getChildTemplates())
 		{
@@ -123,7 +138,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 						.setAdWindowId(adWindowId)
 						.onRecordCopied(childRecordCopiedListeners)
 						.oChildRecordCopied(childRecordCopiedListeners)
-						.copyToNew(childPO);
+						.copyToNew(childPO, childTemplate);
 				log.debug("Copied {}", childPO);
 			}
 		}
@@ -143,20 +158,11 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		recordCopiedListeners.forEach(listener -> listener.onRecordCopied(to, from));
 	}
 
-	protected void onRecordCopied(final PO to, final PO from)
-	{
-		// nothing on this level
-	}
+	protected void onRecordCopied(final PO to, final PO from) {}
 
-	private void fireOnRecordAndChildrenCopied(final PO to, final PO from, final CopyTemplate template)
-	{
-		onRecordAndChildrenCopied(to, from, template);
-	}
+	private void fireOnRecordAndChildrenCopied(final PO to, final PO from, final CopyTemplate template) {onRecordAndChildrenCopied(to, from, template);}
 
-	protected void onRecordAndChildrenCopied(final PO to, final PO from, final CopyTemplate template)
-	{
-		// nothing on this level
-	}
+	protected void onRecordAndChildrenCopied(final PO to, final PO from, final CopyTemplate template) {}
 
 	private Iterator<Object> retrieveChildPOsForParent(final CopyTemplate childTemplate, final PO parentPO)
 	{
@@ -175,10 +181,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @return true if the record shall be copied
 	 */
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	protected boolean isCopyRecord(final PO fromPO)
-	{
-		return true;
-	}
+	protected boolean isCopyRecord(final PO fromPO) {return true;}
 
 	@Override
 	public final GeneralCopyRecordSupport setParentLink(@NonNull final PO parentPO, @NonNull final String parentLinkColumnName)
@@ -222,7 +225,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	public CopyRecordSupport onChildRecordCopied(@NonNull final OnRecordCopiedListener listener)
+	public final CopyRecordSupport onChildRecordCopied(@NonNull final OnRecordCopiedListener listener)
 	{
 		if (!childRecordCopiedListeners.contains(listener))
 		{
