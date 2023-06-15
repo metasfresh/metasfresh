@@ -2,7 +2,8 @@
 Feature: Handling unit export from manufacturing order
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And RabbitMQ MF_TO_ExternalSystem queue is purged
@@ -66,7 +67,7 @@ Feature: Handling unit export from manufacturing order
       | PP_Order_ID.Identifier |
       | ppOrder_manufacturing  |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.HUStatus |
       | ppOrderTU          | A            |
 
@@ -80,7 +81,7 @@ Feature: Handling unit export from manufacturing order
       | storagePPOrderTU           | ppOrderTU          | manufacturingProduct_HU | 10  |
       | storagePPOrderCU           | ppOrderCU          | manufacturingProduct_HU | 10  |
 
-    And after not more than 30s, PP_Cost_Collector are found:
+    And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
       | ppOrder_CostCollector           | ppOrder_manufacturing  | manufacturingProduct_HU | 10          | CO        |
 

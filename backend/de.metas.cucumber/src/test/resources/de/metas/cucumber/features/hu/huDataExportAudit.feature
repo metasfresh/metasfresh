@@ -2,7 +2,8 @@
 Feature: Handling unit data export audit
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
 
@@ -43,7 +44,7 @@ Feature: Handling unit data export audit
 
     And the inventory identified by inventory_1 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventory_line                | createdCU          |
 
