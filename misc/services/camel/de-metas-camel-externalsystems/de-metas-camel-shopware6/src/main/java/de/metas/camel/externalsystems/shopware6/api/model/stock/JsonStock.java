@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,28 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.camel.externalsystems.shopware6.api.model.stock;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class OrderAddressDetails
+@JsonDeserialize(builder = JsonStock.JsonStockBuilder.class)
+public class JsonStock
 {
 	@NonNull
-	JsonOrderAddress jsonOrderAddress;
+	@JsonProperty("stock")
+	Integer stock;
 
-	@Nullable
-	String customShopwareId;
-
-	@Nullable
-	String customMetasfreshId;
-	
-	@Nullable
-	String customEmail;
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonStockBuilder
+	{
+	}
 }

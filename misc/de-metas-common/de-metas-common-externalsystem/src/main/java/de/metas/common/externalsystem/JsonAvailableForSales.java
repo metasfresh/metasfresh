@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,19 +20,32 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.order;
+package de.metas.common.externalsystem;
 
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.BigDecimal;
+
 @Value
 @Builder
-public class ImportOrdersRequest
+public class JsonAvailableForSales
 {
 	@NonNull
-	Shopware6QueryRequest shopware6QueryRequest;
+	JsonProductIdentifier productIdentifier;
 
-	boolean ignoreNextImportTimestamp;
+	@NonNull
+	BigDecimal stock;
+
+	@JsonCreator
+	public JsonAvailableForSales(
+			@NonNull @JsonProperty("productIdentifier") final JsonProductIdentifier productIdentifier,
+			@NonNull @JsonProperty("stock") final BigDecimal stock)
+	{
+		this.productIdentifier = productIdentifier;
+		this.stock = stock;
+	}
 }

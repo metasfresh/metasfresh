@@ -555,7 +555,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_QtyPicked_ID.Identifier |
       | shipmentScheduleQtyPicked_1                |
       | shipmentScheduleQtyPicked_2                |
-    And load newly created M_HU record based on SourceHU
+    And after not more than 60s, load newly created M_HU record based on SourceHU
       | M_HU_ID.Identifier | VHU_Source_ID.Identifier | Qty | HUTraceType    |
       | hu_fifo_picked     | hu_fifo_second_2         | 1   | TRANSFORM_LOAD |
     And validate M_ShipmentSchedule_QtyPicked by id
