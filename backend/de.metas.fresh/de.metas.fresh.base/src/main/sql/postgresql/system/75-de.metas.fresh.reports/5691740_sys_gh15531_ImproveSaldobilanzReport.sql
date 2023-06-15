@@ -398,6 +398,7 @@ BEGIN
                      WHERE TRUE
                        AND fo.PostingType = 'A'
                      ORDER BY fo.DateAcct DESC
+					 LIMIT 1
                  )
                  -- Include posting type Year End
                  UNION ALL
@@ -419,6 +420,7 @@ BEGIN
                        AND p_ExcludePostingTypeYearEnd = 'N' -- p_ExcludePostingTypeYearEnd
                        AND fo.PostingType = 'Y'
                      ORDER BY fo.DateAcct DESC
+					 LIMIT 1
                  )
                  -- Include posting type Statistical
                  UNION ALL
@@ -440,6 +442,7 @@ BEGIN
                        AND p_IncludePostingTypeStatistical = 'Y' -- p_IncludePostingTypeStatistical
                        AND fo.PostingType = 'S'
                      ORDER BY fo.DateAcct DESC
+					 LIMIT 1
                  )
              ) AS t
                  INNER JOIN tmp_accounts a ON a.C_ElementValue_ID = t.c_elementvalue_id
