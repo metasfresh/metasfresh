@@ -22,6 +22,11 @@
 
 package de.metas.order.createFrom;
 
+<<<<<<< HEAD
+=======
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.copy_with_details.template.CopyTemplate;
+>>>>>>> 2ca0826f645 (Avoid copying order cost generated order line and cloning ASI if configured (#15607))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -135,7 +140,7 @@ public class CreateSalesOrderFromProposalCommand
 				.copyRecord(InterfaceWrapperHelper.getPO(fromProposal), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from)
+	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from, @NonNull final CopyTemplate template)
 	{
 		if (InterfaceWrapperHelper.isInstanceOf(to, I_C_OrderLine.class)
 				&& InterfaceWrapperHelper.isInstanceOf(from, I_C_OrderLine.class))

@@ -1,6 +1,7 @@
 package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyRepository;
 import de.metas.inout.IInOutBL;
@@ -17,6 +18,7 @@ import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.order.costs.inout.InOutCostCreateCommand;
 import de.metas.order.costs.inout.InOutCostDeleteCommand;
@@ -253,4 +255,10 @@ public class OrderCostService
 	{
 		orderCostRepository.deleteByCreatedOrderLineId(createdOrderLineId);
 	}
+
+	public boolean isCostGeneratedOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		return orderCostRepository.hasCostsByCreatedOrderLineIds(ImmutableSet.of(orderLineId));
+	}
+
 }

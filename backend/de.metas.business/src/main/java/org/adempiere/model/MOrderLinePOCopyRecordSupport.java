@@ -77,7 +77,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	}
 
 	@Override
-	protected void onRecordCopied(final PO to, final PO from)
+	protected void onRecordCopied(final PO to, final PO from, final CopyTemplate template)
 	{
 		final I_C_OrderLine toOrderLine = InterfaceWrapperHelper.create(to, I_C_OrderLine.class);
 		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);

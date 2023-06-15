@@ -1,8 +1,16 @@
 package org.adempiere.mm.attributes.copyRecordSupport;
 
+<<<<<<< HEAD
+=======
+import de.metas.copy_with_details.OnRecordCopiedListener;
+import de.metas.copy_with_details.template.CopyTemplate;
+import de.metas.util.Services;
+import lombok.NonNull;
+>>>>>>> 2ca0826f645 (Avoid copying order cost generated order line and cloning ASI if configured (#15607))
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.CopyRecordSupport.IOnRecordCopiedListener;
 import org.compiere.model.PO;
+import org.compiere.model.copy.ValueToCopyType;
 
 import de.metas.util.Services;
 
@@ -32,13 +40,19 @@ import de.metas.util.Services;
  * This listener makes sure that when a PO with an ASI is copied, then the ASI is cloned.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CloneASIListener implements IOnRecordCopiedListener
 {
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
 	@Override
-	public void onRecordCopied(PO to, PO from)
+	public void onRecordCopied(PO to, PO from, @NonNull final CopyTemplate template)
 	{
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(to,  from);
+		final ValueToCopyType type = template.getValueToCopyType(COLUMNNAME_M_AttributeSetInstance_ID).orElse(ValueToCopyType.SKIP);
+		if (type.isDirectCopy())
+		{
+			attributeSetInstanceBL.cloneASI(to, from);
+		}
 	}
 }
