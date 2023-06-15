@@ -27,6 +27,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -200,11 +201,9 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return MSG_OK;
 	}
 
-	private void pickHU(final HURow row)
+	private void pickHU(@NonNull final HURow row)
 	{
 		final HuId huId = row.getHuId();
-
-		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
 
 		final PickRequest pickRequest = PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
@@ -212,14 +211,19 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.pickingSlotId(pickingSlotId)
 				.build();
 
-		final ProcessPickingRequest processPickingRequest = ProcessPickingRequest.builder()
+		final ProcessPickingRequest.ProcessPickingRequestBuilder pickingRequestBuilder = ProcessPickingRequest.builder()
 				.huIds(ImmutableSet.of(huId))
-				.ppOrderId(ppOrderView.getPpOrderId())
 				.shipmentScheduleId(shipmentScheduleId)
-				.isTakeWholeHU(isTakeWholeHU)
-				.build();
+				.isTakeWholeHU(isTakeWholeHU);
 
-		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, processPickingRequest);
+		final IView view = getView();
+		if (view instanceof PPOrderLinesView)
+		{
+			final PPOrderLinesView ppOrderView = PPOrderLinesView.cast(view);
+			pickingRequestBuilder.ppOrderId(ppOrderView.getPpOrderId());
+		}
+
+		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, pickingRequestBuilder.build());
 	}
 
 	@Override

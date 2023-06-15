@@ -53,7 +53,7 @@ public class InvoiceEnqueueingWorkpackageProcessor extends WorkpackageProcessorA
 				.setInvoicingParams(getInvoicingParams(parameters))
 				.setFailIfNothingEnqueued(true)
 				.setC_Async_Batch(asyncBatch)
-				.enqueueSelection(PInstanceId.ofRepoIdOrNull(asyncBatch.getAD_PInstance_ID()));
+				.prepareAndEnqueueSelection(PInstanceId.ofRepoIdOrNull(asyncBatch.getAD_PInstance_ID()));
 
 		return Result.SUCCESS;
 	}

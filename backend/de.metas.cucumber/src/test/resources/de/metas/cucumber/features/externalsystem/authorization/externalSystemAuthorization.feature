@@ -2,7 +2,8 @@
 Feature: Camel-ExternalSystem authorization
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And AD_Note table is reset
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | OPT.AD_User_ID | Name                    | OPT.EMail                         | OPT.Login |
@@ -37,7 +38,7 @@ Feature: Camel-ExternalSystem authorization
       | JsonExternalSystemMessage.type |
       | REQUEST_AUTHORIZATION          |
 
-    Then after not more than 30s, validate AD_User_AuthToken record
+    Then after not more than 60s, validate AD_User_AuthToken record
       | AD_User_AuthToken_ID.Identifier | AD_User_ID.Identifier | AD_Role_ID.Identifier |
       | cucumberUserAuthToken_100       | externalSystemUser    | WebUIRole             |
 

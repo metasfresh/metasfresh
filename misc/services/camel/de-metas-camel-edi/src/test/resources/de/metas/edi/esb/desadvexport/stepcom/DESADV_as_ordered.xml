@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EDI_Exp_Desadv AD_Client_Value="metasfresh" ReplicationEvent="0" ReplicationMode="1" ReplicationType="M" SequenceNo="1000004" TrxName="" Version="*">
+    <C_BPartner_ID>
+        <!--Bezeichnet einen Geschäftspartner-->
+        <EdiRecipientGLN>1234567890123</EdiRecipientGLN>
+        <Name>Test Kunde 1</Name>
+        <Value>G0001</Value>
+    </C_BPartner_ID>
+    <C_BPartner_Location_ID>
+        <!--Identifiziert die (Liefer-) Adresse des Geschäftspartners-->
+        <GLN>1234567890123</GLN>
+        <Name>Testadresse 3</Name>
+        <C_Location_ID>
+            <!--Location or Address-->
+            <Address1>teststraße 996</Address1>
+            <C_Country_ID>
+                <!--Country -->
+                <CountryCode>DE</CountryCode>
+            </C_Country_ID>
+            <City>teststadt 3</City>
+            <Postal>45678</Postal>
+        </C_Location_ID>
+    </C_BPartner_Location_ID>
+    <DateOrdered>2022-07-04+03:00</DateOrdered>
+    <DocumentNo>1013013</DocumentNo>
+    <EDI_Desadv_ID>1000003</EDI_Desadv_ID>
+    <EDI_ExportStatus>D</EDI_ExportStatus>
+    <MovementDate>2022-07-04+03:00</MovementDate>
+    <POReference>testReference3</POReference>
+    <EDI_Exp_Desadv_Pack>
+        <GTIN_LU_PackingMaterial>LU_BPARTNER_GTIN</GTIN_LU_PackingMaterial>
+        <IPA_SSCC18>000000000000000062</IPA_SSCC18>
+        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
+        <EDI_Exp_Desadv_Pack_Item>
+            <BestBeforeDate>2022-12-12+02:00</BestBeforeDate>
+            <LotNumber>Lot-Number</LotNumber>
+            <QtyCU>10</QtyCU>
+            <QtyCUsPerLU>30</QtyCUsPerLU>
+            <QtyTU>3</QtyTU>
+            <EDI_DesadvLine_ID>
+                <EDI_DesadvLine_ID>1000003</EDI_DesadvLine_ID>
+                <C_UOM_ID>
+                    <!--Maßeinheit-->
+                    <Name>Stück</Name>
+                    <UOMSymbol>Stk</UOMSymbol>
+                    <X12DE355>PCE</X12DE355>
+                </C_UOM_ID>
+                <Line>10</Line>
+                <M_Product_ID>
+                    <!--Produkt, Leistung, Artikel-->
+                    <Name>Convenience Salat 250g</Name>
+                    <Value>P002737</Value>
+                    <Volume>0</Volume>
+                    <Weight>0.250000000000</Weight>
+                </M_Product_ID>
+                <ProductDescription>Convenience Salat 250g</ProductDescription>
+                <QtyEntered>100</QtyEntered>
+                <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
+                <PriceActual>2.00</PriceActual>
+                <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
+                <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+                <OrderPOReference>testReference3</OrderPOReference>
+                <QtyItemCapacity>10</QtyItemCapacity>
+                <QtyDeliveredInInvoiceUOM>30</QtyDeliveredInInvoiceUOM>
+                <QtyDeliveredInUOM>30</QtyDeliveredInUOM>
+                <OrderLine>10</OrderLine>
+            </EDI_DesadvLine_ID>
+            <GTIN_TU_PackingMaterial>BPARTNER_GTIN</GTIN_TU_PackingMaterial>
+        </EDI_Exp_Desadv_Pack_Item>
+    </EDI_Exp_Desadv_Pack>
+    <Bill_Location_ID>
+        <!--Standort des Geschäftspartners für die Rechnungsstellung-->
+        <GLN>1234567890123</GLN>
+        <Name>Testadresse 3</Name>
+        <C_Location_ID>
+            <!--Location or Address-->
+            <Address1>teststraße 996</Address1>
+            <C_Country_ID>
+                <!--Country -->
+                <CountryCode>DE</CountryCode>
+            </C_Country_ID>
+            <City>teststadt 3</City>
+            <Postal>45678</Postal>
+        </C_Location_ID>
+    </Bill_Location_ID>
+    <C_Currency_ID>
+        <!--Die Währung für diesen Eintrag-->
+        <CurSymbol>€</CurSymbol>
+        <ISO_4217Numeric>978</ISO_4217Numeric>
+        <ISO_Code>EUR</ISO_Code>
+    </C_Currency_ID>
+    <HandOver_Location_ID>
+        <GLN>1234567890123</GLN>
+        <Name>Testadresse 3</Name>
+        <C_Location_ID>
+            <!--Location or Address-->
+            <Address1>teststraße 996</Address1>
+            <C_Country_ID>
+                <!--Country -->
+                <CountryCode>DE</CountryCode>
+            </C_Country_ID>
+            <City>teststadt 3</City>
+            <Postal>45678</Postal>
+        </C_Location_ID>
+    </HandOver_Location_ID>
+    <DropShip_BPartner_ID>
+        <!--Business Partner to ship to-->
+        <EdiRecipientGLN>1234567890123</EdiRecipientGLN>
+        <Name>Test Kunde 1</Name>
+        <Value>G0001</Value>
+    </DropShip_BPartner_ID>
+    <DropShip_Location_ID>
+        <!--Business Partner Location for shipping to-->
+        <GLN>1234567890123</GLN>
+        <Name>Testadresse 3</Name>
+        <C_Location_ID>
+            <!--Location or Address-->
+            <Address1>teststraße 996</Address1>
+            <C_Country_ID>
+                <!--Country -->
+                <CountryCode>DE</CountryCode>
+            </C_Country_ID>
+            <City>teststadt 3</City>
+            <Postal>45678</Postal>
+        </C_Location_ID>
+    </DropShip_Location_ID>
+    <HandOver_Partner_ID>
+        <EdiRecipientGLN>1234567890123</EdiRecipientGLN>
+        <Name>Test Kunde 1</Name>
+        <Value>G0001</Value>
+    </HandOver_Partner_ID>
+    <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+    <DeliveryViaRule>S</DeliveryViaRule>
+</EDI_Exp_Desadv>
