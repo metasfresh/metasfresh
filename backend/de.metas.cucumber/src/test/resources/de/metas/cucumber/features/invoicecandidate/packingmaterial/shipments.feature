@@ -65,8 +65,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -116,8 +116,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -173,8 +173,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -229,8 +229,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -297,8 +297,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -368,8 +368,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.rocessed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false        |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -439,8 +439,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -522,8 +522,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -608,8 +608,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -694,8 +694,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -788,8 +788,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -874,8 +874,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -960,8 +960,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1043,8 +1043,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1128,8 +1128,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1214,8 +1214,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1282,8 +1282,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1353,8 +1353,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1424,8 +1424,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1492,8 +1492,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -1563,8 +1563,8 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
-      | s_s_1                            | 100          | 0            | 100        | 10                | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
+      | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
