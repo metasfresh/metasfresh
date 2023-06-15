@@ -22,10 +22,10 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
-
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * Do nothing implementation of {@link IInvoiceCandidatesChangesChecker}.
@@ -35,25 +35,25 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 /* package */final class NullInvoiceCandidatesChangesChecker implements IInvoiceCandidatesChangesChecker
 {
-	public static final transient NullInvoiceCandidatesChangesChecker instance = new NullInvoiceCandidatesChangesChecker();
+	public static final NullInvoiceCandidatesChangesChecker instance = new NullInvoiceCandidatesChangesChecker();
 
 	private NullInvoiceCandidatesChangesChecker()
 	{
 	}
 
 	@Override
-	public IInvoiceCandidatesChangesChecker setBeforeChanges(Iterable<I_C_Invoice_Candidate> candidates)
+	public IInvoiceCandidatesChangesChecker setBeforeChanges(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
 	{
 		return this;
 	}
 
 	@Override
-	public void assertNoChanges(Iterable<I_C_Invoice_Candidate> candidates)
+	public void assertNoChanges(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
 	{
 	}
 
 	@Override
-	public IInvoiceCandidatesChangesChecker setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum)
+	public IInvoiceCandidatesChangesChecker setTotalNetAmtToInvoiceChecksum(final BigDecimal totalNetAmtToInvoiceChecksum)
 	{
 		return this;
 	}

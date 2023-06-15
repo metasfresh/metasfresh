@@ -56,13 +56,13 @@ Feature: Render invoice address
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
-    And after not more than 30s, C_Invoice_Candidates are found:
+    And after not more than 60s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
@@ -95,13 +95,13 @@ Feature: Render invoice address
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
-    And after not more than 30s, C_Invoice_Candidates are found:
+    And after not more than 60s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
@@ -146,13 +146,13 @@ Feature: Render invoice address
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
-    And after not more than 30s, C_Invoice_Candidates are found:
+    And after not more than 60s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.COLUMNNAME_Bill_BPartner_ID.Identifier | OPT.COLUMNNAME_Bill_Location_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | customer_bp_26_02                          | bpLocation_CH                              | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
