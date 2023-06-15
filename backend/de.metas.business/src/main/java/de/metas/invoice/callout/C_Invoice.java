@@ -182,16 +182,4 @@ public class C_Invoice
 		documentLocationBL.updateCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 
 	}
-
-	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_C_BPartner_ID)
-	public void setInvoiceSectionCodeFromBPartner(final I_C_Invoice invoice)
-	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_ID());
-		if (bPartnerId != null)
-		{
-			final I_C_BPartner bPartner = bpartnerDAO.getById(bPartnerId);
-			invoice.setM_SectionCode_ID(bPartner.getM_SectionCode_ID());
-		}
-	}
-
 }

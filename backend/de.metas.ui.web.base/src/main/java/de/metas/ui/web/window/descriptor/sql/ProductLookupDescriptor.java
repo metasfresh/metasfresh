@@ -133,11 +133,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final String SYSCONFIG_DISPLAY_AVAILABILITY_INFO_ONLY_IF_POSITIVE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.DisplayOnlyPositive";
 
-	private static final String SYSCONFIG_DO_NOT_DISPLAY_AVAILABILITY_INFO = //
-			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.DoNotDisplay";
-
-	private static final String SYSCONFIG_FILTER_OUT_PRODUCTS_WITHOUT_SECTION_CODE = //
-			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.FilterProductsWithoutSectionCode";
+	private static final String SYSCONFIG_FILTER_OUT_PRODUCTS_BASED_ON_SECTION_CODE = //
+			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.FilterProductsBasedOnSectionCode";
 
 	private static final String SYSCONFIG_DisableFullTextSearch = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.DisableFullTextSearch";
@@ -186,7 +183,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
-		param_M_SectionCode_ID = Optional.ofNullable(sectionCodeParamName).map(paramName -> CtxNames.ofNameAndDefaultValue(sectionCodeParamName, "-1")).orElse(null);
+		param_M_SectionCode_ID = CtxNames.ofNullableNameAndDefaultValue(sectionCodeParamName, "-1");
 
 		this.hideDiscontinued = hideDiscontinued;
 
@@ -207,12 +204,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
+			@Nullable final String sectionCodeParamName,
 			final boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
-		param_M_SectionCode_ID = null;
+		param_M_SectionCode_ID = CtxNames.ofNullableNameAndDefaultValue(sectionCodeParamName, "-1");
 		this.hideDiscontinued = hideDiscontinued;
 
 		param_AvailableStockDate = null;
@@ -392,10 +390,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		if (result.isEmpty())
 		{
 			result.add(ProductWithAvailabilityInfo.builder()
-					.productId(productLookupValue.getIdAs(ProductId::ofRepoId))
-					.productDisplayName(productLookupValue.getDisplayNameTrl())
-					.qty(null)
-					.build());
+							   .productId(productLookupValue.getIdAs(ProductId::ofRepoId))
+							   .productDisplayName(productLookupValue.getDisplayNameTrl())
+							   .qty(null)
+							   .build());
 		}
 
 		return ImmutableList.copyOf(result);
@@ -525,23 +523,22 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 	}
 
-	private void appendFilterBySectionCode(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams, final LookupDataSourceContext evalCtx)
+	private void appendFilterBySectionCode(
+			@NonNull final StringBuilder sqlWhereClause,
+			@NonNull final SqlParamsCollector sqlWhereClauseParams,
+			@NonNull final LookupDataSourceContext evalCtx)
 	{
-		if (param_M_SectionCode_ID != null)
+		if (!isFilterProductsBasedOnSectionCodeEnabled())
 		{
-			final int sectionCodeId = param_M_SectionCode_ID.getValueAsInteger(evalCtx);
-			if (sectionCodeId > 0)
-			{
-				sqlWhereClause.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID + "=").append(sqlWhereClauseParams.placeholder(sectionCodeId));
-			}
+			return;
 		}
-	}
 
-	private void appendFilterSectionCodeNotNull(final StringBuilder sqlWhereClause)
-	{
-		if (filterOutProductsWithoutSectionCode() && param_M_SectionCode_ID != null)
+		final int sectionCodeId = param_M_SectionCode_ID.getValueAsInteger(evalCtx);
+		if (sectionCodeId > 0)
 		{
-			sqlWhereClause.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID + " IS NOT NULL");
+			sqlWhereClause
+					.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID + "=")
+					.append(sqlWhereClauseParams.placeholder(sectionCodeId));
 		}
 	}
 
@@ -578,9 +575,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final int limit = evalCtx.getLimit(100);
 		final SqlParamsCollector sqlParams = SqlParamsCollector.newInstance();
 		final String sql = buildSql(sqlParams,
-				evalCtx,
-				offset,
-				limit + 1); // +1 is needed to recognize if we have more results
+									evalCtx,
+									offset,
+									limit + 1); // +1 is needed to recognize if we have more results
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -697,7 +694,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterBySectionCode(sqlWhereClause, sqlWhereClauseParams, evalCtx);
-		appendFilterSectionCodeNotNull(sqlWhereClause);
 		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams);
 
 		//
@@ -708,21 +704,21 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				null, // baseTable
 				"p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID);
 		final StringBuilder sql = new StringBuilder("SELECT"
-				+ "\n p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID
-				+ "\n, (" + sqlDisplayName + ") AS " + COLUMNNAME_ProductDisplayName
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID
-				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
+															+ "\n p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID
+															+ "\n, (" + sqlDisplayName + ") AS " + COLUMNNAME_ProductDisplayName
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID
+															+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
 		//
@@ -843,10 +839,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{
-		if (doNotDisplayAvailabilityInfo())
-		{
-			return productLookupValues;
-		}
 		final boolean afsQueryActivatedInSysConfig = isAFSQueryActivatedInSysConfig();
 		final boolean atpQueryActivatedInSysConfig = isATPQueryActivatedInSysConfig();
 		if (productLookupValues.isEmpty() || !afsQueryActivatedInSysConfig && !atpQueryActivatedInSysConfig)
@@ -871,8 +863,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	}
 
 	private List<Group> getATPAvailabilityInfoGroups(final @NonNull LookupValuesList productLookupValues,
-													 final @Nullable BPartnerId bpartnerId,
-													 final @NonNull ZonedDateTime dateOrNull)
+			final @Nullable BPartnerId bpartnerId,
+			final @NonNull ZonedDateTime dateOrNull)
 	{
 		return ATPProductLookupEnricher.builder()
 				.availableToPromiseAdapter(availableToPromiseAdapter)
@@ -883,10 +875,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	}
 
 	private List<Group> getAFSAvailabilityInfoGroups(final @NonNull LookupValuesList productLookupValues,
-													 final @NonNull ZonedDateTime dateOrNull,
-													 final @Nullable WarehouseId warehouseId,
-													 final @NonNull ClientId clientId,
-													 final @NonNull OrgId orgId)
+			final @NonNull ZonedDateTime dateOrNull,
+			final @Nullable WarehouseId warehouseId,
+			final @NonNull ClientId clientId,
+			final @NonNull OrgId orgId)
 	{
 		return AFSProductLookupEnricher.builder()
 				.availableForSaleAdapter(availableForSaleAdapter)
@@ -932,21 +924,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				"AFS", clientId, orgId);
 	}
 
-	private boolean doNotDisplayAvailabilityInfo()
+	private boolean isFilterProductsBasedOnSectionCodeEnabled()
 	{
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
-		return sysConfigBL.getBooleanValue(SYSCONFIG_DO_NOT_DISPLAY_AVAILABILITY_INFO, false, clientId, orgId);
-	}
-
-
-	private boolean filterOutProductsWithoutSectionCode()
-	{
-		final int clientId = Env.getAD_Client_ID(Env.getCtx());
-		final int orgId = Env.getAD_Org_ID(Env.getCtx());
-
-		return sysConfigBL.getBooleanValue(SYSCONFIG_FILTER_OUT_PRODUCTS_WITHOUT_SECTION_CODE, false, clientId, orgId);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_FILTER_OUT_PRODUCTS_BASED_ON_SECTION_CODE, false, clientId, orgId);
 	}
 
 	private static ITranslatableString createAttributesDisplayString(

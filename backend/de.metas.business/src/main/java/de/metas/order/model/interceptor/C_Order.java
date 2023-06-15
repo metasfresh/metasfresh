@@ -386,14 +386,12 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void setOrderSectionCodeFromBPartner(final I_C_Order order)
+	public void setSectionCodeFromBPartner(final I_C_Order order)
 	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-		if (bPartnerId != null)
-		{
-			final I_C_BPartner bPartner = bpartnerBL.getById(bPartnerId);
-			order.setM_SectionCode_ID(bPartner.getM_SectionCode_ID());
-		}
+		Optional.ofNullable(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()))
+				.map(bpartnerBL::getById)
+				.map(I_C_BPartner::getM_SectionCode_ID)
+				.ifPresent(order::setM_SectionCode_ID);
 	}
 
 	private void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder)

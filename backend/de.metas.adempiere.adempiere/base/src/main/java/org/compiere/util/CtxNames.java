@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -109,6 +110,16 @@ public class CtxNames
 				name, ImmutableList.of(), // modifiers
 				defaultValue // defaultValue
 		);
+	}
+
+	@Nullable
+	public static CtxName ofNullableNameAndDefaultValue(
+			@Nullable final String name,
+			@Nullable final String defaultValue)
+	{
+		return Optional.ofNullable(name)
+				.map(n -> CtxNames.ofNameAndDefaultValue(n, defaultValue))
+				.orElse(null);
 	}
 
 	@Nullable
