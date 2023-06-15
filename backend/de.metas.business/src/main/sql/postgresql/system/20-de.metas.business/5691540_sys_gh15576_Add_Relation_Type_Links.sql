@@ -11,7 +11,9 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T16:51:32.750Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,3542,0,541744,321,TO_TIMESTAMP('2023-06-13 19:51:32','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','N',TO_TIMESTAMP('2023-06-13 19:51:32','YYYY-MM-DD HH24:MI:SS'),100,'m_inventory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning      inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.link_order_id= @C_Order_ID/-1@)')
+INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy, WhereClause)
+VALUES (0, 3542, 0, 541744, 321, TO_TIMESTAMP('2023-06-13 19:51:32', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.order', 'Y', 'N', 'N', TO_TIMESTAMP('2023-06-13 19:51:32', 'YYYY-MM-DD HH24:MI:SS'), 100,
+        'm_inventory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning      inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.link_order_id= @C_Order_ID/-1@)')
 ;
 
 -- Name: C_Order (SO) => M_Inventory
@@ -40,21 +42,26 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T17:12:49.104Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,3542,0,541745,321,TO_TIMESTAMP('2023-06-13 20:12:49','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','N',TO_TIMESTAMP('2023-06-13 20:12:49','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy)
+VALUES (0, 3542, 0, 541745, 321, TO_TIMESTAMP('2023-06-13 20:12:49', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.order', 'Y', 'N', 'N', TO_TIMESTAMP('2023-06-13 20:12:49', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 -- Reference: C_Order (PO) => M_Inventory
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T17:14:30.577Z
-UPDATE AD_Ref_Table SET WhereClause='m_inventory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 20:14:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541745
+UPDATE AD_Ref_Table
+SET WhereClause='m_inventory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 20:14:30', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541745
 ;
 
 -- Reference: C_Order (PO) => M_Inventory
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T17:28:46.743Z
-UPDATE AD_Ref_Table SET WhereClause='M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 20:28:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541745
+UPDATE AD_Ref_Table
+SET WhereClause='M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 20:28:46', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541745
 ;
 
 -- 2023-06-13T17:30:55.304Z
@@ -65,21 +72,27 @@ INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Re
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T17:33:24.725Z
-UPDATE AD_Ref_Table SET WhereClause='m_invetory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 20:33:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541745
+UPDATE AD_Ref_Table
+SET WhereClause='m_invetory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 20:33:24', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541745
 ;
 
 -- Reference: C_Order (PO) => M_Inventory
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T17:33:29.836Z
-UPDATE AD_Ref_Table SET WhereClause='m_inventory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 20:33:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541745
+UPDATE AD_Ref_Table
+SET WhereClause='m_inventory.M_Inventory_ID IN (SELECT m_inventory_id from m_delivery_planning     inner join c_order on m_delivery_planning.c_order_id = c_order.c_order_id and c_order.issotrx=''N''     inner join m_inventory on c_order.c_order_id = m_inventory.c_po_order_id where c_order.c_order_id= @C_Order_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 20:33:29', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541745
 ;
 
 -- Reference: C_Order (PO) => M_Inventory
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T17:42:39.645Z
-UPDATE AD_Ref_Table SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning     inner join c_order c on m_delivery_planning.c_order_id = c.c_order_id and c_order.issotrx=''N''     inner join m_inventory m on c_order.c_order_id = m.c_po_order_id where c.c_order_id=@C_Order_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 20:42:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541745
+UPDATE AD_Ref_Table
+SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning     inner join c_order c on m_delivery_planning.c_order_id = c.c_order_id and c_order.issotrx=''N''     inner join m_inventory m on c_order.c_order_id = m.c_po_order_id where c.c_order_id=@C_Order_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 20:42:39', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541745
 ;
 
 -- Reference: C_Order (PO) => M_Inventory
@@ -100,26 +113,15 @@ UPDATE AD_Ref_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2023-06-13 20:46
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T17:48:14.055Z
-UPDATE AD_Ref_Table SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id where c.c_order_id=@C_Order_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 20:48:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541745
-;
-
--- Reference: RelType C_Invoice_ID->M_InOut
--- Table: M_InOut
--- Key: M_InOut.M_InOut_ID
--- 2023-06-13T17:51:12.402Z
-UPDATE AD_Ref_Table SET AD_Window_ID=168,Updated=TO_TIMESTAMP('2023-06-13 20:51:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540057
-;
-
--- Reference: RelType C_Invoice_ID->M_InOut
--- Table: M_InOut
--- Key: M_InOut.M_InOut_ID
--- 2023-06-13T17:56:29.514Z
-UPDATE AD_Ref_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2023-06-13 20:56:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540057
+UPDATE AD_Ref_Table
+SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id where c.c_order_id=@C_Order_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 20:48:14', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541745
 ;
 
 -- Name: M_InOut (PO) => M_Inventory
 -- 2023-06-13T17:58:36.678Z
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541746,TO_TIMESTAMP('2023-06-13 20:58:36','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inout','Y','N','M_InOut (PO) => M_Inventory',TO_TIMESTAMP('2023-06-13 20:58:36','YYYY-MM-DD HH24:MI:SS'),100,'T')
+INSERT INTO AD_Reference (AD_Client_ID, AD_Org_ID, AD_Reference_ID, Created, CreatedBy, EntityType, IsActive, IsOrderByValue, Name, Updated, UpdatedBy, ValidationType)
+VALUES (0, 0, 541746, TO_TIMESTAMP('2023-06-13 20:58:36', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.inout', 'Y', 'N', 'M_InOut (PO) => M_Inventory', TO_TIMESTAMP('2023-06-13 20:58:36', 'YYYY-MM-DD HH24:MI:SS'), 100, 'T')
 ;
 
 -- 2023-06-13T17:58:36.684Z
@@ -134,7 +136,9 @@ INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Re
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T18:00:08.839Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,3542,0,541746,321,TO_TIMESTAMP('2023-06-13 21:00:08','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inout','Y','N','N',TO_TIMESTAMP('2023-06-13 21:00:08','YYYY-MM-DD HH24:MI:SS'),100,'M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join m_inout i on i.c_order_id = c.c_order_id     where i.m_inout_id=@M_InOut_ID/-1@)')
+INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy, WhereClause)
+VALUES (0, 3542, 0, 541746, 321, TO_TIMESTAMP('2023-06-13 21:00:08', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.inout', 'Y', 'N', 'N', TO_TIMESTAMP('2023-06-13 21:00:08', 'YYYY-MM-DD HH24:MI:SS'), 100,
+        'M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join m_inout i on i.c_order_id = c.c_order_id     where i.m_inout_id=@M_InOut_ID/-1@)')
 ;
 
 -- 2023-06-13T18:01:07.414Z
@@ -154,7 +158,9 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T18:05:08.921Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,3542,0,541747,321,TO_TIMESTAMP('2023-06-13 21:05:08','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.invoice','Y','N','N',TO_TIMESTAMP('2023-06-13 21:05:08','YYYY-MM-DD HH24:MI:SS'),100,'M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join c_invoice i on i.c_order_id = c.c_order_id     where i.c_invoice_id=@C_Invoice_ID/-1@)')
+INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy, WhereClause)
+VALUES (0, 3542, 0, 541747, 321, TO_TIMESTAMP('2023-06-13 21:05:08', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.invoice', 'Y', 'N', 'N', TO_TIMESTAMP('2023-06-13 21:05:08', 'YYYY-MM-DD HH24:MI:SS'), 100,
+        'M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join c_invoice i on i.c_order_id = c.c_order_id     where i.c_invoice_id=@C_Invoice_ID/-1@)')
 ;
 
 -- 2023-06-13T18:06:24.514Z
@@ -173,14 +179,18 @@ UPDATE AD_RelationType SET EntityType='de.metas.order', Name='C_Order (PO) => M_
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T18:11:10.626Z
-UPDATE AD_Ref_Table SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id where c.link_order_id=@C_Order_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 21:11:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541744
+UPDATE AD_Ref_Table
+SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id where c.link_order_id=@C_Order_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 21:11:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541744
 ;
 
 -- Reference: C_Order (SO) => M_Inventory
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T18:11:23.713Z
-UPDATE AD_Ref_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2023-06-13 21:11:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541744
+UPDATE AD_Ref_Table
+SET AD_Window_ID=NULL, Updated=TO_TIMESTAMP('2023-06-13 21:11:23', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541744
 ;
 
 -- 2023-06-13T18:16:15.965Z
@@ -204,14 +214,18 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T18:17:43.394Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,3542,0,541748,321,TO_TIMESTAMP('2023-06-13 21:17:43','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inout','Y','N','N',TO_TIMESTAMP('2023-06-13 21:17:43','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy)
+VALUES (0, 3542, 0, 541748, 321, TO_TIMESTAMP('2023-06-13 21:17:43', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.inout', 'Y', 'N', 'N', TO_TIMESTAMP('2023-06-13 21:17:43', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 -- Reference: M_InOut (SO) => M_Inventory
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T18:17:58.190Z
-UPDATE AD_Ref_Table SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join m_inout i on i.c_order_id = c.link_order_id     where i.m_inout_id=@M_InOut_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 21:17:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541748
+UPDATE AD_Ref_Table
+SET WhereClause='M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join m_inout i on i.c_order_id = c.link_order_id     where i.m_inout_id=@M_InOut_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 21:17:58', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy=100
+WHERE AD_Reference_ID = 541748
 ;
 
 -- 2023-06-13T18:18:22.414Z
@@ -235,7 +249,9 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-13T18:19:58.398Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,3542,0,541749,321,TO_TIMESTAMP('2023-06-13 21:19:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.invoice','Y','N','N',TO_TIMESTAMP('2023-06-13 21:19:58','YYYY-MM-DD HH24:MI:SS'),100,'M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join c_invoice i on i.c_order_id = c.link_order_id     where i.c_invoice_id=@C_Invoice_ID/-1@)')
+INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy, WhereClause)
+VALUES (0, 3542, 0, 541749, 321, TO_TIMESTAMP('2023-06-13 21:19:58', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.invoice', 'Y', 'N', 'N', TO_TIMESTAMP('2023-06-13 21:19:58', 'YYYY-MM-DD HH24:MI:SS'), 100,
+        'M_Inventory_ID IN (SELECT m.m_inventory_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     inner join c_invoice i on i.c_order_id = c.link_order_id     where i.c_invoice_id=@C_Invoice_ID/-1@)')
 ;
 
 -- 2023-06-13T18:23:58.243Z
@@ -262,7 +278,9 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 -- Table: C_Invoice_Candidate
 -- Key: C_Invoice_Candidate.C_Invoice_Candidate_ID
 -- 2023-06-13T18:32:32.561Z
-UPDATE AD_Ref_Table SET WhereClause='C_Invoice_Candidate_ID IN (SELECT i.c_invoice_candidate_id from c_invoice_candidate i      inner join m_delivery_planning d on i.c_order_id=d.c_order_id      where  d.m_delivery_planning_id=@M_Delivery_Planning/-1@)',Updated=TO_TIMESTAMP('2023-06-13 21:32:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541750
+UPDATE AD_Ref_Table
+SET WhereClause='C_Invoice_Candidate_ID IN (SELECT i.c_invoice_candidate_id from c_invoice_candidate i      inner join m_delivery_planning d on i.c_order_id=d.c_order_id      where  d.m_delivery_planning_id=@M_Delivery_Planning/-1@)', Updated=TO_TIMESTAMP('2023-06-13 21:32:32', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541750
 ;
 
 -- 2023-06-13T18:32:54.153Z
@@ -343,14 +361,18 @@ UPDATE AD_Ref_Table SET WhereClause='C_Invoice_Candidate_ID IN (SELECT i.c_invoi
 -- Table: C_Invoice_Candidate
 -- Key: C_Invoice_Candidate.C_Invoice_Candidate_ID
 -- 2023-06-13T19:01:39.222Z
-UPDATE AD_Ref_Table SET WhereClause='C_Invoice_Candidate_ID IN (SELECT i.c_invoice_candidate_id from c_invoice_candidate i     inner join m_delivery_planning d on i.c_order_id=d.c_order_id and i.issotrx=''N''     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-13 22:01:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541750
+UPDATE AD_Ref_Table
+SET WhereClause='C_Invoice_Candidate_ID IN (SELECT i.c_invoice_candidate_id from c_invoice_candidate i     inner join m_delivery_planning d on i.c_order_id=d.c_order_id and i.issotrx=''N''     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-13 22:01:39', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541750
 ;
 
 -- Reference: M_Delivery_Planning => C_Invoice_Candidate
 -- Table: C_Invoice_Candidate
 -- Key: C_Invoice_Candidate.C_Invoice_Candidate_ID
 -- 2023-06-13T19:02:07.706Z
-UPDATE AD_Ref_Table SET AD_Window_ID=540983,Updated=TO_TIMESTAMP('2023-06-13 22:02:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541750
+UPDATE AD_Ref_Table
+SET AD_Window_ID=540983, Updated=TO_TIMESTAMP('2023-06-13 22:02:07', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541750
 ;
 
 -- Name: M_Delivery_Planning => C_Invoice_Candidate (PO)
@@ -470,7 +492,9 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-14T10:54:39.298Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,3542,0,541758,321,TO_TIMESTAMP('2023-06-14 13:54:39','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','N',TO_TIMESTAMP('2023-06-14 13:54:39','YYYY-MM-DD HH24:MI:SS'),100,'M_Inventory_ID IN (SELECT i.m_inventory_id from m_inventory i     inner join c_order o on o.c_order_id=i.c_po_order_id     inner join m_delivery_planning d on c.link_order_id=d.c_order_id     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)')
+INSERT INTO AD_Ref_Table (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, ShowInactiveValues, Updated, UpdatedBy, WhereClause)
+VALUES (0, 3542, 0, 541758, 321, TO_TIMESTAMP('2023-06-14 13:54:39', 'YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.order', 'Y', 'N', 'N', TO_TIMESTAMP('2023-06-14 13:54:39', 'YYYY-MM-DD HH24:MI:SS'), 100,
+        'M_Inventory_ID IN (SELECT i.m_inventory_id from m_inventory i     inner join c_order o on o.c_order_id=i.c_po_order_id     inner join m_delivery_planning d on c.link_order_id=d.c_order_id     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)')
 ;
 
 -- 2023-06-14T10:55:05.485Z
@@ -481,5 +505,7 @@ UPDATE AD_RelationType SET AD_Reference_Target_ID=541758,Updated=TO_TIMESTAMP('2
 -- Table: M_Inventory
 -- Key: M_Inventory.M_Inventory_ID
 -- 2023-06-14T10:57:05.945Z
-UPDATE AD_Ref_Table SET WhereClause='M_Inventory_ID IN (SELECT i.m_inventory_id from m_inventory i     inner join c_order o on o.c_order_id=i.c_po_order_id     inner join m_delivery_planning d on o.link_order_id=d.c_order_id     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-14 13:57:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541758
+UPDATE AD_Ref_Table
+SET WhereClause='M_Inventory_ID IN (SELECT i.m_inventory_id from m_inventory i     inner join c_order o on o.c_order_id=i.c_po_order_id     inner join m_delivery_planning d on o.link_order_id=d.c_order_id     where  d.m_delivery_planning_id=@M_Delivery_Planning_ID/-1@)', Updated=TO_TIMESTAMP('2023-06-14 13:57:05', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID = 541758
 ;
