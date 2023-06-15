@@ -194,7 +194,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		this.excludeBOMProducts = excludeBOMProducts;
 
-		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
+		final ImmutableSet.Builder<CtxName> ctxNamesNeededForQuerySetBuilder = ImmutableSet.builder();
+
+		ctxNamesNeededForQuerySetBuilder.add(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
+		if (param_M_SectionCode_ID != null)
+		{
+			ctxNamesNeededForQuerySetBuilder.add(param_M_SectionCode_ID);
+		}
+
+		ctxNamesNeededForQuery = ctxNamesNeededForQuerySetBuilder.build();
 
 		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
@@ -220,7 +228,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		this.excludeBOMProducts = excludeBOMProducts;
 
-		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
+		final ImmutableSet.Builder<CtxName> ctxNamesNeededForQuerySetBuilder = ImmutableSet.builder();
+
+		ctxNamesNeededForQuerySetBuilder.add(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
+		if (param_M_SectionCode_ID != null)
+		{
+			ctxNamesNeededForQuerySetBuilder.add(param_M_SectionCode_ID);
+		}
+
+		ctxNamesNeededForQuery = ctxNamesNeededForQuerySetBuilder.build();
 
 		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
