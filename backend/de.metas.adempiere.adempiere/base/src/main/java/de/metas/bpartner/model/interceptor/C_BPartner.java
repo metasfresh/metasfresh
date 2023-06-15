@@ -2,12 +2,12 @@ package de.metas.bpartner.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerPOCopyRecordSupport;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.security.Principal;
@@ -27,7 +27,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
@@ -76,7 +75,7 @@ public class C_BPartner
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 
-	private final static transient Logger logger = LogManager.getLogger(C_BPartner.class);
+	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	private final RecordAccessConfigService recordAccessConfigService = SpringContextHolder.instance.getBean(RecordAccessConfigService.class);
 	private final RecordAccessService recordAccessService = SpringContextHolder.instance.getBean(RecordAccessService.class);
@@ -85,7 +84,6 @@ public class C_BPartner
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_C_BPartner.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_C_BPartner.Table_Name, BPartnerPOCopyRecordSupport.class);
 
 		Services.get(ITabCalloutFactory.class)
 				.registerTabCalloutForTable(I_C_BPartner.Table_Name, de.metas.bpartner.callout.C_BPartner_TabCallout.class);

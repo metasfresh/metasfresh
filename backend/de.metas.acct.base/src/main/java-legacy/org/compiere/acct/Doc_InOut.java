@@ -37,7 +37,6 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
@@ -232,7 +231,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
-				.setAmtSource(toMoneyAndRoundToStdPrecision(costs), null)
+				.setAmt(roundToStdPrecision(costs), null)
 				.buildAndAdd();
 		if (dr == null)
 		{
@@ -249,7 +248,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
-				.setAmtSource(null, toMoneyAndRoundToStdPrecision(costs))
+				.setAmt(null, roundToStdPrecision(costs))
 				.buildAndAdd();
 		if (cr == null)
 		{
@@ -284,7 +283,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
-				.setAmtSource(toMoneyAndRoundToStdPrecision(costs), null)
+				.setAmt(roundToStdPrecision(costs), null)
 				.buildAndAdd();
 		if (dr == null)
 		{
@@ -299,7 +298,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
-				.setAmtSource(null, toMoneyAndRoundToStdPrecision(costs))
+				.setAmt(null, roundToStdPrecision(costs))
 				.buildAndAdd();
 		if (cr == null)
 		{
@@ -352,9 +351,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
-				.setAmtSource(toMoneyAndRoundToStdPrecision(costs), null)
+				.setAmt(roundToStdPrecision(costs), null)
 				.setQty(line.getQty()) // (+) Qty
-				.bpartnerId(line.getBPartnerId(costElement.getId()))
+				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -370,11 +369,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(costElement.isMaterialElement()
-						? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
-						: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
-				.setAmtSource(null, toMoneyAndRoundToStdPrecision(costs))
+									? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
+									: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
+				.setAmt(null, roundToStdPrecision(costs))
 				.setQty(line.getQty().negate()) // (-) Qty
-				.bpartnerId(line.getBPartnerId(costElement.getId()))
+				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -412,7 +411,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
-				.setAmtSource(toMoneyAndRoundToStdPrecision(costs), null)
+				.setAmt(roundToStdPrecision(costs), null)
 				.setQty(line.getQty().negate())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
@@ -436,7 +435,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
-				.setAmtSource(null, toMoneyAndRoundToStdPrecision(costs))
+				.setAmt(null, roundToStdPrecision(costs))
 				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
@@ -483,9 +482,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	}
 
 	@NonNull
-	private Money toMoneyAndRoundToStdPrecision(@NonNull final CostAmount costs)
+	private CostAmount roundToStdPrecision(@NonNull final CostAmount costs)
 	{
-		return costs.toMoney().round(services::getCurrencyStandardPrecision);
+		return costs.round(services::getCurrencyStandardPrecision);
 	}
 
 	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
@@ -506,5 +505,4 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//noinspection DataFlowIssue
 		return optionalSalesOrderId.orElse(null);
 	}
-
 }   // Doc_InOut

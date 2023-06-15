@@ -311,7 +311,6 @@ public class C_Invoice_StepDef
 
 		final InvoicingParams invoicingParams = InvoicingParams.builder()
 				.ignoreInvoiceSchedule(false)
-				.supplementMissingPaymentTermIds(true)
 				.build();
 
 		invoiceCandBL.enqueueForInvoicing()

@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_InvoiceTax
  *  @author metasfresh (generated) 
@@ -212,6 +211,27 @@ public interface I_C_InvoiceTax
 	String COLUMNNAME_IsPackagingTax = "IsPackagingTax";
 
 	/**
+	 * Set Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReverseCharge (boolean IsReverseCharge);
+
+	/**
+	 * Get Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReverseCharge();
+
+	ModelColumn<I_C_InvoiceTax, Object> COLUMN_IsReverseCharge = new ModelColumn<>(I_C_InvoiceTax.class, "IsReverseCharge", null);
+	String COLUMNNAME_IsReverseCharge = "IsReverseCharge";
+
+	/**
 	 * Set Price incl. Tax.
 	 * Tax is included in the price
 	 *
@@ -277,6 +297,27 @@ public interface I_C_InvoiceTax
 
 	ModelColumn<I_C_InvoiceTax, Object> COLUMN_Processed = new ModelColumn<>(I_C_InvoiceTax.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Reverse Charge Tax Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReverseChargeTaxAmt (BigDecimal ReverseChargeTaxAmt);
+
+	/**
+	 * Get Reverse Charge Tax Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getReverseChargeTaxAmt();
+
+	ModelColumn<I_C_InvoiceTax, Object> COLUMN_ReverseChargeTaxAmt = new ModelColumn<>(I_C_InvoiceTax.class, "ReverseChargeTaxAmt", null);
+	String COLUMNNAME_ReverseChargeTaxAmt = "ReverseChargeTaxAmt";
 
 	/**
 	 * Set Tax Amount.

@@ -21,13 +21,6 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			org.compiere.model.I_C_InvoiceLine.class);
 
 	@Override
-	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice,
-							 final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef) // settings
-	{
-		return copyLinesFrom(fromInvoice, toInvoice, counter, setOrderRef, setInvoiceRef, defaultDocLineCopyHandler);
-	}
-
-	@Override
 	public int copyLinesFrom(final I_C_Invoice fromInvoice,
 							 final I_C_Invoice toInvoice,
 							 final boolean counter,

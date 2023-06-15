@@ -157,6 +157,29 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_Batch = "Batch";
 
 	/**
+	 * Set Blocked Business Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setBlockedBPartner (boolean BlockedBPartner);
+
+	/**
+	 * Get Blocked Business Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isBlockedBPartner();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_BlockedBPartner = new ModelColumn<>(I_M_Delivery_Planning.class, "BlockedBPartner", null);
+	String COLUMNNAME_BlockedBPartner = "BlockedBPartner";
+
+	/**
 	 * Set Partner Name.
 	 *
 	 * <br>Type: String
@@ -463,8 +486,8 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_Grade = "Grade";
 
 	/**
-	 * Set Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -473,8 +496,8 @@ public interface I_M_Delivery_Planning
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1086,7 +1109,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set PO/SO Line Qty.
+	 * Set Qty Ordered.
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
@@ -1096,7 +1119,7 @@ public interface I_M_Delivery_Planning
 	void setQtyOrdered (BigDecimal QtyOrdered);
 
 	/**
-	 * Get PO/SO Line Qty.
+	 * Get Qty Ordered.
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
@@ -1222,6 +1245,153 @@ public interface I_M_Delivery_Planning
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_M_Delivery_Planning.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_M_Delivery_Planning.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_M_Delivery_Planning.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_M_Delivery_Planning.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_M_Delivery_Planning.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_M_Delivery_Planning.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_Delivery_Planning.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
 	 * Set Warehouse Name.

@@ -38,7 +38,8 @@ public class M_Delivery_Planning
 {
 	private final DeliveryPlanningService deliveryPlanningService;
 
-	public M_Delivery_Planning(@NonNull final DeliveryPlanningService deliveryPlanningService)
+	public M_Delivery_Planning(
+			@NonNull final DeliveryPlanningService deliveryPlanningService)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
 	}

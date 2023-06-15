@@ -9,6 +9,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -74,7 +75,8 @@ public class ExternallyReferencedCandidate
 				.qtyDelivered(newIC.getQtyDelivered())
 				.qtyOrdered(newIC.getQtyOrdered())
 				.soTrx(newIC.getSoTrx())
-				.invoiceDetailItems(newIC.getInvoiceDetailItems());
+				.invoiceDetailItems(newIC.getInvoiceDetailItems())
+				.paymentTermId(newIC.getPaymentTermId());
 	}
 
 	private final OrgId orgId;
@@ -129,6 +131,9 @@ public class ExternallyReferencedCandidate
 
 	private String lineDescription;
 
+	@NonNull
+	PaymentTermId paymentTermId;
+
 	private List<InvoiceDetailItem> invoiceDetailItems;
 
 	@Builder
@@ -158,6 +163,7 @@ public class ExternallyReferencedCandidate
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
+			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -185,6 +191,7 @@ public class ExternallyReferencedCandidate
 		this.taxId = taxId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.paymentTermId = paymentTermId;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 
 		final CurrencyId currencyId = CollectionUtils

@@ -9,6 +9,8 @@ import de.metas.acct.gljournal_sap.service.SAPGLJournalLineCreateRequest;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.document.dimension.Dimension;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
@@ -29,13 +31,15 @@ public class SAPGLJournalLineQuickInputProcessor implements IQuickInputProcessor
 		final ISAPGLJournalLineQuickInput lineQuickInput = quickInput.getQuickInputDocumentAs(ISAPGLJournalLineQuickInput.class);
 
 		final SAPGLJournalLineId glJournalLineId = glJournalService.createLine(SAPGLJournalLineCreateRequest.builder()
-																					   .glJournalId(SAPGLJournalLoaderAndSaver.extractId(headerRecord))
-																					   .postingSign(PostingSign.ofCode(lineQuickInput.getPostingSign()))
-																					   .account(Account.ofId(AccountId.ofRepoId(lineQuickInput.getGL_Account_ID())))
-																					   .amount(lineQuickInput.getAmount())
-																					   .sectionCodeId(SectionCodeId.ofRepoId(lineQuickInput.getM_SectionCode_ID()))
-																					   .taxId(TaxId.ofRepoIdOrNull(lineQuickInput.getC_Tax_ID()))
-																					   .build());
+				.postingSign(PostingSign.ofCode(lineQuickInput.getPostingSign()))
+				.account(Account.ofId(AccountId.ofRepoId(lineQuickInput.getGL_Account_ID())))
+				.amount(lineQuickInput.getAmount())
+				.dimension(Dimension.builder()
+						.sectionCodeId(SectionCodeId.ofRepoIdOrNull(lineQuickInput.getM_SectionCode_ID()))
+						.activityId(ActivityId.ofRepoIdOrNull(lineQuickInput.getC_Activity_ID()))
+						.build())
+				.taxId(TaxId.ofRepoIdOrNull(lineQuickInput.getC_Tax_ID()))
+				.build(), SAPGLJournalLoaderAndSaver.extractId(headerRecord));
 
 		final DocumentId documentId = DocumentId.of(glJournalLineId);
 		return ImmutableSet.of(documentId);

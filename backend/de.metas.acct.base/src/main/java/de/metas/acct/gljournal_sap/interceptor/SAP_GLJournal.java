@@ -6,9 +6,11 @@ import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.copy_with_details.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,11 @@ public class SAP_GLJournal
 	private final SAPGLJournalService glJournalService;
 
 	public SAP_GLJournal(final SAPGLJournalService glJournalService) {this.glJournalService = glJournalService;}
+	@Init
+	public void init()
+	{
+		CopyRecordFactory.enableForTableName(I_SAP_GLJournal.Table_Name);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_SAP_GLJournal record, final ModelChangeType timing)

@@ -1,13 +1,12 @@
 package de.metas.acct.gljournal_sap.service;
 
+import de.metas.acct.Account;
 import de.metas.acct.gljournal_sap.PostingSign;
-import de.metas.acct.gljournal_sap.SAPGLJournalId;
-import de.metas.sectionCode.SectionCodeId;
+import de.metas.document.dimension.Dimension;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -16,10 +15,11 @@ import java.math.BigDecimal;
 @Builder
 public class SAPGLJournalLineCreateRequest
 {
-	@NonNull SAPGLJournalId glJournalId;
 	@NonNull PostingSign postingSign;
 	@NonNull Account account;
 	@NonNull BigDecimal amount;
-	@Nullable SectionCodeId sectionCodeId;
+	@NonNull Dimension dimension;
 	@Nullable TaxId taxId;
+	@Nullable String description;
+	boolean determineTaxBaseSAP;
 }

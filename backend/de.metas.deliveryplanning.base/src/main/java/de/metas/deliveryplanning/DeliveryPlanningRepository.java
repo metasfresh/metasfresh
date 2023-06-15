@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.cache.CacheMgt;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.InOutId;
@@ -56,7 +56,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.model.I_M_Delivery_Planning_Delivery_Instructions_V;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -84,6 +83,13 @@ public class DeliveryPlanningRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+
+	private final DimensionService dimensionService;
+
+	public DeliveryPlanningRepository(@NonNull final DimensionService dimensionService)
+	{
+		this.dimensionService = dimensionService;
+	}
 
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -307,6 +313,8 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setC_OriginCountry_ID(CountryId.toRepoId(request.getOriginCountryId()));
 		deliveryPlanningRecord.setC_DestinationCountry_ID(CountryId.toRepoId(request.getDestinationCountryId()));
 
+		dimensionService.updateRecordUserElements(deliveryPlanningRecord, request.getDimension());
+
 		save(deliveryPlanningRecord);
 	}
 
@@ -341,7 +349,6 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.create()
 				.stream();
-
 	}
 
 	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -448,6 +455,8 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
 
+		dimensionService.updateRecordUserElements(deliveryInstructionRecord, request.getDimension());
+
 		save(deliveryInstructionRecord);
 
 		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
@@ -476,8 +485,6 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 
 		saveRecord(shippingPackageRecord);
-
-		CacheMgt.get().reset(I_M_Delivery_Planning_Delivery_Instructions_V.Table_Name, shippingPackageRecord.getM_ShippingPackage_ID());
 
 		return deliveryInstructionRecord;
 	}
@@ -607,4 +614,13 @@ public class DeliveryPlanningRepository
 				.min(Timestamp::compareTo)
 				.orElse(null);
 	}
+
+	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
+		deliveryPlanning.setPlannedLoadedQuantity(quantity.toBigDecimal());
+		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
+		save(deliveryPlanning);
+	}
+
 }

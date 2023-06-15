@@ -79,7 +79,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceCandBLCreateInvoicesTest
@@ -122,7 +123,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 			// just create a dummy invoice
 			invoice = InterfaceWrapperHelper.create(ctx, I_C_Invoice.class, localTrxName);
-			InterfaceWrapperHelper.save(invoice);
+			save(invoice);
 		}
 
 		private void assumeInvoiceCandidatesAreNotProcessed()
@@ -179,8 +180,9 @@ public class InvoiceCandBLCreateInvoicesTest
 	public void test_InvalidInvoiceCandidate_NoUserInCharge_FlagItAsError()
 	{
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+
 		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10/* priceEntered */, 3/* qty */, false/* isManual */, true/* isSOTrx */);
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		// clear C_Invoice_Candidate_Recompute; otherwise we won't get our error out of DefaultAggregator.mkLineAggregationKeyToUse()
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
@@ -234,6 +236,7 @@ public class InvoiceCandBLCreateInvoicesTest
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
+
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2, ic3);
 
 		//
@@ -254,7 +257,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		// Simulate IC1 was already processed
 		{
 			ic1.setProcessed(true);
-			InterfaceWrapperHelper.save(ic1);
+			save(ic1);
 		}
 
 		final IInvoiceGenerateResult result = invoiceCandBL.createInvoiceGenerateResult(true); // shallStoreInvoices=true
@@ -296,7 +299,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		// Save all invoice candidates
 		for (I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			InterfaceWrapperHelper.save(ic);
+			save(ic);
 		}
 
 		//
@@ -382,7 +385,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 		// change priceEntered
 		ic2.setPriceEntered_Override(BigDecimal.valueOf(5));
-		InterfaceWrapperHelper.save(ic2);
+		save(ic2);
 
 		final BigDecimal priceActual_OverrideComputed2 = Percent.of(ic2.getDiscount()).subtractFromBase(ic2.getPriceEntered_Override(), precision2.toInt());
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
@@ -391,7 +394,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		// Make sure everything is saved until now:
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			InterfaceWrapperHelper.save(ic);
+			save(ic);
 		}
 
 		//
@@ -442,6 +445,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		SpringContextHolder.registerJUnitBean(new ChargeRepository());
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+
 		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerId(bpartner.getC_BPartner_ID())
 				.setPriceEntered(10)
@@ -451,12 +455,16 @@ public class InvoiceCandBLCreateInvoicesTest
 				.setSOTrx(true)
 				.build(); // priceEntered, qty, discount
 
-		new InvoiceCandidateDimensionFactory().updateRecord(
+		final InvoiceCandidateDimensionFactory invoiceCandidateDimensionFactory = new InvoiceCandidateDimensionFactory();
+		final Dimension dimension = DimensionTest.newFullyPopulatedDimension().toBuilder()
+				.productId(icTestSupport.getProductId())
+				.build();
+
+		invoiceCandidateDimensionFactory.updateRecord(
 				ic,
-				DimensionTest.newFullyPopulatedDimension().toBuilder()
-						.productId(icTestSupport.getProductId())
-						.build());
-		InterfaceWrapperHelper.save(ic);
+				dimension);
+
+		save(ic);
 
 		icTestSupport.updateInvalid(ImmutableList.of(ic));
 

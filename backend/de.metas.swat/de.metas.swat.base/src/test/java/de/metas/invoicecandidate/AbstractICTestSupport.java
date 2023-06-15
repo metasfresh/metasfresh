@@ -21,6 +21,7 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -60,6 +61,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -87,6 +89,7 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -97,6 +100,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
@@ -106,6 +110,7 @@ import org.junit.BeforeClass;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -144,6 +149,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	@Getter
 	protected ProductId productId;
 	@Getter
+	protected PaymentTermId paymentTermId;
+	@Getter
 	protected UomId uomId;
 	protected ActivityId activityId;
 	protected WarehouseId warehouseId;
@@ -175,6 +182,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InvoiceLineDimensionFactory());
+		dimensionFactories.add(new InvoiceDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
@@ -252,9 +260,21 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		final I_M_Product product = BusinessTestHelper.createProduct("product", stockUomRecord);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
+		final I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.create(ctx, I_C_PaymentTerm.class, trxName);
+		paymentTerm.setValue("paymentTerm");
+		paymentTerm.setName("paymentTerm");
+		paymentTerm.setNetDays(10);
+		paymentTerm.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
+		paymentTerm.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
+		paymentTerm.setAD_Org_ID(0);
+		InterfaceWrapperHelper.save(paymentTerm);
+		paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
+
 		final I_C_UOM uomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
 		InterfaceWrapperHelper.save(uomRecord);
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
+
+
 
 		final I_C_UOM_Conversion uomConversionRecord = newInstance(I_C_UOM_Conversion.class);
 		uomConversionRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
@@ -482,6 +502,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.setProductId(productId)
 				.setUomId(uomId)
 				.setDiscount(0)
+				.setPaymentTermId(paymentTermId)
+				.setDateToInvoice(LocalDate.parse("2020-06-01"))
 				.setC_Tax(tax_Default);
 	}
 

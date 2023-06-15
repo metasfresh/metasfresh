@@ -183,7 +183,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
+		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
 				{ IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID, IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID },
 				{ IInvoiceLineQuickInput.COLUMNNAME_C_VAT_Code_ID },
 				{ IInvoiceLineQuickInput.COLUMNNAME_Qty }

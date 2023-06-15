@@ -19,7 +19,6 @@
 package org.compiere.apps;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.engine.DocStatus;
@@ -37,12 +36,9 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VPanelUI;
@@ -78,7 +74,6 @@ import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MWindow;
-import org.compiere.model.PO;
 import org.compiere.model.X_AD_Process;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
@@ -103,7 +98,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.util.stream.IntStream;
 
 /**
  * Main Panel of application window.
@@ -403,7 +397,6 @@ public class APanel extends CPanel
 		aSave = addAction("Save", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), false, true);
 		mEdit.addSeparator();
 		aCopy = addAction("Copy", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F2, Event.SHIFT_MASK), false, false);
-		aCopyDetails = addAction("CopyDetails", mEdit, null, false, false); // metas: c.ghita@metas.ro
 		aDelete = addAction("Delete", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), false, false);
 		aDeleteSelection = addAction("DeleteSelection", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_D, Event.CTRL_MASK), false, false);
 		aIgnore = addAction(CMD_Ignore, mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), false, false);
@@ -480,10 +473,6 @@ public class APanel extends CPanel
 			toolBar.add(aNew.getButton());
 			toolBar.add(aSave.getButton());
 			toolBar.add(aCopy.getButton());
-			if (CopyRecordFactory.isEnabled())
-			{
-				toolBar.add(aCopyDetails.getButton());							// metas: c.ghita@metas.ro
-			}
 		}
 
 		// Ignore, Delete
@@ -1440,7 +1429,6 @@ public class APanel extends CPanel
 
 		aNew.setEnabled(((inserting && changedColumn > 0) || !inserting) && insertRecord);
 		aCopy.setEnabled(!changed && insertRecord);
-		aCopyDetails.setEnabled(!changed && insertRecord && CopyRecordFactory.isEnabledForTableName(m_curTab.getTableName()));
 		aRefresh.setEnabled(!changed);
 		aDelete.setEnabled(!changed && deleteRecord);
 		aDeleteSelection.setEnabled(!changed && deleteRecord); // same as "aDelete"
@@ -2019,10 +2007,6 @@ public class APanel extends CPanel
 			{
 				cmd_new(DataNewCopyMode.Copy);
 			}
-			else if (cmd.equals(aCopyDetails.getName()))
-			{
-				cmd_new(DataNewCopyMode.CopyWithDetails);
-			}
 			else if (cmd.equals(aDelete.getName()))
 			{
 				cmd_delete();
@@ -2270,15 +2254,7 @@ public class APanel extends CPanel
 		// If we were asked to copy with details, ask the user which child tables he/she wants to be copied
 		if (DataNewCopyMode.isCopyWithDetails(copyMode))
 		{
-			final List<CopyRecordSupportTableInfo> childTablesToBeCopied = getSuggestedChildTablesToCopyWithDetails();
-			// If user canceled then ignore everything and get out
-			if (childTablesToBeCopied == null)
-			{
-				cmd_ignore();
-				return;
-			}
-
-			m_curTab.setSuggestedCopyWithDetailsList(childTablesToBeCopied);
+			throw new UnsupportedOperationException();
 		}
 
 		m_curTab.dataNew(copyMode);
@@ -3432,7 +3408,6 @@ public class APanel extends CPanel
 
 	private boolean isSearchActive = true; // metas-2009_0021_AP1_CR057
 	private boolean isTabIncluded = false; // metas-2009_0021_AP1_CR056
-	private AppsAction aCopyDetails; // metas
 
 	public GridWorkbench getGridWorkbench()
 	{
@@ -3450,50 +3425,6 @@ public class APanel extends CPanel
 	public boolean requestFocusInWindow()
 	{
 		return m_curGC.requestFocusInWindow();
-	}
-
-	/**
-	 * @return list of {@link CopyRecordSupportTableInfo} to be also copied or <code>null</code> if user canceled.
-	 */
-	private final List<CopyRecordSupportTableInfo> getSuggestedChildTablesToCopyWithDetails()
-	{
-		final Properties ctx = m_ctx;
-		final String tableName = m_curTab.getTableName();
-		final int recordId = m_curTab.getRecord_ID();
-
-		final PO po = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
-		final List<CopyRecordSupportTableInfo> tiList = CopyRecordFactory.getCopyRecordSupport(tableName).getSuggestedChildren(po);
-
-		//
-		final String adLanguage = Env.getAD_Language(ctx);
-		final JList<String> list = new JList<>();
-		list.setListData(tiList.stream().map(tableInfo -> tableInfo.getName(adLanguage)).toArray(size -> new String[size]));
-		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		list.setSelectedIndices(IntStream.range(0, tiList.size()).toArray()); // select entire list
-		//
-		final JOptionPane pane = new JOptionPane(
-				new JScrollPane(list),   // message
-				JOptionPane.QUESTION_MESSAGE,   // messageType
-				JOptionPane.OK_CANCEL_OPTION); // optionType
-		final JDialog deleteDialog = pane.createDialog(this.getParent(), Services.get(IMsgBL.class).getMsg(ctx, "CopyDetailsSelection"));
-		deleteDialog.setVisible(true);
-		final Integer okCancel = (Integer)pane.getValue();
-		if (okCancel != null && okCancel == JOptionPane.OK_OPTION)
-		{
-			final int[] indices = list.getSelectedIndices();
-			Arrays.sort(indices);
-			final ImmutableList.Builder<CopyRecordSupportTableInfo> suggestedList = ImmutableList.builder();
-			for (int indice : indices)
-			{
-				suggestedList.add(tiList.get(indice));
-			}
-
-			return suggestedList.build();
-		}
-		else
-		{
-			return null; // canceled
-		}
 	}
 
 	public GridController getCurrentGridController()

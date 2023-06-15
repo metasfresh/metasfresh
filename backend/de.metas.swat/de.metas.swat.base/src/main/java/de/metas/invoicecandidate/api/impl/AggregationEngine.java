@@ -21,6 +21,8 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.forex.ForexContractRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
@@ -51,6 +53,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -76,6 +79,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -99,6 +103,7 @@ public final class AggregationEngine
 	// services
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
+	private static final AdMessageKey ERR_INVOICE_CAND_BASELINE_DATE_CANNOT_BE_DETERMINED = AdMessageKey.of("InvoiceCand_Cannot_be_determined");
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
@@ -116,18 +121,21 @@ public final class AggregationEngine
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
 	private final MatchInvoiceService matchInvoiceService;
+	private final DimensionService dimensionService;
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
 	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
-	@Nullable private final ForexContractRef forexContractRef;
+	@Nullable
+	private final ForexContractRef forexContractRef;
 	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+
 	@Builder
 	private AggregationEngine(
 			@Nullable final MatchInvoiceService matchInvoiceService,
@@ -137,10 +145,12 @@ public final class AggregationEngine
 			@Nullable final LocalDate dateAcctParam,
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
-			@Nullable final ForexContractRef forexContractRef)
+			@Nullable final ForexContractRef forexContractRef,
+			@Nullable final DimensionService dimensionService)
 	{
 		this.bpartnerBL = coalesceNotNull(bpartnerBL, () -> Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, () -> SpringContextHolder.instance.getBean(MatchInvoiceService.class));
+		this.dimensionService = coalesceNotNull(dimensionService, () -> SpringContextHolder.instance.getBean(DimensionService.class));
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
@@ -306,10 +316,10 @@ public final class AggregationEngine
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-							+ " ic's own headerAggregationKey = {};\n"
-							+ " new headerAndAggregators = {}",
-					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
+									+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
+									+ " ic's own headerAggregationKey = {};\n"
+									+ " new headerAndAggregators = {}",
+							key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
 		{
@@ -457,8 +467,8 @@ public final class AggregationEngine
 				{
 					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-							pricingSystemName,
-							invoiceHeader.getBillTo())
+												 pricingSystemName,
+												 invoiceHeader.getBillTo())
 							.appendParametersToMessage()
 							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
 							.setParameter("C_Invoice_Candidate", icRecord);
@@ -489,6 +499,9 @@ public final class AggregationEngine
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 
 			invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(icRecord, headerAggregationId)));
+
+			final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(icRecord);
+			invoiceHeader.setDimension(invoiceCandidateDimension);
 
 			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
@@ -572,13 +585,16 @@ public final class AggregationEngine
 
 	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
+		final PaymentTermId paymentTermId = invoiceCandBL.getPaymentTermId(ic);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
+
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
 					if (overrideDueDateParam != null)
 					{
 						logger.debug("computeOverrideDueDate - returning aggregator's overrideDueDateParam={} as overrideDueDate", overrideDueDateParam);
 					}
-					final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+
 					if (paymentTermId == null)
 					{
 						return null;
@@ -592,18 +608,18 @@ public final class AggregationEngine
 					return null;
 				},
 				() -> {
-					logger.debug("Due Date will be set on null for now");
+					logger.debug("Due Date will now be computed based on payment term settings");
 
-					return null;
+					final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
+					Timestamp baseLineDate = invoiceCandBL.getBaseLineDate(paymentTerm, ic);
+					if (baseLineDate == null)
+					{
+						throw new AdempiereException(ERR_INVOICE_CAND_BASELINE_DATE_CANNOT_BE_DETERMINED)
+								.appendParametersToMessage()
+								.setParameter("C_PaymentTerm_ID", paymentTermId);
+					}
+					return TimeUtil.asLocalDate(paymentTerm.computeDueDate(baseLineDate), timeZone);
 				});
-	}
-
-	private PaymentTermId getC_PaymentTerm_ID(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		return CoalesceUtil.coalesceSuppliers(
-				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
-				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
-
 	}
 
 	private BPartnerInfo getBillTo(@NonNull final I_C_Invoice_Candidate ic)
@@ -634,12 +650,12 @@ public final class AggregationEngine
 		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
 			final User defaultBillContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-					.onlyActive(true)
-					.contactType(ContactType.BILL_TO_DEFAULT)
-					.bpartnerId(billBPLocationId.getBpartnerId())
-					.bPartnerLocationId(billBPLocationId)
-					.ifNotFound(IfNotFound.RETURN_NULL)
-					.build());
+																					 .onlyActive(true)
+																					 .contactType(ContactType.BILL_TO_DEFAULT)
+																					 .bpartnerId(billBPLocationId.getBpartnerId())
+																					 .bPartnerLocationId(billBPLocationId)
+																					 .ifNotFound(IfNotFound.RETURN_NULL)
+																					 .build());
 			if (defaultBillContact != null)
 			{
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
@@ -826,7 +842,7 @@ public final class AggregationEngine
 		}
 
 		final Aggregation icHeaderAggregation = aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
-				headerAggregationId.getRepoId());
+																				   headerAggregationId.getRepoId());
 		if (icHeaderAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))
 		{
 			return SectionCodeId.ofRepoIdOrNull(icRecord.getM_SectionCode_ID());

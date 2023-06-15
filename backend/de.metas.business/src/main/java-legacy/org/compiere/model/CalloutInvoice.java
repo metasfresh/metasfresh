@@ -747,7 +747,7 @@ public class CalloutInvoice extends CalloutEngine
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt());
+					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt()).getTaxAmount();
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}

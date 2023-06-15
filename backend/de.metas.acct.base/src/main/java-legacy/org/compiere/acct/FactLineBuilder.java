@@ -67,6 +67,8 @@ public final class FactLineBuilder
 	@Nullable private CurrencyConversionContext currencyConversionCtx;
 	@Nullable private BigDecimal amtSourceDr;
 	@Nullable private BigDecimal amtSourceCr;
+	@Nullable private BigDecimal amtAcctDr;
+	@Nullable private BigDecimal amtAcctCr;
 
 	private BigDecimal qty = null;
 	private UomId uomId;
@@ -76,6 +78,7 @@ public final class FactLineBuilder
 	// Other dimensions
 	private OrgId orgId;
 	@Nullable private BPartnerId bpartnerId;
+	@Nullable private BPartnerLocationId bPartnerLocationId;
 	@Nullable private TaxId C_Tax_ID;
 	private Integer locatorId;
 	private ActivityId activityId;
@@ -176,22 +179,24 @@ public final class FactLineBuilder
 		}
 
 		//
-		// Currency convert
-		final CurrencyConversionContext currencyConversionCtx = getCurrencyConversionCtx();
-		if (currencyConversionCtx != null)
+		// Amounts converted to accounting currency
+		if (amtAcctDr != null || amtAcctCr != null)
 		{
-			line.setCurrencyConversionCtx(currencyConversionCtx);
-			line.addDescription(currencyConversionCtx.getSummary());
+			line.setAmtAcct(amtAcctDr, amtAcctCr);
 		}
-
-		//
-		// Optionally overwrite Acct Amount
-		if (docLine != null && (docLine.getAmtAcctDr() != null || docLine.getAmtAcctCr() != null))
+		else if (docLine != null && (docLine.getAmtAcctDr() != null || docLine.getAmtAcctCr() != null))
 		{
 			line.setAmtAcct(docLine.getAmtAcctDr(), docLine.getAmtAcctCr());
 		}
 		else
 		{
+			final CurrencyConversionContext currencyConversionCtx = getCurrencyConversionCtx();
+			if (currencyConversionCtx != null)
+			{
+				line.setCurrencyConversionCtx(currencyConversionCtx);
+				line.addDescription(currencyConversionCtx.getSummary());
+			}
+
 			line.convert();
 		}
 
@@ -210,10 +215,13 @@ public final class FactLineBuilder
 			line.setAD_Org_ID(orgId.getRepoId());
 		}
 		//
-		final BPartnerId bpartnerId = getBpartnerId();
-		if (bpartnerId != null)
+		if (getBPartnerLocationId() != null)
 		{
-			line.setC_BPartner_ID(bpartnerId.getRepoId());
+			line.setBPartnerIdAndLocation(getBpartnerId(), getBPartnerLocationId());
+		}
+		else if (getBpartnerId() != null)
+		{
+			line.setBPartnerId(getBpartnerId());
 		}
 		//
 		final TaxId taxId = getC_Tax_ID();
@@ -313,6 +321,11 @@ public final class FactLineBuilder
 		return fact.getAcctSchema();
 	}
 
+	private CurrencyId getAcctCurrencyId()
+	{
+		return fact.getAcctSchema().getCurrencyId();
+	}
+
 	private PostingType getPostingType()
 	{
 		return fact.getPostingType();
@@ -358,13 +371,23 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder setAmtAcct(@Nullable final BigDecimal amtAcctDr, @Nullable final BigDecimal amtAcctCr)
+	{
+		assertNotBuild();
+		this.amtAcctDr = amtAcctDr;
+		this.amtAcctCr = amtAcctCr;
+		return this;
+	}
+
 	public FactLineBuilder setAmtSource(@Nullable final CostAmount amtSourceDr, @Nullable final CostAmount amtSourceCr)
 	{
 		assertNotBuild();
+
 		setCurrencyId(CostAmount.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr));
 		setAmtSource(
 				amtSourceDr != null ? amtSourceDr.toBigDecimal() : null,
 				amtSourceCr != null ? amtSourceCr.toBigDecimal() : null);
+
 		return this;
 	}
 
@@ -384,6 +407,57 @@ public final class FactLineBuilder
 		setCurrencyId(balance.getCurrencyId());
 		setAmtSource(balance.getDebit().toBigDecimal(), balance.getCredit().toBigDecimal());
 		return this;
+	}
+
+	public FactLineBuilder setAmt(@Nullable final CostAmount dr, @Nullable final CostAmount cr)
+	{
+		assertNotBuild();
+		setAmtSource(extractAmtSource(dr), extractAmtSource(cr));
+		this.amtAcctDr = extractAmtAcct(dr);
+		this.amtAcctCr = extractAmtAcct(cr);
+
+		return this;
+	}
+
+	@Nullable
+	private static Money extractAmtSource(@Nullable final CostAmount costAmount)
+	{
+		if (costAmount == null)
+		{
+			return null;
+		}
+		else if (costAmount.toSourceMoney() != null)
+		{
+			return costAmount.toSourceMoney();
+		}
+		else
+		{
+			return costAmount.toMoney();
+		}
+	}
+
+	@Nullable
+	private BigDecimal extractAmtAcct(@Nullable final CostAmount costAmount)
+	{
+		if (costAmount == null)
+		{
+			return null;
+		}
+
+		final CurrencyId acctCurrencyId = getAcctCurrencyId();
+		final Money sourceValue = costAmount.toSourceMoney();
+		if (sourceValue != null && CurrencyId.equals(sourceValue.getCurrencyId(), acctCurrencyId))
+		{
+			return sourceValue.toBigDecimal();
+		}
+
+		final Money value = costAmount.toMoney();
+		if (value != null && CurrencyId.equals(value.getCurrencyId(), acctCurrencyId))
+		{
+			return value.toBigDecimal();
+		}
+
+		return null;
 	}
 
 	/**
@@ -506,16 +580,40 @@ public final class FactLineBuilder
 		}
 	}
 
+	@NonNull
+	public FactLineBuilder bPartnerAndLocationId(
+			@Nullable final BPartnerId bPartnerId,
+			@Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		assertNotBuild();
+		this.bpartnerId = bPartnerId;
+		this.bPartnerLocationId = bPartnerLocationId;
+		return this;
+	}
+
 	@Nullable
 	private BPartnerId getBpartnerId()
 	{
 		return bpartnerId;
 	}
 
+	@Nullable
+	private BPartnerLocationId getBPartnerLocationId()
+	{
+		return bPartnerLocationId;
+	}
+
 	public FactLineBuilder setC_Tax_ID(final Integer taxId)
 	{
 		assertNotBuild();
 		this.C_Tax_ID = taxId != null ? TaxId.ofRepoIdOrNull(taxId) : null;
+		return this;
+	}
+
+	public FactLineBuilder setC_Tax_ID(final TaxId taxId)
+	{
+		assertNotBuild();
+		this.C_Tax_ID = taxId;
 		return this;
 	}
 

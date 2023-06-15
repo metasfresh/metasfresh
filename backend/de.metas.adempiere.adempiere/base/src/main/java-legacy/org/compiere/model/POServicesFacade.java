@@ -3,11 +3,10 @@ package org.compiere.model;
 import de.metas.ad_reference.ADRefList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.POCacheSourceModel;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
@@ -18,17 +17,23 @@ import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 
 final class POServicesFacade
 {
+	private static final Logger logger = LogManager.getLogger(POServicesFacade.class);
+
 	private IDeveloperModeBL _developerModeBL;
 	private ISysConfigBL _sysConfigBL;
 	private ISessionBL _sessionBL;
 	private ISessionDAO _sessionDAO;
 	private IMigrationLogger _migrationLogger;
-	private IModelCacheInvalidationService _cacheInvalidationService;
+	private ModelCacheInvalidationService _cacheInvalidationService;
 	private IDocumentNoBuilderFactory _documentNoBuilderFactory;
 	private IDocumentNoBL _documentNoBL;
 	private ITrxManager _trxManager;
@@ -84,12 +89,22 @@ final class POServicesFacade
 		return migrationLogger;
 	}
 
-	public IModelCacheInvalidationService cacheInvalidationService()
+	public ModelCacheInvalidationService cacheInvalidationService()
 	{
-		IModelCacheInvalidationService cacheInvalidationService = this._cacheInvalidationService;
+		ModelCacheInvalidationService cacheInvalidationService = this._cacheInvalidationService;
 		if (cacheInvalidationService == null)
 		{
-			cacheInvalidationService = this._cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+			//
+			// Case: on Swing login which happens before Spring context is created
+			if (!SpringContextHolder.instance.isApplicationContextSet()
+					&& Ini.isSwingClient())
+			{
+				logger.warn("Spring context is not yet started => using an empty ModelCacheInvalidationService instance");
+
+				return new ModelCacheInvalidationService(Optional.empty());
+			}
+
+			cacheInvalidationService = this._cacheInvalidationService = ModelCacheInvalidationService.get();
 		}
 		return cacheInvalidationService;
 	}
@@ -166,11 +181,6 @@ final class POServicesFacade
 	public void logMigration(final MFSession session, final PO po, final POInfo poInfo, final String actionType)
 	{
 		migrationLogger().logMigration(session, po, poInfo, actionType);
-	}
-
-	public void invalidateForModel(final POCacheSourceModel model, final ModelCacheInvalidationTiming timing)
-	{
-		cacheInvalidationService().invalidateForModel(model, timing);
 	}
 
 	public void fireDocumentNoChange(final PO po, final String value)

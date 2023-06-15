@@ -76,7 +76,7 @@ public class RabbitMQEventBusConfiguration
 
 	/**
 	 * Attempt to set the application name (e.g. metasfresh-webui-api) as the rabbitmq connection name.
-	 * Thx to https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq
+	 * Thx to <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq">spring-boot-features-rabbitmq</a>
 	 * <p>
 	 * (although right now it doesn't need to work..)
 	 */

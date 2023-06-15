@@ -90,7 +90,7 @@ public class Banking extends AbstractModuleInterceptor
 		{
 			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_Payment(bankStatementBL, paymentBL, sysConfigBL, cashStatementBL)); // 04203
 			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_PaySelection(bankAccountService)); // 04203
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionLine.instance); // 04203
+			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_PaySelectionLine()); // 04203
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment_Request.instance); // 08596
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_AllocationHdr.instance); // 08972
 		}

@@ -22,8 +22,11 @@
 
 package de.metas.externalsystem.sap;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
+import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
+import de.metas.externalsystem.sap.importsettings.SAPBPartnerImportSettings;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.user.UserId;
@@ -89,6 +92,17 @@ public class SAPConfigMapper
 
 				.approvedBy(UserId.ofRepoIdOrNullIfSystem(externalSystemConfigSapLocalFile.getApprovedBy_ID()))
 
+				.build();
+	}
+
+	@NonNull
+	public static SAPBPartnerImportSettings ofBPartnerImportSettingsRecord(@NonNull final I_SAP_BPartnerImportSettings bPartnerImportSettings)
+	{
+		return SAPBPartnerImportSettings.builder()
+				.seqNo(bPartnerImportSettings.getSeqNo())
+				.partnerCodePattern(bPartnerImportSettings.getPartnerCodePattern())
+				.isSingleBPartner(bPartnerImportSettings.isSingleBPartner())
+				.bpGroupId(BPGroupId.ofRepoIdOrNull(bPartnerImportSettings.getC_BP_Group_ID()))
 				.build();
 	}
 }

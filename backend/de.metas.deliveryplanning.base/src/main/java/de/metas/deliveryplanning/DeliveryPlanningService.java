@@ -40,6 +40,8 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -136,6 +138,8 @@ public class DeliveryPlanningService
 
 	private final BPartnerStatsService bPartnerStatsService;
 
+	private final DimensionService dimensionService;
+
 	final MoneyService moneyService;
 
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -156,13 +160,15 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService,
 			@NonNull final BPartnerStatsService bPartnerStatsService,
 			@NonNull final MoneyService moneyService,
-			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService)
+			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
 		this.bPartnerStatsService = bPartnerStatsService;
 		this.moneyService = moneyService;
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
+		this.dimensionService = dimensionService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -181,6 +187,7 @@ public class DeliveryPlanningService
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.receiptSchedule(receiptScheduleRecord)
 				.colorPalette(getColorPalette())
+				.dimensionService(dimensionService)
 				.build()
 				.execute();
 	}
@@ -191,6 +198,7 @@ public class DeliveryPlanningService
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.shipmentSchedule(shipmentScheduleRecord)
 				.colorPalette(getColorPalette())
+				.dimensionService(dimensionService)
 				.build()
 				.execute();
 	}
@@ -226,6 +234,8 @@ public class DeliveryPlanningService
 		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
 		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
 		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
+
+		final Dimension dimension = dimensionService.getFromRecord(deliveryPlanningRecord);
 
 		return DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
@@ -266,6 +276,7 @@ public class DeliveryPlanningService
 				.destinationCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_DestinationCountry_ID()))
 				.shipperId(ShipperId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Shipper_ID()))
 				.transportDetails(deliveryPlanningRecord.getTransportDetails())
+				.dimension(dimension)
 				.build();
 	}
 
@@ -277,13 +288,12 @@ public class DeliveryPlanningService
 
 		final Quantity openQty = getOpenQty(deliveryPlanningId);
 
-		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
 
-		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines));
-		final DeliveryPlanningCreateRequest initialRequest = createRequest(deliveryPlanningId, fraction.add(remainder));
-		deliveryPlanningRepository.generateDeliveryPlanning(initialRequest);
+		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
+		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 
-		for (int i = 1; i < additionalLines; i++)
+		for (int i = 0; i < additionalLines; i++)
 		{
 			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction);
 
@@ -308,6 +318,7 @@ public class DeliveryPlanningService
 		Quantity openQty = qtyOrdered;
 
 		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
+				.filter(deliveryPlanning -> deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
 				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
 				.reduce(Quantity::add)
 				.orElse(null);
@@ -399,7 +410,7 @@ public class DeliveryPlanningService
 		}
 
 		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(deliveryInstructionRequest.getClientId(),
-																	   deliveryInstructionRequest.getOrgId());
+				deliveryInstructionRequest.getOrgId());
 
 		final Money creditUsedByDeliveryInstruction = computeCreditUsedByDeliveryInstruction(deliveryInstructionRequest, baseCurrencyId);
 
@@ -434,7 +445,7 @@ public class DeliveryPlanningService
 
 		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
-														orderLineCurrencyId);
+				orderLineCurrencyId);
 
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
@@ -444,7 +455,7 @@ public class DeliveryPlanningService
 
 		final Tax tax = taxBL.getTaxById(taxId);
 
-		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt()).getTaxAmount();
 
 		final Money taxAmtInfo = Money.of(taxAmt, orderLineCurrencyId);
 
@@ -509,6 +520,8 @@ public class DeliveryPlanningService
 		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord);
 		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord);
 
+		final Dimension deliveryPlanningDimension = dimensionService.getFromRecord(deliveryPlanningRecord);
+
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
@@ -539,6 +552,7 @@ public class DeliveryPlanningService
 				.uom(uomToUse)
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.deliveryPlanningId(deliveryPlanningId)
+				.dimension(deliveryPlanningDimension)
 				.build();
 	}
 
@@ -663,7 +677,7 @@ public class DeliveryPlanningService
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
 				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
 				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
-		
+
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 
 		while (deliveryPlanningIterator.hasNext())
@@ -792,4 +806,5 @@ public class DeliveryPlanningService
 			throw new AdempiereException(MSG_M_Delivery_Planning_BlockedPartner);
 		}
 	}
+
 }

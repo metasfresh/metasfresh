@@ -33,7 +33,6 @@ import org.compiere.util.TimeUtil;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -115,7 +114,6 @@ public class C_BankStatementLine
 
 		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asInstant(bsl.getValutaDate()),
-				ConversionTypeMethod.Spot,
 				ClientId.ofRepoId(bsl.getAD_Client_ID()),
 				OrgId.ofRepoId(bsl.getAD_Org_ID()));
 

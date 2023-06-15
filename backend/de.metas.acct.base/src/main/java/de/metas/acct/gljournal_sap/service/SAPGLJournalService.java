@@ -18,8 +18,10 @@ import java.util.function.Supplier;
 public class SAPGLJournalService
 {
 	private final SAPGLJournalRepository glJournalRepository;
-	@Getter private final SAPGLJournalCurrencyConverter currencyConverter;
-	@Getter private final SAPGLJournalTaxProvider taxProvider;
+	@Getter
+	private final SAPGLJournalCurrencyConverter currencyConverter;
+	@Getter
+	private final SAPGLJournalTaxProvider taxProvider;
 
 	public SAPGLJournalService(
 			@NonNull final SAPGLJournalRepository glJournalRepository,
@@ -51,18 +53,13 @@ public class SAPGLJournalService
 		glJournalRepository.updateById(glJournalId, consumer);
 	}
 
-	public SAPGLJournalLineId createLine(SAPGLJournalLineCreateRequest request)
+	@NonNull
+	public SAPGLJournalLineId createLine(@NonNull final SAPGLJournalLineCreateRequest request, @NonNull final SAPGLJournalId id)
 	{
 		final Supplier<SAPGLJournalLineId> lineIdSupplier = glJournalRepository.updateById(
-				request.getGlJournalId(),
+				id,
 				glJournal -> {
-					return glJournal.addLine(
-							request.getPostingSign(),
-							request.getAccount(),
-							request.getAmount(),
-							request.getSectionCodeId(),
-							request.getTaxId(),
-							currencyConverter);
+					return glJournal.addLine(request, currencyConverter);
 				}
 		);
 
@@ -84,5 +81,18 @@ public class SAPGLJournalService
 	public DocStatus getDocStatus(final SAPGLJournalId glJournalId)
 	{
 		return glJournalRepository.getDocStatus(glJournalId);
+	}
+
+	@NonNull
+	public SAPGLJournal reverse(@NonNull final SAPGLJournalReverseRequest reverseJournalRequest)
+	{
+		final SAPGLJournal journalToBeReversed = glJournalRepository.getById(reverseJournalRequest.getSourceJournalId());
+
+		final SAPGLJournal reversal = glJournalRepository.create(journalToBeReversed.getReversal(reverseJournalRequest.getDateDoc()),
+																 currencyConverter);
+
+		glJournalRepository.save(journalToBeReversed.withDocStatus(DocStatus.Reversed));
+
+		return reversal;
 	}
 }

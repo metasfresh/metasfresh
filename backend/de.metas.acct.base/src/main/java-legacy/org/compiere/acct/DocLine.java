@@ -25,6 +25,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.costing.CostingLevel;
@@ -727,6 +728,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 					() -> Optional.ofNullable(m_doc.getBPartnerId()));
 		}
 		return _bpartnerId.orElse(null);
+	}
+
+	@Nullable
+	public BPartnerLocationId getBPartnerLocationId()
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(getBPartnerId(), getC_BPartner_Location_ID());
 	}
 
 	protected final void setBPartnerId(final BPartnerId bpartnerId)

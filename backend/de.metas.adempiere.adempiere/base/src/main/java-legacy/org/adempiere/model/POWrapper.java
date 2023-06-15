@@ -660,6 +660,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			.add("M_AttributeSet_ID".toLowerCase())
 			.add("M_AttributeSetInstance_ID".toLowerCase())
 			.add("AD_System_ID".toLowerCase())
+			.add("GL_Category_ID".toLowerCase())
 			.build();
 
 	protected Object invokeParent(final Method method, final Object[] args) throws Exception
@@ -1028,16 +1029,15 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return po.is_Changed();
 	}
 
-	public static final boolean isOldValues(final Object model)
+	public static boolean isOldValues(final Object model)
 	{
 		final POWrapper wrapper = getPOWrapperOrNull(model);
-		return wrapper == null ? false : wrapper.useOldValues;
+		return wrapper != null && wrapper.useOldValues;
 	}
 
-	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
+	@Nullable
+	public static IModelInternalAccessor getModelInternalAccessor(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		if (model instanceof PO)
 		{
 			final PO po = (PO)model;

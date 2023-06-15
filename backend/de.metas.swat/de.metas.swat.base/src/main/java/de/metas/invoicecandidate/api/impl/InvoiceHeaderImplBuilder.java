@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.dimension.Dimension;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
@@ -88,14 +89,19 @@ public class InvoiceHeaderImplBuilder
 
 	private int M_SectionCode_ID;
 
-	@Nullable private ForexContractRef forexContractRef;
+	@Nullable
+	private ForexContractRef forexContractRef;
 
 	private String invoiceAdditionalText;
 	private boolean notShowOriginCountry;
 
 	private int C_PaymentInstruction_ID;
 
-	InvoiceHeaderImplBuilder() {}
+	private Dimension dimension;
+
+	InvoiceHeaderImplBuilder()
+	{
+	}
 
 	public InvoiceHeaderImpl build()
 	{
@@ -150,6 +156,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+
+		invoiceHeader.setDimension(this.dimension);
 
 		return invoiceHeader;
 	}
@@ -468,8 +476,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + value
-					+ "\n New value: " + valueNew);
+												 + "\n Current value: " + value
+												 + "\n New value: " + valueNew);
 		}
 	}
 
@@ -490,8 +498,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + id
-					+ "\n New value: " + idNew);
+												 + "\n Current value: " + id
+												 + "\n New value: " + idNew);
 		}
 	}
 
@@ -524,8 +532,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new IllegalStateException("Internal error: invalid ID " + modelIdToUse
-					+ "\n Model: " + model
-					+ "\n Model new: " + modelNew);
+													+ "\n Model: " + model
+													+ "\n Model new: " + modelNew);
 		}
 	}
 
@@ -542,8 +550,8 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + value
-				+ "\n New value: " + valueNew);
+											 + "\n Current value: " + value
+											 + "\n New value: " + valueNew);
 	}
 
 	public void setExternalId(final String externalId)
@@ -579,6 +587,11 @@ public class InvoiceHeaderImplBuilder
 	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
 	{
 		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setDimension(@NonNull final Dimension dimension)
+	{
+		this.dimension = dimension;
 	}
 
 	public void setNotShowOriginCountry(final boolean notShowOriginCountry)

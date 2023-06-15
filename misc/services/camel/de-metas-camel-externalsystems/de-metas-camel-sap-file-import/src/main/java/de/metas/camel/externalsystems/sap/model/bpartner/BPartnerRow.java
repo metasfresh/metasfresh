@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.sap.model.bpartner;
 import de.metas.common.util.Check;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -38,6 +39,7 @@ import java.util.Optional;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class BPartnerRow
 {
 	@DataField(pos = 1)

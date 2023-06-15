@@ -47,6 +47,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
@@ -108,6 +109,11 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -278,6 +284,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -641,6 +648,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	@Nullable
 	private Quantity extractQtyInvoiced(@NonNull final I_C_Invoice_Line_Alloc ila)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(ila.getC_UOM_ID());
@@ -732,6 +740,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.setContext(ctx, trxName)
 				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
 				.generateInvoices(candidates);
+	}
+
+
+	@Override
+	public void setPaymentTermIfMissing(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getC_PaymentTerm_ID() > 0)
+		{
+			return;
+		}
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
+
+		final PaymentTermId paymentTermIdToUse = paymentTermRepository
+				.retrievePaymentTermId(paymentTermQuery)
+				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
+						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
 	}
 
 	@Override
@@ -1053,6 +1082,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return result;
 	}
 
+	@Nullable
 	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -1213,10 +1243,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return TimeUtil.asLocalDate(getDateToInvoiceTS(ic));
 	}
 
-	/**
-	 * For class-internal use
-	 */
-	private Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
+	@Override
+	public Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoiceOverride = ic.getDateToInvoice_Override();
 		if (dateToInvoiceOverride != null)
@@ -2651,5 +2679,40 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		return ZERO;
+	}
+
+	@Override
+	public Timestamp getBaseLineDate(@NonNull final PaymentTerm paymentTerm, @NonNull final I_C_Invoice_Candidate ic)
+	{
+		final BaseLineType baseLineType = paymentTerm.getBaseLineType();
+
+		final Timestamp baseLineDate;
+
+		switch (baseLineType)
+		{
+
+			case AfterDelivery:
+				baseLineDate = ic.getDeliveryDate();
+				break;
+			case AfterBillOfLanding:
+				baseLineDate = ic.getActualLoadingDate();
+				break;
+			case InvoiceDate:
+				baseLineDate = getDateToInvoiceTS(ic);
+				break;
+			default:
+				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
+		}
+
+		return baseLineDate;
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
+
 	}
 }

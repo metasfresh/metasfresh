@@ -238,6 +238,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.postTradeDiscount(acctSchemaRecord.isTradeDiscountPosted())
 				.postServices(acctSchemaRecord.isPostServices())
 				.postIfSameClearingAccounts(acctSchemaRecord.isPostIfClearingEqual())
+				.isAllowMultiDebitAndCredit(acctSchemaRecord.isAllowMultiDebitAndCredit())
+				//
 				.isAutoSetDebtoridAndCreditorid(acctSchemaRecord.isAutoSetDebtoridAndCreditorid())
 				.debtorIdPrefix(acctSchemaRecord.getDebtorIdPrefix())
 				.creditorIdPrefix(acctSchemaRecord.getCreditorIdPrefix())

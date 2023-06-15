@@ -24,6 +24,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -126,6 +127,8 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
+
+			icRecord.setC_PaymentTerm_ID(ic.getPaymentTermId().getRepoId());
 		}
 		else
 		{
@@ -294,6 +297,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
+
+		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 
 		return candidate.build();
 	}

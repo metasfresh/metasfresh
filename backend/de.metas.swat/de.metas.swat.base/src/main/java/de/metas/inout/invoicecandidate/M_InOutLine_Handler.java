@@ -421,6 +421,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Save the Invoice Candidate, so that we can use its ID further down
+		invoiceCandBL.setPaymentTermIfMissing(icRecord);
 		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
@@ -806,6 +807,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
+
 		return orderLineBL.getPaymentTermId(ol);
 	}
 
@@ -948,7 +950,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set C_Tax from Product (07442)
 		final OrgId orgId = OrgId.ofRepoId(inoutLineRecord.getAD_Org_ID());
 		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
-		final Properties ctx = getCtx(inoutLineRecord);
 		final Timestamp shipDate = inOutRecord.getMovementDate();
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(icRecord.getC_VAT_Code_Override_ID(), icRecord.getC_VAT_Code_ID()));
 

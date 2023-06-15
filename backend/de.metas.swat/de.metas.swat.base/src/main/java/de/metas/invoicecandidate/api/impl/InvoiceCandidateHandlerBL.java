@@ -46,6 +46,9 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -315,7 +318,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
+		if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
 		{
 			return ImmutableList.of();
 		}
@@ -405,6 +408,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final int adUserInChargeId = handler.getAD_User_InCharge_ID(ic);
 			ic.setAD_User_InCharge_ID(adUserInChargeId);
 		}
+
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class); // not having this as field bc there might be problems with circular dependencies
+		invoiceCandBL.setPaymentTermIfMissing(ic);
 
 		// Save it
 		InterfaceWrapperHelper.save(ic);

@@ -36,11 +36,13 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -78,6 +80,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.invoice.InvoicesRestController;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceRequest;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceRequestItem;
@@ -126,6 +129,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest.STORAGE_UOM;
 
 /*
@@ -153,6 +157,8 @@ import static de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest.STOR
 @Service
 public class JsonInvoiceService
 {
+	private static final String DEFAULT_DATA_SOURCE_INTERNAL_NAME = "SOURCE." + InvoicesRestController.class.getName();
+
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -226,14 +232,14 @@ public class JsonInvoiceService
 			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			result.lineInfo(JSONInvoiceLineInfo.builder()
-									.lineNumber(line.getLine())
-									.productName(productName)
-									.qtyInvoiced(line.getQtyEntered())
-									.price(line.getPriceEntered())
-									.taxRate(taxRate)
-									.lineNetAmt(line.getLineNetAmt())
-									.currency(currency)
-									.build());
+					.lineNumber(line.getLine())
+					.productName(productName)
+					.qtyInvoiced(line.getQtyEntered())
+					.price(line.getPriceEntered())
+					.taxRate(taxRate)
+					.lineNetAmt(line.getLineNetAmt())
+					.currency(currency)
+					.build());
 		}
 
 		result.invoiceId(JsonMetasfreshId.of(invoiceId.getRepoId()));
@@ -338,9 +344,9 @@ public class JsonInvoiceService
 				.stream()
 				.peek(identifier2InvoiceEntry -> validateInvoiceType(identifier2InvoiceEntry.getValue(), identifier2InvoiceEntry.getKey(), request.getType()))
 				.map(identifier2InvoiceEntry -> buildPayableDocument(identifier2InvoiceEntry.getValue(),
-																	 transactionDate,
-																	 requestCurrencyId,
-																	 identifier2Line.get(identifier2InvoiceEntry.getKey())))
+						transactionDate,
+						requestCurrencyId,
+						identifier2Line.get(identifier2InvoiceEntry.getKey())))
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList<PaymentDocument> paymentDocuments = ImmutableList.of(paymentDocument);
@@ -393,10 +399,10 @@ public class JsonInvoiceService
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(getAmountsToAllocate(invoiceToAllocate,
-														allocationLine,
-														requestCurrencyId,
-														convertToInvoiceCurrency,
-														invoiceProcessingFeeCalculation))
+						allocationLine,
+						requestCurrencyId,
+						convertToInvoiceCurrency,
+						invoiceProcessingFeeCalculation))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();
 	}
@@ -444,11 +450,11 @@ public class JsonInvoiceService
 	{
 		final ClientAndOrgId clientAndOrgId = invoiceToAllocate.getClientAndOrgId();
 		return currencyBL.getCurrencyRate(currencyFromId,
-										  currencyToId,
-										  invoiceToAllocate.getEvaluationDate().toInstant(),
-										  invoiceToAllocate.getCurrencyConversionTypeId(),
-										  clientAndOrgId.getClientId(),
-										  clientAndOrgId.getOrgId());
+				currencyToId,
+				invoiceToAllocate.getEvaluationDate().toInstant(),
+				invoiceToAllocate.getCurrencyConversionTypeId(),
+				clientAndOrgId.getClientId(),
+				clientAndOrgId.getOrgId());
 
 	}
 
@@ -464,13 +470,13 @@ public class JsonInvoiceService
 		final ZonedDateTime transactionDateAndTime = TimeUtil.asZonedDateTime(transactionDate, zoneId);
 
 		return invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
-																		 .orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
-																		 .evaluationDate(transactionDateAndTime)
-																		 .customerId(invoiceToAllocate.getBpartnerId())
-																		 .docTypeId(invoiceToAllocate.getDocTypeId())
-																		 .invoiceId(invoiceToAllocate.getInvoiceId())
-																		 .invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
-																		 .build());
+				.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+				.evaluationDate(transactionDateAndTime)
+				.customerId(invoiceToAllocate.getBpartnerId())
+				.docTypeId(invoiceToAllocate.getDocTypeId())
+				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+				.build());
 	}
 
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
@@ -484,7 +490,7 @@ public class JsonInvoiceService
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final CreateInvoiceRequest createInvoiceRequest = buildCreateInvoiceRequest(request.getInvoice(),
-																					masterdataProvider);
+				masterdataProvider);
 
 		return manualInvoiceService.createInvoice(createInvoiceRequest);
 	}
@@ -588,16 +594,19 @@ public class JsonInvoiceService
 
 		final DocTypeId docTypeId = getDocTypeId(invoiceHeader.getInvoiceDocType(), clientAndOrgId);
 
+		final InputDataSourceId dataSourceId = getInputDataSourceId(invoiceHeader, masterdataProvider, clientAndOrgId.getOrgId());
+
 		return CreateInvoiceRequestHeader.builder()
 				.externalHeaderId(invoiceHeader.getExternalHeaderId())
+				.dataSourceId(dataSourceId)
 				.orgId(clientAndOrgId.getOrgId())
 				.billBPartnerLocationId(bPartnerInfo.getBPartnerLocationIdOrError())
 				.billContactId(bPartnerInfo.getContactId())
 				.dateInvoiced(dateInvoiced)
 				.dateAcct(invoiceHeader.getDateAcctAsInstant(zoneId)
-								  .orElse(dateInvoiced))
+						.orElse(dateInvoiced))
 				.dateOrdered(invoiceHeader.getDateOrderedAsInstant(zoneId)
-									 .orElse(dateInvoiced))
+						.orElse(dateInvoiced))
 				.docTypeId(docTypeId)
 				.poReference(invoiceHeader.getPoReference())
 				.soTrx(SOTrx.ofNameNotNull(invoiceHeader.getSoTrx()))
@@ -742,7 +751,7 @@ public class JsonInvoiceService
 		final BankAccountId bankAccountId = paymentService
 				.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
 				.orElseThrow(() -> new AdempiereException(String.format("Cannot find Bank Account for the org-bpartner of org-id: %s, currency-id: %s and iban: %s",
-																		orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
+						orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
 
 		final DefaultPaymentBuilder paymentBuilder = JsonPaymentDirection.INBOUND == request.getType()
 				? paymentService.newInboundReceiptBuilder()
@@ -838,6 +847,32 @@ public class JsonInvoiceService
 		}
 	}
 
+
+	@NonNull
+	private static InputDataSourceId getInputDataSourceId(
+			@NonNull final JsonCreateInvoiceRequestItemHeader invoiceHeader,
+			@NonNull final MasterdataProvider masterdataProvider,
+			@NonNull final OrgId orgId)
+	{
+		final String dataSourceIdentifier = coalesce(
+				invoiceHeader.getDataSource(),
+				"int-" + DEFAULT_DATA_SOURCE_INTERNAL_NAME);
+
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(
+				dataSourceIdentifier,
+				orgId);
+
+		if (dataSourceId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataSource")
+					.resourceIdentifier(dataSourceIdentifier)
+					.parentResource(invoiceHeader).build();
+		}
+
+		return dataSourceId;
+	}
+	
 	@Value
 	@Builder
 	private static class InvoiceLoader
@@ -885,7 +920,8 @@ public class JsonInvoiceService
 		{
 			final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
 					.orgId(orgId)
-					.docType(getDocType(invoiceIdentifier));
+					.docType(getDocType(invoiceIdentifier))
+					.docStatuses(DocStatus.completedOrClosedStatuses());
 
 			final IdentifierString identifierString = IdentifierString.of(invoiceIdentifier.getInvoiceIdentifier());
 

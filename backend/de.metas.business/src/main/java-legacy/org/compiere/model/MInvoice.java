@@ -53,7 +53,9 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
+import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -528,23 +530,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		m_lines = null;
 	}    // renumberLines
 
-	/**
-	 * Copy Lines From other Invoice.
-	 *
-	 * @param otherInvoice invoice
-	 * @param counter      create counter links
-	 * @param setOrder     set order links
-	 * @return number of lines copied
-	 * @deprecated pls use {@link IInvoiceBL#copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean)}
-	 */
-	@Deprecated
-	public int copyLinesFrom(final MInvoice otherInvoice, final boolean counter, final boolean setOrder)
-	{
-		// ts: 04054: moving copyLinesFrom business logic to the implementors of IInvoiceBL
-		return Services.get(IInvoiceBL.class).copyLinesFrom(otherInvoice, this, counter, setOrder,
-															false); // setInvoiceRef == false
-	}    // copyLinesFrom
-
 	private void setReversal(final boolean reversal)
 	{
 		m_reversal = reversal;
@@ -886,8 +871,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		createPaySchedule();
 
+		final boolean isEnforceSOCreditStatus = bPartnerStatsService.isEnforceCreditStatus(ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID()));
 		// Credit Status
-		if (isSOTrx() && !isReversal())
+		if (isSOTrx() && !isReversal() && isEnforceSOCreditStatus)
 		{
 			// task FRESH-152
 			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
@@ -980,26 +966,29 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final MTax tax = iTax.getTax();
 			if (tax.isSummary())
 			{
-				final MTax[] cTaxes = tax.getChildTaxes(false);    // Multiple taxes
-				for (final MTax cTax : cTaxes)
+				// Multiple taxes
+				for (final I_C_Tax childTaxRecord : tax.getChildTaxes(false))
 				{
-					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, TaxUtils.from(cTax));
+					final Tax childTax = TaxUtils.from(childTaxRecord);
+					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, childTax);
 					final BigDecimal taxBaseAmt = iTax.getTaxBaseAmt();
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
+					final CalculateTaxResult calculateTaxResult = childTax.calculateTax(taxBaseAmt, taxIncluded, taxPrecision.toInt());
 					//
 					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, trxName);
 					newITax.setClientOrg(this);
 					newITax.setC_Invoice(this);
-					newITax.setC_Tax_ID(cTax.getC_Tax_ID());
+					newITax.setC_Tax_ID(childTax.getTaxId().getRepoId());
 					newITax.setPrecision(taxPrecision.toInt());
 					newITax.setIsTaxIncluded(taxIncluded);
+					newITax.setIsReverseCharge(childTax.isReverseCharge());
 					newITax.setTaxBaseAmt(taxBaseAmt);
-					newITax.setTaxAmt(taxAmt);
+					newITax.setTaxAmt(calculateTaxResult.getTaxAmount());
+					newITax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
 					newITax.saveEx(trxName);
 					//
 					if (!taxIncluded)
 					{
-						grandTotal = grandTotal.add(taxAmt);
+						grandTotal = grandTotal.add(calculateTaxResult.getTaxAmount());
 					}
 				}
 

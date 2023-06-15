@@ -172,6 +172,27 @@ public interface I_AD_Table
 	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
+	 * Set Cloning Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCloningEnabled (java.lang.String CloningEnabled);
+
+	/**
+	 * Get Cloning Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCloningEnabled();
+
+	ModelColumn<I_AD_Table, Object> COLUMN_CloningEnabled = new ModelColumn<>(I_AD_Table.class, "CloningEnabled", null);
+	String COLUMNNAME_CloningEnabled = "CloningEnabled";
+
+	/**
 	 * Set Copy Columns from Table.
 	 * Create Dictionary Columns for a Table taking another as base
 	 *
@@ -239,6 +260,27 @@ public interface I_AD_Table
 
 	ModelColumn<I_AD_Table, Object> COLUMN_Description = new ModelColumn<>(I_AD_Table.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Downline Cloning Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDownlineCloningStrategy (java.lang.String DownlineCloningStrategy);
+
+	/**
+	 * Get Downline Cloning Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDownlineCloningStrategy();
+
+	ModelColumn<I_AD_Table, Object> COLUMN_DownlineCloningStrategy = new ModelColumn<>(I_AD_Table.class, "DownlineCloningStrategy", null);
+	String COLUMNNAME_DownlineCloningStrategy = "DownlineCloningStrategy";
 
 	/**
 	 * Set Entity Type.
@@ -714,4 +756,27 @@ public interface I_AD_Table
 
 	ModelColumn<I_AD_Table, Object> COLUMN_WEBUI_View_PageLength = new ModelColumn<>(I_AD_Table.class, "WEBUI_View_PageLength", null);
 	String COLUMNNAME_WEBUI_View_PageLength = "WEBUI_View_PageLength";
+
+	/**
+	 * Set When Child Cloning Strategy.
+	 * The cloning strategy to be used when this table is included (as a child) to a parent (e.g. C_OrderLine)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWhenChildCloningStrategy (java.lang.String WhenChildCloningStrategy);
+
+	/**
+	 * Get When Child Cloning Strategy.
+	 * The cloning strategy to be used when this table is included (as a child) to a parent (e.g. C_OrderLine)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getWhenChildCloningStrategy();
+
+	ModelColumn<I_AD_Table, Object> COLUMN_WhenChildCloningStrategy = new ModelColumn<>(I_AD_Table.class, "WhenChildCloningStrategy", null);
+	String COLUMNNAME_WhenChildCloningStrategy = "WhenChildCloningStrategy";
 }

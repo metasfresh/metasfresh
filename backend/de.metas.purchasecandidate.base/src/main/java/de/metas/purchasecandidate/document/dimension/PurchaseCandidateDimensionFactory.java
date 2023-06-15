@@ -42,13 +42,20 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 	}
 
 	@Override
-	public void updateRecord(final I_C_PurchaseCandidate record, final Dimension from)
+	public void updateRecord(@NonNull final I_C_PurchaseCandidate record, @NonNull final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
 		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
 		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+
+		updateRecordUserElements(record, from);
+	}
+
+	@Override
+	public void updateRecordUserElements(@NonNull final I_C_PurchaseCandidate record, @NonNull final Dimension from)
+	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

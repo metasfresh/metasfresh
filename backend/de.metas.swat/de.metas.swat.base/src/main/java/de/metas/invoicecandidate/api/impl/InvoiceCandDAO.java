@@ -10,8 +10,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
@@ -388,7 +388,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(final OrderId orderId)
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
@@ -1179,8 +1179,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_C_Invoice_Candidate.Table_Name, onlyInvoiceCandidateIds);
 		}
 
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	protected final int untag(@NonNull final InvoiceCandRecomputeTagger tagger)
@@ -1325,37 +1325,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				false, // updateOnlyIfNull
 				selectionId // selectionId
 		);
-	}
-
-	@Override
-	public void updateMissingPaymentTermIds(final PInstanceId selectionId)
-	{
-		final PInstanceId selectionToUpdateId = retrieveIcsToUpdateSelectionId(selectionId);
-		if (selectionToUpdateId == null)
-		{
-			return;
-		}
-		final PaymentTermId paymentTermId = retrievePaymentTermId(selectionId);
-		if (paymentTermId == null)
-		{
-			return;
-		}
-
-		final int updateCount = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionToUpdateId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, paymentTermId)
-				.execute();
-
-		Loggables.withLogger(logger, Level.INFO)
-				.addLog("updateMissingPaymentTermIds - {} C_Invoice_Candidates were updated; selectionId={}, paymentTermId={}",
-						updateCount, selectionId, paymentTermId);
-
-		// Invalidate the candidates which we updated
-		invalidateCandsForSelection(selectionToUpdateId);
-
 	}
 
 	private PInstanceId retrieveIcsToUpdateSelectionId(final PInstanceId selectionId)
