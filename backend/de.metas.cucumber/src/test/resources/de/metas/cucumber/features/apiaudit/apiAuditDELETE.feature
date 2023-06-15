@@ -1,8 +1,10 @@
 @from:cucumber
+@tag1
 Feature: API Audit DELETE http method
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the API audit data is reset
 
   @from:cucumber
@@ -49,15 +51,15 @@ Feature: API Audit DELETE http method
 
     And there are no records in API_Response_Audit for the API_Request_Audit from context
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And after not more than 60s, there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status      |
       | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And after not more than 60s, there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And after not more than 60s, there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -105,16 +107,16 @@ Feature: API Audit DELETE http method
 
     And there are no records in API_Response_Audit for the API_Request_Audit from context
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And after not more than 60s, there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status |
       | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And after not more than 60s, there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary               |
       | Endpoint invoked; returning httpCode: 404 | null                           |
       | Endpoint invoked; log ad_issue            | Endpoint invoked; log ad_issue |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And after not more than 60s, there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 

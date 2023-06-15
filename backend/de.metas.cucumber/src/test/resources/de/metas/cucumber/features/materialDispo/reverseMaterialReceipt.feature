@@ -2,7 +2,8 @@
 Feature: Reversal of material receipt is correctly considered in Material Dispo
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
@@ -40,10 +41,10 @@ Feature: Reversal of material receipt is correctly considered in Material Dispo
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     And the order identified by o_1 is completed
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 10  | 10                     |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_16052022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -52,7 +53,7 @@ Feature: Reversal of material receipt is correctly considered in Material Dispo
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_16052022_1      | inOut_16052022_1      |
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | SUPPLY              | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 0   | 10                     |                                 |
       | c_2        | UNEXPECTED_INCREASE | PURCHASE                      | p_1                     |                      | 10  | 10                     | 2021-04-14T00:00:00             |

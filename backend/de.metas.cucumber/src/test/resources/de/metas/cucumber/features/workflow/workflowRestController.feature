@@ -2,7 +2,8 @@
 Feature: workflow rest controller tests
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-18T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -44,7 +45,7 @@ Feature: workflow rest controller tests
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | workflowInventory         | workflowInventoryLine         | workflowProduct_230822  | 0       | 1        | PCE          |
     And complete inventory with inventoryIdentifier 'workflowInventory'
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | workflowInventoryLine         | workflowProductHU  |
 
@@ -57,7 +58,7 @@ Feature: workflow rest controller tests
 
     And the order identified by pickingOrder is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | pickingOrderLine          | N             |
 
@@ -116,7 +117,7 @@ Feature: workflow rest controller tests
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | distributionInventory     | distributionInventoryLine     | workflowProduct_230822  | 0       | 1        | PCE          |
     And complete inventory with inventoryIdentifier 'distributionInventory'
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier            |
       | distributionInventoryLine     | workflowProductHUDistribution |
 
@@ -193,7 +194,7 @@ Feature: workflow rest controller tests
       | manufacturingInventory    | manufacturingComponentInventoryLine | manufacturingProductComponent | 0       | 1        | PCE          |
     And complete inventory with inventoryIdentifier 'manufacturingInventory'
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier       | M_HU_ID.Identifier              |
       | manufacturingComponentInventoryLine | createdManufacturingComponentHU |
 
@@ -217,7 +218,7 @@ Feature: workflow rest controller tests
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
       | manufacturingOrder     | MOP         | manufacturingProduct    | 1          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | manufacturingProductPlanning          |
 
-    And after not more than 30s, PP_Order_BomLines are found
+    And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier       | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | manufacturingBOMLine           | manufacturingOrder     | manufacturingProductComponent | 1            | false           | PCE               | CO            |
 

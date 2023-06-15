@@ -1,0 +1,65 @@
+{
+  "data": {
+    "id": "id",
+    "countryId": "countryId",
+    "street": "street 121",
+    "zipcode": "66121",
+    "city": "city",
+    "phoneNumber": "1212121",
+    "additionalAddressLine1": "additionalAddressLine1",
+    "additionalAddressLine2": "additionalAddressLine2",
+    "company": "company address",
+    "department": "department",
+    "salutationId": "salutationId",
+    "title": "title",
+    "firstName": "firstName",
+    "lastName": "lastName",
+    "countryStateId": null,
+    "customerId": "d165beffbe8f428d87c8a9701b5d69e6",
+    "country": null,
+    "countryState": null,
+    "salutation": {
+      "salutationKey": "undefined",
+      "displayName": "",
+      "letterName": "",
+      "translations": null,
+      "customers": null,
+      "customerAddresses": null,
+      "orderCustomers": null,
+      "orderAddresses": null,
+      "newsletterRecipients": null,
+      "_uniqueIdentifier": "ed643807c9f84cc8b50132ea3ccb1c3b",
+      "versionId": null,
+      "translated": {
+        "displayName": "",
+        "letterName": "",
+        "customFields": []
+      },
+      "createdAt": "2022-05-25T12:10:14.797+00:00",
+      "updatedAt": null,
+      "extensions": {
+        "foreignKeys": {
+          "apiAlias": null,
+          "extensions": []
+        }
+      },
+      "id": "ed643807c9f84cc8b50132ea3ccb1c3b",
+      "customFields": null,
+      "apiAlias": "salutation"
+    },
+    "customer": null,
+    "_uniqueIdentifier": "87a554c5ccc740c9811dba4b8943f5da",
+    "versionId": null,
+    "translated": [],
+    "createdAt": "2022-03-20T10:28:02.235+00:00",
+    "updatedAt": null,
+    "extensions": {
+      "foreignKeys": {
+        "apiAlias": null,
+        "extensions": []
+      }
+    },
+    "customFields": null,
+    "apiAlias": "customer_address"
+  }
+}

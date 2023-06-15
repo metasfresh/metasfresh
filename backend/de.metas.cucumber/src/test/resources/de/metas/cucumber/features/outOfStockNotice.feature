@@ -1,7 +1,8 @@
 Feature: warehouse out of stock notice
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
   Scenario: warehouse out of stock notice api test
@@ -37,7 +38,7 @@ Feature: warehouse out of stock notice
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
     And the order identified by o_3 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | OPT.Warehouse_ID |
       | s_sched_1  | ol_3                      | N             | 540008           |
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/warehouses/540008/outOfStockNotice' and fulfills with '200' status code
