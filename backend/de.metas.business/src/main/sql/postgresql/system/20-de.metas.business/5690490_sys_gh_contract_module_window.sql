@@ -1113,23 +1113,23 @@ UPDATE AD_Column SET IsCalculated='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('20
 -- 2023-06-07T10:21:33.955742567Z
 INSERT INTO t_alter_column values('contract_module_type','Contract_Module_Type_ID','NUMERIC(10)',null,null)
 ;
-
--- 2023-06-07T10:23:34.907807790Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582397,0,'AD_Ref_Table_ID',TO_TIMESTAMP('2023-06-07 11:23:34.613','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','AD_Ref_Table','AD_Ref_Table',TO_TIMESTAMP('2023-06-07 11:23:34.613','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- 2023-06-07T10:23:34.908867372Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582397 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
--- Column: AD_Ref_Table.AD_Ref_Table_ID
--- 2023-06-07T10:23:35.502495225Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,586752,582397,0,13,103,'AD_Ref_Table_ID',TO_TIMESTAMP('2023-06-07 11:23:34.611','YYYY-MM-DD HH24:MI:SS.US'),100,'D',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','AD_Ref_Table',TO_TIMESTAMP('2023-06-07 11:23:34.611','YYYY-MM-DD HH24:MI:SS.US'),100,1)
-;
-
--- 2023-06-07T10:23:35.506948799Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=586752 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
+--
+-- -- 2023-06-07T10:23:34.907807790Z
+-- INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582397,0,'AD_Ref_Table_ID',TO_TIMESTAMP('2023-06-07 11:23:34.613','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','AD_Ref_Table','AD_Ref_Table',TO_TIMESTAMP('2023-06-07 11:23:34.613','YYYY-MM-DD HH24:MI:SS.US'),100)
+-- ;
+--
+-- -- 2023-06-07T10:23:34.908867372Z
+-- INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582397 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+-- ;
+--
+-- -- Column: AD_Ref_Table.AD_Ref_Table_ID
+-- -- 2023-06-07T10:23:35.502495225Z
+-- INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,586752,582397,0,13,103,'AD_Ref_Table_ID',TO_TIMESTAMP('2023-06-07 11:23:34.611','YYYY-MM-DD HH24:MI:SS.US'),100,'D',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','AD_Ref_Table',TO_TIMESTAMP('2023-06-07 11:23:34.611','YYYY-MM-DD HH24:MI:SS.US'),100,1)
+-- ;
+--
+-- -- 2023-06-07T10:23:35.506948799Z
+-- INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=586752 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+-- ;
 
 -- 2023-06-07T10:23:36.185250221Z
 /* DDL */  select update_Column_Translation_From_AD_Element(582397)
