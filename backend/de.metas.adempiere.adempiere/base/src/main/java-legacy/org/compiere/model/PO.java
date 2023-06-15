@@ -5299,7 +5299,7 @@ public abstract class PO
 	 *
 	 * @return transaction manager; never return null
 	 */
-	private ITrxManager get_TrxManager()
+	protected final ITrxManager get_TrxManager()
 	{
 		return Services.get(ITrxManager.class);
 	}

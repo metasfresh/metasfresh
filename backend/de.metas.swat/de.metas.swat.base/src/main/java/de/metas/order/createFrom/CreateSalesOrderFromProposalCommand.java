@@ -23,6 +23,7 @@
 package de.metas.order.createFrom;
 
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.copy_with_details.template.CopyTemplate;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -134,7 +135,7 @@ public class CreateSalesOrderFromProposalCommand
 						InterfaceWrapperHelper.getPO(fromProposal));
 	}
 
-	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from)
+	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from, @NonNull final CopyTemplate template)
 	{
 		if (InterfaceWrapperHelper.isInstanceOf(to, I_C_OrderLine.class)
 				&& InterfaceWrapperHelper.isInstanceOf(from, I_C_OrderLine.class))

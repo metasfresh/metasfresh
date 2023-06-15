@@ -12,8 +12,10 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.copy.ValueToCopyResolveContext;
 import org.compiere.model.copy.ValueToCopyResolved;
+import org.compiere.model.copy.ValueToCopyType;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @EqualsAndHashCode
 @ToString
@@ -58,9 +60,19 @@ public final class CopyTemplate
 		return column;
 	}
 
+	private Optional<CopyTemplateColumn> getColumnIfExists(final String columnName)
+	{
+		return Optional.ofNullable(columnsByColumnName.get(columnName));
+	}
+
 	public ValueToCopyResolved getValueToCopy(@NonNull ValueToCopyResolveContext context)
 	{
 		return getColumn(context.getColumnName()).getValueToCopy().resolve(context);
+	}
+
+	public Optional<ValueToCopyType> getValueToCopyType(@NonNull final String columnName)
+	{
+		return getColumnIfExists(columnName).map(column -> column.getValueToCopy().getType());
 	}
 
 	public boolean hasChildTableName(@NonNull final String tableName)

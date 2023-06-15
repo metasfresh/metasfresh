@@ -88,7 +88,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 
 		// Notify listeners
-		fireOnRecordCopied(toPO, fromPO);
+		fireOnRecordCopied(toPO, fromPO, template);
 
 		toPO.saveEx(ITrx.TRXNAME_ThreadInherited);
 		toPO.setCopying(false);
@@ -133,6 +133,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			for (final Iterator<Object> it = retrieveChildPOsForParent(childTemplate, fromPO); it.hasNext(); )
 			{
 				final PO childPO = InterfaceWrapperHelper.getPO(it.next());
+
+				if (!isCopyChildRecord(template, childPO, childTemplate))
+				{
+					continue;
+				}
+
 				CopyRecordFactory.getCopyRecordSupport(childTemplate.getTableName())
 						.setParentLink(toPO, parentLinkColumnName)
 						.setAdWindowId(adWindowId)
@@ -152,13 +158,13 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @param to   the copy
 	 * @param from the source
 	 */
-	private void fireOnRecordCopied(final PO to, final PO from)
+	private void fireOnRecordCopied(final PO to, final PO from, final CopyTemplate template)
 	{
-		onRecordCopied(to, from);
-		recordCopiedListeners.forEach(listener -> listener.onRecordCopied(to, from));
+		onRecordCopied(to, from, template);
+		recordCopiedListeners.forEach(listener -> listener.onRecordCopied(to, from, template));
 	}
 
-	protected void onRecordCopied(final PO to, final PO from) {}
+	protected void onRecordCopied(final PO to, final PO from, final CopyTemplate template) {}
 
 	private void fireOnRecordAndChildrenCopied(final PO to, final PO from, final CopyTemplate template) {onRecordAndChildrenCopied(to, from, template);}
 
@@ -182,6 +188,8 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 */
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	protected boolean isCopyRecord(final PO fromPO) {return true;}
+
+	protected boolean isCopyChildRecord(final CopyTemplate parentTemplate, final PO fromChildPO, final CopyTemplate childTemplate) {return true;}
 
 	@Override
 	public final GeneralCopyRecordSupport setParentLink(@NonNull final PO parentPO, @NonNull final String parentLinkColumnName)

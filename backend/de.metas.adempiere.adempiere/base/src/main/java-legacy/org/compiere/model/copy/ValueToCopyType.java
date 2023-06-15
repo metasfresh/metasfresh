@@ -8,5 +8,8 @@ public enum ValueToCopyType
 	COMPUTE_WITH_FUNCTION,
 	APPEND_SUFFIX,
 	SKIP,
-	NOT_SPECIFIED
+	NOT_SPECIFIED,
+	;
+
+	public boolean isDirectCopy() {return DIRECT_COPY.equals(this);}
 }
