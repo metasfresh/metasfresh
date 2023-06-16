@@ -64,6 +64,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -234,8 +235,8 @@ public class DeliveryPlanningRepository
 
 	public <T> T getShipmentOrReceiptInfo(
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
-			@NonNull Function<DeliveryPlanningReceiptInfo, T> receiptInfoMapper,
-			@NonNull Function<DeliveryPlanningShipmentInfo, T> shipmentInfoMapper)
+			@NonNull final Function<DeliveryPlanningReceiptInfo, T> receiptInfoMapper,
+			@NonNull final Function<DeliveryPlanningShipmentInfo, T> shipmentInfoMapper)
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
@@ -493,7 +494,10 @@ public class DeliveryPlanningRepository
 			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
-		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
+		final String created = new SimpleDateFormat("yyyyMMdd-HHmm").format(deliveryInstruction.getCreated());
+		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo() + "-"
+													+ deliveryPlanningId.getRepoId()
+													+ "-" + created);
 		deliveryPlanningRecord.setM_ShipperTransportation_ID(deliveryInstruction.getM_ShipperTransportation_ID());
 		saveRecord(deliveryPlanningRecord);
 	}
