@@ -479,7 +479,7 @@ BEGIN
                v_AcctSchemaInfo.C_Calendar_ID,
                tb.C_ElementValue_ID,
 
-               NULL::numeric    AS ad_org_id,
+               p_ad_org_id      AS ad_org_id,
                v_AcctSchemaInfo.iso_code,
                COUNT(0) OVER () AS OverallCount,
                tb.activityName,
