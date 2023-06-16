@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CacheMgt;
-import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.Language;
@@ -275,15 +274,6 @@ public class POTrlRepository
 		if (sqlSet.length() == 0)
 		{
 			return;
-		}
-
-		final boolean isUpdatedColumnPresent = Optional.ofNullable(POInfo.getPOInfo(baseTableName))
-				.map(poInfo -> poInfo.getColumnIndex("Updated") > -1)
-				.orElse(false);
-
-		if (isUpdatedColumnPresent)
-		{
-			sqlSet.append(", Updated").append("=").append(DB.TO_DATE(SystemTime.asTimestamp(), false));
 		}
 
 		final String keyColumnName = trlInfo.getKeyColumnName();
