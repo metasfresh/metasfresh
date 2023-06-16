@@ -68,7 +68,7 @@
         <!-- please keep junit jupiter and platform versions synched up -->
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
         <junit-platform.version>1.9.3</junit-platform.version>
-        
+
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>

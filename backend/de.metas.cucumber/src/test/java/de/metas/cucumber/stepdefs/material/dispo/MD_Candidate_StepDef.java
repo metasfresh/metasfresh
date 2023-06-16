@@ -77,7 +77,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
@@ -138,6 +137,29 @@ public class MD_Candidate_StepDef
 		candidateWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
+	}
+
+	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
+	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> map = dataTable.asMaps().get(0);
+
+		final int shipmentScheduleId = Integer.parseInt(map.get("M_ShipmentSchedule_ID"));
+		final int productId = Integer.parseInt(map.get("M_Product_ID"));
+		final Instant preparationDate = Instant.parse(map.get("PreparationDate"));
+		final BigDecimal qty = new BigDecimal(map.get("Qty"));
+
+		final MaterialDescriptor descriptor = MaterialDispoUtils.createMaterialDescriptor(productId, preparationDate, qty);
+
+		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
+				.materialDescriptor(descriptor)
+				.shipmentScheduleId(shipmentScheduleId)
+				.reservedQuantity(qty)
+				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
+				.build();
+
+		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent, null);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")

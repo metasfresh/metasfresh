@@ -239,14 +239,14 @@ public class JsonInvoiceService
 	{
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveShipmentLinesForOrderId(orderIds);
 
-		final Set<InvoiceId> invoiceIds = invoiceService.retrieveInvoiceCandsByInOutLines(shipmentLines).stream()
+		final Set<InvoiceId> createdInvoiceIds = invoiceService.retrieveInvoiceCandsByInOutLines(shipmentLines).stream()
 				.map(invoiceCandDAO::retrieveIlForIc)
 				.flatMap(List::stream)
 				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
 				.map(InvoiceId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return invoiceIds.stream()
+		return createdInvoiceIds.stream()
 				.map(invoiceId -> getInvoiceInfo(invoiceId, Env.getAD_Language()))
 				.collect(ImmutableList.toImmutableList());
 	}

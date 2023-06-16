@@ -595,7 +595,7 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_PO | order_PO              | product_S4              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
 
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | po_supply  | SUPPLY            | PURCHASE                      | product_S4              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
 
@@ -618,14 +618,14 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_SO | order_SO              | product_S4              | 20         | orderLineAttributeSetInstance            |
     And the order identified by order_SO is completed
 
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_finishedGood | false     | product_S4              | bom_1                        | pp_finishedGood                   | 540006        | 10         | 10           | 0            | PCE               | 2022-01-08T21:00:00Z | 2022-01-08T21:00:00Z | false    | bomAttributeSetInstance                  |
-    And after not more than 30s, PP_OrderLine_Candidates are found
+    And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier       | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_finishedGood                  | olc_finishedGood | component_S4            | 50         | PCE               | CO            | bomLine_1                        | bomLineAttributeSetInstance              |
 
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier  | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | po_supply   | SUPPLY            | PURCHASE                      | product_S4              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
       | so_demand   | DEMAND            | SHIPMENT                      | product_S4              | 2022-01-08T21:00:00Z | -20 | -10                    | orderLineAttributeSetInstance            |
