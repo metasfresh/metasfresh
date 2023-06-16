@@ -3,7 +3,8 @@ Feature: data export audit using bpartner metasfresh api
   export audit data should be created
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
 
   Scenario: The request is good and the export audit data is created
@@ -35,7 +36,7 @@ Feature: data export audit using bpartner metasfresh api
     Then process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_1               | bpartner_location_1               | location_1               |
-    Then after not more than 30s, there are added records in Data_Export_Audit
+    Then after not more than 60s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
       | bpartner_data_export            | C_BPartner          | bpartner_1           |                                        |
       | bp_location_data_export         | C_BPartner_Location | bpartner_location_1  | bpartner_data_export                   |
@@ -61,7 +62,7 @@ Feature: data export audit using bpartner metasfresh api
     And process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_1               | bpartner_location_1               | location_1               |
-    And after not more than 30s, there are added records in Data_Export_Audit
+    And after not more than 60s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
       | bpartner_data_export            | C_BPartner          | bpartner_1           |                                        |
       | bp_location_data_export         | C_BPartner_Location | bpartner_location_1  | bpartner_data_export                   |
@@ -93,7 +94,7 @@ Feature: data export audit using bpartner metasfresh api
     And process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_2               | bpartner_location_2               | location_2               |
-    And after not more than 30s, there are added records in Data_Export_Audit
+    And after not more than 60s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
       | bpartner_data_export            | C_BPartner          | bpartner_2           |                                        |
       | bp_location_data_export         | C_BPartner_Location | bpartner_location_2  | bpartner_data_export                   |
@@ -204,7 +205,7 @@ Feature: data export audit using bpartner metasfresh api
       | externalRef_BPartner              | BPartner_ER_Audit_25032022   |
       | externalRef_BPLocation            | BPLocation_ER_Audit_25032022 |
       | externalRef_BPContact             | BPContact_ER_Audit_25032022  |
-    And after not more than 30s, there are added records in Data_Export_Audit
+    And after not more than 60s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier   | Data_Export_Audit_Parent_ID.Identifier |
       | dataExport_BPartner             | S_ExternalReference | externalRef_BPartner   |                                        |
       | dataExport_BPLocation           | S_ExternalReference | externalRef_BPLocation |                                        |

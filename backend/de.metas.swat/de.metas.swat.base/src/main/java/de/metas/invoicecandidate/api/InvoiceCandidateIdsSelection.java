@@ -19,12 +19,12 @@ public final class InvoiceCandidateIdsSelection
 {
 	private static final InvoiceCandidateIdsSelection EMPTY = new InvoiceCandidateIdsSelection(null, ImmutableSet.of());
 
-	public static InvoiceCandidateIdsSelection ofSelectionId(@NonNull PInstanceId selectionId)
+	public static InvoiceCandidateIdsSelection ofSelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return new InvoiceCandidateIdsSelection(selectionId, null);
 	}
 
-	public static InvoiceCandidateIdsSelection ofIdsSet(@NonNull Set<InvoiceCandidateId> ids)
+	public static InvoiceCandidateIdsSelection ofIdsSet(@NonNull final Set<InvoiceCandidateId> ids)
 	{
 		return !ids.isEmpty()
 				? new InvoiceCandidateIdsSelection(null, ImmutableSet.copyOf(ids))

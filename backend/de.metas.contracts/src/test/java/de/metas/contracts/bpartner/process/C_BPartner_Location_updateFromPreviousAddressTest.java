@@ -52,6 +52,7 @@ public class C_BPartner_Location_updateFromPreviousAddressTest
 	public static void init()
 	{
 		AdempiereTestHelper.get().staticInit();
+		AdempiereTestHelper.get().init();
 	}
 
 	@BeforeEach

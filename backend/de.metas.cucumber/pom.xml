@@ -2,7 +2,7 @@
   ~ #%L
   ~ de.metas.cucumber
   ~ %%
-  ~ Copyright (C) 2020 metas GmbH
+  ~ Copyright (C) 2022 metas GmbH
   ~ %%
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as
@@ -38,8 +38,8 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
-        <cucumber.version>6.8.1</cucumber.version>
-        <testcontainers.version>1.16.2</testcontainers.version>
+        <cucumber.version>7.5.0</cucumber.version>
+        <testcontainers.version>1.17.6</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -105,6 +105,7 @@
             <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
@@ -160,6 +161,17 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <properties>
+                        <configurationParameters>
+                            cucumber.junit-platform.naming-strategy=long
+                        </configurationParameters>
+                    </properties>
                 </configuration>
             </plugin>
         </plugins>

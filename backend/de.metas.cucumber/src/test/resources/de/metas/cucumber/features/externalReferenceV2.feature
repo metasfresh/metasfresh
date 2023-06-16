@@ -5,7 +5,8 @@ Feature: external references for metasfresh resources
   So that the resources 3rd party systems can be connected with metasfresh data
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: external resource is not referenced to a metasfresh resource

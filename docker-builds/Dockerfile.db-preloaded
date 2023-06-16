@@ -12,4 +12,9 @@ RUN /usr/local/bin/docker-entrypoint.sh postgres
 
 FROM db as final
 
-COPY --from=init $PGDATA $PGDATA
+# changing pgdata location to avoid existing volume so we are able to commit post cucumber data later on
+ENV PGDATA /var/lib/postgresql/customdata
+# grabed from official postgres image: this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
+RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
+
+COPY --from=init /var/lib/postgresql/data $PGDATA

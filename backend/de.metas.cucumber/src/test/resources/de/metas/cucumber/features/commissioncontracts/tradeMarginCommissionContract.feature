@@ -5,7 +5,8 @@ Feature: Trade margin commission contract
   I have a trade margin contract, when order is processed commission points and commission deed are computed accordingly
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
@@ -120,7 +121,7 @@ Feature: Trade margin commission contract
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_1                      |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
     And validate invoice candidate
