@@ -22,12 +22,17 @@
 
 package de.metas.cucumber.stepdefs.distributionorder;
 
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
+import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,38 +41,43 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_M_Shipper;
+import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.X_DD_Order;
 
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class DD_Order_StepDef
 {
-	private final DD_OrderLine_StepDefData ddOrderLineTable;
-	private final DD_Order_StepDefData ddOrderTable;
+	private final C_BPartner_StepDefData bPartnerTable;
 	private final M_Warehouse_StepDefData warehouseTable;
-	private final M_Shipper_StepDefData shipperTable;
+	private final DD_Order_StepDefData ddOrderTable;
+	private final S_Resource_StepDefData resourceTable;
+
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public DD_Order_StepDef(
-			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
-			@NonNull final DD_Order_StepDefData ddOrderTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_Shipper_StepDefData shipperTable)
+			@NonNull final DD_Order_StepDefData ddOrderTable,
+			@NonNull final S_Resource_StepDefData resourceTable)
 	{
-		this.ddOrderLineTable = ddOrderLineTable;
-		this.ddOrderTable = ddOrderTable;
+		this.bPartnerTable = bPartnerTable;
 		this.warehouseTable = warehouseTable;
-		this.shipperTable = shipperTable;
+		this.ddOrderTable = ddOrderTable;
+		this.resourceTable = resourceTable;
 	}
 
 	@And("DD_Orders are found:")
@@ -77,6 +87,61 @@ public class DD_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			findDDOrder(tableRow);
+		}
+	}
+
+	@And("metasfresh contains DD_Orders:")
+	public void metasfresh_contains_dd_orders(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+
+			final String fromWareHouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID + ".From." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Warehouse fromWarehouse = warehouseTable.get(fromWareHouseIdentifier);
+
+			final String toWareHouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID + ".To." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Warehouse toWarehouse = warehouseTable.get(toWareHouseIdentifier);
+
+			final String transitWareHouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID + ".Transit." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Warehouse transitWarehouse = warehouseTable.get(transitWareHouseIdentifier);
+
+			final String docTypeDistributionName = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_DD_Order.COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name);
+
+			final String resourceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_S_Resource testResource = resourceTable.get(resourceIdentifier);
+			Assertions.assertThat(testResource).isNotNull();
+			final ResourceId resourceId = ResourceId.ofRepoId(testResource.getS_Resource_ID());
+
+			final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstanceOutOfTrx(I_DD_Order.class);
+
+			ddOrder.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+			ddOrder.setM_Warehouse_From_ID(fromWarehouse.getM_Warehouse_ID());
+			ddOrder.setM_Warehouse_To_ID(toWarehouse.getM_Warehouse_ID());
+			ddOrder.setM_Warehouse_ID(transitWarehouse.getM_Warehouse_ID());
+			ddOrder.setPP_Plant_ID(resourceId.getRepoId());
+			ddOrder.setIsInDispute(false);
+			ddOrder.setIsSOTrx(false);
+			ddOrder.setIsInTransit(false);
+			ddOrder.setDeliveryRule(X_DD_Order.DELIVERYRULE_Availability);
+
+			if (Check.isNotBlank(docTypeDistributionName))
+			{
+				final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTypeDistributionName)
+						.create()
+						.firstId(DocTypeId::ofRepoIdOrNull);
+
+				assertThat(docTypeId).isNotNull();
+				ddOrder.setC_DocType_ID(docTypeId.getRepoId());
+			}
+
+			ddOrderService.save(ddOrder);
+
+			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			ddOrderTable.putOrReplace(recordIdentifier, ddOrder);
 		}
 	}
 

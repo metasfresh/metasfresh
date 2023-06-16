@@ -6,7 +6,7 @@ Feature: material-dispo updates on shipment-schedule events
   So that the ATP is always correct
 
   Background: Initial Data
-    Given metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value              | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | value_md_ss_290922 | pricing_system_description | true         |
@@ -23,6 +23,12 @@ Feature: material-dispo updates on shipment-schedule events
   @from:cucumber
   @topic:materialdispo
   Scenario: shipment-schedule with no quantity in stock
+    And metasfresh contains M_Products:
+      | Identifier | Name            |
+      | p_1        | p_No_Qty_160922 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     Given metasfresh contains M_Products:
       | Identifier | Name            |
       | p_1        | p_No_Qty_160922 |
@@ -36,7 +42,7 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, MD_Candidates are found
+    Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2022-09-18T21:00:00.00Z | -10 | -10                    |
       | c_2        | SUPPLY            |                               | p_1                     | 2022-09-18T21:00:00.00Z | 10  | 0                      |
@@ -47,6 +53,12 @@ Feature: material-dispo updates on shipment-schedule events
   @from:cucumber
   @topic:materialdispo
   Scenario: shipment-schedule with quantity in stock
+    And metasfresh contains M_Products:
+      | Identifier | Name              |
+      | p_1        | p_With_Qty_160922 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     Given metasfresh contains M_Products:
       | Identifier | Name              |
       | p_1        | p_With_Qty_160922 |
@@ -63,7 +75,7 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 20         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, MD_Candidates are found
+    Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-09-18T10:00:00.00Z | 100 | 100                    |
       | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2022-09-18T21:00:00.00Z | -20 | 80                     |

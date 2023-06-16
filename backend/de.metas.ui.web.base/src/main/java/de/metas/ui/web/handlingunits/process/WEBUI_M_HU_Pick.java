@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
@@ -60,7 +61,7 @@ import java.util.stream.Stream;
 public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
-	
+
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
 	private PickingSlotId pickingSlotId;
 
@@ -204,11 +205,9 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return MSG_OK;
 	}
 
-	private void pickHU(final HURow row)
+	private void pickHU(@NonNull final HURow row)
 	{
 		final HuId huId = row.getHuId();
-
-		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
 
 		final PickRequest pickRequest = PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
@@ -218,14 +217,19 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 
 		pickingCandidateService.pickHU(pickRequest);
 
-		final ProcessPickingRequest processPickingRequest = ProcessPickingRequest.builder()
+		final ProcessPickingRequest.ProcessPickingRequestBuilder pickingRequestBuilder = ProcessPickingRequest.builder()
 				.huIds(ImmutableSet.of(huId))
-				.ppOrderId(ppOrderView.getPpOrderId())
 				.shipmentScheduleId(shipmentScheduleId)
-				.shouldSplitHUIfOverDelivery(!isTakeWholeHU)
-				.build();
+				.shouldSplitHUIfOverDelivery(!isTakeWholeHU);
 
-		pickingCandidateService.processForHUIds(processPickingRequest);
+		final IView view = getView();
+		if (view instanceof PPOrderLinesView)
+		{
+			final PPOrderLinesView ppOrderView = PPOrderLinesView.cast(view);
+			pickingRequestBuilder.ppOrderId(ppOrderView.getPpOrderId());
+		}
+
+		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, pickingRequestBuilder.build());
 	}
 
 	@Override

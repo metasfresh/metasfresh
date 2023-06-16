@@ -58,12 +58,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
@@ -125,32 +123,14 @@ public class MD_Candidate_StepDef
 		this.orderLineTable = orderLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 
-		this.postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		this.materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
-		this.candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
-	}
-
-	@Given("metasfresh initially has no MD_Candidate data")
-	public void setupMD_Candidate_Data()
-	{
-		truncateMDCandidateData();
-	}
-
-	private void truncateMDCandidateData()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
-	}
-
-	@And("metasfresh initially has no MD_Candidate_StockChange_detail data")
-	public void setupMD_Candidate_StockChange_detail_Data()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE md_candidate_stockChange_detail cascade", ITrx.TRXNAME_None);
+		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
+		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table)
 	{
-		truncateMDCandidateData();
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
@@ -497,16 +477,16 @@ public class MD_Candidate_StepDef
 		final Runnable logContext = () -> logger.error("MD_Candidate not found\n"
 															   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
 															   + "**query result candidates:**\n{}\n"
-															   + "**all candidates:**\n{}",
-													   tableRow, candidatesQuery,
+															   + "**all product related candidates:**\n{}",
+													   tableRow,
+													   candidatesQuery,
 													   materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
-													   materialDispoRecordRepository.getAllAsString());
+													   materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
 
-		final MaterialDispoDataItem materialDispoRecord = StepDefUtil
+		return StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
 								   logContext);
-		return materialDispoRecord;
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)

@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Localhost (putty port)"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ic114_local"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>

@@ -22,19 +22,16 @@ package org.compiere.model;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.util.Services;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.util.Services;
 
 public class Callout_AD_Menu extends CalloutEngine
 {
-	public String onAD_Window_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String onAD_Window_ID(final ICalloutField calloutField)
 	{
-		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		final I_AD_Menu menu = calloutField.getModel(I_AD_Menu.class);
 
 		final AdWindowId windowId = AdWindowId.ofRepoIdOrNull(menu.getAD_Window_ID());
 		if (windowId == null)
@@ -53,9 +50,9 @@ public class Callout_AD_Menu extends CalloutEngine
 		return NO_ERROR;
 	}
 
-	public String onAD_Process_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String onAD_Process_ID(final ICalloutField calloutField)
 	{
-		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		final I_AD_Menu menu = calloutField.getModel(I_AD_Menu.class);
 		if (menu.getAD_Process_ID() <= 0)
 			return "";
 
@@ -68,9 +65,9 @@ public class Callout_AD_Menu extends CalloutEngine
 		return "";
 	}
 
-	public String onAD_Form_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String onAD_Form_ID(final ICalloutField calloutField)
 	{
-		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		final I_AD_Menu menu = calloutField.getModel(I_AD_Menu.class);
 		if (menu.getAD_Form_ID() <= 0)
 			return "";
 
@@ -82,9 +79,9 @@ public class Callout_AD_Menu extends CalloutEngine
 		return "";
 	}
 
-	public String onAD_Task_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String onAD_Task_ID(final ICalloutField calloutField)
 	{
-		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		final I_AD_Menu menu = calloutField.getModel(I_AD_Menu.class);
 		if (menu.getAD_Task_ID() <= 0)
 			return "";
 
@@ -96,9 +93,9 @@ public class Callout_AD_Menu extends CalloutEngine
 		return "";
 	}
 
-	public String onAD_Workflow_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String onAD_Workflow_ID(final ICalloutField calloutField)
 	{
-		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
+		final I_AD_Menu menu = calloutField.getModel(I_AD_Menu.class);
 		if (menu.getAD_Workflow_ID() <= 0)
 			return "";
 

@@ -210,6 +210,7 @@ public class C_Order_StepDef
 			final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
 			if (Check.isNotBlank(deliveryRule))
 			{
+				// note that IF the C_BPartner has a deliveryRule set (not-mandatory there), this values will be overwritten by it
 				order.setDeliveryRule(deliveryRule);
 			}
 

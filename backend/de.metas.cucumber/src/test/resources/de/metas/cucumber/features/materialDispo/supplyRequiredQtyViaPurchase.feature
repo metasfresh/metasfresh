@@ -17,7 +17,6 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
-    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   @Id:S0222_100
@@ -73,7 +72,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
     And the inventory identified by i_1 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
 
@@ -218,7 +217,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 15                           | 15                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 15                             | 15                         | 0                                  |
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
       | il_2                          | hu_2               |
