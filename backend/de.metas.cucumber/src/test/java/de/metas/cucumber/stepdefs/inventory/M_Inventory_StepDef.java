@@ -26,6 +26,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -88,6 +89,7 @@ public class M_Inventory_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 
 	public M_Inventory_StepDef(
@@ -104,6 +106,7 @@ public class M_Inventory_StepDef
 		this.productTable = productTable;
 		this.huTable = huTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.warehouseTable = warehouseTable;
 	}
 

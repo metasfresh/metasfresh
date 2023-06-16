@@ -29,7 +29,6 @@ import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
-import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -40,6 +39,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -209,7 +209,7 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
-				.onOverDelivery(getOnOverDelivery(request.isShouldSplitHUIfOverDelivery()))
+				.onOverDelivery(getOnOverDelivery(!request.isTakeWholeHU()))
 				.ppOrderId(request.getPpOrderId())
 				.build()
 				.perform();

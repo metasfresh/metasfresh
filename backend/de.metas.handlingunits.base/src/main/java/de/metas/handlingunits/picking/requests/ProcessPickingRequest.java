@@ -31,7 +31,6 @@ import lombok.Value;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
-
 @Value
 @Builder
 public class ProcessPickingRequest
@@ -42,8 +41,8 @@ public class ProcessPickingRequest
 	@NonNull
 	ImmutableSet<HuId> huIds;
 
-	@Nullable
+	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
 
-	boolean shouldSplitHUIfOverDelivery;
+	boolean isTakeWholeHU;
 }

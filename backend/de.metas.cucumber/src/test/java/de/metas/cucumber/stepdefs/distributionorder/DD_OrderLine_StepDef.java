@@ -24,10 +24,14 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.common.util.Check;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistributionLine_StepDefData;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -41,15 +45,19 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -63,19 +71,25 @@ public class DD_OrderLine_StepDef
 	private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final M_Product_StepDefData productTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 	private final DD_Order_StepDefData ddOrderTable;
 	private final DD_OrderLine_StepDefData ddOrderLineTable;
+	private final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable;
 	private final M_Locator_StepDefData locatorTable;
 
 	public DD_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final DD_Order_StepDefData ddOrderTable,
 			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
+			@NonNull final DD_NetworkDistributionLine_StepDefData ddNetworkLineTable,
 			@NonNull final M_Locator_StepDefData locatorTable)
 	{
 		this.productTable = productTable;
+		this.orderLineTable = orderLineTable;
 		this.ddOrderTable = ddOrderTable;
 		this.ddOrderLineTable = ddOrderLineTable;
+		this.ddNetworkLineTable = ddNetworkLineTable;
 		this.locatorTable = locatorTable;
 	}
 
@@ -123,29 +137,6 @@ public class DD_OrderLine_StepDef
 			saveRecord(orderLine);
 
 			ddOrderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
-		}
-	}
-
-	@And("validate DD_Order_MoveSchedule")
-	public void validate_move_schedule(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_DD_OrderLine orderLine = ddOrderLineTable.get(orderLineIdentifier);
-
-			final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_DD_Order_MoveSchedule.COLUMNNAME_QtyPicked);
-
-			final I_DD_Order_MoveSchedule moveSchedule = queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
-					.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, orderLine.getDD_OrderLine_ID())
-					.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_Created)
-					.create()
-					.firstOnly(I_DD_Order_MoveSchedule.class);
-
-			assertThat(moveSchedule).isNotNull();
-			assertThat(moveSchedule.getQtyToPick()).isEqualTo(qtyPicked);
-
 		}
 	}
 

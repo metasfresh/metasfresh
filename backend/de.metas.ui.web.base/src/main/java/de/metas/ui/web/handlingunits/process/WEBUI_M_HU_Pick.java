@@ -6,7 +6,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
-import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
@@ -18,6 +17,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.HURow;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
@@ -220,7 +220,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final ProcessPickingRequest.ProcessPickingRequestBuilder pickingRequestBuilder = ProcessPickingRequest.builder()
 				.huIds(ImmutableSet.of(huId))
 				.shipmentScheduleId(shipmentScheduleId)
-				.shouldSplitHUIfOverDelivery(!isTakeWholeHU);
+				.isTakeWholeHU(isTakeWholeHU);
 
 		final IView view = getView();
 		if (view instanceof PPOrderLinesView)

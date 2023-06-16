@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
@@ -42,12 +43,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
 import java.util.List;
@@ -61,7 +65,9 @@ public class DD_Order_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final DD_Order_StepDefData ddOrderTable;
+	private final DD_OrderLine_StepDefData ddOrderLineTable;
 	private final S_Resource_StepDefData resourceTable;
+	private final M_Shipper_StepDefData shipperTable;
 
 	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 
@@ -72,12 +78,16 @@ public class DD_Order_StepDef
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final DD_Order_StepDefData ddOrderTable,
-			@NonNull final S_Resource_StepDefData resourceTable)
+			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
+			@NonNull final S_Resource_StepDefData resourceTable,
+			@NonNull final M_Shipper_StepDefData shipperTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.warehouseTable = warehouseTable;
 		this.ddOrderTable = ddOrderTable;
+		this.ddOrderLineTable = ddOrderLineTable;
 		this.resourceTable = resourceTable;
+		this.shipperTable = shipperTable;
 	}
 
 	@And("DD_Orders are found:")
