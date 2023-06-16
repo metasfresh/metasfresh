@@ -94,15 +94,17 @@ public final class Loggables
 		return new LoggableWithLogger(get(), logger, level);
 	}
 
+	@NonNull
 	public static ILoggable withFallbackToLogger(@NonNull final Logger logger, @NonNull final Level level)
 	{
-		if (get() instanceof NullLoggable)
+		final ILoggable threadLocalLoggable = get();
+		if (NullLoggable.isNull(threadLocalLoggable))
 		{
-			return new LoggableWithLogger(get(), logger, level); 
+			return new LoggableWithLogger(threadLocalLoggable, logger, level);
 		}
 		else
 		{
-			return get();
+			return threadLocalLoggable;
 		}
 	}
 
