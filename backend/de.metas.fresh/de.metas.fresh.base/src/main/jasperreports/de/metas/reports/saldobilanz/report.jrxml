@@ -131,6 +131,9 @@ order by parentValue1, parentValue2, parentValue3, parentValue4, namevalue, leve
 	<field name="level" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="level"/>
 	</field>
+	<variable name="activity_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="Activity" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameyearsum}]]></variableExpression>
+	</variable>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
@@ -360,14 +363,14 @@ order by parentValue1, parentValue2, parentValue3, parentValue4, namevalue, leve
 					</textElement>
 					<textFieldExpression><![CDATA[$F{activityname}==null ? $R{NoActivity} : ($R{Activity}+" :  "+ $F{activityname})]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="Activity" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="353" y="2" width="102" height="12" isRemoveLineWhenBlank="true" uuid="1b236043-c112-47eb-9b90-f50d740d2e2b">
 						<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{sameyearsum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{activity_sum}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
