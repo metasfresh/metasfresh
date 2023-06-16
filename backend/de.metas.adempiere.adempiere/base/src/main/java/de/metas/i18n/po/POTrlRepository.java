@@ -3,6 +3,11 @@ package de.metas.i18n.po;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
+=======
+import de.metas.cache.CacheMgt;
+import de.metas.common.util.time.SystemTime;
+>>>>>>> 1a182c4a857 (Make sure to update the Updated column when propagating TRL update to base table (#15610))
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.ModelTranslation;
@@ -198,6 +203,44 @@ public class POTrlRepository
 		final String keyColumn = trlInfo.getKeyColumnName();
 
 		final StringBuilder sqlSet = new StringBuilder();
+<<<<<<< HEAD
+=======
+		for (final String columnName : trlInfo.getTranslatedColumnNames())
+		{
+			if (!InterfaceWrapperHelper.isValueChanged(trlRecord, columnName))
+			{
+				continue;
+			}
+
+			final String sqlValue = convertValueToSql(trlRecord.get_Value(columnName));
+			if (sqlSet.length() > 0)
+			{
+				sqlSet.append(", ");
+			}
+			sqlSet.append(columnName).append("=").append(sqlValue);
+		}
+
+		if (sqlSet.length() == 0)
+		{
+			return;
+		}
+
+		final boolean isUpdatedColumnPresent = Optional.ofNullable(POInfo.getPOInfo(baseTableName))
+				.map(poInfo -> poInfo.getColumnIndex("Updated") > -1)
+				.orElse(false);
+
+		if (isUpdatedColumnPresent)
+		{
+			sqlSet.append(", Updated").append("=").append(DB.TO_DATE(SystemTime.asTimestamp(), false));
+		}
+
+		final String keyColumnName = trlInfo.getKeyColumnName();
+		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
+
+		final String sql = "UPDATE " + baseTableName + " SET " + sqlSet + " WHERE " + keyColumnName + "=" + convertValueToSql(keyColumnValue);
+		final int updatedCount = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated {} base records for {}", updatedCount, trlRecord);
+>>>>>>> 1a182c4a857 (Make sure to update the Updated column when propagating TRL update to base table (#15610))
 
 		//
 		// If AutoUpdateTrl then copy the changed fields from record to each translation.
