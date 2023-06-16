@@ -66,6 +66,9 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	/** Consider using {@link IShipmentScheduleBL#getQtyToDeliver(I_M_ShipmentSchedule)} instead. */
 	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
 
+	@Nullable
+	BigDecimal getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched);
+
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
 
 	@Deprecated

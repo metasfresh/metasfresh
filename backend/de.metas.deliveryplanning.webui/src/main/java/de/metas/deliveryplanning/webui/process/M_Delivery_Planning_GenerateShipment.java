@@ -40,6 +40,10 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 	@Param(parameterName = PARAM_QtyToDeliver, mandatory = true)
 	private BigDecimal p_QtyToDeliverBD;
 
+	private static final String PARAM_QtyAvailable = "QtyAvailableParam";
+	@Param(parameterName = PARAM_QtyToDeliver, mandatory = true)
+	private BigDecimal p_QtyAvailable;
+
 	@NestedParams
 	private final ForexContractParameters p_FECParams = ForexContractParameters.newInstance();
 
@@ -65,6 +69,12 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 		{
 			final ShipmentScheduleId shipmentScheduleId = helper.getShipmentInfo(getDeliveryPlanningId()).getShipmentScheduleId();
 			return helper.getQtyToDeliverByShipmentScheduleId(shipmentScheduleId);
+		}
+		else if(parameter.getColumnName().equals(PARAM_QtyAvailable))
+		{
+			final ShipmentScheduleId shipmentScheduleId = helper.getShipmentInfo(getDeliveryPlanningId()).getShipmentScheduleId();
+			final BigDecimal qtyOnHand = helper.getQtyOnHandByShipmentScheduleId(shipmentScheduleId);
+			return qtyOnHand == null ? BigDecimal.ZERO : qtyOnHand;
 		}
 		else
 		{

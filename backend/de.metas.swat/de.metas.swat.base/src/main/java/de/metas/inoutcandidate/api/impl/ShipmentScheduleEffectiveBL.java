@@ -92,6 +92,13 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		return sched.getQtyToDeliver();
 	}
 
+	@Nullable
+	@Override
+	public BigDecimal getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
+	{
+			return sched.getQtyOnHand();
+	}
+
 	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
