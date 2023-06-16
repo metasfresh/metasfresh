@@ -6,6 +6,8 @@ set /P version=<docker-builds/version.info
 for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date}"') do (set buildtime=%%g)
 for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHHmm""""}"') do (set buildnr=%%g)
 
+if not exist docker-builds\mvn\local-settings.xml ( copy docker-builds\mvn\settings.xml docker-builds\mvn\local-settings.xml)
+
 (
 	echo build.name=local windows
 	echo build.system=%ComputerName%
@@ -39,14 +41,14 @@ echo.
 @echo building maven artifacts
 @echo --------------------------
 
-docker build -f docker-builds/Dockerfile.common -t %pubregistry%/metas-mvn-common:%qualifier% . || @goto error
-docker build -f docker-builds/Dockerfile.backend -t %pubregistry%/metas-mvn-backend:%qualifier% . || @goto error
-docker build -f docker-builds/Dockerfile.camel -t %pubregistry%/metas-mvn-camel:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.common --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-common:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.backend --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-backend:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.camel --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-camel:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.camel.dist -t %pubregistry%/metas-mvn-camel-dist:%qualifier% . || @goto error
 
-docker build -f docker-builds/Dockerfile.junit -t %pubregistry%/metas-junit:%qualifier% . || @goto error
-docker build -f docker-builds/Dockerfile.camel.junit -t %pubregistry%/metas-camel-junit:%qualifier% . || @goto error
-docker build -f docker-builds/Dockerfile.cucumber -t %pubregistry%/metas-cucumber:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.junit --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-junit:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.junit --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-camel-junit:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.cucumber --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-cucumber:%qualifier% . || @goto error
 
 
 @echo.
@@ -69,6 +71,7 @@ docker build -f docker-builds/Dockerfile.db-preloaded -t %pubregistry%/metas-db:
 @echo --------------------------
 docker build -f docker-builds/Dockerfile.backend.api.compat -t %pubregistry%/metas-api:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.backend.app.compat -t %pubregistry%/metas-app:%qualifier%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.report.compat -t %pubregistry%/metas-report:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.mobile.compat -t %pubregistry%/metas-mobile:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.frontend.compat -t %pubregistry%/metas-frontend:%qualifier%-compat . || @goto error
 
