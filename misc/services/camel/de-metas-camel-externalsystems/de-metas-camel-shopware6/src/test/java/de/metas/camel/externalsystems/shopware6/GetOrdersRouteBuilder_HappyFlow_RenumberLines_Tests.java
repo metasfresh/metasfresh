@@ -26,10 +26,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -39,14 +40,16 @@ import java.io.InputStream;
 
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_UPSERT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CREATE_PAYMENT;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CLEAR;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CREATE;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_PROCESS;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
-import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PAGE_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -69,15 +72,17 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 	{
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor createdBPartnerProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor(JSON_UPSERT_BPARTNER_RESPONSE);
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatedOLCandProcessor();
-		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor mockSuccessfullyProcessOLCandProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
 							   successfullyCreatedOLCandProcessor,
-							   successfullyClearOrdersProcessor,
+							   mockSuccessfullyProcessOLCandProcessor,
 							   runtimeParamsProcessor,
 							   createPaymentProcessor,
+							   successfullyCalledGetOrderPage,
 							   GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder().build(),
 							   JSON_ORDER_LINES_DO_NOT_RENUMBER);
 
@@ -98,11 +103,11 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		final MockEndpoint olCandMockEndpoint = getMockEndpoint(MOCK_OL_CAND_CREATE);
 		olCandMockEndpoint.expectedBodiesReceived(objectMapper.readValue(olCandCreateRequestIS, JsonOLCandCreateBulkRequest.class));
 
-		//validate JsonOLCandClearRequest
-		final InputStream jsonOLCandClearRequest = this.getClass().getResourceAsStream(JSON_OL_CAND_CLEAR_REQUEST);
+		//validate JsonOLCandProcessRequest
+		final InputStream jsonOLCandProcessRequestIS = this.getClass().getResourceAsStream(JSON_OL_CAND_PROCESS_REQUEST);
 
-		final MockEndpoint olCandClearEndpoint = getMockEndpoint(MOCK_OL_CAND_CLEAR);
-		olCandClearEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandClearRequest, JsonOLCandClearRequest.class));
+		final MockEndpoint olCandProcessEndpoint = getMockEndpoint(MOCK_OL_CAND_PROCESS);
+		olCandProcessEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandProcessRequestIS, JsonOLCandProcessRequest.class));
 
 		//validate create payment request
 		final InputStream jsonCreatePaymentRequest = this.getClass().getResourceAsStream(JSON_ORDER_PAYMENT_CREATE_REQUEST);
@@ -120,9 +125,10 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
-		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
+		assertThat(mockSuccessfullyProcessOLCandProcessor.called).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
+		assertThat(successfullyCalledGetOrderPage.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
 
@@ -131,15 +137,17 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 	{
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor createdBPartnerProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor(JSON_UPSERT_BPARTNER_RESPONSE);
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatedOLCandProcessor();
-		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor successfullyProcessOLCandProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage mockSuccessfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
 							   successfullyCreatedOLCandProcessor,
-							   successfullyClearOrdersProcessor,
+							   successfullyProcessOLCandProcessor,
 							   runtimeParamsProcessor,
 							   createPaymentProcessor,
+							   mockSuccessfullyCalledGetOrderPage,
 							   GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder().build(),
 							   JSON_ORDER_LINES_DO_RENUMBER);
 
@@ -160,11 +168,11 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		final MockEndpoint olCandMockEndpoint = getMockEndpoint(MOCK_OL_CAND_CREATE);
 		olCandMockEndpoint.expectedBodiesReceived(objectMapper.readValue(olCandCreateRequestIS, JsonOLCandCreateBulkRequest.class));
 
-		//validate JsonOLCandClearRequest
-		final InputStream jsonOLCandClearRequest = this.getClass().getResourceAsStream(JSON_OL_CAND_CLEAR_REQUEST);
+		//validate JsonOLCandProcessRequest
+		final InputStream jsonOLCandProcessRequestIS = this.getClass().getResourceAsStream(JSON_OL_CAND_PROCESS_REQUEST);
 
-		final MockEndpoint olCandClearEndpoint = getMockEndpoint(MOCK_OL_CAND_CLEAR);
-		olCandClearEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandClearRequest, JsonOLCandClearRequest.class));
+		final MockEndpoint olCandProcessEndpoint = getMockEndpoint(MOCK_OL_CAND_PROCESS);
+		olCandProcessEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandProcessRequestIS, JsonOLCandProcessRequest.class));
 
 		//validate create payment request
 		final InputStream jsonCreatePaymentRequest = this.getClass().getResourceAsStream(JSON_ORDER_PAYMENT_CREATE_REQUEST);
@@ -182,9 +190,10 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
-		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
+		assertThat(successfullyProcessOLCandProcessor.called).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
+		assertThat(mockSuccessfullyCalledGetOrderPage.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 
 	}
@@ -192,16 +201,22 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 	private void prepareRouteForTesting(
 			final MockUpsertBPartnerProcessor upsertBPartnerProcessor,
 			final MockSuccessfullyCreatedOLCandProcessor olCandProcessor,
-			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
+			final MockSuccessfullyProcessOLCandProcessor processOLCandProcessor,
 			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
 			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor,
+			final MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage,
 			final JsonExternalSystemRequest request,
 			final String jsonOLPath) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
-							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
+							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
 									  .replace()
-									  .process(new MockGetOrdersProcessor(request, jsonOLPath)));
+									  .process(new MockBuildOrdersContextProcessor(request, jsonOLPath, 1, JSON_ORDERS_RESOURCE_PATH, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE)));
+
+		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
+							  advice -> advice.weaveById(GET_ORDERS_PAGE_PROCESSOR_ID)
+									  .after()
+									  .process(successfullyCalledGetOrderPage));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {
@@ -227,11 +242,11 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 										  .process(createPaymentProcessor);
 							  });
 
-		AdviceWith.adviceWith(context, CLEAR_ORDERS_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
+		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
 									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_OL_CAND_CLEAR)
-									  .process(olCandClearProcessor));
+									  .to(MOCK_OL_CAND_PROCESS)
+									  .process(processOLCandProcessor));
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)

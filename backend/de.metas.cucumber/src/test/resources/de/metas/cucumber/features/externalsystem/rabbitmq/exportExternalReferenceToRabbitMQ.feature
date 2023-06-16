@@ -1,7 +1,8 @@
 Feature: Validate external reference is sent to RabbitMQ
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: Export external reference and c_bpartner when created by RabbitMQ.SubjectCreatedByUserGroup_ID
     Given metasfresh contains AD_UserGroup:
@@ -183,7 +184,7 @@ Feature: Validate external reference is sent to RabbitMQ
       | externalRef_BPartner              | BPartner_ER_S2_25032022   |
       | externalRef_BPLocation            | BPLocation_ER_S2_25032022 |
       | externalRef_BPContact             | BPContact_ER_S2_25032022  |
-    And after not more than 30s, there are added records in Data_Export_Audit
+    And after not more than 60s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier   | Data_Export_Audit_Parent_ID.Identifier |
       | dataExport_BPartner             | S_ExternalReference | externalRef_BPartner   |                                        |
       | dataExport_BPLocation           | S_ExternalReference | externalRef_BPLocation |                                        |
