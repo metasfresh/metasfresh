@@ -309,28 +309,24 @@ BEGIN
              , fa.C_AcctSchema_ID
              , (CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END) AS c_activity_id
              , (CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END)   AS m_product_id
-             , a.name                                                              AS activityName
-             , p.name                                                              AS productName
+             , NULL::text                                                          AS activityName
+             , NULL::text                                                          AS productName
              , COALESCE(SUM(fa.AmtAcctDr - fa.AmtAcctCr), 0)                       AS Balance
         FROM Fact_Acct fa
                  INNER JOIN c_elementvalue ev ON fa.account_id = ev.c_elementvalue_id
-                 LEFT OUTER JOIN C_Activity a ON ((CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END) = a.c_activity_id)
-                 LEFT OUTER JOIN M_Product p ON ((CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END) = p.m_product_id)
         WHERE fa.dateacct <= p_date
           AND fa.ad_org_id = p_ad_org_id
           AND (fa.PostingType = 'A' OR (p_ExcludePostingTypeYearEnd = 'N' AND fa.PostingType = 'Y') OR (p_IncludePostingTypeStatistical = 'Y' AND fa.PostingType = 'S'))
-          AND (ev.AccountType NOT IN ('E', 'R') OR fa.DateAcct >= p_date)
-        GROUP BY fa.AD_Client_ID
-               , fa.C_AcctSchema_ID
-               , fa.Account_ID
-               , (CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END)
-               , (CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END)
-               , a.name
-               , p.name;
+          AND (ev.AccountType NOT IN ('E', 'R') OR fa.DateAcct >= DATE_TRUNC('year', p_date))
+        GROUP BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.Account_ID,
+                 (CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END), (CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END);
 
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
         RAISE NOTICE 'Sums  per activity and product for % dates', v_rowcount;
         CREATE UNIQUE INDEX ON tmp_Fact_Acct_Per_Activity_Product (Account_ID, M_Product_ID, C_Activity_ID);
+
+        UPDATE tmp_Fact_Acct_Per_Activity_Product t SET activityName=(SELECT name FROM C_Activity a WHERE a.C_Activity_ID = t.C_Activity_ID) WHERE t.C_Activity_ID IS NOT NULL;
+        UPDATE tmp_Fact_Acct_Per_Activity_Product t SET productName=(SELECT name FROM M_Product p WHERE p.M_Product_ID = t.M_Product_ID) WHERE t.M_Product_ID IS NOT NULL;
 
         -- compute sums per account and activity/product until given date
         DROP TABLE IF EXISTS tmp_activity_product_balances_todate;
