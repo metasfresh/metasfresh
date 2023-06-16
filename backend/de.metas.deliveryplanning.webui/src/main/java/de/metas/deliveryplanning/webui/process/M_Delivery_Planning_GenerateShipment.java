@@ -73,8 +73,7 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 		else if(parameter.getColumnName().equals(PARAM_QtyAvailable))
 		{
 			final ShipmentScheduleId shipmentScheduleId = helper.getShipmentInfo(getDeliveryPlanningId()).getShipmentScheduleId();
-			final BigDecimal qtyOnHand = helper.getQtyOnHandByShipmentScheduleId(shipmentScheduleId);
-			return qtyOnHand == null ? BigDecimal.ZERO : qtyOnHand;
+			return helper.getQtyOnHandByShipmentScheduleId(shipmentScheduleId).toBigDecimal();
 		}
 		else
 		{

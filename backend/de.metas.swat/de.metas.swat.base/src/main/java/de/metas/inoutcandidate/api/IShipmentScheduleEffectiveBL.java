@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.document.location.DocumentLocation;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -66,8 +67,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	/** Consider using {@link IShipmentScheduleBL#getQtyToDeliver(I_M_ShipmentSchedule)} instead. */
 	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
 
-	@Nullable
-	BigDecimal getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched);
+	Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched);
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
 

@@ -325,12 +325,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 		}
 
 		final ShipmentScheduleId shipmentScheduleId = shipmentInfo.getShipmentScheduleId();
-		final BigDecimal qtyOnHand = getQtyOnHandByShipmentScheduleId(shipmentScheduleId);
-		final BigDecimal qtyOnHandToUse = qtyOnHand == null ? BigDecimal.ZERO : qtyOnHand;
+		final BigDecimal qtyOnHand = getQtyOnHandByShipmentScheduleId(shipmentScheduleId).toBigDecimal();
 
 		final DeliveryRule deliveryRule = getDeliveryRuleByShipmentScheduleId(shipmentScheduleId);
 		final InOutId b2bReceiptId = request.getB2bReceiptId();
-		if (request.getQtyToShipBD().compareTo(qtyOnHandToUse) > 0 && !deliveryRule.isForce() && b2bReceiptId == null)
+		if (request.getQtyToShipBD().compareTo(qtyOnHand) > 0 && !deliveryRule.isForce() && b2bReceiptId == null)
 		{
 			throw new AdempiereException(MSG_ERROR_GOODS_ISSUE_QUANTITY);
 		}
@@ -365,8 +364,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		return shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleBL.getById(shipmentScheduleId));
 	}
 
-	@Nullable
-	public BigDecimal getQtyOnHandByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public Quantity getQtyOnHandByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return shipmentScheduleEffectiveBL.getQtyOnHand(shipmentScheduleBL.getById(shipmentScheduleId));
 	}
