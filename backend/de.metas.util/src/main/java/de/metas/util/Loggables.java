@@ -100,7 +100,7 @@ public final class Loggables
 		final ILoggable threadLocalLoggable = get();
 		if (NullLoggable.isNull(threadLocalLoggable))
 		{
-			return new LoggableWithLogger(threadLocalLoggable, logger, level);
+			return new LoggableWithLogger(NullLoggable.instance, logger, level);
 		}
 		else
 		{
