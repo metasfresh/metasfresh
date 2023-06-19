@@ -1727,6 +1727,50 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
+	 * Set Manually created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManuallyCreated (boolean IsManuallyCreated);
+
+	/**
+	 * Get Manually created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManuallyCreated();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsManuallyCreated = new ModelColumn<>(I_I_BPartner.class, "IsManuallyCreated", null);
+	String COLUMNNAME_IsManuallyCreated = "IsManuallyCreated";
+
+	/**
+	 * Set ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setISO_Code (@Nullable java.lang.String ISO_Code);
+
+	/**
+	 * Get ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getISO_Code();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_ISO_Code = new ModelColumn<>(I_I_BPartner.class, "ISO_Code", null);
+	String COLUMNNAME_ISO_Code = "ISO_Code";
+
+	/**
 	 * Set SEPA Signed.
 	 *
 	 * <br>Type: YesNo
