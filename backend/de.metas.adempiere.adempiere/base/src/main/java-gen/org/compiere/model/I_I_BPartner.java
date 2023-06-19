@@ -370,6 +370,27 @@ public interface I_I_BPartner
 	String COLUMNNAME_AggregationName = "AggregationName";
 
 	/**
+	 * Set Bank Details.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBankDetails (@Nullable java.lang.String BankDetails);
+
+	/**
+	 * Get Bank Details.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBankDetails();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_BankDetails = new ModelColumn<>(I_I_BPartner.class, "BankDetails", null);
+	String COLUMNNAME_BankDetails = "BankDetails";
+
+	/**
 	 * Set Geburtstag.
 	 * Birthday or Anniversary day
 	 *
@@ -2455,6 +2476,29 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_Processing = new ModelColumn<>(I_I_BPartner.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set QR IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQR_IBAN (@Nullable java.lang.String QR_IBAN);
+
+	/**
+	 * Get QR IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQR_IBAN();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_QR_IBAN = new ModelColumn<>(I_I_BPartner.class, "QR_IBAN", null);
+	String COLUMNNAME_QR_IBAN = "QR_IBAN";
 
 	/**
 	 * Set Qualification .
