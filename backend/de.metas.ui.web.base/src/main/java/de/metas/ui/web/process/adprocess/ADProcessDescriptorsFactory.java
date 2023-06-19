@@ -372,21 +372,10 @@ import java.util.stream.Stream;
 			@NonNull final I_AD_Process_Para adProcessParamRecord,
 			@NonNull final DocumentFieldDescriptor.Builder paramDescriptorBuilder)
 	{
-		if (adProcessParamRecord.getAD_Element_ID() <= 0)
-		{
-			final I_AD_Process_Para processParamTrl = InterfaceWrapperHelper.translate(adProcessParamRecord, I_AD_Process_Para.class);
-			paramDescriptorBuilder
-					.setCaption(processParamTrl.getName())
-					.setDescription(processParamTrl.getDescription());
-		}
-		else
-		{
-			final I_AD_Element element = Services.get(IADElementDAO.class).getById(adProcessParamRecord.getAD_Element_ID());
-			final I_AD_Element elementTrl = InterfaceWrapperHelper.translate(element, I_AD_Element.class);
-			paramDescriptorBuilder
-					.setCaption(elementTrl.getName())
-					.setDescription(elementTrl.getDescription());
-		}
+		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(adProcessParamRecord);
+		paramDescriptorBuilder
+				.setCaption(trl.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Name, adProcessParamRecord.getName()))
+				.setDescription(trl.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Description, adProcessParamRecord.getDescription()));
 	}
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
