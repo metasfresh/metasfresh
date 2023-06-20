@@ -119,6 +119,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		return sched.getQtyToDeliver();
 	}
 
+<<<<<<< HEAD
 	@Override
 	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
 	{
@@ -126,6 +127,8 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		return Quantity.of(sched.getQtyOnHand(), uom);
 	}
 
+=======
+>>>>>>> bf394b56cd7 (fix conflict)
 	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
