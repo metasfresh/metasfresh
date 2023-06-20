@@ -719,7 +719,7 @@
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="382" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="7f1e1c22-0b38-4aa5-9740-7d386e5f8a94">
+				<reportElement x="374" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="7f1e1c22-0b38-4aa5-9740-7d386e5f8a94">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )&&$F{amtsourcedr}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -727,8 +727,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="392" y="10" width="19" height="6" isRemoveLineWhenBlank="true" uuid="706d72f5-cab5-4243-a161-c20c632e0c34">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="385" y="10" width="26" height="6" isRemoveLineWhenBlank="true" uuid="706d72f5-cab5-4243-a161-c20c632e0c34">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -737,7 +737,7 @@
 				<textFieldExpression><![CDATA[$F{amtsourcedr}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="440" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="a166e224-ac28-4ddb-ba95-d7191622a9aa">
+				<reportElement x="432" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="a166e224-ac28-4ddb-ba95-d7191622a9aa">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )&&$F{amtsourcecr}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -745,8 +745,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="450" y="10" width="19" height="6" isRemoveLineWhenBlank="true" uuid="b786481a-7aae-4e71-b557-90376be0d871">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="443" y="10" width="26" height="6" isRemoveLineWhenBlank="true" uuid="b786481a-7aae-4e71-b557-90376be0d871">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
