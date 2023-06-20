@@ -1,9 +1,11 @@
 package de.metas.bpartner.service;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoice.InvoiceId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -46,13 +48,19 @@ public class BankAccountQuery
 	@Nullable
 	InvoiceId invoiceId;
 	boolean containsQRIBAN;
+	@Nullable
+	String description;
+	@Nullable
+	BankId bankId;
 
 	@Builder(toBuilder = true)
 	private BankAccountQuery(
 			@Nullable @Singular final Collection<BPBankAcctUse> bpBankAcctUses,
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final InvoiceId invoiceId,
-			final Boolean containsQRIBAN)
+			final Boolean containsQRIBAN,
+			@Nullable final String description,
+			@Nullable final BankId bankId)
 	{
 		this.bpBankAcctUses = bpBankAcctUses != null && !bpBankAcctUses.isEmpty() ?
 				ImmutableSet.copyOf(bpBankAcctUses) :
@@ -60,9 +68,10 @@ public class BankAccountQuery
 		this.bPartnerId = bPartnerId;
 		this.invoiceId = invoiceId;
 		this.containsQRIBAN = CoalesceUtil.coalesce(containsQRIBAN, false);
+		this.description = description;
+		this.bankId = bankId;
 
-		assume(bPartnerId != null || invoiceId != null,
-				"At least one of the parameters 'bPartnerId, invoiceId and value needs to be non-null/non-empty");
+		assume(bPartnerId != null || invoiceId != null || Check.isNotBlank(description) || bankId != null,
+			   "At least one of the parameters 'bPartnerId, 'invoiceId', 'description' or 'BankId' needs to be non-null/non-empty");
 	}
-
 }

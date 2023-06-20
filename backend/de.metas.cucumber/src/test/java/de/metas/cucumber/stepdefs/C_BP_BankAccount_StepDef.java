@@ -35,8 +35,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Currency;
 import org.jetbrains.annotations.Nullable;
@@ -211,5 +213,41 @@ public class C_BP_BankAccount_StepDef
 
 		return queryBuilder.create()
 				.firstOnly(I_C_BP_BankAccount.class);
+	}
+
+	@And("validate C_BP_BankAccount:")
+	public void validate_C_BP_BankAccount(@NonNull final DataTable dataTable)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bpBankAccountIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BP_BankAccount bpBankAccount = bpBankAccountTable.get(bpBankAccountIdentifier);
+
+			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartnerRecord = bpartnerTable.get(bpIdentifier);
+			softly.assertThat(bpBankAccount.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bPartnerRecord.getC_BPartner_ID());
+
+			final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_Description);
+			if (Check.isNotBlank(description))
+			{
+				softly.assertThat(bpBankAccount.getDescription()).as("Description").isEqualTo(description);
+			}
+
+			final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IBAN);
+			if (Check.isNotBlank(iban))
+			{
+				softly.assertThat(bpBankAccount.getIBAN()).as("IBAN").isEqualTo(iban);
+			}
+
+			final String qrIban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_QR_IBAN);
+			if (Check.isNotBlank(qrIban))
+			{
+				softly.assertThat(bpBankAccount.getQR_IBAN()).as("QR_IBAN").isEqualTo(qrIban);
+			}
+		}
+
+		softly.assertAll();
 	}
 }

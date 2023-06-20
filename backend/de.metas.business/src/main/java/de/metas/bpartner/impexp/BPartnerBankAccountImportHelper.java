@@ -3,21 +3,28 @@ package de.metas.bpartner.impexp;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
-import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.service.BankAccountQuery;
+import de.metas.bpartner.service.IBPBankAccountDAO;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -44,6 +51,7 @@ import javax.validation.constraints.Null;
 /* package */ class BPartnerBankAccountImportHelper
 {
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final BankRepository bankRepository;
 	private BPartnerImportProcess process;
 
@@ -60,8 +68,7 @@ import javax.validation.constraints.Null;
 		return this;
 	}
 
-	@Nullable
-	public I_C_BP_BankAccount importRecord(final I_I_BPartner importRecord)
+	public void importRecord(final I_I_BPartner importRecord)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(importRecord.getC_BPartner_ID());
 
@@ -93,8 +100,74 @@ import javax.validation.constraints.Null;
 
 			importRecord.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
 		}
+		else if (Check.isNotBlank(importRecord.getBankDetails()))
+		{
+			bankAccount = initializeBankAccountFromBankDetails(importRecord.getBankDetails());
+
+			bankAccount.setIBAN(importRecord.getIBAN());
+			bankAccount.setQR_IBAN(importRecord.getQR_IBAN());
+			bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
+			bankAccount.setAD_Org_ID(importRecord.getAD_Org_ID());
+
+			if (Check.isBlank(importRecord.getISO_Code()))
+			{
+				throw new AdempiereException("Missing value for mandatory field 'ISO-Currency Code'");
+			}
+
+			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(importRecord.getISO_Code());
+			final CurrencyId currencyId = currencyBL.getByCurrencyCode(currencyCode).getId();
+			bankAccount.setC_Currency_ID(currencyId.getRepoId());
+
+			InterfaceWrapperHelper.saveRecord(bankAccount);
+		}
+	}
+
+	@NonNull
+	private I_C_BP_BankAccount initializeBankAccountFromBankDetails(@NonNull final String bankDetails)
+	{
+		final I_C_BP_BankAccount bankAccount;
+
+		final Optional<BankId> bankIdOpt = resolveBankIdFromBankDetails(bankDetails);
+
+		if (bankIdOpt.isPresent())
+		{
+			final BankAccountQuery queryWithBankId = BankAccountQuery.builder().description(bankDetails).build();
+			bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithBankId));
+			bankAccount.setC_Bank_ID(BankId.optionalToRepoId(bankIdOpt));
+		}
+		else
+		{
+			final BankAccountQuery queryWithBankDetails = BankAccountQuery.builder().description(bankDetails).build();
+			bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithBankDetails));
+
+			if (Check.isBlank(bankAccount.getName()))
+			{
+				bankAccount.setName(bankDetails);
+			}
+
+			if (Check.isBlank(bankAccount.getDescription()))
+			{
+				bankAccount.setDescription(bankDetails);
+			}
+		}
 
 		return bankAccount;
 	}
 
+	@NonNull
+	private Optional<BankId> resolveBankIdFromBankDetails(@NonNull final String bankDetails)
+	{
+		final Set<BankId> bankIdCollection = bankRepository.retrieveBankIdsByName(bankDetails);
+
+		return Optional.ofNullable(CollectionUtils.singleElementOrNull(bankIdCollection));
+	}
+
+	@NonNull
+	private I_C_BP_BankAccount handleBPBankAccountCollection(final List<BPartnerBankAccount> bpBankAccountCollection)
+	{
+		return Optional.ofNullable(CollectionUtils.singleElementOrNull(bpBankAccountCollection))
+				.map(BPartnerBankAccount::getId)
+				.map(id -> InterfaceWrapperHelper.load(id, I_C_BP_BankAccount.class))
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class));
+	}
 }

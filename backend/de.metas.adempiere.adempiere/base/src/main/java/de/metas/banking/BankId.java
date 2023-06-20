@@ -69,4 +69,9 @@ public class BankId implements RepoIdAware
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
+
+	public static int optionalToRepoId(final Optional<BankId> idOptional)
+	{
+		return idOptional.map(BankId::getRepoId).orElse(-1);
+	}
 }

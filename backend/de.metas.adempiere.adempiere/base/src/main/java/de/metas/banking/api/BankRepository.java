@@ -22,6 +22,7 @@
 
 package de.metas.banking.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -160,4 +162,15 @@ public class BankRepository
 				this::retrieveDefaultBankDataImportConfigId);
 	}
 
+	@NonNull
+	public Set<BankId> retrieveBankIdsByName(final String bankName)
+	{
+		return queryBL.createQueryBuilder(I_C_Bank.class)
+				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, false)
+				.addOnlyActiveRecordsFilter()
+				.iterateAndStream()
+				.map(I_C_Bank::getC_Bank_ID)
+				.map(BankId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

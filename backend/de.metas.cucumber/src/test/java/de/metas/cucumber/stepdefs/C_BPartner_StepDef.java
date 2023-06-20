@@ -46,6 +46,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -512,5 +513,40 @@ public class C_BPartner_StepDef
 		InterfaceWrapperHelper.save(bPartner);
 
 		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);
+	}
+
+	@And("validate C_BPartner:")
+	public void validate_C_BPartner(@NonNull final DataTable dataTable)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
+
+			final String bpValue = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_Value);
+			softly.assertThat(bPartnerRecord.getValue()).as("Value").isEqualTo(bpValue);
+
+			final String companyName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_CompanyName);
+			if (Check.isNotBlank(companyName))
+			{
+				softly.assertThat(bPartnerRecord.getCompanyName()).as("CompanyName").isEqualTo(companyName);
+			}
+
+			final String vaTaxID = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_VATaxID);
+			if (Check.isNotBlank(vaTaxID))
+			{
+				softly.assertThat(bPartnerRecord.getVATaxID()).as("VATaxID").isEqualTo(vaTaxID);
+			}
+
+			final String firstname = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_Firstname);
+			if (Check.isNotBlank(firstname))
+			{
+				softly.assertThat(bPartnerRecord.getFirstname()).as("Firstname").isEqualTo(firstname);
+			}
+		}
+
+		softly.assertAll();
 	}
 }
