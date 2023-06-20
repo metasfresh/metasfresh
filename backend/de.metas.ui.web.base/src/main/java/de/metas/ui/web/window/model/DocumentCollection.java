@@ -28,6 +28,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.copy_with_details.CopyRecordRequest;
+import de.metas.copy_with_details.CopyRecordService;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -67,12 +69,6 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.copy.CopyRecordRequest;
-import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -352,8 +348,7 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
+		@SuppressWarnings("UnnecessaryLocalVariable") final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
@@ -410,14 +405,14 @@ public class DocumentCollection
 			long countDocumentsWithChanges = 0;
 			final List<DocumentKey> documentKeysToInvalidate = new ArrayList<>();
 			for (final Map.Entry<DocumentKey, Document> entry : rootDocuments.asMap().entrySet())
-				{
+			{
 				final Document document = entry.getValue();
 				if (document.hasChangesRecursivelly())
-					{
-						countDocumentsWithChanges++;
-					}
-					else
-					{
+				{
+					countDocumentsWithChanges++;
+				}
+				else
+				{
 					documentKeysToInvalidate.add(entry.getKey());
 				}
 			}
@@ -665,11 +660,11 @@ public class DocumentCollection
 		}
 
 		//
-			// Invalidate the root documents
+		// Invalidate the root documents
 		rootDocuments.invalidateAll(documentKeys);
 
 		//
-			// Notify frontend
+		// Notify frontend
 		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
@@ -714,34 +709,34 @@ public class DocumentCollection
 			final WindowId windowId = entityDescriptor.getWindowId();
 			final DocumentKey rootDocumentKey = DocumentKey.of(windowId, rootDocumentId);
 			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
-				if (rootDocument != null)
+			if (rootDocument != null)
+			{
+				try (final IAutoCloseable ignored = rootDocument.lockForWriting())
 				{
-					try (final IAutoCloseable ignored = rootDocument.lockForWriting())
+					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
 					{
-						for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
+						final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
+						if (includedRowIds.isEmpty())
 						{
-							final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
-							if (includedRowIds.isEmpty())
-							{
-								continue;
-							}
+							continue;
+						}
 
-							for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
-							{
-								final DetailId detailId = includedEntityDescriptor.getDetailId();
+						for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
+						{
+							final DetailId detailId = includedEntityDescriptor.getDetailId();
 
-								rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
-							}
+							rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
 						}
 					}
 				}
+			}
 
-				//
-				// Invalidate the root document
-				if (documentToInvalidate.isInvalidateDocument())
-				{
+			//
+			// Invalidate the root document
+			if (documentToInvalidate.isInvalidateDocument())
+			{
 				rootDocuments.invalidate(rootDocumentKey);
-				}
+			}
 
 			//
 			// Notify frontend, even if the root document does not exist (or it was not cached).
@@ -820,31 +815,6 @@ public class DocumentCollection
 		final PO toPO = copyRecordService.copyRecord(copyRecordRequest);
 
 		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
-	}
-
-	public void duplicateTabRowInTrx(
-			@NonNull final TableRecordReference parentRef,
-			@NonNull final TableRecordReference fromRecordRef,
-			@NonNull final AdWindowId windowId)
-	{
-		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
-		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
-		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
-
-		final Object parentModel = parentRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
-		final PO parentPO = InterfaceWrapperHelper.getPO(parentModel);
-
-		if (!CopyRecordFactory.isEnabledForTableName(tableName))
-		{
-			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
-		}
-
-		final CopyRecordSupport copyRecordSupport = CopyRecordFactory.getCopyRecordSupport(tableName);
-		copyRecordSupport.setAdWindowId(windowId);
-		copyRecordSupport.setParentPO(parentPO);
-		copyRecordSupport.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
-		copyRecordSupport.setBase(true);
-		copyRecordSupport.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)

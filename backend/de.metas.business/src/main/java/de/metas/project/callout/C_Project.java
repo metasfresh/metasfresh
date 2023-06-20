@@ -22,6 +22,7 @@
 
 package de.metas.project.callout;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.service.ProjectService;
 import de.metas.util.Check;
@@ -30,7 +31,6 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Component;
 

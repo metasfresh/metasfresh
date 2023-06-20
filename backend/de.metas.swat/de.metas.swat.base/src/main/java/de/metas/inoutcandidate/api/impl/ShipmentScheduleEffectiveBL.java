@@ -128,6 +128,14 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
+	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final I_C_UOM uom = productBL.getStockUOM(sched.getM_Product_ID());
+		final BigDecimal qty = sched.getQtyOnHand() == null ? BigDecimal.ZERO : sched.getQtyOnHand();
+		return Quantity.of(qty, uom);
+	}
+
+	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
 		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);

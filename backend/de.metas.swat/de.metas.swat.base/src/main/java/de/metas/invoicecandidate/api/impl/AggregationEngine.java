@@ -145,8 +145,8 @@ public final class AggregationEngine
 	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
-	@Nullable private final ForexContractRef forexContractRef;
-
+	@Nullable
+	private final ForexContractRef forexContractRef;
 	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}

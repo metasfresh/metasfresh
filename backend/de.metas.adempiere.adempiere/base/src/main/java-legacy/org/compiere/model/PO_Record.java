@@ -33,7 +33,7 @@ import de.metas.logging.LogManager;
  *  @author Jorg Janke
  *  @version $Id: PO_Record.java,v 1.4 2006/07/30 00:58:04 jjanke Exp $
  */
-public class PO_Record
+class PO_Record
 {
 	/**	Parent Tables		*/
 	private static int[]	s_parents =	new int[]{
