@@ -255,6 +255,15 @@ public class I_BPartner_StepDef
 				final I_C_BP_BankAccount bpBankAccountRecord = InterfaceWrapperHelper.load(ibpRecord.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
 				bpBankAccountTable.putOrReplace(bpBankAccountIdentifier, bpBankAccountRecord);
 			}
+
+			final String isoCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_ISO_Code);
+			if (Check.isNotBlank(isoCode))
+			{
+				softly.assertThat(ibpRecord.getISO_Code()).as("ISO_Code").isEqualTo(isoCode);
+			}
+
+			final Boolean isManuallyCreated = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_I_BPartner.COLUMNNAME_IsManuallyCreated, false);
+			softly.assertThat(ibpRecord.isManuallyCreated()).as("IsManuallyCreated").isEqualTo(isManuallyCreated);
 		}
 
 		softly.assertAll();

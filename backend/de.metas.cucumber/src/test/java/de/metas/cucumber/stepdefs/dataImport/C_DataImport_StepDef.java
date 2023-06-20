@@ -258,6 +258,8 @@ public class C_DataImport_StepDef
 			final String bankDetails = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_BankDetails);
 			final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_IBAN);
 			final String qrIban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_QR_IBAN);
+			final String isoCurrencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_ISO_Code);
+			final String isManual = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_IsManuallyCreated);
 
 			final String payload = bpValue + "	"
 					+ companyName + "	"
@@ -281,7 +283,9 @@ public class C_DataImport_StepDef
 					+ postal + "	"
 					+ bankDetails + "	"
 					+ iban + "	"
-					+ qrIban + "	";
+					+ qrIban + "	"
+					+ isoCurrencyCode + "	"
+					+ isManual + "	";
 
 			testContext.setRequestPayload(payload.replaceAll("null", ""));
 		}

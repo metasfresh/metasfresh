@@ -26,6 +26,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.bank.C_Bank_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -54,6 +55,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 public class C_BP_BankAccount_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final C_BP_BankAccount_StepDefData bpBankAccountTable;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -245,6 +247,13 @@ public class C_BP_BankAccount_StepDef
 			if (Check.isNotBlank(qrIban))
 			{
 				softly.assertThat(bpBankAccount.getQR_IBAN()).as("QR_IBAN").isEqualTo(qrIban);
+			}
+
+			final String isoCurrencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ISO_Code");
+			if (Check.isNotBlank(isoCurrencyCode))
+			{
+				final CurrencyId currencyId = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCurrencyCode)).getId();
+				softly.assertThat(bpBankAccount.getC_Currency_ID()).as("C_Currency_ID").isEqualTo(currencyId.getRepoId());
 			}
 		}
 
