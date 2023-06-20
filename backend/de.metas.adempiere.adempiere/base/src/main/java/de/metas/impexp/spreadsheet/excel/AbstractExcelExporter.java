@@ -36,6 +36,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -67,6 +68,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -76,6 +78,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 public abstract class AbstractExcelExporter
 {
+	private final static String SYS_CONFIG_NUMERIC_FORMAT = "de.metas.impexp.spreadsheet.excel.NumericFormat";
+
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Is the current Row a Function Row
 	 *
@@ -399,7 +405,12 @@ public abstract class AbstractExcelExporter
 		else if (DisplayType.isNumeric(displayType))
 		{
 			final DecimalFormat df = DisplayType.getNumberFormat(displayType, getLanguage());
-			final String format = getNumberFormatString(df, isHighlightNegativeNumbers);
+
+			final String format = Optional.ofNullable(sysConfigBL.getValue(SYS_CONFIG_NUMERIC_FORMAT,
+																		   null,
+																		   Env.getAD_Org_ID(Env.getCtx()),
+																		   Env.getAD_Client_ID()))
+					.orElseGet(() -> getNumberFormatString(df, isHighlightNegativeNumbers));
 
 			final DataFormat dataFormat = getDataFormat();
 			style.setDataFormat(dataFormat.getFormat(format));

@@ -57,7 +57,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
@@ -3833,7 +3832,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		return m_vo.getMaxQueryRecords();
 	}
 
-	private final int getMaxQueryRecordsActual(final GridTabMaxRows maxQueryRecords)
+	private int getMaxQueryRecordsActual(final GridTabMaxRows maxQueryRecords)
 	{
 		return GridTabMaxRowsRestrictionChecker.builder()
 				.setAD_Tab(this)
@@ -4020,7 +4019,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	private DataNewCopyMode _dataNewCopyMode = null;
 	/** Tables suggested by user for copy with details */
-	private List<CopyRecordSupportTableInfo> m_suggestedCopyWithDetailsList = null;
 
 	/**
 	 * Returns if we are in record copying mode.
@@ -4039,7 +4037,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * @param dataNewCopyMode
 	 */
-	private final void setDataNewCopyMode(final DataNewCopyMode dataNewCopyMode)
+	private void setDataNewCopyMode(final DataNewCopyMode dataNewCopyMode)
 	{
 		Check.assumeNotNull(dataNewCopyMode, "dataNewCopyMode not null");
 		this._dataNewCopyMode = dataNewCopyMode;
@@ -4048,24 +4046,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/**
 	 * Reset currently active copy mode
 	 */
-	private final void resetDataNewCopyMode()
+	private void resetDataNewCopyMode()
 	{
 		this._dataNewCopyMode = null;
-	}
-
-	public final void setSuggestedCopyWithDetailsList(final List<CopyRecordSupportTableInfo> suggestedCopyWithDetailsList)
-	{
-		this.m_suggestedCopyWithDetailsList = ImmutableList.copyOf(suggestedCopyWithDetailsList);
-	}
-
-	public final void resetSuggestedCopyWithDetailsList()
-	{
-		this.m_suggestedCopyWithDetailsList = null;
-	}
-
-	public final List<CopyRecordSupportTableInfo> getSuggestedCopyWithDetailsList()
-	{
-		return m_suggestedCopyWithDetailsList;
 	}
 
 	/**
@@ -4073,7 +4056,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * This method won't remove those special variables (i.e. those who start with {@link #CTX_Prefix}).
 	 */
-	private final void clearTabContext()
+	private void clearTabContext()
 	{
 		final Properties ctx = getCtx();
 		final int windowNo = getWindowNo();

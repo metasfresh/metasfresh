@@ -401,6 +401,15 @@ public class C_Order
 		//}
 	}
 
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setSectionCodeFromBPartner(final I_C_Order order)
+	{
+		Optional.ofNullable(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()))
+				.map(bpartnerBL::getById)
+				.map(I_C_BPartner::getM_SectionCode_ID)
+				.ifPresent(order::setM_SectionCode_ID);
+	}
+
 	private void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder)
 	{
 		final AdMessageKey errorMessage = checkNeedsAndHasContactWithValidEmail(salesOrder);

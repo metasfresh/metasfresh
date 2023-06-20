@@ -35,6 +35,7 @@ pull_request_rules:
        - base=koala_yawn_uat
        - base=mad_orange_uat
        - base=magic_oak_uat
+       - base=modified_carbon_uat
        - base=neon_underwear_uat
        - base=nerdy_frog_uat
        - base=pot_hole_uat
@@ -46,6 +47,7 @@ pull_request_rules:
        - base=tenacious_d_uat
        - base=week_end_uat
        - base=yoyo_uat
+       - base=zulu_alpha_uat
      - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
