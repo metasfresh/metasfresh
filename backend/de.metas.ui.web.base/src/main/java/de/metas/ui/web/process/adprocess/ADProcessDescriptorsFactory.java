@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.adprocess;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.IModelTranslationMap;
@@ -12,7 +13,6 @@ import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
@@ -44,7 +44,6 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -54,7 +53,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
-import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.X_AD_Process;
@@ -372,21 +370,10 @@ import java.util.stream.Stream;
 			@NonNull final I_AD_Process_Para adProcessParamRecord,
 			@NonNull final DocumentFieldDescriptor.Builder paramDescriptorBuilder)
 	{
-		if (adProcessParamRecord.getAD_Element_ID() <= 0)
-		{
-			final I_AD_Process_Para processParamTrl = InterfaceWrapperHelper.translate(adProcessParamRecord, I_AD_Process_Para.class);
-			paramDescriptorBuilder
-					.setCaption(processParamTrl.getName())
-					.setDescription(processParamTrl.getDescription());
-		}
-		else
-		{
-			final I_AD_Element element = Services.get(IADElementDAO.class).getById(adProcessParamRecord.getAD_Element_ID());
-			final I_AD_Element elementTrl = InterfaceWrapperHelper.translate(element, I_AD_Element.class);
-			paramDescriptorBuilder
-					.setCaption(elementTrl.getName())
-					.setDescription(elementTrl.getDescription());
-		}
+		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(adProcessParamRecord);
+		paramDescriptorBuilder
+				.setCaption(trl.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Name, adProcessParamRecord.getName()))
+				.setDescription(trl.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Description, adProcessParamRecord.getDescription()));
 	}
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")

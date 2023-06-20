@@ -147,6 +147,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final CtxName param_C_BPartner_ID;
 	private final CtxName param_PricingDate;
 	private final CtxName param_AvailableStockDate;
+	@Nullable
 	private final CtxName param_M_SectionCode_ID;
 	private static final CtxName param_AD_Client_ID = CtxNames.ofNameAndDefaultValue(WindowConstants.FIELDNAME_AD_Client_ID, "-1");
 
@@ -197,10 +198,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final ImmutableSet.Builder<CtxName> ctxNamesNeededForQuerySetBuilder = ImmutableSet.builder();
 
 		ctxNamesNeededForQuerySetBuilder.add(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
-		if (param_M_SectionCode_ID != null)
-		{
-			ctxNamesNeededForQuerySetBuilder.add(param_M_SectionCode_ID);
-		}
+		Optional.ofNullable(param_M_SectionCode_ID).ifPresent(ctxNamesNeededForQuerySetBuilder::add);
 
 		ctxNamesNeededForQuery = ctxNamesNeededForQuerySetBuilder.build();
 
@@ -231,10 +229,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final ImmutableSet.Builder<CtxName> ctxNamesNeededForQuerySetBuilder = ImmutableSet.builder();
 
 		ctxNamesNeededForQuerySetBuilder.add(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
-		if (param_M_SectionCode_ID != null)
-		{
-			ctxNamesNeededForQuerySetBuilder.add(param_M_SectionCode_ID);
-		}
+		Optional.ofNullable(param_M_SectionCode_ID).ifPresent(ctxNamesNeededForQuerySetBuilder::add);
 
 		ctxNamesNeededForQuery = ctxNamesNeededForQuerySetBuilder.build();
 
@@ -549,13 +544,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return;
 		}
 
-		final int sectionCodeId = param_M_SectionCode_ID.getValueAsInteger(evalCtx);
-		if (sectionCodeId > 0)
-		{
-			sqlWhereClause
-					.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID + "=")
-					.append(sqlWhereClauseParams.placeholder(sectionCodeId));
-		}
+		Optional.ofNullable(param_M_SectionCode_ID)
+				.map(param -> param.getValueAsInteger(evalCtx))
+				.filter(sectionCodeId -> sectionCodeId > 0)
+				.ifPresent(sectionCodeId -> sqlWhereClause
+						.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID + "=")
+						.append(sqlWhereClauseParams.placeholder(sectionCodeId)));
 	}
 
 	private void appendFilterByPriceList(
