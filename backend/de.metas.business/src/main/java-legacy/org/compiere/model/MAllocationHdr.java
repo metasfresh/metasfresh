@@ -951,8 +951,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	{
 		final MAllocationHdr reversal = new MAllocationHdr(getCtx(), 0, get_TrxName());
 
-		final boolean copyHonorIsCalculated = true;
-		copyValues(this, reversal, copyHonorIsCalculated);
+		copyValues(this, reversal, true);
 
 		//
 		// 07570: Keep AD_Org of original document
@@ -977,7 +976,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		for (final MAllocationLine line : getLines(true))
 		{
 			final MAllocationLine reversalLine = new MAllocationLine(reversal);
-			PO.copyValues(line, reversalLine, copyHonorIsCalculated);
+			PO.copyValues(line, reversalLine, true);
 
 			//
 			// 07570: Keep AD_Org of original document

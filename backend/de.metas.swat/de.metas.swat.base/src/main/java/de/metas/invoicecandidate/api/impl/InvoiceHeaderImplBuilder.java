@@ -105,7 +105,8 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_Activity_ID;
 
-	@Nullable private ForexContractRef forexContractRef;
+	@Nullable
+	private ForexContractRef forexContractRef;
 
 	private String invoiceAdditionalText;
 	private boolean notShowOriginCountry;

@@ -241,7 +241,7 @@ public class MProduct extends X_M_Product
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			if (this.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			if(!this.isCopying())
 			{
 				insert_Accounting(I_M_Product_Acct.Table_Name,
 						I_M_Product_Category_Acct.Table_Name,

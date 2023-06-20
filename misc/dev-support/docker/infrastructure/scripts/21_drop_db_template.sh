@@ -2,7 +2,7 @@
 
 #
 # %L
-# work-metas
+# master
 # %%
 # Copyright (C) 2023 metas GmbH
 # %%

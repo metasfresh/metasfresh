@@ -145,8 +145,8 @@ public final class AggregationEngine
 	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
-	@Nullable private final ForexContractRef forexContractRef;
-
+	@Nullable
+	private final ForexContractRef forexContractRef;
 	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
@@ -536,6 +536,9 @@ public final class AggregationEngine
 
 			// 06630: set shipment id to header
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
+
+			final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(icRecord);
+			invoiceHeader.setDimension(invoiceCandidateDimension);
 
 			final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(icRecord);
 			invoiceHeader.setDimension(invoiceCandidateDimension);

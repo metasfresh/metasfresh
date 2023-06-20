@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.modelvalidator;
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -40,6 +39,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
