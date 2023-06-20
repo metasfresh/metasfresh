@@ -119,20 +119,11 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		return sched.getQtyToDeliver();
 	}
 
-	@Nullable
 	@Override
 	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final I_C_UOM uom = productBL.getStockUOM(sched.getM_Product_ID());
 		return Quantity.of(sched.getQtyOnHand(), uom);
-	}
-
-	@Override
-	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final I_C_UOM uom = productBL.getStockUOM(sched.getM_Product_ID());
-		final BigDecimal qty = sched.getQtyOnHand() == null ? BigDecimal.ZERO : sched.getQtyOnHand();
-		return Quantity.of(qty, uom);
 	}
 
 	@Override
