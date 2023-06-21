@@ -39,7 +39,7 @@ import java.sql.Timestamp;
 
 @Builder
 @Value
-public final class PaymentTerm
+public class PaymentTerm
 {
 	@NonNull PaymentTermId id;
 	@NonNull OrgId orgId;
