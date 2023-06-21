@@ -1,6 +1,7 @@
 package de.metas.inout;
 
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -10,7 +11,6 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PricingSystem;
@@ -54,6 +54,8 @@ import java.util.Set;
 public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
+
+	List<I_M_InOut> getByOrderId(@NonNull OrderId orderId);
 
 	void save(I_M_InOut inout);
 

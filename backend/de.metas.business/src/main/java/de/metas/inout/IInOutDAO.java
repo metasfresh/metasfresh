@@ -57,6 +57,8 @@ public interface IInOutDAO extends ISingletonService
 	@Nullable
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
+	List<I_M_InOut> getByOrderId(@NonNull OrderId orderId);
+
 	I_M_InOutLine getLineByIdInTrx(InOutLineId inoutLineId);
 
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
