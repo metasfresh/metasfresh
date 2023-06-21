@@ -1,0 +1,16 @@
+package de.metas.gplr.model;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class BPartnerName
+{
+	@NonNull String code;
+	@NonNull String name;
+	@Nullable String vatId;
+}
