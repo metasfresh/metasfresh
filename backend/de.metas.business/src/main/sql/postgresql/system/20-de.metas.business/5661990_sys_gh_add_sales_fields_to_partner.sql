@@ -1342,6 +1342,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(581622) 
 ;
 
+COMMIT; -- without this commit we sometimes get
+-- psql:/opt/metasfresh/dist/sql/20-de.metas.business/5661990_sys_gh_add_sales_fields_to_partner.sql:1347: ERROR:  deadlock detected
+-- app_1       |   DETAIL:  Process 292 waits for AccessExclusiveLock on relation 20055 of database 16385; blocked by process 299.
+-- app_1       |   Process 299 waits for AccessShareLock on relation 18250 of database 16385; blocked by process 292.
+
 -- 2022-10-25T17:07:01.802Z
 /* DDL */ SELECT public.db_alter_table('AD_User','ALTER TABLE public.AD_User ADD COLUMN Hobbies_interests VARCHAR(255)')
 ;
