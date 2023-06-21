@@ -132,7 +132,7 @@ import java.util.Set;
 			return;
 		}
 
-		if (bankAccount.getC_Currency_ID() < 0 && Check.isBlank(importRecord.getISO_Code()))
+		if (bankAccount.getC_Currency_ID() <= 0 && Check.isBlank(importRecord.getISO_Code()))
 		{
 			throw new AdempiereException("Missing mandatory value for currency on business partner bank account!");
 		}
