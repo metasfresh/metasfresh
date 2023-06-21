@@ -1,5 +1,6 @@
 package de.metas.forex;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import de.metas.currency.FixedConversionRate;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class ForexContractRef
 {
 	@Nullable ForexContractId forexContractId;
@@ -54,4 +56,8 @@ public class ForexContractRef
 				.build();
 	}
 
+	public CurrencyId getForeignCurrencyId()
+	{
+		return CurrencyId.equals(fromCurrencyId, orderCurrencyId) ? toCurrencyId : fromCurrencyId;
+	}
 }
