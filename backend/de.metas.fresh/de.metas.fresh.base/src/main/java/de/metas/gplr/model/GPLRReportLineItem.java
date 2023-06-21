@@ -1,7 +1,6 @@
 package de.metas.gplr.model;
 
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Value;
