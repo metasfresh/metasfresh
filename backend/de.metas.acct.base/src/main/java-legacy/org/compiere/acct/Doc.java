@@ -1735,7 +1735,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	@Nullable
-	private LocalDate getValueAsLocalDateOrNull(final String columnName)
+	public LocalDate getValueAsLocalDateOrNull(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);

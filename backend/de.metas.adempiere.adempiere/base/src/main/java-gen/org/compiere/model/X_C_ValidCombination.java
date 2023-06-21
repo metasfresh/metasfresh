@@ -825,4 +825,28 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
+
+	@Override
+	public void setUserElementDate1 (final @Nullable java.sql.Timestamp UserElementDate1)
+	{
+		set_Value (COLUMNNAME_UserElementDate1, UserElementDate1);
+	}
+
+	@Override
+	public java.sql.Timestamp getUserElementDate1()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate1);
+	}
+
+	@Override
+	public void setUserElementDate2 (final @Nullable java.sql.Timestamp UserElementDate2)
+	{
+		set_Value (COLUMNNAME_UserElementDate2, UserElementDate2);
+	}
+
+	@Override
+	public java.sql.Timestamp getUserElementDate2()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate2);
+	}
 }

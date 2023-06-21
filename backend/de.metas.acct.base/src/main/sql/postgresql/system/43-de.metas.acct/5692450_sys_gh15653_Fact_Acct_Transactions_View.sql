@@ -69,4 +69,3 @@ SELECT fact_acct_id,
        userElementDate1,
        userElementDate2
 FROM Fact_Acct fact;
-
