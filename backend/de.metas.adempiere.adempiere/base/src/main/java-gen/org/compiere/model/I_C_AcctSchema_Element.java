@@ -78,7 +78,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Buchführungsschema-Element.
+	 * Set Acct.Schema Element.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -87,7 +87,7 @@ public interface I_C_AcctSchema_Element
 	void setC_AcctSchema_Element_ID (int C_AcctSchema_Element_ID);
 
 	/**
-	 * Get Buchführungsschema-Element.
+	 * Get Acct.Schema Element.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -217,7 +217,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_C_Element_ID = "C_Element_ID";
 
 	/**
-	 * Set Kontenart.
+	 * Set Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: Search
@@ -227,7 +227,7 @@ public interface I_C_AcctSchema_Element
 	void setC_ElementValue_ID (int C_ElementValue_ID);
 
 	/**
-	 * Get Kontenart.
+	 * Get Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: Search
@@ -345,7 +345,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Art.
+	 * Set Type.
 	 * Element Type (account or user defined)
 	 *
 	 * <br>Type: List
@@ -355,7 +355,7 @@ public interface I_C_AcctSchema_Element
 	void setElementType (java.lang.String ElementType);
 
 	/**
-	 * Get Art.
+	 * Get Type.
 	 * Element Type (account or user defined)
 	 *
 	 * <br>Type: List
@@ -391,7 +391,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Ausgeglichen.
+	 * Set Balanced.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -400,7 +400,7 @@ public interface I_C_AcctSchema_Element
 	void setIsBalanced (boolean IsBalanced);
 
 	/**
-	 * Get Ausgeglichen.
+	 * Get Balanced.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -433,7 +433,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_IsDisplayInEditor = "IsDisplayInEditor";
 
 	/**
-	 * Set Pflichtangabe.
+	 * Set mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -443,7 +443,7 @@ public interface I_C_AcctSchema_Element
 	void setIsMandatory (boolean IsMandatory);
 
 	/**
-	 * Get Pflichtangabe.
+	 * Get mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
