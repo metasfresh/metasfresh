@@ -1479,6 +1479,7 @@ public interface I_Fact_Acct
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
+<<<<<<< HEAD
 	 * Set VAT Code.
 	 *
 	 * <br>Type: String
@@ -1498,4 +1499,46 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, Object> COLUMN_VATCode = new ModelColumn<>(I_Fact_Acct.class, "VATCode", null);
 	String COLUMNNAME_VATCode = "VATCode";
+=======
+	 * Set From Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementDate1 (@Nullable java.sql.Timestamp UserElementDate1);
+
+	/**
+	 * Get From Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getUserElementDate1();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElementDate1 = new ModelColumn<>(I_Fact_Acct.class, "UserElementDate1", null);
+	String COLUMNNAME_UserElementDate1 = "UserElementDate1";
+
+	/**
+	 * Set To Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementDate2 (@Nullable java.sql.Timestamp UserElementDate2);
+
+	/**
+	 * Get To Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getUserElementDate2();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElementDate2 = new ModelColumn<>(I_Fact_Acct.class, "UserElementDate2", null);
+	String COLUMNNAME_UserElementDate2 = "UserElementDate2";
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 }

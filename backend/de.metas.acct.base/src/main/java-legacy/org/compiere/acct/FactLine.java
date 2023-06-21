@@ -1,13 +1,17 @@
 package org.compiere.acct;
 
+<<<<<<< HEAD
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
+=======
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
+<<<<<<< HEAD
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
@@ -44,12 +48,43 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
+=======
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.PostingException;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRate;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.location.LocationId;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+<<<<<<< HEAD
+=======
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Location;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 import org.compiere.model.I_C_RevenueRecognition_Plan;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Movement;
@@ -57,12 +92,20 @@ import org.compiere.model.MAccount;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+<<<<<<< HEAD
+=======
+import org.compiere.util.TimeUtil;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+<<<<<<< HEAD
+=======
+import java.time.LocalDate;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 
 /**
  * Accounting Fact Entry.
@@ -234,6 +277,7 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		updateUserElementStrings();
+		updateUserElementDates();
 
 	}   // setAccount
 
@@ -275,6 +319,42 @@ public final class FactLine extends X_Fact_Acct
 				{
 					set_Value(userElementStringColumnname, userElementString);
 				}
+			}
+		}
+	}
+
+	private void updateUserElementDates()
+	{
+		updateUserElementDate(AcctSchemaElementType.UserElementDate1);
+		updateUserElementDate(AcctSchemaElementType.UserElementDate2);
+	}
+
+	private void updateUserElementDate(@NonNull final AcctSchemaElementType dateElementType)
+	{
+		final AcctSchemaElement userElementDateElement = acctSchema.getSchemaElementByType(dateElementType);
+		if (userElementDateElement != null)
+		{
+			final String userElementDateColumnName = userElementDateElement.getDisplayColumnName();
+			LocalDate userElementLocalDate = null;
+
+			if (m_docLine != null)
+			{
+				userElementLocalDate = m_docLine.getValueAsLocalDateOrNull(userElementDateColumnName);
+
+			}
+			
+			if (userElementLocalDate == null)
+			{
+				if (m_doc == null)
+				{
+					throw new IllegalArgumentException("Document not set yet");
+				}
+				userElementLocalDate = m_doc.getValueAsLocalDateOrNull(userElementDateColumnName);
+			}
+			
+			if (userElementLocalDate != null)
+			{
+				set_Value(userElementDateColumnName, TimeUtil.asTimestamp(userElementLocalDate));
 			}
 		}
 	}
@@ -1284,8 +1364,13 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString5(getUserElementString5())
 				.setUserElementString6(getUserElementString6())
 				.setUserElementString7(getUserElementString7())
+<<<<<<< HEAD
 				.setSalesOrderId(getC_OrderSO_ID())
 				.setM_SectionCode_ID(getM_SectionCode_ID())
+=======
+				.setUserElementDate1(TimeUtil.asInstant(getUserElementDate1())) 
+				.setUserElementDate2(TimeUtil.asInstant(getUserElementDate2()))
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 				.build();
 	}
 

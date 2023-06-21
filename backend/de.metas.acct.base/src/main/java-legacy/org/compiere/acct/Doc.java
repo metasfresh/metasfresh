@@ -1531,7 +1531,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	@Nullable
+<<<<<<< HEAD
 	private LocalDateAndOrgId getValueAsLocalDateOrNull(final String columnName)
+=======
+	public LocalDate getValueAsLocalDateOrNull(final String columnName)
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	{
 		@NonNull final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);

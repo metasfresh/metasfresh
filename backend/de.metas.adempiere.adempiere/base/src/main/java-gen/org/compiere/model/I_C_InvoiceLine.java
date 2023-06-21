@@ -114,6 +114,30 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_A_CreateAsset = "A_CreateAsset";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setA_Processed (boolean A_Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isA_Processed();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_A_Processed = new ModelColumn<>(I_C_InvoiceLine.class, "A_Processed", null);
+	String COLUMNNAME_A_Processed = "A_Processed";
+
+	/**
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -524,6 +548,116 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Shipping_Location_ID (int C_Shipping_Location_ID);
+
+	/**
+	 * Get Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Shipping_Location_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Shipping_Location_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Shipping_Location_ID", null);
+	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
+
+	/**
+	 * Set Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_ID();
+
+	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
+	 * Set BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_BPartner_ID (int C_UOM_BPartner_ID);
+
+	/**
+	 * Get BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_BPartner_ID();
+
+	String COLUMNNAME_C_UOM_BPartner_ID = "C_UOM_BPartner_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -699,6 +833,13 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Set External IDs.
+<<<<<<< HEAD
+=======
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -708,6 +849,13 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Get External IDs.
+<<<<<<< HEAD
+=======
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1398,6 +1546,48 @@ public interface I_C_InvoiceLine
 	int getUser2_ID();
 
 	String COLUMNNAME_User2_ID = "User2_ID";
+
+	/**
+	 * Set From Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementDate1 (@Nullable java.sql.Timestamp UserElementDate1);
+
+	/**
+	 * Get From Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getUserElementDate1();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementDate1 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementDate1", null);
+	String COLUMNNAME_UserElementDate1 = "UserElementDate1";
+
+	/**
+	 * Set To Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementDate2 (@Nullable java.sql.Timestamp UserElementDate2);
+
+	/**
+	 * Get To Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getUserElementDate2();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementDate2 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementDate2", null);
+	String COLUMNNAME_UserElementDate2 = "UserElementDate2";
 
 	/**
 	 * Set UserElementString1.

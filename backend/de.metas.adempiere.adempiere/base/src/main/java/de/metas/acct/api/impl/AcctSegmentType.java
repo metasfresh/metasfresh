@@ -55,8 +55,14 @@ public enum AcctSegmentType
 	UserElementString5(AcctSchemaElementType.UserElementString5),
 	UserElementString6(AcctSchemaElementType.UserElementString6),
 	UserElementString7(AcctSchemaElementType.UserElementString7),
+<<<<<<< HEAD
 	SalesOrder(AcctSchemaElementType.SalesOrder),
 	SectionCode(AcctSchemaElementType.SectionCode);
+=======
+	UserElementDate1(AcctSchemaElementType.UserElementDate1),
+	UserElementDate2(AcctSchemaElementType.UserElementDate2)
+	;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 
 	AcctSegmentType(@SuppressWarnings("unused") final AcctSchemaElementType elementType)
 	{

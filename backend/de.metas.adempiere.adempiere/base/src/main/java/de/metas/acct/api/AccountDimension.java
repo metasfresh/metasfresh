@@ -27,9 +27,19 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.util.NumberUtils;
+<<<<<<< HEAD
 
 import java.util.HashMap;
 import java.util.Map;
+=======
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 
 /**
  * Immutable {@link AccountDimension} implementation
@@ -83,12 +93,12 @@ public final class AccountDimension
 
 	public int getAD_Client_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Client),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Client), 0);
 	}
 
 	public int getAD_Org_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Organization),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Organization), 0);
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -98,57 +108,57 @@ public final class AccountDimension
 
 	public int getC_ElementValue_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Account),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Account), 0);
 	}
 
 	public int getC_SubAcct_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SubAccount),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SubAccount), 0);
 	}
 
 	public int getM_Product_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Product),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Product), 0);
 	}
 
 	public int getC_BPartner_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.BPartner),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.BPartner), 0);
 	}
 
 	public int getAD_OrgTrx_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.OrgTrx),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.OrgTrx), 0);
 	}
 
 	public int getC_LocFrom_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationFrom),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationFrom), 0);
 	}
 
 	public int getC_LocTo_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationTo),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationTo), 0);
 	}
 
 	public int getC_SalesRegion_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesRegion),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesRegion), 0);
 	}
 
 	public int getC_Project_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Project),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Project), 0);
 	}
 
 	public int getC_Campaign_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Campaign),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Campaign), 0);
 	}
 
 	public int getC_Activity_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity), 0);
 	}
 
 	public int getSalesOrderId()
@@ -163,22 +173,22 @@ public final class AccountDimension
 
 	public int getUser1_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList1),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList1), 0);
 	}
 
 	public int getUser2_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList2),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList2), 0);
 	}
 
 	public int getUserElement1_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement1),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement1), 0);
 	}
 
 	public int getUserElement2_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement2),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement2), 0);
 	}
 
 	public String getUserElementString1()
@@ -216,7 +226,22 @@ public final class AccountDimension
 		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString7));
 	}
 
+<<<<<<< HEAD
 	@SuppressWarnings("UnusedReturnValue")
+=======
+	@Nullable
+	public Instant getUserElementDate1()
+	{
+		return TimeUtil.asInstant(getSegmentValue(AcctSegmentType.UserElementDate1));
+	}
+
+	@Nullable
+	public Instant getUserElementDate2()
+	{
+		return TimeUtil.asInstant(getSegmentValue(AcctSegmentType.UserElementDate2));
+	}
+
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	public static final class Builder
 	{
 		private String alias = null;
@@ -239,12 +264,23 @@ public final class AccountDimension
 			return this;
 		}
 
+<<<<<<< HEAD
 		public Builder setSegmentValue(final AcctSegmentType segmentType, final Object value)
 		{
 			if(value instanceof Integer)
+=======
+		private Builder setSegmentValue(final AcctSegmentType segmentType, final Object value)
+		{
+			if (value instanceof Integer)
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 			{
 				final int intValue = NumberUtils.asInt(value, 0);
 				segmentValues.put(segmentType, intValue);
+			}
+			else if (value instanceof Instant)
+			{
+				Optional.ofNullable(TimeUtil.asInstant(value))
+						.ifPresent(instantValue -> segmentValues.put(segmentType, instantValue));
 			}
 			else
 			{
@@ -449,6 +485,18 @@ public final class AccountDimension
 		public Builder setUserElementString7(final String userElementString7)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString7, userElementString7);
+			return this;
+		}
+
+		public Builder setUserElementDate1(final Instant userElementDate1)
+		{
+			setSegmentValue(AcctSegmentType.UserElementDate1, userElementDate1);
+			return this;
+		}
+
+		public Builder setUserElementDate2(final Instant userElementDate2)
+		{
+			setSegmentValue(AcctSegmentType.UserElementDate2, userElementDate2);
 			return this;
 		}
 	}

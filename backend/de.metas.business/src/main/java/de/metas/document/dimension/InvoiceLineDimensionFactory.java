@@ -30,6 +30,10 @@ import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
 import org.compiere.model.I_C_InvoiceLine;
+<<<<<<< HEAD
+=======
+import org.compiere.util.TimeUtil;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 import org.springframework.stereotype.Component;
 
 @Component
@@ -62,6 +66,8 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 				.userElementString7(record.getUserElementString7())
 				.user1_ID(record.getUser1_ID())
 				.user2_ID(record.getUser2_ID())
+				.userElementDate1(TimeUtil.asInstant(record.getUserElementDate1()))
+				.userElementDate2(TimeUtil.asInstant(record.getUserElementDate2()))
 				.build();
 	}
 
@@ -91,5 +97,10 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 		record.setUserElementString7(from.getUserElementString7());
 		record.setUser1_ID(from.getUser1_ID());
 		record.setUser2_ID(from.getUser2_ID());
+<<<<<<< HEAD
+=======
+		record.setUserElementDate1(TimeUtil.asTimestamp(from.getUserElementDate1()));
+		record.setUserElementDate2(TimeUtil.asTimestamp(from.getUserElementDate2()));
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	}
 }

@@ -368,6 +368,34 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_Created = new ModelColumn<>(I_C_AcctSchema_Element.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	 * Set Type.
 	 * Element Type (account or user defined)
 	 *

@@ -1175,6 +1175,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setVATCode (final @Nullable java.lang.String VATCode)
 	{
 		set_Value (COLUMNNAME_VATCode, VATCode);
@@ -1184,5 +1185,28 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public java.lang.String getVATCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_VATCode);
+=======
+	public void setUserElementDate1 (final @Nullable java.sql.Timestamp UserElementDate1)
+	{
+		set_Value (COLUMNNAME_UserElementDate1, UserElementDate1);
+	}
+
+	@Override
+	public java.sql.Timestamp getUserElementDate1()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate1);
+	}
+
+	@Override
+	public void setUserElementDate2 (final @Nullable java.sql.Timestamp UserElementDate2)
+	{
+		set_Value (COLUMNNAME_UserElementDate2, UserElementDate2);
+	}
+
+	@Override
+	public java.sql.Timestamp getUserElementDate2()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate2);
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	}
 }

@@ -2055,6 +2055,10 @@ public class TimeUtil
 		{
 			return null;
 		}
+		else if (String.valueOf(obj).equals(String.valueOf((Object)null)))
+		{
+			return null;
+		}
 		else if (obj instanceof InstantAndOrgId)
 		{
 			return ((InstantAndOrgId)obj).toInstant();

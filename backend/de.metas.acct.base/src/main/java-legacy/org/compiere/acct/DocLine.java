@@ -905,8 +905,20 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return null;
 		}
 
+<<<<<<< HEAD
 		final Timestamp ts = docLinePO.get_ValueAsTimestamp(index);
 		if (ts == null)
+=======
+		return defaultValue;
+	}
+
+	@Nullable
+	public final LocalDate getValueAsLocalDateOrNull(final String columnName)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 		{
 			return null;
 		}

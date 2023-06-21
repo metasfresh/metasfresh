@@ -13,7 +13,11 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -779705090L;
+=======
+	private static final long serialVersionUID = -2052883460L;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -489,6 +493,24 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+	}
+
+	@Override
+	public int getC_TaxCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
+	}
+
+	@Override
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 	public void setC_UOM_BPartner_ID (final int C_UOM_BPartner_ID)
 	{
 		if (C_UOM_BPartner_ID < 1) 
@@ -986,6 +1008,30 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getUser2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
+	}
+
+	@Override
+	public void setUserElementDate1 (final @Nullable java.sql.Timestamp UserElementDate1)
+	{
+		set_Value (COLUMNNAME_UserElementDate1, UserElementDate1);
+	}
+
+	@Override
+	public java.sql.Timestamp getUserElementDate1() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate1);
+	}
+
+	@Override
+	public void setUserElementDate2 (final @Nullable java.sql.Timestamp UserElementDate2)
+	{
+		set_Value (COLUMNNAME_UserElementDate2, UserElementDate2);
+	}
+
+	@Override
+	public java.sql.Timestamp getUserElementDate2() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate2);
 	}
 
 	@Override

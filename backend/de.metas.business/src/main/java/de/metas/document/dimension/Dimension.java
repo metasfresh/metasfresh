@@ -36,8 +36,12 @@ import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
 import java.util.Collection;
 import java.util.HashSet;
+=======
+import java.time.Instant;
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 import java.util.Objects;
 
 @Value
@@ -69,7 +73,21 @@ public class Dimension implements Comparable<Dimension>
 	@Nullable String userElementString6;
 	@Nullable String userElementString7;
 
+<<<<<<< HEAD
 	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2) {return Objects.equals(d1, d2);}
+=======
+	@Nullable
+	Instant userElementDate1;
+
+	@Nullable
+	Instant userElementDate2;
+
+	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2)
+	{
+
+		return Objects.equals(d1, d2);
+	}
+>>>>>>> 7afb39974a7 (Datefields in InvoiceCandidates (#15657))
 
 	@Override
 	public int compareTo(@Nullable final Dimension other)
