@@ -56,7 +56,10 @@ public enum AcctSegmentType
 	UserElementString6(AcctSchemaElementType.UserElementString6),
 	UserElementString7(AcctSchemaElementType.UserElementString7),
 	SalesOrder(AcctSchemaElementType.SalesOrder),
-	SectionCode(AcctSchemaElementType.SectionCode);
+	SectionCode(AcctSchemaElementType.SectionCode),
+	UserElementDate1(AcctSchemaElementType.UserElementDate1),
+	UserElementDate2(AcctSchemaElementType.UserElementDate2)
+	;
 
 	AcctSegmentType(@SuppressWarnings("unused") final AcctSchemaElementType elementType)
 	{

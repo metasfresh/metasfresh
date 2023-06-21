@@ -24,6 +24,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.sql.ResultSet;
@@ -143,6 +144,8 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUserElementString5(dimension.getUserElementString5());
 		newAccount.setUserElementString6(dimension.getUserElementString6());
 		newAccount.setUserElementString7(dimension.getUserElementString7());
+		newAccount.setUserElementDate1(TimeUtil.asTimestamp(dimension.getUserElementDate1()));
+		newAccount.setUserElementDate2(TimeUtil.asTimestamp(dimension.getUserElementDate2()));
 		InterfaceWrapperHelper.save(newAccount);
 		logger.debug("New: {}", newAccount);
 		return newAccount;

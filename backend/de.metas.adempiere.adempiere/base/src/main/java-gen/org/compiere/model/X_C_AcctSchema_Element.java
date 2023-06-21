@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_AcctSchema_Element extends org.compiere.model.PO implements I_C_AcctSchema_Element, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -780143124L;
+	private static final long serialVersionUID = 732300258L;
 
     /** Standard Constructor */
     public X_C_AcctSchema_Element (final Properties ctx, final int C_AcctSchema_Element_ID, @Nullable final String trxName)
@@ -341,6 +341,11 @@ public class X_C_AcctSchema_Element extends org.compiere.model.PO implements I_C
 	public static final String ELEMENTTYPE_SalesOrder = "OR";
 	/** Section Code = SC */
 	public static final String ELEMENTTYPE_SectionCode = "SC";
+	/** UserElementDate1 = D1 */
+	public static final String ELEMENTTYPE_UserElementDate1 = "D1";
+	/** UserElementDate2 = D2 */
+	public static final String ELEMENTTYPE_UserElementDate2 = "D2";
+
 	@Override
 	public void setElementType (final java.lang.String ElementType)
 	{

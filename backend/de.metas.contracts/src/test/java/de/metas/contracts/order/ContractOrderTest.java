@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
@@ -45,8 +45,10 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
 	@BeforeEach
-	public void before()
+	@Override
+	public void init()
 	{
+		super.init();
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(
 						new ContractOrderService(),

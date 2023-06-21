@@ -57,6 +57,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -234,6 +235,7 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		updateUserElementStrings();
+		updateUserElementDates();
 
 	}   // setAccount
 
@@ -275,6 +277,42 @@ public final class FactLine extends X_Fact_Acct
 				{
 					set_Value(userElementStringColumnname, userElementString);
 				}
+			}
+		}
+	}
+
+	private void updateUserElementDates()
+	{
+		updateUserElementDate(AcctSchemaElementType.UserElementDate1);
+		updateUserElementDate(AcctSchemaElementType.UserElementDate2);
+	}
+
+	private void updateUserElementDate(@NonNull final AcctSchemaElementType dateElementType)
+	{
+		final AcctSchemaElement userElementDateElement = acctSchema.getSchemaElementByType(dateElementType);
+		if (userElementDateElement != null)
+		{
+			final String userElementDateColumnName = userElementDateElement.getDisplayColumnName();
+			LocalDateAndOrgId userElementLocalDate = null;
+
+			if (m_docLine != null)
+			{
+				userElementLocalDate = m_docLine.getValueAsLocalDateOrNull(userElementDateColumnName);
+
+			}
+			
+			if (userElementLocalDate == null)
+			{
+				if (m_doc == null)
+				{
+					throw new IllegalArgumentException("Document not set yet");
+				}
+				userElementLocalDate = m_doc.getValueAsLocalDateOrNull(userElementDateColumnName);
+			}
+			
+			if (userElementLocalDate != null)
+			{
+				set_Value(userElementDateColumnName, TimeUtil.asTimestamp(userElementLocalDate.toLocalDate()));
 			}
 		}
 	}
@@ -1286,6 +1324,8 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString7(getUserElementString7())
 				.setSalesOrderId(getC_OrderSO_ID())
 				.setM_SectionCode_ID(getM_SectionCode_ID())
+				.setUserElementDate1(TimeUtil.asInstant(getUserElementDate1()))
+				.setUserElementDate2(TimeUtil.asInstant(getUserElementDate2()))
 				.build();
 	}
 

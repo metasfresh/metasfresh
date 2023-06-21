@@ -31,6 +31,7 @@ import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
+import org.compiere.util.TimeUtil;
 
 import java.util.Properties;
 
@@ -78,7 +79,8 @@ public class FactAcctBL implements IFactAcctBL
 				.setUserElementString5(fa.getUserElementString5())
 				.setUserElementString6(fa.getUserElementString6())
 				.setUserElementString7(fa.getUserElementString7())
-
+				.setUserElementDate1(TimeUtil.asInstant(fa.getUserElementDate1()))
+				.setUserElementDate2(TimeUtil.asInstant(fa.getUserElementDate2()))
 				.build();
 	}
 }
