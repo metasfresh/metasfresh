@@ -8,6 +8,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.CalculationMethod;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -200,19 +201,20 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_C_PaymentTerm.class)
-				.map(PaymentTermRepository::toPaymentTerm)
+				.map(PaymentTermRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 		return new PaymentTermMap(paymentTerms);
 	}
 
-	private static PaymentTerm toPaymentTerm(@NonNull final I_C_PaymentTerm record)
+	private static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record)
 	{
 		return PaymentTerm.builder()
 				.id(extractId(record))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.name(record.getName())
 				.value(record.getValue())
+				.name(record.getName())
+				.description(record.getDescription())
 				.discountDays(record.getDiscountDays())
 				.netDays(record.getNetDays())
 				.graceDays(record.getGraceDays())

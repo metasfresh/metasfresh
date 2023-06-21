@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.payment.paymentterm.impl;
+package de.metas.payment.paymentterm;
 
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.BaseLineType;
@@ -47,8 +47,10 @@ public class PaymentTerm
 	@NonNull CalculationMethod calculationMethod;
 	@NonNull BaseLineType baseLineType;
 
-	@Nullable String value;
-	@Nullable String name;
+	@NonNull String value;
+	@NonNull String name;
+	@Nullable String description;
+
 	@Nullable Percent discount;
 	@Nullable Percent discount2;
 	@Nullable String netDay;
