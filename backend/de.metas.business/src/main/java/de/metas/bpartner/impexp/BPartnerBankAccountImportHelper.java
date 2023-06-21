@@ -119,6 +119,8 @@ import java.util.Set;
 			bankAccount.setC_Currency_ID(currencyId.getRepoId());
 
 			InterfaceWrapperHelper.saveRecord(bankAccount);
+
+			importRecord.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
 		}
 	}
 

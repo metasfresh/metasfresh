@@ -5,7 +5,6 @@ import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImport
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -103,8 +102,6 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateM_PricingSystems(selection);
 
 		dbUpdatePO_PricingSystems(selection);
-
-		dpUpdateBP_BankAccount(selection);
 
 		stopwatch.stop();
 		logger.info("Took {} to update I_BPartner records ({})", stopwatch, selection);
@@ -822,42 +819,5 @@ public class BPartnerImportTableSqlUpdater
 
 			executeUpdate("Flag records with invalid PO_PricingSystem_ID", sql);
 		}
-	}
-
-	private void dpUpdateBP_BankAccount(final ImportRecordsSelection selection)
-	{
-		{
-			final StringBuilder sql = new StringBuilder("UPDATE "
-																+ I_I_BPartner.Table_Name
-																+ " i SET "
-																+ I_I_BPartner.COLUMNNAME_C_BP_BankAccount_ID
-																+ "=(SELECT "
-																+ I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID
-																+ " FROM "
-																+ I_C_BP_BankAccount.Table_Name
-																+ " bpAcct  WHERE i."
-																+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
-																+ "=bpAcct."
-																+ I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID
-																+ " AND i."
-																+ I_I_BPartner.COLUMNNAME_IBAN
-																+ " LIKE bpAcct."
-																+ I_C_BP_BankAccount.COLUMNNAME_IBAN
-																+ " AND bpAcct."
-																+ I_C_BP_BankAccount.COLUMNNAME_QR_IBAN
-																+ " LIKE i."
-																+ I_I_BPartner.COLUMNNAME_QR_IBAN
-																+ ") "
-																+ "WHERE "
-																+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
-																+ " IS NOT NULL AND "
-																+ I_I_BPartner.COLUMNNAME_C_BP_BankAccount_ID
-																+ " IS NULL "
-																+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-					.append(selection.toSqlWhereClause("i"));
-
-			executeUpdate("Set BP Account by IBAN or QR-IBAN", sql);
-		}
-		//
 	}
 }
