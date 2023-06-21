@@ -57,6 +57,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -292,7 +293,7 @@ public final class FactLine extends X_Fact_Acct
 		if (userElementDateElement != null)
 		{
 			final String userElementDateColumnName = userElementDateElement.getDisplayColumnName();
-			LocalDate userElementLocalDate = null;
+			LocalDateAndOrgId userElementLocalDate = null;
 
 			if (m_docLine != null)
 			{
@@ -311,7 +312,7 @@ public final class FactLine extends X_Fact_Acct
 			
 			if (userElementLocalDate != null)
 			{
-				set_Value(userElementDateColumnName, TimeUtil.asTimestamp(userElementLocalDate));
+				set_Value(userElementDateColumnName, TimeUtil.asTimestamp(userElementLocalDate.toLocalDate()));
 			}
 		}
 	}

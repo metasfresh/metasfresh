@@ -81,7 +81,6 @@ public class FactAcctBL implements IFactAcctBL
 				.setUserElementString7(fa.getUserElementString7())
 				.setUserElementDate1(TimeUtil.asInstant(fa.getUserElementDate1()))
 				.setUserElementDate2(TimeUtil.asInstant(fa.getUserElementDate2()))
-
 				.build();
 	}
 }

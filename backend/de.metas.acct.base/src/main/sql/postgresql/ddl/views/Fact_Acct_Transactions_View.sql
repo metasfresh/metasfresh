@@ -140,7 +140,7 @@ SELECT fact.fact_acct_id,
        fact.m_costelement_id,
        fact.c_bpartner2_id,
        fact.c_bpartner_location_id,
-       userElementDate1,
-       userElementDate2
+       fact.userElementDate1,
+       fact.userElementDate2
 FROM fact_acct fact
 ;

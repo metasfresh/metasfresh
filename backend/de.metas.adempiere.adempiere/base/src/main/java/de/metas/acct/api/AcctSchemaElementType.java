@@ -1,16 +1,14 @@
 package de.metas.acct.api;
 
-import java.util.Arrays;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.X_C_AcctSchema_Element;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.Arrays;
 
 /*
  * #%L
@@ -60,7 +58,7 @@ public enum AcctSchemaElementType
 	UserElementString6(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString6, I_C_ValidCombination.COLUMNNAME_UserElementString6),//
 	UserElementString7(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString7, I_C_ValidCombination.COLUMNNAME_UserElementString7),//
 	SalesOrder(X_C_AcctSchema_Element.ELEMENTTYPE_SalesOrder, I_C_ValidCombination.COLUMNNAME_C_OrderSO_ID),//
-	SectionCode(X_C_AcctSchema_Element.ELEMENTTYPE_SectionCode, I_C_ValidCombination.COLUMNNAME_M_SectionCode_ID)
+	SectionCode(X_C_AcctSchema_Element.ELEMENTTYPE_SectionCode, I_C_ValidCombination.COLUMNNAME_M_SectionCode_ID),
 	UserElementDate1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate1, I_C_ValidCombination.COLUMNNAME_UserElementDate1),//
 	UserElementDate2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate2, I_C_ValidCombination.COLUMNNAME_UserElementDate2)//
 

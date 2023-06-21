@@ -36,9 +36,9 @@ import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
-import java.time.Instant;
 import java.util.Objects;
 
 @Value
@@ -72,8 +72,11 @@ public class Dimension implements Comparable<Dimension>
 
 	@Nullable Instant userElementDate1;
 	@Nullable Instant userElementDate2;
-	
-	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2) {return Objects.equals(d1, d2);}
+
+	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2)
+	{
+		return Objects.equals(d1, d2);
+	}
 
 	@Override
 	public int compareTo(@Nullable final Dimension other)
@@ -113,6 +116,8 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString5(CoalesceUtil.coalesce(this.userElementString5, other.userElementString5))
 				.userElementString6(CoalesceUtil.coalesce(this.userElementString6, other.userElementString6))
 				.userElementString7(CoalesceUtil.coalesce(this.userElementString7, other.userElementString7))
+				.userElementDate1(CoalesceUtil.coalesce(this.userElementDate1, other.userElementDate1))
+				.userElementDate2(CoalesceUtil.coalesce(this.userElementDate2, other.userElementDate2))
 				.build();
 
 		if (newDimension.equals(this))
@@ -158,6 +163,8 @@ public class Dimension implements Comparable<Dimension>
 		@Nullable HashSet<String> userElementString5 = null;
 		@Nullable HashSet<String> userElementString6 = null;
 		@Nullable HashSet<String> userElementString7 = null;
+		@Nullable HashSet<Instant> userElementDate1 = null;
+		@Nullable HashSet<Instant> userElementDate2 = null;
 
 		for (final Dimension dimension : collection)
 		{
@@ -179,6 +186,8 @@ public class Dimension implements Comparable<Dimension>
 			userElementString5 = collectValueIfNotNull(userElementString5, dimension.getUserElementString5());
 			userElementString6 = collectValueIfNotNull(userElementString6, dimension.getUserElementString6());
 			userElementString7 = collectValueIfNotNull(userElementString7, dimension.getUserElementString7());
+			userElementDate1 = collectValueIfNotNull(userElementDate1, dimension.getUserElementDate1());
+			userElementDate2 = collectValueIfNotNull(userElementDate2, dimension.getUserElementDate2());
 		}
 
 		return builder()
@@ -200,6 +209,8 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString5(CollectionUtils.singleElementOrNull(userElementString5))
 				.userElementString6(CollectionUtils.singleElementOrNull(userElementString6))
 				.userElementString7(CollectionUtils.singleElementOrNull(userElementString7))
+				.userElementDate1(CollectionUtils.singleElementOrNull(userElementDate1))
+				.userElementDate2(CollectionUtils.singleElementOrNull(userElementDate2))
 				.build();
 	}
 
