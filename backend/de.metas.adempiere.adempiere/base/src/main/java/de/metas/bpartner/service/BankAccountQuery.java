@@ -52,6 +52,10 @@ public class BankAccountQuery
 	String description;
 	@Nullable
 	BankId bankId;
+	@Nullable
+	String iban;
+	@Nullable
+	String qrIban;
 
 	@Builder(toBuilder = true)
 	private BankAccountQuery(
@@ -60,7 +64,9 @@ public class BankAccountQuery
 			@Nullable final InvoiceId invoiceId,
 			final Boolean containsQRIBAN,
 			@Nullable final String description,
-			@Nullable final BankId bankId)
+			@Nullable final BankId bankId,
+			@Nullable final String iban,
+			@Nullable final String qrIban)
 	{
 		this.bpBankAcctUses = bpBankAcctUses != null && !bpBankAcctUses.isEmpty() ?
 				ImmutableSet.copyOf(bpBankAcctUses) :
@@ -70,8 +76,10 @@ public class BankAccountQuery
 		this.containsQRIBAN = CoalesceUtil.coalesce(containsQRIBAN, false);
 		this.description = description;
 		this.bankId = bankId;
+		this.iban = iban;
+		this.qrIban = qrIban;
 
-		assume(bPartnerId != null || invoiceId != null || Check.isNotBlank(description) || bankId != null,
-			   "At least one of the parameters 'bPartnerId, 'invoiceId', 'description' or 'BankId' needs to be non-null/non-empty");
+		assume(bPartnerId != null || invoiceId != null || Check.isNotBlank(description) || bankId != null || Check.isNotBlank(iban) || Check.isNotBlank(qrIban),
+			   "At least one of the parameters 'bPartnerId, 'invoiceId', 'description', 'BankId', 'iban', 'qrIban' needs to be non-null/non-empty");
 	}
 }

@@ -141,13 +141,22 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 							.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getInvoiceId())
 							.create());
 		}
-		else if (Check.isNotBlank(query.getDescription()))
+
+		if (Check.isNotBlank(query.getDescription()))
 		{
 			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_Description, query.getDescription(), true);
 		}
-		else if (query.getBankId() != null)
+		if (query.getBankId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, query.getBankId());
+		}
+		if(Check.isNotBlank(query.getIban()))
+		{
+			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, query.getIban(), false);
+		}
+		if(Check.isNotBlank(query.getQrIban()))
+		{
+			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, query.getQrIban(), false);
 		}
 
 		final Collection<BPBankAcctUse> bankAcctUses = query.getBpBankAcctUses();

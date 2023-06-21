@@ -103,25 +103,50 @@ import java.util.Set;
 		else if (Check.isNotBlank(importRecord.getBankDetails()))
 		{
 			bankAccount = initializeBankAccountFromBankDetails(importRecord.getBankDetails());
+		}
 
-			bankAccount.setIBAN(importRecord.getIBAN());
-			bankAccount.setQR_IBAN(importRecord.getQR_IBAN());
-			bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
-			bankAccount.setAD_Org_ID(importRecord.getAD_Org_ID());
-
-			if (Check.isBlank(importRecord.getISO_Code()))
+		if (Check.isNotBlank(importRecord.getIBAN()))
+		{
+			if (bankAccount == null)
 			{
-				throw new AdempiereException("Missing value for mandatory field 'ISO-Currency Code'");
+				final BankAccountQuery queryWithIban = BankAccountQuery.builder().iban(importRecord.getIBAN()).build();
+				bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithIban));
 			}
 
-			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(importRecord.getISO_Code());
-			final CurrencyId currencyId = currencyBL.getByCurrencyCode(currencyCode).getId();
-			bankAccount.setC_Currency_ID(currencyId.getRepoId());
-
-			InterfaceWrapperHelper.saveRecord(bankAccount);
-
-			importRecord.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
+			bankAccount.setIBAN(importRecord.getIBAN());
 		}
+
+		if (Check.isNotBlank(importRecord.getQR_IBAN()))
+		{
+			if (bankAccount == null)
+			{
+				final BankAccountQuery queryWithQRIban = BankAccountQuery.builder().qrIban(importRecord.getQR_IBAN()).build();
+				bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithQRIban));
+			}
+
+			bankAccount.setQR_IBAN(importRecord.getQR_IBAN());
+		}
+
+		if (bankAccount == null)
+		{
+			return;
+		}
+
+		if (bankAccount.getC_Currency_ID() < 0 && Check.isBlank(importRecord.getISO_Code()))
+		{
+			throw new AdempiereException("Missing mandatory value for currency on business partner bank account!");
+		}
+
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(importRecord.getISO_Code());
+		final CurrencyId currencyId = currencyBL.getByCurrencyCode(currencyCode).getId();
+		bankAccount.setC_Currency_ID(currencyId.getRepoId());
+
+		bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
+		bankAccount.setAD_Org_ID(importRecord.getAD_Org_ID());
+
+		InterfaceWrapperHelper.saveRecord(bankAccount);
+
+		importRecord.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
 	}
 
 	@NonNull
