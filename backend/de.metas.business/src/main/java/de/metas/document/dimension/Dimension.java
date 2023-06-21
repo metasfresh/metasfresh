@@ -38,6 +38,7 @@ import lombok.With;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.time.Instant;
 import java.util.Objects;
 
 @Value
@@ -69,6 +70,9 @@ public class Dimension implements Comparable<Dimension>
 	@Nullable String userElementString6;
 	@Nullable String userElementString7;
 
+	@Nullable Instant userElementDate1;
+	@Nullable Instant userElementDate2;
+	
 	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2) {return Objects.equals(d1, d2);}
 
 	@Override

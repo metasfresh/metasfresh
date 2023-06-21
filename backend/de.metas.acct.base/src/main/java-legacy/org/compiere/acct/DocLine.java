@@ -896,7 +896,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	}
 
 	@Nullable
-	private LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
+	public LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
 	{
 		@NonNull final PO docLinePO = getPO();
 		final int index = docLinePO.get_ColumnIndex(columnName);
