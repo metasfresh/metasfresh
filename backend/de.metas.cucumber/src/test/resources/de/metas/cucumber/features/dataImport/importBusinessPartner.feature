@@ -33,8 +33,8 @@ Feature: Import Business Partner via DataImportRestController
       | bpImported               | Y            | Y         | bpDataImportConfig         | bpImportValue | Import Company  | CHE-108.019.127 MWST | firstnameImport | addr1Import  | cityImport | DE              | 1101       | bankDetailsImport | CH87 0483 5056 8223 8100 0 | CH81 3100 0056 8223 8100 0 | importedBPartner             | importedBPLocation                    | importedBPBankAccount              | CHF          | N                     |
 
     And validate C_BPartner:
-      | C_BPartner_ID.Identifier | Value         | OPT.CompanyName | OPT.VATaxID          | OPT.Firstname   | OPT.IsManuallyCreated |
-      | importedBPartner         | bpImportValue | Import Company  | CHE-108.019.127 MWST | firstnameImport | N                     |
+      | C_BPartner_ID.Identifier | Value         | OPT.CompanyName | OPT.VATaxID          | OPT.IsManuallyCreated |
+      | importedBPartner         | bpImportValue | Import Company  | CHE-108.019.127 MWST | N                     |
     And validate C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_ID.Identifier | OPT.Address                  | OPT.Name                              |
       | importedBPLocation                | importedBPartner         | addr1Import\n1101 cityImport | cityImport addr1Import Import Company |

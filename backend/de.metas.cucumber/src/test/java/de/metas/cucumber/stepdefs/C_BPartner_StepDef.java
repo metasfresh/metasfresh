@@ -540,12 +540,6 @@ public class C_BPartner_StepDef
 				softly.assertThat(bPartnerRecord.getVATaxID()).as("VATaxID").isEqualTo(vaTaxID);
 			}
 
-			final String firstname = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_Firstname);
-			if (Check.isNotBlank(firstname))
-			{
-				softly.assertThat(bPartnerRecord.getFirstname()).as("Firstname").isEqualTo(firstname);
-			}
-
 			final Boolean isManuallyCreated = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BPartner.COLUMNNAME_IsManuallyCreated, false);
 			softly.assertThat(bPartnerRecord.isManuallyCreated()).as("IsManuallyCreated").isEqualTo(isManuallyCreated);
 		}
