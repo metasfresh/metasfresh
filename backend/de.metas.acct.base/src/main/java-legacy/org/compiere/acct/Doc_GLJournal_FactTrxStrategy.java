@@ -14,7 +14,7 @@ final class Doc_GLJournal_FactTrxStrategy implements FactTrxStrategy
 	private Doc_GLJournal_FactTrxStrategy() {}
 
 	@Override
-	public List<FactTrxLines> createFactTrxLines(final List<FactLine> factLines)
+	public List<FactTrxLines> createFactTrxLines(final List<FactLine2> factLines)
 	{
 		if (factLines.isEmpty())
 		{
@@ -22,7 +22,7 @@ final class Doc_GLJournal_FactTrxStrategy implements FactTrxStrategy
 		}
 
 		final Map<Integer, FactTrxLines.FactTrxLinesBuilder> factTrxLinesByKey = new LinkedHashMap<>();
-		for (final FactLine factLine : factLines)
+		for (final FactLine2 factLine : factLines)
 		{
 			factTrxLinesByKey.computeIfAbsent(extractGroupNo(factLine), key -> FactTrxLines.builder())
 					.factLine(factLine);
@@ -34,7 +34,7 @@ final class Doc_GLJournal_FactTrxStrategy implements FactTrxStrategy
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static int extractGroupNo(final FactLine factLine)
+	private static int extractGroupNo(final FactLine2 factLine)
 	{
 		final DocLine<?> docLine = factLine.getDocLine();
 		if (docLine instanceof DocLine_GLJournal)

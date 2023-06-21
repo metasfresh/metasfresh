@@ -300,7 +300,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 						line,
 						as.getCurrencyId());
 
-				final FactLine factLine = fact.createLine(line,
+				final FactLine2 factLine = fact.createLine(line,
 						line.getAccount(),
 						line.getCurrencyId(),
 						line.getAmtSourceDr(),

@@ -25,7 +25,6 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.document.DocBaseType;
 import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
@@ -145,8 +144,8 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		I_M_Product product = Services.get(IProductDAO.class).getById(m_issue.getM_Product_ID());
 
 		// Line pointers
-		FactLine dr = null;
-		FactLine cr = null;
+		FactLine2 dr = null;
+		FactLine2 cr = null;
 
 		// Issue Cost
 		CostAmount cost = null;
@@ -182,16 +181,17 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		// Inventory CR
 		{
 			ProductAcctType acctType = ProductAcctType.P_Asset_Acct;
-			if (Services.get(IProductBL.class).isService(product))
+			if (!services.isProductStocked(product))
 			{
 				acctType = ProductAcctType.P_Expense_Acct;
 			}
-			cr = fact.createLine(m_line,
-					m_line.getAccount(acctType, as),
-					cost.getCurrencyId(),
-					null, cost.toBigDecimal());
-			cr.setM_Locator_ID(m_line.getM_Locator_ID());
-			cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);    // from Loc
+			cr = fact.createLine()
+					.setDocLine(m_line)
+					.setAccount(m_line.getAccount(acctType, as))
+					.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
+					.locatorId(m_line.getM_Locator_ID())
+					.fromLocationOfLocator(m_line.getM_Locator_ID())
+					.buildAndAdd();
 		}
 
 		//

@@ -121,7 +121,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		if (DocBaseType.ARReceipt.equals(docBaseType))
 		{
 			// Asset (DR)
-			final FactLine fl_DR = fact.createLine()
+			final FactLine2 fl_DR = fact.createLine()
 					.setAccount(getBankAccount(as))
 					.setAmtSource(getCurrencyId(), getAmount(), null)
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
@@ -146,7 +146,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			{
 				acct = getBankAccountAccount(BankAccountAcctType.B_UnallocatedCash_Acct, as);
 			}
-			final FactLine fl_CR = fact.createLine()
+			final FactLine2 fl_CR = fact.createLine()
 					.setAccount(acct)
 					.setAmtSource(getCurrencyId(), null, getAmount())
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
@@ -174,7 +174,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			{
 				acct = getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
 			}
-			final FactLine fl_DR = fact.createLine()
+			final FactLine2 fl_DR = fact.createLine()
 					.setAccount(acct)
 					.setAmtSource(getCurrencyId(), getAmount(), null)
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
@@ -185,7 +185,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 
 			// Asset (CR)
-			final FactLine fl_CR = fact.createLine()
+			final FactLine2 fl_CR = fact.createLine()
 					.setAccount(getBankAccount(as))
 					.setAmtSource(getCurrencyId(), null, getAmount())
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))

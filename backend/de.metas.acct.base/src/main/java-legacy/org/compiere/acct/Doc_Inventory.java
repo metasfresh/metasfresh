@@ -132,7 +132,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		//
 		// Charge/InventoryDiff CR/DR
 		final Account invDiff = getInvDifferencesAccount(as, line, costs.toBigDecimal().negate());
-		final FactLine cr = fact.createLine()
+		final FactLine2 cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(invDiff)
 				.setAmtSourceDrOrCr(costs.toMoney().negate())

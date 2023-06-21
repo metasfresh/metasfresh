@@ -33,12 +33,13 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
-import org.compiere.acct.FactLine;
+import org.compiere.acct.FactLine2;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
@@ -187,22 +188,28 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final DocLine_CostCollector docLine = getLine();
 		final String description = costElement.getName();
 		final Fact fact = new Fact(this, as, PostingType.Actual);
-
-		final FactLine dr = fact.createLine(docLine, debit, cost.getCurrencyId(), cost.toBigDecimal(), null);
-		dr.setQty(qty);
-		dr.addDescription(description);
-		dr.setC_Project_ID(docLine.getC_Project_ID());
-		dr.setC_Activity_ID(docLine.getActivityId());
-		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
-		dr.setM_Locator_ID(docLine.getM_Locator_ID());
-
-		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.toBigDecimal());
-		cr.setQty(qty);
-		cr.addDescription(description);
-		cr.setC_Project_ID(docLine.getC_Project_ID());
-		cr.setC_Activity_ID(docLine.getActivityId());
-		cr.setC_Campaign_ID(docLine.getC_Campaign_ID());
-		cr.setM_Locator_ID(docLine.getM_Locator_ID());
+		fact.createLine()
+				.setDocLine(docLine)
+				.setAccount(debit)
+				.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
+				.setQty(qty)
+				.additionalDescription(description)
+				.projectId(ProjectId.ofRepoIdOrNull(docLine.getC_Project_ID()))
+				.activityId(docLine.getActivityId())
+				.campaignId(docLine.getC_Campaign_ID())
+				.locatorId(docLine.getM_Locator_ID())
+				.buildAndAdd();
+		fact.createLine()
+				.setDocLine(docLine)
+				.setAccount(credit)
+				.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
+				.setQty(qty)
+				.additionalDescription(description)
+				.projectId(ProjectId.ofRepoIdOrNull(docLine.getC_Project_ID()))
+				.activityId(docLine.getActivityId())
+				.campaignId(docLine.getC_Campaign_ID())
+				.locatorId(docLine.getM_Locator_ID())
+				.buildAndAdd();
 
 		return fact;
 	}
@@ -307,7 +314,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	{
 		final DocLine_CostCollector docLine = getLine();
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
-		if(costResult == null)
+		if (costResult == null)
 		{
 			// NOTE: there is no need to fail if no cost details were created
 			// because it might be that there are no cost elements defined for resource, which is acceptable
@@ -345,7 +352,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	{
 		final DocLine_CostCollector docLine = getLine();
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
-		if(costResult == null)
+		if (costResult == null)
 		{
 			// NOTE: there is no need to fail if no cost details were created
 			// because it might be that there are no cost elements defined for resource, which is acceptable

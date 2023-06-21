@@ -1,12 +1,11 @@
 package org.compiere.acct;
 
+import com.google.common.collect.ImmutableList;
+import org.compiere.acct.FactTrxLines.FactTrxLinesBuilder;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.compiere.acct.FactTrxLines.FactTrxLinesBuilder;
-
-import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
@@ -35,7 +34,7 @@ final class PerDocumentLineFactTrxStrategy implements FactTrxStrategy
 	public static final transient PerDocumentLineFactTrxStrategy instance = new PerDocumentLineFactTrxStrategy();
 
 	@Override
-	public List<FactTrxLines> createFactTrxLines(final List<FactLine> factLines)
+	public List<FactTrxLines> createFactTrxLines(final List<FactLine2> factLines)
 	{
 		if (factLines.isEmpty())
 		{
@@ -43,7 +42,7 @@ final class PerDocumentLineFactTrxStrategy implements FactTrxStrategy
 		}
 
 		final Map<Integer, FactTrxLinesBuilder> factTrxLinesByKey = new LinkedHashMap<>();
-		for (final FactLine factLine : factLines)
+		for (final FactLine2 factLine : factLines)
 		{
 			factTrxLinesByKey.computeIfAbsent(extractGrouppingKey(factLine), key -> FactTrxLines.builder())
 					.factLine(factLine);
@@ -55,7 +54,7 @@ final class PerDocumentLineFactTrxStrategy implements FactTrxStrategy
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static int extractGrouppingKey(final FactLine factLine)
+	private static int extractGrouppingKey(final FactLine2 factLine)
 	{
 		return factLine.getLine_ID();
 

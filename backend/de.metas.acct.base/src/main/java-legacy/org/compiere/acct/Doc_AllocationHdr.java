@@ -36,6 +36,7 @@ import de.metas.document.DocBaseType;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.acct.api.IFactAcctBL;
@@ -326,8 +327,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	/**
 	 * Create facts for payments in the case when no invoice was involved.
 	 * The pay Amt will go to Credit for outgoing payments and to Debit for Incoming payments
-	 *
-	 * @param fact
 	 */
 	private void createFactLines_PaymentAllocation(final Fact fact)
 	{
@@ -458,8 +457,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		final AcctSchema as = fact.getAcctSchema();
 		final Account paymentAcct = line.getPaymentAcct(as);
-		final FactLine fl_Payment;
-		final FactLine fl_Discount;
+		final FactLine2 fl_Payment;
+		final FactLine2 fl_Discount;
 
 		//
 		// Case: Customer Overpayment
@@ -494,17 +493,15 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Update fact line dimensions
 		Check.assumeNotNull(fl_Payment, "fl_Payment not null");
 		fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
-		fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
-		fl_Payment.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+		fl_Payment.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 		//
 		Check.assumeNotNull(fl_Discount, "fl_Discount not null");
 		fl_Discount.setAD_Org_ID(payment.getAD_Org_ID());
-		fl_Discount.setC_BPartner_ID(payment.getC_BPartner_ID());
-		fl_Discount.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+		fl_Discount.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 	}
 
 	/**
-	 * Creates the {@link FactLine} to book the payment document.
+	 * Creates the {@link FactLine2} to book the payment document.
 	 *
 	 * @return source and accounted amount
 	 */
@@ -561,7 +558,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 		}
 
-		final FactLine factLine = factLineBuilder.buildAndAdd();
+		final FactLine2 factLine = factLineBuilder.buildAndAdd();
 
 		return factLine.getAmtSourceAndAcctDrOrCr();
 	}
@@ -597,7 +594,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		if (taxes == null || taxes.length == 0)
 		{
 			// old behavior
-			final FactLine fl;
+			final FactLine2 fl;
 			if (isDiscountExpense)
 			{
 				fl = fact.createLine(line, getBPGroupAccount(BPartnerGroupAccountType.DiscountExp, as), getCurrencyId(), discountAmt_CMAdjusted.toBigDecimal(), null);
@@ -611,8 +608,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			if (payment != null)
 			{
 				fl.setAD_Org_ID(payment.getAD_Org_ID());
-				fl.setC_BPartner_ID(payment.getC_BPartner_ID());
-				fl.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+				fl.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 			}
 
 		}
@@ -649,7 +645,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 				//
 				// Get tax specific discount account
-				final int taxId = taxes[i].getC_Tax_ID();
+				final TaxId taxId = TaxId.ofRepoId(taxes[i].getC_Tax_ID());
 				Account account = getTaxDiscountAccount(taxId, isDiscountExpense, as);
 				if (account == null)
 				{
@@ -660,7 +656,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				//
 				// Create discount fact line
 				final Money taxDiscountAmt_CMAdjusted = isCreditMemoInvoice ? taxDiscountAmt.negate() : taxDiscountAmt;
-				FactLine fl = null;
+				FactLine2 fl = null;
 				if (isDiscountExpense)
 				{
 					fl = fact.createLine(line, account, getCurrencyId(), taxDiscountAmt_CMAdjusted.toBigDecimal(), null);
@@ -675,8 +671,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					if (payment != null)
 					{
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
-						fl.setC_BPartner_ID(payment.getC_BPartner_ID());
-						fl.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+						fl.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 					}
 					discountAmtSourceAndAcct.add(fl.getAmtSourceAndAcctDrOrCr());
 				}
@@ -727,14 +722,14 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * @param taxId
 	 * @return
 	 */
-	private static final Account getTaxDiscountAccount(final int taxId, final boolean isDiscountExpense, final AcctSchema as)
+	private static Account getTaxDiscountAccount(final TaxId taxId, final boolean isDiscountExpense, final AcctSchema as)
 	{
 		return getTaxDiscountAccount(taxId, isDiscountExpense, as.getId());
 	}
 
-	static Account getTaxDiscountAccount(final int taxId, final boolean isDiscountExpense, final AcctSchemaId acctSchemaId)
+	static Account getTaxDiscountAccount(final TaxId taxId, final boolean isDiscountExpense, final AcctSchemaId acctSchemaId)
 	{
-		if (taxId <= 0)
+		if (taxId == null)
 		{
 			return null;
 		}
@@ -765,10 +760,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	}
 
 	/**
-	 * Creates the {@link FactLine} to book the invoice write off.
+	 * Creates the {@link FactLine2} to book the invoice write off.
 	 *
-	 * @param fact
-	 * @param line
 	 * @return WriteOff amount booked
 	 */
 	private final AmountSourceAndAcct createInvoiceWriteOffFacts(final Fact fact, final DocLine_Allocation line)
@@ -811,7 +804,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 		}
 
-		final FactLine factLine = factLineBuilder.buildAndAdd();
+		final FactLine2 factLine = factLineBuilder.buildAndAdd();
 		factLine.invertDrAndCrAmountsIfTrue(line.isCreditMemoInvoice());
 
 		return factLine.getAmtSourceAndAcctDrOrCr();
@@ -889,14 +882,14 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 		}
 
-		final FactLine factLine = factLineBuilder.buildAndAdd();
+		final FactLine2 factLine = factLineBuilder.buildAndAdd();
 
 		final Money allocationAcctOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtAcct(), factLine.getAcctSchema().getCurrencyId());
 		createRealizedGainLossFactLine(line, fact, factLine, allocationAcctOnPaymentDate);
 	}
 
 	/**
-	 * Creates the {@link FactLine} to book the purchase - sales invoice compensation
+	 * Creates the {@link FactLine2} to book the purchase - sales invoice compensation
 	 *
 	 * @param fact
 	 * @param line
@@ -968,7 +961,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			factLineBuilder.setAmtSource(compensationAmtSource, null);
 		}
-		final FactLine factLine = factLineBuilder.buildAndAdd();
+		final FactLine2 factLine = factLineBuilder.buildAndAdd();
 
 		//
 		// Mark the lines as compensated
@@ -981,7 +974,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	}
 
 	/**
-	 * Create the {@link FactLine} which is about booking the currency gain/loss between invoice and payment.
+	 * Create the {@link FactLine2} which is about booking the currency gain/loss between invoice and payment.
 	 * <p>
 	 * It is also creating a new FactLine where the currency gain/loss is booked.
 	 *
@@ -990,14 +983,14 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * @param invoiceFactLine             invoice related booking (on Invoice date)
 	 * @param allocationAcctOnPaymentDate
 	 */
-	private void createRealizedGainLossFactLine(final DocLine_Allocation line, final Fact fact, final FactLine invoiceFactLine, final Money allocationAcctOnPaymentDate)
+	private void createRealizedGainLossFactLine(final DocLine_Allocation line, final Fact fact, final FactLine2 invoiceFactLine, final Money allocationAcctOnPaymentDate)
 	{
 		final AcctSchema as = fact.getAcctSchema();
 
 		//
 		// Get how much was booked for invoice, on allocation's date
 		final boolean isDR = invoiceFactLine.getAmtAcctDr().signum() != 0;
-		final Money allocationAcctOnInvoiceDate = isDR 
+		final Money allocationAcctOnInvoiceDate = isDR
 				? Money.of(invoiceFactLine.getAmtAcctDr(), as.getCurrencyId())
 				: Money.of(invoiceFactLine.getAmtAcctCr(), as.getCurrencyId());
 
@@ -1023,7 +1016,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		//
 		// Check the "invoice minus paid" amount and decide if it's a gain or loss and book it.
-		final FactLine fl;
+		final FactLine2 fl;
 		// Sales invoice (i.e. the invoice was booked on C_Receivable, on Credit)
 		if (!isDR)
 		{
@@ -1062,9 +1055,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		// Update created gain/loss fact line (description, dimensions etc)
-		fl.setAD_Org_ID(invoiceFactLine.getAD_Org_ID());
-		fl.setC_BPartner_ID(invoiceFactLine.getC_BPartner_ID());
-		fl.setC_BPartner_Location_ID(invoiceFactLine.getC_BPartner_Location_ID());
+		fl.setAD_Org_ID(invoiceFactLine.getOrgIdEffective());
+		fl.setBPartnerIdAndLocation(invoiceFactLine.getC_BPartner_ID(), invoiceFactLine.getC_BPartner_Location_ID());
 		fl.addDescription(description.toString());
 
 	}
@@ -1195,7 +1187,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	private final boolean isDiscountExpense;
 	//
 	private I_Fact_Acct _invoiceGrandTotalFact;
-	private final List<I_Fact_Acct> _invoiceTaxFacts = new ArrayList<>();
+	private final ArrayList<FactLine2> _invoiceTaxFacts = new ArrayList<>();
 
 	private PostingException newPostingException()
 	{
@@ -1257,7 +1249,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		return BigDecimal.ZERO;
 	}
 
-	private List<I_Fact_Acct> getInvoiceTaxFacts()
+	private List<FactLine2> getInvoiceTaxFacts()
 	{
 		return _invoiceTaxFacts;
 	}
@@ -1267,7 +1259,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		return !_invoiceTaxFacts.isEmpty();
 	}
 
-	private final Account getTaxDiscountAcct(final AcctSchema as, final int taxId)
+	private Account getTaxDiscountAcct(final AcctSchema as, final TaxId taxId)
 	{
 		final Account discountAccount = Doc_AllocationHdr.getTaxDiscountAccount(taxId, isDiscountExpense, as.getId());
 		if (discountAccount != null)
@@ -1299,15 +1291,15 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Iterate the invoice tax facts
 		final CurrencyPrecision precision = as.getStandardPrecision();
-		for (final I_Fact_Acct taxFactAcct : getInvoiceTaxFacts())
+		for (final FactLine2 taxFactAcct : getInvoiceTaxFacts())
 		{
 			//
 			// Get the C_Tax_ID
-			final int taxId = taxFactAcct.getC_Tax_ID();
-			if (taxId <= 0)
+			final TaxId taxId = taxFactAcct.getC_Tax_ID();
+			if (taxId == null)
 			{
 				// shall not happen
-				newPostingException()
+				throw newPostingException()
 						.setAcctSchema(as)
 						.setFactLine(taxFactAcct)
 						.setDocLine(line)
@@ -1353,17 +1345,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						// Discount expense
 						if (isDiscountExpense)
 						{
-							final FactLine flDR = fact.createLine(line, discountAcct, as.getCurrencyId(), amountCMAdjusted, null);
+							final FactLine2 flDR = fact.createLine(line, discountAcct, as.getCurrencyId(), amountCMAdjusted, null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted);
+							final FactLine2 flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted);
 							updateFactLine(flCR, taxId, description);
 						}
 						// Discount revenue
 						else
 						{
-							final FactLine flDR = fact.createLine(line, discountAcct, as.getCurrencyId(), amountCMAdjusted.negate(), null);
+							final FactLine2 flDR = fact.createLine(line, discountAcct, as.getCurrencyId(), amountCMAdjusted.negate(), null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted.negate());
+							final FactLine2 flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted.negate());
 							updateFactLine(flCR, taxId, description);
 						}
 
@@ -1389,17 +1381,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						// Discount expense
 						if (isDiscountExpense)
 						{
-							final FactLine flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted, null);
+							final FactLine2 flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted, null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, discountAcct, as.getCurrencyId(), null, amountCMAdjusted);
+							final FactLine2 flCR = fact.createLine(line, discountAcct, as.getCurrencyId(), null, amountCMAdjusted);
 							updateFactLine(flCR, taxId, description);
 						}
 						// Discount revenue
 						else
 						{
-							final FactLine flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted.negate(), null);
+							final FactLine2 flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted.negate(), null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, discountAcct, as.getCurrencyId(), null, amountCMAdjusted.negate());
+							final FactLine2 flCR = fact.createLine(line, discountAcct, as.getCurrencyId(), null, amountCMAdjusted.negate());
 							updateFactLine(flCR, taxId, description);
 						}
 					}
@@ -1422,9 +1414,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						final Fact fact = createEmptyFact(as);
 						result.add(fact);
 
-						final FactLine flDR = fact.createLine(line, writeOffAccount, as.getCurrencyId(), amountCMAdjusted, null);
+						final FactLine2 flDR = fact.createLine(line, writeOffAccount, as.getCurrencyId(), amountCMAdjusted, null);
 						updateFactLine(flDR, taxId, description);
-						final FactLine flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted);
+						final FactLine2 flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted);
 						updateFactLine(flCR, taxId, description);
 					}
 				}
@@ -1440,9 +1432,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						final Fact fact = createEmptyFact(as);
 						result.add(fact);
 
-						final FactLine flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted, null);
+						final FactLine2 flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted, null);
 						updateFactLine(flDR, taxId, description);
-						final FactLine flCR = fact.createLine(line, writeOffAccount, as.getCurrencyId(), null, amountCMAdjusted);
+						final FactLine2 flCR = fact.createLine(line, writeOffAccount, as.getCurrencyId(), null, amountCMAdjusted);
 						updateFactLine(flCR, taxId, description);
 					}
 				}
@@ -1466,7 +1458,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * @param precision            precision
 	 * @return (taxAmt / invoice grand total amount) * taxAmt
 	 */
-	private static final BigDecimal calcAmount(
+	private static BigDecimal calcAmount(
 			final BigDecimal taxAmt,
 			final BigDecimal invoiceGrandTotalAmt,
 			final BigDecimal discountAmt,
@@ -1500,13 +1492,11 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	}    // calcAmount
 
 	/**
-	 * Convenient method to update {@link FactLine}'s infos if the line is not null.
+	 * Convenient method to update {@link FactLine2}'s infos if the line is not null.
 	 *
-	 * @param fl
-	 * @param taxId
 	 * @param description description to add
 	 */
-	private static final void updateFactLine(final FactLine fl, final int taxId, final String description)
+	private static void updateFactLine(final FactLine2 fl, final TaxId taxId, final String description)
 	{
 		if (fl == null)
 		{

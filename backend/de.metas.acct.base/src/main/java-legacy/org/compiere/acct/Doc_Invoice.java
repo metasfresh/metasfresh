@@ -422,11 +422,11 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final BigDecimal taxAmt = docTax.getTaxAmt();
 			if (taxAmt != null && taxAmt.signum() != 0)
 			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
+				final FactLine2 tl = fact.createLine(null, docTax.getTaxDueAcct(as),
 						getCurrencyId(), null, taxAmt);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
+					tl.setC_Tax_ID(docTax.getTaxId());
 				}
 			}
 		}
@@ -460,7 +460,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
+			fl.setLocationFromOrg(fl.getOrgIdEffective(), true);      // from Loc
 			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 		});
 
@@ -535,11 +535,11 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final BigDecimal taxAmt = docTax.getTaxAmt();
 			if (taxAmt != null && taxAmt.signum() != 0)
 			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
+				final FactLine2 tl = fact.createLine(null, docTax.getTaxDueAcct(as),
 						getCurrencyId(), taxAmt, null);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
+					tl.setC_Tax_ID(docTax.getTaxId());
 				}
 			}
 		}
@@ -571,7 +571,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
+			fl.setLocationFromOrg(fl.getOrgIdEffective(), true);      // from Loc
 			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 		});
 
@@ -735,7 +735,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// Set Locations
 		fact.forEach(fl -> {
 			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
+			fl.setLocationFromOrg(fl.getOrgIdEffective(), false);    // to Loc
 		});
 
 		// Liability CR
@@ -887,7 +887,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// Set Locations
 		fact.forEach(fl -> {
 			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
+			fl.setLocationFromOrg(fl.getOrgIdEffective(), false);    // to Loc
 		});
 
 		// Liability DR

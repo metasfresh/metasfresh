@@ -79,6 +79,8 @@ import java.sql.SQLException;
  * amt Teo Sarca
  * <li>FR [ 2819081 ] FactLine.getDocLine should be public
  */
+// TODO DELETE ME
+@Deprecated
 public final class FactLine extends X_Fact_Acct
 {
 	private MAccount m_acct = null;
@@ -462,7 +464,7 @@ public final class FactLine extends X_Fact_Acct
 						.setAcctSchema(acctSchema)
 						.setDocument(getDoc())
 						.setDocLine(getDocLine())
-						.setFactLine(this)
+						//.setFactLine(this)
 						.setParameter("Rounding error", amtRoundingError)
 						.setParameter("Rounding error (tolerated)", errorMarginTolerated);
 				log.debug(ex.getLocalizedMessage(), ex);

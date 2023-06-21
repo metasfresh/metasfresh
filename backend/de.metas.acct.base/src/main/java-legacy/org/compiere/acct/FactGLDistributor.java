@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.gldistribution.GLDistributionBuilder;
 import de.metas.acct.gldistribution.GLDistributionResult;
@@ -13,7 +14,6 @@ import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /*
  * #%L
@@ -51,7 +50,7 @@ import java.util.Properties;
  */
 
 /**
- * Helper class to apply {@link I_GL_Distribution}s on a given list of {@link FactLine}s.
+ * Helper class to apply {@link I_GL_Distribution}s on a given list of {@link FactLine2}s.
  * It is used internally by {@link Fact}.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -66,14 +65,10 @@ import java.util.Properties;
 	// Services
 	private static final Logger logger = LogManager.getLogger(FactGLDistributor.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
-	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 
-	private FactGLDistributor()
-	{
-		super();
-	}
+	private FactGLDistributor() {}
 
-	public List<FactLine> distribute(final List<FactLine> lines)
+	public List<FactLine2> distribute(final List<FactLine2> lines)
 	{
 		// no lines -> nothing to distribute
 		if (lines.isEmpty())
@@ -81,13 +76,13 @@ import java.util.Properties;
 			return lines;
 		}
 
-		final List<FactLine> newLines = new ArrayList<>();
-		final List<FactLine> newLines_Last = new ArrayList<>();
+		final List<FactLine2> newLines = new ArrayList<>();
+		final List<FactLine2> newLines_Last = new ArrayList<>();
 
 		// For all fact lines
-		for (final FactLine line : lines)
+		for (final FactLine2 line : lines)
 		{
-			final AccountDimension lineDimension = factAcctBL.createAccountDimension(line);
+			final AccountDimension lineDimension = line.toAccountDimension();
 			final I_GL_Distribution distribution = findGL_Distribution(line, lineDimension);
 			if (distribution == null)
 			{
@@ -107,7 +102,7 @@ import java.util.Properties;
 					.setCurrencyId(line.getCurrencyId())
 					.setQtyToDistribute(line.getQty())
 					.distribute();
-			final List<FactLine> lines_Distributed = createFactLines(line, distributionResult);
+			final List<FactLine2> lines_Distributed = createFactLines(line, distributionResult);
 
 			// FR 2685367 - GL Distribution delete line instead reverse
 			if (distribution.isCreateReversal())
@@ -115,7 +110,7 @@ import java.util.Properties;
 				newLines.add(line); // keep the original line in it's place
 
 				// Add Reversal
-				final FactLine reversal = line.accrue(distribution.getName());
+				final FactLine2 reversal = line.accrue(distribution.getName());
 				newLines_Last.add(reversal);
 
 				// Add the "distribution to" lines
@@ -137,7 +132,7 @@ import java.util.Properties;
 		return newLines;
 	}
 
-	private IPair<Sign, BigDecimal> deriveAmountAndSign(@NonNull final FactLine line)
+	private IPair<Sign, BigDecimal> deriveAmountAndSign(@NonNull final FactLine2 line)
 	{
 		final Sign amountSign;
 		final BigDecimal amount;
@@ -155,19 +150,17 @@ import java.util.Properties;
 	}
 
 	@Nullable
-	private I_GL_Distribution findGL_Distribution(final FactLine baseLine, final AccountDimension baseLineDimension)
+	private I_GL_Distribution findGL_Distribution(final FactLine2 baseLine, final AccountDimension baseLineDimension)
 	{
-		final Properties ctx = baseLine.getCtx();
-		final String postingType = baseLine.getPostingType();
-		final Doc<?> doc = baseLine.getDoc();
-		final DocTypeId docTypeId = doc.getC_DocType_ID();
+		final PostingType postingType = baseLine.getPostingType();
+		final DocTypeId docTypeId = baseLine.getC_DocType_ID();
 
-		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(ctx, baseLineDimension, postingType, docTypeId);
+		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(Env.getCtx(), baseLineDimension, postingType, docTypeId);
 		if (distributions.isEmpty())
 		{
 			return null;
 		}
-		if (distributions.size() > 1)
+		else if (distributions.size() > 1)
 		{
 			final AdempiereException ex = new AdempiereException("More then one GL_Distribution found for " + baseLine
 					+ "\nDimension: " + baseLineDimension
@@ -183,7 +176,7 @@ import java.util.Properties;
 		}
 	}
 
-	private List<FactLine> createFactLines(final FactLine baseLine, final GLDistributionResult glDistribution)
+	private List<FactLine2> createFactLines(final FactLine2 baseLine, final GLDistributionResult glDistribution)
 	{
 		final List<GLDistributionResultLine> glDistributionLines = glDistribution.getResultLines();
 		if (glDistributionLines.isEmpty())
@@ -191,10 +184,10 @@ import java.util.Properties;
 			return ImmutableList.of();
 		}
 
-		final List<FactLine> factLines = new ArrayList<>(glDistributionLines.size());
+		final List<FactLine2> factLines = new ArrayList<>(glDistributionLines.size());
 		for (final GLDistributionResultLine glDistributionLine : glDistributionLines)
 		{
-			final FactLine factLine = createFactLine(baseLine, glDistributionLine);
+			final FactLine2 factLine = createFactLine(baseLine, glDistributionLine);
 			if (factLine == null)
 			{
 				continue;
@@ -205,7 +198,7 @@ import java.util.Properties;
 		return factLines;
 	}
 
-	private FactLine createFactLine(final FactLine baseLine, final GLDistributionResultLine glDistributionLine)
+	private FactLine2 createFactLine(final FactLine2 baseLine, final GLDistributionResultLine glDistributionLine)
 	{
 		final BigDecimal amount = glDistributionLine.getAmount();
 		if (amount.signum() == 0)
@@ -213,29 +206,32 @@ import java.util.Properties;
 			return null;
 		}
 
-		final Doc<?> doc = baseLine.getDoc();
-		final DocLine<?> docLine = baseLine.getDocLine();
-
 		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
 		final MAccount account = MAccount.get(Env.getCtx(), accountDimension);
 
-		final FactLine factLine = new FactLine(baseLine.getServices(), baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
-
-		//
-		// Set Info & Account
-		factLine.setDocumentInfo(doc, docLine);
-		factLine.setSubLine_ID(baseLine.getSubLine_ID());
-		factLine.setAccount(baseLine.getAcctSchema(), account);
-		factLine.setPostingType(baseLine.getPostingType());
+		final FactLine2 factLine = FactLine2.builder()
+				.services(baseLine.getServices())
+				.doc(baseLine.getDoc())
+				.docLine(baseLine.getDocLine())
+				.AD_Table_ID(baseLine.getAD_Table_ID())
+				.Record_ID(baseLine.getRecord_ID())
+				.Line_ID(baseLine.getLine_ID())
+				.SubLine_ID(baseLine.getSubLine_ID())
+				.postingType(baseLine.getPostingType())
+				.acctSchema(baseLine.getAcctSchema())
+				.account(account)
+				.accountConceptualName(null)
+				.additionalDescription(glDistributionLine.getDescription())
+				.build();
 
 		//
 		// Update accounting dimensions
 
 		factLine.updateFromDimension(AccountDimension.builder()
-											 .applyOverrides(accountDimension)
-											 .clearC_AcctSchema_ID()
-											 .clearSegmentValue(AcctSegmentType.Account)
-											 .build());
+				.applyOverrides(accountDimension)
+				.clearC_AcctSchema_ID()
+				.clearSegmentValue(AcctSegmentType.Account)
+				.build());
 
 		// Amount
 		setAmountToFactLine(glDistributionLine, factLine);
@@ -244,16 +240,13 @@ import java.util.Properties;
 		// Convert
 		factLine.convert();
 
-		// Description
-		factLine.addDescription(glDistributionLine.getDescription());
-
 		logger.info("{}", factLine);
 		return factLine;
 	}
 
 	private void setAmountToFactLine(
 			@NonNull final GLDistributionResultLine glDistributionLine,
-			@NonNull final FactLine factLine)
+			@NonNull final FactLine2 factLine)
 	{
 		final Money amount = Money.of(glDistributionLine.getAmount(), glDistributionLine.getCurrencyId());
 

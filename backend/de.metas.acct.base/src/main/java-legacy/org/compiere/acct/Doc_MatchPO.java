@@ -152,7 +152,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		//
 		// Product PPV
-		final FactLine cr = fact.createLine()
+		final FactLine2 cr = fact.createLine()
 				.setDocLine(null)
 				.setAccount(docLine.getAccount(ProductAcctType.P_PurchasePriceVariance_Acct, as))
 				.setAmtSourceDrOrCr(difference.negateIf(isReturnTrx).toMoney())
@@ -165,7 +165,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		//
 		// PPV Offset
-		final FactLine dr = fact.createLine()
+		final FactLine2 dr = fact.createLine()
 				.setDocLine(null)
 				.setAccount(getGLAccount(GLAccountType.PPVOffset, as))
 				.setAmtSourceDrOrCr(difference.negateIfNot(isReturnTrx).toMoney())
@@ -185,7 +185,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		return ImmutableList.of(fact);
 	}
 
-	private void updateFromPurchaseOrderLine(final FactLine factLine)
+	private void updateFromPurchaseOrderLine(final FactLine2 factLine)
 	{
 		if (factLine == null)
 		{

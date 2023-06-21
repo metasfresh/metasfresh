@@ -228,8 +228,8 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
 				.bpartnerIdIfNotNull(line.getBPartnerId());
 
-		final FactLine factLine_BankAsset;
-		final FactLine factLine_BankTransfer;
+		final FactLine2 factLine_BankAsset;
+		final FactLine2 factLine_BankTransfer;
 		final BigDecimal amtAcct_BankAsset;
 		final BigDecimal amtAcct_BankTransfer;
 

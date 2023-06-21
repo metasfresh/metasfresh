@@ -19,7 +19,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
-import org.compiere.acct.FactLine;
+import org.compiere.acct.FactLine2;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -99,7 +99,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 				amtAcctCr = line.getAmountAcct().toBigDecimal();
 			}
 
-			final FactLine factLine = fact.createLine()
+			final FactLine2 factLine = fact.createLine()
 					.setAccount(line.getAccount())
 					.setAmtSource(glJournalCurrencyConversionCtx.getCurrencyId(), amtSourceDr, amtSourceCr)
 					.setAmtAcct(amtAcctDr, amtAcctCr)

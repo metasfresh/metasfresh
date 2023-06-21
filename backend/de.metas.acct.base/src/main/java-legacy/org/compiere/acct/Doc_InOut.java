@@ -47,6 +47,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MInOut;
+import org.compiere.model.X_M_InOut;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -228,35 +229,35 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// CoGS DR
-		final FactLine dr = fact.createLine()
+		final FactLine2 dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
 				.setAmt(roundToStdPrecision(costs), null)
+				.setQty(line.getQty().negate())
+				.orgId(line.getOrderOrgId())
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfLocator(line.getM_Locator_ID())
+				.toLocationOfBPartner(getBPartnerLocationId())
 				.buildAndAdd();
 		if (dr == null)
 		{
 			throw newPostingException().setDetailMessage("FactLine DR not created: " + line);
 		}
-		dr.setM_Locator_ID(line.getM_Locator_ID());
-		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());        // Revenue X-Org
-		dr.setQty(line.getQty().negate());
 
 		//
 		// Inventory CR
-		final FactLine cr = fact.createLine()
+		final FactLine2 cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
 				.setAmt(null, roundToStdPrecision(costs))
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfLocator(line.getM_Locator_ID())
+				.toLocationOfBPartner(getBPartnerLocationId())
 				.buildAndAdd();
 		if (cr == null)
 		{
 			throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
 		}
-		cr.setM_Locator_ID(line.getM_Locator_ID());
-		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		cr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 	}
 
 	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
@@ -280,35 +281,35 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory DR
-		final FactLine dr = fact.createLine()
+		final FactLine2 dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
 				.setAmt(roundToStdPrecision(costs), null)
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfLocator(line.getM_Locator_ID())
+				.toLocationOfBPartner(getBPartnerLocationId())
 				.buildAndAdd();
 		if (dr == null)
 		{
 			throw newPostingException().addDetailMessage("FactLine DR not created: " + line);
 		}
-		dr.setM_Locator_ID(line.getM_Locator_ID());
-		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 
 		//
 		// CoGS CR
-		final FactLine cr = fact.createLine()
+		final FactLine2 cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
 				.setAmt(null, roundToStdPrecision(costs))
+				.setQty(line.getQty().negate())
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfLocator(line.getM_Locator_ID())
+				.toLocationOfBPartner(getBPartnerLocationId())
+				.orgId(line.getOrderOrgId())
 				.buildAndAdd();
 		if (cr == null)
 		{
 			throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
 		}
-		cr.setM_Locator_ID(line.getM_Locator_ID());
-		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		cr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-		cr.setAD_Org_ID(line.getOrderOrgId());        // Revenue X-Org
-		cr.setQty(line.getQty().negate());
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
@@ -348,7 +349,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory/Asset DR
-		final FactLine dr = fact.createLine()
+		final FactLine2 dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(roundToStdPrecision(costs), null)
@@ -366,7 +367,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// NotInvoicedReceipt CR
-		final FactLine cr = fact.createLine()
+		final FactLine2 cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(costElement.isMaterialElement()
 									? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
@@ -408,7 +409,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// NotInvoicedReceipt DR
-		final FactLine dr = fact.createLine()
+		final FactLine2 dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setAmt(roundToStdPrecision(costs), null)
@@ -424,7 +425,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!dr.updateReverseLine(I_M_InOut.Table_Name, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -432,7 +433,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory/Asset CR
-		final FactLine cr = fact.createLine()
+		final FactLine2 cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(null, roundToStdPrecision(costs))
@@ -445,10 +446,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		{
 			throw newPostingException().setDetailMessage("CR not created: " + line);
 		}
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
+		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!cr.updateReverseLine(I_M_InOut.Table_Name, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}

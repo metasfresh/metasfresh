@@ -35,6 +35,4 @@ public interface IFactAcctBL extends ISingletonService
 	 * Gets/creates the account (i.e. {@link I_C_ValidCombination}) of given fact line.
 	 */
 	Account getAccount(I_Fact_Acct factAcct);
-
-	AccountDimension createAccountDimension(I_Fact_Acct fa);
 }

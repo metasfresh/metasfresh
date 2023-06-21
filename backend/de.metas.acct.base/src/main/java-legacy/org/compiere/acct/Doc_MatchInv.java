@@ -58,6 +58,7 @@ import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AccessLevel;
@@ -277,7 +278,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final Money receiptAmt = costs.getAmountBeforeAdjustment().toMoney();
-		final FactLine dr_NotInvoicedReceipts = fact.createLine()
+		final I_M_InOutLine receiptLine = getReceiptLine();
+		final FactLine2 dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(costElementId != null
 						? getCostElementAccount(as, costElementId, CostElementAccountType.P_CostClearing_Acct)
 						: getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
@@ -286,14 +288,19 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.setQty(getQty())
 				.costElement(costElementId)
 				.bpartnerId(getReceiptBPartnerId())
+				.orgId(OrgId.ofRepoIdOrAny(receiptLine.getAD_Org_ID()))
+				.orgTrxId(OrgId.ofRepoIdOrAny(receiptLine.getAD_OrgTrx_ID()))
+				.locatorId(receiptLine.getM_Locator_ID())
 				.buildAndAdd();
-		updateFromReceiptLine(dr_NotInvoicedReceipts);
+
+		dr_NotInvoicedReceipts.setC_UOM_ID(UomId.ofRepoId(receiptLine.getC_UOM_ID()));
+		dr_NotInvoicedReceipts.setFromDimension(services.extractDimensionFromModel(receiptLine));
 
 		//
 		// InventoryClearing CR
 		// From Invoice
 		final Money invoiceLineMatchedAmt = getInvoiceLineMatchedAmt();
-		final FactLine cr_InventoryClearing = fact.createLine()
+		final FactLine2 cr_InventoryClearing = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
 				.setAmtSource(null, invoiceLineMatchedAmt)
@@ -374,7 +381,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Create the invoice price variance fact line, if needed
 		// InvoicePriceVariance DR/CR
-		final FactLine ipvFactLine = fact.createLine()
+		final FactLine2 ipvFactLine = fact.createLine()
 				.setDocLine(null)
 				.setAccount(docLine.getInvoicePriceVarianceAccount(as))
 				.setAmtSource(balance.toSingleSide().invert())
@@ -519,7 +526,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	/**
 	 * Updates dimensions and UOM of given FactLine from invoice line
 	 */
-	private void updateFromInvoiceLine(@Nullable final FactLine fl)
+	private void updateFromInvoiceLine(@Nullable final FactLine2 fl)
 	{
 		if (fl == null)
 		{
@@ -531,22 +538,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final Dimension invoiceLineDimension = services.extractDimensionFromModel(invoiceLine);
 		fl.setFromDimension(invoiceLineDimension);
-	}
-
-	private void updateFromReceiptLine(@Nullable final FactLine fl)
-	{
-		if (fl == null)
-		{
-			return;
-		}
-
-		final I_M_InOutLine receiptLine = getReceiptLine();
-		fl.setAD_Org_ID(receiptLine.getAD_Org_ID()); // Org for cross charge
-		fl.setAD_OrgTrx_ID(receiptLine.getAD_OrgTrx_ID());
-		fl.setM_Locator_ID(receiptLine.getM_Locator_ID());
-		fl.setC_UOM_ID(receiptLine.getC_UOM_ID());
-
-		fl.setFromDimension(services.extractDimensionFromModel(receiptLine));
 	}
 
 	private CostAmountDetailed getCreateCostDetails(final AcctSchema as)
