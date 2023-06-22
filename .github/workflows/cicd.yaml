@@ -435,12 +435,6 @@ jobs:
         with:
           name: junit-logs
           path: junit/**/junit.log
-<<<<<<< HEAD
-      - name: produce-summary
-        run: |
-          echo 'test results can be found at http://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
-=======
->>>>>>> pipeline/v172
 
   cucumber-build:
     name: build (cucumber)
