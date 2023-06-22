@@ -184,6 +184,9 @@ import lombok.NonNull;
 				.build());
 
 		bpartnerLocation.setC_Location_ID(locationId.getRepoId());
+		bpartnerLocation.setBPartnerName(importRecord.getlocation_bpartner_name());
+		final String name = importRecord.getlocation_name();
+		bpartnerLocation.setName(Check.isEmpty(name) ? "" : name);
 	}
 
 	private static void updateBillToAndShipToFlags(

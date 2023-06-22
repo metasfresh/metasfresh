@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 539919959L;
+	private static final long serialVersionUID = -1341139762L;
 
     /** Standard Constructor */
     public X_I_BPartner (final Properties ctx, final int I_BPartner_ID, @Nullable final String trxName)
@@ -33,6 +33,66 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAccountNo (final @Nullable java.lang.String AccountNo)
+	{
+		set_Value (COLUMNNAME_AccountNo, AccountNo);
+	}
+
+	@Override
+	public java.lang.String getAccountNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountNo);
+	}
+
+	@Override
+	public void setAddress1 (final @Nullable java.lang.String Address1)
+	{
+		set_Value (COLUMNNAME_Address1, Address1);
+	}
+
+	@Override
+	public java.lang.String getAddress1() 
+	{
+		return get_ValueAsString(COLUMNNAME_Address1);
+	}
+
+	@Override
+	public void setAddress2 (final @Nullable java.lang.String Address2)
+	{
+		set_Value (COLUMNNAME_Address2, Address2);
+	}
+
+	@Override
+	public java.lang.String getAddress2() 
+	{
+		return get_ValueAsString(COLUMNNAME_Address2);
+	}
+
+	@Override
+	public void setAddress3 (final @Nullable java.lang.String Address3)
+	{
+		set_Value (COLUMNNAME_Address3, Address3);
+	}
+
+	@Override
+	public java.lang.String getAddress3() 
+	{
+		return get_ValueAsString(COLUMNNAME_Address3);
+	}
+
+	@Override
+	public void setAddress4 (final @Nullable java.lang.String Address4)
+	{
+		set_Value (COLUMNNAME_Address4, Address4);
+	}
+
+	@Override
+	public java.lang.String getAddress4() 
+	{
+		return get_ValueAsString(COLUMNNAME_Address4);
 	}
 
 	@Override
@@ -165,54 +225,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
-	public void setAddress1 (final @Nullable java.lang.String Address1)
-	{
-		set_Value (COLUMNNAME_Address1, Address1);
-	}
-
-	@Override
-	public java.lang.String getAddress1() 
-	{
-		return get_ValueAsString(COLUMNNAME_Address1);
-	}
-
-	@Override
-	public void setAddress2 (final @Nullable java.lang.String Address2)
-	{
-		set_Value (COLUMNNAME_Address2, Address2);
-	}
-
-	@Override
-	public java.lang.String getAddress2() 
-	{
-		return get_ValueAsString(COLUMNNAME_Address2);
-	}
-
-	@Override
-	public void setAddress3 (final @Nullable java.lang.String Address3)
-	{
-		set_Value (COLUMNNAME_Address3, Address3);
-	}
-
-	@Override
-	public java.lang.String getAddress3() 
-	{
-		return get_ValueAsString(COLUMNNAME_Address3);
-	}
-
-	@Override
-	public void setAddress4 (final @Nullable java.lang.String Address4)
-	{
-		set_Value (COLUMNNAME_Address4, Address4);
-	}
-
-	@Override
-	public java.lang.String getAddress4() 
-	{
-		return get_ValueAsString(COLUMNNAME_Address4);
-	}
-
-	@Override
 	public void setAggregationName (final @Nullable java.lang.String AggregationName)
 	{
 		set_Value (COLUMNNAME_AggregationName, AggregationName);
@@ -222,6 +234,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getAggregationName() 
 	{
 		return get_ValueAsString(COLUMNNAME_AggregationName);
+	}
+
+	@Override
+	public void setA_Name (final @Nullable java.lang.String A_Name)
+	{
+		set_Value (COLUMNNAME_A_Name, A_Name);
+	}
+
+	@Override
+	public java.lang.String getA_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Name);
 	}
 
 	@Override
@@ -273,6 +297,72 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_Aggregation_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Aggregation_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ExternalId (final @Nullable java.lang.String C_BPartner_ExternalId)
+	{
+		set_Value (COLUMNNAME_C_BPartner_ExternalId, C_BPartner_ExternalId);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_ExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_ExternalId);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_ExternalId (final @Nullable java.lang.String C_BPartner_Location_ExternalId)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_ExternalId, C_BPartner_Location_ExternalId);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_ExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_ExternalId);
+	}
+
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Memo (final @Nullable java.lang.String C_BPartner_Memo)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Memo, C_BPartner_Memo);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Memo() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Memo);
 	}
 
 	@Override
@@ -342,72 +432,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_BP_PrintFormat_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_PrintFormat_ID);
-	}
-
-	@Override
-	public void setC_BPartner_ExternalId (final @Nullable java.lang.String C_BPartner_ExternalId)
-	{
-		set_Value (COLUMNNAME_C_BPartner_ExternalId, C_BPartner_ExternalId);
-	}
-
-	@Override
-	public java.lang.String getC_BPartner_ExternalId() 
-	{
-		return get_ValueAsString(COLUMNNAME_C_BPartner_ExternalId);
-	}
-
-	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
-	}
-
-	@Override
-	public int getC_BPartner_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
-	}
-
-	@Override
-	public void setC_BPartner_Location_ExternalId (final @Nullable java.lang.String C_BPartner_Location_ExternalId)
-	{
-		set_Value (COLUMNNAME_C_BPartner_Location_ExternalId, C_BPartner_Location_ExternalId);
-	}
-
-	@Override
-	public java.lang.String getC_BPartner_Location_ExternalId() 
-	{
-		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_ExternalId);
-	}
-
-	@Override
-	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
-	{
-		if (C_BPartner_Location_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
-	}
-
-	@Override
-	public int getC_BPartner_Location_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
-	}
-
-	@Override
-	public void setC_BPartner_Memo (final @Nullable java.lang.String C_BPartner_Memo)
-	{
-		set_Value (COLUMNNAME_C_BPartner_Memo, C_BPartner_Memo);
-	}
-
-	@Override
-	public java.lang.String getC_BPartner_Memo() 
-	{
-		return get_ValueAsString(COLUMNNAME_C_BPartner_Memo);
 	}
 
 	@Override
@@ -534,6 +558,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setCity (final @Nullable java.lang.String City)
+	{
+		set_Value (COLUMNNAME_City, City);
+	}
+
+	@Override
+	public java.lang.String getCity() 
+	{
+		return get_ValueAsString(COLUMNNAME_City);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Job getC_Job()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Job_ID, org.compiere.model.I_C_Job.class);
@@ -558,60 +594,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_Job_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Job_ID);
-	}
-
-	@Override
-	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
-	{
-		if (C_PaymentTerm_ID < 1) 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
-	}
-
-	@Override
-	public int getC_PaymentTerm_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Region getC_Region()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class);
-	}
-
-	@Override
-	public void setC_Region(final org.compiere.model.I_C_Region C_Region)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class, C_Region);
-	}
-
-	@Override
-	public void setC_Region_ID (final int C_Region_ID)
-	{
-		if (C_Region_ID < 1) 
-			set_Value (COLUMNNAME_C_Region_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Region_ID, C_Region_ID);
-	}
-
-	@Override
-	public int getC_Region_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Region_ID);
-	}
-
-	@Override
-	public void setCity (final @Nullable java.lang.String City)
-	{
-		set_Value (COLUMNNAME_City, City);
-	}
-
-	@Override
-	public java.lang.String getCity() 
-	{
-		return get_ValueAsString(COLUMNNAME_City);
 	}
 
 	@Override
@@ -687,6 +669,21 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
+	}
+
+	@Override
 	public void setCreditLimit (final @Nullable BigDecimal CreditLimit)
 	{
 		set_Value (COLUMNNAME_CreditLimit, CreditLimit);
@@ -722,6 +719,33 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getCreditorId() 
 	{
 		return get_ValueAsInt(COLUMNNAME_CreditorId);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Region getC_Region()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class);
+	}
+
+	@Override
+	public void setC_Region(final org.compiere.model.I_C_Region C_Region)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class, C_Region);
+	}
+
+	@Override
+	public void setC_Region_ID (final int C_Region_ID)
+	{
+		if (C_Region_ID < 1) 
+			set_Value (COLUMNNAME_C_Region_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Region_ID, C_Region_ID);
+	}
+
+	@Override
+	public int getC_Region_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Region_ID);
 	}
 
 	@Override
@@ -884,6 +908,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setIBAN (final @Nullable java.lang.String IBAN)
+	{
+		set_Value (COLUMNNAME_IBAN, IBAN);
+	}
+
+	@Override
+	public java.lang.String getIBAN() 
+	{
+		return get_ValueAsString(COLUMNNAME_IBAN);
+	}
+
+	@Override
 	public void setI_BPartner_ID (final int I_BPartner_ID)
 	{
 		if (I_BPartner_ID < 1) 
@@ -944,18 +980,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getI_LineNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_I_LineNo);
-	}
-
-	@Override
-	public void setIBAN (final @Nullable java.lang.String IBAN)
-	{
-		set_Value (COLUMNNAME_IBAN, IBAN);
-	}
-
-	@Override
-	public java.lang.String getIBAN() 
-	{
-		return get_ValueAsString(COLUMNNAME_IBAN);
 	}
 
 	@Override
@@ -1163,6 +1187,54 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setlocation_bpartner_name (final @Nullable java.lang.String location_bpartner_name)
+	{
+		set_Value (COLUMNNAME_location_bpartner_name, location_bpartner_name);
+	}
+
+	@Override
+	public java.lang.String getlocation_bpartner_name() 
+	{
+		return get_ValueAsString(COLUMNNAME_location_bpartner_name);
+	}
+
+	@Override
+	public void setlocation_name (final @Nullable java.lang.String location_name)
+	{
+		set_Value (COLUMNNAME_location_name, location_name);
+	}
+
+	@Override
+	public java.lang.String getlocation_name() 
+	{
+		return get_ValueAsString(COLUMNNAME_location_name);
+	}
+
+	@Override
+	public void setMemo_Delivery (final @Nullable java.lang.String Memo_Delivery)
+	{
+		set_Value (COLUMNNAME_Memo_Delivery, Memo_Delivery);
+	}
+
+	@Override
+	public java.lang.String getMemo_Delivery() 
+	{
+		return get_ValueAsString(COLUMNNAME_Memo_Delivery);
+	}
+
+	@Override
+	public void setMemo_Invoicing (final @Nullable java.lang.String Memo_Invoicing)
+	{
+		set_Value (COLUMNNAME_Memo_Invoicing, Memo_Invoicing);
+	}
+
+	@Override
+	public java.lang.String getMemo_Invoicing() 
+	{
+		return get_ValueAsString(COLUMNNAME_Memo_Invoicing);
+	}
+
+	@Override
 	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
 		if (M_PricingSystem_ID < 1) 
@@ -1202,30 +1274,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getM_Shipper_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
-	}
-
-	@Override
-	public void setMemo_Delivery (final @Nullable java.lang.String Memo_Delivery)
-	{
-		set_Value (COLUMNNAME_Memo_Delivery, Memo_Delivery);
-	}
-
-	@Override
-	public java.lang.String getMemo_Delivery() 
-	{
-		return get_ValueAsString(COLUMNNAME_Memo_Delivery);
-	}
-
-	@Override
-	public void setMemo_Invoicing (final @Nullable java.lang.String Memo_Invoicing)
-	{
-		set_Value (COLUMNNAME_Memo_Invoicing, Memo_Invoicing);
-	}
-
-	@Override
-	public java.lang.String getMemo_Invoicing() 
-	{
-		return get_ValueAsString(COLUMNNAME_Memo_Invoicing);
 	}
 
 	@Override
@@ -1321,6 +1369,12 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULE_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULE_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -1354,6 +1408,12 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public static final String PAYMENTRULEPO_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULEPO_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULEPO_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULEPO_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULEPO_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRulePO (final @Nullable java.lang.String PaymentRulePO)
 	{
@@ -1415,6 +1475,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setPOBox (final @Nullable java.lang.String POBox)
+	{
+		set_Value (COLUMNNAME_POBox, POBox);
+	}
+
+	@Override
+	public java.lang.String getPOBox() 
+	{
+		return get_ValueAsString(COLUMNNAME_POBox);
+	}
+
+	@Override
 	public void setPO_PaymentTerm_ID (final int PO_PaymentTerm_ID)
 	{
 		if (PO_PaymentTerm_ID < 1) 
@@ -1454,18 +1526,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPO_PricingSystem_Value() 
 	{
 		return get_ValueAsString(COLUMNNAME_PO_PricingSystem_Value);
-	}
-
-	@Override
-	public void setPOBox (final @Nullable java.lang.String POBox)
-	{
-		set_Value (COLUMNNAME_POBox, POBox);
-	}
-
-	@Override
-	public java.lang.String getPOBox() 
-	{
-		return get_ValueAsString(COLUMNNAME_POBox);
 	}
 
 	@Override
@@ -1553,6 +1613,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setRegionName (final @Nullable java.lang.String RegionName)
+	{
+		set_Value (COLUMNNAME_RegionName, RegionName);
+	}
+
+	@Override
+	public java.lang.String getRegionName() 
+	{
+		return get_ValueAsString(COLUMNNAME_RegionName);
+	}
+
+	@Override
 	public org.compiere.model.I_R_InterestArea getR_InterestArea()
 	{
 		return get_ValueAsPO(COLUMNNAME_R_InterestArea_ID, org.compiere.model.I_R_InterestArea.class);
@@ -1577,18 +1649,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getR_InterestArea_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_R_InterestArea_ID);
-	}
-
-	@Override
-	public void setRegionName (final @Nullable java.lang.String RegionName)
-	{
-		set_Value (COLUMNNAME_RegionName, RegionName);
-	}
-
-	@Override
-	public java.lang.String getRegionName() 
-	{
-		return get_ValueAsString(COLUMNNAME_RegionName);
 	}
 
 	@Override
