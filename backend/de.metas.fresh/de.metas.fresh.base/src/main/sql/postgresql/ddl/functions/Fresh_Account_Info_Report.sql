@@ -401,7 +401,7 @@ BEGIN
                              NULL::numeric                               AS sourcebalance4,
                              (SELECT c.iso_code FROM c_currency c WHERE c.c_currency_id = (r.Beginning_SourceBalance).c_currency_id4)::text AS sourcebalance_currency4,
 
-                             (r.Beginning_SourceBalance).balance2        AS beginingbalance5,
+                             (r.Beginning_SourceBalance).balance5        AS beginingbalance5,
                              NULL::numeric                               AS sourcebalance5,
                              (SELECT c.iso_code FROM c_currency c WHERE c.c_currency_id = (r.Beginning_SourceBalance).c_currency_id5)::text AS sourcebalance_currency5
              FROM tmp_report r)
