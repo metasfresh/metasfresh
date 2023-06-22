@@ -30,6 +30,12 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+/**
+ * Glue-code that invokes the {@link ModularContractService} on certain order events.
+ * <p/>
+ * Note: even now where we don't yet implemented modular sales contracts, we need to act on sales orders, too.<br/>
+ * That's because the eventual sales (and their totalamounts) can play a role in the purchase contracts final settlement.
+ */
 @Component
 @Interceptor(I_C_Order.class)
 public class C_Order
@@ -44,30 +50,18 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	void afterComplete(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isSOTrx())
-		{
-			return; // no need to bother the service with sales orders unless we implemented modular sales order contracts
-		}
 		contractService.invokeWithModel(orderRecord, ModularContractService.ModelAction.COMPLETED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	void afterReverse(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isSOTrx())
-		{
-			return; // no need to bother the service with sales orders unless we implemented modular sales order contracts
-		}
 		contractService.invokeWithModel(orderRecord, ModularContractService.ModelAction.REVERSED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE })
 	void afterReactivate(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isSOTrx())
-		{
-			return; // no need to bother the service with sales orders unless we implemented modular sales order contracts
-		}
 		contractService.invokeWithModel(orderRecord, ModularContractService.ModelAction.REACTIVATED);
 	}
 }
