@@ -55,6 +55,8 @@ public class M_ShipmentSchedule_EnqueueSelection
 		implements IProcessPrecondition
 {
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Param(parameterName = "QuantityType", mandatory = true)
 	private M_ShipmentSchedule_QuantityTypeToUse quantityType;
 
@@ -72,11 +74,12 @@ public class M_ShipmentSchedule_EnqueueSelection
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean foundAtLeastOneUnprocessedSchedule = context.getSelectedModels(I_M_ShipmentSchedule.class).stream()
-				.filter(sched -> sched.isActive())
-				.filter(sched -> !sched.isProcessed())
-				.findAny()
-				.isPresent();
+		final boolean foundAtLeastOneUnprocessedSchedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.filter(context.getQueryFilter(I_M_ShipmentSchedule.class))
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.create()
+				.anyMatch();
 
 		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnprocessedSchedule);
 	}
@@ -105,8 +108,6 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 	private IQueryFilter<I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters()
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ICompositeQueryFilter<I_M_ShipmentSchedule> filters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class);
 
 		filters.addOnlyActiveRecordsFilter();
