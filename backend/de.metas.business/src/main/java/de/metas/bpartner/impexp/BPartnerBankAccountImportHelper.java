@@ -3,7 +3,7 @@ package de.metas.bpartner.impexp;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
-import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
@@ -17,7 +17,6 @@ import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 
 /*
  * #%L
@@ -71,6 +70,8 @@ import javax.validation.constraints.Null;
 		if (bankAccount != null)
 		{
 			bankAccount.setIBAN(importRecord.getIBAN());
+			CoalesceUtil.firstNotEmptyTrimmed(importRecord.getA_Name(), importRecord.getName(), importRecord.getSwiftCode(), "-");
+			bankAccount.setAccountNo(importRecord.getAccountNo());
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bankAccount);
 		}
@@ -79,7 +80,8 @@ import javax.validation.constraints.Null;
 			bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
 			bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 			bankAccount.setIBAN(importRecord.getIBAN());
-			bankAccount.setA_Name(importRecord.getSwiftCode());
+			CoalesceUtil.firstNotEmptyTrimmed(importRecord.getA_Name(), importRecord.getName(), importRecord.getSwiftCode(), "-");
+			bankAccount.setAccountNo(importRecord.getAccountNo());
 			bankAccount.setSwiftCode(importRecord.getSwiftCode());
 			bankAccount.setC_Currency_ID(currencyBL.getBaseCurrency(process.getCtx()).getId().getRepoId());
 			final BankId bankId = bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode()).orElse(null);
