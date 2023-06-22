@@ -70,7 +70,7 @@ import javax.annotation.Nullable;
 		{
 			bankAccount.setIBAN(importRecord.getIBAN());
 			final String accountName = importRecord.getA_Name();
-			bankAccount.setA_Name(Check.isEmpty(accountName) ? importRecord.getSwiftCode() : accountName);
+			bankAccount.setA_Name(Check.isEmpty(accountName) ? importRecord.getName() : accountName);
 			bankAccount.setAccountNo(importRecord.getAccountNo());
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bankAccount);
@@ -81,7 +81,7 @@ import javax.annotation.Nullable;
 			bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 			bankAccount.setIBAN(importRecord.getIBAN());
 			final String accountName = importRecord.getA_Name();
-			bankAccount.setA_Name(Check.isEmpty(accountName) ? importRecord.getSwiftCode() : accountName);
+			bankAccount.setA_Name(Check.isEmpty(accountName) ? importRecord.getName() : accountName);
 			bankAccount.setAccountNo(importRecord.getAccountNo());
 			bankAccount.setSwiftCode(importRecord.getSwiftCode());
 			bankAccount.setC_Currency_ID(currencyBL.getBaseCurrency(process.getCtx()).getId().getRepoId());
