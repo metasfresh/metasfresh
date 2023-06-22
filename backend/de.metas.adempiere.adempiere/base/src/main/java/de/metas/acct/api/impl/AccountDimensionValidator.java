@@ -268,6 +268,14 @@ import java.util.Set;
 		{
 			return accountDimension.getUserElementString7();
 		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementDate1))
+		{
+			return accountDimension.getUserElementDate1();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementDate2))
+		{
+			return accountDimension.getUserElementDate2();
+		}
 		else
 		{
 			// Unknown

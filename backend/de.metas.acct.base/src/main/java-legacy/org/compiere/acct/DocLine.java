@@ -21,10 +21,7 @@ import de.metas.acct.Account;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
-import de.metas.acct.accounts.TaxAcctType;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.bpartner.BPartnerId;
@@ -67,7 +64,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
@@ -896,7 +892,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	}
 
 	@Nullable
-	private LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
+	public LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
 	{
 		@NonNull final PO docLinePO = getPO();
 		final int index = docLinePO.get_ColumnIndex(columnName);
