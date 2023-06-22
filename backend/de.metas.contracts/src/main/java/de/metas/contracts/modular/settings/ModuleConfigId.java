@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.contracts
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.calendar.standard;
+package de.metas.contracts.modular.settings;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -28,38 +28,26 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-public class CalendarId implements RepoIdAware
+public class ModuleConfigId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static CalendarId ofRepoId(final int repoId)
+	public static ModuleConfigId ofRepoId(final int repoId)
 	{
-		return new CalendarId(repoId);
+		return new ModuleConfigId(repoId);
 	}
 
-	@Nullable
-	public static CalendarId ofRepoIdOrNull(final int repoId)
+	private ModuleConfigId(final int repoId)
 	{
-		return repoId > 0 ? new CalendarId(repoId) : null;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "moduleConfigId");
 	}
 
-	public static int toRepoId(@Nullable final CalendarId calendarId)
-	{
-		return calendarId != null ? calendarId.getRepoId() : -1;
-	}
-
-	private CalendarId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "calendarId");
-	}
-
+	@Override
 	@JsonValue
-	public int toJson()
+	public int getRepoId()
 	{
-		return getRepoId();
+		return repoId;
 	}
 }

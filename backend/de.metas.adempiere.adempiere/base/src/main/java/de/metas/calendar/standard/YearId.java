@@ -31,30 +31,30 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class CalendarId implements RepoIdAware
+public class YearId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static CalendarId ofRepoId(final int repoId)
+	public static YearId ofRepoId(final int repoId)
 	{
-		return new CalendarId(repoId);
+		return new YearId(repoId);
 	}
 
 	@Nullable
-	public static CalendarId ofRepoIdOrNull(final int repoId)
+	public static YearId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new CalendarId(repoId) : null;
+		return repoId > 0 ? new YearId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final CalendarId calendarId)
+	public static int toRepoId(@Nullable final YearId yearId)
 	{
-		return calendarId != null ? calendarId.getRepoId() : -1;
+		return yearId != null ? yearId.getRepoId() : -1;
 	}
 
-	private CalendarId(final int repoId)
+	private YearId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "calendarId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "yearId");
 	}
 
 	@JsonValue

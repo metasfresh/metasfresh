@@ -22,45 +22,22 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
-import de.metas.organization.OrgId;
-import de.metas.pricing.PricingSystemId;
+import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.product.ProductId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-
-import java.util.List;
 
 @Value
 @Builder
-public class ModularContractSettings
+public class ModuleConfig
 {
-	@NonNull
-	ModularContractSettingsId id;
+	int seqNo;
 
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
 	String name;
 
-	@NonNull
-	CalendarId calendarId;
+	String invoicingGroup;
 
-	@NonNull
-	YearId yearId;
-
-	@NonNull
-	PricingSystemId pricingSystemId;
-
-	/**
-	 * Basically, purchase order line with this product may start the contract-frenzy.
-	 */
-	@NonNull
 	ProductId productId;
 
-	@NonNull
-	List<ModuleConfig> moduleConfigs;
+	IModularContractTypeHandler handlerImpl;
 }
