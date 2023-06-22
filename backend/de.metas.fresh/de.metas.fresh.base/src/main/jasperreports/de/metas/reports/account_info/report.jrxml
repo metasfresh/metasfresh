@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="122"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="873"/>
@@ -65,6 +65,15 @@
 	<field name="a_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="a_value"/>
 	</field>
+	<field name="amtsourcedr" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="amtsourcedr"/>
+	</field>
+	<field name="amtsourcecr" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="amtsourcecr"/>
+	</field>
+	<field name="source_currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
+	</field>
 	<field name="amtacctdr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtacctdr"/>
 	</field>
@@ -115,6 +124,36 @@
 	</field>
 	<field name="tax_rate_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="tax_rate_name"/>
+	</field>
+	<field name="sourcebalance1" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance1"/>
+	</field>
+	<field name="sourcebalance_currency1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency1"/>
+	</field>
+	<field name="sourcebalance2" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance2"/>
+	</field>
+	<field name="sourcebalance_currency2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency2"/>
+	</field>
+	<field name="sourcebalance3" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance3"/>
+	</field>
+	<field name="sourcebalance_currency3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency3"/>
+	</field>
+	<field name="sourcebalance4" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance4"/>
+	</field>
+	<field name="sourcebalance_currency4" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency4"/>
+	</field>
+	<field name="sourcebalance5" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance5"/>
+	</field>
+	<field name="sourcebalance_currency5" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency5"/>
 	</field>
 	<group name="Count Group">
 		<groupExpression><![CDATA[""]]></groupExpression>
@@ -452,7 +491,7 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="9" splitType="Stretch">
+		<band height="40" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="7" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
@@ -474,11 +513,11 @@
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
+				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} :
 (
 	($F{description}.equals("Summe") ? $R{sum} :
 		($F{description}.equals("Summe in EUR") ? $R{sum_eur} : $F{description})
-	) 
+	)
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
@@ -544,8 +583,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{tax_rate_name}]]></textFieldExpression>
 			</textField>
-<<<<<<< HEAD
-=======
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="492" y="10" width="10" height="6" isRemoveLineWhenBlank="true" uuid="aff19034-f97d-4fd4-944a-bd480a056766">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency1}!=null]]></printWhenExpression>
@@ -735,7 +772,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{source_currency}+")"]]></textFieldExpression>
 			</textField>
->>>>>>> c394ff70a04 (Show begining balance in source currency in Accounting Info report (#15628))
 		</band>
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>
@@ -759,11 +795,11 @@
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
+				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} :
 (
 	($F{description}.equals("Summe") ? $R{sum} :
 		($F{description}.equals("Summe in EUR") ? $R{sum_eur} : $F{description})
-	) 
+	)
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
@@ -802,11 +838,11 @@
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
+				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} :
 (
 	($F{description}.equals("Summe") ? $R{sum} :
 		($F{description}.equals("Summe in EUR") ? $R{sum_eur} : $F{description})
-	) 
+	)
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
