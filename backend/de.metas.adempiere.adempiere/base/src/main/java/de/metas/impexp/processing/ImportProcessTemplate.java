@@ -553,28 +553,6 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		});
 	}
 
-	private int retrieveRunDataId()
-	{
-		final Properties ctx = Env.getCtx();
-		final String sql = buildSqlSelectRecordsToImport();
-
-		return IteratorUtils.asIterator(new AbstractPreparedStatementBlindIterator<ImportRecordType>()
-		{
-
-			@Override
-			protected PreparedStatement createPreparedStatement()
-			{
-				return DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			}
-
-			@Override
-			protected ImportRecordType fetch(final ResultSet rs) throws SQLException
-			{
-				return retrieveImportRecord(ctx, rs);
-			}
-		});
-	}
-
 	private void importGroup(
 			@NonNull final ImportGroup<ImportGroupKey, ImportRecordType> importGroup,
 			@NonNull final IMutable<Object> stateHolder)
