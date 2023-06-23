@@ -9,6 +9,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.impexp.ActualImportRecordsResult;
+import de.metas.impexp.DataImportRunId;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
@@ -702,8 +703,8 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 			return;
 		}
 
-		final DataImportConfigId dataImportConfigId = extractDataImportConfigIdOrNull();
-		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportConfigId, 0));
+		final DataImportRunId dataImportRunId = extractDataImporRunIdOrNull();
+		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportRunId));
 	}
 
 	private void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
@@ -731,11 +732,11 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return value.map(DataImportConfigId::ofRepoIdOrNull).orElse(null);
 	}
 
-	private DataImportConfigId extractDataImportConfigIdOrNull()
+	private DataImportRunId extractDataImporRunIdOrNull()
 	{
 		final String whereClause = getImportRecordsSelection().toSqlWhereClause();
-		final StringBuilder sql = new StringBuilder("SELECT c_dataimport_id FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='Y' ").append(whereClause);
+		final StringBuilder sql = new StringBuilder("SELECT C_DataImport_Run_id FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='Y' ").append(whereClause);
 
-		return DataImportConfigId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql.toString()));
+		return DataImportRunId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql.toString()));
 	}
 }
