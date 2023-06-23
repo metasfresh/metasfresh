@@ -795,6 +795,11 @@ public class DeliveryPlanningService
 				.ifPresent(invoiceCandidateHandlerBL::invalidateCandidatesFor);
 	}
 
+	public void invalidateInvoiceCandidatesFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		invalidateInvoiceCandidatesFor(deliveryPlanningRepository.getById(deliveryPlanningId));
+	}
+
 	private void validateDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		if (isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter))
