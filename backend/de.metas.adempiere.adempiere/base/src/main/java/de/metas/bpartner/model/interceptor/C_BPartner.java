@@ -28,6 +28,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
@@ -244,6 +245,12 @@ public class C_BPartner
 																						.build());
 	}
 
-
-
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setIsManuallyCreated(@NonNull final org.compiere.model.I_C_BPartner record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			record.setIsManuallyCreated(true);
+		}
+	}
 }
