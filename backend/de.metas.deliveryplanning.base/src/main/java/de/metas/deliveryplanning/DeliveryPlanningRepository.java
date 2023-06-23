@@ -52,6 +52,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -61,7 +62,6 @@ import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -603,22 +603,6 @@ public class DeliveryPlanningRepository
 				.anyMatch();
 	}
 
-	@Nullable
-	public Timestamp getMinLoadingDateFromCompletedDeliveryInstructions(@NonNull final OrderLineId orderLineId)
-	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
-				.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.addNotNull(I_M_ShipperTransportation.COLUMNNAME_LoadingDate)
-				.create()
-				.listDistinct(I_M_ShipperTransportation.COLUMNNAME_LoadingDate, Timestamp.class)
-				.stream()
-				.min(Timestamp::compareTo)
-				.orElse(null);
-	}
-
 	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
@@ -627,4 +611,20 @@ public class DeliveryPlanningRepository
 		save(deliveryPlanning);
 	}
 
+	@NonNull
+	public Optional<Timestamp> getMinActualLoadingDateFromPlanningsWithCompletedInstructions(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate)
+				.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.andCollect(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
+				.orderBy(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate)
+				.setLimit(QueryLimit.ONE)
+				.create()
+				.firstOnlyOptional()
+				.map(I_M_Delivery_Planning::getActualLoadingDate);
+	}
 }
