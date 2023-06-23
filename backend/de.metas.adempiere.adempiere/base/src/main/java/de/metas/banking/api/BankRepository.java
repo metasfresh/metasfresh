@@ -22,7 +22,6 @@
 
 package de.metas.banking.api;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -163,14 +162,12 @@ public class BankRepository
 	}
 
 	@NonNull
-	public Set<BankId> retrieveBankIdsByName(final String bankName)
+	public Set<BankId> retrieveBankIdsByName(@NonNull final String bankName)
 	{
 		return queryBL.createQueryBuilder(I_C_Bank.class)
 				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, false)
 				.addOnlyActiveRecordsFilter()
-				.iterateAndStream()
-				.map(I_C_Bank::getC_Bank_ID)
-				.map(BankId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.create()
+				.listIds(BankId::ofRepoId);
 	}
 }

@@ -49,8 +49,6 @@ public class BankAccountQuery
 	InvoiceId invoiceId;
 	boolean containsQRIBAN;
 	@Nullable
-	String description;
-	@Nullable
 	BankId bankId;
 	@Nullable
 	String iban;
@@ -63,7 +61,6 @@ public class BankAccountQuery
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final InvoiceId invoiceId,
 			final Boolean containsQRIBAN,
-			@Nullable final String description,
 			@Nullable final BankId bankId,
 			@Nullable final String iban,
 			@Nullable final String qrIban)
@@ -74,12 +71,11 @@ public class BankAccountQuery
 		this.bPartnerId = bPartnerId;
 		this.invoiceId = invoiceId;
 		this.containsQRIBAN = CoalesceUtil.coalesce(containsQRIBAN, false);
-		this.description = description;
 		this.bankId = bankId;
 		this.iban = iban;
 		this.qrIban = qrIban;
 
-		assume(bPartnerId != null || invoiceId != null || Check.isNotBlank(description) || bankId != null || Check.isNotBlank(iban) || Check.isNotBlank(qrIban),
-			   "At least one of the parameters 'bPartnerId, 'invoiceId', 'description', 'BankId', 'iban', 'qrIban' needs to be non-null/non-empty");
+		assume(bPartnerId != null || invoiceId != null || bankId != null || Check.isNotBlank(iban) || Check.isNotBlank(qrIban),
+			   "At least one of the parameters 'bPartnerId, 'invoiceId', 'BankId', 'iban', 'qrIban' needs to be non-null/non-empty");
 	}
 }

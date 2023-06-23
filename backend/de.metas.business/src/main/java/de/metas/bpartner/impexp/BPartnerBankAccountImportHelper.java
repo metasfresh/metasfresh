@@ -3,7 +3,6 @@ package de.metas.bpartner.impexp;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
-import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.service.BankAccountQuery;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.currency.CurrencyCode;
@@ -22,7 +21,6 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -71,6 +69,7 @@ import java.util.Set;
 	public void importRecord(final I_I_BPartner importRecord)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(importRecord.getC_BPartner_ID());
+		BankId bankId = null;
 
 		I_C_BP_BankAccount bankAccount = BankAccountId.optionalOfRepoId(importRecord.getC_BP_BankAccount_ID())
 				.map(bankAccountId -> InterfaceWrapperHelper.load(bankAccountId, I_C_BP_BankAccount.class))
@@ -89,7 +88,7 @@ import java.util.Set;
 			bankAccount.setA_Name(importRecord.getSwiftCode());
 			bankAccount.setSwiftCode(importRecord.getSwiftCode());
 			bankAccount.setC_Currency_ID(currencyBL.getBaseCurrency(process.getCtx()).getId().getRepoId());
-			final BankId bankId = bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode()).orElse(null);
+			bankId = bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode()).orElse(null);
 			if (bankId != null)
 			{
 				bankAccount.setC_Bank_ID(bankId.getRepoId());
@@ -102,7 +101,7 @@ import java.util.Set;
 		}
 		else if (Check.isNotBlank(importRecord.getBankDetails()))
 		{
-			bankAccount = initializeBankAccountFromBankDetails(importRecord.getBankDetails());
+			bankId = resolveBankIdFromBankDetails(importRecord.getBankDetails()).orElse(null);
 		}
 
 		if (Check.isNotBlank(importRecord.getIBAN()))
@@ -110,7 +109,8 @@ import java.util.Set;
 			if (bankAccount == null)
 			{
 				final BankAccountQuery queryWithIban = BankAccountQuery.builder().iban(importRecord.getIBAN()).build();
-				bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithIban));
+				bankAccount = bankAccountDAO.getSingleBPBankAccount(queryWithIban)
+						.orElseGet(bankAccountDAO::initializeBPBankAccount);
 			}
 
 			bankAccount.setIBAN(importRecord.getIBAN());
@@ -121,7 +121,8 @@ import java.util.Set;
 			if (bankAccount == null)
 			{
 				final BankAccountQuery queryWithQRIban = BankAccountQuery.builder().qrIban(importRecord.getQR_IBAN()).build();
-				bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithQRIban));
+				bankAccount = bankAccountDAO.getSingleBPBankAccount(queryWithQRIban)
+						.orElseGet(bankAccountDAO::initializeBPBankAccount);
 			}
 
 			bankAccount.setQR_IBAN(importRecord.getQR_IBAN());
@@ -132,53 +133,17 @@ import java.util.Set;
 			return;
 		}
 
-		if (bankAccount.getC_Currency_ID() <= 0 && Check.isBlank(importRecord.getISO_Code()))
-		{
-			throw new AdempiereException("Missing mandatory value for currency on business partner bank account!");
-		}
+		importCurrencyCode(bankAccount, importRecord);
+		importBankDetails(bankAccount, importRecord);
 
-		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(importRecord.getISO_Code());
-		final CurrencyId currencyId = currencyBL.getByCurrencyCode(currencyCode).getId();
-		bankAccount.setC_Currency_ID(currencyId.getRepoId());
-
+		bankAccount.setC_Bank_ID(BankId.toRepoId(bankId));
 		bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 		bankAccount.setAD_Org_ID(importRecord.getAD_Org_ID());
 
-		InterfaceWrapperHelper.saveRecord(bankAccount);
+		ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
+		InterfaceWrapperHelper.save(bankAccount);
 
 		importRecord.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
-	}
-
-	@NonNull
-	private I_C_BP_BankAccount initializeBankAccountFromBankDetails(@NonNull final String bankDetails)
-	{
-		final I_C_BP_BankAccount bankAccount;
-
-		final Optional<BankId> bankIdOpt = resolveBankIdFromBankDetails(bankDetails);
-
-		if (bankIdOpt.isPresent())
-		{
-			final BankAccountQuery queryWithBankId = BankAccountQuery.builder().description(bankDetails).build();
-			bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithBankId));
-			bankAccount.setC_Bank_ID(BankId.optionalToRepoId(bankIdOpt));
-		}
-		else
-		{
-			final BankAccountQuery queryWithBankDetails = BankAccountQuery.builder().description(bankDetails).build();
-			bankAccount = handleBPBankAccountCollection(bankAccountDAO.getBpartnerBankAccount(queryWithBankDetails));
-
-			if (Check.isBlank(bankAccount.getName()))
-			{
-				bankAccount.setName(bankDetails);
-			}
-
-			if (Check.isBlank(bankAccount.getDescription()))
-			{
-				bankAccount.setDescription(bankDetails);
-			}
-		}
-
-		return bankAccount;
 	}
 
 	@NonNull
@@ -189,12 +154,33 @@ import java.util.Set;
 		return Optional.ofNullable(CollectionUtils.singleElementOrNull(bankIdCollection));
 	}
 
-	@NonNull
-	private I_C_BP_BankAccount handleBPBankAccountCollection(final List<BPartnerBankAccount> bpBankAccountCollection)
+	private void importCurrencyCode(@NonNull final I_C_BP_BankAccount bpBankAccount, @NonNull final I_I_BPartner importRecord)
 	{
-		return Optional.ofNullable(CollectionUtils.singleElementOrNull(bpBankAccountCollection))
-				.map(BPartnerBankAccount::getId)
-				.map(id -> InterfaceWrapperHelper.load(id, I_C_BP_BankAccount.class))
-				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class));
+		if (bpBankAccount.getC_Currency_ID() <= 0 && Check.isBlank(importRecord.getISO_Code()))
+		{
+			throw new AdempiereException("Missing mandatory value for currency on business partner bank account!");
+		}
+
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(importRecord.getISO_Code());
+		final CurrencyId currencyId = currencyBL.getByCurrencyCode(currencyCode).getId();
+		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
+	}
+
+	private void importBankDetails(@NonNull final I_C_BP_BankAccount bpBankAccount, @NonNull final I_I_BPartner importRecord)
+	{
+		if (Check.isBlank(importRecord.getBankDetails()))
+		{
+			return;
+		}
+
+		if (Check.isBlank(bpBankAccount.getName()))
+		{
+			bpBankAccount.setName(importRecord.getBankDetails());
+		}
+
+		if (Check.isBlank(bpBankAccount.getDescription()))
+		{
+			bpBankAccount.setDescription(importRecord.getBankDetails());
+		}
 	}
 }

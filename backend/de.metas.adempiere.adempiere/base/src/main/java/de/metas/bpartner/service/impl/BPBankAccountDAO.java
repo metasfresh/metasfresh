@@ -35,6 +35,7 @@ import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,6 +43,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 
@@ -142,21 +144,17 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 							.create());
 		}
 
-		if (Check.isNotBlank(query.getDescription()))
-		{
-			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_Description, query.getDescription(), true);
-		}
 		if (query.getBankId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, query.getBankId());
 		}
-		if(Check.isNotBlank(query.getIban()))
+		if (Check.isNotBlank(query.getIban()))
 		{
-			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, query.getIban(), false);
+			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, query.getIban(), true);
 		}
-		if(Check.isNotBlank(query.getQrIban()))
+		if (Check.isNotBlank(query.getQrIban()))
 		{
-			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, query.getQrIban(), false);
+			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, query.getQrIban(), true);
 		}
 
 		final Collection<BPBankAcctUse> bankAcctUses = query.getBpBankAcctUses();
@@ -173,6 +171,24 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.stream()
 				.map(this::of)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_C_BP_BankAccount> getSingleBPBankAccount(@NonNull final BankAccountQuery query)
+	{
+		final List<BPartnerBankAccount> bpBankAccountCollection = getBpartnerBankAccount(query);
+
+		return Optional.ofNullable(CollectionUtils.singleElementOrNull(bpBankAccountCollection))
+				.map(BPartnerBankAccount::getId)
+				.map(id -> InterfaceWrapperHelper.load(id, I_C_BP_BankAccount.class));
+	}
+
+	@Override
+	@NonNull
+	public I_C_BP_BankAccount initializeBPBankAccount()
+	{
+		return InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
 	}
 
 	private BPartnerBankAccount of(@NonNull final I_C_BP_BankAccount record)
