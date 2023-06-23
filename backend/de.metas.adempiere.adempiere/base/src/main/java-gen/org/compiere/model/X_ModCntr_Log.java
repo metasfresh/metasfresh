@@ -5,23 +5,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for Contract_Module_Log
+/** Generated Model for ModCntr_Log
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_Contract_Module_Log extends org.compiere.model.PO implements I_Contract_Module_Log, org.compiere.model.I_Persistent 
+public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 991883089L;
+	private static final long serialVersionUID = -1537804477L;
 
     /** Standard Constructor */
-    public X_Contract_Module_Log (final Properties ctx, final int Contract_Module_Log_ID, @Nullable final String trxName)
+    public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
     {
-      super (ctx, Contract_Module_Log_ID, trxName);
+      super (ctx, ModCntr_Log_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_Contract_Module_Log (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_ModCntr_Log (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -95,48 +95,6 @@ public class X_Contract_Module_Log extends org.compiere.model.PO implements I_Co
 	}
 
 	@Override
-	public void setContract_Module_Log_ID (final int Contract_Module_Log_ID)
-	{
-		if (Contract_Module_Log_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Contract_Module_Log_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Contract_Module_Log_ID, Contract_Module_Log_ID);
-	}
-
-	@Override
-	public int getContract_Module_Log_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Contract_Module_Log_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_Contract_Module_Type getContract_Module_Type()
-	{
-		return get_ValueAsPO(COLUMNNAME_Contract_Module_Type_ID, org.compiere.model.I_Contract_Module_Type.class);
-	}
-
-	@Override
-	public void setContract_Module_Type(final org.compiere.model.I_Contract_Module_Type Contract_Module_Type)
-	{
-		set_ValueFromPO(COLUMNNAME_Contract_Module_Type_ID, org.compiere.model.I_Contract_Module_Type.class, Contract_Module_Type);
-	}
-
-	@Override
-	public void setContract_Module_Type_ID (final int Contract_Module_Type_ID)
-	{
-		if (Contract_Module_Type_ID < 1) 
-			set_Value (COLUMNNAME_Contract_Module_Type_ID, null);
-		else 
-			set_Value (COLUMNNAME_Contract_Module_Type_ID, Contract_Module_Type_ID);
-	}
-
-	@Override
-	public int getContract_Module_Type_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Contract_Module_Type_ID);
-	}
-
-	@Override
 	public void setDateTrx (final @Nullable java.sql.Timestamp DateTrx)
 	{
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
@@ -170,6 +128,48 @@ public class X_Contract_Module_Log extends org.compiere.model.PO implements I_Co
 	public boolean isSOTrx() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
+	public void setModCntr_Log_ID (final int ModCntr_Log_ID)
+	{
+		if (ModCntr_Log_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Log_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Log_ID, ModCntr_Log_ID);
+	}
+
+	@Override
+	public int getModCntr_Log_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Log_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_ModCntr_Type getModCntr_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, org.compiere.model.I_ModCntr_Type.class);
+	}
+
+	@Override
+	public void setModCntr_Type(final org.compiere.model.I_ModCntr_Type ModCntr_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, org.compiere.model.I_ModCntr_Type.class, ModCntr_Type);
+	}
+
+	@Override
+	public void setModCntr_Type_ID (final int ModCntr_Type_ID)
+	{
+		if (ModCntr_Type_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_Type_ID, ModCntr_Type_ID);
+	}
+
+	@Override
+	public int getModCntr_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Type_ID);
 	}
 
 	@Override

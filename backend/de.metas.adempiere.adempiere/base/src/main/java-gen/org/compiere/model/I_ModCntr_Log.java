@@ -3,14 +3,14 @@ package org.compiere.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for Contract_Module_Log
+/** Generated Interface for ModCntr_Log
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_Contract_Module_Log 
+public interface I_ModCntr_Log 
 {
 
-	String Table_Name = "Contract_Module_Log";
+	String Table_Name = "ModCntr_Log";
 
 //	/** AD_Table_ID=542338 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -90,7 +90,7 @@ public interface I_Contract_Module_Log
 	 */
 	int getC_Flatrate_Term_ID();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_Contract_Module_Log.class, "C_Flatrate_Term_ID", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_ModCntr_Log.class, "C_Flatrate_Term_ID", null);
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
@@ -111,7 +111,7 @@ public interface I_Contract_Module_Log
 	 */
 	int getC_Invoice_Candidate_ID();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_Contract_Module_Log.class, "C_Invoice_Candidate_ID", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_ModCntr_Log.class, "C_Invoice_Candidate_ID", null);
 	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
 
 	/**
@@ -135,52 +135,6 @@ public interface I_Contract_Module_Log
 	String COLUMNNAME_CollectionPoint_BPartner_ID = "CollectionPoint_BPartner_ID";
 
 	/**
-	 * Set Contract Module Log.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setContract_Module_Log_ID (int Contract_Module_Log_ID);
-
-	/**
-	 * Get Contract Module Log.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getContract_Module_Log_ID();
-
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_Contract_Module_Log_ID = new ModelColumn<>(I_Contract_Module_Log.class, "Contract_Module_Log_ID", null);
-	String COLUMNNAME_Contract_Module_Log_ID = "Contract_Module_Log_ID";
-
-	/**
-	 * Set Contract Module Type.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setContract_Module_Type_ID (int Contract_Module_Type_ID);
-
-	/**
-	 * Get Contract Module Type.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getContract_Module_Type_ID();
-
-	@Nullable org.compiere.model.I_Contract_Module_Type getContract_Module_Type();
-
-	void setContract_Module_Type(@Nullable org.compiere.model.I_Contract_Module_Type Contract_Module_Type);
-
-	ModelColumn<I_Contract_Module_Log, org.compiere.model.I_Contract_Module_Type> COLUMN_Contract_Module_Type_ID = new ModelColumn<>(I_Contract_Module_Log.class, "Contract_Module_Type_ID", org.compiere.model.I_Contract_Module_Type.class);
-	String COLUMNNAME_Contract_Module_Type_ID = "Contract_Module_Type_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -190,7 +144,7 @@ public interface I_Contract_Module_Log
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_Created = new ModelColumn<>(I_Contract_Module_Log.class, "Created", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_Created = new ModelColumn<>(I_ModCntr_Log.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -225,7 +179,7 @@ public interface I_Contract_Module_Log
 	 */
 	@Nullable java.sql.Timestamp getDateTrx();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_Contract_Module_Log.class, "DateTrx", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_ModCntr_Log.class, "DateTrx", null);
 	String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
@@ -246,7 +200,7 @@ public interface I_Contract_Module_Log
 	 */
 	@Nullable java.lang.String getDescription();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_Description = new ModelColumn<>(I_Contract_Module_Log.class, "Description", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Log.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
 
 	/**
@@ -269,7 +223,7 @@ public interface I_Contract_Module_Log
 	 */
 	boolean isActive();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_IsActive = new ModelColumn<>(I_Contract_Module_Log.class, "IsActive", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_IsActive = new ModelColumn<>(I_ModCntr_Log.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
@@ -292,8 +246,54 @@ public interface I_Contract_Module_Log
 	 */
 	boolean isSOTrx();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_Contract_Module_Log.class, "IsSOTrx", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Log.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Contract Module Log.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Log_ID (int ModCntr_Log_ID);
+
+	/**
+	 * Get Contract Module Log.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Log_ID();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Log_ID", null);
+	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
+
+	/**
+	 * Set Contract Module Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Type_ID (int ModCntr_Type_ID);
+
+	/**
+	 * Get Contract Module Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Type_ID();
+
+	@Nullable org.compiere.model.I_ModCntr_Type getModCntr_Type();
+
+	void setModCntr_Type(@Nullable org.compiere.model.I_ModCntr_Type ModCntr_Type);
+
+	ModelColumn<I_ModCntr_Log, org.compiere.model.I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Type_ID", org.compiere.model.I_ModCntr_Type.class);
+	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
 
 	/**
 	 * Set Product.
@@ -357,7 +357,7 @@ public interface I_Contract_Module_Log
 	 */
 	boolean isProcessed();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_Processed = new ModelColumn<>(I_Contract_Module_Log.class, "Processed", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_Processed = new ModelColumn<>(I_ModCntr_Log.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
@@ -400,7 +400,7 @@ public interface I_Contract_Module_Log
 	 */
 	int getRecord_ID();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_Contract_Module_Log.class, "Record_ID", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_ModCntr_Log.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
@@ -413,7 +413,7 @@ public interface I_Contract_Module_Log
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_Contract_Module_Log, Object> COLUMN_Updated = new ModelColumn<>(I_Contract_Module_Log.class, "Updated", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_Updated = new ModelColumn<>(I_ModCntr_Log.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
