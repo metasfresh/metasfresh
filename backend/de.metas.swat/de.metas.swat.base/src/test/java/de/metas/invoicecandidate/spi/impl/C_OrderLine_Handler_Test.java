@@ -97,6 +97,13 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	@Before
 	public void init()
 	{
+<<<<<<< HEAD
+=======
+		AdempiereTestHelper.get().forceStaticInit();
+
+		initStuff();
+
+>>>>>>> 64c2f9c1194 (fix tests (#15685))
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
