@@ -5,23 +5,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for Contract_Module_Type
+/** Generated Model for ModCntr_Type
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_Contract_Module_Type extends org.compiere.model.PO implements I_Contract_Module_Type, org.compiere.model.I_Persistent 
+public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1352901181L;
+	private static final long serialVersionUID = -1913315153L;
 
     /** Standard Constructor */
-    public X_Contract_Module_Type (final Properties ctx, final int Contract_Module_Type_ID, @Nullable final String trxName)
+    public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
     {
-      super (ctx, Contract_Module_Type_ID, trxName);
+      super (ctx, ModCntr_Type_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_Contract_Module_Type (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_ModCntr_Type (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -47,21 +47,6 @@ public class X_Contract_Module_Type extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public void setContract_Module_Type_ID (final int Contract_Module_Type_ID)
-	{
-		if (Contract_Module_Type_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Contract_Module_Type_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Contract_Module_Type_ID, Contract_Module_Type_ID);
-	}
-
-	@Override
-	public int getContract_Module_Type_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Contract_Module_Type_ID);
-	}
-
-	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -71,6 +56,21 @@ public class X_Contract_Module_Type extends org.compiere.model.PO implements I_C
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setModCntr_Type_ID (final int ModCntr_Type_ID)
+	{
+		if (ModCntr_Type_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Type_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Type_ID, ModCntr_Type_ID);
+	}
+
+	@Override
+	public int getModCntr_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Type_ID);
 	}
 
 	@Override
