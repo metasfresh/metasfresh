@@ -30,6 +30,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+
 @Component
 @RequiredArgsConstructor
 public class DeliveryPlanningICHandlerExtension implements OrderLineHandlerExtension
@@ -40,7 +42,9 @@ public class DeliveryPlanningICHandlerExtension implements OrderLineHandlerExten
 	@Override
 	public void setDeliveryRelatedData(@NonNull final OrderLineId orderLineId, @NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		deliveryPlanningService.getMinActualLoadingDateFromPlanningsWithCompletedInstructions(orderLineId)
-				.ifPresent(invoiceCandidate::setActualLoadingDate);
+		final Timestamp actualLoadingDate = deliveryPlanningService.getMinActualLoadingDateFromPlanningsWithCompletedInstructions(orderLineId)
+				.orElse(null);
+
+		invoiceCandidate.setActualLoadingDate(actualLoadingDate);
 	}
 }
