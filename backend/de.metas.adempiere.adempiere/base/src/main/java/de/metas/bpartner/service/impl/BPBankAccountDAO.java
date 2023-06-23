@@ -33,7 +33,6 @@ import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BankAccountQuery;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.money.CurrencyId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -149,19 +148,6 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 							.addOnlyActiveRecordsFilter()
 							.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getInvoiceId())
 							.create());
-		}
-
-		if (query.getBankId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, query.getBankId());
-		}
-		if (Check.isNotBlank(query.getIban()))
-		{
-			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, query.getIban(), true);
-		}
-		if (Check.isNotBlank(query.getQrIban()))
-		{
-			queryBuilder.addStringLikeFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, query.getQrIban(), true);
 		}
 
 		final Collection<BPBankAcctUse> bankAcctUses = query.getBpBankAcctUses();

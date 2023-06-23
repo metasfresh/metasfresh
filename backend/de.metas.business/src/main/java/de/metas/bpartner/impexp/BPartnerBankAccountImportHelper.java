@@ -3,6 +3,7 @@ package de.metas.bpartner.impexp;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
+import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
@@ -72,12 +73,6 @@ import java.util.Set;
 		if (bankAccount != null)
 		{
 			bankAccount.setIBAN(importRecord.getIBAN());
-
-			final Optional<CurrencyId> currencyIdOpt = resolveCurrencyId(importRecord);
-			if (currencyIdOpt.isPresent())
-			{
-				bankAccount.setC_Currency_ID(currencyIdOpt.get().getRepoId());
-			}
 
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bankAccount);
@@ -155,12 +150,9 @@ import java.util.Set;
 	@NonNull
 	private Optional<CurrencyId> resolveCurrencyId(@NonNull final I_I_BPartner importRecord)
 	{
-		if (Check.isNotBlank(importRecord.getISO_Code()))
-		{
-			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(importRecord.getISO_Code());
-			return Optional.of(currencyBL.getByCurrencyCode(currencyCode).getId());
-		}
-
-		return Optional.empty();
+		return Optional.ofNullable(importRecord.getISO_Code())
+				.map(CurrencyCode::ofThreeLetterCode)
+				.map(currencyBL::getByCurrencyCode)
+				.map(Currency::getId);
 	}
 }
