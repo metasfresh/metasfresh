@@ -1,5 +1,6 @@
 package de.metas.bpartner.impexp;
 
+import de.metas.common.util.CoalesceUtil;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
@@ -107,7 +108,7 @@ import lombok.NonNull;
 
 		if (bpartnerLocation != null)
 		{
-			updateExistingBPartnerLocation(bpartner, bpartnerLocation, importRecord);
+			updateBPartnerLocation(bpartner, bpartnerLocation, importRecord);
 		}
 
 		return bpartnerLocation;
@@ -138,7 +139,7 @@ import lombok.NonNull;
 			bpartnerLocation.setAD_Org_ID(bpartner.getOrgId());
 			bpartnerLocation.setC_BPartner_ID(bpartner.getIdOrNull().getRepoId());
 
-			updateExistingBPartnerLocation(bpartner, bpartnerLocation, importRecord);
+			updateBPartnerLocation(bpartner, bpartnerLocation, importRecord);
 
 			return bpartnerLocation;
 		}
@@ -148,7 +149,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private void updateExistingBPartnerLocation(
+	private void updateBPartnerLocation(
 			@NonNull final BPartner bpartner,
 			@NonNull final I_C_BPartner_Location bpartnerLocation,
 			@NonNull final I_I_BPartner from)
@@ -185,8 +186,7 @@ import lombok.NonNull;
 
 		bpartnerLocation.setC_Location_ID(locationId.getRepoId());
 		bpartnerLocation.setBPartnerName(importRecord.getlocation_bpartner_name());
-		final String name = importRecord.getlocation_name();
-		bpartnerLocation.setName(Check.isEmpty(name) ? "" : name);
+		bpartnerLocation.setName(CoalesceUtil.firstNotBlank(importRecord.getlocation_name(),bpartnerLocation.getName(),"."));
 	}
 
 	private static void updateBillToAndShipToFlags(
