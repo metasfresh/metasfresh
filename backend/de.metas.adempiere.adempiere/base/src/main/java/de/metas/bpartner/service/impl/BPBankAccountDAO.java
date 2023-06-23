@@ -125,6 +125,15 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	@Override
 	public List<BPartnerBankAccount> getBpartnerBankAccount(final BankAccountQuery query)
 	{
+		return getBpartnerBankAccountRecords(query)
+				.stream()
+				.map(this::of)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private List<I_C_BP_BankAccount> getBpartnerBankAccountRecords(final BankAccountQuery query)
+	{
 		final IQueryBuilder<I_C_BP_BankAccount> queryBuilder = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
 				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_IsDefault); // DESC (Y, then N)
@@ -140,6 +149,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 							.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getInvoiceId())
 							.create());
 		}
+
 		final Collection<BPBankAcctUse> bankAcctUses = query.getBpBankAcctUses();
 		if (bankAcctUses != null && !bankAcctUses.isEmpty())
 		{
@@ -152,10 +162,10 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		queryBuilder.orderBy(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID);
 		return queryBuilder.create()
 				.stream()
-				.map(this::of)
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	private BPartnerBankAccount of(@NonNull final I_C_BP_BankAccount record)
 	{
 		return BPartnerBankAccount.builder()

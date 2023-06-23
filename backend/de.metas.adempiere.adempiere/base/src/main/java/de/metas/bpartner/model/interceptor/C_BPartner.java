@@ -27,6 +27,11 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
+<<<<<<< HEAD
+=======
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
+>>>>>>> 0039a58242f (New Flag in c_bpartner `isManual` and Import Format for Business Partner (#15656))
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
@@ -242,6 +247,12 @@ public class C_BPartner
 																						.build());
 	}
 
-
-
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setIsManuallyCreated(@NonNull final org.compiere.model.I_C_BPartner record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			record.setIsManuallyCreated(true);
+		}
+	}
 }
