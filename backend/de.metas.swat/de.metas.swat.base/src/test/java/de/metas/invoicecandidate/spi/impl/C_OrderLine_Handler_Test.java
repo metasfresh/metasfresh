@@ -33,6 +33,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.Assertions;
@@ -97,6 +98,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	@Before
 	public void init()
 	{
+		AdempiereTestHelper.get().forceStaticInit();
+
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");

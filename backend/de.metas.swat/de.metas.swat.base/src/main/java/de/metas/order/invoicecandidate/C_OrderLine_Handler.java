@@ -95,7 +95,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+<<<<<<< HEAD
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+=======
+>>>>>>> b3c4627e380 (fix tests (#15683))
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -460,6 +463,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		setDeliveredDataFromFirstInOut(icRecord, firstInOut);
+<<<<<<< HEAD
+=======
+
+		final Collection<OrderLineHandlerExtension> handlerExtensions = SpringContextHolder.instance
+				.getBeansOfType(OrderLineHandlerExtension.class); //FIXME
+
+		handlerExtensions.forEach(extension -> extension.setDeliveryRelatedData(OrderLineId.ofRepoId(icRecord.getC_OrderLine_ID()),
+																				icRecord));
+>>>>>>> b3c4627e380 (fix tests (#15683))
 	}
 
 	@Override
