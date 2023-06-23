@@ -52,4 +52,10 @@ public class M_Delivery_Planning
 			deliveryPlanningService.validateDeletion(deliveryPlanning);
 		}
 	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate)
+	public void onActualLoadingDateChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryPlanning);
+	}
 }
