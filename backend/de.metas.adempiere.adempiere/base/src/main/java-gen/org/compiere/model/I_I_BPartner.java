@@ -370,6 +370,27 @@ public interface I_I_BPartner
 	String COLUMNNAME_AggregationName = "AggregationName";
 
 	/**
+	 * Set Bank Details.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBankDetails (@Nullable java.lang.String BankDetails);
+
+	/**
+	 * Get Bank Details.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBankDetails();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_BankDetails = new ModelColumn<>(I_I_BPartner.class, "BankDetails", null);
+	String COLUMNNAME_BankDetails = "BankDetails";
+
+	/**
 	 * Set Geburtstag.
 	 * Birthday or Anniversary day
 	 *
@@ -1706,6 +1727,50 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
+	 * Set Manually created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManuallyCreated (boolean IsManuallyCreated);
+
+	/**
+	 * Get Manually created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManuallyCreated();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsManuallyCreated = new ModelColumn<>(I_I_BPartner.class, "IsManuallyCreated", null);
+	String COLUMNNAME_IsManuallyCreated = "IsManuallyCreated";
+
+	/**
+	 * Set ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setISO_Code (@Nullable java.lang.String ISO_Code);
+
+	/**
+	 * Get ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getISO_Code();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_ISO_Code = new ModelColumn<>(I_I_BPartner.class, "ISO_Code", null);
+	String COLUMNNAME_ISO_Code = "ISO_Code";
+
+	/**
 	 * Set SEPA Signed.
 	 *
 	 * <br>Type: YesNo
@@ -2455,6 +2520,29 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_Processing = new ModelColumn<>(I_I_BPartner.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set QR IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQR_IBAN (@Nullable java.lang.String QR_IBAN);
+
+	/**
+	 * Get QR IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQR_IBAN();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_QR_IBAN = new ModelColumn<>(I_I_BPartner.class, "QR_IBAN", null);
+	String COLUMNNAME_QR_IBAN = "QR_IBAN";
 
 	/**
 	 * Set Qualification .

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 539919959L;
+	private static final long serialVersionUID = 1546991868L;
 
     /** Standard Constructor */
     public X_I_BPartner (final Properties ctx, final int I_BPartner_ID, @Nullable final String trxName)
@@ -222,6 +222,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getAggregationName() 
 	{
 		return get_ValueAsString(COLUMNNAME_AggregationName);
+	}
+
+	@Override
+	public void setBankDetails (final @Nullable java.lang.String BankDetails)
+	{
+		set_Value (COLUMNNAME_BankDetails, BankDetails);
+	}
+
+	@Override
+	public java.lang.String getBankDetails() 
+	{
+		return get_ValueAsString(COLUMNNAME_BankDetails);
 	}
 
 	@Override
@@ -1067,6 +1079,30 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setIsManuallyCreated (final boolean IsManuallyCreated)
+	{
+		set_Value (COLUMNNAME_IsManuallyCreated, IsManuallyCreated);
+	}
+
+	@Override
+	public boolean isManuallyCreated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManuallyCreated);
+	}
+
+	@Override
+	public void setISO_Code (final @Nullable java.lang.String ISO_Code)
+	{
+		set_Value (COLUMNNAME_ISO_Code, ISO_Code);
+	}
+
+	@Override
+	public java.lang.String getISO_Code() 
+	{
+		return get_ValueAsString(COLUMNNAME_ISO_Code);
+	}
+
+	@Override
 	public void setIsSEPASigned (final boolean IsSEPASigned)
 	{
 		set_Value (COLUMNNAME_IsSEPASigned, IsSEPASigned);
@@ -1538,6 +1574,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public void setQR_IBAN (final @Nullable java.lang.String QR_IBAN)
+	{
+		set_Value (COLUMNNAME_QR_IBAN, QR_IBAN);
+	}
+
+	@Override
+	public java.lang.String getQR_IBAN() 
+	{
+		return get_ValueAsString(COLUMNNAME_QR_IBAN);
 	}
 
 	@Override
