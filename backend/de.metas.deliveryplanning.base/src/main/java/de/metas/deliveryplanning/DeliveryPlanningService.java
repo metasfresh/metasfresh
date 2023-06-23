@@ -799,6 +799,27 @@ public class DeliveryPlanningService
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public Optional<Timestamp> getMinActualLoadingDateFromPlanningsWithCompletedInstructions(@NonNull final OrderLineId orderLineId)
+	{
+		return deliveryPlanningRepository.getMinActualLoadingDateFromPlanningsWithCompletedInstructions(orderLineId);
+	}
+
+	public void invalidateInvoiceCandidatesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		Optional.ofNullable(OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID()))
+				.map(orderLineBL::getOrderLineById)
+				.ifPresent(invoiceCandidateHandlerBL::invalidateCandidatesFor);
+	}
+
+	public void invalidateInvoiceCandidatesFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		invalidateInvoiceCandidatesFor(deliveryPlanningRepository.getById(deliveryPlanningId));
+	}
+
+>>>>>>> d49c17e2312 (recompute ref inv cand on shipper transportation complete/void (#15679))
 	private void validateDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		if (isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter))

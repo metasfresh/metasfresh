@@ -53,6 +53,7 @@ public class M_ShipperTransportation
 				.build());
 
 		updateDeliveryPlanning(shipperTransportation);
+<<<<<<< HEAD
 	}
 
 	private void updateDeliveryPlanning(@NonNull final I_M_ShipperTransportation shipperTransportation)
@@ -63,6 +64,16 @@ public class M_ShipperTransportation
 			trxManager.runAfterCommit(() ->
 					deliveryPlanningService.updateICFromDeliveryPlanningId(deliveryPlanningId));
 		}
+=======
+>>>>>>> d49c17e2312 (recompute ref inv cand on shipper transportation complete/void (#15679))
 	}
 
+	private void updateDeliveryPlanning(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(shipperTransportation.getM_Delivery_Planning_ID());
+		if (deliveryPlanningId != null)
+		{
+			trxManager.runAfterCommit(() -> deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryPlanningId));
+		}
+	}
 }
