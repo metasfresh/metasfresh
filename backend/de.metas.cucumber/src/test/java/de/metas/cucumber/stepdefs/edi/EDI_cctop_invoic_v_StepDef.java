@@ -212,7 +212,7 @@ public class EDI_cctop_invoic_v_StepDef
 	private static Element getElement(@NonNull final Node node, @NonNull final String tagName)
 	{
 		final Element element = node instanceof Document
-				? ((Document) node).getDocumentElement()
+				? ((Document)node).getDocumentElement()
 				: (Element)node;
 
 		final NodeList nodeList = element.getElementsByTagName(tagName);
@@ -275,7 +275,7 @@ public class EDI_cctop_invoic_v_StepDef
 			final String invoicIdentifier = DataTableUtil.extractStringForColumnName(row, I_EDI_cctop_invoic_v.COLUMNNAME_EDI_cctop_invoic_v_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final Document invoic = cctopInvoiceTable.get(invoicIdentifier);
 
-			final String desadvIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String desadvIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_EDI_cctop_invoic_v.COLUMNNAME_EDIDesadvDocumentNo + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(desadvIdentifier))
 			{
 				final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);

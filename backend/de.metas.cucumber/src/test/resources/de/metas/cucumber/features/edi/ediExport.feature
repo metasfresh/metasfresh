@@ -68,7 +68,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
-      | o_1        | true    | 2156425                  | 2021-04-17  | po_ref_mock     |
+      | o_1        | true    | 2156425                  | 2021-04-17  | po_ref_23062023 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_1       | o_1                   | convenienceSalate       | 10         | 3010001                                |
@@ -92,8 +92,8 @@ Feature: EDI_cctop_invoic_v export format
       | o_1                   | invoice_1               |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 10 Tage 1 % | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference     | paymentTerm | processed | docStatus |
+      | invoice_1               | 2156425                  | 2205175                           | po_ref_23062023 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
@@ -112,8 +112,8 @@ Feature: EDI_cctop_invoic_v export format
       | ic_1                             | ep_1                        | routingKey                   |
 
     And validate EDI_cctop_invoic_v:
-      | EDI_cctop_invoic_v_ID.Identifier | OPT.EDI_Desadv_ID.Identifier |
-      | ic_1                             | d_1                          |
+      | EDI_cctop_invoic_v_ID.Identifier | OPT.EDIDesadvDocumentNo.Identifier |
+      | ic_1                             | d_1                                |
 
     And EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated
       | EDI_cctop_invoic_v_ID.Identifier | OPT.Buyer_GTIN_CU   | OPT.Buyer_EAN_CU     | OPT.Supplier_GTIN_CU | OPT.Buyer_GTIN_TU | OPT.GTIN        |
