@@ -553,6 +553,28 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		});
 	}
 
+	private int retrieveRunDataId()
+	{
+		final Properties ctx = Env.getCtx();
+		final String sql = buildSqlSelectRecordsToImport();
+
+		return IteratorUtils.asIterator(new AbstractPreparedStatementBlindIterator<ImportRecordType>()
+		{
+
+			@Override
+			protected PreparedStatement createPreparedStatement()
+			{
+				return DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			}
+
+			@Override
+			protected ImportRecordType fetch(final ResultSet rs) throws SQLException
+			{
+				return retrieveImportRecord(ctx, rs);
+			}
+		});
+	}
+
 	private void importGroup(
 			@NonNull final ImportGroup<ImportGroupKey, ImportRecordType> importGroup,
 			@NonNull final IMutable<Object> stateHolder)
@@ -689,7 +711,21 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 	protected void afterImport()
 	{
-		// nothing to do here
+		runSQLAfterAllImport();
+	}
+
+	private void runSQLAfterAllImport()
+	{
+
+		final ImportRecordType importRecord;
+		final List<DBFunction> functions = getDbFunctions().getAvailableAfterAllFunctions();
+		if (functions.isEmpty())
+		{
+			return;
+		}
+
+		final DataImportConfigId dataImportConfigId = extractDataImportConfigIdOrNull();
+		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportConfigId, 0));
 	}
 
 	private void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
@@ -715,5 +751,13 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		final Optional<Integer> value = InterfaceWrapperHelper.getValue(importRecord, importTableDescriptor.getDataImportConfigIdColumnName());
 		return value.map(DataImportConfigId::ofRepoIdOrNull).orElse(null);
+	}
+
+	private DataImportConfigId extractDataImportConfigIdOrNull()
+	{
+		final String whereClause = getImportRecordsSelection().toSqlWhereClause();
+		final StringBuilder sql = new StringBuilder("SELECT c_dataimport_id FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='Y' ").append(whereClause);
+
+		return DataImportConfigId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql.toString()));
 	}
 }
