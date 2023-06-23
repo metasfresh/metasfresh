@@ -165,8 +165,8 @@ public class BankRepository
 	public Set<BankId> retrieveBankIdsByName(@NonNull final String bankName)
 	{
 		return queryBL.createQueryBuilder(I_C_Bank.class)
-				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, false)
 				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, true)
 				.create()
 				.listIds(BankId::ofRepoId);
 	}
