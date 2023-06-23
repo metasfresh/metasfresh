@@ -67,6 +67,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -269,6 +270,18 @@ public class C_OrderLine_StepDef
 			if (dateOrdered != null)
 			{
 				orderLine.setDateOrdered(dateOrdered);
+			}
+
+			final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
+			if (Check.isNotBlank(uomX12DE355))
+			{
+				final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+						.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.firstIdOnly(UomId::ofRepoIdOrNull);
+				assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+				orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
 			}
 
 			saveRecord(orderLine);

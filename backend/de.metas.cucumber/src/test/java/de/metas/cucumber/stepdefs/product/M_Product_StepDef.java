@@ -49,6 +49,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
@@ -260,6 +261,25 @@ public class M_Product_StepDef
 		}
 	}
 
+	@And("update M_Product and expect exception to be thrown:")
+	public void update_M_Product_and_check_exception(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> productTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : productTableList)
+		{
+			try
+			{
+				updateMProduct(dataTableRow);
+			}
+			catch (final AdempiereException exception)
+			{
+				final String expectedExceptionMessage = DataTableUtil.extractStringForColumnName(dataTableRow, "ExceptionMessage");
+
+				assertThat(exception.getMessage()).contains(expectedExceptionMessage);
+			}
+		}
+	}
+
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
 		final String productName = tableRow.get("Name");
@@ -393,7 +413,7 @@ public class M_Product_StepDef
 		}
 
 		final String sapProductHierarchy = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_SAP_ProductHierarchy);
-		if(Check.isNotBlank(sapProductHierarchy))
+		if (Check.isNotBlank(sapProductHierarchy))
 		{
 			assertThat(productRecord.getSAP_ProductHierarchy()).isEqualTo(sapProductHierarchy);
 		}
@@ -448,6 +468,18 @@ public class M_Product_StepDef
 		if (isStocked != null)
 		{
 			productRecord.setIsStocked(isStocked);
+		}
+
+		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (Check.isNotBlank(uomX12DE355))
+		{
+			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstIdOnly(UomId::ofRepoIdOrNull);
+			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+			productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
 		}
 
 		saveRecord(productRecord);
