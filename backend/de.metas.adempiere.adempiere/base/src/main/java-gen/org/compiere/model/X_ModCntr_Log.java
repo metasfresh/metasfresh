@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1537804477L;
+	private static final long serialVersionUID = -1796535266L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -47,6 +48,49 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getAD_Table_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
+	}
+
+	@Override
+	public void setAmount (final BigDecimal Amount)
+	{
+		set_Value (COLUMNNAME_Amount, Amount);
+	}
+
+	@Override
+	public BigDecimal getAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Amount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
+	{
+		if (Bill_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
+	}
+
+	@Override
+	public int getBill_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
@@ -95,6 +139,21 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
 	public void setDateTrx (final @Nullable java.sql.Timestamp DateTrx)
 	{
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
@@ -119,6 +178,33 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
+	}
+
+	@Override
 	public void setIsSOTrx (final boolean IsSOTrx)
 	{
 		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
@@ -128,6 +214,47 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public boolean isSOTrx() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	/** 
+	 * ModCntr_Log_DocumentType AD_Reference_ID=541770
+	 * Reference name: ModCntr_Log_DocumentType
+	 */
+	public static final int MODCNTR_LOG_DOCUMENTTYPE_AD_Reference_ID=541770;
+	/** Purchase Order = PurchaseOrder */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_PurchaseOrder = "PurchaseOrder";
+	/** Supply Agreement = SupplyAgreement */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_SupplyAgreement = "SupplyAgreement";
+	/** Material Receipt = MaterialReceipt */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_MaterialReceipt = "MaterialReceipt";
+	/** Production = Production */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_Production = "Production";
+	/** Contract Prefinancing = ContractPrefinancing */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_ContractPrefinancing = "ContractPrefinancing";
+	/** Interim Invoice = InterimInvoice */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_InterimInvoice = "InterimInvoice";
+	/** Contract Setting = ContractSetting */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_ContractSetting = "ContractSetting";
+	/** Sales Order = SalesOrder */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_SalesOrder = "SalesOrder";
+	/** Shipment Disposition = ShipmentDisposition */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_ShipmentDisposition = "ShipmentDisposition";
+	/** Shipment = Shipment */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_Shipment = "Shipment";
+	/** Final Settlement = FinalSettlement */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_FinalSettlement = "FinalSettlement";
+	/** Definitive Final Settlement = DefinitiveFinalSettlement */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement = "DefinitiveFinalSettlement";
+	@Override
+	public void setModCntr_Log_DocumentType (final @Nullable java.lang.String ModCntr_Log_DocumentType)
+	{
+		set_Value (COLUMNNAME_ModCntr_Log_DocumentType, ModCntr_Log_DocumentType);
+	}
+
+	@Override
+	public java.lang.String getModCntr_Log_DocumentType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ModCntr_Log_DocumentType);
 	}
 
 	@Override
@@ -227,6 +354,19 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getProducer_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Producer_BPartner_ID);
+	}
+
+	@Override
+	public void setQty (final @Nullable BigDecimal Qty)
+	{
+		set_Value (COLUMNNAME_Qty, Qty);
+	}
+
+	@Override
+	public BigDecimal getQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

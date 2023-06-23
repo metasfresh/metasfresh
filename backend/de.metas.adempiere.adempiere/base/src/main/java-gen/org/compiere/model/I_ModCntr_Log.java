@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -71,6 +72,71 @@ public interface I_ModCntr_Log
 	int getAD_Table_ID();
 
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
+	 * Set Amount.
+	 * Amount in a defined currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAmount (BigDecimal Amount);
+
+	/**
+	 * Get Amount.
+	 * Amount in a defined currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getAmount();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_Amount = new ModelColumn<>(I_ModCntr_Log.class, "Amount", null);
+	String COLUMNNAME_Amount = "Amount";
+
+	/**
+	 * Set Bill Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_BPartner_ID (int Bill_BPartner_ID);
+
+	/**
+	 * Get Bill Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_BPartner_ID();
+
+	String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Flatrate Term.
@@ -160,6 +226,28 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Date.
 	 * Transaction Date
 	 *
@@ -202,6 +290,31 @@ public interface I_ModCntr_Log
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Log.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_ModCntr_Log, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_ModCntr_Log.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
 	 * Set Active.
@@ -248,6 +361,27 @@ public interface I_ModCntr_Log
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Log.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Document Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Log_DocumentType (@Nullable java.lang.String ModCntr_Log_DocumentType);
+
+	/**
+	 * Get Document Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getModCntr_Log_DocumentType();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_ModCntr_Log_DocumentType = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Log_DocumentType", null);
+	String COLUMNNAME_ModCntr_Log_DocumentType = "ModCntr_Log_DocumentType";
 
 	/**
 	 * Set Contract Module Log.
@@ -379,6 +513,29 @@ public interface I_ModCntr_Log
 	int getProducer_BPartner_ID();
 
 	String COLUMNNAME_Producer_BPartner_ID = "Producer_BPartner_ID";
+
+	/**
+	 * Set Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQty (@Nullable BigDecimal Qty);
+
+	/**
+	 * Get Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQty();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_Qty = new ModelColumn<>(I_ModCntr_Log.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Set Record ID.
