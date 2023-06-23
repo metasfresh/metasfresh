@@ -216,3 +216,78 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,2161,0,541769,259,181,TO_TIMESTAMP('2023-06-22 18:18:26','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','N',TO_TIMESTAMP('2023-06-22 18:18:26','YYYY-MM-DD HH24:MI:SS'),100,'C_Order_ID IN (SELECT c.c_order_id from c_order c     inner join m_delivery_planning d on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join m_inventory m on c.c_order_id = m.c_po_order_id     where m.m_inventory_id=@M_Inventory_ID/-1@)')
 ;
 
+-- Reference: C_Invoice_Candidate (PO) => M_Delivery_Planning
+-- Table: M_Delivery_Planning
+-- Key: M_Delivery_Planning.M_Delivery_Planning_ID
+-- 2023-06-22T16:48:00.716Z
+UPDATE AD_Ref_Table SET WhereClause='M_Delivery_Planning_ID IN (SELECT d.m_delivery_planning_id from m_delivery_planning d     inner join c_order c on d.c_order_id = c.c_order_id and c.issotrx=''N''     inner join c_invoice_candidate i on i.c_order_id = c.c_order_id     where i.c_invoice_candidate_id=@C_Invoice_Candidate_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-22 19:48:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541761
+;
+
+-- 2023-06-22T17:16:00.915Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541707,541767,540395,TO_TIMESTAMP('2023-06-22 20:15:59','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.invoice','Y','N','M_Delivery_Planning => C_Invoice (PO)',TO_TIMESTAMP('2023-06-22 20:15:59','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:17:02.200Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,336,541759,540396,TO_TIMESTAMP('2023-06-22 20:17:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','C_Invoice (PO) => M_Delivery_Planning',TO_TIMESTAMP('2023-06-22 20:17:02','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:17:52.222Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540266,541761,540397,TO_TIMESTAMP('2023-06-22 20:17:52','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','C_Invoice_Candidate (PO) => M_Delivery_Planning',TO_TIMESTAMP('2023-06-22 20:17:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:17:59.938Z
+UPDATE AD_RelationType SET EntityType='de.metas.invoice',Updated=TO_TIMESTAMP('2023-06-22 20:17:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540397
+;
+
+-- 2023-06-22T17:18:13.430Z
+UPDATE AD_RelationType SET EntityType='de.metas.invoice',Updated=TO_TIMESTAMP('2023-06-22 20:18:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540396
+;
+
+-- 2023-06-22T17:19:18.780Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540266,541765,540398,TO_TIMESTAMP('2023-06-22 20:19:18','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','C_Invoice_Candidate (PO) => M_InOut (PO)',TO_TIMESTAMP('2023-06-22 20:19:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:20:17.260Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540266,541763,540399,TO_TIMESTAMP('2023-06-22 20:20:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.invoice','Y','N','C_Invoice_Candidate (PO) => C_Order (PO)',TO_TIMESTAMP('2023-06-22 20:20:17','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:20:36.221Z
+UPDATE AD_RelationType SET EntityType='de.metas.invoice',Updated=TO_TIMESTAMP('2023-06-22 20:20:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540398
+;
+
+-- 2023-06-22T17:22:31.707Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541707,541768,540400,TO_TIMESTAMP('2023-06-22 20:22:31','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','M_Delivery_Planning => C_Invoice (SO)',TO_TIMESTAMP('2023-06-22 20:22:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:22:39.739Z
+UPDATE AD_RelationType SET EntityType='de.metas.invoice',Updated=TO_TIMESTAMP('2023-06-22 20:22:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540400
+;
+
+-- 2023-06-22T17:24:34.922Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,336,541760,540401,TO_TIMESTAMP('2023-06-22 20:24:34','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','C_Invoice (SO) => M_Delivery_Planning',TO_TIMESTAMP('2023-06-22 20:24:34','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:25:49.513Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540266,541762,540402,TO_TIMESTAMP('2023-06-22 20:25:49','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.invoice','Y','N','C_Invoice_Candidate (SO) => M_Delivery_Planning',TO_TIMESTAMP('2023-06-22 20:25:49','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:26:05.317Z
+UPDATE AD_RelationType SET EntityType='de.metas.invoice',Updated=TO_TIMESTAMP('2023-06-22 20:26:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540401
+;
+
+-- 2023-06-22T17:26:21.100Z
+UPDATE AD_RelationType SET EntityType='de.metas.invoice',Updated=TO_TIMESTAMP('2023-06-22 20:26:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540392
+;
+
+-- 2023-06-22T17:29:12.461Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540266,541766,540403,TO_TIMESTAMP('2023-06-22 20:29:12','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.invoice','Y','N','C_Invoice_Candidate (SO) => M_InOut (SO)',TO_TIMESTAMP('2023-06-22 20:29:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:30:23.968Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540266,541764,540404,TO_TIMESTAMP('2023-06-22 20:30:23','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.invoice','Y','N','C_Invoice_Candidate (SO) => C_Order (SO)',TO_TIMESTAMP('2023-06-22 20:30:23','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-06-22T17:31:01.730Z
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,53249,541769,540405,TO_TIMESTAMP('2023-06-22 20:31:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order','Y','N','M_Inventory => C_Order (PO)',TO_TIMESTAMP('2023-06-22 20:31:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
