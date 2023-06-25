@@ -1,7 +1,10 @@
 package de.metas.requisition.callout;
 
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Requisition;
 
@@ -10,6 +13,9 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
+import org.compiere.model.I_M_Warehouse;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -56,6 +62,19 @@ public class M_Requisition
 		if (documentNoInfo != null && documentNoInfo.isDocNoControlled())
 		{
 			requisition.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+	}
+
+	@CalloutMethod(columnNames = I_M_Requisition.COLUMNNAME_M_Warehouse_ID)
+	public void onWarehouseChanged(@NonNull final I_M_Requisition requisition)
+	{
+		//
+		// M_Warehouse_ID is a mandatory column
+		final Optional<WarehouseId> warehouseId = WarehouseId.optionalOfRepoId(requisition.getM_Warehouse_ID());
+		if (warehouseId.isPresent())
+		{
+			final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId.get());
+			requisition.setWarehouse_Location_ID(warehouse.getC_BPartner_Location_ID());
 		}
 	}
 }
