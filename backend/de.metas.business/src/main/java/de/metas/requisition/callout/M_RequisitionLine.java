@@ -2,16 +2,21 @@ package de.metas.requisition.callout;
 
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.requisition.RequisitionRepository;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MProductPricing;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -104,4 +109,31 @@ public class M_RequisitionLine
 
 		line.setLineNetAmt(lineNetAmt);
 	}
+
+	@CalloutMethod(columnNames = I_M_RequisitionLine.COLUMNNAME_LineNetAmt)
+	public void onLineNetAmtChanged(@NonNull final I_M_RequisitionLine requisitionLine)
+	{
+		final I_M_Requisition requisition = requisitionLine.getM_Requisition();
+
+		final List<I_M_RequisitionLine> lines = getRequisitionRepository().getLinesByRequisitionId(requisition.getM_Requisition_ID());
+
+		final BigDecimal calculatedTotalAmt = BigDecimal.ZERO;
+		for (final I_M_RequisitionLine line : lines)
+		{
+			calculatedTotalAmt.add(line.getLineNetAmt());
+		}
+
+		final BigDecimal totalLines = requisition.getTotalLines();
+		if (calculatedTotalAmt.compareTo(totalLines) != 0)
+		{
+			requisition.setTotalLines(calculatedTotalAmt);
+			InterfaceWrapperHelper.save(requisition);
+		}
+	}
+
+	private RequisitionRepository getRequisitionRepository()
+	{
+		return Adempiere.getBean(RequisitionRepository.class);
+	}
+
 }
