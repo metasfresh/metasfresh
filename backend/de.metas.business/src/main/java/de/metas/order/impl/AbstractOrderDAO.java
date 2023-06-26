@@ -466,6 +466,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_OrderSO_ID, salesOrderId)
+				.stream()
+				.map(allocRecord -> OrderId.ofRepoId(allocRecord.getC_OrderPO_ID()))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@NonNull
 	private IQueryBuilder<I_C_Order> createQueryBuilder(@NonNull final GetOrdersQuery query)
 	{
