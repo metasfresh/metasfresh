@@ -61,6 +61,16 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(qty, uomRecord);
 	}
 
+	@Nullable
+	public static Quantity ofOrNull(@Nullable final BigDecimal qty, @Nullable final I_C_UOM uom)
+	{
+		if (qty == null || uom == null)
+		{
+			return null;
+		}
+		return of(qty, uom);
+	}
+
 	/**
 	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
 	 */

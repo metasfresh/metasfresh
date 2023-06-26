@@ -6,6 +6,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.contracts
@@ -42,6 +44,11 @@ public class FlatrateTermId implements RepoIdAware
 	public static FlatrateTermId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static int toRepoId(@Nullable final FlatrateTermId flatrateTermId)
+	{
+		return flatrateTermId != null ? flatrateTermId.getRepoId() : -1;
 	}
 
 	private FlatrateTermId(final int repoId)

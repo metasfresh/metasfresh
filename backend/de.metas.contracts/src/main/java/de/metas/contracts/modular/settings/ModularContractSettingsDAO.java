@@ -44,6 +44,7 @@ import java.util.List;
 @Service
 public class ModularContractSettingsDAO
 {
+
 	public ModularContractSettings getFor(@NonNull final FlatrateTermId contractId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -68,6 +69,7 @@ public class ModularContractSettingsDAO
 			@NonNull final I_ModCntr_Settings settingsRecord,
 			@NonNull final List<I_ModCntr_Module> moduleRecords)
 	{
+
 		final ModularContractSettings.ModularContractSettingsBuilder result = ModularContractSettings.builder()
 				.id(ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID()))
 				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
@@ -95,4 +97,5 @@ public class ModularContractSettingsDAO
 
 		return result.build();
 	}
+
 }

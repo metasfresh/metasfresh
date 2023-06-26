@@ -41,10 +41,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ModularContractSettingsDAOTest
 {
@@ -100,7 +101,6 @@ class ModularContractSettingsDAOTest
 		assertThat(settings.getId().getRepoId()).isEqualTo(settingsRecord.getModCntr_Settings_ID());
 		assertThat(settings.getModuleConfigs()).hasSize(1);
 
-
 		final ModuleConfig moduleConfig = settings.getModuleConfigs().get(0);
 		assertThat(moduleConfig.getSeqNo()).isEqualTo(10);
 		assertThat(moduleConfig.getProductId().getRepoId()).isEqualTo(130);
@@ -110,37 +110,38 @@ class ModularContractSettingsDAOTest
 		assertThat(handlerImpl).isInstanceOf(HandlerImpl.class);
 	}
 
-	public static class HandlerImpl implements IModularContractTypeHandler
+	public static class HandlerImpl implements IModularContractTypeHandler<Object>
 	{
 
 		@Override
-		public boolean probablyAppliesTo(@NonNull final Object model, @NonNull final ModularContractSettings settings)
+		public boolean probablyAppliesTo(@NonNull final Object model)
 		{
-			return false;
+			return true;
 		}
 
 		@Override
-		public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final Object model, @NonNull final ModularContractSettings settings)
+		public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(final @NonNull Object model, final @NonNull FlatrateTermId flatrateTermId)
 		{
 			return Optional.empty();
 		}
 
 		@Override
-		public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final Object model)
+		public @NonNull Stream<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final Object model)
 		{
-			return Optional.empty();
+			return Stream.empty();
 		}
 
 		@Override
-		public @NonNull Optional<LogEntryDeleteRequest> createLogEntryDeleteRequest(final Object model)
+		public @NonNull Stream<LogEntryDeleteRequest> createLogEntryDeleteRequest(final Object model)
 		{
-			return Optional.empty();
+			return Stream.empty();
 		}
 
 		@Override
-		public @NonNull Optional<FlatrateTermId> getContractId(@NonNull final Object model)
+		public @NonNull Stream<FlatrateTermId> getContractIds(@NonNull final Object model)
 		{
-			return Optional.empty();
+			return Stream.empty();
 		}
+
 	}
 }

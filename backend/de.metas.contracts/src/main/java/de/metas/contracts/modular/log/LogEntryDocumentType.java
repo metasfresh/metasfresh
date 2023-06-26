@@ -22,10 +22,60 @@
 
 package de.metas.contracts.modular.log;
 
-public enum LogEntryDocumentType /*  implements ReferenceListAwareEnum TODO */
-{
-	PURCHASE_ORDER,
-	MATERIAL_RECEIPT
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.contracts.model.X_ModCntr_Log;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
-	// ..and so on
+import javax.annotation.Nullable;
+import java.util.Arrays;
+
+public enum LogEntryDocumentType implements ReferenceListAwareEnum
+{
+	PURCHASE_ORDER(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_PurchaseOrder),
+	SupplyAgreement(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SupplyAgreement),
+	MATERIAL_RECEIPT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_MaterialReceipt),
+	PRODUCTION(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Production),
+	CONTRACT_PREFINANCING(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ContractPrefinancing),
+	CONTRACT_SETTING(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ContractSetting),
+	SALES_ORDER(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SalesOrder),
+	SHIPMENT_DISPOSITION(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ShipmentDisposition),
+	SHIPMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Shipment),
+	FINAL_SETTLEMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_FinalSettlement),
+	DEFINITIVE_FINAL_SETTLEMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement),
+	;
+
+	private static final ImmutableMap<String, LogEntryDocumentType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), LogEntryDocumentType::getCode);
+
+	LogEntryDocumentType(final String code)
+	{
+		this.code = code;
+	}
+
+	private final String code;
+
+	@Override
+	public String getCode()
+	{
+		return code;
+	}
+
+	@NonNull
+	public static LogEntryDocumentType ofCode(@NonNull final String code)
+	{
+		final LogEntryDocumentType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + LogEntryDocumentType.class + " found for code: " + code);
+		}
+		return type;
+	}
+
+	@Nullable
+	public static LogEntryDocumentType ofNullableCode(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : null;
+	}
 }

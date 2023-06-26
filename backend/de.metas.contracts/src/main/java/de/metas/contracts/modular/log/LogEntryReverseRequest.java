@@ -22,16 +22,13 @@
 
 package de.metas.contracts.modular.log;
 
-import de.metas.contracts.FlatrateTermId;
-import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
 public class LogEntryReverseRequest
 {
-	FlatrateTermId contractId;
-
-	ProductId productId;
+	@NonNull ModularContractLogEntryId id;
 }

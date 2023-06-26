@@ -31,6 +31,7 @@ import de.metas.money.Money;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -42,6 +43,7 @@ import javax.annotation.Nullable;
  * Add further properties as needed.
  */
 @Value
+@Builder
 public class ModularContractLogEntry
 {
 	@NonNull
@@ -59,10 +61,10 @@ public class ModularContractLogEntry
 	@NonNull
 	BPartnerId collectionPointBPartnerId;
 
-	@NonNull
+	@Nullable
 	BPartnerId producerBPartnerId;
 
-	@NonNull
+	@Nullable
 	BPartnerId invoicingBPartnerId;
 
 	@NonNull
@@ -82,7 +84,7 @@ public class ModularContractLogEntry
 	@Nullable
 	Quantity quantity;
 
-	@NonNull
+	@Nullable
 	Money amount;
 
 	@NonNull

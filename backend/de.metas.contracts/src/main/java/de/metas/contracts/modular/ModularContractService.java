@@ -22,18 +22,13 @@
 
 package de.metas.contracts.modular;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDeleteRequest;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class ModularContractService
@@ -43,52 +38,41 @@ public class ModularContractService
 		COMPLETED, REVERSED, REACTIVATED
 	}
 
-	private final ImmutableList<IModularContractTypeHandler> handlers;
-	private final ModularContractSettingsDAO contractSettingsDAO;
-
+	private final Map<Class<Object>, Collection<IModularContractTypeHandler>> modelToHandlersCache;
 	private final ModularContractLogDAO contractLogDAO;
 
-	public ModularContractService(@NonNull final ImmutableList<IModularContractTypeHandler> handlers,
-			final ModularContractSettingsDAO contractSettingsDAO,
-			final ModularContractLogDAO contractLogDAO)
+	public ModularContractService(
+			@NonNull final ModularContractLogDAO contractLogDAO)
 	{
-		this.handlers = handlers;
-		this.contractSettingsDAO = contractSettingsDAO;
 		this.contractLogDAO = contractLogDAO;
+		modelToHandlersCache = new HashMap<>();
 	}
 
 	public void invokeWithModel(@NonNull final Object model, @NonNull final ModelAction action)
 	{
-		for (final IModularContractTypeHandler handler : handlers)
+		modelToHandlersCache.get(model.getClass()).stream()
+				.filter(handler -> handler.probablyAppliesTo(model))
+				.forEach(handler -> invokeWithModel(model, action, handler));
+	}
+
+	private <T> void invokeWithModel(final @NonNull T model, final @NonNull ModelAction action, final IModularContractTypeHandler<T> handler)
+	{
+		switch (action)
 		{
-			final Optional<FlatrateTermId> contractId = handler.getContractId(model);
-			if (contractId.isEmpty())
+			case COMPLETED ->
 			{
-				continue;
+				handler.createLogEntryCreateRequest(model)
+						.forEach(contractLogDAO::create);
 			}
-
-			final ModularContractSettings settings = contractSettingsDAO.getFor(contractId.get());
-			if (handler.probablyAppliesTo(model, settings))
+			case REVERSED ->
 			{
-				switch (action)
-				{
-					case COMPLETED ->
-					{
-						final Optional<LogEntryCreateRequest> request = handler.createLogEntryCreateRequest(model, settings);
-						request.ifPresent(contractLogDAO::create);
-					}
-					case REVERSED ->
-					{
-						final Optional<LogEntryReverseRequest> request = handler.createLogEntryReverseRequest(model);
-						request.ifPresent(contractLogDAO::reverse);
-					}
-					case REACTIVATED ->
-					{
-						final Optional<LogEntryDeleteRequest> request = handler.createLogEntryDeleteRequest(model);
-						request.ifPresent(contractLogDAO::delete);
-					}
-				}
-
+				handler.createLogEntryReverseRequest(model)
+						.forEach(contractLogDAO::reverse);
+			}
+			case REACTIVATED ->
+			{
+				handler.createLogEntryDeleteRequest(model)
+						.forEach(contractLogDAO::delete);
 			}
 		}
 	}

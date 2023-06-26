@@ -52,6 +52,11 @@ public class ModularContractLogEntryId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "modularContractLogEntryId");
 	}
 
+	public static int toRepoId(@Nullable final ModularContractLogEntryId modularContractLogEntryId)
+	{
+		return modularContractLogEntryId != null ? modularContractLogEntryId.getRepoId() : -1;
+	}
+
 	@Override
 	@JsonValue
 	public int getRepoId()

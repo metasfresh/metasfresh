@@ -30,6 +30,10 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModularContractService.ModelAction.REACTIVATED;
+import static de.metas.contracts.modular.ModularContractService.ModelAction.REVERSED;
+
 /**
  * Glue-code that invokes the {@link ModularContractService} on certain order events.
  * <p/>
@@ -50,18 +54,18 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	void afterComplete(@NonNull final I_C_Order orderRecord)
 	{
-		contractService.invokeWithModel(orderRecord, ModularContractService.ModelAction.COMPLETED);
+		contractService.invokeWithModel(orderRecord, COMPLETED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	void afterReverse(@NonNull final I_C_Order orderRecord)
 	{
-		contractService.invokeWithModel(orderRecord, ModularContractService.ModelAction.REVERSED);
+		contractService.invokeWithModel(orderRecord, REVERSED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE })
 	void afterReactivate(@NonNull final I_C_Order orderRecord)
 	{
-		contractService.invokeWithModel(orderRecord, ModularContractService.ModelAction.REACTIVATED);
+		contractService.invokeWithModel(orderRecord, REACTIVATED);
 	}
 }

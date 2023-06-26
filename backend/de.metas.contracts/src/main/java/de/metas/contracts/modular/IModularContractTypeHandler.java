@@ -26,10 +26,10 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.settings.ModularContractSettings;
 import lombok.NonNull;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Implementors
@@ -43,42 +43,50 @@ import java.util.Optional;
  * one for {@link de.metas.inout.model.I_M_InOut} and so on.
  * When implementing another handler, please be sure to also add a model interceptor such as {@link de.metas.contracts.modular.interceptor.C_Order}.
  */
-public interface IModularContractTypeHandler
+public interface IModularContractTypeHandler<T>
 {
 	/**
 	 * Implementations of this method should be very fast. It's OK to return {@code true} even if not 100% sure that there will be a log record coming out of this.
 	 */
-	boolean probablyAppliesTo(@NonNull Object model, @NonNull ModularContractSettings settings);
+	boolean probablyAppliesTo(@NonNull Object model);
 
 	/**
-	 * Return a request if the framework shall create the log, or {@link Optional#empty()} otherwise.
+	 * Return a Stream of request if the framework shall create one or more logs, or {@link Stream#empty()} otherwise.
 	 */
 	@NonNull
-	Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull Object model, @NonNull ModularContractSettings settings);
+	default Stream<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model)
+	{
+		return getContractIds(model)
+				.map(flatrateTermId -> createLogEntryCreateRequest(model, flatrateTermId))
+				.filter(Optional::isPresent)
+				.map(Optional::get);
+	}
+
+	@NonNull
+	Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 
 	/**
-	 * Return a request if the framework shall create a reversal-record log record, or {@link Optional#empty()} otherwise.
+	 * Return a request if the framework shall create one or more reversal-record log records, or {@link Stream#empty()} otherwise.
 	 * This method has no {@code settings} parameter because i *think* there are existing log records that have to be reversed independently of settings.
 	 */
 	@NonNull
-	Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull Object model);
+	Stream<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull T model);
 
 	/**
-	 * Return a request if the framework shall delete the log, or {@link Optional#empty()} otherwise.
+	 * Return a request if the framework shall delete one or more logs, or {@link Stream#empty()}  otherwise.
 	 * This method has no {@code settings} parameter because i *think* there are existing log records that have to be deleted independently of settings.
 	 */
 	@NonNull
-	Optional<LogEntryDeleteRequest> createLogEntryDeleteRequest(Object model);
+	Stream<LogEntryDeleteRequest> createLogEntryDeleteRequest(T model);
 
 	/**
-	 * The handler's implementation will need to somehow extract the corresponding contract:
+	 * The handler's implementation will need to somehow extract the corresponding contract(s):
 	 * <ul>
 	 * <li>so it can get the contract-settings and can find out if this handler plays a role in the contract</li>
 	 * <li>so it can be put inside the new log record.</li>
 	 * </ul>
 	 */
 	@NonNull
-	Optional<FlatrateTermId> getContractId(@NonNull Object model);
-
+	Stream<FlatrateTermId> getContractIds(@NonNull T model);
 
 }
