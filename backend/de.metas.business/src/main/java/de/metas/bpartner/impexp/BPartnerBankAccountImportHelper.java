@@ -20,7 +20,6 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 
