@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 923087334L;
+	private static final long serialVersionUID = 1865145681L;
 
 	/** Standard Constructor */
 	public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -1176,6 +1176,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isHaddexCheck()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHaddexCheck);
+	}
+
+	@Override
+	public void setIsManuallyCreated (final boolean IsManuallyCreated)
+	{
+		set_Value (COLUMNNAME_IsManuallyCreated, IsManuallyCreated);
+	}
+
+	@Override
+	public boolean isManuallyCreated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManuallyCreated);
 	}
 
 	@Override
