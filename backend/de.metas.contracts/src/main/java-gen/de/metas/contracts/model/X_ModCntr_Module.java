@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Module
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr_Module, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -348314190L;
+	private static final long serialVersionUID = 1918625418L;
 
     /** Standard Constructor */
     public X_ModCntr_Module (final Properties ctx, final int ModCntr_Module_ID, @Nullable final String trxName)
@@ -98,15 +98,15 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	}
 
 	@Override
-	public org.compiere.model.I_ModCntr_Type getModCntr_Type()
+	public de.metas.contracts.model.I_ModCntr_Type getModCntr_Type()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, org.compiere.model.I_ModCntr_Type.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class);
 	}
 
 	@Override
-	public void setModCntr_Type(final org.compiere.model.I_ModCntr_Type ModCntr_Type)
+	public void setModCntr_Type(final de.metas.contracts.model.I_ModCntr_Type ModCntr_Type)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, org.compiere.model.I_ModCntr_Type.class, ModCntr_Type);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class, ModCntr_Type);
 	}
 
 	@Override

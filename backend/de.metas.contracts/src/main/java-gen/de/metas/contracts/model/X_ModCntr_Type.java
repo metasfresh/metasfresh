@@ -1,15 +1,15 @@
 // Generated Model - DO NOT CHANGE
-package org.compiere.model;
+package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Type
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
+public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent
 {
 
 	private static final long serialVersionUID = -1913315153L;
@@ -35,25 +35,25 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	}
 
 	@Override
-	public void setClassname (final @Nullable java.lang.String Classname)
+	public void setClassname (final @Nullable String Classname)
 	{
 		set_Value (COLUMNNAME_Classname, Classname);
 	}
 
 	@Override
-	public java.lang.String getClassname() 
+	public String getClassname()
 	{
 		return get_ValueAsString(COLUMNNAME_Classname);
 	}
 
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (final @Nullable String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -74,25 +74,25 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (final String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public String getName()
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setValue (final java.lang.String Value)
+	public void setValue (final String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
 	@Override
-	public java.lang.String getValue() 
+	public String getValue()
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}

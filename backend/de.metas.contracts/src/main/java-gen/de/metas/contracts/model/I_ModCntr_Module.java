@@ -182,11 +182,11 @@ public interface I_ModCntr_Module
 	 */
 	int getModCntr_Type_ID();
 
-	org.compiere.model.I_ModCntr_Type getModCntr_Type();
+	de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
 
-	void setModCntr_Type(org.compiere.model.I_ModCntr_Type ModCntr_Type);
+	void setModCntr_Type(de.metas.contracts.model.I_ModCntr_Type ModCntr_Type);
 
-	ModelColumn<I_ModCntr_Module, org.compiere.model.I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Type_ID", org.compiere.model.I_ModCntr_Type.class);
+	ModelColumn<I_ModCntr_Module, de.metas.contracts.model.I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Type_ID", de.metas.contracts.model.I_ModCntr_Type.class);
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
 
 	/**

@@ -1,8 +1,9 @@
-package org.compiere.model;
+package de.metas.contracts.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for ModCntr_Log
  *  @author metasfresh (generated) 
@@ -156,7 +157,11 @@ public interface I_ModCntr_Log
 	 */
 	int getC_Flatrate_Term_ID();
 
-	ModelColumn<I_ModCntr_Log, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_ModCntr_Log.class, "C_Flatrate_Term_ID", null);
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
+
+	void setC_Flatrate_Term(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
+
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_ModCntr_Log.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
@@ -422,11 +427,11 @@ public interface I_ModCntr_Log
 	 */
 	int getModCntr_Type_ID();
 
-	@Nullable org.compiere.model.I_ModCntr_Type getModCntr_Type();
+	@Nullable de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
 
-	void setModCntr_Type(@Nullable org.compiere.model.I_ModCntr_Type ModCntr_Type);
+	void setModCntr_Type(@Nullable de.metas.contracts.model.I_ModCntr_Type ModCntr_Type);
 
-	ModelColumn<I_ModCntr_Log, org.compiere.model.I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Type_ID", org.compiere.model.I_ModCntr_Type.class);
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Type_ID", de.metas.contracts.model.I_ModCntr_Type.class);
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
 
 	/**

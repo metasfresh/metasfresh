@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
-package org.compiere.model;
+package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Log
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1796535266L;
+	private static final long serialVersionUID = 453313620L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -91,6 +91,18 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getC_Currency_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+	}
+
+	@Override
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public void setC_Flatrate_Term(final de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
 	}
 
 	@Override
@@ -273,15 +285,15 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public org.compiere.model.I_ModCntr_Type getModCntr_Type()
+	public de.metas.contracts.model.I_ModCntr_Type getModCntr_Type()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, org.compiere.model.I_ModCntr_Type.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class);
 	}
 
 	@Override
-	public void setModCntr_Type(final org.compiere.model.I_ModCntr_Type ModCntr_Type)
+	public void setModCntr_Type(final de.metas.contracts.model.I_ModCntr_Type ModCntr_Type)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, org.compiere.model.I_ModCntr_Type.class, ModCntr_Type);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class, ModCntr_Type);
 	}
 
 	@Override
