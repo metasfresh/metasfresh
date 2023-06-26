@@ -14,7 +14,7 @@ public class GPLRReportSalesOrder
 	@NonNull String documentNo;
 
 	// 013 - Sold to - Customer code, customer name, customer VAT ID Of metasfresh Business partner
-	@NonNull BPartnerName customer;
+	@NonNull GPLRBPartnerName customer;
 
 	// 014 - Contract - Frame contract number if invoice for call off order
 	@Nullable String frameContractNo;
@@ -25,5 +25,5 @@ public class GPLRReportSalesOrder
 
 	// 016 - Terms of Delivery
 	// i.e. Incoterm and incoterm Location
-	@Nullable IncotermsInfo incoterms;
+	@Nullable GPLRIncotermsInfo incoterms;
 }

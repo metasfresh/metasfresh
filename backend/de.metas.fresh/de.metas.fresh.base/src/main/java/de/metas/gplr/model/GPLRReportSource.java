@@ -15,7 +15,7 @@ public class GPLRReportSource
 	@Nullable String departmentName;
 
 	// 002 - Section - Section code and section name
-	@Nullable SectionCodeAndName sectionCode;
+	@Nullable GPLRSectionCode sectionCode;
 
 	// 003 - Document No - Metasfresh invoice number
 	@NonNull String documentNo;
@@ -39,12 +39,12 @@ public class GPLRReportSource
 
 	// 009 - Terms of Payment - (1) Terms of payment code, (2) payment term description, (3) payment method text
 	// e.g. B075 75 days after BL
-	@NonNull PaymentTermName paymentTerm;
+	@NonNull GPLRPaymentTermName paymentTerm;
 
 	// 010 - Due Date - Due Date from invoice
 	@Nullable LocalDateAndOrgId dueDate;
 
 	// 011 - Currency & Rate FEC No. - Currency & Rate used in invoice, All FECs related to order
 	// e.g.USD / 1.0123
-	@Nullable ForexInfo forexInfo;
+	@Nullable GPLRForexInfo forexInfo;
 }

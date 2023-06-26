@@ -11,13 +11,13 @@ import java.util.Objects;
 
 @Value
 @Builder
-public class PaymentTermName
+public class GPLRPaymentTermName
 {
 	@NonNull String code;
 	@NonNull String name;
 	@Nullable String description;
 
-	public static PaymentTermName of(@NonNull final PaymentTerm paymentTerm)
+	public static GPLRPaymentTermName of(@NonNull final PaymentTerm paymentTerm)
 	{
 		return builder()
 				.code(paymentTerm.getValue())

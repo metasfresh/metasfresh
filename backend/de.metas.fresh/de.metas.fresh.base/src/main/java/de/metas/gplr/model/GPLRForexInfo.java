@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 @Value
 @Builder
-public class ForexInfo
+public class GPLRForexInfo
 {
 	@NonNull CurrencyCode foreignCurrency;
 	@NonNull BigDecimal currencyRate;

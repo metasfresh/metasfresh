@@ -12,31 +12,24 @@ import javax.annotation.Nullable;
 @Builder
 public class GPLRReportShipment
 {
-	// 017 - Delivery
-	// i.e. Delivery (Goods issue) DocNo metasfresh
+	// 017 - Delivery - Delivery (Goods issue) DocNo metasfresh
 	@NonNull String documentNo;
 
-	// 018 - Ship To
-	// i.e. Customer code, customer name of ship-to, if no different ship-to, print business partner
-	@NonNull BPartnerName shipTo;
+	// 018 - Ship To - Customer code, customer name of ship-to, if no different ship-to, print business partner
+	@NonNull GPLRBPartnerName shipTo;
 
-	// 019 - Dest
-	// i.e. 2 digit ISO code of ship-to country
-	@NonNull CountryCode shipToCountry;
+	// 019 - Dest - 2 digit ISO code of ship-to country
+	@Nullable CountryCode shipToCountry;
 
-	// 020 - Warehouse
-	// i.e. ast 4 digits SAP Warehouse No and warehouse name, for back to back print XXXX
-	@NonNull String warehouse;
+	// 020 - Warehouse - last 4 digits SAP Warehouse No and warehouse name, for back to back print XXXX
+	@NonNull GPLRWarehouseName warehouse;
 
-	// 021 - GI Date
-	// i.e. Goods issue date
+	// 021 - GI Date - Goods issue date
 	@NonNull LocalDateAndOrgId movementDate;
 
-	// 022 - Terms of Delivery
-	// i.e. Incoterm and Incoterm Location
-	@Nullable IncotermsInfo incoterms;
+	// 022 - Terms of Delivery - Incoterm and Incoterm Location
+	@Nullable GPLRIncotermsInfo incoterms;
 
-	// 023 - Vessel Name & Shipped By
-	// i.e. Print Vessel name field content, if empty print Means of Transport
-	@Nullable String shipper;
+	// 023 - Vessel Name & Shipped By - Print Vessel name field content, if empty print Means of Transport
+	@Nullable GPLRShipperName shipper;
 }

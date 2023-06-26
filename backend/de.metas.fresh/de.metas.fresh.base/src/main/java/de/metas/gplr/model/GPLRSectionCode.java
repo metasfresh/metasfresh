@@ -10,12 +10,12 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class SectionCodeAndName
+public class GPLRSectionCode
 {
 	@NonNull String code;
 	@Nullable String name;
 
-	public static SectionCodeAndName of(SectionCode sectionCode)
+	public static GPLRSectionCode of(SectionCode sectionCode)
 	{
 		return builder()
 				.code(sectionCode.getValue())

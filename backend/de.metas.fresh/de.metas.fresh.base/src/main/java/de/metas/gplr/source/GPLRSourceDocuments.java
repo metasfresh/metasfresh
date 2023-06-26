@@ -4,9 +4,6 @@ import de.metas.invoice.InvoiceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
 
 import java.util.List;
 
@@ -14,10 +11,12 @@ import java.util.List;
 @Builder
 public class GPLRSourceDocuments
 {
-	@NonNull I_C_Invoice salesInvoice;
-	@NonNull I_C_Order salesOrder;
+	@NonNull SourceInvoice salesInvoice;
+	@NonNull SourceOrder salesOrder;
 
-	@NonNull List<I_M_InOut> shipments;
+	@NonNull List<SourceShipment> shipments;
 
-	public InvoiceId getSalesInvoiceId() {return InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID());}
+	@NonNull List<SourceOrder> purchaseOrders;
+
+	public InvoiceId getSalesInvoiceId() {return salesInvoice.getId();}
 }

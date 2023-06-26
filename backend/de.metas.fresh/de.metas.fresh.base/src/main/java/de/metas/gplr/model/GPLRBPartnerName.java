@@ -8,8 +8,9 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class IncotermsInfo
+public class GPLRBPartnerName
 {
 	@NonNull String code;
-	@Nullable String location;
+	@NonNull String name;
+	@Nullable String vatId;
 }

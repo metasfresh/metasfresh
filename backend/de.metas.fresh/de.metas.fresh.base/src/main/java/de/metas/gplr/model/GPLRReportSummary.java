@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class GPLRReportSummary
@@ -18,7 +20,7 @@ public class GPLRReportSummary
 
 	// 031 - Sales (LC) - summarize price of all invoice lines
 	// 039 - Sales (FC) - Summarize price of all invoice lines in foreign currency
-	@NonNull Amount salesLC;
+	@Nullable Amount salesLC;
 	@NonNull Amount salesFC;
 
 	// 032 - Taxes - Needed, summary tax line from sales invoice
@@ -26,20 +28,20 @@ public class GPLRReportSummary
 
 	// 033 - Estimated - summarize estimated costs from sales order (presume order : delivery 1:1)
 	// 040 - Estimated - summarize estimated costs in foreign currency from sales order (presume order : delivery 1:1)
-	@NonNull Amount estimatedLC;
+	@Nullable Amount estimatedLC;
 	@NonNull Amount estimatedFC;
 
 	// 034 - COGS - summarize material costs all invoice lines
-	@NonNull Amount cogsLC;
+	@Nullable Amount cogsLC;
 
 	// 035 - Charge - If non-invoiceable charges on sales invoice to customer
 	// 041 - Charge - Costs in foreign currency charged to customer
-	@NonNull Amount chargesLC;
-	@NonNull Amount chargesFC;
+	@Nullable Amount chargesLC;
+	@Nullable Amount chargesFC;
 
 	// 036 - PROFIT / LOSS Profit - calculate Sales minus Estimated minus COGS
-	@NonNull Amount profitOrLossLC;
+	@Nullable Amount profitOrLossLC;
 
 	// 037 - Rate - calculate percentage profit/loss against Sales
-	@NonNull Percent profitRate;
+	@Nullable Percent profitRate;
 }

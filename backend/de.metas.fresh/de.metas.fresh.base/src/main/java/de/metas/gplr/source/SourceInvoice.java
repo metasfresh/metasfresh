@@ -1,0 +1,39 @@
+package de.metas.gplr.source;
+
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.document.DocTypeId;
+import de.metas.forex.ForexContractRef;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class SourceInvoice
+{
+	@NonNull InvoiceId id;
+	@NonNull OrderId orderId;
+	@NonNull OrgId orgId;
+	@NonNull String documentNo;
+	@NonNull String docTypeName;
+	@Nullable ForexContractRef forexContractRef;
+	@NonNull CurrencyConversionContext currencyConversionCtx;
+	@NonNull SourceUserInfo createdBy;
+	@NonNull LocalDateAndOrgId created;
+	@NonNull LocalDateAndOrgId dateInvoiced;
+	@NonNull PaymentTerm paymentTerm;
+	@Nullable LocalDateAndOrgId dueDate;
+	@Nullable String descriptionBottom;
+	@NonNull Amount linesNetAmt;
+	@NonNull Amount taxAmt;
+}

@@ -17,6 +17,7 @@ public class GPLRReport
 	@NonNull GPLRReportSalesOrder salesOrder;
 	@NonNull List<GPLRReportShipment> shipments;
 	@NonNull List<GPLRReportPurchaseOrder> purchaseOrders;
+	@NonNull GPLRReportSummary summary;
 	@NonNull List<GPLRReportLineItem> lineItems;
 	@NonNull List<GPLRReportCharge> charges;
 	@NonNull List<GPLRReportNote> otherNotes;
