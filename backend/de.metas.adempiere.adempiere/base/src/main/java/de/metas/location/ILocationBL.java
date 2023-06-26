@@ -19,7 +19,7 @@ public interface ILocationBL extends ISingletonService
 	/**
 	 * Build address string based on given locationId and bpartner and user blocks
 	 * 
-	 * task FRESH-119: transaction no longer needed in this method. Provide the location as object, not by its ID. This way we avoid unnecessary extra loading of the object based on id.
+	 * @implSpec task FRESH-119: transaction no longer needed in this method. Provide the location as object, not by its ID. This way we avoid unnecessary extra loading of the object based on id.
 	 * 
 	 * @param bpartner - optional parameter; we need this for language
 	 *
