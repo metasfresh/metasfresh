@@ -4,11 +4,15 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -17,6 +21,8 @@ import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -59,8 +65,7 @@ import javax.annotation.Nullable;
 		return this;
 	}
 
-	@Nullable
-	public I_C_BP_BankAccount importRecord(final I_I_BPartner importRecord)
+	public void importRecord(final I_I_BPartner importRecord)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(importRecord.getC_BPartner_ID());
 
@@ -72,31 +77,88 @@ import javax.annotation.Nullable;
 			bankAccount.setIBAN(importRecord.getIBAN());
 			CoalesceUtil.firstNotEmptyTrimmed(importRecord.getA_Name(), importRecord.getName(), importRecord.getSwiftCode(), "-");
 			bankAccount.setAccountNo(importRecord.getAccountNo());
+
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bankAccount);
 		}
-		else if (!Check.isEmpty(importRecord.getSwiftCode(), true) && !Check.isEmpty(importRecord.getIBAN(), true))
+		else if (Check.isNotBlank(importRecord.getSwiftCode())
+				|| Check.isNotBlank(importRecord.getIBAN())
+				|| Check.isNotBlank(importRecord.getQR_IBAN()))
 		{
 			bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
 			bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 			bankAccount.setIBAN(importRecord.getIBAN());
 			CoalesceUtil.firstNotEmptyTrimmed(importRecord.getA_Name(), importRecord.getName(), importRecord.getSwiftCode(), "-");
 			bankAccount.setAccountNo(importRecord.getAccountNo());
-			bankAccount.setSwiftCode(importRecord.getSwiftCode());
-			bankAccount.setC_Currency_ID(currencyBL.getBaseCurrency(process.getCtx()).getId().getRepoId());
-			final BankId bankId = bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode()).orElse(null);
-			if (bankId != null)
-			{
-				bankAccount.setC_Bank_ID(bankId.getRepoId());
-			}
+
+			bankAccount.setQR_IBAN(importRecord.getQR_IBAN());
+			bankAccount.setC_Bank_ID(BankId.optionalToRepoId(resolveBankId(importRecord)));
+
+			final CurrencyId currencyId = resolveCurrencyId(importRecord)
+					.orElseGet(() -> currencyBL.getBaseCurrency(process.getCtx()).getId());
+			bankAccount.setC_Currency_ID(CurrencyId.toRepoId(currencyId));
+
+			importSwiftCode(bankAccount, importRecord);
+			importBankDetails(bankAccount, importRecord);
 
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bankAccount);
 
 			importRecord.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
 		}
-
-		return bankAccount;
 	}
 
+	@NonNull
+	private Optional<BankId> resolveBankIdFromBankDetails(@NonNull final String bankDetails)
+	{
+		final Set<BankId> bankIdCollection = bankRepository.retrieveBankIdsByName(bankDetails);
+
+		return Optional.ofNullable(CollectionUtils.singleElementOrNull(bankIdCollection));
+	}
+
+	private void importBankDetails(@NonNull final I_C_BP_BankAccount bpBankAccount, @NonNull final I_I_BPartner importRecord)
+	{
+		if (Check.isBlank(importRecord.getBankDetails()))
+		{
+			return;
+		}
+
+		bpBankAccount.setName(importRecord.getBankDetails());
+		bpBankAccount.setDescription(importRecord.getBankDetails());
+	}
+
+	private void importSwiftCode(@NonNull final I_C_BP_BankAccount bpBankAccount, @NonNull final I_I_BPartner importRecord)
+	{
+		if (Check.isBlank(importRecord.getSwiftCode()))
+		{
+			return;
+		}
+
+		bpBankAccount.setSwiftCode(importRecord.getSwiftCode());
+	}
+
+	@NonNull
+	private Optional<BankId> resolveBankId(@NonNull final I_I_BPartner importRecord)
+	{
+		if (Check.isNotBlank(importRecord.getSwiftCode()))
+		{
+			return bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode());
+		}
+
+		if (Check.isNotBlank(importRecord.getBankDetails()))
+		{
+			return resolveBankIdFromBankDetails(importRecord.getBankDetails());
+		}
+
+		return Optional.empty();
+	}
+
+	@NonNull
+	private Optional<CurrencyId> resolveCurrencyId(@NonNull final I_I_BPartner importRecord)
+	{
+		return Optional.ofNullable(importRecord.getISO_Code())
+				.map(CurrencyCode::ofThreeLetterCode)
+				.map(currencyBL::getByCurrencyCode)
+				.map(Currency::getId);
+	}
 }

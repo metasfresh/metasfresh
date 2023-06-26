@@ -62,7 +62,6 @@ public class BankAccountQuery
 		this.containsQRIBAN = CoalesceUtil.coalesce(containsQRIBAN, false);
 
 		assume(bPartnerId != null || invoiceId != null,
-				"At least one of the parameters 'bPartnerId, invoiceId and value needs to be non-null/non-empty");
+			   "At least one of the parameters 'bPartnerId, invoiceId and value needs to be non-null/non-empty");
 	}
-
 }
