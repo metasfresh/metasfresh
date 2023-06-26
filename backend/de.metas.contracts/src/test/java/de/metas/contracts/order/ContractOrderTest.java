@@ -38,16 +38,9 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	final private static String terminationMemo = "note: cancelContract_test";
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-<<<<<<< HEAD
-	@BeforeEach
-	@Override
-	public void init()
-=======
 	@Override
 	protected void afterInit()
->>>>>>> ee0dfc43c16 (Module Contract tables and columns renaming (#15689))
 	{
-		super.init();
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(
 						new ContractOrderService(),
