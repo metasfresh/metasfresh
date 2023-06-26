@@ -36,6 +36,7 @@ import java.util.Optional;
  * <ul>
  * <li>should be annotated with {@link org.springframework.stereotype.Component},
  * so that one instance per class is initialized and injected into {@link ModularContractService}.</li>
+ * <li><b>OR?</b> they might be loaded from {@code Contract_Module_Type} (TODO create ContractModuleTypeDAO in this case)</li>
  * </ul>
  * <p>
  * At this stage I think there will be one implementation for {@link org.compiere.model.I_C_Order},

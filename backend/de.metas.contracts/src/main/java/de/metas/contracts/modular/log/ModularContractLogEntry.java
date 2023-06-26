@@ -22,10 +22,21 @@
 
 package de.metas.contracts.modular.log;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.settings.ModuleConfigId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
+import de.metas.money.Money;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
 
 /**
  * Add further properties as needed.
@@ -41,4 +52,47 @@ public class ModularContractLogEntry
 
 	@NonNull
 	ProductId productId;
+
+	@NonNull
+	TableRecordReference referencedRecord;
+
+	@NonNull
+	BPartnerId collectionPointBPartnerId;
+
+	@NonNull
+	BPartnerId producerBPartnerId;
+
+	@NonNull
+	BPartnerId invoicingBPartnerId;
+
+	@NonNull
+	WarehouseId collectionPoint;
+
+	@NonNull
+	ModuleConfigId moduleConfigId;
+
+	@NonNull
+	LogEntryDocumentType documentType;
+
+	@NonNull
+	SOTrx soTrx;
+
+	boolean processed;
+
+	@Nullable
+	Quantity quantity;
+
+	@NonNull
+	Money amount;
+
+	@NonNull
+	LocalDateAndOrgId transactionDate;
+
+	@Nullable
+	InvoiceCandidateId invoiceCandidateId;
+
+/*
+	Contract module	type:C_Flatrate_Term.Contract_module_Type_ID See	https://github.com/metasfresh/me03/issues/15645 TODO
+	Active:Y: instead of having this, maybe just ignore inactive record in the DAO
+*/
 }
