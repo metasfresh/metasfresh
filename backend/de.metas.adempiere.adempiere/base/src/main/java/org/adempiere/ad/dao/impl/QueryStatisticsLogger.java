@@ -1,15 +1,12 @@
 package org.adempiere.ad.dao.impl;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
+import com.google.common.base.Stopwatch;
 import de.metas.common.util.time.SystemTime;
+import de.metas.dao.sql.SqlParamsInliner;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
@@ -23,11 +20,15 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
@@ -37,6 +38,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private static final TimeUnit TIMEUNIT_Internal = TimeUnit.NANOSECONDS;
 	private static final TimeUnit TIMEUNIT_Display = TimeUnit.MILLISECONDS;
+	private static final String nl = "\n";
+	private static SqlParamsInliner SQL_PARAMS_INLINER = SqlParamsInliner.builder().failOnError(false).build();
 
 	private boolean enabled = false;
 	private final ConcurrentHashMap<String, QueryStatistics> sql2statistics = new ConcurrentHashMap<>();
@@ -236,7 +239,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		final int count = traceSqlQueries_Count.incrementAndGet();
 		final String prefix = "-- SQL[" + count + "]-" + threadName + "-";
 		final String prefixSQL = "                 ";
-		final String nl = "\n";
 
 		final StringBuilder message = new StringBuilder();
 
@@ -261,17 +263,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		}
 		else
 		{
-			final String sqlNorm = sql
-					.trim()
-					.replace("\r\n", "\n").replace("\n", nl); // make sure we always have `nl`
+			String sqlNorm = normalizeAndInlineSqlParams(sql, sqlParams);
 			message.append(nl).append(sqlNorm);
-		}
-
-		//
-		// SQL query parameters
-		if (sqlParams != null && !sqlParams.isEmpty())
-		{
-			message.append(nl + "-- Parameters[").append(sqlParams.size()).append("]: ").append(sqlParams);
 		}
 
 		//
@@ -282,6 +275,19 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 				+ "\n" + prefix + "-end-----------------------------------------------------------------------------"
 				+ "\n");
 
+	}
+
+	private static String normalizeAndInlineSqlParams(@NonNull final String sql, @Nullable final Map<Integer, Object> sqlParams)
+	{
+		String sqlNorm = sql
+				.trim()
+				.replace("\r\n", "\n").replace("\n", nl); // make sure we always have `nl`
+
+		if (sqlParams != null && !sqlParams.isEmpty())
+		{
+			sqlNorm = SQL_PARAMS_INLINER.inline(sqlNorm, sqlParams.values().toArray());
+		}
+		return sqlNorm;
 	}
 
 	private String extractTrxNameInfo(final String trxName)
