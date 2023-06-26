@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
@@ -103,35 +104,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public abstract class AbstractFlatrateTermTest
 {
-	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-
-	private final static String SEQUENCE = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
 	protected final static BigDecimal QTY_ONE = BigDecimal.ONE;
 	protected final static BigDecimal PRICE_TEN = BigDecimal.TEN;
-
+	private final static String SEQUENCE = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
+	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	public FlatrateTermTestHelper helper;
-
+	protected IContractChangeBL contractChangeBL;
 	@Getter
 	private I_C_Calendar calendar;
-
 	@Getter
 	private AcctSchemaId acctSchemaId;
-
 	@Getter
 	private CurrencyId currencyId;
-
 	@Getter
 	private I_C_Country country;
-
 	@Getter
 	private I_C_BPartner bpartner;
-
 	@Getter
 	private I_C_BPartner_Location bpLocation;
-
 	@Getter
 	private org.compiere.model.I_AD_User user;
-
 	private TaxCategoryId taxCategoryId;
 
 	@BeforeAll
@@ -160,13 +152,14 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 
+		contractChangeBL = Services.get(IContractChangeBL.class);
+
 		afterInit();
 	}
 
 	protected void afterInit()
 	{
 	}
-
 
 	protected FlatrateTermTestHelper createFlatrateTermTestHelper()
 	{
