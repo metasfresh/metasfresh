@@ -1,8 +1,8 @@
 package de.metas.gplr;
 
 import de.metas.department.DepartmentService;
-import de.metas.gplr.source.GPLRSourceDocuments;
-import de.metas.gplr.source.GPLRSourceDocumentsService;
+import de.metas.gplr.source.SourceDocuments;
+import de.metas.gplr.source.SourceDocumentsService;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.MoneyService;
 import lombok.NonNull;
@@ -14,12 +14,12 @@ public class GPLRReportService
 {
 	//
 	// Services
-	@NonNull private final GPLRSourceDocumentsService sourceDocumentsService;
+	@NonNull private final SourceDocumentsService sourceDocumentsService;
 	@NonNull private final DepartmentService departmentService;
 	@NonNull private final MoneyService moneyService;
 
 	public GPLRReportService(
-			final @NonNull GPLRSourceDocumentsService sourceDocumentsService,
+			final @NonNull SourceDocumentsService sourceDocumentsService,
 			final @NonNull DepartmentService departmentService,
 			final @NonNull MoneyService moneyService)
 	{
@@ -39,7 +39,7 @@ public class GPLRReportService
 		createReport(sourceDocumentsService.getByInvoiceId(invoiceId));
 	}
 
-	private void createReport(@NonNull final GPLRSourceDocuments source)
+	private void createReport(@NonNull final SourceDocuments source)
 	{
 		if (isReportGeneratedFor(source.getSalesInvoiceId()))
 		{

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Value
 @Builder
-public class GPLRSourceDocuments
+public class SourceDocuments
 {
 	@NonNull SourceInvoice salesInvoice;
 	@NonNull SourceOrder salesOrder;

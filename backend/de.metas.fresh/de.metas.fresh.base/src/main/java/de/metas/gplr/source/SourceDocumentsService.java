@@ -67,7 +67,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 @Service
-public class GPLRSourceDocumentsService
+public class SourceDocumentsService
 {
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -87,7 +87,7 @@ public class GPLRSourceDocumentsService
 	@NonNull private final OrderCostService orderCostService;
 	@NonNull private final IncotermsRepository incotermsRepository;
 
-	public GPLRSourceDocumentsService(
+	public SourceDocumentsService(
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final MoneyService moneyService,
@@ -101,7 +101,7 @@ public class GPLRSourceDocumentsService
 		this.incotermsRepository = incotermsRepository;
 	}
 
-	public GPLRSourceDocuments getByInvoiceId(final InvoiceId invoiceId)
+	public SourceDocuments getByInvoiceId(final InvoiceId invoiceId)
 	{
 		final SourceInvoice salesInvoice = getSalesInvoice(invoiceId);
 		final OrderId salesOrderId = salesInvoice.getOrderId();
@@ -140,7 +140,7 @@ public class GPLRSourceDocumentsService
 					.build();
 		};
 
-		return GPLRSourceDocuments.builder()
+		return SourceDocuments.builder()
 				.salesInvoice(salesInvoice)
 				.salesOrder(toOrderAndLines.apply(salesOrder))
 				.shipments(getSourceShipments(salesOrderId))

@@ -24,7 +24,7 @@ import de.metas.gplr.model.GPLRReportSummary;
 import de.metas.gplr.model.GPLRSectionCode;
 import de.metas.gplr.model.GPLRShipperName;
 import de.metas.gplr.model.GPLRWarehouseName;
-import de.metas.gplr.source.GPLRSourceDocuments;
+import de.metas.gplr.source.SourceDocuments;
 import de.metas.gplr.source.SourceBPartnerInfo;
 import de.metas.gplr.source.SourceIncotermsAndLocation;
 import de.metas.gplr.source.SourceInvoice;
@@ -55,7 +55,7 @@ final class GPLRReportCreateCommand
 	@NonNull private final MoneyService moneyService;
 	//
 	// Params
-	@NonNull private final GPLRSourceDocuments source;
+	@NonNull private final SourceDocuments source;
 
 	//
 	// State
@@ -66,7 +66,7 @@ final class GPLRReportCreateCommand
 	private GPLRReportCreateCommand(
 			final @NonNull DepartmentService departmentService,
 			final @NonNull MoneyService moneyService,
-			final @NonNull GPLRSourceDocuments source)
+			final @NonNull SourceDocuments source)
 	{
 		this.departmentService = departmentService;
 		this.moneyService = moneyService;
