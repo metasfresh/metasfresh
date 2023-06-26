@@ -7,6 +7,7 @@ Feature: sales order interaction with material cockpit - Order Line's UOM is dif
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
+  @Id:S0278_100
   @from:cucumber
   Scenario: SO with qty = 10, no ASI
     Given metasfresh contains M_Products:
