@@ -2,15 +2,12 @@ package de.metas.gplr.source;
 
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.document.DocTypeId;
 import de.metas.forex.ForexContractRef;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTerm;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
