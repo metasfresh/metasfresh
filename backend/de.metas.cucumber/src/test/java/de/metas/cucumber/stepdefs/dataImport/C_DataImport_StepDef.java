@@ -22,22 +22,30 @@
 
 package de.metas.cucumber.stepdefs.dataImport;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.importFormat.AD_ImpFormat_StepDefData;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DataImport;
+import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,20 +65,28 @@ public class C_DataImport_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final AD_User_StepDefData contactTable;
+	private final C_DataImport_StepDefData dataImportTable;
+	private final AD_ImpFormat_StepDefData impFormatTable;
 
 	private final TestContext testContext;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_DataImport_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final AD_User_StepDefData contactTable,
+			@NonNull final C_DataImport_StepDefData dataImportTable,
+			@NonNull final AD_ImpFormat_StepDefData impFormatTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.productTable = productTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.contactTable = contactTable;
+		this.dataImportTable = dataImportTable;
+		this.impFormatTable = impFormatTable;
 		this.testContext = testContext;
 	}
 
@@ -181,5 +197,97 @@ public class C_DataImport_StepDef
 				.collect(Collectors.joining("\n"));
 
 		testContext.setRequestPayload(content);
+	}
+
+	@And("metasfresh contains C_DataImport:")
+	public void metasfreshContainsDataImport(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String internalName = DataTableUtil.extractStringForColumnName(row, I_C_DataImport.COLUMNNAME_InternalName);
+
+			final I_C_DataImport record = CoalesceUtil
+					.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_C_DataImport.class)
+											   .addOnlyActiveRecordsFilter()
+											   .addStringLikeFilter(I_C_DataImport.COLUMNNAME_InternalName, internalName, false)
+											   .create()
+											   .firstOnlyOrNull(I_C_DataImport.class),
+									   () -> InterfaceWrapperHelper.newInstance(I_C_DataImport.class));
+
+			final String impFormatIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_ImpFormat.COLUMNNAME_AD_ImpFormat_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_AD_ImpFormat importFormat = impFormatTable.getOptional(impFormatIdentifier)
+					.orElseThrow(() -> new AdempiereException("Missing I_AD_ImpFormat for identifier!")
+							.appendParametersToMessage()
+							.setParameter("impFormatIdentifier", impFormatIdentifier));
+
+			record.setAD_ImpFormat_ID(importFormat.getAD_ImpFormat_ID());
+			record.setInternalName(internalName);
+
+			InterfaceWrapperHelper.saveRecord(record);
+
+			final String dataRecordIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_DataImport.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER);
+			dataImportTable.putOrReplace(dataRecordIdentifier, record);
+		}
+	}
+
+	@And("store business partner DataImport string requestBody in context")
+	public void store_business_partner_string_requestBody_in_context(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bpValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_BPValue);
+			final String companyName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Companyname);
+			final String taxId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_TaxID);
+			final String firstName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Firstname);
+			final String lastName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Lastname);
+			final Boolean isShipToContactDefault = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_I_BPartner.COLUMNNAME_IsShipToContact_Default, false);
+			final Boolean isBillToContactDefault = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_I_BPartner.COLUMNNAME_IsBillToContact_Default, false);
+			final String address1 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Address1);
+			final String address2 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Address2);
+			final String address3 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Address3);
+			final String address4 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Address4);
+			final String city = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_City);
+			final String region = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_RegionName);
+			final String countryCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_CountryCode);
+			final String groupValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_GroupValue);
+			final Boolean isBillToDefault = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_I_BPartner.COLUMNNAME_IsBillToDefault, false);
+			final Boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_I_BPartner.COLUMNNAME_IsShipToDefault, false);
+			final String adLanguage = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_GroupValue);
+			final String orgValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_OrgValue);
+			final String postal = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_Postal);
+			final String bankDetails = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_BankDetails);
+			final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_IBAN);
+			final String qrIban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_QR_IBAN);
+			final String isoCurrencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_ISO_Code);
+			final String isManual = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_BPartner.COLUMNNAME_IsManuallyCreated);
+
+			final String payload = bpValue + "	"
+					+ companyName + "	"
+					+ taxId + "	"
+					+ firstName + "	"
+					+ lastName + "	"
+					+ isShipToContactDefault + "	"
+					+ isBillToContactDefault + "	"
+					+ address1 + "	"
+					+ address2 + "	"
+					+ address3 + "	"
+					+ address4 + "	"
+					+ city + "	"
+					+ region + "	"
+					+ countryCode + "	"
+					+ groupValue + "	"
+					+ isBillToDefault + "	"
+					+ isShipToDefault + "	"
+					+ adLanguage + "	"
+					+ orgValue + "	"
+					+ postal + "	"
+					+ bankDetails + "	"
+					+ iban + "	"
+					+ qrIban + "	"
+					+ isoCurrencyCode + "	"
+					+ isManual + "	";
+
+			testContext.setRequestPayload(payload.replaceAll("null", ""));
+		}
 	}
 }

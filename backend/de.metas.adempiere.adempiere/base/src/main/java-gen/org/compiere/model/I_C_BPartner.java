@@ -1763,6 +1763,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsHaddexCheck = "IsHaddexCheck";
 
 	/**
+	 * Set Manually created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManuallyCreated (boolean IsManuallyCreated);
+
+	/**
+	 * Get Manually created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManuallyCreated();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsManuallyCreated = new ModelColumn<>(I_C_BPartner.class, "IsManuallyCreated", null);
+	String COLUMNNAME_IsManuallyCreated = "IsManuallyCreated";
+
+	/**
 	 * Set Manufacturer.
 	 *
 	 * <br>Type: YesNo
