@@ -94,9 +94,21 @@ public class InventoryDAO implements IInventoryDAO
 	}
 
 	@Override
+	public void setInventoryLinesCounted(@NonNull final InventoryId inventoryId, final boolean counted)
+	{
+		Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.addNotEqualsFilter(I_M_InventoryLine.COLUMNNAME_IsCounted, counted)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_IsCounted, counted)
+				.execute();
+	}
+
+	@Override
 	public void save(I_M_InventoryLine inventoryLine)
 	{
 		saveRecord(inventoryLine);
 	}
-
 }

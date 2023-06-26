@@ -2,6 +2,7 @@ package de.metas.inventory;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -48,6 +49,8 @@ public interface IInventoryDAO extends ISingletonService
 	boolean hasLines(InventoryId inventoryId);
 
 	void setInventoryLinesProcessed(InventoryId inventoryId, boolean processed);
+
+	void setInventoryLinesCounted(@NonNull InventoryId inventoryId, boolean counted);
 
 	void save(I_M_InventoryLine inventoryLine);
 }
