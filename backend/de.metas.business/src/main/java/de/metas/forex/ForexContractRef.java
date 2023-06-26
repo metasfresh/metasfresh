@@ -56,8 +56,18 @@ public class ForexContractRef
 				.build();
 	}
 
+	/**
+	 * @return foreign currency (i.e. the order currency)
+	 */
+	@NonNull
 	public CurrencyId getForeignCurrencyId()
 	{
-		return CurrencyId.equals(fromCurrencyId, orderCurrencyId) ? toCurrencyId : fromCurrencyId;
+		return orderCurrencyId;
 	}
+
+	/**
+	 * @return local currency (i.e. the other one, which is not the order currency)
+	 */
+	@NonNull
+	public CurrencyId getLocalCurrencyId() {return CurrencyId.equals(fromCurrencyId, orderCurrencyId) ? toCurrencyId : fromCurrencyId;}
 }

@@ -31,7 +31,7 @@ class ForexContractRefTest
 	}
 
 	@Nested
-	class getForeignCurrencyId
+	class getForeignCurrencyId_and_getLocalCurrencyId
 	{
 		CurrencyId CURRENCY1 = CurrencyId.ofRepoId(555);
 		CurrencyId CURRENCY2 = CurrencyId.ofRepoId(444);
@@ -49,21 +49,23 @@ class ForexContractRefTest
 			final CurrencyId CURRENCY1 = CurrencyId.ofRepoId(555);
 			final ForexContractRef forexContractRef = forexContractRef()
 					.orderCurrencyId(CURRENCY1)
-					.fromCurrencyId(CURRENCY2)
-					.toCurrencyId(CURRENCY1)
+					.fromCurrencyId(CURRENCY1)
+					.toCurrencyId(CURRENCY2)
 					.build();
-			assertThat(forexContractRef.getForeignCurrencyId()).isEqualTo(CURRENCY2);
+			assertThat(forexContractRef.getForeignCurrencyId()).isEqualTo(CURRENCY1);
+			assertThat(forexContractRef.getLocalCurrencyId()).isEqualTo(CURRENCY2);
 		}
 
 		@Test
 		void toCurrency_is_foreignCurrency()
 		{
 			final ForexContractRef forexContractRef = forexContractRef()
-					.orderCurrencyId(CURRENCY2)
-					.fromCurrencyId(CURRENCY2)
-					.toCurrencyId(CURRENCY1)
+					.orderCurrencyId(CURRENCY1)
+					.fromCurrencyId(CURRENCY1)
+					.toCurrencyId(CURRENCY2)
 					.build();
 			assertThat(forexContractRef.getForeignCurrencyId()).isEqualTo(CURRENCY1);
+			assertThat(forexContractRef.getLocalCurrencyId()).isEqualTo(CURRENCY2);
 		}
 	}
 }
