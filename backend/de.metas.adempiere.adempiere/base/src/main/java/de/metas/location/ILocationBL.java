@@ -41,4 +41,6 @@ public interface ILocationBL extends ISingletonService
 	 * @return new duplicated location
 	 */
 	I_C_Location duplicate(I_C_Location location);
+
+	CountryCode getCountryCodeByLocationId(@NonNull LocationId id);
 }
