@@ -3,10 +3,17 @@ package de.metas.inventory.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.product.ProductId;
+import de.metas.util.NumberUtils;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -15,6 +22,9 @@ import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -40,6 +50,8 @@ import lombok.NonNull;
 
 public class InventoryDAO implements IInventoryDAO
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
 	{
@@ -72,7 +84,7 @@ public class InventoryDAO implements IInventoryDAO
 
 	private IQueryBuilder<I_M_InventoryLine> queryLinesForInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
@@ -83,7 +95,7 @@ public class InventoryDAO implements IInventoryDAO
 	@Override
 	public void setInventoryLinesProcessed(@NonNull final InventoryId inventoryId, final boolean processed)
 	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
+		queryBL.createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
 				.addNotEqualsFilter(I_M_InventoryLine.COLUMNNAME_Processed, processed)
@@ -96,7 +108,7 @@ public class InventoryDAO implements IInventoryDAO
 	@Override
 	public void setInventoryLinesCounted(@NonNull final InventoryId inventoryId, final boolean counted)
 	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
+		queryBL.createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
 				.addNotEqualsFilter(I_M_InventoryLine.COLUMNNAME_IsCounted, counted)
@@ -104,6 +116,39 @@ public class InventoryDAO implements IInventoryDAO
 				.updateDirectly()
 				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_IsCounted, counted)
 				.execute();
+	}
+
+	@Override
+	public ImmutableSet<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<Integer> invetoryIds)
+	{
+		if (invetoryIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
+				.addInArrayFilter(I_M_InventoryLine.COLUMN_M_Inventory_ID, invetoryIds)
+				.andCollectChildren(I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
+				.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID)
+				.stream()
+				.map(this::extractProductIdorNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	private ProductId extractProductIdorNull(@NonNull final Map<String, Object> map)
+	{
+		final int productId = NumberUtils.asInt(map.get(I_M_Product.COLUMNNAME_M_Product_ID), -1);
+		if (productId <= 0)
+		{
+			// shall not happen
+			return null;
+		}
+		return ProductId.ofRepoId(productId);
 	}
 
 	@Override
