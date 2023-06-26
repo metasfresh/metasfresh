@@ -82,6 +82,7 @@ SELECT
                                                         inner join m_inout inout on inoutline.m_inout_id = inout.m_inout_id
                                                         inner join EDI_Desadv edi on inout.EDI_Desadv_ID = edi.EDI_Desadv_ID
         where icl.c_invoice_id = i.c_invoice_id) as EDIDesadvDocumentNo
+
 FROM C_Invoice i
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypetarget_ID
          LEFT JOIN C_Order o ON o.C_Order_ID=i.C_Order_ID
