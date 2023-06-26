@@ -28,6 +28,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class ModularContractSettingsId implements RepoIdAware
 {
@@ -37,6 +39,12 @@ public class ModularContractSettingsId implements RepoIdAware
 	public static ModularContractSettingsId ofRepoId(final int repoId)
 	{
 		return new ModularContractSettingsId(repoId);
+	}
+
+	@Nullable
+	public static ModularContractSettingsId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new ModularContractSettingsId(repoId) : null;
 	}
 
 	private ModularContractSettingsId(final int repoId)

@@ -26,21 +26,39 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ModuleConfigId implements RepoIdAware
 {
 	int repoId;
+	ModularContractSettingsId modularContractSettingsId;
 
 	@JsonCreator
-	public static ModuleConfigId ofRepoId(final int repoId)
+	public static ModuleConfigId ofRepoId(@NonNull final ModularContractSettingsId modularContractSettingsId, final int repoId)
 	{
-		return new ModuleConfigId(repoId);
+		return new ModuleConfigId(modularContractSettingsId, repoId);
 	}
 
-	private ModuleConfigId(final int repoId)
+	public static ModuleConfigId ofRepoId(final int modularContractSettingsId, final int repoId)
 	{
+		return new ModuleConfigId(ModularContractSettingsId.ofRepoId(modularContractSettingsId), repoId);
+	}
+
+	@Nullable
+	public static ModuleConfigId ofRepoIdOrNull(final Integer modularContractSettingsId, final Integer repoId)
+	{
+		return modularContractSettingsId != null && modularContractSettingsId > 0
+				&& repoId != null && repoId > 0
+				? new ModuleConfigId(ModularContractSettingsId.ofRepoId(modularContractSettingsId), repoId) : null;
+	}
+
+	private ModuleConfigId(@NonNull final ModularContractSettingsId modularContractSettingsId, final int repoId)
+	{
+		this.modularContractSettingsId = modularContractSettingsId;
 		this.repoId = Check.assumeGreaterThanZero(repoId, "moduleConfigId");
 	}
 
