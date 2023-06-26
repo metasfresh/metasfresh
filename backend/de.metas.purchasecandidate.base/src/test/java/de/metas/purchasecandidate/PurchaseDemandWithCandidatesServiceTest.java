@@ -162,6 +162,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(discountSchemaRecord);
 
 		paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("test payment term");
+		paymentTermRecord.setName("test payment term");
 		paymentTermRecord.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
 		paymentTermRecord.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
 		saveRecord(paymentTermRecord);
