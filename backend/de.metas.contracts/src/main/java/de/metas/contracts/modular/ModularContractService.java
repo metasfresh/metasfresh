@@ -26,9 +26,7 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Service
 public class ModularContractService
@@ -38,19 +36,20 @@ public class ModularContractService
 		COMPLETED, REVERSED, REACTIVATED
 	}
 
-	private final Map<Class<Object>, Collection<IModularContractTypeHandler>> modelToHandlersCache;
 	private final ModularContractLogDAO contractLogDAO;
+	private final List<IModularContractTypeHandler> knownHandlers;
 
 	public ModularContractService(
-			@NonNull final ModularContractLogDAO contractLogDAO)
+			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final List<IModularContractTypeHandler> knownHandlers)
 	{
 		this.contractLogDAO = contractLogDAO;
-		modelToHandlersCache = new HashMap<>();
+		this.knownHandlers = knownHandlers;
 	}
 
 	public void invokeWithModel(@NonNull final Object model, @NonNull final ModelAction action)
 	{
-		modelToHandlersCache.get(model.getClass()).stream()
+		knownHandlers.stream()
 				.filter(handler -> handler.probablyAppliesTo(model))
 				.forEach(handler -> invokeWithModel(model, action, handler));
 	}

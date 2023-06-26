@@ -23,9 +23,12 @@
 package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 import java.util.Optional;
@@ -57,6 +60,7 @@ public interface IModularContractTypeHandler<T>
 	default Stream<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model)
 	{
 		return getContractIds(model)
+				.filter(flatrateTermId -> X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract.equals(Services.get(IFlatrateDAO.class).retrieveTerm(flatrateTermId).getType_Conditions()))
 				.map(flatrateTermId -> createLogEntryCreateRequest(model, flatrateTermId))
 				.filter(Optional::isPresent)
 				.map(Optional::get);
@@ -66,7 +70,7 @@ public interface IModularContractTypeHandler<T>
 	Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 
 	/**
-	 * Return a request if the framework shall create one or more reversal-record log records, or {@link Stream#empty()} otherwise.
+	 * Return a Stream of requests if the framework shall create one or more reversal-record log records, or {@link Stream#empty()} otherwise.
 	 * This method has no {@code settings} parameter because i *think* there are existing log records that have to be reversed independently of settings.
 	 */
 	@NonNull

@@ -23,12 +23,19 @@
 package de.metas.contracts.modular.log;
 
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-@Value
+import javax.annotation.Nullable;
+
 @Builder
-public class LogEntryReverseRequest
+public record LogEntryReverseRequest(@Nullable ModularContractLogEntryId id, @Nullable TableRecordReference referencedModel)
 {
-	@NonNull ModularContractLogEntryId id;
+	public LogEntryReverseRequest
+	{
+		if (id == null && referencedModel == null)
+		{
+			throw new AdempiereException("LogEntryReverseRequest - either an ID or a tableRecordReference must be present.");
+		}
+	}
 }

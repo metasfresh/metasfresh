@@ -37,20 +37,24 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 @Service
 public class ModularContractLogDAO
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public ModularContractLogEntry get(@NonNull final ModularContractLogEntryId id)
 	{
-		return toModularContractLogEntry(InterfaceWrapperHelper.load(ModularContractLogEntryId.toRepoId(id), I_ModCntr_Log.class));
+		return fromDB(InterfaceWrapperHelper.load(ModularContractLogEntryId.toRepoId(id), I_ModCntr_Log.class));
 	}
 
 	public ModularContractLogEntryId create(@NonNull final LogEntryCreateRequest request)
@@ -99,7 +103,7 @@ public class ModularContractLogDAO
 		return log;
 	}
 
-	private ModularContractLogEntry toModularContractLogEntry(final I_ModCntr_Log log)
+	private ModularContractLogEntry fromDB(final I_ModCntr_Log log)
 	{
 		return ModularContractLogEntry.builder()
 				.id(ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID()))
@@ -119,9 +123,10 @@ public class ModularContractLogDAO
 				.build();
 	}
 
+	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest logEntryReverseRequest)
 	{
-		final I_ModCntr_Log oldLog = InterfaceWrapperHelper.load(logEntryReverseRequest.getId().getRepoId(), I_ModCntr_Log.class);
+		final I_ModCntr_Log oldLog = InterfaceWrapperHelper.load(logEntryReverseRequest.id().getRepoId(), I_ModCntr_Log.class);
 
 		final I_ModCntr_Log reversedLog = InterfaceWrapperHelper.newInstance(I_ModCntr_Log.class);
 		InterfaceWrapperHelper.copyValues(oldLog, reversedLog);
@@ -129,15 +134,31 @@ public class ModularContractLogDAO
 		{
 			reversedLog.setQty(reversedLog.getQty().negate());
 		}
+		InterfaceWrapperHelper.save(reversedLog);
 
-		return null; // todo
+		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
 	}
 
 	/**
 	 * @return the log entry that was just deleted; might be helpful for testing.
 	 */
+	@Nullable
 	public ModularContractLogEntry delete(final LogEntryDeleteRequest logEntryDeleteRequest)
 	{
-		return null; // todo
+		final TableRecordReference referencedModel = logEntryDeleteRequest.getReferencedModel();
+		final I_ModCntr_Log recordToDelete = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, referencedModel.getAdTableId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, referencedModel.getRecord_ID())
+				.orderBy(I_ModCntr_Log.COLUMNNAME_Created)
+				.create()
+				.first();
+		if (recordToDelete != null)
+		{
+			final ModularContractLogEntry logEntry = fromDB(recordToDelete);
+			InterfaceWrapperHelper.delete(recordToDelete);
+			return logEntry;
+		}
+		return null;
 	}
 }

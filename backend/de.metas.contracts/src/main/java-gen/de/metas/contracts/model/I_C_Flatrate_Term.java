@@ -324,6 +324,31 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Flatrate_Term_Master_ID = "C_Flatrate_Term_Master_ID";
 
 	/**
+	 * Set Next Term.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID);
+
+	/**
+	 * Get Next Term.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_FlatrateTerm_Next_ID();
+
+	@Nullable I_C_Flatrate_Term getC_FlatrateTerm_Next();
+
+	void setC_FlatrateTerm_Next(@Nullable I_C_Flatrate_Term C_FlatrateTerm_Next);
+
+	ModelColumn<I_C_Flatrate_Term, I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", I_C_Flatrate_Term.class);
+	String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
+
+	/**
 	 * Set Contract Transition.
 	 *
 	 * <br>Type: TableDir
@@ -352,54 +377,96 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
-	 * Set Next Term.
+	 * Set Change or Cancel.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID);
+	void setChangeOrCancelTerm (@Nullable java.lang.String ChangeOrCancelTerm);
 
 	/**
-	 * Get Next Term.
+	 * Get Change or Cancel.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_FlatrateTerm_Next_ID();
+	@Nullable java.lang.String getChangeOrCancelTerm();
 
-	@Nullable I_C_Flatrate_Term getC_FlatrateTerm_Next();
-
-	void setC_FlatrateTerm_Next(@Nullable I_C_Flatrate_Term C_FlatrateTerm_Next);
-
-	ModelColumn<I_C_Flatrate_Term, I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", I_C_Flatrate_Term.class);
-	String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new ModelColumn<>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
+	String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
 
 	/**
-	 * Set Sales Order.
+	 * Set Contract Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setContractStatus (@Nullable java.lang.String ContractStatus);
+
+	/**
+	 * Get Contract Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getContractStatus();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new ModelColumn<>(I_C_Flatrate_Term.class, "ContractStatus", null);
+	String COLUMNNAME_ContractStatus = "ContractStatus";
+
+	/**
+	 * Set Change Contract Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Order_Term_ID (int C_Order_Term_ID);
+	void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
 
 	/**
-	 * Get Sales Order.
+	 * Get Change Contract Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Order_Term_ID();
+	int getC_OrderLine_TermChange_ID();
 
-	@Nullable org.compiere.model.I_C_Order getC_Order_Term();
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
 
-	void setC_Order_Term(@Nullable org.compiere.model.I_C_Order C_Order_Term);
+	void setC_OrderLine_TermChange(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
 
-	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
+
+	/**
+	 * Set Contract Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+
+	/**
+	 * Get Contract Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_Term_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+
+	void setC_OrderLine_Term(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
 
 	/**
 	 * Set Change Sales Order.
@@ -430,77 +497,54 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
 
 	/**
-	 * Set Contract Orderline.
+	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+	void setC_Order_Term_ID (int C_Order_Term_ID);
 
 	/**
-	 * Get Contract Orderline.
+	 * Get Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_OrderLine_Term_ID();
+	int getC_Order_Term_ID();
 
-	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+	@Nullable org.compiere.model.I_C_Order getC_Order_Term();
 
-	void setC_OrderLine_Term(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+	void setC_Order_Term(@Nullable org.compiere.model.I_C_Order C_Order_Term);
 
-	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
-	String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
 
 	/**
-	 * Set Change Contract Orderline.
+	 * Get Created.
+	 * Date this record was created
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new ModelColumn<>(I_C_Flatrate_Term.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Change Contract Orderline.
+	 * Get Created By.
+	 * User who created this records
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: Table
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_OrderLine_TermChange_ID();
+	int getCreatedBy();
 
-	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
-
-	void setC_OrderLine_TermChange(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
-
-	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
-	String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
-
-	/**
-	 * Set RfQ Response Line.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
-
-	/**
-	 * Get RfQ Response Line.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_RfQResponseLine_ID();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_RfQResponseLine_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_RfQResponseLine_ID", null);
-	String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Tax Category.
@@ -547,73 +591,6 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Change or Cancel.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChangeOrCancelTerm (@Nullable String ChangeOrCancelTerm);
-
-	/**
-	 * Get Change or Cancel.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getChangeOrCancelTerm();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new ModelColumn<>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
-	String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
-
-	/**
-	 * Set Contract Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setContractStatus (@Nullable String ContractStatus);
-
-	/**
-	 * Get Contract Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getContractStatus();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new ModelColumn<>(I_C_Flatrate_Term.class, "ContractStatus", null);
-	String COLUMNNAME_ContractStatus = "ContractStatus";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new ModelColumn<>(I_C_Flatrate_Term.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Date.
 	 *
 	 * <br>Type: Date
@@ -642,7 +619,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDeliveryRule (@Nullable String DeliveryRule);
+	void setDeliveryRule (@Nullable java.lang.String DeliveryRule);
 
 	/**
 	 * Get Delivery Rule.
@@ -652,7 +629,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDeliveryRule();
+	@Nullable java.lang.String getDeliveryRule();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DeliveryRule = new ModelColumn<>(I_C_Flatrate_Term.class, "DeliveryRule", null);
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
@@ -665,7 +642,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDeliveryViaRule (@Nullable String DeliveryViaRule);
+	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Delivery Via.
@@ -675,7 +652,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDeliveryViaRule();
+	@Nullable java.lang.String getDeliveryViaRule();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_C_Flatrate_Term.class, "DeliveryViaRule", null);
 	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
@@ -688,7 +665,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocAction (String DocAction);
+	void setDocAction (java.lang.String DocAction);
 
 	/**
 	 * Get Process Batch.
@@ -698,7 +675,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocAction();
+	java.lang.String getDocAction();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DocAction = new ModelColumn<>(I_C_Flatrate_Term.class, "DocAction", null);
 	String COLUMNNAME_DocAction = "DocAction";
@@ -710,7 +687,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (String DocStatus);
+	void setDocStatus (java.lang.String DocStatus);
 
 	/**
 	 * Get Status.
@@ -719,7 +696,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocStatus();
+	java.lang.String getDocStatus();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Flatrate_Term.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
@@ -732,7 +709,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (String DocumentNo);
+	void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
@@ -742,7 +719,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocumentNo();
+	java.lang.String getDocumentNo();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_Flatrate_Term.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
@@ -864,7 +841,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExtendTerm (@Nullable String ExtendTerm);
+	void setExtendTerm (@Nullable java.lang.String ExtendTerm);
 
 	/**
 	 * Get Extend Contract.
@@ -873,7 +850,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExtendTerm();
+	@Nullable java.lang.String getExtendTerm();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ExtendTerm = new ModelColumn<>(I_C_Flatrate_Term.class, "ExtendTerm", null);
 	String COLUMNNAME_ExtendTerm = "ExtendTerm";
@@ -1034,6 +1011,71 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
+	 * Set Vertrag Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMasterDocumentNo (@Nullable java.lang.String MasterDocumentNo);
+
+	/**
+	 * Get Vertrag Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMasterDocumentNo();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterDocumentNo = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterDocumentNo", null);
+	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
+
+	/**
+	 * Set Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
+
+	/**
+	 * Get Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getMasterEndDate();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterEndDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterEndDate", null);
+	String COLUMNNAME_MasterEndDate = "MasterEndDate";
+
+	/**
+	 * Set Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
+
+	/**
+	 * Get Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getMasterStartDate();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterStartDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterStartDate", null);
+	String COLUMNNAME_MasterStartDate = "MasterStartDate";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
@@ -1103,71 +1145,6 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Vertrag Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMasterDocumentNo (@Nullable String MasterDocumentNo);
-
-	/**
-	 * Get Vertrag Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getMasterDocumentNo();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterDocumentNo = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterDocumentNo", null);
-	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
-
-	/**
-	 * Set Master End Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
-
-	/**
-	 * Get Master End Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getMasterEndDate();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterEndDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterEndDate", null);
-	String COLUMNNAME_MasterEndDate = "MasterEndDate";
-
-	/**
-	 * Set Master Start Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
-
-	/**
-	 * Get Master Start Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getMasterStartDate();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterStartDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterStartDate", null);
-	String COLUMNNAME_MasterStartDate = "MasterStartDate";
-
-	/**
 	 * Set Note.
 	 * Optional additional user defined information
 	 *
@@ -1175,7 +1152,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setNote (@Nullable String Note);
+	void setNote (@Nullable java.lang.String Note);
 
 	/**
 	 * Get Note.
@@ -1185,7 +1162,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getNote();
+	@Nullable java.lang.String getNote();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Note = new ModelColumn<>(I_C_Flatrate_Term.class, "Note", null);
 	String COLUMNNAME_Note = "Note";
@@ -1233,34 +1210,13 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_PlannedQtyPerUnit = "PlannedQtyPerUnit";
 
 	/**
-	 * Set Supply Product.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPMM_Product_ID (int PMM_Product_ID);
-
-	/**
-	 * Get Supply Product.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPMM_Product_ID();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PMM_Product_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "PMM_Product_ID", null);
-	String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
-
-	/**
 	 * Set Prepare Closing.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPrepareClosing (@Nullable String PrepareClosing);
+	void setPrepareClosing (@Nullable java.lang.String PrepareClosing);
 
 	/**
 	 * Get Prepare Closing.
@@ -1269,7 +1225,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPrepareClosing();
+	@Nullable java.lang.String getPrepareClosing();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PrepareClosing = new ModelColumn<>(I_C_Flatrate_Term.class, "PrepareClosing", null);
 	String COLUMNNAME_PrepareClosing = "PrepareClosing";
@@ -1338,27 +1294,6 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Qty Next Year.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setQtyPlanned_NextYear (BigDecimal QtyPlanned_NextYear);
-
-	/**
-	 * Get Qty Next Year.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyPlanned_NextYear();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_QtyPlanned_NextYear = new ModelColumn<>(I_C_Flatrate_Term.class, "QtyPlanned_NextYear", null);
-	String COLUMNNAME_QtyPlanned_NextYear = "QtyPlanned_NextYear";
-
-	/**
 	 * Set Start Date.
 	 * First effective day (inclusive)
 	 *
@@ -1409,7 +1344,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setTerminationMemo (@Nullable String TerminationMemo);
+	void setTerminationMemo (@Nullable java.lang.String TerminationMemo);
 
 	/**
 	 * Get Termination Memo.
@@ -1418,7 +1353,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getTerminationMemo();
+	@Nullable java.lang.String getTerminationMemo();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_TerminationMemo = new ModelColumn<>(I_C_Flatrate_Term.class, "TerminationMemo", null);
 	String COLUMNNAME_TerminationMemo = "TerminationMemo";
@@ -1430,7 +1365,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setTerminationReason (@Nullable String TerminationReason);
+	void setTerminationReason (@Nullable java.lang.String TerminationReason);
 
 	/**
 	 * Get Reason ofTermination .
@@ -1439,7 +1374,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getTerminationReason();
+	@Nullable java.lang.String getTerminationReason();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_TerminationReason = new ModelColumn<>(I_C_Flatrate_Term.class, "TerminationReason", null);
 	String COLUMNNAME_TerminationReason = "TerminationReason";
@@ -1451,7 +1386,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType_Conditions (String Type_Conditions);
+	void setType_Conditions (java.lang.String Type_Conditions);
 
 	/**
 	 * Get Contract Type.
@@ -1460,7 +1395,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getType_Conditions();
+	java.lang.String getType_Conditions();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Type_Conditions = new ModelColumn<>(I_C_Flatrate_Term.class, "Type_Conditions", null);
 	String COLUMNNAME_Type_Conditions = "Type_Conditions";
@@ -1474,7 +1409,7 @@ public interface I_C_Flatrate_Term
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setType_Flatrate (@Nullable String Type_Flatrate);
+	void setType_Flatrate (@Nullable java.lang.String Type_Flatrate);
 
 	/**
 	 * Get Flatrate Type.
@@ -1483,7 +1418,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	@Nullable String getType_Flatrate();
+	@Nullable java.lang.String getType_Flatrate();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Type_Flatrate = new ModelColumn<>(I_C_Flatrate_Term.class, "Type_Flatrate", null);
 	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
@@ -1498,7 +1433,7 @@ public interface I_C_Flatrate_Term
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setUOMType (@Nullable String UOMType);
+	void setUOMType (@Nullable java.lang.String UOMType);
 
 	/**
 	 * Get UOM Type.
@@ -1508,7 +1443,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	@Nullable String getUOMType();
+	@Nullable java.lang.String getUOMType();
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Term.class, "UOMType", null);
 	String COLUMNNAME_UOMType = "UOMType";
