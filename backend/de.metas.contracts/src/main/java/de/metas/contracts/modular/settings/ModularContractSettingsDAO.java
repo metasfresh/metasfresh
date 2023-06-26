@@ -22,14 +22,77 @@
 
 package de.metas.contracts.modular.settings;
 
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.I_ModCntr_Settings;
+import de.metas.contracts.model.I_ModCntr_Type;
+import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.lang.ClassLoaderUtil;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ModularContractSettingsDAO
 {
-	public ModularContractSettings getFor(FlatrateTermId contractId)
+	public ModularContractSettings getFor(@NonNull final FlatrateTermId contractId)
 	{
-		return null; // TODO
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_ModCntr_Settings settingsRecord = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, contractId)
+				.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
+				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
+				.create()
+				.firstOnly();
+
+		final List<I_ModCntr_Module> moduleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, settingsRecord.getModCntr_Settings_ID())
+				.create()
+				.list();
+
+		return fromPOs(settingsRecord, moduleRecords);
+	}
+
+	private static ModularContractSettings fromPOs(
+			@NonNull final I_ModCntr_Settings settingsRecord,
+			@NonNull final List<I_ModCntr_Module> moduleRecords)
+	{
+		final ModularContractSettings.ModularContractSettingsBuilder result = ModularContractSettings.builder()
+				.id(ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID()))
+				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
+				.yearId(YearId.ofRepoId(settingsRecord.getC_Calendar_ID(), settingsRecord.getC_Year_ID()))
+				.pricingSystemId(PricingSystemId.ofRepoId(settingsRecord.getM_PricingSystem_ID()))
+				.productId(ProductId.ofRepoId(settingsRecord.getM_Product_ID()))
+				.name(settingsRecord.getName());
+
+		for (final I_ModCntr_Module moduleRecord : moduleRecords)
+		{
+			final I_ModCntr_Type modCntrType = moduleRecord.getModCntr_Type();
+			final Class<?> handlerImplClass = ClassLoaderUtil.validateJavaClassname(modCntrType.getClassname(), IModularContractTypeHandler.class);
+			final IModularContractTypeHandler handlerImpl = (IModularContractTypeHandler)ClassLoaderUtil.newInstanceFromNoArgConstructor(handlerImplClass);
+
+			final ModuleConfig moduleConfig = ModuleConfig.builder()
+					.name(moduleRecord.getName())
+					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
+					.seqNo(moduleRecord.getSeqNo())
+					.invoicingGroup(moduleRecord.getInvoicingGroup())
+					.handlerImpl(handlerImpl)
+					.build();
+
+			result.moduleConfig(moduleConfig);
+		}
+
+		return result.build();
 	}
 }

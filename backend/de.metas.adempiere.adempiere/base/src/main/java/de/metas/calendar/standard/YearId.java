@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -35,16 +36,21 @@ public class YearId implements RepoIdAware
 {
 	int repoId;
 
+	CalendarId calendarId;
+
 	@JsonCreator
-	public static YearId ofRepoId(final int repoId)
+	public static YearId ofRepoId(final int calendarId, final int repoId)
 	{
-		return new YearId(repoId);
+		return new YearId(CalendarId.ofRepoId(calendarId), repoId);
 	}
 
 	@Nullable
-	public static YearId ofRepoIdOrNull(final int repoId)
+	public static YearId ofRepoIdOrNull(@Nullable final Integer calendarId, @Nullable final Integer repoId)
 	{
-		return repoId > 0 ? new YearId(repoId) : null;
+		return
+				calendarId != null && calendarId > 0 && repoId != null && repoId > 0
+						? new YearId(CalendarId.ofRepoId(calendarId), repoId)
+						: null;
 	}
 
 	public static int toRepoId(@Nullable final YearId yearId)
@@ -52,9 +58,11 @@ public class YearId implements RepoIdAware
 		return yearId != null ? yearId.getRepoId() : -1;
 	}
 
-	private YearId(final int repoId)
+	private YearId(@NonNull final CalendarId calendarId, final int repoId)
 	{
+		this.calendarId = calendarId;
 		this.repoId = Check.assumeGreaterThanZero(repoId, "yearId");
+
 	}
 
 	@JsonValue

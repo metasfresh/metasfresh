@@ -22,13 +22,13 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
@@ -47,10 +47,7 @@ public class ModularContractSettings
 	String name;
 
 	@NonNull
-	CalendarId calendarId;
-
-	@NonNull
-	YearId yearId;
+	YearId yearId; // this includes the calendar
 
 	@NonNull
 	PricingSystemId pricingSystemId;
@@ -62,5 +59,6 @@ public class ModularContractSettings
 	ProductId productId;
 
 	@NonNull
+	@Singular
 	List<ModuleConfig> moduleConfigs;
 }

@@ -22,22 +22,22 @@ package org.adempiere.appdict.validation.spi.impl;
  * #L%
  */
 
-
+import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import de.metas.util.lang.ClassLoaderUtil;
+import lombok.NonNull;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
 
-import de.metas.process.JavaProcess;
-import de.metas.util.Check;
-
 public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 {
 	@Override
-	public void validate(I_AD_Process process)
+	public void validate(@NonNull final I_AD_Process process)
 	{
 		String classname = process.getClassname();
-		if (Check.isEmpty(classname, true))
+		if (Check.isBlank(classname))
 		{
 			return;
 		}
@@ -50,7 +50,7 @@ public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 			return;
 		}
 
-		validateJavaClassname(process.getClassname(), JavaProcess.class);
+		ClassLoaderUtil.validateJavaClassname(process.getClassname(), JavaProcess.class);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 
 			message.append("Error on ").append(process).append(" (IsActive=").append(process.isActive()).append("): ");
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			message.append("Error (InterfaceWrapperHelper exception: ").append(e.getLocalizedMessage()).append(") on ").append(violation.getItem()).append(": ");
 		}
