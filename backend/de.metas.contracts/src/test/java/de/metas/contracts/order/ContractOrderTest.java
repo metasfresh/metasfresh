@@ -29,12 +29,11 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
@@ -44,8 +43,8 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	final private static String terminationMemo = "note: cancelContract_test";
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(

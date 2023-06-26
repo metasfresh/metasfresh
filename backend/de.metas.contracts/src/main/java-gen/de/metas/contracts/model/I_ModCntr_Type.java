@@ -1,16 +1,39 @@
-package org.compiere.model;
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import javax.annotation.Nullable;
+package de.metas.contracts.model;
+
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for Contract_Module_Type
+import javax.annotation.Nullable;
+
+/** Generated Interface for ModCntr_Type
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_Contract_Module_Type 
+public interface I_ModCntr_Type 
 {
 
-	String Table_Name = "Contract_Module_Type";
+	String Table_Name = "ModCntr_Type";
 
 //	/** AD_Table_ID=542337 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -68,29 +91,8 @@ public interface I_Contract_Module_Type
 	 */
 	@Nullable java.lang.String getClassname();
 
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_Classname = new ModelColumn<>(I_Contract_Module_Type.class, "Classname", null);
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_Classname = new ModelColumn<>(I_ModCntr_Type.class, "Classname", null);
 	String COLUMNNAME_Classname = "Classname";
-
-	/**
-	 * Set Contract Module Type.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setContract_Module_Type_ID (int Contract_Module_Type_ID);
-
-	/**
-	 * Get Contract Module Type.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getContract_Module_Type_ID();
-
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_Contract_Module_Type_ID = new ModelColumn<>(I_Contract_Module_Type.class, "Contract_Module_Type_ID", null);
-	String COLUMNNAME_Contract_Module_Type_ID = "Contract_Module_Type_ID";
 
 	/**
 	 * Get Created.
@@ -102,7 +104,7 @@ public interface I_Contract_Module_Type
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_Created = new ModelColumn<>(I_Contract_Module_Type.class, "Created", null);
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_Created = new ModelColumn<>(I_ModCntr_Type.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -135,7 +137,7 @@ public interface I_Contract_Module_Type
 	 */
 	@Nullable java.lang.String getDescription();
 
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_Description = new ModelColumn<>(I_Contract_Module_Type.class, "Description", null);
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Type.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
 
 	/**
@@ -158,8 +160,29 @@ public interface I_Contract_Module_Type
 	 */
 	boolean isActive();
 
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_IsActive = new ModelColumn<>(I_Contract_Module_Type.class, "IsActive", null);
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_IsActive = new ModelColumn<>(I_ModCntr_Type.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Contract Module Type.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Type_ID (int ModCntr_Type_ID);
+
+	/**
+	 * Get Contract Module Type.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Type_ID();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Type.class, "ModCntr_Type_ID", null);
+	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
 
 	/**
 	 * Set Name.
@@ -179,7 +202,7 @@ public interface I_Contract_Module_Type
 	 */
 	java.lang.String getName();
 
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_Name = new ModelColumn<>(I_Contract_Module_Type.class, "Name", null);
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Type.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
 
 	/**
@@ -192,7 +215,7 @@ public interface I_Contract_Module_Type
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_Updated = new ModelColumn<>(I_Contract_Module_Type.class, "Updated", null);
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_Updated = new ModelColumn<>(I_ModCntr_Type.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
@@ -227,6 +250,6 @@ public interface I_Contract_Module_Type
 	 */
 	java.lang.String getValue();
 
-	ModelColumn<I_Contract_Module_Type, Object> COLUMN_Value = new ModelColumn<>(I_Contract_Module_Type.class, "Value", null);
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_Value = new ModelColumn<>(I_ModCntr_Type.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
 }
