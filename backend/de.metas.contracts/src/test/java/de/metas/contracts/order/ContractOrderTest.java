@@ -17,8 +17,6 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.location.impl.DummyDocumentLocationBL;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
@@ -27,25 +25,21 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
-
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static String terminationMemo = "note: cancelContract_test";
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(
@@ -54,7 +48,6 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 						ADReferenceService.newMocked(),
 						new GLCategoryRepository()));
 		SystemTime.setTimeSource(today);
-		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test
