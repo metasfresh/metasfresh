@@ -155,6 +155,35 @@ public class MoneyService
 		return Money.of(convertedAmount, targetCurrencyId);
 	}
 
+	@NonNull
+	public Amount convertToCurrency(
+			@NonNull final Amount amount,
+			@NonNull final CurrencyCode targetCurrencyCode,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyCode fromCurrencyCode = amount.getCurrencyCode();
+		if (Objects.equals(fromCurrencyCode, targetCurrencyCode))
+		{
+			return amount;
+		}
+
+		final CurrencyId fromCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(fromCurrencyCode);
+		final CurrencyId targetCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(targetCurrencyCode);
+
+		final CurrencyConversionResult conversionResult = currencyBL.convert(
+				context,
+				amount.toBigDecimal(),
+				fromCurrencyId,
+				targetCurrencyId);
+
+		final BigDecimal convertedAmount = Check.assumeNotNull(
+				conversionResult.getAmount(),
+				"CurrencyConversion from currency={}({}) to currencyId={}({}) needs to work; currencyConversionContext={}, currencyConversionResult={}",
+				fromCurrencyCode, fromCurrencyId, targetCurrencyCode, targetCurrencyId, context, conversionResult);
+
+		return Amount.of(convertedAmount, targetCurrencyCode);
+	}
+
 	public Money percentage(@NonNull final Percent percent, @NonNull final Money input)
 	{
 		if (percent.isOneHundred())
