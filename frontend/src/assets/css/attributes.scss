@@ -28,6 +28,30 @@
   z-index: 50;
   margin-top: 5px;
   width: 450px;
+  overflow: auto;
+}
+
+.attributes-dropdown {
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $brand-light-color;
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
 }
 
 .attributes-dropup {

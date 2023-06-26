@@ -74,6 +74,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -447,6 +448,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		setDeliveredDataFromFirstInOut(icRecord, firstInOut);
+
+		final Collection<OrderLineHandlerExtension> handlerExtensions = SpringContextHolder.instance
+				.getBeansOfType(OrderLineHandlerExtension.class); //FIXME
+
+		handlerExtensions.forEach(extension -> extension.setDeliveryRelatedData(OrderLineId.ofRepoId(icRecord.getC_OrderLine_ID()),
+																				icRecord));
 	}
 
 	@Override
