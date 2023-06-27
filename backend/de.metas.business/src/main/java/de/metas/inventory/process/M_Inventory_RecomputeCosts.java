@@ -22,6 +22,7 @@
 
 package de.metas.inventory.process;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -50,6 +51,7 @@ import org.compiere.util.TimeUtil;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessPrecondition
 {
@@ -95,14 +97,18 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 
 	private Set<Integer> getSelectedInventoryIds()
 	{
-		return getSelectedIncludedRecordIds(I_M_Inventory.class);
+		return retrieveSelectedRecordsQueryBuilder(I_M_Inventory.class)
+				.create()
+				.listIds()
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public void recomputeCosts()
 	{
 
 		final List<CostElement> costElements = getCostElements();
-		final Timestamp startDate =  TimeUtil.addDays(getStartDate(), -1);
+		final Timestamp startDate = TimeUtil.addDays(getStartDate(), -1);
 
 		costElements.forEach(costElement -> {
 
