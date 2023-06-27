@@ -138,6 +138,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocumentNo;
 
 public class C_Invoice_StepDef
 {
@@ -624,6 +625,13 @@ public class C_Invoice_StepDef
 			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 			softly.assertThat(invoice.getM_SectionCode_ID()).as("M_SectionCode_ID").isEqualTo(sectionCode.getM_SectionCode_ID());
 		}
+
+		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
+		if (Check.isNotBlank(documentNo))
+		{
+			softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo);
+		}
+
 		softly.assertAll();
 	}
 
@@ -770,6 +778,12 @@ public class C_Invoice_StepDef
 		{
 			invoice.setExternalId(externalId);
 		}
+
+		final int taxDepartureCountry = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID);
+		if (taxDepartureCountry > 0)
+		{
+			invoice.setC_Tax_Departure_Country_ID(taxDepartureCountry);
+		}
 		
 		invoiceDAO.save(invoice);
 
@@ -818,6 +832,12 @@ public class C_Invoice_StepDef
 		if (dueDate != null)
 		{
 			invoice.setDueDate(dueDate);
+		}
+
+		final int taxDepartureCountry = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID);
+		if (taxDepartureCountry > 0)
+		{
+			invoice.setC_Tax_Departure_Country_ID(taxDepartureCountry);
 		}
 
 		InterfaceWrapperHelper.save(invoice);
