@@ -1,13 +1,9 @@
 package de.metas.currency;
 
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.ImmutableList;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
-import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,7 +15,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -143,25 +138,30 @@ public class Amount implements Comparable<Amount>
 		}
 	}
 
-	public static CurrencyCode getCommonCurrencyCodeOfAll(@NonNull final Amount... amounts)
+	public static CurrencyCode getCommonCurrencyCodeOfAll(@Nullable final Amount... amounts)
 	{
-		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
-
-		//noinspection ConstantConditions
-		final Iterator<Amount> moneysIterator = Stream.of(amounts)
-				.filter(Objects::nonNull)
-				.iterator();
-		final ImmutableListMultimap<CurrencyCode, Amount> amountsByCurrencyCode = Multimaps.index(moneysIterator, Amount::getCurrencyCode);
-		if (amountsByCurrencyCode.isEmpty())
+		if (amounts == null || amounts.length <= 0)
 		{
 			throw new AdempiereException("The given moneys may not be empty");
 		}
 
-		final ImmutableSet<CurrencyCode> currencyCodes = amountsByCurrencyCode.keySet();
-		Check.errorIf(currencyCodes.size() > 1,
-				"at least two money instances have different currencies: {}", amountsByCurrencyCode);
-
-		return CollectionUtils.singleElement(currencyCodes.asList());
+		final ImmutableList<CurrencyCode> currencies = Stream.of(amounts)
+				.filter(Objects::nonNull)
+				.map(Amount::getCurrencyCode)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+		if (currencies.isEmpty())
+		{
+			throw new AdempiereException("The given moneys may not be empty");
+		}
+		else if (currencies.size() == 1)
+		{
+			return currencies.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("At least two amounts have different currencies: " + Arrays.asList(amounts));
+		}
 	}
 
 	@Override
