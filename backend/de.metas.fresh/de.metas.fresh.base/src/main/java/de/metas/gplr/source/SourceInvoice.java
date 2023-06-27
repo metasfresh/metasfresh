@@ -1,8 +1,6 @@
 package de.metas.gplr.source;
 
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.forex.ForexContractRef;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
 import de.metas.organization.LocalDateAndOrgId;
@@ -23,8 +21,7 @@ public class SourceInvoice
 	@NonNull OrgId orgId;
 	@NonNull String documentNo;
 	@NonNull String docTypeName;
-	@Nullable ForexContractRef forexContractRef;
-	@NonNull CurrencyConversionContext currencyConversionCtx;
+	@NonNull SourceCurrencyInfo currencyInfo;
 	@NonNull SourceUserInfo createdBy;
 	@NonNull LocalDateAndOrgId created;
 	@NonNull LocalDateAndOrgId dateInvoiced;

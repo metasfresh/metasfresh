@@ -7,11 +7,10 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.department.Department;
 import de.metas.department.DepartmentService;
-import de.metas.forex.ForexContractRef;
 import de.metas.gplr.model.GPLRBPartnerName;
-import de.metas.gplr.model.GPLRForexInfo;
+import de.metas.gplr.model.GPLRCurrencyInfo;
 import de.metas.gplr.model.GPLRIncotermsInfo;
-import de.metas.gplr.model.GPLRPaymentTermName;
+import de.metas.gplr.model.GPLRPaymentTermRenderedString;
 import de.metas.gplr.model.GPLRReport;
 import de.metas.gplr.model.GPLRReportCharge;
 import de.metas.gplr.model.GPLRReportLineItem;
@@ -19,13 +18,14 @@ import de.metas.gplr.model.GPLRReportNote;
 import de.metas.gplr.model.GPLRReportPurchaseOrder;
 import de.metas.gplr.model.GPLRReportSalesOrder;
 import de.metas.gplr.model.GPLRReportShipment;
-import de.metas.gplr.model.GPLRReportSource;
+import de.metas.gplr.model.GPLRReportSourceDocument;
 import de.metas.gplr.model.GPLRReportSummary;
-import de.metas.gplr.model.GPLRSectionCode;
-import de.metas.gplr.model.GPLRShipperName;
+import de.metas.gplr.model.GPLRSectionCodeRenderedString;
+import de.metas.gplr.model.GPLRShipperRenderedString;
 import de.metas.gplr.model.GPLRWarehouseName;
-import de.metas.gplr.source.SourceDocuments;
 import de.metas.gplr.source.SourceBPartnerInfo;
+import de.metas.gplr.source.SourceCurrencyInfo;
+import de.metas.gplr.source.SourceDocuments;
 import de.metas.gplr.source.SourceIncotermsAndLocation;
 import de.metas.gplr.source.SourceInvoice;
 import de.metas.gplr.source.SourceOrder;
@@ -37,13 +37,12 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderLineId;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -78,7 +77,7 @@ final class GPLRReportCreateCommand
 	{
 		final GPLRReport report = GPLRReport.builder()
 				.created(reportDate)
-				.source(createGPLRReportSource())
+				.sourceDocument(createGPLRReportSourceDocument())
 				.salesOrder(createGPLRReportSalesOrder())
 				.shipments(source.getShipments()
 						.stream()
@@ -102,17 +101,10 @@ final class GPLRReportCreateCommand
 		final SourceOrder salesOrder = source.getSalesOrder();
 		final SourceInvoice salesInvoice = source.getSalesInvoice();
 
-		final ForexContractRef forexContractRef = salesInvoice.getForexContractRef();
-		if (forexContractRef == null)
-		{
-			// TODO fallback and
-			//  * use the acct schema currency for Local Currency
-			//  * use order currency for Foreign Currency
-			throw new AdempiereException("No FEC set. Cannot determine local currency");
-		}
-		final CurrencyCode localCurrency = moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getLocalCurrencyId());
-		final CurrencyCode foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getForeignCurrencyId());
-		final CurrencyConversionContext currencyConversionCtx = salesInvoice.getCurrencyConversionCtx();
+		final SourceCurrencyInfo currencyInfo = salesInvoice.getCurrencyInfo();
+		final CurrencyCode localCurrency = currencyInfo.getLocalCurrencyCode();
+		final CurrencyCode foreignCurrency = currencyInfo.getForeignCurrencyCode();
+		final CurrencyConversionContext currencyConversionCtx = currencyInfo.getConversionCtx();
 		final UnaryOperator<Amount> toLocal = amountFC -> moneyService.convertToCurrency(amountFC, localCurrency, currencyConversionCtx);
 
 		final Amount estimatedFC = salesOrder.getEstimatedOrderCostAmount();
@@ -126,19 +118,21 @@ final class GPLRReportCreateCommand
 				.taxesLC(toLocal.apply(salesInvoice.getTaxAmt()))
 				.estimatedFC(estimatedFC)
 				.estimatedLC(toLocal.apply(estimatedFC))
-				.cogsLC(null) // TODO: get them from shipment accounting
-				.chargesFC(null) // TODO
-				.chargesLC(null) // TODO
-				.profitOrLossLC(null) // TODO
-				.profitRate(null) // TODO
+				.cogsLC(Amount.zero(localCurrency)) // TODO: get them from shipment accounting
+				.chargesFC(Amount.zero(foreignCurrency)) // TODO
+				.chargesLC(Amount.zero(localCurrency)) // TODO
+				.profitOrLossLC(Amount.zero(localCurrency)) // TODO
+				.profitRate(Percent.ZERO) // TODO
 				.build();
 	}
 
-	private GPLRReportSource createGPLRReportSource()
+	private GPLRReportSourceDocument createGPLRReportSourceDocument()
 	{
 		final SourceInvoice salesInvoice = source.getSalesInvoice();
 
-		return GPLRReportSource.builder()
+		return GPLRReportSourceDocument.builder()
+				.invoiceId(salesInvoice.getId())
+				.orgId(salesInvoice.getOrgId())
 				.departmentName(getDepartment().map(Department::getName).orElse(null))
 				.sectionCode(getSectionCode().orElse(null))
 				.documentNo(salesInvoice.getDocumentNo())
@@ -147,15 +141,15 @@ final class GPLRReportCreateCommand
 				.documentDate(salesInvoice.getDateInvoiced())
 				.created(salesInvoice.getCreated())
 				.product("TODO") // TODO find out how to set it here since the SAP_ProductHierarchy is on M_Product which is not on document header level!
-				.paymentTerm(GPLRPaymentTermName.of(salesInvoice.getPaymentTerm()))
+				.paymentTerm(GPLRPaymentTermRenderedString.of(salesInvoice.getPaymentTerm()))
 				.dueDate(salesInvoice.getDueDate())
-				.forexInfo(toForexInfo(salesInvoice.getForexContractRef()))
+				.currencyInfo(toCurrencyInfo(salesInvoice.getCurrencyInfo()))
 				.build();
 	}
 
-	private Optional<GPLRSectionCode> getSectionCode()
+	private Optional<GPLRSectionCodeRenderedString> getSectionCode()
 	{
-		return source.getSalesOrder().getSectionCode().map(GPLRSectionCode::of);
+		return source.getSalesOrder().getSectionCode().map(GPLRSectionCodeRenderedString::of);
 	}
 
 	private Optional<Department> getDepartment()
@@ -165,16 +159,12 @@ final class GPLRReportCreateCommand
 	}
 
 	@Nullable
-	private GPLRForexInfo toForexInfo(final ForexContractRef forexContractRef)
+	private GPLRCurrencyInfo toCurrencyInfo(final SourceCurrencyInfo currencyInfo)
 	{
-		if (forexContractRef == null)
-		{
-			return null;
-		}
-
-		return GPLRForexInfo.builder()
-				.foreignCurrency(moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getForeignCurrencyId()))
-				.currencyRate(forexContractRef.getCurrencyRate())
+		return GPLRCurrencyInfo.builder()
+				.foreignCurrency(currencyInfo.getForeignCurrencyCode())
+				.currencyRate(currencyInfo.getCurrencyRate())
+				.fecDocumentNo(currencyInfo.getFecDocumentNo())
 				.build();
 	}
 
@@ -238,7 +228,7 @@ final class GPLRReportCreateCommand
 	}
 
 	@Nullable
-	private GPLRShipperName toShipperName(@Nullable final SourceShipperInfo shipper)
+	private GPLRShipperRenderedString toShipperName(@Nullable final SourceShipperInfo shipper)
 	{
 		if (shipper == null)
 		{
@@ -246,7 +236,7 @@ final class GPLRReportCreateCommand
 		}
 
 		final ITranslatableString shipperName = shipper.getName();
-		return GPLRShipperName.builder().name(shipperName.translate(adLanguage)).build();
+		return GPLRShipperRenderedString.ofShipperName(shipperName.translate(adLanguage));
 	}
 
 	private GPLRReportPurchaseOrder createGPLRReportPurchaseOrder(final SourceOrder purchaseOrder)
@@ -255,9 +245,9 @@ final class GPLRReportCreateCommand
 				.documentNo(purchaseOrder.getDocumentNo())
 				.purchasedFrom(toBPartnerName(purchaseOrder.getBpartner()))
 				.vendorReference(purchaseOrder.getPoReference()) // is it OK?
-				.paymentTerm(GPLRPaymentTermName.of(purchaseOrder.getPaymentTerm()))
+				.paymentTerm(GPLRPaymentTermRenderedString.of(purchaseOrder.getPaymentTerm()))
 				.incoterms(toIncotermsInfo(purchaseOrder.getIncotermsAndLocation()))
-				.forexInfo(null) // TODO not available for order but only for invoice?!? shall i try to get it from invoice? what if there are many?
+				.currencyInfo(null) // TODO get it from assigned contract.. better solve it on source loading level
 				.build();
 	}
 
@@ -278,7 +268,7 @@ final class GPLRReportCreateCommand
 						.lineCode(formatOrderLineNo(salesOrderLine.getLineNo()))
 						.description(salesOrderLine.getProductName())
 						.qty(salesOrderLine.getQtyEntered())
-						.costPrice(null) // TODO
+						.priceFC(null) // TODO
 						.batchNo(null) // TODO
 						.amountLC(null) // TODO
 						.amountFC(null) // TODO
@@ -324,7 +314,7 @@ final class GPLRReportCreateCommand
 		return result.build();
 	}
 
-	private List<GPLRReportCharge> createGPLRReportCharges()
+	private ImmutableList<GPLRReportCharge> createGPLRReportCharges()
 	{
 		ImmutableList.Builder<GPLRReportCharge> result = ImmutableList.builder();
 
@@ -375,7 +365,7 @@ final class GPLRReportCreateCommand
 
 	private static String formatOrderLineNo(final int line) {return String.format("%06d", line);}
 
-	private List<GPLRReportNote> createGPLRReportNotes()
+	private ImmutableList<GPLRReportNote> createGPLRReportNotes()
 	{
 		final SourceInvoice salesInvoice = source.getSalesInvoice();
 		return ImmutableList.of(

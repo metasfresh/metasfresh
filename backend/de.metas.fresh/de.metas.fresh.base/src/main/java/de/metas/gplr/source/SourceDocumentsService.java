@@ -11,6 +11,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
+import de.metas.forex.ForexContractService;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.inout.IInOutBL;
@@ -86,19 +89,22 @@ public class SourceDocumentsService
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final OrderCostService orderCostService;
 	@NonNull private final IncotermsRepository incotermsRepository;
+	@NonNull private final ForexContractService forexContractService;
 
 	public SourceDocumentsService(
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final MoneyService moneyService,
 			@NonNull final OrderCostService orderCostService,
-			@NonNull final IncotermsRepository incotermsRepository)
+			@NonNull final IncotermsRepository incotermsRepository,
+			@NonNull final ForexContractService forexContractService)
 	{
 		this.sectionCodeService = sectionCodeService;
 		this.documentLocationBL = documentLocationBL;
 		this.moneyService = moneyService;
 		this.orderCostService = orderCostService;
 		this.incotermsRepository = incotermsRepository;
+		this.forexContractService = forexContractService;
 	}
 
 	public SourceDocuments getByInvoiceId(final InvoiceId invoiceId)
@@ -226,8 +232,7 @@ public class SourceDocumentsService
 				.orgId(orgId)
 				.documentNo(invoice.getDocumentNo())
 				.docTypeName(docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID())).getName())
-				.forexContractRef(InvoiceDAO.extractForeignContractRef(invoice))
-				.currencyConversionCtx(invoiceBL.getCurrencyConversionCtx(invoice))
+				.currencyInfo(extractCurrencyInfo(invoice))
 				.createdBy(getUserInfo(invoice.getCreatedBy()))
 				.created(LocalDateAndOrgId.ofTimestamp(invoice.getCreated(), orgId, orgDAO::getTimeZone))
 				.dateInvoiced(LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(), orgId, orgDAO::getTimeZone))
@@ -236,6 +241,31 @@ public class SourceDocumentsService
 				.descriptionBottom(StringUtils.trimBlankToNull(invoice.getDescriptionBottom()))
 				.linesNetAmt(Amount.of(invoice.getTotalLines(), currencyCode))
 				.taxAmt(Amount.of(invoice.getGrandTotal().subtract(invoice.getTotalLines()), currencyCode)) // TODO shall we consider reverse charge taxes too? in that case we shall sum up the ReverseChargeTaxAmt and TaxAmt from C_Invoice_Tax
+				.build();
+	}
+
+	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Invoice invoice)
+	{
+		final ForexContractRef forexContractRef = InvoiceDAO.extractForeignContractRef(invoice);
+		if (forexContractRef == null)
+		{
+			// TODO fallback and
+			//  * use the acct schema currency for Local Currency
+			//  * use order currency for Foreign Currency
+			throw new AdempiereException("No FEC set. Cannot determine local currency");
+		}
+
+		final ForexContractId forexContractId = forexContractRef.getForexContractId();
+		final String forexContractNo = forexContractId != null
+				? forexContractService.getById(forexContractId).getDocumentNo()
+				: null;
+
+		return SourceCurrencyInfo.builder()
+				.currencyRate(forexContractRef.getCurrencyRate())
+				.foreignCurrencyCode(moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getForeignCurrencyId()))
+				.localCurrencyCode(moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getLocalCurrencyId()))
+				.fecDocumentNo(forexContractNo)
+				.conversionCtx(invoiceBL.getCurrencyConversionCtx(invoice))
 				.build();
 	}
 

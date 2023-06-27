@@ -20,11 +20,11 @@ public class GPLRReportPurchaseOrder
 	@Nullable String vendorReference;
 
 	// 027 - Terms of Payment - (1) Terms of payment code, (2) payment term description
-	@NonNull GPLRPaymentTermName paymentTerm;
+	@NonNull GPLRPaymentTermRenderedString paymentTerm;
 
 	// 028 - Terms of Delivery - Incoterm Value and Location
 	@Nullable GPLRIncotermsInfo incoterms;
 
 	// 029 - Currency & Rate - Currency "/" Rate <CR> "FEC No.:" FEC ID All FECs related order
-	@Nullable GPLRForexInfo forexInfo;
+	@NonNull GPLRCurrencyInfo currencyInfo;
 }

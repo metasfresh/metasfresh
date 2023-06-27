@@ -1,7 +1,6 @@
 package de.metas.gplr.model;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -10,6 +9,6 @@ import javax.annotation.Nullable;
 @Builder
 public class GPLRReportNote
 {
-	@NonNull String sourceDocument;
+	@Nullable String sourceDocument;
 	@Nullable String text;
 }

@@ -31,5 +31,5 @@ public class GPLRReportShipment
 	@Nullable GPLRIncotermsInfo incoterms;
 
 	// 023 - Vessel Name & Shipped By - Print Vessel name field content, if empty print Means of Transport
-	@Nullable GPLRShipperName shipper;
+	@Nullable GPLRShipperRenderedString shipper;
 }

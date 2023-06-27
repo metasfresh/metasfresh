@@ -1,6 +1,7 @@
 package de.metas.gplr.model;
 
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Value;
@@ -25,7 +26,7 @@ public class GPLRReportLineItem
 	@Nullable Quantity qty;
 
 	// 047 - Unit Price - Moving average for line (per batch/material/warehouse), the one used for goods issue accounting transaction
-	@Nullable Amount costPrice;
+	@Nullable Amount priceFC;
 
 	// 048 - LC Amt - Line Item local currency Amount (see AC8)
 	// 049 - FC Amt - Line Item Foreign Currency Amount (see AC8)
@@ -34,4 +35,10 @@ public class GPLRReportLineItem
 
 	// 050 - Batch - Batch No
 	@Nullable String batchNo;
+
+	@Nullable
+	public CurrencyCode getForeignCurrency() {return Amount.getCommonCurrencyCodeOfAll(priceFC, amountFC);}
+
+	@Nullable
+	public CurrencyCode getLocalCurrency() {return Amount.getCommonCurrencyCodeOfAll(amountLC);}
 }
