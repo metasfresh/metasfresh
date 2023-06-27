@@ -1,8 +1,7 @@
 ARG REFNAME=local
 FROM metasfresh/metas-api:$REFNAME as api
 
-# instead of: FROM ubuntu:16.04 & apt get install openjdk-8-jdk-headless
-FROM eclipse-temurin:17.0.5_8-jre as runtime
+FROM eclipse-temurin:17.0.7_7-jdk as runtime
 
 RUN apt-get -y update && apt-get -y install locales netcat && rm -rf /var/lib/apt/lists/*
 RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
