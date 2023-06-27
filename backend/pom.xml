@@ -31,7 +31,7 @@
         <zxing.version>2.3.0</zxing.version>
 
         <spring-boot.version>2.7.7</spring-boot.version>
-        <lucene.version>8.6.2</lucene.version>
+        <lucene.version>8.11.1</lucene.version>
 
         <!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. -->
         <!-- For versions info, see https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
