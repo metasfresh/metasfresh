@@ -113,8 +113,12 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 		costElements.forEach(costElement -> {
 
 			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited
-					, "select \"de_metas_acct\".product_costs_recreate_from_date(p_C_AcctSchema_ID:=?, p_M_CostElement_ID:=?, p_m_product_selection_id:=?, p_StartDateAcct:=?, p_ReorderDocs_DateAcct_Trunc:=?)" //
-					, new Object[] { getAccountingSchemaId(), costElement.getId(), getPinstanceId(), startDate, "MM" } //
+					, "select \"de_metas_acct\".product_costs_recreate_from_date( p_C_AcctSchema_ID :="+getAccountingSchemaId().getRepoId()
+											 + ", p_M_CostElement_ID:=" + costElement.getId().getRepoId()
+											 + ", p_m_product_selection_id:=" + getPinstanceId().getRepoId()
+											 +" , p_ReorderDocs_DateAcct_Trunc:='MM'"
+									 		 + ", p_StartDateAcct:='"+startDate +"'::date)"  //
+					, null //
 			);
 		});
 
