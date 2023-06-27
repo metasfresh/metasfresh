@@ -24,14 +24,21 @@ package de.metas.requisition.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.requisition.RequisitionRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Component
 @Interceptor(I_M_RequisitionLine.class)
@@ -48,4 +55,33 @@ public class M_RequisitionLine
 			requisitionLine.setIsVendor(bpartner.isVendor());
 		}
 	}
+
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_RequisitionLine.COLUMNNAME_LineNetAmt })
+	public void updateRequisitionTotalLines(@NonNull final I_M_RequisitionLine line)
+	{
+		calculateTotalLines(line);
+	}
+
+	private void calculateTotalLines(@NonNull final I_M_RequisitionLine requisitionLine)
+	{
+		final I_M_Requisition requisition = requisitionLine.getM_Requisition();
+		final List<I_M_RequisitionLine> lines = getRequisitionRepository().getLinesByRequisitionId(requisition.getM_Requisition_ID());
+
+		BigDecimal calculatedTotalAmt = BigDecimal.ZERO;
+		for (final I_M_RequisitionLine line : lines)
+		{
+			calculatedTotalAmt = calculatedTotalAmt.add(line.getLineNetAmt());
+		}
+
+		requisition.setTotalLines(calculatedTotalAmt);
+		InterfaceWrapperHelper.save(requisition);
+
+		// CacheMgt.get().reset();
+	}
+
+	private RequisitionRepository getRequisitionRepository()
+	{
+		return Adempiere.getBean(RequisitionRepository.class);
+	}
+
 }

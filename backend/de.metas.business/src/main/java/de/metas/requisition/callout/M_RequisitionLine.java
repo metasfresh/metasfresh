@@ -55,7 +55,7 @@ public class M_RequisitionLine
 
 		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(line.getM_Product_ID());
 		line.setC_UOM_ID(uomId.getRepoId());
-	}	// product
+	}    // product
 
 	@CalloutMethod(columnNames = I_M_RequisitionLine.COLUMNNAME_Qty)
 	public void onQtyChanged(final I_M_RequisitionLine line)
@@ -110,30 +110,7 @@ public class M_RequisitionLine
 		line.setLineNetAmt(lineNetAmt);
 	}
 
-	@CalloutMethod(columnNames = I_M_RequisitionLine.COLUMNNAME_LineNetAmt)
-	public void onLineNetAmtChanged(@NonNull final I_M_RequisitionLine requisitionLine)
-	{
-		final I_M_Requisition requisition = requisitionLine.getM_Requisition();
 
-		final List<I_M_RequisitionLine> lines = getRequisitionRepository().getLinesByRequisitionId(requisition.getM_Requisition_ID());
 
-		final BigDecimal calculatedTotalAmt = BigDecimal.ZERO;
-		for (final I_M_RequisitionLine line : lines)
-		{
-			calculatedTotalAmt.add(line.getLineNetAmt());
-		}
-
-		final BigDecimal totalLines = requisition.getTotalLines();
-		if (calculatedTotalAmt.compareTo(totalLines) != 0)
-		{
-			requisition.setTotalLines(calculatedTotalAmt);
-			InterfaceWrapperHelper.save(requisition);
-		}
-	}
-
-	private RequisitionRepository getRequisitionRepository()
-	{
-		return Adempiere.getBean(RequisitionRepository.class);
-	}
 
 }
