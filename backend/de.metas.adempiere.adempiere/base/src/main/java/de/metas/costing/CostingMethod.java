@@ -40,7 +40,8 @@ public enum CostingMethod implements ReferenceListAwareEnum
 	AverageInvoice(X_M_CostElement.COSTINGMETHOD_AverageInvoice), //
 	LastInvoice(X_M_CostElement.COSTINGMETHOD_LastInvoice), //
 	UserDefined(X_M_CostElement.COSTINGMETHOD_UserDefined), //
-	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__) //
+	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__), //
+	MovingAverageInvoice(X_M_CostElement.COSTINGMETHOD_MovingAverageInvoice)//
 
 	;
 
