@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.product.ProductId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -99,18 +98,6 @@ public class InventoryDAO implements IInventoryDAO
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_Processed, processed)
-				.execute();
-	}
-
-	@Override
-	public void setInventoryLinesCounted(@NonNull final InventoryId inventoryId)
-	{
-		queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_IsCounted, true)
 				.execute();
 	}
 

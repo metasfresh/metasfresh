@@ -22,6 +22,7 @@
 
 package de.metas.inventory.process;
 
+import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
@@ -34,7 +35,7 @@ import lombok.NonNull;
 
 public class M_Inventory_Mark_As_Counted extends JavaProcess implements IProcessPrecondition
 {
-	final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -56,7 +57,7 @@ public class M_Inventory_Mark_As_Counted extends JavaProcess implements IProcess
 	protected String doIt() throws Exception
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-		inventoryDAO.setInventoryLinesCounted(inventoryId, true);
+		inventoryBL.setInventoryLinesCounted(inventoryId);
 
 		return MSG_OK;
 	}

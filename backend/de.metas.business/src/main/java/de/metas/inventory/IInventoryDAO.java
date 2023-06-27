@@ -52,7 +52,6 @@ public interface IInventoryDAO extends ISingletonService
 
 	void setInventoryLinesProcessed(InventoryId inventoryId, boolean processed);
 
-	void setInventoryLinesCounted(@NonNull InventoryId inventoryId);
 	List<ProductId> retrieveUsedProductsByInventoryIds(@NonNull Collection<Integer> invetoryIds);
 
 	void save(I_M_InventoryLine inventoryLine);

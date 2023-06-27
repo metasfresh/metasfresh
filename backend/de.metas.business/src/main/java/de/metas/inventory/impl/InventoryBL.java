@@ -59,11 +59,14 @@ public class InventoryBL implements IInventoryBL
 	@VisibleForTesting
 	public static final String SYSCONFIG_QuickInput_Charge_ID = "de.metas.adempiere.callout.M_Inventory.QuickInput.C_Charge_ID";
 
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+
 	@Override
 	public int getDefaultInternalChargeId()
 	{
 		final Properties ctx = Env.getCtx();
-		final int chargeId = Services.get(ISysConfigBL.class).getIntValue(
+		final int chargeId = sysConfigBL.getIntValue(
 				SYSCONFIG_QuickInput_Charge_ID,
 				-1, // defaultValue
 				Env.getAD_Client_ID(ctx),
@@ -107,7 +110,7 @@ public class InventoryBL implements IInventoryBL
 	@Override
 	public DocStatus getDocStatus(@NonNull final InventoryId inventoryId)
 	{
-		final I_M_Inventory inventory = Services.get(IInventoryDAO.class).getById(inventoryId);
+		final I_M_Inventory inventory = inventoryDAO.getById(inventoryId);
 		return DocStatus.ofCode(inventory.getDocStatus());
 	}
 
@@ -210,6 +213,18 @@ public class InventoryBL implements IInventoryBL
 		final int defaultChargeId = getDefaultInternalChargeId();
 
 		inventoryLine.setC_Charge_ID(defaultChargeId);
+
+	}
+
+	@Override
+	public void setInventoryLinesCounted(@NonNull final InventoryId inventoryId)
+	{
+		inventoryDAO.retrieveLinesForInventoryId(inventoryId)
+				.stream().forEach(inventoryLine -> {
+
+					inventoryLine.setIsCounted(true);
+					save(inventoryLine);
+				});
 
 	}
 }
