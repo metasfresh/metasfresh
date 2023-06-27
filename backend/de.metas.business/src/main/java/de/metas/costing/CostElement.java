@@ -55,7 +55,7 @@ public class CostElement
 		this.clientId = clientId;
 	}
 
-	public boolean isMaterialCostingMethod()
+	public boolean isMaterialCostType()
 	{
 		return getCostElementType().isMaterial()
 				&& getCostingMethod() != null;

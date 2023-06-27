@@ -1,7 +1,9 @@
 package de.metas.inventory;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import de.metas.product.ProductId;
 import lombok.NonNull;
@@ -9,6 +11,7 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.util.ISingletonService;
+import org.elasticsearch.action.search.SearchTask;
 
 /*
  * #%L
@@ -52,7 +55,9 @@ public interface IInventoryDAO extends ISingletonService
 
 	void setInventoryLinesProcessed(InventoryId inventoryId, boolean processed);
 
-	List<ProductId> retrieveUsedProductsByInventoryIds(@NonNull Collection<Integer> invetoryIds);
+	Set<ProductId> retrieveUsedProductsByInventoryIds(@NonNull Collection<Integer> invetoryIds);
+
+	Timestamp retrieveMinInvetoryDateFromSelection(@NonNull Collection<Integer> invetoryIds);
 
 	void save(I_M_InventoryLine inventoryLine);
 }

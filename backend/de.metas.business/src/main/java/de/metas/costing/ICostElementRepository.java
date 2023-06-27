@@ -52,4 +52,5 @@ public interface ICostElementRepository
 
 	Set<CostElementId> getIdsByCostingMethod(CostingMethod costingMethod);
 
+	List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull CostingMethod costingMethod);
 }

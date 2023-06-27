@@ -1,25 +1,26 @@
 package de.metas.inventory.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Collection;
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
-
-import de.metas.inventory.IInventoryDAO;
-import de.metas.inventory.InventoryId;
-import de.metas.inventory.InventoryLineId;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.compiere.model.I_M_Product;
+
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 
 /*
@@ -102,23 +103,44 @@ public class InventoryDAO implements IInventoryDAO
 	}
 
 	@Override
-	public List<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<Integer> invetoryIds)
+	public Set<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<Integer> invetoryIds)
 	{
 		if (invetoryIds.isEmpty())
 		{
-			return ImmutableList.of();
+			return ImmutableSet.of();
 		}
 
-		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addInArrayFilter(I_M_InventoryLine.COLUMN_M_Inventory_ID, invetoryIds)
-				.andCollectChildren(I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
-				.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID,  ProductId.class)
-				;
+		final List<ProductId> list =
+				queryBL.createQueryBuilder(I_M_InventoryLine.class)
+						.addInArrayFilter(I_M_InventoryLine.COLUMN_M_Inventory_ID, invetoryIds)
+						.andCollectChildren(I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_Product.class)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
+						.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID, ProductId.class);
+
+		return ImmutableSet.copyOf(list);
 	}
 
+	@Override
+	public Timestamp retrieveMinInvetoryDateFromSelection(@NonNull final Collection<Integer> invetoryIds)
+	{
+		if (invetoryIds.isEmpty())
+		{
+			return null;
+		}
+
+		return queryBL.createQueryBuilder(I_M_Inventory.class)
+				.addInArrayFilter(I_M_Inventory.COLUMN_M_Inventory_ID, invetoryIds)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Inventory.COLUMN_MovementDate)
+				.create()
+				.stream()
+				.limit(1)
+				.map(inventory -> inventory.getMovementDate())
+				.findFirst()
+				.orElse(null);
+	}
 
 	@Override
 	public void save(I_M_InventoryLine inventoryLine)

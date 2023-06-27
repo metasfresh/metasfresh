@@ -164,7 +164,7 @@ public class CostElementRepository implements ICostElementRepository
 	{
 		return getIndexedCostElements()
 				.streamForClientId(clientId)
-				.filter(ce -> ce.isMaterialCostingMethod())
+				.filter(ce -> ce.isMaterialCostType())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -199,6 +199,17 @@ public class CostElementRepository implements ICostElementRepository
 		return streamByCostingMethod(costingMethod)
 				.map(CostElement::getId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return getIndexedCostElements()
+				.streamForClientId(clientId)
+				.filter(ce -> ce.getCostingMethod() == costingMethod)
+				.filter(ce -> ce.getCostElementType() == CostElementType.Material)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Stream<CostElement> streamByCostingMethod(@NonNull final CostingMethod costingMethod)
