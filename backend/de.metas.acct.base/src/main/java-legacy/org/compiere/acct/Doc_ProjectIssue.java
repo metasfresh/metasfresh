@@ -16,16 +16,26 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.accounts.ProjectAccountType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.costing.CostAmount;
+import de.metas.document.DocBaseType;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.SpringContextHolder;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
@@ -35,24 +45,17 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.costing.CostAmount;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.List;
 
 /**
  * Project Issue.
  * Note:
  * Will load the default GL Category.
  * Set up a document type to set the GL Category.
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Doc_ProjectIssue.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
@@ -63,12 +66,16 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 	public Doc_ProjectIssue(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_ProjectIssue);
+		super(ctx, DocBaseType.ProjectIssue);
 	}
 
-	/** Pseudo Line */
+	/**
+	 * Pseudo Line
+	 */
 	private DocLine_ProjectIssue m_line = null;
-	/** Issue */
+	/**
+	 * Issue
+	 */
 	private I_C_ProjectIssue m_issue = null;
 
 	@Override
@@ -85,24 +92,24 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 	/**
 	 * Get DocumentNo
-	 * 
+	 *
 	 * @return document no
 	 */
 	@Override
 	public String getDocumentNo()
 	{
 		final ProjectId projectId = ProjectId.ofRepoId(m_issue.getC_Project_ID());
-		final I_C_Project project = projectRepository.getById(projectId);
+		final I_C_Project project = projectRepository.getRecordById(projectId);
 		if (project != null)
 		{
 			return project.getValue() + " #" + m_issue.getLine();
 		}
 		return "(" + m_issue.getC_Project_ID() + ")";
-	}	// getDocumentNo
+	}    // getDocumentNo
 
 	/**
 	 * Get Balance
-	 * 
+	 *
 	 * @return Zero (always balanced)
 	 */
 	@Override
@@ -114,15 +121,15 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	/**
 	 * Create Facts (the accounting logic) for
 	 * PJI
-	 * 
+	 *
 	 * <pre>
 	 *  Issue
 	 *      ProjectWIP      DR
 	 *      Inventory               CR
 	 * </pre>
-	 * 
+	 * <p>
 	 * Project Account is either Asset or WIP depending on Project Type
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @return Fact
 	 */
@@ -159,32 +166,32 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		//
 		// Project DR
 		{
-			AccountType acctType = AccountType.ProjectWIP;
+			ProjectAccountType acctType = ProjectAccountType.PJ_WIP_Acct;
 			if (MProject.PROJECTCATEGORY_AssetProject.equals(ProjectCategory))
 			{
-				acctType = AccountType.ProjectAsset;
+				acctType = ProjectAccountType.PJ_Asset_Acct;
 			}
 			dr = fact.createLine(m_line,
-					getAccount(acctType, as),
+					getProjectAccount(acctType, as),
 					cost.getCurrencyId(),
-					cost.getValue(), null);
+					cost.toBigDecimal(), null);
 			dr.setQty(m_line.getQty().negate());
 		}
 
 		//
 		// Inventory CR
 		{
-			ProductAcctType acctType = ProductAcctType.Asset;
+			ProductAcctType acctType = ProductAcctType.P_Asset_Acct;
 			if (Services.get(IProductBL.class).isService(product))
 			{
-				acctType = ProductAcctType.Expense;
+				acctType = ProductAcctType.P_Expense_Acct;
 			}
 			cr = fact.createLine(m_line,
 					m_line.getAccount(acctType, as),
 					cost.getCurrencyId(),
-					null, cost.getValue());
+					null, cost.toBigDecimal());
 			cr.setM_Locator_ID(m_line.getM_Locator_ID());
-			cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);	// from Loc
+			cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);    // from Loc
 		}
 
 		//
@@ -193,7 +200,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 	/**
 	 * Get PO Costs in Currency of AcctSchema
-	 * 
+	 *
 	 * @param as Account Schema
 	 * @return Unit PO Cost
 	 */
@@ -240,11 +247,11 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			pstmt = null;
 			rs = null;
 		}
-	}	// getPOCost();
+	}    // getPOCost();
 
 	/**
 	 * Get Labor Cost from Expense Report
-	 * 
+	 *
 	 * @param as Account Schema
 	 * @return Unit Labor Cost
 	 */
@@ -286,6 +293,17 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			pstmt = null;
 			rs = null;
 		}
-	}	// getLaborCost
+	}    // getLaborCost
 
-}	// DocProjectIssue
+	@NonNull
+	private Account getProjectAccount(final ProjectAccountType acctType, final AcctSchema as)
+	{
+		final ProjectId projectId = getC_Project_ID();
+		if (projectId == null)
+		{
+			throw new AdempiereException("Project not set");
+		}
+
+		return getAccountProvider().getProjectAccount(as.getId(), projectId, acctType);
+	}
+}    // DocProjectIssue

@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import org.adempiere.ad.service.IADReferenceDAO;
+import de.metas.ad_reference.ADRefList;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class JsonRejectReasonsList
 {
 	@NonNull List<JsonRejectReason> reasons;
 
-	public static JsonRejectReasonsList of(@NonNull IADReferenceDAO.ADRefList adRefList, @NonNull JsonOpts jsonOpts)
+	public static JsonRejectReasonsList of(@NonNull ADRefList adRefList, @NonNull JsonOpts jsonOpts)
 	{
 		return builder()
 				.reasons(adRefList.getItems()

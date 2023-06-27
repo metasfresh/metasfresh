@@ -24,7 +24,6 @@ package de.metas.money;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
@@ -35,6 +34,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -43,13 +43,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Objects;
 
 @Service
@@ -83,13 +83,18 @@ public class MoneyService
 		return currencyRepository.getStdPrecision(currencyCode);
 	}
 
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return currencyRepository.getStdPrecision(currencyId);
+	}
+
 	@NonNull
 	public CurrencyConversionContext createConversionContext(
-			@Nullable final LocalDate convDate,
+			@NonNull final LocalDateAndOrgId convDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final ClientAndOrgId clientAndOrgId)
+			@NonNull final ClientId clientId)
 	{
-		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
 	}
 
 	/**
@@ -107,12 +112,22 @@ public class MoneyService
 		}
 
 		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
-				SystemTime.asLocalDate(),
-				ConversionTypeMethod.Spot,
+				SystemTime.asInstant(),
 				Env.getClientId(),
 				Env.getOrgId());
 
 		return convertMoneyToCurrency(money, targetCurrencyId, currencyConversionContext);
+	}
+
+	@NonNull
+	public Money convertMoneyToCurrency(
+			@NonNull final Money money,
+			@NonNull final CurrencyCode currencyCode,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+
+		return convertMoneyToCurrency(money, currencyId, context);
 	}
 
 	@NonNull

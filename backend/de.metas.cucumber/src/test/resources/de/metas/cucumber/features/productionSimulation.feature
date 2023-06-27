@@ -125,8 +125,14 @@ Feature: create production simulation
       | c_3        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T00:00:00Z | 95   | 95                     | olASI                                    | false         |
       | c_4        | INVENTORY_UP      |                               | p_1                     | 2021-04-17T00:00:00Z | 4    | 99                     | olASI                                    | false         |
 
+    And post DeactivateAllSimulatedCandidatesEvent and wait for processing
+    And delete all simulated candidates
+    And validate there is no simulated md_candidate
+    And validate there is no simulated PP_Order_Candidate
+
 
   @from:cucumber
+  @Id:S0171.100
   Scenario: The simulation for qty 14 is created with duration to produce 1 qty set to 1 day,
   having both supplies and other demand in between demand date and initial 'production finished' date
     Given metasfresh contains M_Products:
@@ -235,6 +241,12 @@ Feature: create production simulation
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-23T08:00:00Z | 9   | 11                     | productPlanningASI                       | true          |
       | c_l_3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-14T08:00:00Z | -1  | -1                     | bomLineASI                               | true          |
       | c_l_4      | SUPPLY            |                               | p_2                     | 2021-04-14T08:00:00Z | 1   | 0                      | bomLineASI                               | true          |
+
+    And after not more than 60s, PP_Order_Candidate found for orderLine ol_2
+      | Identifier |
+      | ppoc_1     |
+    And delete C_OrderLine identified by ol_2, but keep its id into identifierIds table
+    And no PP_Order_Candidate found for orderLine ol_2
 
 
   @from:cucumber

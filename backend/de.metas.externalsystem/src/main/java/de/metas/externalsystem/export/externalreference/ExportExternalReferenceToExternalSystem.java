@@ -44,6 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.async.Debouncer;
+import de.metas.util.async.DebouncerSysConfig;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -79,8 +80,8 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 		this.externalSystemConfigService = externalSystemConfigService;
 		this.syncExternalReferenceDebouncer = Debouncer.<ExternalReferenceId>builder()
 				.name("syncExternalReferenceDebouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
-				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.delayInMillis", 5000))
+				.bufferMaxSize(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getSysConfigName(), DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getDefaultValue()))
+				.delayInMillis(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getSysConfigName(), DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getDefaultValue()))
 				.distinct(true)
 				.consumer(this::syncCollectedExternalReferencesIfRequired)
 				.build();
@@ -159,6 +160,12 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 
 			exportToExternalSystemIfRequired(externalReferenceToExportRecordRef, () -> getAdditionalExternalSystemConfigIds(externalReferenceId));
 		}
+	}
+
+	@VisibleForTesting
+	public int getCurrentPendingItems()
+	{
+		return this.syncExternalReferenceDebouncer.getCurrentBufferSize();
 	}
 
 	@NonNull

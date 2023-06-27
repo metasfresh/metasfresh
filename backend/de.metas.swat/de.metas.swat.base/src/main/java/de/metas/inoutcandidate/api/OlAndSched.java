@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.api;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +20,12 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
+package de.metas.inoutcandidate.api;
+
 import de.metas.document.engine.DocStatus;
-import de.metas.impex.InputDataSourceId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -35,6 +33,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -162,19 +161,5 @@ public final class OlAndSched
 	public String getSalesOrderPORef()
 	{
 		return salesOrder.map(I_C_Order::getPOReference).orElse(null);
-	}
-
-	@Nullable
-	public InputDataSourceId getSalesOrderADInputDatasourceID()
-	{
-		if(!salesOrder.isPresent())
-		{
-			return null;
-		}
-
-		final I_C_Order orderRecord = salesOrder.get();
-
-		return InputDataSourceId.ofRepoIdOrNull(orderRecord.getAD_InputDataSource_ID());
-
 	}
 }

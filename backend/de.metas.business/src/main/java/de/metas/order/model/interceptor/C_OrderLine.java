@@ -1,9 +1,13 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -23,6 +27,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -34,6 +41,7 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
@@ -44,6 +52,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -82,19 +91,26 @@ public class C_OrderLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
 
+	private final DimensionService dimensionService;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
-			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
+		this.dimensionService = dimensionService;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -227,6 +243,7 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
 			I_C_OrderLine.COLUMNNAME_QtyDelivered,
+			I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
 			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{
@@ -420,4 +437,64 @@ public class C_OrderLine
 
 		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_C_VAT_Code_ID })
+	public void updateTaxFromVatCodeId(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.isProcessed())
+		{
+			return;
+		}
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(orderLine.getC_VAT_Code_ID());
+		if (vatCodeId == null)
+		{
+			return;
+		}
+		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
+		if (tax != null)
+		{
+			orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
+	public void updateIsOnConsignment(final I_C_OrderLine orderLine)
+	{
+		orderLineBL.updateIsOnConsignmentNoSave(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsOnConsignment })
+	public void updateIsOnConsignmentOrder(final I_C_OrderLine orderLine)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
+
+		trxManager.accumulateAndProcessAfterCommit(
+				"orderIdsToUpdateIsOnConsigment",
+				ImmutableSet.of(orderId),
+				this::updateIsOnConsignmentFromLines
+		);
+	}
+
+	private void updateIsOnConsignmentFromLines(final List<OrderId> orderIds)
+	{
+		for (final OrderId orderId : ImmutableSet.copyOf(orderIds))
+		{
+			orderBL.updateIsOnConsignmentFromLines(orderId);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void copyDimensionFromHeader(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		// only update the section code and user elements. It's not specified if the other dimensions should be inherited from the order header to the lines
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
+
+		final Dimension orderDimension = dimensionService.getFromRecord(order);
+		dimensionService.updateRecordUserElements(orderLine, orderDimension);
+	}
+
 }

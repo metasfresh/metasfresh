@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
@@ -34,9 +35,12 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.common.util.EmptyUtil;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.lock.api.ILock;
@@ -72,6 +76,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -186,7 +191,7 @@ public class ShipmentScheduleEnqueuer
 				if (invalidSchedulesService.isFlaggedForRecompute(shipmentScheduleId))
 				{
 					// we can't just not enqueue those workpackages and only write a debug log message about it
-					// => enqueue them, log if and collect experience about what what the practical impact is.
+					// => enqueue them, log if and collect experience about what the practical impact is.
 					// 	doEnqueueCurrentPackage = false;
 					Loggables.withLogger(logger, Level.INFO).addLog("shipmentScheduleId is flagged for recompute; -> still enqueue the workpackage!");
 				}
@@ -219,7 +224,12 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
-							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_FixedShipmentDate, workPackageParameters.getFixedShipmentDate())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef, JsonObjectMapperHolder.toJson(workPackageParameters.getForexContractRef()))
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, workPackageParameters.getDeliveryPlanningId())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_B2B_Receipt_ID, workPackageParameters.getB2bReceiptId())
+					;
 
 					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
 					// and it will move them to a new owner which is created per workpackage
@@ -331,7 +341,7 @@ public class ShipmentScheduleEnqueuer
 	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 * task https://metasfresh.atlassian.net/browse/FRESH-342
+	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-342">task</a>
 	 */
 	public static class Result implements IEnqueueResult
 	{
@@ -375,8 +385,13 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
+		public static final String PARAM_FixedShipmentDate = "FixedShipmentDate";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
+		public static final String PARAM_ForexContractRef = "ForexContractRef";
+		public static final String PARAM_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
+		public static final String PARAM_B2B_Receipt_ID = "B2B_Receipt_ID";
+
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -395,9 +410,10 @@ public class ShipmentScheduleEnqueuer
 		 */
 		@Builder.Default
 		boolean onTheFlyPickToPackingInstructions = false;
-		
+
 		boolean completeShipments;
 		boolean isShipmentDateToday;
+		@Nullable LocalDate fixedShipmentDate;
 
 		/**
 		 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.
@@ -408,6 +424,10 @@ public class ShipmentScheduleEnqueuer
 
 		@Nullable
 		ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride;
+
+		@Nullable ForexContractRef forexContractRef;
+		@Nullable DeliveryPlanningId deliveryPlanningId;
+		@Nullable InOutId b2bReceiptId;
 	}
 
 }

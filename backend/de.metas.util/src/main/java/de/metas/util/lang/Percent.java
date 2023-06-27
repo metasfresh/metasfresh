@@ -1,19 +1,17 @@
 package de.metas.util.lang;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * #%L
@@ -103,7 +101,7 @@ public class Percent
 
 	/**
 	 * Like {@link #of(BigDecimal, BigDecimal, int, RoundingMode)} with "half-up".
-	 *
+	 * <p>
 	 * Examples:
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"), 2)} returns an instance of "25%".
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
@@ -170,7 +168,9 @@ public class Percent
 
 	public static final Percent ZERO = new Percent(BigDecimal.ZERO);
 
-	/** 100 based value */
+	/**
+	 * 100 based value
+	 */
 	@Getter(AccessLevel.NONE) BigDecimal value;
 
 	private Percent(@NonNull final BigDecimal valueAsBigDecimal)
@@ -179,14 +179,25 @@ public class Percent
 		this.value = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
 	}
 
-	/** @return 100 based value */
+	@Deprecated
+	@Override
+	public String toString()
+	{
+		return "" + value + "%";
+	}
+
+	/**
+	 * @return 100 based value
+	 */
 	@JsonValue
 	public BigDecimal toBigDecimal()
 	{
 		return value;
 	}
 
-	/** @return 100 based value */
+	/**
+	 * @return 100 based value
+	 */
 	public int toInt()
 	{
 		return value.intValue();
@@ -290,7 +301,7 @@ public class Percent
 
 	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision)
 	{
-		return addToBase(base,precision,RoundingMode.HALF_UP);
+		return addToBase(base, precision, RoundingMode.HALF_UP);
 	}
 
 	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision, final RoundingMode roundingMode)
@@ -362,8 +373,7 @@ public class Percent
 	 */
 	public Percent roundToHalf(@NonNull final RoundingMode roundingMode)
 	{
-		@SuppressWarnings("BigDecimalMethodWithoutRoundingCalled")
-		final BigDecimal newPercentValue = toBigDecimal()
+		@SuppressWarnings("BigDecimalMethodWithoutRoundingCalled") final BigDecimal newPercentValue = toBigDecimal()
 				.multiply(TWO_VALUE)
 				.setScale(0, roundingMode)
 				.divide(TWO_VALUE)

@@ -1,41 +1,9 @@
 package de.metas.contracts.order;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
-
+import de.metas.acct.GLCategoryRepository;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
-import de.metas.location.impl.DummyDocumentLocationBL;
-import de.metas.user.UserRepository;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IFlatrateBL;
@@ -48,24 +16,37 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
-
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static String terminationMemo = "note: cancelContract_test";
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
+				new C_Flatrate_Term(
+						new ContractOrderService(),
+						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
+						ADReferenceService.newMocked(),
+						new GLCategoryRepository()));
 		SystemTime.setTimeSource(today);
 	}
 

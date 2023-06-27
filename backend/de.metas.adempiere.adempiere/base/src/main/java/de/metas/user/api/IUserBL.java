@@ -1,15 +1,16 @@
 package de.metas.user.api;
 
-import de.metas.util.Check;
-import org.compiere.model.I_AD_User;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
 
@@ -82,4 +83,7 @@ public interface IUserBL extends ISingletonService
 	UserEMailConfig getEmailConfigById(UserId userId);
 
 	void deleteUserDependency(I_AD_User userRecord);
+
+	@NonNull
+	ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull String externalId, @NonNull OrgId orgId);
 }

@@ -68,8 +68,11 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -80,6 +83,8 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
@@ -98,6 +103,8 @@ public class C_Order
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
@@ -200,6 +207,22 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	public void updateProjectFromOrder(@NonNull final I_C_Order order)
+	{
+		if (order.getC_Project_ID() <= 0)
+		{
+			return; // let possible existing project assignment be
+		}
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			orderLine.setC_Project_ID(order.getC_Project_ID());
+			orderDAO.save(orderLine);
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID,
@@ -217,22 +240,31 @@ public class C_Order
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID })
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void setIncoterms(final I_C_Order order)
+	public void setIncoterms(@NonNull final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
+		if (InterfaceWrapperHelper.isCopying(order))
+		{
+			return; // nothing to do ; the value shall be cloned
+		}
 
-		final int c_Incoterms;
+		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
+		if (bpartner == null)
+		{
+			return; // nothing to do yet
+		}
+
+		final int incotermsId;
 
 		if (order.isSOTrx())
 		{
-			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+			incotermsId = bpartner.getC_Incoterms_Customer_ID();
 		}
 		else
 		{
-			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+			incotermsId = bpartner.getC_Incoterms_Vendor_ID();
 		}
 
-		order.setC_Incoterms_ID(c_Incoterms);
+		order.setC_Incoterms_ID(incotermsId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
@@ -367,6 +399,15 @@ public class C_Order
 		// TODO teo: there's no way to remove the callout error right now, unless the user reloads the page.
 		//  	It will always appear when changing the PaymentRule after it was set once.
 		//}
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setSectionCodeFromBPartner(final I_C_Order order)
+	{
+		Optional.ofNullable(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()))
+				.map(bpartnerBL::getById)
+				.map(I_C_BPartner::getM_SectionCode_ID)
+				.ifPresent(order::setM_SectionCode_ID);
 	}
 
 	private void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder)
@@ -533,12 +574,29 @@ public class C_Order
 		validateSupplierApprovals(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
 	public void validateVoidActionForMediatedOrder(final I_C_Order order)
 	{
 		if (orderBL.isMediated(order))
 		{
 			throw new AdempiereException("'Void' action is not permitted for mediated orders!");
+		}
+	}
+
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_M_Warehouse_ID,
+			I_C_Order.COLUMNNAME_IsDropShip,
+			I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void handleDropShipRelatedColumns(@NonNull final I_C_Order order)
+	{
+		if (isValueChanged(order, I_C_Order.COLUMNNAME_M_Warehouse_ID))
+		{
+			setDropShipFlag(order);
+		}
+
+		if (orderBL.isUseDefaultBillToLocationForBPartner(order))
+		{
+			setDefaultBillToBPartnerLocation(order);
 		}
 	}
 
@@ -569,6 +627,116 @@ public class C_Order
 			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+		}
+	}
+
+	private void setDropShipFlag(@NonNull final I_C_Order order)
+	{
+		if (order.isDropShip())
+		{
+			return;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+
+		if (warehouseId == null)
+		{
+			return;
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+
+		order.setIsDropShip(warehouseBL.isDropShipWarehouse(warehouseId, orgId));
+	}
+
+	private void setDefaultBillToBPartnerLocation(@NonNull final I_C_Order order)
+	{
+		final IBPartnerDAO.BPartnerLocationQuery billToQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+				.build();
+
+		final I_C_BPartner_Location billToLocation = bpartnerDAO.retrieveBPartnerLocation(billToQuery);
+		if (billToLocation != null)
+		{
+			order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_UserElementString1,
+					I_C_Order.COLUMNNAME_UserElementString2,
+					I_C_Order.COLUMNNAME_UserElementString3,
+					I_C_Order.COLUMNNAME_UserElementString4,
+					I_C_Order.COLUMNNAME_UserElementString5,
+					I_C_Order.COLUMNNAME_UserElementString6,
+					I_C_Order.COLUMNNAME_UserElementString7,
+					I_C_Order.COLUMNNAME_M_SectionCode_ID
+			})
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_UserElementString1,
+			I_C_Order.COLUMNNAME_UserElementString2,
+			I_C_Order.COLUMNNAME_UserElementString3,
+			I_C_Order.COLUMNNAME_UserElementString4,
+			I_C_Order.COLUMNNAME_UserElementString5,
+			I_C_Order.COLUMNNAME_UserElementString6,
+			I_C_Order.COLUMNNAME_UserElementString7,
+			I_C_Order.COLUMNNAME_M_SectionCode_ID
+	})
+	public void copyDimensionToLines(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
+		if (orderLines.isEmpty())
+		{
+			return;
+		}
+
+		final boolean userElementString1Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString1);
+		final boolean userElementString2Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString2);
+		final boolean userElementString3Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString3);
+		final boolean userElementString4Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString4);
+		final boolean userElementString5Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString5);
+		final boolean userElementString6Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString6);
+		final boolean userElementString7Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString7);
+		final boolean sectionCodeChanged = isValueChanged(order, I_C_Order.COLUMNNAME_M_SectionCode_ID);
+
+		for (final I_C_OrderLine line : orderLines)
+		{
+			if (userElementString1Changed)
+			{
+				line.setUserElementString1(order.getUserElementString1());
+			}
+			if (userElementString2Changed)
+			{
+				line.setUserElementString2(order.getUserElementString2());
+			}
+			if (userElementString3Changed)
+			{
+				line.setUserElementString3(order.getUserElementString3());
+			}
+			if (userElementString4Changed)
+			{
+				line.setUserElementString4(order.getUserElementString4());
+			}
+			if (userElementString5Changed)
+			{
+				line.setUserElementString5(order.getUserElementString5());
+			}
+			if (userElementString6Changed)
+			{
+				line.setUserElementString6(order.getUserElementString6());
+			}
+			if (userElementString7Changed)
+			{
+				line.setUserElementString7(order.getUserElementString7());
+			}
+			if (sectionCodeChanged)
+			{
+				line.setM_SectionCode_ID(order.getM_SectionCode_ID());
+			}
+
+			orderBL.save(line);
 		}
 	}
 }

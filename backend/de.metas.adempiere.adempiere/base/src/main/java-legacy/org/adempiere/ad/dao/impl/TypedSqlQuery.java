@@ -23,7 +23,6 @@ package org.adempiere.ad.dao.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.selection.pagination.PaginationService;
@@ -59,6 +58,7 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.util.DB;
+import org.compiere.util.DB.ResultSetRowLoader;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -89,9 +89,7 @@ import java.util.Properties;
  *         2546052 ] Introduce Query aggregate methods
  *         <li>FR [ 2726447 ] Query aggregate methods for all return types
  *         <li>FR [ 2818547 ] Implement Query.setOnlySelection
- *         https://sourceforge.net/tracker/?func=detail&aid=2818547&group_id=176962&atid=879335
  *         <li>FR [ 2818646 ] Implement Query.firstId/firstIdOnly
- *         https://sourceforge.net/tracker/?func=detail&aid=2818646&group_id=176962&atid=879335
  * @author Redhuan D. Oon
  *         <li>FR: [ 2214883 ] Remove SQL code and Replace for Query // introducing SQL String prompt in log.info
  *         <li>FR: [ 2214883 ] - to introduce .setClient_ID
@@ -437,20 +435,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
-	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be throwed
-	 *
-	 * @return first PO
-	 * @see  #first()
-	 */
-	@Nullable
-	public <ET extends T> ET firstOnly() throws DBException
-	{
-		final Class<ET> clazz = null;
-		final boolean throwExIfMoreThenOneFound = true;
-		return firstOnly(clazz, throwExIfMoreThenOneFound);
-	}
-
-	/**
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
 	 */
@@ -460,7 +444,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			@Nullable final Class<ET> clazz,
 			final boolean throwExIfMoreThenOneFound) throws DBException
 	{
-		ET model = null;
+		ET model;
 		final String sql = buildSQL(
 				null,    // selectClause: use default (i.e. all columns)
 				null, // fromClause
@@ -615,7 +599,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				});
 	}
 
-	public <AT> List<AT> aggregateList(
+	public <AT> ImmutableList<AT> aggregateList(
 			@NonNull final String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@NonNull final Class<AT> returnType)
@@ -626,17 +610,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				rs -> DB.retrieveValueOrDefault(rs, 1, returnType));
 	}
 
-	@FunctionalInterface
-	private interface ValueFetcher<T>
-	{
-		T retrieveValue(ResultSet rs) throws SQLException;
-	}
-
-	public <AT> List<AT> aggregateList(
+	public <AT> ImmutableList<AT> aggregateList(
 			@NonNull String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@Nullable final List<String> groupBys,
-			@NonNull final ValueFetcher<AT> valueFetcher)
+			@NonNull final ResultSetRowLoader<AT> valueFetcher)
 	{
 		// NOTE: it's OK to have the sqlFunction null. Methods like first(columnName, valueClass) are relying on this.
 		// if (Check.isEmpty(aggregateType.sqlFunction, true)) throw new DBException("No Aggregate Function defined");
@@ -666,8 +644,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
-		final List<AT> result = new ArrayList<>();
-
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
 		if (Check.isEmpty(aggregateType.getSqlFunction(), true))
 		{
@@ -686,7 +662,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (groupBys != null && !groupBys.isEmpty())
 		{
 			groupBysClause = Joiner.on(", ").join(groupBys);
-
 			sqlSelect.append("\n, ").append(groupBysClause);
 		}
 		else
@@ -702,15 +677,19 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			pstmt = DB.prepareStatement(sql, this.trxName);
 			rs = createResultSet(pstmt);
+
+			final ImmutableList.Builder<AT> result = ImmutableList.builder();
 			while (rs.next())
 			{
-				final AT value = valueFetcher.retrieveValue(rs);
+				final AT value = valueFetcher.retrieveRowOrNull(rs);
 				if (value == null)
 				{
 					continue; // Skip null values
 				}
 				result.add(value);
 			}
+
+			return result.build();
 		}
 		catch (final SQLException e)
 		{
@@ -720,12 +699,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			DB.close(rs, pstmt);
 		}
-		//
-		return result;
 	}
 
 	@Override
-	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	public final <AT> ImmutableList<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
 		return aggregateList(columnName, Aggregate.DISTINCT, valueType);
 	}
@@ -1348,9 +1325,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			sql = inlineSqlParams(sql, sqlParams);
 		}
 
-		return MoreObjects.toStringHelper(this)
-				.addValue(sql)
-				.toString();
+		return sql;
 	}
 
 	@VisibleForTesting
@@ -1570,7 +1545,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(selectClause, fromClause, groupByClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
-		return DB.executeUpdateEx(sql, params, trxName);
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
 	@Nullable
@@ -1602,26 +1577,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
-		return DB.executeUpdateEx(sql, params, trxName);
-	}
-
-	@Override
-	public int delete(final boolean failIfProcessed)
-	{
-		final List<T> records = list(modelClass);
-		if (records.isEmpty())
-		{
-			return 0;
-		}
-
-		int countDeleted = 0;
-		for (final Object record : records)
-		{
-			InterfaceWrapperHelper.delete(record, failIfProcessed);
-			countDeleted++;
-		}
-
-		return countDeleted;
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
 	/**
@@ -1701,7 +1657,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlWhereClauseParams = getParametersEffective();
 		sqlParams.addAll(sqlWhereClauseParams);
 
-		return DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
 	}
 
 	/**
@@ -1759,7 +1715,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute
-		return DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), getTrxName());
+		return DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), getTrxName());
 	}
 
 	@Override
@@ -1853,7 +1809,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute the INSERT and return how many records were inserted
-		final int countInsert = DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
 		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 }

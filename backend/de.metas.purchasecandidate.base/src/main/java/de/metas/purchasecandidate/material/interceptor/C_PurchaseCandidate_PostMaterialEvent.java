@@ -98,7 +98,7 @@ public class C_PurchaseCandidate_PostMaterialEvent
 				.supplyRequiredDescriptor(createSupplyRequiredDescritproOrNull(purchaseCandidateRecord))
 				.build();
 
-		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateCreatedEvent);
+		postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
 	}
 
 	@Nullable
@@ -127,7 +127,7 @@ public class C_PurchaseCandidate_PostMaterialEvent
 
 		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = createUpdatedEvent(purchaseCandidateRecord);
 
-		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateUpdatedEvent);
+		postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateUpdatedEvent);
 	}
 
 	@VisibleForTesting

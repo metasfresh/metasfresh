@@ -167,18 +167,18 @@ public class TransactionCreatedHandlerTests
 				.type(CandidateType.UNEXPECTED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(createProductDescriptor())
-						.warehouseId(WAREHOUSE_ID)
-						.quantity(ONE)
-						.date(date) // both attributes *and* date need to match
-						.build())
+											.productDescriptor(createProductDescriptor())
+											.warehouseId(WAREHOUSE_ID)
+											.quantity(ONE)
+											.date(date) // both attributes *and* date need to match
+											.build())
 				.transactionDetail(TransactionDetail.builder()
-						.quantity(ONE)
-						.storageAttributesKey(AttributesKey.ALL)
-						.transactionId(TRANSACTION_ID + 1)
-						.transactionDate(date)
-						.complete(true)
-						.build())
+										   .quantity(ONE)
+										   .storageAttributesKey(AttributesKey.ALL)
+										   .transactionId(TRANSACTION_ID + 1)
+										   .transactionDate(date)
+										   .complete(true)
+										   .build())
 				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
@@ -242,9 +242,16 @@ public class TransactionCreatedHandlerTests
 			final ArgumentCaptor<CandidatesQuery> queryCaptor = ArgumentCaptor.forClass(CandidatesQuery.class);
 			Mockito.verify(candidateRepository, Mockito.times(2))
 					.retrieveLatestMatchOrNull(queryCaptor.capture());
+
 			final CandidatesQuery query = queryCaptor.getValue();
 			//
-			assertDemandDetailQuery(query);
+			//
+			assertThat(query).isNotNull();
+			assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+			assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
+
+			// note: If we have a demand detail, then only query via that demand detail *and maybe* the transaction's attributes-key
+			assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
 		}
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_DECREASE);
@@ -260,16 +267,16 @@ public class TransactionCreatedHandlerTests
 	{
 		final Instant date = SystemTime.asInstant();
 
-		final Candidate exisitingCandidate = Candidate.builder()
+		final Candidate existingCandidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(11))
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(createProductDescriptor())
-						.warehouseId(WAREHOUSE_ID)
-						.quantity(SIXTY_THREE)
-						.date(date)
-						.build())
+											.productDescriptor(createProductDescriptor())
+											.warehouseId(WAREHOUSE_ID)
+											.quantity(SIXTY_THREE)
+											.date(date)
+											.build())
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(DemandDetail.forShipmentLineId(
 						SHIPMENT_LINE_ID,
@@ -277,7 +284,7 @@ public class TransactionCreatedHandlerTests
 				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
-				.thenReturn(exisitingCandidate);
+				.thenReturn(existingCandidate);
 
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), date)
 				.transactionId(TRANSACTION_ID)
@@ -296,7 +303,12 @@ public class TransactionCreatedHandlerTests
 					.retrieveLatestMatchOrNull(queryCaptor.capture());
 			final CandidatesQuery query = queryCaptor.getValue();
 			//
-			assertDemandDetailQuery(query);
+			assertThat(query).isNotNull();
+			assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+			assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
+
+			// note: If we have a demand detail, then only query via that demand detail *and maybe* the transaction's attributes-key
+			assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
 		}
 
 		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
@@ -320,6 +332,8 @@ public class TransactionCreatedHandlerTests
 		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
 		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 
+		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 		// note: If we have a demand detail, then only query via that demand detail *and maybe* the transaction's attributes-key
 
 		assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
@@ -333,11 +347,11 @@ public class TransactionCreatedHandlerTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.date(date)
-						.productDescriptor(createProductDescriptor())
-						.quantity(quantity)
-						.warehouseId(WAREHOUSE_ID)
-						.build());
+											.date(date)
+											.productDescriptor(createProductDescriptor())
+											.quantity(quantity)
+											.warehouseId(WAREHOUSE_ID)
+											.build());
 	}
 
 	private void makeCommonAssertions(final Candidate candidate)

@@ -39,4 +39,7 @@ public final class OrderCandidate_Constants
 	 */
 	public static final String DATA_DESTINATION_INTERNAL_NAME = "DEST.de.metas.ordercandidate";
 
+
+	public static final String HEADER_AGGREGATION_KEY_DELIMITER = "#";
+
 }

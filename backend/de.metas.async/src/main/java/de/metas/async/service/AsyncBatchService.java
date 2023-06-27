@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -169,12 +169,12 @@ public class AsyncBatchService
 	/**
 	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
+	 * This is important as we want to avoid old "with-error" work packages failing a new async batch run.
 	 * <br/>
 	 * <br/>
 	 * {@code wasProcessedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was processed for the first time after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to consider work packages that were created in the past but only run now.
+	 * This is important as we want to consider work packages that were created in the past but only run now.
 	 * <br/>
 	 * <br/>
 	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.

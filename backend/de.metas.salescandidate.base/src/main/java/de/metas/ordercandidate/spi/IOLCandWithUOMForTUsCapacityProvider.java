@@ -5,6 +5,8 @@ import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.salescandidate.base
@@ -48,5 +50,5 @@ public interface IOLCandWithUOMForTUsCapacityProvider
 	 * @return the number of CUs that fit into the {@code olCand}'s TU, in the respective product's stock-UOM. Might also be {@link Quantity#isInfinite()}. Throw a user-friendly exception if the capacity can't be found.
 	 */
 	@NonNull
-	Quantity computeQtyItemCapacity(@NonNull I_C_OLCand olCand);
+	Optional<Quantity> computeQtyItemCapacity(@NonNull I_C_OLCand olCand);
 }

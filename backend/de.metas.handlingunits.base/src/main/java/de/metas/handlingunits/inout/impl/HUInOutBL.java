@@ -22,9 +22,9 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -56,13 +56,11 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -70,7 +68,6 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -83,13 +80,11 @@ import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class HUInOutBL implements IHUInOutBL
 {
@@ -105,9 +100,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -305,7 +298,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubTypeAny()
 				.isSOTrx(true)
 				.build();
@@ -317,7 +310,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.docBaseType(DocBaseType.MaterialDelivery)
 				.isSOTrx(false)
 				.build();
 
@@ -328,7 +321,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
 				.build();
 
@@ -377,8 +370,8 @@ public class HUInOutBL implements IHUInOutBL
 		for (final I_M_InOutLine lineRecord : lineRecords)
 		{
 			Check.errorIf(lineRecord.getReversalLine_ID() <= 0,
-						  "copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
-						  lineRecord.getM_InOutLine_ID(), inOutRecord);
+					"copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
+					lineRecord.getM_InOutLine_ID(), inOutRecord);
 
 			huAssignmentBL.copyHUAssignments(lineRecord, lineRecord.getReversalLine());
 		}
@@ -405,18 +398,17 @@ public class HUInOutBL implements IHUInOutBL
 						Map.Entry::getValue));
 	}
 
-	public ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
+	@Override
+	public Set<HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
 	{
 		if (inoutIds.isEmpty())
 		{
-			return ImmutableSetMultimap.of();
+			return ImmutableSet.of();
 		}
-		final Set<InOutLineId> inoutLineIds = inoutIds.stream()
-				.map(inOutDAO::retrieveLinesForInOutId)
-				.flatMap(Collection::stream)
-				.map(InOutAndLineId::getInOutLineId)
-				.collect(Collectors.toSet());
-		return getHUIdsByInOutLineIds(inoutLineIds);
+
+		final ImmutableSet<InOutLineId> inoutLineIds = inOutDAO.retrieveActiveLineIdsByInOutIds(inoutIds);
+		final ImmutableSetMultimap<InOutLineId, HuId> huIds = getHUIdsByInOutLineIds(inoutLineIds);
+		return ImmutableSet.copyOf(huIds.values());
 	}
 
 	@Override
@@ -438,7 +430,7 @@ public class HUInOutBL implements IHUInOutBL
 			return false;
 		}
 
-		final ImmutableCollection<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId)).values();
+		final Set<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId));
 		if (huIds.isEmpty())
 		{
 			return true;
@@ -475,6 +467,16 @@ public class HUInOutBL implements IHUInOutBL
 				huAttributesBL.validateMandatoryShipmentAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
 			}
 		}
+	}
+
+	public boolean isServiceRepair(@NonNull final org.compiere.model.I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(DocBaseType.MaterialReceipt).docSubType(X_C_DocType.DOCSUBTYPE_SR)
+				.isSOTrx(true)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
 }

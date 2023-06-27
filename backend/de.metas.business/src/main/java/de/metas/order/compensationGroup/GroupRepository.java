@@ -1,7 +1,5 @@
 package de.metas.order.compensationGroup;
 
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.order.OrderId;
@@ -53,5 +51,6 @@ public interface GroupRepository
 		@NonNull @Singular ImmutableSet<OrderLineId> orderLineIds;
 		@NonNull GroupTemplate newGroupTemplate;
 		@Nullable ConditionsId newContractConditionsId;
+		@Nullable GroupCompensationOrderBy groupCompensationOrderBy;
 	}
 }

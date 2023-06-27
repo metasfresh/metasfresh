@@ -1,5 +1,21 @@
 package de.metas.payment.api;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.I_C_Payment;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -9,46 +25,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import de.metas.banking.BankAccountId;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.I_C_Payment;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.util.ISingletonService;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public interface IPaymentDAO extends ISingletonService
 {
@@ -72,12 +48,6 @@ public interface IPaymentDAO extends ISingletonService
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	BigDecimal getInvoiceOpenAmount(I_C_Payment payment, boolean creditMemoAdjusted);
-
-	/**
-	 * Return a list of active, processed lines in {@link I_C_PaySelection}
-	 */
-	@Deprecated
-	List<I_C_PaySelectionLine> getProcessedLines(I_C_PaySelection paySelection);
 
 	/**
 	 * retrieve payment allocations for specific payment
@@ -113,4 +83,7 @@ public interface IPaymentDAO extends ISingletonService
 	void save(@NonNull final I_C_Payment payment);
 
 	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(OrgId orgId, BankAccountId bankAccountId, Instant startDate, Instant endDate);
+
+	@NonNull
+	Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull PaymentId paymentId);
 }

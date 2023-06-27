@@ -35,7 +35,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Phase;
 import org.compiere.model.I_C_Task;
 import org.compiere.model.MAccount;
-import org.compiere.model.MGLCategory;
 import org.compiere.model.MKCategory;
 import org.compiere.model.MRequestCategory;
 import org.compiere.model.MTree_Base;
@@ -132,7 +131,6 @@ public class TableModelClassLoader
 		specialTableName2className.put("AD_Element", M_Element.class.getName());
 		specialTableName2className.put("AD_Tree", MTree_Base.class.getName());
 		specialTableName2className.put("R_Category", MRequestCategory.class.getName());
-		specialTableName2className.put("GL_Category", MGLCategory.class.getName());
 		specialTableName2className.put("K_Category", MKCategory.class.getName());
 		specialTableName2className.put("C_ValidCombination", MAccount.class.getName());
 		specialTableName2className.put("C_Phase", I_C_Phase.class.getName());

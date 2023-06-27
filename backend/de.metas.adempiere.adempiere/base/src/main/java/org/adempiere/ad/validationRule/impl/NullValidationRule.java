@@ -17,7 +17,7 @@ public final class NullValidationRule implements IValidationRule
 {
 	public static final NullValidationRule instance = new NullValidationRule();
 
-	public static final boolean isNull(final IValidationRule rule)
+	public static boolean isNull(final IValidationRule rule)
 	{
 		return rule == null || rule == instance;
 	}
@@ -44,4 +44,4 @@ public final class NullValidationRule implements IValidationRule
 	{
 		return IStringExpression.NULL;
 	}
-};
+}

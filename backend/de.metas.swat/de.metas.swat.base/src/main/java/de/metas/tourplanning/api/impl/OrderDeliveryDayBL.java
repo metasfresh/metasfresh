@@ -15,7 +15,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -99,7 +99,13 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		final ZonedDateTime systemTime = de.metas.common.util.time.SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
-			order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
+			int offset = 0;
+			if (isUseFallback)
+				offset = sysConfigBL.getIntValue(
+						SYSCONFIG_Fallback_PreparationDate_Offset_Hours,
+						0);
+
+			order.setPreparationDate(TimeUtil.addHours(TimeUtil.asTimestamp(preparationDate), offset));
 
 			logger.debug("Setting Tour {} for C_Order {}. Old Tour was {} (fallbackToDatePromised={}, systemTime={})",
 					tourAndDate.getLeft().getRepoId(),

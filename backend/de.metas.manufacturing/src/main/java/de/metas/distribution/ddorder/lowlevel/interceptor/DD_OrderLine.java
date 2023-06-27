@@ -22,15 +22,15 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
  * #L%
  */
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.resource.Resource;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -70,7 +70,7 @@ class DD_OrderLine
 	})
 	public void setPP_Plant_From_ID(final I_DD_OrderLine ddOrderLine)
 	{
-		I_S_Resource plantFrom = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
+		Resource plantFrom = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
 
 		//
 		// If no plant was found for "Warehouse From" we shall use the Destination Plant.
@@ -80,8 +80,7 @@ class DD_OrderLine
 		// I see it as perfectly normal to use the Destination Plant in this case.
 		if (plantFrom == null)
 		{
-			final I_S_Resource plantTo = ddOrderLine.getDD_Order().getPP_Plant();
-			plantFrom = plantTo;
+			plantFrom = ddOrderLowLevelService.getPlantTo(ddOrderLine);
 		}
 
 		if (plantFrom == null)
@@ -93,7 +92,7 @@ class DD_OrderLine
 			);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
-		ddOrderLine.setPP_Plant_From(plantFrom);
+		ddOrderLine.setPP_Plant_From_ID(plantFrom.getResourceId().getRepoId());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

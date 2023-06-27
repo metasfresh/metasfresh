@@ -9,7 +9,6 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static java.math.BigDecimal.ZERO;
 
@@ -147,7 +147,14 @@ public class DemandCandiateHandler implements CandidateHandler
 
 		if (savedCandidate.getType() == CandidateType.DEMAND)
 		{
-			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
+			if(candidateSaveResult.getPreviousQty() == null)
+			{
+				fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
+			}
+			else
+			{ // it's an update => make sure that the supplyRequiredEvent has the updated-flag set and contains the qty-delta
+				fireSupplyRequiredEventIfNeeded(candidateSaveResult.toCandidateWithUpdateInfo(), savedStockCandidate);
+			}
 		}
 		return candidateToReturn;
 	}
@@ -157,14 +164,9 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
 
-		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(candidate.getId());
-		if (!childStockCandidate.isPresent())
-		{
-			return; // nothing to do
-		}
-		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(childStockCandidate.get().getId());
+		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = deleteCandidateFunc.apply(candidate.getId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 
@@ -199,7 +201,12 @@ public class DemandCandiateHandler implements CandidateHandler
 		Loggables.addLog("Quantity after demand applied: {}", availableQuantityAfterDemandWasApplied);
 
 		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getMinMaxDescriptor());
-		if (requiredQty.signum() > 0)
+		// note: since this candidate might need to be handled "lotForLot", we may fire the event even if requiredQty <= 0
+		final BigDecimal fullDemandQty = demandCandidateWithId.getMaterialDescriptor().getQuantity();
+		final BigDecimal deltaQuantity = demandCandidateWithId.isUpdated() ? demandCandidateWithId.getDeltaQuantity() : BigDecimal.ZERO;
+		final boolean deltaEqualsFullDepand = fullDemandQty.compareTo(deltaQuantity) == 0; // if a sales order is reactivated, qty is changed and then the order is completed, we get 3 events; the last one has delta=fullDemand and we don't to get confused by that last event.
+		if (requiredQty.signum() > 0
+				|| (fullDemandQty.signum() > 0  && !(requiredQty.signum() == 0 && deltaEqualsFullDepand)))
 		{
 			postSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 		}
@@ -241,25 +248,33 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private void postSupplyRequiredEvent(@NonNull final Candidate demandCandidateWithId, @NonNull final BigDecimal requiredQty)
 	{
-		// create supply record now! otherwise
-		final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
-				.type(CandidateType.SUPPLY)
-				.businessCase(null)
-				.businessCaseDetail(null)
-				.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
-				//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
-				.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
-				.quantity(requiredQty)
-				.simulated(demandCandidateWithId.isSimulated())
-				.build();
 
-		final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
+		final SupplyRequiredEvent supplyRequiredEvent;
+		if(requiredQty.signum() != 0)
+		{
+			// create supply record now! otherwise if e.g. a new shipmentschedule-event comes in before the planner responded to the current one (and if we are not lot-4-lot), the next demand-event's qty will be too high
+			final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
+					.type(CandidateType.SUPPLY)
+					.businessCase(null)
+					.businessCaseDetail(null)
+					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
+					//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
+					.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
+					.quantity(requiredQty)
+					.simulated(demandCandidateWithId.isSimulated())
+					.build();
 
-		final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator
-				.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
+			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
 
-		materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
+			supplyRequiredEvent = SupplyRequiredEventCreator
+					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
+		}
+		else
+		{ // fire the event anyway, because it might be lot4lot
+			supplyRequiredEvent = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, null);
+		}
 
-		Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
+			materialEventService.enqueueEventAfterNextCommit(supplyRequiredEvent);
+			Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
+		}
 	}
-}

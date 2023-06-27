@@ -2,7 +2,8 @@ package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
-import de.metas.money.CurrencyConversionTypeId;
+import de.metas.costing.methods.CostAmountType;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -16,7 +17,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Objects;
 
 /*
@@ -46,24 +47,25 @@ import java.util.Objects;
 @EqualsAndHashCode(doNotUseGetters = true) // because we are throwing exception on some getters, see below...
 public class CostDetailCreateRequest
 {
-	AcctSchemaId acctSchemaId;
-	ClientId clientId;
-	OrgId orgId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
-	CostingDocumentRef documentRef;
+	@Nullable AcctSchemaId acctSchemaId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull CostingDocumentRef documentRef;
 	/**
 	 * Initial document reference (in case of reversal)
 	 */
-	CostingDocumentRef initialDocumentRef;
-	CostElement costElement;
-	CostAmount amt;
-	Quantity qty;
-	CurrencyConversionTypeId currencyConversionTypeId;
-	LocalDate date;
-	String description;
+	@Nullable CostingDocumentRef initialDocumentRef;
+	@Nullable CostElement costElement;
+	@NonNull CostAmountType amtType;
+	@NonNull CostAmount amt;
+	@NonNull Quantity qty;
+	@Nullable CurrencyConversionContext currencyConversionContext;
+	@NonNull Instant date;
+	@Nullable String description;
 
-	CostAmount explicitCostPrice;
+	@Nullable CostAmount explicitCostPrice;
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
@@ -75,10 +77,11 @@ public class CostDetailCreateRequest
 			@NonNull final CostingDocumentRef documentRef,
 			@Nullable final CostingDocumentRef initialDocumentRef,
 			@Nullable final CostElement costElement,
+			@Nullable final CostAmountType amtType,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
-			@NonNull final LocalDate date,
+			@Nullable final CurrencyConversionContext currencyConversionContext,
+			@NonNull final Instant date,
 			@Nullable final String description,
 			@Nullable final CostAmount explicitCostPrice)
 	{
@@ -90,9 +93,10 @@ public class CostDetailCreateRequest
 		this.documentRef = documentRef;
 		this.costElement = costElement;
 		this.initialDocumentRef = initialDocumentRef;
+		this.amtType = amtType != null ? amtType : CostAmountType.MAIN;
 		this.amt = amt;
 		this.qty = qty;
-		this.currencyConversionTypeId = currencyConversionTypeId;
+		this.currencyConversionContext = currencyConversionContext;
 		this.date = date;
 		this.description = description;
 		this.explicitCostPrice = explicitCostPrice;
@@ -120,14 +124,19 @@ public class CostDetailCreateRequest
 		return getCostElement().getId();
 	}
 
-	public boolean isAllCostElements()
+	public boolean isExplicitCostElement()
 	{
-		return costElement == null;
+		return costElement != null;
 	}
 
 	public boolean isReversal()
 	{
 		return getInitialDocumentRef() != null;
+	}
+
+	public boolean isOutbound()
+	{
+		return getQty().signum() < 0 && !isReversal();
 	}
 
 	public CostDetailCreateRequest withAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
@@ -152,12 +161,18 @@ public class CostDetailCreateRequest
 
 	public CostDetailCreateRequest withAmount(@NonNull final CostAmount amt)
 	{
-		if (Objects.equals(this.amt, amt))
+		return withAmountAndType(amt, this.amtType);
+	}
+
+	public CostDetailCreateRequest withAmountAndType(@NonNull final CostAmount amt, @NonNull final CostAmountType amtType)
+	{
+		if (Objects.equals(this.amt, amt)
+				&& Objects.equals(this.amtType, amtType))
 		{
 			return this;
 		}
 
-		return toBuilder().amt(amt).build();
+		return toBuilder().amt(amt).amtType(amtType).build();
 	}
 
 	public CostDetailCreateRequest withAmountAndQty(
@@ -206,6 +221,11 @@ public class CostDetailCreateRequest
 		return toBuilder().qty(qty).build();
 	}
 
+	public CostDetailCreateRequest withQtyZero()
+	{
+		return withQty(qty.toZero());
+	}
+
 	public CostDetailBuilder toCostDetailBuilder()
 	{
 		final CostDetailBuilder costDetail = CostDetail.builder()
@@ -215,13 +235,15 @@ public class CostDetailCreateRequest
 				.productId(getProductId())
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				//
+				.amtType(getAmtType())
 				.amt(getAmt())
 				.qty(getQty())
 				//
 				.documentRef(getDocumentRef())
-				.description(getDescription());
+				.description(getDescription())
+				.dateAcct(getDate());
 
-		if (!isAllCostElements())
+		if (isExplicitCostElement())
 		{
 			costDetail.costElementId(getCostElementId());
 		}

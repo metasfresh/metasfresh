@@ -120,7 +120,7 @@ public class PPOrderCreatedHandlerTests
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -141,12 +141,11 @@ public class PPOrderCreatedHandlerTests
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
-				new MainDataRequestHandler(),
 				candidateRepositoryRetrieval);
 	}
 
 	@Test
-	public void handle_CreatedEvent_with_groupId()
+	public void handle_CreatedEvent()
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30/* ppOrderId */, MaterialDispoGroupId.ofInt(40));
 		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);
@@ -194,7 +193,9 @@ public class PPOrderCreatedHandlerTests
 			assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isNotEqualTo(supplyDemandGroupId); // stock candidates' groupIds are different from supply/demand groups' groupIds
 			assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isNotEqualTo(t2Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different if they are about different products or warehouses
 			assertThat(t1Product1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product1Demand.getMD_Candidate_ID());
-
+			// }
+			//
+			// {
 			final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct2Id).get(0);
 			assertThat(t1Product2Demand.getQty()).isEqualByComparingTo(TEN);
 			assertThat(t1Product2Demand.getM_Product_ID()).isEqualTo(rawProduct2Id);

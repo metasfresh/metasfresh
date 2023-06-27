@@ -39,12 +39,13 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMLineId;
@@ -53,16 +54,17 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.productioncandidate.agg.key.impl.PPOrderCandidateHeaderAggregationKeyBuilder;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
+import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
+
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,7 +72,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class PPOrderCandidateService
@@ -79,16 +80,19 @@ public class PPOrderCandidateService
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	private final ProductPlanningService productPlanningService;
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
+	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
 
 	public PPOrderCandidateService(
 			@NonNull final ProductPlanningService productPlanningService,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
+			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService)
 	{
 		this.productPlanningService = productPlanningService;
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
+		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
 	}
 
 	@NonNull
@@ -101,21 +105,9 @@ public class PPOrderCandidateService
 	}
 
 	@NonNull
-	public OrderGenerateResult processCandidates(@NonNull final Stream<I_PP_Order_Candidate> orderCandidates)
+	public OrderGenerateResult processCandidates(@NonNull final PPOrderCandidateProcessRequest ppOrderCandidateProcessRequest)
 	{
-		final ImmutableList<I_PP_Order_Candidate> sortedCandidates = orderCandidates
-				.filter(orderCandidate -> !orderCandidate.isProcessed())
-				.sorted(Comparator.comparing(this::generateHeaderAggregationKey))
-				.collect(ImmutableList.toImmutableList());
-
-		if (sortedCandidates.isEmpty())
-		{
-			return new OrderGenerateResult();
-		}
-
-		return createPPOrderProducerFromCandidate()
-				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
-				.createOrders(sortedCandidates);
+		return createPPOrderProducerFromCandidate().createOrders(ppOrderCandidateProcessRequest);
 	}
 
 	@NonNull
@@ -171,7 +163,7 @@ public class PPOrderCandidateService
 
 		for (final Map.Entry<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLineCandidate2BOMLineEntry : orderLineCandidate2BOMLine.entrySet())
 		{
-			final boolean isOrderLineOutdated = !orderLineCandidate2BOMLineEntry.getValue().isPresent();
+			final boolean isOrderLineOutdated = orderLineCandidate2BOMLineEntry.getValue().isEmpty();
 			if (isOrderLineOutdated)
 			{
 				handleOutdatedLine(orderLineCandidate2BOMLineEntry.getKey());
@@ -339,20 +331,14 @@ public class PPOrderCandidateService
 	@NonNull
 	private PPOrderProducerFromCandidate createPPOrderProducerFromCandidate()
 	{
-		return new PPOrderProducerFromCandidate(new OrderGenerateResult());
-	}
-
-	@NonNull
-	private PPOrderCandidateHeaderAggregationKeyBuilder mkPPOrderCandidateHeaderAggregationKeyBuilder()
-	{
-		return new PPOrderCandidateHeaderAggregationKeyBuilder();
-	}
-
-	@NonNull
-	private String generateHeaderAggregationKey(@NonNull final I_PP_Order_Candidate orderCandidateRecord)
-	{
-		final PPOrderCandidateHeaderAggregationKeyBuilder orderCandidateKeyBuilder = mkPPOrderCandidateHeaderAggregationKeyBuilder();
-		return orderCandidateKeyBuilder.buildKey(orderCandidateRecord);
+		return PPOrderProducerFromCandidate.builder()
+				.ppOrderAllocatorBuilderService(ppOrderAllocatorBuilderService)
+				.ppOrderService(ppOrderService)
+				.trxManager(trxManager)
+				.ppOrderCandidatesDAO(ppOrderCandidateDAO)
+				.productPlanningsRepo(productPlanningDAO)
+				.createEachPPOrderInOwnTrx(true)
+				.build();
 	}
 
 	private void handleOutdatedLine(@NonNull final I_PP_OrderLine_Candidate orderCandidateLine)

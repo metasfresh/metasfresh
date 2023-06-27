@@ -39,6 +39,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -102,11 +103,13 @@ public class BankRepository
 				.build();
 	}
 
+	@NonNull
 	public Optional<BankId> getBankIdBySwiftCode(final String swiftCode)
 	{
 		return bankIdsBySwiftCode.getOrLoad(swiftCode, this::retrieveBankIdBySwiftCode);
 	}
 
+	@NonNull
 	private Optional<BankId> retrieveBankIdBySwiftCode(final String swiftCode)
 	{
 		final int bankRepoId = queryBL.createQueryBuilderOutOfTrx(I_C_Bank.class)
@@ -158,4 +161,13 @@ public class BankRepository
 				this::retrieveDefaultBankDataImportConfigId);
 	}
 
+	@NonNull
+	public Set<BankId> retrieveBankIdsByName(@NonNull final String bankName)
+	{
+		return queryBL.createQueryBuilder(I_C_Bank.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, true)
+				.create()
+				.listIds(BankId::ofRepoId);
+	}
 }

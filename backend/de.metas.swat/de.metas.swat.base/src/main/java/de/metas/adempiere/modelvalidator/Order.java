@@ -2,7 +2,6 @@ package de.metas.adempiere.modelvalidator;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_BPartner;
@@ -10,7 +9,6 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.impl.OrderBL;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -112,7 +110,7 @@ public class Order implements ModelValidator
 
 		if (InterfaceWrapperHelper.isInstanceOf(po, I_C_OrderLine.class))
 		{
-			if (type.isNew() && type.isBefore() && po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			if (type.isNew() && type.isBefore() && !po.isCopying())
 			{
 				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
 				updateOrderLineAddresses(orderLine);

@@ -25,8 +25,8 @@ package de.metas.pricing.productprice;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -41,6 +41,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ProductPriceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final ProductTaxCategoryService productTaxCategoryService;
+
+	public ProductPriceRepository(@NonNull final ProductTaxCategoryService productTaxCategoryService)
+	{
+		this.productTaxCategoryService = productTaxCategoryService;
+	}
 
 	@NonNull
 	public ProductPrice createProductPrice(@NonNull final CreateProductPriceRequest request)
@@ -65,6 +72,24 @@ public class ProductPriceRepository
 	{
 		final I_M_ProductPrice record = getRecordById(productPriceId);
 		return toProductPrice(record);
+	}
+
+	@NonNull
+	public ProductPrice toProductPrice(@NonNull final I_M_ProductPrice record)
+	{
+		return ProductPrice.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
+				.priceListVersionId(PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID()))
+				.priceLimit(record.getPriceLimit())
+				.priceList(record.getPriceList())
+				.priceStd(record.getPriceStd())
+				.taxCategoryId(productTaxCategoryService.getTaxCategoryId(record))
+				.isActive(record.isActive())
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+				.seqNo(record.getSeqNo())
+				.build();
 	}
 
 	@NonNull
@@ -129,21 +154,4 @@ public class ProductPriceRepository
 				.firstOnlyNotNull(I_M_ProductPrice.class);
 	}
 
-	@NonNull
-	private ProductPrice toProductPrice(@NonNull final I_M_ProductPrice record)
-	{
-		return ProductPrice.builder()
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
-				.priceListVersionId(PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID()))
-				.priceLimit(record.getPriceLimit())
-				.priceList(record.getPriceList())
-				.priceStd(record.getPriceStd())
-				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
-				.isActive(record.isActive())
-				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
-				.seqNo(record.getSeqNo())
-				.build();
-	}
 }

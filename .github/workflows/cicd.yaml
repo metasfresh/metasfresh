@@ -162,7 +162,7 @@ jobs:
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          
+
   test-frontend:
     name: test (frontend)
     runs-on: ubuntu-latest
@@ -399,6 +399,7 @@ jobs:
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .

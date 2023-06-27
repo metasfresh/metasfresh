@@ -1,427 +1,372 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for GL_DistributionLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_GL_DistributionLine 
 {
 
-    /** TableName=GL_DistributionLine */
-    public static final String Table_Name = "GL_DistributionLine";
+	String Table_Name = "GL_DistributionLine";
 
-    /** AD_Table_ID=707 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=707 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 2 - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Konto.
+	 * Set Account.
 	 * Account used
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAccount_ID (int Account_ID);
+	void setAccount_ID (int Account_ID);
 
 	/**
-	 * Get Konto.
+	 * Get Account.
 	 * Account used
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAccount_ID();
+	int getAccount_ID();
 
-    /** Column definition for Account_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_Account_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "Account_ID", null);
-    /** Column name Account_ID */
-    public static final String COLUMNNAME_Account_ID = "Account_ID";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Account_ID = new ModelColumn<>(I_GL_DistributionLine.class, "Account_ID", null);
+	String COLUMNNAME_Account_ID = "Account_ID";
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Client>(I_GL_DistributionLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Org>(I_GL_DistributionLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Buchende Organisation.
+	 * Set Trx Organization.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
+	void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
 
 	/**
-	 * Get Buchende Organisation.
+	 * Get Trx Organization.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_OrgTrx_ID();
+	int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
-
-    /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Org>(I_GL_DistributionLine.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_OrgTrx_ID */
-    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
+	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
-	 * Set Kostenstelle.
-	 * Kostenstelle
+	 * Set Activity.
+	 * Business Activity
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Activity_ID (int C_Activity_ID);
+	void setC_Activity_ID (int C_Activity_ID);
 
 	/**
-	 * Get Kostenstelle.
-	 * Kostenstelle
+	 * Get Activity.
+	 * Business Activity
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Activity_ID();
+	int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity();
-
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
-
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Activity>(I_GL_DistributionLine.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
-    /** Column name C_Activity_ID */
-    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_BPartner>(I_GL_DistributionLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Werbemassnahme.
+	 * Set Campaign.
 	 * Marketing Campaign
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Campaign_ID (int C_Campaign_ID);
+	void setC_Campaign_ID (int C_Campaign_ID);
 
 	/**
-	 * Get Werbemassnahme.
+	 * Get Campaign.
 	 * Marketing Campaign
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Campaign_ID();
+	int getC_Campaign_ID();
 
-	public org.compiere.model.I_C_Campaign getC_Campaign();
+	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
 
-	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
+	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
 
-    /** Column definition for C_Campaign_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Campaign>(I_GL_DistributionLine.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-    /** Column name C_Campaign_ID */
-    public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_GL_DistributionLine.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Von Ort.
+	 * Set Location From.
 	 * Location that inventory was moved from
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_LocFrom_ID (int C_LocFrom_ID);
+	void setC_LocFrom_ID (int C_LocFrom_ID);
 
 	/**
-	 * Get Von Ort.
+	 * Get Location From.
 	 * Location that inventory was moved from
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_LocFrom_ID();
+	int getC_LocFrom_ID();
 
-	public org.compiere.model.I_C_Location getC_LocFrom();
+	@Nullable org.compiere.model.I_C_Location getC_LocFrom();
 
-	public void setC_LocFrom(org.compiere.model.I_C_Location C_LocFrom);
+	void setC_LocFrom(@Nullable org.compiere.model.I_C_Location C_LocFrom);
 
-    /** Column definition for C_LocFrom_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Location>(I_GL_DistributionLine.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
-    /** Column name C_LocFrom_ID */
-    public static final String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new ModelColumn<>(I_GL_DistributionLine.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
 
 	/**
-	 * Set Nach Ort.
+	 * Set Location To.
 	 * Location that inventory was moved to
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_LocTo_ID (int C_LocTo_ID);
+	void setC_LocTo_ID (int C_LocTo_ID);
 
 	/**
-	 * Get Nach Ort.
+	 * Get Location To.
 	 * Location that inventory was moved to
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_LocTo_ID();
+	int getC_LocTo_ID();
 
-	public org.compiere.model.I_C_Location getC_LocTo();
+	@Nullable org.compiere.model.I_C_Location getC_LocTo();
 
-	public void setC_LocTo(org.compiere.model.I_C_Location C_LocTo);
+	void setC_LocTo(@Nullable org.compiere.model.I_C_Location C_LocTo);
 
-    /** Column definition for C_LocTo_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Location>(I_GL_DistributionLine.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
-    /** Column name C_LocTo_ID */
-    public static final String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new ModelColumn<>(I_GL_DistributionLine.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
 
 	/**
-	 * Set Projekt.
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_GL_DistributionLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Project en_US 208.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Project_ID (int C_Project_ID);
+	void setC_Project_ID (int C_Project_ID);
 
 	/**
-	 * Get Projekt.
+	 * Get Project en_US 208.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Project_ID();
+	int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
-
-    /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_Project>(I_GL_DistributionLine.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
-    /** Column name C_Project_ID */
-    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Set Sales Region.
+	 * Sales coverage region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SalesRegion_ID (int C_SalesRegion_ID);
+
+	/**
+	 * Get Sales Region.
+	 * Sales coverage region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SalesRegion_ID();
+
+	@Nullable org.compiere.model.I_C_SalesRegion getC_SalesRegion();
+
+	void setC_SalesRegion(@Nullable org.compiere.model.I_C_SalesRegion C_SalesRegion);
+
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_GL_DistributionLine.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
+	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+
+	/**
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Created = new ModelColumn<>(I_GL_DistributionLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_User>(I_GL_DistributionLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Vertriebsgebiet.
-	 * Sales coverage region
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_SalesRegion_ID (int C_SalesRegion_ID);
-
-	/**
-	 * Get Vertriebsgebiet.
-	 * Sales coverage region
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_SalesRegion_ID();
-
-	public org.compiere.model.I_C_SalesRegion getC_SalesRegion();
-
-	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion);
-
-    /** Column definition for C_SalesRegion_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_SalesRegion>(I_GL_DistributionLine.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
-    /** Column name C_SalesRegion_ID */
-    public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
-
-	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Description = new ModelColumn<>(I_GL_DistributionLine.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Hauptbuch - Aufteilung.
+	 * Set GL Distribution.
 	 * General Ledger Distribution
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setGL_Distribution_ID (int GL_Distribution_ID);
+	void setGL_Distribution_ID (int GL_Distribution_ID);
 
 	/**
-	 * Get Hauptbuch - Aufteilung.
+	 * Get GL Distribution.
 	 * General Ledger Distribution
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getGL_Distribution_ID();
+	int getGL_Distribution_ID();
 
-	public org.compiere.model.I_GL_Distribution getGL_Distribution();
+	org.compiere.model.I_GL_Distribution getGL_Distribution();
 
-	public void setGL_Distribution(org.compiere.model.I_GL_Distribution GL_Distribution);
+	void setGL_Distribution(org.compiere.model.I_GL_Distribution GL_Distribution);
 
-    /** Column definition for GL_Distribution_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_GL_Distribution> COLUMN_GL_Distribution_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_GL_Distribution>(I_GL_DistributionLine.class, "GL_Distribution_ID", org.compiere.model.I_GL_Distribution.class);
-    /** Column name GL_Distribution_ID */
-    public static final String COLUMNNAME_GL_Distribution_ID = "GL_Distribution_ID";
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_GL_Distribution> COLUMN_GL_Distribution_ID = new ModelColumn<>(I_GL_DistributionLine.class, "GL_Distribution_ID", org.compiere.model.I_GL_Distribution.class);
+	String COLUMNNAME_GL_Distribution_ID = "GL_Distribution_ID";
 
 	/**
 	 * Set GL Distribution Line.
@@ -431,7 +376,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setGL_DistributionLine_ID (int GL_DistributionLine_ID);
+	void setGL_DistributionLine_ID (int GL_DistributionLine_ID);
 
 	/**
 	 * Get GL Distribution Line.
@@ -441,120 +386,121 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getGL_DistributionLine_ID();
+	int getGL_DistributionLine_ID();
 
-    /** Column definition for GL_DistributionLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_GL_DistributionLine_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "GL_DistributionLine_ID", null);
-    /** Column name GL_DistributionLine_ID */
-    public static final String COLUMNNAME_GL_DistributionLine_ID = "GL_DistributionLine_ID";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_GL_DistributionLine_ID = new ModelColumn<>(I_GL_DistributionLine.class, "GL_DistributionLine_ID", null);
+	String COLUMNNAME_GL_DistributionLine_ID = "GL_DistributionLine_ID";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_IsActive = new ModelColumn<>(I_GL_DistributionLine.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Zeile Nr..
-	 * Unique line for this document
+	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setLine (int Line);
+	void setLine (int Line);
 
 	/**
-	 * Get Zeile Nr..
-	 * Unique line for this document
+	 * Get SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getLine();
+	int getLine();
 
-    /** Column definition for Line */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "Line", null);
-    /** Column name Line */
-    public static final String COLUMNNAME_Line = "Line";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Line = new ModelColumn<>(I_GL_DistributionLine.class, "Line", null);
+	String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_M_Product>(I_GL_DistributionLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_GL_DistributionLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Organisation.
-	 * Organizational entity within client
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOrg_ID (int Org_ID);
+	void setOrg_ID (int Org_ID);
 
 	/**
 	 * Get Organisation.
-	 * Organizational entity within client
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getOrg_ID();
+	int getOrg_ID();
 
-	public org.compiere.model.I_AD_Org getOrg();
-
-	public void setOrg(org.compiere.model.I_AD_Org Org);
-
-    /** Column definition for Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Org> COLUMN_Org_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_Org>(I_GL_DistributionLine.class, "Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name Org_ID */
-    public static final String COLUMNNAME_Org_ID = "Org_ID";
+	String COLUMNNAME_Org_ID = "Org_ID";
 
 	/**
 	 * Set Overwrite Account.
@@ -564,7 +510,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteAcct (boolean OverwriteAcct);
+	void setOverwriteAcct (boolean OverwriteAcct);
 
 	/**
 	 * Get Overwrite Account.
@@ -574,12 +520,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteAcct();
+	boolean isOverwriteAcct();
 
-    /** Column definition for OverwriteAcct */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteAcct = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteAcct", null);
-    /** Column name OverwriteAcct */
-    public static final String COLUMNNAME_OverwriteAcct = "OverwriteAcct";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteAcct = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteAcct", null);
+	String COLUMNNAME_OverwriteAcct = "OverwriteAcct";
 
 	/**
 	 * Set Overwrite Activity.
@@ -589,7 +533,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteActivity (boolean OverwriteActivity);
+	void setOverwriteActivity (boolean OverwriteActivity);
 
 	/**
 	 * Get Overwrite Activity.
@@ -599,12 +543,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteActivity();
+	boolean isOverwriteActivity();
 
-    /** Column definition for OverwriteActivity */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteActivity = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteActivity", null);
-    /** Column name OverwriteActivity */
-    public static final String COLUMNNAME_OverwriteActivity = "OverwriteActivity";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteActivity = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteActivity", null);
+	String COLUMNNAME_OverwriteActivity = "OverwriteActivity";
 
 	/**
 	 * Set Overwrite Bus.Partner.
@@ -614,7 +556,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteBPartner (boolean OverwriteBPartner);
+	void setOverwriteBPartner (boolean OverwriteBPartner);
 
 	/**
 	 * Get Overwrite Bus.Partner.
@@ -624,12 +566,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteBPartner();
+	boolean isOverwriteBPartner();
 
-    /** Column definition for OverwriteBPartner */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteBPartner = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteBPartner", null);
-    /** Column name OverwriteBPartner */
-    public static final String COLUMNNAME_OverwriteBPartner = "OverwriteBPartner";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteBPartner = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteBPartner", null);
+	String COLUMNNAME_OverwriteBPartner = "OverwriteBPartner";
 
 	/**
 	 * Set Overwrite Campaign.
@@ -639,7 +579,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteCampaign (boolean OverwriteCampaign);
+	void setOverwriteCampaign (boolean OverwriteCampaign);
 
 	/**
 	 * Get Overwrite Campaign.
@@ -649,12 +589,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteCampaign();
+	boolean isOverwriteCampaign();
 
-    /** Column definition for OverwriteCampaign */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteCampaign = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteCampaign", null);
-    /** Column name OverwriteCampaign */
-    public static final String COLUMNNAME_OverwriteCampaign = "OverwriteCampaign";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteCampaign = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteCampaign", null);
+	String COLUMNNAME_OverwriteCampaign = "OverwriteCampaign";
 
 	/**
 	 * Set Overwrite Location From.
@@ -664,7 +602,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteLocFrom (boolean OverwriteLocFrom);
+	void setOverwriteLocFrom (boolean OverwriteLocFrom);
 
 	/**
 	 * Get Overwrite Location From.
@@ -674,12 +612,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteLocFrom();
+	boolean isOverwriteLocFrom();
 
-    /** Column definition for OverwriteLocFrom */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteLocFrom = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteLocFrom", null);
-    /** Column name OverwriteLocFrom */
-    public static final String COLUMNNAME_OverwriteLocFrom = "OverwriteLocFrom";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteLocFrom = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteLocFrom", null);
+	String COLUMNNAME_OverwriteLocFrom = "OverwriteLocFrom";
 
 	/**
 	 * Set Overwrite Location To.
@@ -689,7 +625,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteLocTo (boolean OverwriteLocTo);
+	void setOverwriteLocTo (boolean OverwriteLocTo);
 
 	/**
 	 * Get Overwrite Location To.
@@ -699,12 +635,33 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteLocTo();
+	boolean isOverwriteLocTo();
 
-    /** Column definition for OverwriteLocTo */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteLocTo = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteLocTo", null);
-    /** Column name OverwriteLocTo */
-    public static final String COLUMNNAME_OverwriteLocTo = "OverwriteLocTo";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteLocTo = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteLocTo", null);
+	String COLUMNNAME_OverwriteLocTo = "OverwriteLocTo";
+
+	/**
+	 * Set Overwrite Order.
+	 * Overwrite the account segment Order with the value specified
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOverwriteOrder (boolean OverwriteOrder);
+
+	/**
+	 * Get Overwrite Order.
+	 * Overwrite the account segment Order with the value specified
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOverwriteOrder();
+
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteOrder = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteOrder", null);
+	String COLUMNNAME_OverwriteOrder = "OverwriteOrder";
 
 	/**
 	 * Set Overwrite Organization.
@@ -714,7 +671,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteOrg (boolean OverwriteOrg);
+	void setOverwriteOrg (boolean OverwriteOrg);
 
 	/**
 	 * Get Overwrite Organization.
@@ -724,12 +681,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteOrg();
+	boolean isOverwriteOrg();
 
-    /** Column definition for OverwriteOrg */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteOrg = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteOrg", null);
-    /** Column name OverwriteOrg */
-    public static final String COLUMNNAME_OverwriteOrg = "OverwriteOrg";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteOrg = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteOrg", null);
+	String COLUMNNAME_OverwriteOrg = "OverwriteOrg";
 
 	/**
 	 * Set Overwrite Trx Organuzation.
@@ -739,7 +694,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteOrgTrx (boolean OverwriteOrgTrx);
+	void setOverwriteOrgTrx (boolean OverwriteOrgTrx);
 
 	/**
 	 * Get Overwrite Trx Organuzation.
@@ -749,12 +704,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteOrgTrx();
+	boolean isOverwriteOrgTrx();
 
-    /** Column definition for OverwriteOrgTrx */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteOrgTrx = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteOrgTrx", null);
-    /** Column name OverwriteOrgTrx */
-    public static final String COLUMNNAME_OverwriteOrgTrx = "OverwriteOrgTrx";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteOrgTrx = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteOrgTrx", null);
+	String COLUMNNAME_OverwriteOrgTrx = "OverwriteOrgTrx";
 
 	/**
 	 * Set Overwrite Product.
@@ -764,7 +717,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteProduct (boolean OverwriteProduct);
+	void setOverwriteProduct (boolean OverwriteProduct);
 
 	/**
 	 * Get Overwrite Product.
@@ -774,12 +727,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteProduct();
+	boolean isOverwriteProduct();
 
-    /** Column definition for OverwriteProduct */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteProduct = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteProduct", null);
-    /** Column name OverwriteProduct */
-    public static final String COLUMNNAME_OverwriteProduct = "OverwriteProduct";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteProduct = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteProduct", null);
+	String COLUMNNAME_OverwriteProduct = "OverwriteProduct";
 
 	/**
 	 * Set Overwrite Project.
@@ -789,7 +740,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteProject (boolean OverwriteProject);
+	void setOverwriteProject (boolean OverwriteProject);
 
 	/**
 	 * Get Overwrite Project.
@@ -799,12 +750,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteProject();
+	boolean isOverwriteProject();
 
-    /** Column definition for OverwriteProject */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteProject = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteProject", null);
-    /** Column name OverwriteProject */
-    public static final String COLUMNNAME_OverwriteProject = "OverwriteProject";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteProject = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteProject", null);
+	String COLUMNNAME_OverwriteProject = "OverwriteProject";
 
 	/**
 	 * Set Overwrite Sales Region.
@@ -814,7 +763,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteSalesRegion (boolean OverwriteSalesRegion);
+	void setOverwriteSalesRegion (boolean OverwriteSalesRegion);
 
 	/**
 	 * Get Overwrite Sales Region.
@@ -824,12 +773,33 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteSalesRegion();
+	boolean isOverwriteSalesRegion();
 
-    /** Column definition for OverwriteSalesRegion */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteSalesRegion = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteSalesRegion", null);
-    /** Column name OverwriteSalesRegion */
-    public static final String COLUMNNAME_OverwriteSalesRegion = "OverwriteSalesRegion";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteSalesRegion = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteSalesRegion", null);
+	String COLUMNNAME_OverwriteSalesRegion = "OverwriteSalesRegion";
+
+	/**
+	 * Set Overwrite Section Code.
+	 * Overwrite the account segment Sectoin Coder with the value specified
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOverwriteSectionCode (boolean OverwriteSectionCode);
+
+	/**
+	 * Get Overwrite Section Code.
+	 * Overwrite the account segment Sectoin Coder with the value specified
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOverwriteSectionCode();
+
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteSectionCode = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteSectionCode", null);
+	String COLUMNNAME_OverwriteSectionCode = "OverwriteSectionCode";
 
 	/**
 	 * Set Overwrite User1.
@@ -839,7 +809,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteUser1 (boolean OverwriteUser1);
+	void setOverwriteUser1 (boolean OverwriteUser1);
 
 	/**
 	 * Get Overwrite User1.
@@ -849,12 +819,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteUser1();
+	boolean isOverwriteUser1();
 
-    /** Column definition for OverwriteUser1 */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteUser1 = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteUser1", null);
-    /** Column name OverwriteUser1 */
-    public static final String COLUMNNAME_OverwriteUser1 = "OverwriteUser1";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteUser1 = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteUser1", null);
+	String COLUMNNAME_OverwriteUser1 = "OverwriteUser1";
 
 	/**
 	 * Set Overwrite User2.
@@ -864,7 +832,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwriteUser2 (boolean OverwriteUser2);
+	void setOverwriteUser2 (boolean OverwriteUser2);
 
 	/**
 	 * Get Overwrite User2.
@@ -874,12 +842,10 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwriteUser2();
+	boolean isOverwriteUser2();
 
-    /** Column definition for OverwriteUser2 */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteUser2 = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "OverwriteUser2", null);
-    /** Column name OverwriteUser2 */
-    public static final String COLUMNNAME_OverwriteUser2 = "OverwriteUser2";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_OverwriteUser2 = new ModelColumn<>(I_GL_DistributionLine.class, "OverwriteUser2", null);
+	String COLUMNNAME_OverwriteUser2 = "OverwriteUser2";
 
 	/**
 	 * Set Percent.
@@ -889,7 +855,7 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPercent (java.math.BigDecimal Percent);
+	void setPercent (BigDecimal Percent);
 
 	/**
 	 * Get Percent.
@@ -899,98 +865,85 @@ public interface I_GL_DistributionLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPercent();
+	BigDecimal getPercent();
 
-    /** Column definition for Percent */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_Percent = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "Percent", null);
-    /** Column name Percent */
-    public static final String COLUMNNAME_Percent = "Percent";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Percent = new ModelColumn<>(I_GL_DistributionLine.class, "Percent", null);
+	String COLUMNNAME_Percent = "Percent";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, Object>(I_GL_DistributionLine.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Updated = new ModelColumn<>(I_GL_DistributionLine.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_AD_User>(I_GL_DistributionLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Nutzer 1.
+	 * Set User List 1.
 	 * User defined list element #1
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUser1_ID (int User1_ID);
+	void setUser1_ID (int User1_ID);
 
 	/**
-	 * Get Nutzer 1.
+	 * Get User List 1.
 	 * User defined list element #1
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getUser1_ID();
+	int getUser1_ID();
 
-	public org.compiere.model.I_C_ElementValue getUser1();
+	@Nullable org.compiere.model.I_C_ElementValue getUser1();
 
-	public void setUser1(org.compiere.model.I_C_ElementValue User1);
+	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
 
-    /** Column definition for User1_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_ElementValue>(I_GL_DistributionLine.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name User1_ID */
-    public static final String COLUMNNAME_User1_ID = "User1_ID";
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_GL_DistributionLine.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
+	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
-	 * Set Nutzer 2.
-	 * User defined list element #2
+	 * Set User 2.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUser2_ID (int User2_ID);
+	void setUser2_ID (int User2_ID);
 
 	/**
-	 * Get Nutzer 2.
-	 * User defined list element #2
+	 * Get User 2.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getUser2_ID();
+	int getUser2_ID();
 
-	public org.compiere.model.I_C_ElementValue getUser2();
+	@Nullable org.compiere.model.I_C_ElementValue getUser2();
 
-	public void setUser2(org.compiere.model.I_C_ElementValue User2);
+	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
 
-    /** Column definition for User2_ID */
-    public static final org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_ElementValue>(I_GL_DistributionLine.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name User2_ID */
-    public static final String COLUMNNAME_User2_ID = "User2_ID";
+	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_GL_DistributionLine.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
+	String COLUMNNAME_User2_ID = "User2_ID";
 }

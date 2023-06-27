@@ -150,7 +150,7 @@ public class PP_Order extends CalloutEngine
 			return;
 		}
 
-		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 		ppOrder.setM_Locator_ID(locatorId.getRepoId());
 	}
 
@@ -189,6 +189,7 @@ public class PP_Order extends CalloutEngine
 				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
 				.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()))
+				.includeWithNullProductId(false)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrderWithProductId.getM_AttributeSetInstance_ID()))
 				.build();
 		I_PP_Product_Planning pp = productPlanningDAO.find(query).orElse(null);

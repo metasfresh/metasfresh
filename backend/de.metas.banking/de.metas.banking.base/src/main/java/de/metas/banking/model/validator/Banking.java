@@ -22,13 +22,6 @@ package de.metas.banking.model.validator;
  * #L%
  */
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_I_BankStatement;
-
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.impexp.BankStatementImportProcess;
@@ -44,6 +37,12 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_I_BankStatement;
 
 /**
  * Banking module activator
@@ -90,7 +89,7 @@ public class Banking extends AbstractModuleInterceptor
 		{
 			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_Payment(bankStatementBL, paymentBL, sysConfigBL, cashStatementBL)); // 04203
 			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_PaySelection(bankAccountService)); // 04203
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionLine.instance); // 04203
+			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_PaySelectionLine()); // 04203
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment_Request.instance); // 08596
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_AllocationHdr.instance); // 08972
 		}

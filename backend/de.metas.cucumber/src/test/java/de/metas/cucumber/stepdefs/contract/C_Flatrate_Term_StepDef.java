@@ -64,6 +64,7 @@ import java.util.Map;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -245,6 +246,32 @@ public class C_Flatrate_Term_StepDef
 
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 			contractTable.put(flatrateTermIdentifier, contract);
+		}
+	}
+
+	@And("retrieve C_Flatrate_Term:")
+	public void retrieve_C_Flatrate_Term(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String flatrateConditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Conditions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Conditions flatrateConditions = conditionsTable.get(flatrateConditionsIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final I_C_Flatrate_Term flatrateTerm = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+					.addEqualsFilter(COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditions.getC_Flatrate_Conditions_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.orderByDescending(COLUMNNAME_C_Flatrate_Term_ID)
+					.create()
+					.first(I_C_Flatrate_Term.class);
+
+			assertThat(flatrateTerm).isNotNull();
+
+			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Term_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			contractTable.put(flatrateTermIdentifier, flatrateTerm);
 		}
 	}
 }

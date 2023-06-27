@@ -6,13 +6,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.pporder.LiberoException;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -24,14 +25,10 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_S_Resource;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
@@ -40,7 +37,6 @@ import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityCode;
 import org.eevolution.api.PPOrderRoutingActivityId;
-import org.eevolution.api.PPOrderRoutingActivitySchedule;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderRoutingProduct;
 import org.eevolution.api.PPOrderRoutingProductId;
@@ -51,12 +47,10 @@ import org.eevolution.model.I_PP_Order_Workflow;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -66,7 +60,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	@Override
 	public PPOrderRouting getByOrderId(@NonNull final PPOrderId orderId)
@@ -234,18 +227,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	}
 
 	@Override
-	public String retrieveResourceNameForFirstNode(@NonNull final PPOrderId orderId)
-	{
-		final I_PP_Order_Workflow orderWorkflow = retrieveOrderWorkflowOrNull(orderId);
-		final I_PP_Order_Node startNode = orderWorkflow.getPP_Order_Node();
-		Check.assumeNotNull(startNode, LiberoException.class, "Start node shall exist for {}", orderId);
-
-		final ResourceId resourceId = ResourceId.ofRepoId(startNode.getS_Resource_ID());
-		final I_S_Resource resource = resourceDAO.getById(resourceId);
-		return resource.getName();
-	}
-
-	@Override
 	public PPOrderRoutingActivity getFirstActivity(@NonNull final PPOrderId orderId)
 	{
 		final I_PP_Order_Workflow orderWorkflow = retrieveOrderWorkflowOrNull(orderId);
@@ -270,12 +251,14 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.type(PPRoutingActivityType.ofCode(record.getPP_Activity_Type()))
 				.code(PPOrderRoutingActivityCode.ofString(record.getValue()))
 				.name(record.getName())
-				.routingActivityId(PPRoutingActivityId.ofAD_WF_Node_ID(routingId, record.getAD_WF_Node_ID()))
+				.routingActivityId(PPRoutingActivityId.ofRepoId(routingId, record.getAD_WF_Node_ID()))
 				//
 				.subcontracting(record.isSubcontracting())
 				.subcontractingVendorId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				//
 				.milestone(record.isMilestone())
+				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()))
+				.userInstructions(UserInstructions.ofNullableString(record.getPP_UserInstructions()))
 				//
 				.resourceId(resourceId)
 				//
@@ -303,6 +286,9 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.qtyRejected(Quantitys.create(record.getQtyReject(), uomId))
 				.dateStart(TimeUtil.asInstant(record.getDateStart()))
 				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
+				.alwaysAvailableToUser(CoalesceUtil.coalesceNotNull(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()), PPAlwaysAvailableToUser.DEFAULT))
+				//
+				.scannedQRCode(GlobalQRCode.ofNullableString(record.getScannedQRCode()))
 				//
 				.build();
 	}
@@ -334,74 +320,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		orderActivity.setDateStartSchedule(TimeUtil.asTimestamp(activityChangeRequest.getScheduledStartDate()));
 		orderActivity.setDateFinishSchedule(TimeUtil.asTimestamp(activityChangeRequest.getScheduledEndDate()));
 		saveRecord(orderActivity);
-	}
-
-	@Override
-	public List<PPOrderRoutingActivitySchedule> getActivitySchedulesByDateAndResource(final Instant date, final ResourceId resourceId)
-	{
-		return queryBL
-				.createQueryBuilder(I_PP_Order_Node.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(createActivityScheduleIntersectsWithDayTimeSlotFilter(date, resourceId))
-				.orderBy(I_PP_Order_Node.COLUMN_DateStartSchedule)
-				.create()
-				.stream()
-				.map(this::toPPOrderRoutingActivitySchedule)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private IQueryFilter<I_PP_Order_Node> createActivityScheduleIntersectsWithDayTimeSlotFilter(final Instant dateTime, final ResourceId resourceId)
-	{
-		final ResourceType resourceType = resourceDAO.getResourceTypeByResourceId(resourceId);
-		final Instant dayStart = resourceType.getDayStart(dateTime);
-		final Instant dayEnd = resourceType.getDayEnd(dateTime);
-
-		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBL.createCompositeQueryFilter(I_PP_Order_Node.class)
-				.setJoinOr();
-
-		//
-		// Case 1: The time dependent process has already begun and ends at this day.
-		filters.addCompositeQueryFilter()
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateStartSchedule, Operator.LESS_OR_EQUAL, dayStart)
-				//
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateFinishSchedule, Operator.GREATER_OR_EQUAL, dayStart)
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateFinishSchedule, Operator.LESS_OR_EQUAL, dayEnd);
-
-		//
-		// Case 2: The time dependent process begins and ends at this day.
-		filters.addCompositeQueryFilter()
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateStartSchedule, Operator.GREATER_OR_EQUAL, dayStart)
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateStartSchedule, Operator.LESS_OR_EQUAL, dayEnd)
-				//
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateFinishSchedule, Operator.GREATER_OR_EQUAL, dayStart)
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateFinishSchedule, Operator.LESS_OR_EQUAL, dayEnd);
-
-		//
-		// Case 3: The time dependent process begins at this day and ends few days later.
-		filters.addCompositeQueryFilter()
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateStartSchedule, Operator.GREATER_OR_EQUAL, dayStart)
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateStartSchedule, Operator.LESS_OR_EQUAL, dayEnd)
-				//
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateFinishSchedule, Operator.GREATER_OR_EQUAL, dayEnd);
-
-		//
-		// Case 4: The time dependent process has already begun and ends few days later.
-		filters.addCompositeQueryFilter()
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateStartSchedule, Operator.LESS_OR_EQUAL, dayStart)
-				//
-				.addCompareFilter(I_PP_Order_Node.COLUMN_DateFinishSchedule, Operator.GREATER_OR_EQUAL, dayEnd);
-
-		return filters;
-	}
-
-	private PPOrderRoutingActivitySchedule toPPOrderRoutingActivitySchedule(final I_PP_Order_Node record)
-	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
-		return PPOrderRoutingActivitySchedule.builder()
-				.orderRoutingActivityId(PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID()))
-				.scheduledStartDate(Objects.requireNonNull(record.getDateStartSchedule()).toInstant())
-				.scheduledEndDate(Objects.requireNonNull(record.getDateFinishSchedule()).toInstant())
-				.build();
 	}
 
 	@Override
@@ -631,6 +549,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getSubcontractingVendorId()));
 
 		record.setIsMilestone(from.isMilestone());
+		record.setPP_AlwaysAvailableToUser(from.getAlwaysAvailableToUser().getCode());
+		record.setPP_UserInstructions(from.getUserInstructions() != null ? from.getUserInstructions().getAsString() : null);
 
 		record.setS_Resource_ID(from.getResourceId().getRepoId());
 
@@ -665,6 +585,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		final PPRoutingActivityTemplateId activityTemplateId = from.getActivityTemplateId();
 		record.setAD_WF_Node_Template_ID(PPRoutingActivityTemplateId.toRepoId(activityTemplateId));
+
+		record.setScannedQRCode(from.getScannedQRCode() != null ? from.getScannedQRCode().getAsString() : null);
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)

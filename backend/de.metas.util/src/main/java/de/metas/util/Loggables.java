@@ -1,14 +1,13 @@
 package de.metas.util;
 
-import javax.annotation.Nullable;
-
+import ch.qos.logback.classic.Level;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.logging.LogbackLoggable;
 import org.slf4j.Logger;
 
-import ch.qos.logback.classic.Level;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -93,6 +92,20 @@ public final class Loggables
 	public static ILoggable withLogger(@NonNull final Logger logger, @NonNull final Level level)
 	{
 		return new LoggableWithLogger(get(), logger, level);
+	}
+
+	@NonNull
+	public static ILoggable withFallbackToLogger(@NonNull final Logger logger, @NonNull final Level level)
+	{
+		final ILoggable threadLocalLoggable = get();
+		if (NullLoggable.isNull(threadLocalLoggable))
+		{
+			return new LoggableWithLogger(NullLoggable.instance, logger, level);
+		}
+		else
+		{
+			return threadLocalLoggable;
+		}
 	}
 
 	public static ILoggable withWarnLoggerToo(@NonNull final Logger logger)

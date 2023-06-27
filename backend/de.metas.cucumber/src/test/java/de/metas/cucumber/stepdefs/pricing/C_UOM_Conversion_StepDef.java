@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
@@ -57,6 +58,7 @@ public class C_UOM_Conversion_StepDef
 	private final C_UOM_Conversion_StepDefData conversionTable;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_UOM_Conversion_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -83,6 +85,16 @@ public class C_UOM_Conversion_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			update_C_UOM_Conversions(tableRow);
+		}
+	}
+
+	@And("inactivate C_UOM_Conversion:")
+	public void inactivate_C_UOM_Conversions(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			inactivate_C_UOM_Conversions(tableRow);
 		}
 	}
 
@@ -145,5 +157,32 @@ public class C_UOM_Conversion_StepDef
 				.build();
 
 		uomConversionDAO.createUOMConversion(uomConversionRequest);
+	}
+
+	private void inactivate_C_UOM_Conversions(@NonNull final Map<String, String> tableRow)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(productIdentifier);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final String fromX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, "FROM_" + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final X12DE355 fromX12DE355 = X12DE355.ofCode(fromX12de355Code);
+		final UomId fromUomId = uomDAO.getUomIdByX12DE355(fromX12DE355);
+
+		final String toX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, "TO_" + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final X12DE355 toX12DE355 = X12DE355.ofCode(toX12de355Code);
+		final UomId toUomId = uomDAO.getUomIdByX12DE355(toX12DE355);
+
+		final I_C_UOM_Conversion conversionRecord = queryBL.createQueryBuilder(I_C_UOM_Conversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, fromUomId)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, toUomId)
+				.create()
+				.firstOnlyNotNull(I_C_UOM_Conversion.class);
+
+		conversionRecord.setIsActive(false);
+
+		saveRecord(conversionRecord);
 	}
 }

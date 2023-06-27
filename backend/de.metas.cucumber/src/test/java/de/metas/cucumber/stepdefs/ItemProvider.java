@@ -55,7 +55,7 @@ public interface ItemProvider<T>
 
 		boolean resultFound;
 		T result;
-		String log;		
+		String log;
 	}
 
 	ProviderResult<T> execute();

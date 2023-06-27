@@ -22,6 +22,8 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+import de.metas.acct.GLCategoryRepository;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
 import de.metas.contracts.callorder.CallOrderContractService;
@@ -33,6 +35,7 @@ import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.order.ContractOrderService;
+import de.metas.contracts.printing.impl.FlatrateTermPrintingQueueHandler;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
 import de.metas.document.location.IDocumentLocationBL;
@@ -48,6 +51,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -75,6 +79,8 @@ public class MainValidator extends AbstractModuleInterceptor
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo;
 	private final CallOrderContractService callOrderContractService;
+	private final ADReferenceService adReferenceService;
+	private final GLCategoryRepository glCategoryRepository;
 
 	@Deprecated
 	public MainValidator()
@@ -84,7 +90,9 @@ public class MainValidator extends AbstractModuleInterceptor
 				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
 				SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class),
 				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class),
-				SpringContextHolder.instance.getBean(CallOrderContractService.class));
+				SpringContextHolder.instance.getBean(CallOrderContractService.class),
+				ADReferenceService.get(),
+				GLCategoryRepository.get());
 	}
 
 	public MainValidator(
@@ -92,13 +100,17 @@ public class MainValidator extends AbstractModuleInterceptor
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo,
-			@NonNull final CallOrderContractService callOrderContractService)
+			@NonNull final CallOrderContractService callOrderContractService,
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final GLCategoryRepository glCategoryRepository)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
 		this.groupChangesHandler = groupChangesHandler;
 		this.inoutLinesWithMissingInvoiceCandidateRepo = inoutLinesWithMissingInvoiceCandidateRepo;
 		this.callOrderContractService = callOrderContractService;
+		this.adReferenceService = adReferenceService;
+		this.glCategoryRepository = glCategoryRepository;
 	}
 
 	@Override
@@ -150,11 +162,14 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 
+
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		registerInOutLinesWithMissingInvoiceCandidateFilter();
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
+
+		Services.get(IPrintingQueueBL.class).registerHandler(FlatrateTermPrintingQueueHandler.instance);
 	}
 
 	/**
@@ -177,7 +192,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(C_SubscriptionProgress.instance);
 		engine.addModelValidator(C_Flatrate_DataEntry.instance);
 		engine.addModelValidator(C_Flatrate_Matching.instance);
-		engine.addModelValidator(new C_Flatrate_Term(contractOrderService,documentLocationBL));
+		engine.addModelValidator(new C_Flatrate_Term(contractOrderService, documentLocationBL, adReferenceService, glCategoryRepository));
 
 		engine.addModelValidator(new C_Invoice_Candidate());
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc());

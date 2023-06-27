@@ -1,0 +1,16 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:TransportationStatusRequest-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "TransportationStatusRequest":{
+ "UBLVersionID":{"_":"2.1"},
+ "ID":{"_":"TSR_1"},
+ "IssueDate":{"_":"2011-10-06"},
+ "IssueTime":{"_":"09:29:10+01:00"},
+ "TransportationStatusTypeCode":{"_":"All deviations"},
+ "TransportExecutionPlanDocumentReference":{
+  "ID":{"_":"TEP_1"}
+ },
+ "Consignment":[{
+  "ID":{"_":"CON_1"}
+ }]
+}}

@@ -1,5 +1,6 @@
 package de.metas.contracts.subscription.invoicecandidatehandler;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
@@ -17,30 +18,28 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
-import de.metas.organization.IOrgDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.function.Consumer;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
@@ -102,8 +101,6 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		// 05265
 		icRecord.setIsSOTrx(true);
 
-		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-
 		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
 		icRecord.setQtyOrdered(qty);
 	}
@@ -114,7 +111,8 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
+
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
 				taxCategoryId,
@@ -125,8 +123,9 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				CoalesceUtil.coalesceSuppliersNotNull(
 						() -> ContractLocationHelper.extractDropshipLocationId(term),
 						() -> ContractLocationHelper.extractBillToLocationId(term)),
-				SOTrx.ofBoolean(ic.isSOTrx()));
-		
+				SOTrx.ofBoolean(ic.isSOTrx()),
+				vatCodeId);
+
 		return PriceAndTax.builder()
 				.pricingSystemId(PricingSystemId.ofRepoId(term.getM_PricingSystem_ID()))
 				.priceActual(term.getPriceActual())
@@ -154,36 +153,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final UomId uomId = HandlerTools.retrieveUomId(icRecord);
 
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(icRecord);
-		return new Quantity(
-				term.getPlannedQtyPerUnit(),
-				loadOutOfTrx(uomId, I_C_UOM.class));
-	}
-
-	@Override
-	public Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
-	{
-		return defaultImplementation;
-	}
-
-	@Override
-	public Timestamp calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
-	{
-		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
-
-		final Timestamp dateOrdered;
-		final boolean termHasAPredecessor = Services.get(IContractsDAO.class).termHasAPredecessor(term);
-		if (!termHasAPredecessor)
-		{
-			dateOrdered = term.getStartDate();
-		}
-		// If the term was extended (meaning that there is a predecessor term),
-		// C_Invoice_Candidate.DateOrdered should rather be the StartDate minus TermOfNoticeDuration/TermOfNoticeUnit
-		else
-		{
-			final Timestamp firstDayOfNewTerm = getGetExtentionDateOfNewTerm(term);
-			dateOrdered = firstDayOfNewTerm;
-		}
-		return dateOrdered;
+		return Quantitys.create(term.getPlannedQtyPerUnit(), uomId);
 	}
 
 	/**

@@ -62,7 +62,14 @@ public class BPartnerCompositeCachingKeysMapper implements CachingKeysMapper<BPa
 		final ImmutableList<BPartnerId> result;
 		if (I_C_BPartner.Table_Name.equals(recordRef.getTableName()))
 		{
-			result = ImmutableList.of(BPartnerId.ofRepoId(recordRef.getRecord_ID()));
+			if (recordRef.getRecord_ID() <= 0)
+			{
+				result = ImmutableList.of();
+			}
+			else
+			{
+				result = ImmutableList.of(BPartnerId.ofRepoId(recordRef.getRecord_ID()));
+			}
 		}
 		else if (I_C_BPartner_Location.Table_Name.equals(recordRef.getTableName()))
 		{
@@ -134,7 +141,7 @@ public class BPartnerCompositeCachingKeysMapper implements CachingKeysMapper<BPa
 		{
 			return true; // there might be too many C_BPartners using the given role; also this change is not frequent; so, better reset the whole cache
 		}
-		
+
 		// If we can't retrieve the model - e.g. because it was already deleted - then we can't extract the C_BPartner_ID to invalidate. 
 		// In that case we need to reset all
 		final Object recordRefModel = recordRef.getModel(Object.class);

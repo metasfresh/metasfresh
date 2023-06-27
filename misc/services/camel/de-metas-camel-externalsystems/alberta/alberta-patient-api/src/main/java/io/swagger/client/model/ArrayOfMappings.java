@@ -12,11 +12,8 @@
 
 package io.swagger.client.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import io.swagger.client.model.CustomerMapping;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 /**
  * ArrayOfMappings
  */

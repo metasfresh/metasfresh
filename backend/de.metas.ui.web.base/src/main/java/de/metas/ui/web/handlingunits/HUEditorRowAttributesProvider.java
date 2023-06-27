@@ -20,6 +20,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,7 +54,9 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	private final boolean readonly;
-	private final boolean isMaterialReceipt;
+
+	private final boolean serialNoFromSequence;
+	private final AttributeSourceDocument attributeSourceDocument;
 
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(this::createAttributeStorageFactory);
 	private final ConcurrentHashMap<ViewRowAttributesKey, HUEditorRowAttributes> rowAttributesByKey = new ConcurrentHashMap<>();
@@ -68,10 +71,12 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 	@Builder
 	private HUEditorRowAttributesProvider(
 			final boolean readonly,
-			final boolean isMaterialReceipt)
+			final boolean serialNoFromSequence,
+			final AttributeSourceDocument attributeSourceDocument)
 	{
 		this.readonly = readonly;
-		this.isMaterialReceipt = isMaterialReceipt;
+		this.serialNoFromSequence = serialNoFromSequence;
+		this.attributeSourceDocument = attributeSourceDocument;
 	}
 
 	DocumentId createAttributeKey(final HuId huId)
@@ -104,7 +109,8 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 				.productIds(extractProductIds(storage))
 				.hu(hu)
 				.readonly(rowAttributesReadonly)
-				.isMaterialReceipt(isMaterialReceipt)
+				.attributeSourceDocument(attributeSourceDocument)
+				.serialNoFromSequence(serialNoFromSequence)
 				.build();
 	}
 

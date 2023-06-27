@@ -134,7 +134,7 @@ public class AddressBuilderTest
 	}
 
 	@Builder(builderMethodName = "BPartnerBuilder")
-	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language)
+	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		bpartner.setName(name);
@@ -142,6 +142,7 @@ public class AddressBuilderTest
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setIsCompany(isCompany);
 		bpartner.setAD_Language(AD_Language);
+		bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() : -1);
 		InterfaceWrapperHelper.save(bpartner);
 
 		return bpartner;
@@ -1055,21 +1056,6 @@ public class AddressBuilderTest
 			saveRecord(location);
 
 			return location;
-		}
-
-		@Builder(builderMethodName = "BPartnerBuilder")
-		private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
-		{
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
-			bpartner.setName(name);
-			bpartner.setName2(name2);
-			bpartner.setAD_Org_ID(orgId.getRepoId());
-			bpartner.setIsCompany(isCompany);
-			bpartner.setAD_Language(AD_Language);
-			bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() : -1);
-			InterfaceWrapperHelper.save(bpartner);
-
-			return bpartner;
 		}
 
 		private GreetingId prepareGreeting(@NonNull final String name)

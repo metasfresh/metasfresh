@@ -23,9 +23,11 @@
 package de.metas.rest_api.v2.shipping;
 
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inoutcandidate.ReceiptScheduleRepository;
@@ -59,7 +61,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ReceiptCandidateAPIServiceTest
 {
@@ -108,8 +110,8 @@ class ReceiptCandidateAPIServiceTest
 
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
-				new ReceiptScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
+				new ReceiptScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}
