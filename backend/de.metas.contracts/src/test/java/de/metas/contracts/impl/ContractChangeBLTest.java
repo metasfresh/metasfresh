@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");

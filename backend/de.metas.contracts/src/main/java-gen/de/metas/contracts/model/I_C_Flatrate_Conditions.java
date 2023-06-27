@@ -103,7 +103,7 @@ public interface I_C_Flatrate_Conditions
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setC_Flatrate_Matching_IncludedT (@Nullable String C_Flatrate_Matching_IncludedT);
+	void setC_Flatrate_Matching_IncludedT (@Nullable java.lang.String C_Flatrate_Matching_IncludedT);
 
 	/**
 	 * Get Flatrate Matching.
@@ -112,7 +112,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	@Nullable String getC_Flatrate_Matching_IncludedT();
+	@Nullable java.lang.String getC_Flatrate_Matching_IncludedT();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Flatrate_Matching_IncludedT = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Matching_IncludedT", null);
 	String COLUMNNAME_C_Flatrate_Matching_IncludedT = "C_Flatrate_Matching_IncludedT";
@@ -135,33 +135,12 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getC_Flatrate_Transition_ID();
 
-	@Nullable I_C_Flatrate_Transition getC_Flatrate_Transition();
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
 
-	void setC_Flatrate_Transition(@Nullable I_C_Flatrate_Transition C_Flatrate_Transition);
+	void setC_Flatrate_Transition(@Nullable de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition);
 
-	ModelColumn<I_C_Flatrate_Conditions, I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Transition_ID", I_C_Flatrate_Transition.class);
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Transition_ID", de.metas.contracts.model.I_C_Flatrate_Transition.class);
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
-
-	/**
-	 * Set Hierarchy commission settings.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_HierarchyCommissionSettings_ID (int C_HierarchyCommissionSettings_ID);
-
-	/**
-	 * Get Hierarchy commission settings.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_HierarchyCommissionSettings_ID();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_HierarchyCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_HierarchyCommissionSettings_ID", null);
-	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
 
 	/**
 	 * Set Interim Invoice Settings.
@@ -187,6 +166,27 @@ public interface I_C_Flatrate_Conditions
 
 	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Interim_Invoice_Settings> COLUMN_C_Interim_Invoice_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Interim_Invoice_Settings_ID", org.compiere.model.I_C_Interim_Invoice_Settings.class);
 	String COLUMNNAME_C_Interim_Invoice_Settings_ID = "C_Interim_Invoice_Settings_ID";
+
+	/**
+	 * Set Clearing Base.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClearingAmtBaseOn (@Nullable java.lang.String ClearingAmtBaseOn);
+
+	/**
+	 * Get Clearing Base.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getClearingAmtBaseOn();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_ClearingAmtBaseOn = new ModelColumn<>(I_C_Flatrate_Conditions.class, "ClearingAmtBaseOn", null);
+	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
 
 	/**
 	 * Set License fee settings.
@@ -231,74 +231,6 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
 
 	/**
-	 * Set Abo-Rabatt.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
-
-	/**
-	 * Get Abo-Rabatt.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_SubscrDiscount_ID();
-
-	@Nullable I_C_SubscrDiscount getC_SubscrDiscount();
-
-	void setC_SubscrDiscount(@Nullable I_C_SubscrDiscount C_SubscrDiscount);
-
-	ModelColumn<I_C_Flatrate_Conditions, I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", I_C_SubscrDiscount.class);
-	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Clearing Base.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setClearingAmtBaseOn (@Nullable String ClearingAmtBaseOn);
-
-	/**
-	 * Get Clearing Base.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getClearingAmtBaseOn();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_ClearingAmtBaseOn = new ModelColumn<>(I_C_Flatrate_Conditions.class, "ClearingAmtBaseOn", null);
-	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -324,25 +256,51 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Description.
+	 * Set Subscription Discount.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
 
 	/**
-	 * Get Description.
+	 * Get Subscription Discount.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	int getC_SubscrDiscount_ID();
 
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Description = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
+
+	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
+	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Process Batch.
@@ -352,7 +310,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocAction (String DocAction);
+	void setDocAction (java.lang.String DocAction);
 
 	/**
 	 * Get Process Batch.
@@ -362,7 +320,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocAction();
+	java.lang.String getDocAction();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_DocAction = new ModelColumn<>(I_C_Flatrate_Conditions.class, "DocAction", null);
 	String COLUMNNAME_DocAction = "DocAction";
@@ -374,7 +332,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (String DocStatus);
+	void setDocStatus (java.lang.String DocStatus);
 
 	/**
 	 * Get Status.
@@ -383,7 +341,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocStatus();
+	java.lang.String getDocStatus();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Flatrate_Conditions.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
@@ -396,7 +354,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInvoiceRule (String InvoiceRule);
+	void setInvoiceRule (java.lang.String InvoiceRule);
 
 	/**
 	 * Get Invoice Rule.
@@ -406,7 +364,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getInvoiceRule();
+	java.lang.String getInvoiceRule();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_Flatrate_Conditions.class, "InvoiceRule", null);
 	String COLUMNNAME_InvoiceRule = "InvoiceRule";
@@ -582,6 +540,73 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
+	 * Set Maximum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMargin_Max (BigDecimal Margin_Max);
+
+	/**
+	 * Get Maximum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMargin_Max();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
+	String COLUMNNAME_Margin_Max = "Margin_Max";
+
+	/**
+	 * Set Minimum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMargin_Min (BigDecimal Margin_Min);
+
+	/**
+	 * Get Minimum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMargin_Min();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
+	String COLUMNNAME_Margin_Min = "Margin_Min";
+
+	/**
+	 * Set Modular Contract Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Settings_ID (int ModCntr_Settings_ID);
+
+	/**
+	 * Get Modular Contract Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Settings_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings();
+
+	void setModCntr_Settings(@Nullable de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_ModCntr_Settings> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "ModCntr_Settings_ID", de.metas.contracts.model.I_ModCntr_Settings.class);
+	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
+
+	/**
 	 * Set Pricing System.
 	 *
 	 * <br>Type: Search
@@ -662,76 +687,13 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_M_Product_Flatrate_ID = "M_Product_Flatrate_ID";
 
 	/**
-	 * Set Quality Inspection Conference.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_QualityInsp_LagerKonf_ID (int M_QualityInsp_LagerKonf_ID);
-
-	/**
-	 * Get Quality Inspection Conference.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_QualityInsp_LagerKonf_ID();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_M_QualityInsp_LagerKonf_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "M_QualityInsp_LagerKonf_ID", null);
-	String COLUMNNAME_M_QualityInsp_LagerKonf_ID = "M_QualityInsp_LagerKonf_ID";
-
-	/**
-	 * Set Maximum Corridor.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMargin_Max (BigDecimal Margin_Max);
-
-	/**
-	 * Get Maximum Corridor.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMargin_Max();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
-	String COLUMNNAME_Margin_Max = "Margin_Max";
-
-	/**
-	 * Set Minimum Corridor.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMargin_Min (BigDecimal Margin_Min);
-
-	/**
-	 * Get Minimum Corridor.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMargin_Min();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
-	String COLUMNNAME_Margin_Min = "Margin_Min";
-
-	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -740,7 +702,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Name = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -752,7 +714,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setOnFlatrateTermExtend (String OnFlatrateTermExtend);
+	void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend);
 
 	/**
 	 * Get When extending contract.
@@ -761,7 +723,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getOnFlatrateTermExtend();
+	java.lang.String getOnFlatrateTermExtend();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_OnFlatrateTermExtend = new ModelColumn<>(I_C_Flatrate_Conditions.class, "OnFlatrateTermExtend", null);
 	String COLUMNNAME_OnFlatrateTermExtend = "OnFlatrateTermExtend";
@@ -773,7 +735,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPrintName (@Nullable String PrintName);
+	void setPrintName (@Nullable java.lang.String PrintName);
 
 	/**
 	 * Get Print Name.
@@ -782,7 +744,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPrintName();
+	@Nullable java.lang.String getPrintName();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_PrintName = new ModelColumn<>(I_C_Flatrate_Conditions.class, "PrintName", null);
 	String COLUMNNAME_PrintName = "PrintName";
@@ -836,7 +798,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType_Clearing (String Type_Clearing);
+	void setType_Clearing (java.lang.String Type_Clearing);
 
 	/**
 	 * Get Clearing Type.
@@ -845,7 +807,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getType_Clearing();
+	java.lang.String getType_Clearing();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Clearing = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Clearing", null);
 	String COLUMNNAME_Type_Clearing = "Type_Clearing";
@@ -857,7 +819,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType_Conditions (String Type_Conditions);
+	void setType_Conditions (java.lang.String Type_Conditions);
 
 	/**
 	 * Get Contract Type.
@@ -866,7 +828,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getType_Conditions();
+	java.lang.String getType_Conditions();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Conditions = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Conditions", null);
 	String COLUMNNAME_Type_Conditions = "Type_Conditions";
@@ -878,7 +840,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType_Flatrate (String Type_Flatrate);
+	void setType_Flatrate (java.lang.String Type_Flatrate);
 
 	/**
 	 * Get Flatrate Type.
@@ -887,7 +849,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getType_Flatrate();
+	java.lang.String getType_Flatrate();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Flatrate = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Flatrate", null);
 	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
@@ -900,7 +862,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setUOMType (String UOMType);
+	void setUOMType (java.lang.String UOMType);
 
 	/**
 	 * Get UOM Type.
@@ -910,7 +872,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getUOMType();
+	java.lang.String getUOMType();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Conditions.class, "UOMType", null);
 	String COLUMNNAME_UOMType = "UOMType";
