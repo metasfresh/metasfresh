@@ -1,5 +1,6 @@
 package de.metas.document.archive.async.spi.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
@@ -9,15 +10,18 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.IOStreamUtils;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.slf4j.Logger;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -53,6 +57,8 @@ import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AU
 
 public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 {
+	private static final Logger logger = LogManager.getLogger(DocOutboundCCWorkpackageProcessor.class);
+	
 	public static final void scheduleOnTrxCommit(final org.compiere.model.I_AD_Archive archive)
 	{
 		SCHEDULER.schedule(archive);
@@ -77,6 +83,8 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
 		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
 		{
+			Loggables.withLogger(logger, Level.INFO).addLog("SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION=Y -> Skipping DocOutboundCCWorkpackageProcessor!");
+			
 			return Result.SUCCESS;
 		}
 

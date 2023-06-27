@@ -26,7 +26,7 @@ export const workflowReducer = ({ draftState, action }) => {
       return draftState;
     }
 
-    case launcherTypes.POPULATE_LAUNCHERS: {
+    case launcherTypes.POPULATE_LAUNCHERS_COMPLETE: {
       const { applicationLaunchers } = action.payload;
 
       removeWFProcessesFromState({

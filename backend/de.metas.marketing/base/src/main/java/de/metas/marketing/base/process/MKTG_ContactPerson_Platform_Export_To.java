@@ -1,15 +1,9 @@
 package de.metas.marketing.base.process;
 
-import java.util.List;
-
-import de.metas.marketing.base.CampaignSyncService;
-import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.PlatformSyncService;
 import de.metas.marketing.base.model.CampaignId;
-import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.SyncDirection;
-import de.metas.marketing.base.model.SyncResult;
-import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.process.JavaProcess;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -39,7 +33,7 @@ import org.compiere.SpringContextHolder;
 
 public class MKTG_ContactPerson_Platform_Export_To extends JavaProcess
 {
-	private final CampaignSyncService syncService = SpringContextHolder.instance.getBean(CampaignSyncService.class);
+	private final PlatformSyncService syncService = SpringContextHolder.instance.getBean(PlatformSyncService.class);
 
 	@Override
 	protected String doIt()

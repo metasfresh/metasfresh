@@ -42,17 +42,21 @@ public class ViewRowIdsOrderedSelection
 	QueryLimit queryLimit;
 	boolean queryLimitHit;
 
+	@Nullable EmptyReason emptyReason;
+
 	@Builder(toBuilder = true)
 	private ViewRowIdsOrderedSelection(
 			@NonNull final ViewId viewId,
 			final long size,
 			@Nullable final DocumentQueryOrderByList orderBys,
-			@Nullable final QueryLimit queryLimit)
+			@Nullable final QueryLimit queryLimit,
+			@Nullable final EmptyReason emptyReason)
 	{
 		this.viewId = viewId;
 		this.size = size;
 		this.orderBys = orderBys != null ? orderBys : DocumentQueryOrderByList.EMPTY;
 		this.queryLimit = queryLimit != null ? queryLimit : QueryLimit.NO_LIMIT;
+		this.emptyReason = emptyReason;
 
 		this.queryLimitHit = this.queryLimit.isLimited()
 				&& size > 0

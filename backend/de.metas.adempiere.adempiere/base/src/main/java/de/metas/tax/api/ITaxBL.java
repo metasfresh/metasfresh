@@ -57,15 +57,18 @@ public interface ITaxBL extends ISingletonService
 			@NonNull OrgId orgId,
 			@Nullable WarehouseId warehouseId,
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			SOTrx soTrx);
+			SOTrx soTrx,
+			@Nullable VatCodeId vatCodeId);
 
 	/**
-	 * Calculate Tax - no rounding
-	 *
-	 * @param taxIncluded if true tax is calculated from gross otherwise from net
-	 * @return tax amount
+	 * @param taxIncluded if true tax is included in given amount
 	 */
-	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+	CalculateTaxResult calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+
+	/**
+	 * @return tax amount (only actual tax amount, NOT reverse charge tax amt)
+	 */
+	BigDecimal calculateTaxAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
 	 * Calculate base amount, excluding tax
@@ -98,7 +101,8 @@ public interface ITaxBL extends ISingletonService
 			int AD_Org_ID, int M_Warehouse_ID,
 			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
 			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
-			boolean IsSOTrx);
+			boolean IsSOTrx,
+			@Nullable VatCodeId vatCodeId);
 
 	/**
 	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.

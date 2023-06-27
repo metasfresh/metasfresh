@@ -86,8 +86,12 @@ class OrderBOMCostCalculatorRepositoryTest
 		// Manufacturing order
 		// IMPORTANT: remark that the finished good and component UOMs are different from their stocking UOM!
 		final I_PP_Order ppOrder = helper.order()
-				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
-				.componentId(componentId).componentQtyRequired("200").componentUOM(helper.uomKg) // i.e. we need 2 Kg for one finished good
+				.finishedGoodsProductId(finishedGoodsProductId)
+				.finishedGoodsQty("100")
+				.finishedGoodsUOM(helper.uomEach)
+				.componentId(componentId)
+				.componentQtyRequired("200")
+				.componentUOM(helper.uomKg) // i.e. we need 2 Kg for one finished good
 				.build();
 		ppOrderCostBL.createOrderCosts(ppOrder);
 

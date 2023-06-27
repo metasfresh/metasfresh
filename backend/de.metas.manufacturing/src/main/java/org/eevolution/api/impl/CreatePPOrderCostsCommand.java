@@ -22,7 +22,6 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import org.eevolution.api.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -49,6 +48,7 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.costing.BOM;
 import org.eevolution.costing.OrderBOMCostCalculatorRepository;
@@ -148,7 +148,7 @@ final class CreatePPOrderCostsCommand
 			final PPOrderCosts orderCosts,
 			final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(ClientId.METASFRESH, costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			return;
@@ -262,9 +262,15 @@ final class CreatePPOrderCostsCommand
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Nullable
 	private PPOrderCostCandidate createCostSegmentForOrderActivityOrNull(final PPOrderRoutingActivity activity)
 	{
 		final ResourceId resourceId = activity.getResourceId();
+		if (resourceId.isNoResource())
+		{
+			return null;
+		}
+
 		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId);
 
 		final UomId durationUomId = uomDAO.getUomIdByTemporalUnit(activity.getDurationUnit().getTemporalUnit());
@@ -279,7 +285,7 @@ final class CreatePPOrderCostsCommand
 
 	private Stream<PPOrderCost> createPPOrderCostsAndStream(final PPOrderCostCandidate candidate)
 	{
-		final Set<CostElementId> costElementIds = costElementsRepo.getActiveCostElementIds();
+		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByClientId(candidate.getCostSegment().getClientId());
 		if (costElementIds.isEmpty())
 		{
 			// shall not happen!

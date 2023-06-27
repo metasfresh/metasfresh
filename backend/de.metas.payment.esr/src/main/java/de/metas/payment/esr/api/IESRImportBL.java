@@ -1,12 +1,5 @@
 package de.metas.payment.esr.api;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.payment.PaymentId;
@@ -16,6 +9,12 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 public interface IESRImportBL extends ISingletonService
 {

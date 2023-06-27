@@ -67,10 +67,10 @@ SELECT ol.line,
        -- in case there is no C_BPartner_Product, fallback to the default ones
        COALESCE(NULLIF(bpp.ProductNo, ''), p.value)           AS bp_product_no,
        COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) AS bp_product_name,
-       c.cursymbol,
-       p.value                                                AS p_value,
-       p.description                                          AS p_description,
-       p.documentnote                                         AS p_documentnote,
+	c.cursymbol,
+	p.value AS p_value,
+    COALESCE(pt.description, p.description) AS p_description,
+    COALESCE(pt.documentnote, p.documentnote) AS p_documentnote,
        o.description                                          AS order_description,
        (CASE
             WHEN pl.priceprecision <= 1

@@ -44,6 +44,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -100,6 +101,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	IHUQueryBuilder createHUQueryBuilder();
 
 	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
+
+	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
+
+	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
 
 	/**
 	 * @return default storage factory
@@ -409,6 +414,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	void markDestroyed(IHUContext huContext, I_M_HU hu);
 
+	void saveHU(I_M_HU hu);
+
 	/**
 	 * Marks all HUs as destroyed, but doesn't handle the storages.
 	 *
@@ -592,4 +599,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
+
+	ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId);
 }

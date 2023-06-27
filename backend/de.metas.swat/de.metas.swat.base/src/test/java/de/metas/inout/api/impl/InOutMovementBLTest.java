@@ -1,6 +1,6 @@
 package de.metas.inout.api.impl;
 
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_M_Movement;
@@ -74,7 +74,7 @@ public class InOutMovementBLTest
 
 		locatorForIssues = createLocator(warehouseForIssues);
 
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
 		inOutMovementBL = new InOutMovementBL();
 	}

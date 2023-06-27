@@ -26,6 +26,7 @@ import de.metas.Profiles;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
@@ -33,18 +34,20 @@ import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.command.GetProductsCommand;
+import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,6 +64,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.product.v2.response.ProductsQueryParams.AD_PINSTANCE_ID;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CONFIG_TYPE;
@@ -110,6 +114,7 @@ public class ProductsRestController
 					.servicesFacade(productsServicesFacade)
 					.albertaProductService(albertaProductService)
 					.externalSystemService(externalSystemService)
+					.productRestService(productRestService)
 					.externalSystemType(externalSystemType)
 					.externalSystemConfigValue(externalSystemChildConfigValue)
 					.adLanguage(adLanguage)
@@ -134,16 +139,16 @@ public class ProductsRestController
 		}
 	}
 
-	@ApiOperation("Create or update products and corresponding Bpartner-products.")
+	@Operation(summary = "Create or update products and corresponding Bpartner-products.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created or updated product(s)"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created or updated product(s)"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
 	@PutMapping("{orgCode}")
 	public ResponseEntity<JsonResponseUpsert> upsertProducts(
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") @Nullable final String orgCode,
 			@RequestBody @NonNull final JsonRequestProductUpsert request)
 
@@ -151,6 +156,48 @@ public class ProductsRestController
 		final JsonResponseUpsert responseUpsert = productRestService.upsertProducts(orgCode, request);
 
 		return ResponseEntity.ok().body(responseUpsert);
+	}
+
+	@Operation(summary = "Retrieve product by product identifier.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Product successfully retrieved"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
+	})
+	@GetMapping("{orgCode}/{externalIdentifier}")
+	public ResponseEntity<?> getByExternalIdentifier(
+			@PathVariable("orgCode") @Nullable final String orgCode,
+			@Parameter(description = PRODUCT_IDENTIFIER_DOC) @PathVariable(value = "externalIdentifier") @NonNull final String externalIdentifier)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		try
+		{
+			final ExternalIdentifier productIdentifier = ExternalIdentifier.of(externalIdentifier);
+
+			final JsonGetProductsResponse response = GetProductsCommand.builder()
+					.servicesFacade(productsServicesFacade)
+					.albertaProductService(albertaProductService)
+					.externalSystemService(externalSystemService)
+					.productRestService(productRestService)
+					.adLanguage(adLanguage)
+					.orgCode(orgCode)
+					.productIdentifier(productIdentifier)
+					.execute();
+
+			Check.assumeEquals(response.getProducts().size(), 1, "JsonGetProductsResponse should have only one JsonProduct!");
+
+			return ResponseEntity.ok().body(response.getProducts().get(0));
+		}
+		catch (final Exception ex)
+		{
+			logger.error(ex.getMessage(), ex);
+
+			return ResponseEntity
+					.status(HttpStatus.UNPROCESSABLE_ENTITY)
+					.body(ex);
+		}
 	}
 
 	private void logExportedProducts(

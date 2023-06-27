@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.service;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -47,7 +48,7 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -95,15 +96,13 @@ public class PPOrderCandidatePojoConverter
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public PPOrderCandidatePojoConverter(
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
@@ -136,6 +135,8 @@ public class PPOrderCandidatePojoConverter
 									 .qtyDelivered(qtyProcessedInStockUOM.toBigDecimal())
 									 .plantId(ResourceId.ofRepoId(ppOrderCandidateRecord.getS_Resource_ID()))
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderCandidateRecord))
+									 .packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_HU_PI_Item_Product_ID()))
+									 .lotForLot(ppOrderCandidateRecord.getIsLotForLot())
 									 .build())
 				.lines(toPPOrderLineCandidates(ppOrderCandidateRecord))
 				.build();

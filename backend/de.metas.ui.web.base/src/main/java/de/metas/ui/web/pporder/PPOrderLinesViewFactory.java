@@ -23,8 +23,10 @@
 package de.metas.ui.web.pporder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -62,20 +64,25 @@ public class PPOrderLinesViewFactory implements IViewFactory
 {
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ASIRepository asiRepository;
 	private final DefaultHUEditorViewFactory huEditorViewFactory;
 	private final HUReservationService huReservationService;
+	private final ADReferenceService adReferenceService;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
 	public PPOrderLinesViewFactory(
 			@NonNull final ASIRepository asiRepository,
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		this.asiRepository = asiRepository;
 		this.huEditorViewFactory = huEditorViewFactory;
 		this.huReservationService = huReservationService;
+		this.adReferenceService = adReferenceService;
 	}
 
 	@Override
@@ -84,6 +91,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		final ViewId viewId = request.getViewId();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(request.getSingleFilterOnlyId());
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final boolean hasSerialNumberSequence = ppOrderBL.hasSerialNumberSequence(ppOrderId);
 		final PPOrderDocBaseType ppOrderDocBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
 
 		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier
@@ -91,8 +99,10 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.viewWindowId(viewId.getWindowId())
 				.ppOrderId(ppOrderId)
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
+				.serialNoFromSequence(hasSerialNumberSequence)
 				.huSQLViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
+				.adReferenceService(adReferenceService)
 				.build();
 
 		return PPOrderLinesView.builder()
@@ -138,8 +148,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("PP Order Issue/Receipt")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)

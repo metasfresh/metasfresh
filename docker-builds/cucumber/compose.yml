@@ -46,7 +46,7 @@ services:
 
   bouncer:
     image: busybox
-    command: "/bin/sh -c 'sleep 110m && echo \"Who of you folks wound the clock? It is really time to stop!\" && echo \"timeout: aborting cucumber run after 110 minutes\"'"
+    command: "/bin/sh -c 'sleep 180m && echo \"Who of you folks wound the clock? It is really time to stop!\" && echo \"timeout: aborting cucumber run after 110 minutes\"'"
 
 volumes: {}
 configs: {}

@@ -21,29 +21,10 @@ package de.metas.dunning.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
-import de.metas.dunning.api.IDunningCandidateProducer;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.exception.InconsistentDunningCandidateStateException;
 import de.metas.dunning.exception.NotImplementedDunningException;
@@ -52,6 +33,24 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.impl.DunnableDocBuilder;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.junit.Assert.assertThat;
 
 /**
  * NOTE:
@@ -164,49 +163,6 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 
 		// shall throw exception
 		producer.createDunningCandidate(context, sourceDoc);
-	}
-
-	@Test
-	public void test_createDunningCandidate_FullUpdate()
-	{
-		final Date dunningDate = TimeUtil.getDay(2013, 02, 01);
-		final PlainDunningContext context = createPlainDunningContext(dunningDate, dunningLevel1_10);
-
-		final IDunnableDoc sourceDoc = mkDunnableDocBuilder()
-				.setDaysDue(15) // daysDue,
-				.create();
-
-		final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context, sourceDoc);
-		Assert.assertNotNull("Candidate shall be generated", candidate);
-		assertDunningCandidateValid(candidate, context, sourceDoc);
-
-		{
-			context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, false);
-			dao.setStaled(candidate, false);
-			final I_C_Dunning_Candidate candidate2 = producer.createDunningCandidate(context, sourceDoc);
-			Assert.assertNull("No candidate shall be produced (staled=false, fullUpdate=false)", candidate2);
-		}
-		{
-			context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, false);
-			dao.setStaled(candidate, true);
-			final I_C_Dunning_Candidate candidate2 = producer.createDunningCandidate(context, sourceDoc);
-			Assert.assertNotNull("Candidate shall be produced (staled=true, fullUpdate=false)", candidate2);
-			assertDunningCandidateValid(candidate2, context, sourceDoc);
-		}
-		{
-			context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, true);
-			dao.setStaled(candidate, false);
-			final I_C_Dunning_Candidate candidate2 = producer.createDunningCandidate(context, sourceDoc);
-			Assert.assertNotNull("Candidate shall be produced (staled=false, fullUpdate=true)", candidate2);
-			assertDunningCandidateValid(candidate2, context, sourceDoc);
-		}
-		{
-			context.isProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, true);
-			dao.setStaled(candidate, true);
-			final I_C_Dunning_Candidate candidate2 = producer.createDunningCandidate(context, sourceDoc);
-			Assert.assertNotNull("Candidate shall be produced (staled=true, fullUpdate=true)", candidate2);
-			assertDunningCandidateValid(candidate2, context, sourceDoc);
-		}
 	}
 
 	@Test

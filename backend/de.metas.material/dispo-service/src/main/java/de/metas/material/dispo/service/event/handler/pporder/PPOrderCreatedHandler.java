@@ -2,9 +2,7 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -26,11 +24,9 @@ import de.metas.material.event.pporder.PPOrderData;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -62,18 +58,13 @@ public final class PPOrderCreatedHandler
 		implements MaterialEventHandler<PPOrderCreatedEvent>
 {
 	private final CandidateChangeService candidateChangeService;
-	private final MainDataRequestHandler mainDataRequestHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
-			@NonNull final MainDataRequestHandler mainDataRequestHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		this.candidateChangeService = candidateChangeService;
-		this.mainDataRequestHandler = mainDataRequestHandler;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
@@ -95,11 +86,9 @@ public final class PPOrderCreatedHandler
 		handlePPOrderCreatedEvent(event);
 	}
 
-	private MaterialDispoGroupId handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private void handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
-
-		updateMainData(ppOrderEvent);
 
 		final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
 		final ProductionDetail headerProductionDetail = ProductionDetail.cast(headerCandidate.getBusinessCaseDetail());
@@ -114,26 +103,6 @@ public final class PPOrderCreatedHandler
 				.advised(headerProductionDetail.getAdvised())
 				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there we might know the shipment schedule ID
 				.create();
-
-		return headerCandidate.getGroupId();
-	}
-
-	private void updateMainData(final @NonNull PPOrderCreatedEvent ppOrderEvent)
-	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderEvent.getEventDescriptor().getOrgId());
-
-		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
-				.warehouseId(ppOrderEvent.getPpOrder().getPpOrderData().getWarehouseId())
-				.productDescriptor(ppOrderEvent.getPpOrder().getPpOrderData().getProductDescriptor())
-				.date(TimeUtil.getDay(ppOrderEvent.getPpOrder().getPpOrderData().getDatePromised(), orgZoneId))
-				.build();
-
-		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
-				.identifier(mainDataRecordIdentifier)
-				.qtySupplyPPOrder(ppOrderEvent.getPpOrder().getPpOrderData().getQtyOpen())
-				.build();
-
-		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 
 	@NonNull
@@ -152,6 +121,7 @@ public final class PPOrderCreatedHandler
 				.businessCaseDetail(createProductionDetailForPPOrder(ppOrderEvent))
 				.materialDescriptor(createMaterialDescriptorForPPOrder(ppOrder))
 				// .groupId(null) // will be set after save
+				.lotForLot(ppOrderEvent.getLotForLot())
 				.build();
 
 		return candidateChangeService.onCandidateNewOrChange(

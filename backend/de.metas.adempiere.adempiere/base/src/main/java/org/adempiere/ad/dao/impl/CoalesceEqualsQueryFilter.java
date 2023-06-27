@@ -35,15 +35,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.util.Check;
 
-/* package */ class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	private final List<String> columnNames;
 	private final Object value;
 
 	public CoalesceEqualsQueryFilter(final Object value, final String... columnNames)
 	{
-		super();
-
 		Check.assumeNotNull(columnNames, "columnNames not null");
 		Check.assumeNotNull(columnNames.length > 1, "columnNames.length > 1");
 		this.columnNames = Arrays.asList(columnNames);
@@ -86,8 +84,7 @@ import de.metas.util.Check;
 			modelValue = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 		}
 
-		final boolean accepted = Objects.equals(modelValue, value);
-		return accepted;
+		return Objects.equals(modelValue, value);
 	}
 
 	@Override
@@ -118,7 +115,7 @@ import de.metas.util.Check;
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
 
-	private final void buildSql()
+	private void buildSql()
 	{
 		if (sqlBuilt)
 		{
@@ -153,10 +150,4 @@ import de.metas.util.Check;
 		this.sqlParams = sqlParams;
 		this.sqlBuilt = true;
 	}
-
-	protected void resetSqlBuilt()
-	{
-		this.sqlBuilt = false;
-	}
-
 }

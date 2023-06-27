@@ -28,6 +28,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -40,10 +41,11 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
@@ -56,6 +58,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
@@ -68,6 +71,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	void registerVetoer(ModelWithoutInvoiceCandidateVetoer vetoer, String tableName);
 
 	boolean isAllowedToCreateInvoiceCandidateFor(Object model);
+
+	Timestamp getBaseLineDate(@NonNull PaymentTerm paymentTerm, @NonNull I_C_Invoice_Candidate ic);
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Invoice_Candidate ic);
 
 	interface IInvoiceGenerateResult
 	{
@@ -128,6 +135,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule);
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
+
+	void setPaymentTermIfMissing(@NonNull I_C_Invoice_Candidate icRecord);
 
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 
@@ -216,6 +225,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	IAutoCloseable setUpdateProcessInProgress();
 
+	Timestamp getDateToInvoiceTS(@NonNull I_C_Invoice_Candidate ic);
+
 	/**
 	 * Creates initial {@link IInvoiceGenerateResult}
 	 *
@@ -229,12 +240,13 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * IMPORTANT: as of now we suppose this to be the only way of creating ilas! Please don't create them yourself somewhere in the code.
 	 *
-	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
 	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
+
+	void handleVoidingForInvoice(@NonNull org.compiere.model.I_C_Invoice invoice);
 
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
@@ -314,7 +326,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
-	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">...</a>).
 	 * <p>
 	 * Candidate will not be saved.
 	 */
@@ -356,6 +368,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Also close the shipment schedules on which the invoice candidates are based
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
+
+	void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
 
 	/**
 	 * Iterate the candidates to close and close them one by one.
@@ -424,4 +440,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
 	 */
 	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
+
+	void computeIsInEffect(DocStatus status, I_C_Invoice_Candidate invoiceCandidate);
 }

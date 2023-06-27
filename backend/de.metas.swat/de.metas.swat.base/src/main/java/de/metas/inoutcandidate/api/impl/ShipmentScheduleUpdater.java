@@ -63,7 +63,7 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -270,6 +270,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
+				shipmentScheduleHandlerBL.updateShipmentScheduleFromReferencedRecord(sched);
+
 				updateCatchUomId(sched);
 
 				updateWarehouseId(sched);
@@ -340,7 +342,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// task 09869: don't rely on ol anyways
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
 			schedRecord.setQtyDelivered(qtyDelivered);
-			schedRecord.setQtyReserved(BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered())));
+			// takes into consideration isClosed flag 
+			schedRecord.setQtyReserved(BigDecimal.ZERO.max(shipmentScheduleEffectiveBL.computeQtyOrdered(olAndSched.getSched()).subtract(schedRecord.getQtyDelivered())));
 
 			updateLineNetAmt(olAndSched);
 

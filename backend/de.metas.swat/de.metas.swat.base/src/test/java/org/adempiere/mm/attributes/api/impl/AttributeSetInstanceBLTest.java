@@ -1,13 +1,8 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -24,9 +19,13 @@ import org.compiere.model.X_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -190,6 +189,12 @@ public class AttributeSetInstanceBLTest
 		{
 			assertThat(ImmutableSet.of(stringAttribute.getValue(), listAttribute.getValue())).contains(attributeCode.getCode());
 			return (String)valuesByAttributeCode.get(attributeCode);
+		}
+
+		@Override
+		public String getValueAsStringOrNull(final AttributeCode attributeCode)
+		{
+			return getValueAsString(attributeCode);
 		}
 
 		@Override

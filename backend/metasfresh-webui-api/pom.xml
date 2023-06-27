@@ -30,6 +30,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.servicerepair</groupId>
 			<artifactId>de.metas.servicerepair.webui</artifactId>
 			<version>${metasfresh.version}</version>
@@ -39,6 +45,24 @@
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.forex</groupId>
+			<artifactId>de.metas.forex.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.deliveryplanning</groupId>
+			<artifactId>de.metas.deliveryplanning.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.invoice</groupId>
+			<artifactId>de.metas.invoice.webui</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

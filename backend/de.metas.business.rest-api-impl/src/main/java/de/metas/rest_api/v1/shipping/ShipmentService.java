@@ -353,7 +353,7 @@ public class ShipmentService
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(true)
 				.setScheduleIdToExternalInfo(request.getScheduleToExternalInfo())
-				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE)
+				.computeShipmentDate(CalculateShippingDateRule.DELIVERY_DATE)
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(scheduleWithHUS);
 	}

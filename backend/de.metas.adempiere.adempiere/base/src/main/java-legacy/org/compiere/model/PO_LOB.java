@@ -36,7 +36,7 @@ import java.sql.PreparedStatement;
  *  @author Jorg Janke
  *  @version $Id: PO_LOB.java,v 1.2 2006/07/30 00:58:04 jjanke Exp $
  */
-public class PO_LOB implements Serializable
+class PO_LOB implements Serializable
 {
 	/**
 	 * 
@@ -121,7 +121,7 @@ public class PO_LOB implements Serializable
 				.append(m_tableName)
 				.append(" SET ").append(m_columnName)
 				.append("=null WHERE ").append(m_whereClause);
-			int no = DB.executeUpdate(sql.toString(), trxName);
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), trxName);
 			log.debug("save [" + trxName + "] #" + no + " - no data - set to null - " + m_value);
 			if (no == 0)
 				log.warn("[" + trxName + "] - not updated - " + sql);

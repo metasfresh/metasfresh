@@ -208,8 +208,8 @@ Feature: Product price validation
       | C_Order_ID.Identifier |
       | order_S0144.2_120     |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference    | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | order_S0144.2_120     | 89676577   | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        | Shopware                               |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference    | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
+      | order_S0144.2_120     | 89676577       | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        | Shopware                               |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_SO144.2_120            | order_S0144.2_120     | product_S0144.2_120     | 0            | 10         | 0           | 120   | 0        | EUR          | true      | ppASI_S0144.2_120                        | huProductTU                            |

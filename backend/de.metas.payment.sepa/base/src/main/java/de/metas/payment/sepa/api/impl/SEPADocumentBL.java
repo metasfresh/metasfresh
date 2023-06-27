@@ -52,8 +52,14 @@ public class SEPADocumentBL implements ISEPADocumentBL
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final SEPAMarshaler marshaler = newSEPAMarshaler(protocol, exportContext);
-		marshaler.marshal(sepaExport, out);
-
+		try
+		{
+			marshaler.marshal(sepaExport, out);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 		return SEPACreditTransferXML.builder()
 				.filename(FileUtil.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
 				.contentType(MimeType.TYPE_XML)

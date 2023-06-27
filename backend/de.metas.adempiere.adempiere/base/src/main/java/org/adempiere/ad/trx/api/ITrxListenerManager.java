@@ -1,12 +1,12 @@
 package org.adempiere.ad.trx.api;
 
-import java.util.function.Supplier;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
-
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.function.Supplier;
 
 /**
  * Transactions Listeners Mananger.<br>
@@ -18,7 +18,7 @@ import lombok.NonNull;
 public interface ITrxListenerManager
 {
 
-	public enum TrxEventTiming
+	enum TrxEventTiming
 	{
 		NONE(0),
 		/**
@@ -45,7 +45,7 @@ public interface ITrxListenerManager
 		 */
 		AFTER_CLOSE(40);
 
-		private int seqNo;
+		private final int seqNo;
 
 		TrxEventTiming(final int seqNo)
 		{
@@ -56,15 +56,10 @@ public interface ITrxListenerManager
 		 * <li>Every timing can be registered within "none", i.e. outside of any listener method.</li>
 		 * <li>otherwise, a listener can be registered within another listener's method if its timing is after that other listener method's timing.<br>
 		 * e.g. within a beforeComlete() (=> otherTiming) method you can register a listener for "afterRollBack" (=> this timing)</li>
-		 * <li>Also, we allow {@link #AFTER_COMMIT} to be registered within another after-commit because it's generally OK to have any number of commits within one transaction</li>
 		 */
 		public boolean canBeRegisteredWithinOtherTiming(@NonNull final TrxEventTiming otherTiming)
 		{
 			if (otherTiming == NONE)
-			{
-				return true;
-			}
-			else if (otherTiming == AFTER_COMMIT && this == AFTER_COMMIT)
 			{
 				return true;
 			}
@@ -76,17 +71,25 @@ public interface ITrxListenerManager
 	}
 
 	@FunctionalInterface
-	public interface EventHandlingMethod
+	interface EventHandlingMethod
 	{
 		void onTransactionEvent(ITrx trx);
 	}
 
-	public class RegisterListenerRequest
+	class RegisterListenerRequest
 	{
 		@Getter
 		private final TrxEventTiming timing;
 		@Getter
 		private boolean registerWeakly = false;
+
+		/**
+		 * Normally, if a listener is registered from another listener during its commit, 
+		 * that listener is not registered, but fired right away.
+		 * With this field can force that new listener to be fired after the next (not current) commit instead.
+		 */
+		@Getter
+		private boolean forceAfterNextCommit = false;
 		@Getter
 		private boolean invokeMethodJustOnce = true;
 		@Getter
@@ -133,11 +136,27 @@ public interface ITrxListenerManager
 
 		/**
 		 * Sets the given handling method (can be lambda) and registers the listener.
+		 * 
+		 * Note that instead of registering the listener, the implementation might also decide to invoke the listener right away.
 		 */
 		public void registerHandlingMethod(@NonNull final EventHandlingMethod handlingMethod)
 		{
 			this.handlingMethod = handlingMethod;
 			parent.registerListener(this);
+		}
+
+		public RegisterListenerRequest forceAfterNextCommit(final boolean forceAfterNextCommit)
+		{
+			this.forceAfterNextCommit = forceAfterNextCommit;
+
+			if (this.forceAfterNextCommit && this.timing != TrxEventTiming.AFTER_COMMIT)
+			{
+				throw new AdempiereException("forceAfterNextCommit option can only be used with TrxEventTiming.AFTER_COMMIT!")
+						.appendParametersToMessage()
+						.setParameter("timing", timing);
+			}
+
+			return this;
 		}
 
 		@Override
@@ -184,6 +203,8 @@ public interface ITrxListenerManager
 	/**
 	 * This method shall only be called by the framework. Instead, call {@link #newEventListener(TrxEventTiming)}
 	 * and be sure to call {@link RegisterListenerRequest#registerHandlingMethod(EventHandlingMethod)} at the end.
+	 * 
+	 * Note that instead of registering the listener, the implementation might also decide to invoke the listener right away.
 	 */
 	void registerListener(RegisterListenerRequest listener);
 

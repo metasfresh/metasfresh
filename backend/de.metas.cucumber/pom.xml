@@ -151,6 +151,12 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.banking</groupId>
+            <artifactId>de.metas.banking.camt53</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

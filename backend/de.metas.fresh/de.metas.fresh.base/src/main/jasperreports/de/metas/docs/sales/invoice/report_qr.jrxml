@@ -136,7 +136,7 @@
 				<textElement markup="none">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{cr_iban}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{cr_qr_iban}!=null && !$F{cr_qr_iban}.isEmpty()) ? $F{cr_qr_iban} : $F{cr_iban}]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement x="193" y="88" width="127" height="127" uuid="2491ecb1-7b4b-4cd7-9874-907a022a5f50">

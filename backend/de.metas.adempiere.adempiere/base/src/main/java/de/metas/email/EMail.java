@@ -125,6 +125,9 @@ public final class EMail implements Serializable
 	@JsonIgnore
 	private transient EMailSentStatus _status = EMailSentStatus.NOT_SENT;
 
+	@JsonIgnore
+	private boolean _forceRealEmailRecipients = false;
+
 	EMail(
 			@NonNull final Mailbox mailbox,
 			@Nullable final EMailAddress to,
@@ -415,17 +418,9 @@ public final class EMail implements Serializable
 		}
 
 		final InternetAddress debugMailTo = getDebugMailToAddress();
-		if (debugMailTo != null)
+		if (!_forceRealEmailRecipients && debugMailTo != null)
 		{
-			if (Message.RecipientType.TO.equals(type))
-			{
-				message.setRecipient(Message.RecipientType.TO, debugMailTo);
-			}
-
-			for (final Address address : addresses)
-			{
-				message.addHeader("X-metasfreshDebug-Original-Address" + type.toString(), address.toString());
-			}
+			overrideRecipients(message, type, addresses, debugMailTo);
 		}
 		else
 		{
@@ -1109,6 +1104,32 @@ public final class EMail implements Serializable
 	public List<EMailAttachment> getAttachments()
 	{
 		return ImmutableList.copyOf(_attachments);
+	}
+
+	/**
+	   *  Do send the mail to the respective mail address, even if the {@code DebugMailTo} SysConfig is set.
+	   */
+	public void forceRealEmailRecipients()
+	{
+		_forceRealEmailRecipients = true;
+	}
+
+	private void overrideRecipients(
+			final SMTPMessage message,
+			final RecipientType type,
+			final List<? extends Address> addresses,
+			final InternetAddress debugMailTo
+	) throws MessagingException
+	{
+		if (Message.RecipientType.TO.equals(type))
+		{
+			message.setRecipient(Message.RecipientType.TO, debugMailTo);
+		}
+
+		for (final Address address : addresses)
+		{
+			message.addHeader("X-metasfreshDebug-Original-Address" + type.toString(), address.toString());
+		}
 	}
 
 	@Override

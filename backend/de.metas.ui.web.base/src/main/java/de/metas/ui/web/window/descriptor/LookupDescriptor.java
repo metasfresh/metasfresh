@@ -84,7 +84,7 @@ public interface LookupDescriptor
 		return Optional.empty();
 	}
 
-	default <T extends LookupDescriptor> T cast(final Class<T> lookupDescriptorClass)
+	default <T extends LookupDescriptor> T cast(final Class<T> ignoredLookupDescriptorClass)
 	{
 		@SuppressWarnings("unchecked")
 		final T thisCasted = (T)this;

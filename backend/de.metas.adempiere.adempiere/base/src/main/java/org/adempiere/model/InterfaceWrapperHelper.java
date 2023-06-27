@@ -40,6 +40,7 @@ import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -79,6 +80,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -148,17 +150,17 @@ public class InterfaceWrapperHelper
 	/**
 	 * Creates a new instance of the given object using same context and trxName as <code>contextProvider</code>
 	 *
-	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
-	 *            <p>
-	 *            IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
-	 *            <i>if</i> the given <code>contextProvider</code> permits it. See {@link IContextAware#isAllowThreadInherited()}.
+	 * @param contextProvider          any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
+	 *                                 <p>
+	 *                                 IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
+	 *                                 <i>if</i> the given <code>contextProvider</code> permits it. See {@link IContextAware#isAllowThreadInherited()}.
 	 * @param useClientOrgFromProvider if {@code true}, then the context used to create the new instance will have the {@code contextProvider}'s {@code AD_Client_ID} and {@code AD_Org_ID} as
-	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
+	 *                                 {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
 	 */
 	public static <T> T newInstance(final Class<T> cl,
-			@NonNull final Object contextProvider,
-			final boolean useClientOrgFromProvider)
+									@NonNull final Object contextProvider,
+									final boolean useClientOrgFromProvider)
 	{
 		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
 		//
@@ -222,7 +224,7 @@ public class InterfaceWrapperHelper
 	 * </ul>
 	 *
 	 * @param model the underlying {@link PO}, {@link GridTab} or POJO for which we need an instance of <code>cl</code>
-	 * @param cl the interface we need an instance of
+	 * @param cl    the interface we need an instance of
 	 * @return an instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
 	 */
 	public static <T> T create(@Nullable final Object model, final Class<T> cl)
@@ -234,18 +236,18 @@ public class InterfaceWrapperHelper
 	/**
 	 * See {@link #create(Object, Class)} for additional infos.
 	 *
-	 * @param modelClass model class
+	 * @param modelClass   model class
 	 * @param useOldValues
 	 *            <ul>
-	 *            <li>true if old values shall be used
-	 *            <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
-	 *            </ul>
+	 *                                <li>true if old values shall be used
+	 *                                <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
+	 *                                </ul>
 	 *
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
-	 *             <ul>
-	 *             <li>{@link #create(Object, Class)}
-	 *             <li>or {@link #createOld(Object, Class)}
-	 *             </ul>
+	 * <ul>
+	 * <li>{@link #create(Object, Class)}
+	 * <li>or {@link #createOld(Object, Class)}
+	 * </ul>
 	 */
 	@Deprecated
 	public static <T> T create(
@@ -259,8 +261,7 @@ public class InterfaceWrapperHelper
 		}
 		else if (modelClass.isInstance(model) && !useOldValues)
 		{
-			@SuppressWarnings("unchecked")
-			final T modelCasted = (T)model;
+			@SuppressWarnings("unchecked") final T modelCasted = (T)model;
 			return modelCasted;
 		}
 		else
@@ -273,7 +274,7 @@ public class InterfaceWrapperHelper
 	 * Wraps given the <code>model</code> and uses the <b>old</b> values for all model getters.
 	 * See {@link #create(Object, Class)} for more informations.
 	 */
-	public static <T> T createOld(final Object model, final Class<T> cl)
+	public static <T> T createOld(final T model, final Class<T> cl)
 	{
 		final boolean useOldValues = true;
 		return create(model, cl, useOldValues);
@@ -404,7 +405,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * Converts given list to target type by calling {@link #create(Object, Class)} for each item.
 	 *
-	 * @param list list to be converted
+	 * @param list  list to be converted
 	 * @param clazz target model class
 	 * @return converted list to given model
 	 */
@@ -666,7 +667,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
 	 *
-	 * @param model may be null
+	 * @param model                 may be null
 	 * @param useClientOrgFromModel ignored, unless the given model is {@link ModelContextAware} or just a "normal" model. See {@link #getCtx(Object, boolean)}
 	 */
 	public static Properties getCtx(
@@ -776,6 +777,16 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void deleteAll(@NonNull final Collection<?> models, final boolean failIfProcessed)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(model -> InterfaceWrapperHelper.delete(model, failIfProcessed));
+	}
+
 	public static void deleteAll(@NonNull final Collection<?> models)
 	{
 		if (models.isEmpty())
@@ -829,7 +840,8 @@ public class InterfaceWrapperHelper
 	 * Introducing this exception to be thrown instead of ADempiereException. Reason: It's a pain if you have a breakpoint on "AdempiereException" and the debugger stops every 2 seconds because
 	 * InterfaceWrapperHelper throws it.
 	 */
-	/* package */@SuppressWarnings("serial")
+	/* package */
+	@SuppressWarnings("serial")
 	static class MissingTableNameException extends AdempiereException
 	{
 		private static MissingTableNameException notFound(final Class<?> modelClass)
@@ -1174,20 +1186,16 @@ public class InterfaceWrapperHelper
 		return OrgId.optionalOfRepoId(orgIdInt);
 	}
 
-	public static <T> T getValueByColumnId(final Object model, final int adColumnId)
+	public static <T> T getValueByColumnId(@NonNull final Object model, @NonNull final AdColumnId adColumnId)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assume(adColumnId > 0, "adColumnId > 0");
-
 		if (GridTabWrapper.isHandled(model))
 		{
 			final GridTab gridTab = GridTabWrapper.getGridTab(model);
 			for (final GridField field : gridTab.getFields())
 			{
-				if (field.getAD_Column_ID() == adColumnId)
+				if (field.getAD_Column_ID() == adColumnId.getRepoId())
 				{
-					@SuppressWarnings("unchecked")
-					final T value = (T)field.getValue();
+					@SuppressWarnings("unchecked") final T value = (T)field.getValue();
 					return value;
 				}
 			}
@@ -1197,8 +1205,7 @@ public class InterfaceWrapperHelper
 		else if (POWrapper.isHandled(model))
 		{
 			final PO po = POWrapper.getStrictPO(model);
-			@SuppressWarnings("unchecked")
-			final T value = (T)po.get_ValueOfColumn(adColumnId);
+			@SuppressWarnings("unchecked") final T value = (T)po.get_ValueOfColumn(adColumnId);
 			return value;
 		}
 		// else if (POJOWrapper.isHandled(model))
@@ -1263,9 +1270,9 @@ public class InterfaceWrapperHelper
 	}
 
 	private static <T> T getValue(final Object model,
-			final String columnName,
-			final boolean throwExIfColumnNotFound,
-			final boolean useOverrideColumnIfAvailable)
+								  final String columnName,
+								  final boolean throwExIfColumnNotFound,
+								  final boolean useOverrideColumnIfAvailable)
 	{
 		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
@@ -1295,7 +1302,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static boolean setValue(
 			@NonNull final Object model,
-			@NonNull final String columnName, 
+			@NonNull final String columnName,
 			@Nullable final Object value)
 	{
 		final boolean throwExIfColumnNotFound = false;
@@ -1383,6 +1390,12 @@ public class InterfaceWrapperHelper
 	public static <T> T getDynAttribute(@NonNull final Object model, @NonNull final String attributeName)
 	{
 		return helpers.getDynAttribute(model, attributeName);
+	}
+
+	@Nullable
+	public static <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return helpers.computeDynAttributeIfAbsent(model, attributeName, supplier);
 	}
 
 	/**
@@ -1587,7 +1600,6 @@ public class InterfaceWrapperHelper
 		return helpers.isValueChanged(model, ImmutableSet.copyOf(columnNames));
 	}
 
-
 	@Deprecated
 	public static boolean isPOValueChanged(final Object model, final String columnName)
 	{
@@ -1645,10 +1657,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param modelClass
-	 * @return immutable list of column names of modelClass's table
+	 * @return immutable list of physical column names of modelClass's table
 	 */
-	public static Set<String> getModelColumnNames(final Class<?> modelClass)
+	public static Set<String> getModelPhysicalColumnNames(final Class<?> modelClass)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
@@ -1660,8 +1671,10 @@ public class InterfaceWrapperHelper
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		Check.assumeNotNull(poInfo, "poInfo not null for {}", tableName); // shall not happen
-
-		return poInfo.getColumnNames();
+		return poInfo.getColumnNames()
+				.stream()
+				.filter(poInfo::isPhysicalColumn)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
@@ -1719,7 +1732,6 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-
 	/**
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>
 	 * then return an instance using {@link #create(Object, Class)}.<br>
@@ -1730,7 +1742,7 @@ public class InterfaceWrapperHelper
 	 * @return
 	 */
 	public static <T> T asColumnReferenceAwareOrNull(final Object model,
-			final Class<T> clazz)
+													 final Class<T> clazz)
 	{
 		if (model == null)
 		{
@@ -1761,10 +1773,8 @@ public class InterfaceWrapperHelper
 	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
 	 *
 	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
-	 *
-	 * @param model
 	 */
-	public static final void disableReadOnlyColumnCheck(final Object model)
+	public static void disableReadOnlyColumnCheck(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
 		ATTR_ReadOnlyColumnCheckDisabled.setValue(model, Boolean.TRUE);
@@ -1778,7 +1788,7 @@ public class InterfaceWrapperHelper
 	}
 
 	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
-	public static final Object checkZeroIdValue(final String columnName, final Object value)
+	public static Object checkZeroIdValue(final String columnName, final Object value)
 	{
 		return POWrapper.checkZeroIdValue(columnName, value);
 	}

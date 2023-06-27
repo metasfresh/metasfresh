@@ -125,7 +125,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 							.append(sqlImportWhereClause);
 
-			final int resultsForValueUpdate = DB.executeUpdateEx(sqlUpdateByValue.toString(), trxName);
+			final int resultsForValueUpdate = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdateByValue.toString(), trxName);
 			log.debug("Set C_BPartner_ID for {} records", resultsForValueUpdate);
 
 		}
@@ -144,7 +144,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 							.append(sqlImportWhereClause);
 
-			final int resultsForGlobalIdUpdate = DB.executeUpdateEx(sqlUpdateByGlobalId.toString(), trxName);
+			final int resultsForGlobalIdUpdate = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdateByGlobalId.toString(), trxName);
 			log.debug("Set C_BPartner_ID for {} records", resultsForGlobalIdUpdate);
 
 		}
@@ -168,7 +168,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_User.COLUMNNAME_AD_Role_ID + " IS NULL";
 
-		final int no = DB.executeUpdateEx(sql, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 		log.debug("Set R_RequestType_ID for {} records", no);
 	}
 
@@ -178,7 +178,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_User.I_ISIMPORTED_ImportFailed, errorMsg + "; " };
-		DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
 
 	}
 

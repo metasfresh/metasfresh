@@ -758,7 +758,6 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipTo(previousLocation.isShipTo());
 	}
 
-
 	@Override
 	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
 	{
@@ -800,5 +799,31 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		return bPartnerLocation;
+	}
+
+	@NonNull
+	@Override
+	public Optional<String> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
+		{
+			return Optional.of(bpartnerLocation.getVATaxID());
+		}
+
+		final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
+		if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
+		{
+			return Optional.of(bPartner.getVATaxID());
+		}
+
+		return Optional.empty();
+	}
+
+	@NonNull
+	@Override
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return userRepository.getDefaultDunningContact(bPartnerId);
 	}
 }

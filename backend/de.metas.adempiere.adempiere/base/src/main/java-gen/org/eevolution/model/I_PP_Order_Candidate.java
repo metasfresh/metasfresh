@@ -1,9 +1,8 @@
 package org.eevolution.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -78,28 +77,6 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -123,6 +100,28 @@ public interface I_PP_Order_Candidate
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date Promised.
@@ -215,6 +214,29 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
+	 * Set Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsLotForLot (@Nullable java.lang.String IsLotForLot);
+
+	/**
+	 * Get Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsLotForLot();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_PP_Order_Candidate.class, "IsLotForLot", null);
+	String COLUMNNAME_IsLotForLot = "IsLotForLot";
+
+	/**
 	 * Set Simulated.
 	 *
 	 * <br>Type: YesNo
@@ -261,6 +283,27 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "M_HU_PI_Item_Product_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
 	 * Set Product.
@@ -466,6 +509,27 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_QtyProcessed = "QtyProcessed";
 
 	/**
+	 * Set Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	/**
+	 * Get Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
+
+	/**
 	 * Set Quantity To Process.
 	 *
 	 * <br>Type: Quantity
@@ -485,6 +549,31 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyToProcess = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyToProcess", null);
 	String COLUMNNAME_QtyToProcess = "QtyToProcess";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Order_Candidate.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Resource.

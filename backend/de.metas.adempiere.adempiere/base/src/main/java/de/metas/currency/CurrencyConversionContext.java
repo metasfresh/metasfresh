@@ -11,16 +11,17 @@ import lombok.Value;
 import org.adempiere.service.ClientId;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CurrencyConversionContext
 {
 	@NonNull
-	LocalDate conversionDate;
+	Instant conversionDate;
 	@NonNull
 	CurrencyConversionTypeId conversionTypeId;
 	@NonNull

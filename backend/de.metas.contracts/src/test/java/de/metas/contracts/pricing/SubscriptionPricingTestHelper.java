@@ -1,16 +1,6 @@
 package de.metas.contracts.pricing;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.List;
-
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -20,12 +10,20 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.Discount;
-import de.metas.pricing.rules.PriceListVersion;
+import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -63,7 +61,7 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 	{
 		return ImmutableList.of(
 				SubscriptionPricingRule.class.getName(),
-				PriceListVersion.class.getName(),
+				PriceListVersionPricingRule.class.getName(),
 				Discount.class.getName());
 	}
 

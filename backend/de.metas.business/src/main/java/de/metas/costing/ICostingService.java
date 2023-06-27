@@ -1,7 +1,7 @@
 package de.metas.costing;
 
-import de.metas.order.OrderLineId;
-import de.metas.uom.UomId;
+import de.metas.i18n.ExplainedOptional;
+import lombok.NonNull;
 
 import java.util.Optional;
 
@@ -29,23 +29,23 @@ import java.util.Optional;
 
 public interface ICostingService
 {
+	CostElement getCostElementById(@NonNull CostElementId costElementId);
+
 	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
 
+	ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
+
 	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
+
+	ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(CostDetailReverseRequest request);
 
 	MoveCostsResult moveCosts(MoveCostsRequest request);
 
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
-	/**
-	 * @return seed cost or null
-	 */
-	Optional<CostAmount> calculateSeedCosts(
-			CostSegment costSegment,
-			CostingMethod costingMethod,
-			final OrderLineId orderLineId);
-
 	Optional<CostPrice> getCurrentCostPrice(
 			CostSegment costSegment,
 			CostingMethod costingMethod);
+
+	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 }

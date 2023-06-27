@@ -10,6 +10,9 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -21,11 +24,10 @@ import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -86,6 +88,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, BPartner.C_BPARTNER_SALES_REP_ID)
 			.put(I_C_BPartner.COLUMNNAME_InternalName, BPartner.INTERNAL_NAME)
 			.put(I_C_BPartner.COLUMNNAME_PaymentRule, BPartner.PAYMENT_RULE)
+			.put(I_C_BPartner.COLUMNNAME_PaymentRulePO, BPartner.PAYMENT_RULE_PO)
 			.put(I_C_BPartner.COLUMNNAME_IsCompany, BPartner.COMPANY)
 			.put(I_C_BPartner.COLUMNNAME_VATaxID, BPartner.VAT_ID)
 			.put(I_C_BPartner.COLUMNNAME_C_Greeting_ID, BPartner.GREETING_ID)
@@ -98,6 +101,18 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_MKTG_Campaign_ID, BPartner.CAMPAIGN_ID)
 			.put(I_C_BPartner.COLUMNNAME_DebtorId, BPartner.DEBTOR_ID)
 			.put(I_C_BPartner.COLUMNNAME_CreditorId, BPartner.CREDITOR_ID)
+			.put(I_C_BPartner.COLUMNNAME_M_SectionCode_ID, BPartner.SECTION_CODE_ID)
+			.put(I_C_BPartner.COLUMNNAME_Description, BPartner.DESCRIPTION)
+			.put(I_C_BPartner.COLUMNNAME_DeliveryRule, BPartner.DELIVERY_RULE)
+			.put(I_C_BPartner.COLUMNNAME_DeliveryViaRule, BPartner.DELIVERY_VIA_RULE)
+			.put(I_C_BPartner.COLUMNNAME_IsStorageWarehouse, BPartner.STORAGE_WAREHOUSE)
+			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID, BPartner.INCOTERMS_CUSTOMER_ID)
+			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID, BPartner.INCOTERMS_VENDOR_ID)
+			.put(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, BPartner.SECTION_GROUP_PARTNER_ID)
+			.put(I_C_BPartner.COLUMNNAME_IsProspect, BPartner.PROSPECT)
+			.put(I_C_BPartner.COLUMNNAME_SAP_BPartnerCode, BPartner.SAP_BPARTNER_CODE)
+			.put(I_C_BPartner.COLUMNNAME_IsSectionGroupPartner, BPartner.SECTION_GROUP_PARTNER)
+			.put(I_C_BPartner.COLUMNNAME_IsSectionPartner, BPartner.SECTION_PARTNER)
 			.build();
 
 	@VisibleForTesting
@@ -153,7 +168,13 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsEphemeral, BPartnerLocation.EPHEMERAL)
 			.put(I_C_BPartner_Location.COLUMNNAME_EMail, BPartnerLocation.EMAIL)
 			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
-			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
+			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocation.VISITORS_ADDRESS)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, BPartnerLocation.HANDOVER_LOCATION)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsRemitTo, BPartnerLocation.REMIT_TO)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, BPartnerLocation.REPLICATION_LOOKUP_DEFAULT)
+			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
+			.put(I_C_BPartner_Location.COLUMNNAME_SAP_PaymentMethod, BPartnerLocation.SAP_PAYMENT_METHOD)
+			.put(I_C_BPartner_Location.COLUMNNAME_SAP_BPartnerCode, BPartnerLocation.SAP_BPARTNER_CODE)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,
@@ -177,6 +198,7 @@ final class ChangeLogUtil
 	private static final ImmutableMap<String, String> C_COUNTRY_COLUMN_MAP = ImmutableMap
 			.<String, String>builder()
 			.put(I_C_Country.COLUMNNAME_CountryCode, BPartnerLocation.COUNTRYCODE)
+			.put(I_C_Country.COLUMNNAME_Name, BPartnerLocation.COUNTRY_NAME)
 			.build();
 
 	@VisibleForTesting
@@ -187,6 +209,17 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
+			.build();
+
+	@VisibleForTesting
+	private static final ImmutableMap<String, String> C_BPARTNER_CREDIT_LIMIT_COLUMN_MAP = ImmutableMap
+			.<String, String>builder()
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID, BPartnerCreditLimit.ID)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, BPartnerCreditLimit.BPARTNER_ID)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_CreditLimit_Type_ID, BPartnerCreditLimit.CREDIT_LIMIT_TYPE_ID)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, BPartnerCreditLimit.AMOUNT)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, BPartnerCreditLimit.DATE_FROM)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, BPartnerCreditLimit.ACTIVE)
 			.build();
 
 	public static RecordChangeLog createBPartnerChangeLog(
@@ -343,6 +376,37 @@ final class ChangeLogUtil
 				.lastChangedTimestamp(lastChanged.getLeft())
 				.recordId(ComposedRecordId.singleKey(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID, bankAccountRecord.getC_BP_BankAccount_ID()))
 				.tableName(I_C_BP_BankAccount.Table_Name)
+				.entries(domainEntries)
+				.build();
+	}
+
+	@NonNull
+	public static RecordChangeLog createCreditLimitChangeLog(
+			@NonNull final I_C_BPartner_CreditLimit creditLimitRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries = relatedRecords.getRecordRef2LogEntries();
+		final ImmutableList<RecordChangeLogEntry> userEntries = recordRef2LogEntries.get(TableRecordReference.of(creditLimitRecord));
+
+		IPair<Instant, UserId> lastChanged = ImmutablePair.of(
+				TimeUtil.asInstant(creditLimitRecord.getUpdated()),
+				UserId.ofRepoIdOrNull(creditLimitRecord.getUpdatedBy()/* might be -1 */));
+
+		final List<RecordChangeLogEntry> domainEntries = new ArrayList<>();
+		for (final RecordChangeLogEntry userEntry : userEntries)
+		{
+			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(userEntry, C_BPARTNER_CREDIT_LIMIT_COLUMN_MAP);
+			lastChanged = latestOf(entry, lastChanged);
+			entry.ifPresent(domainEntries::add);
+		}
+
+		return RecordChangeLog.builder()
+				.createdByUserId(UserId.ofRepoIdOrNull(creditLimitRecord.getCreatedBy()/* might be -1 */))
+				.createdTimestamp(TimeUtil.asInstant(creditLimitRecord.getCreated()))
+				.lastChangedByUserId(lastChanged.getRight())
+				.lastChangedTimestamp(lastChanged.getLeft())
+				.recordId(ComposedRecordId.singleKey(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID, creditLimitRecord.getC_BPartner_CreditLimit_ID()))
+				.tableName(I_C_BPartner_CreditLimit.Table_Name)
 				.entries(domainEntries)
 				.build();
 	}

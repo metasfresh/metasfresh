@@ -1,8 +1,8 @@
 package de.metas.inoutcandidate.lock;
 
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Lock;
 import de.metas.logging.LogManager;
@@ -53,6 +53,13 @@ public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRe
 {
 	private static final Logger logger = LogManager.getLogger(SqlShipmentScheduleLockRepository.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ModelCacheInvalidationService modelCacheInvalidationService;
+
+	public SqlShipmentScheduleLockRepository(
+			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService)
+	{
+		this.modelCacheInvalidationService = modelCacheInvalidationService;
+	}
 
 	@Override
 	public void lock(@NonNull final ShipmentScheduleLockRequest request)
@@ -165,7 +172,7 @@ public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRe
 		final String sql = "DELETE FROM " + I_M_ShipmentSchedule_Lock.Table_Name
 				+ " WHERE " + DB.buildSqlList(I_M_ShipmentSchedule_Lock.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds, sqlParams);
 
-		DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 
 		fireShipmentSchedulesChanged(shipmentScheduleIds);
 	}
@@ -223,6 +230,6 @@ public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRe
 		}
 
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
-		Services.get(IModelCacheInvalidationService.class).invalidate(request, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 }

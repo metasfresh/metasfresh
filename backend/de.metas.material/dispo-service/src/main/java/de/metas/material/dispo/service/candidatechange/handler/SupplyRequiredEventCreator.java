@@ -3,9 +3,12 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import com.google.common.base.Preconditions;
 import de.metas.common.util.IdConstants;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor.SupplyRequiredDescriptorBuilder;
@@ -92,6 +95,23 @@ public class SupplyRequiredEventCreator
 					.orderLineId(IdConstants.toRepoId(demandDetail.getOrderLineId()))
 					.subscriptionProgressId(IdConstants.toRepoId(demandDetail.getSubscriptionProgressId()));
 		}
+
+		final BusinessCaseDetail businessCaseDetail = demandCandidate.getBusinessCaseDetail();
+		if(businessCaseDetail != null && businessCaseDetail.getCandidateBusinessCase() == CandidateBusinessCase.PRODUCTION)
+		{
+			final ProductionDetail productionDetail = ProductionDetail.cast(businessCaseDetail);
+			if(productionDetail.getPpOrderId() > 0)
+			{
+				descriptorBuilder
+						.ppOrderId(productionDetail.getPpOrderId());
+			}
+			if(productionDetail.getPpOrderLineCandidateId() > 0)
+			{
+				descriptorBuilder
+						.ppOrderLineCandidateId(productionDetail.getPpOrderLineCandidateId());
+			}
+			descriptorBuilder.ppOrderProductPlanningId(productionDetail.getProductPlanningId());
+		}
 		return descriptorBuilder.build();
 	}
 
@@ -108,7 +128,11 @@ public class SupplyRequiredEventCreator
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(candidate.getClientAndOrgId(), traceId))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
 				.fullDemandQty(fullDemandQty)
-				.simulated(candidate.isSimulated());
+				.simulated(candidate.isSimulated())
+				.isLotForLot(candidate.getLotForLot())
+				.updated(candidate.isUpdated())
+				.deltaQuantity(candidate.getDeltaQuantity())
+				.minMaxDescriptor(candidate.getMinMaxDescriptor());
 	}
 
 }

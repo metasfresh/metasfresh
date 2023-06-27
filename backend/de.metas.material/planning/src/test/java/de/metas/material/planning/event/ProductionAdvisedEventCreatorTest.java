@@ -1,6 +1,7 @@
 package de.metas.material.planning.event;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -9,12 +10,13 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidatePojoSupplier;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.product.ResourceId;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -30,7 +32,10 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
 /*
  * #%L
@@ -60,6 +65,8 @@ public class ProductionAdvisedEventCreatorTest
 	PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 
 	private I_M_Product product;
+	private I_PP_Product_Planning ppProductPlanning;
+	private IOrgDAO orgDAO;
 
 	@BeforeEach
 	public void init()
@@ -73,16 +80,27 @@ public class ProductionAdvisedEventCreatorTest
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 
+		ppProductPlanning = newInstance(I_PP_Product_Planning.class);
+		saveRecord(ppProductPlanning);
+
 		ppOrderCandidateDemandMatcher = Mockito.mock(PPOrderCandidateDemandMatcher.class);
 		ppOrderCandidatePojoSupplier = Mockito.mock(PPOrderCandidatePojoSupplier.class);
+
+		orgDAO = Mockito.mock(IOrgDAO.class);
+		Services.registerService(IOrgDAO.class, orgDAO);
 	}
 
 	@Test
-	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
+	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLotInfo()
 	{
-		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
+
+		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
+
+		ppProductPlanning.setIsLotForLot(false);
+		saveRecord(ppProductPlanning);
+
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(newInstance(I_PP_Product_Planning.class));
+				.thenReturn(ppProductPlanning);
 
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -90,12 +108,48 @@ public class ProductionAdvisedEventCreatorTest
 		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(IMaterialRequest.class)))
 				.thenReturn(createDummyPPOrderCandidate());
 
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
+		SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final PPOrderCandidateAdvisedEventCreator pPOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier);
 		final List<PPOrderCandidateAdvisedEvent> events = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
+
 		assertThat(events).hasSize(1);
-		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+		assertThat(events.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+	}
+
+	@Test
+	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot_Applied()
+	{
+		ppProductPlanning.setIsLotForLot(true);
+		saveRecord(ppProductPlanning);
+
+		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
+		Mockito.when(mrpContext.getProductPlanning())
+				.thenReturn(ppProductPlanning);
+
+		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
+				.thenReturn(true);
+
+		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(IMaterialRequest.class)))
+				.thenReturn(createDummyPPOrderCandidate());
+
+		Mockito.when(orgDAO.getTimeZone(Mockito.any()))
+				.thenReturn(SystemTime.zoneId());
+
+		SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
+
+		final PPOrderCandidateAdvisedEventCreator pPOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier);
+		final List<PPOrderCandidateAdvisedEvent> events = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+
+		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
+				.isLotForLot(ISLOTFORLOT_Yes)
+				.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(new BigDecimal("20")))
+				.build();
+
+		assertThat(events).hasSize(1);
+		assertThat(events.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 
 	private static PPOrderCandidate createDummyPPOrderCandidate()

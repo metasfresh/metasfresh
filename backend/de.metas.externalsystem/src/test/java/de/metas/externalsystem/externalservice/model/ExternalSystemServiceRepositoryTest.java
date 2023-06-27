@@ -22,43 +22,31 @@
 
 package de.metas.externalsystem.externalservice.model;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalSystemServiceTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class ExternalSystemServiceRepositoryTest
 {
 	private ExternalSystemServiceRepository externalSystemServiceRepo;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		externalSystemServiceRepo = new ExternalSystemServiceRepository();
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -85,7 +73,7 @@ public class ExternalSystemServiceRepositoryTest
 		//then
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -109,7 +97,7 @@ public class ExternalSystemServiceRepositoryTest
 
 		//then
 		assertThat(result).isNotEmpty();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
 	}
 
 	@Test

@@ -81,7 +81,7 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess im
 
 	@Nullable
 	@Override
-	public Object getParameterDefaultValue(@NonNull  final IProcessDefaultParameter parameter)
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
 		if (PARAM_IsKeepProposalPrices.contentEquals(parameter.getColumnName()))
 		{

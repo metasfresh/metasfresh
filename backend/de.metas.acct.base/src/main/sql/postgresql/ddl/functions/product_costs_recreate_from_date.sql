@@ -7,13 +7,27 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_StartDateAcct    timestamp WITH TIME ZONE)
 ;
 
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE,
+    p_DryRun           char(1))
+;
+
+
 CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
-    p_C_AcctSchema_ID  numeric,
-    p_M_CostElement_ID numeric,
-    p_M_Product_ID     numeric = NULL,
-    p_M_Product_IDs    numeric[] = NULL,
-    p_ReorderDocs      char(1) = 'Y',
-    p_StartDateAcct    timestamp WITH TIME ZONE = '1970-01-01')
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric = NULL,
+    p_M_Product_IDs              numeric[] = NULL,
+    p_ReorderDocs                char(1) = 'Y',
+    p_ReorderDocs_DateAcct_Trunc varchar = 'DD',
+    p_StartDateAcct              timestamp WITH TIME ZONE = '1970-01-01',
+    p_DryRun           char(1) = 'N')
     RETURNS text
 AS
 $BODY$
@@ -21,6 +35,8 @@ DECLARE
     v_productIds                       numeric[];
     v_costingLevel                     char(1);
     v_orgIds                           numeric[];
+    v_costElement                      m_costelement%rowtype;
+    v_IsManualCostPrice                boolean; -- true if we are dealing with manual cost price (i.e. M_Cost.CurrentCostPrice is set by user and we MUST keep it)
     --
     rowcount                           integer := 0;
     rowcount_mcost_updated             integer := 0;
@@ -78,9 +94,24 @@ BEGIN
     RAISE NOTICE 'p_C_AcctSchema_ID=%: CostingLevel=%', p_C_AcctSchema_ID, v_costingLevel;
     RAISE NOTICE 'Orgs: %', v_orgIds;
 
-    RAISE NOTICE 'p_M_CostElement_ID=%', p_M_CostElement_ID;
+    --
+    -- Validate parameter: Cost Element
+    --
+    SELECT *
+    INTO v_costElement
+    FROM M_CostElement ce
+    WHERE ce.m_costelement_id = p_M_CostElement_ID;
+    IF (v_costElement IS NULL) THEN
+        RAISE EXCEPTION 'Cost Element % not found', p_M_CostElement_ID;
+    END IF;
+    v_IsManualCostPrice := v_costElement.costingmethod = 'S'; -- S=Standard Costing
+    RAISE NOTICE 'p_M_CostElement_ID=%: CostingMethod=% => IsManualCost=%', p_M_CostElement_ID, v_costElement.costingmethod, v_IsManualCostPrice;
+
+    --
+    -- Log other parameters
     RAISE NOTICE 'p_ReorderDocs=%', p_ReorderDocs;
     RAISE NOTICE 'p_StartDateAcct=%', p_StartDateAcct;
+    RAISE NOTICE 'p_DryRun=%', p_DryRun;
 
 
     --
@@ -160,27 +191,30 @@ BEGIN
 
                         DELETE
                         FROM m_costdetail
-                        WHERE m_costdetail_id IN (
-                            SELECT m_costdetail_id
-                            FROM m_costdetail_v cd
-                            WHERE cd.c_acctschema_id = v_firstCostDetail.c_acctschema_id
-                              AND cd.m_costelement_id = v_firstCostDetail.m_costelement_id
-                              AND cd.M_Product_ID = v_firstCostDetail.m_product_id
-                              AND cd.ad_client_id = v_firstCostDetail.ad_client_id
-                              AND (v_currentOrgId <= 0 OR cd.ad_org_id = v_currentOrgId)
-                              AND cd.dateacct >= p_StartDateAcct
-                        );
+                        WHERE m_costdetail_id IN (SELECT m_costdetail_id
+                                                  FROM m_costdetail_v cd
+                                                  WHERE cd.c_acctschema_id = v_firstCostDetail.c_acctschema_id
+                                                    AND cd.m_costelement_id = v_firstCostDetail.m_costelement_id
+                                                    AND cd.M_Product_ID = v_firstCostDetail.m_product_id
+                                                    AND cd.ad_client_id = v_firstCostDetail.ad_client_id
+                                                    AND (v_currentOrgId <= 0 OR cd.ad_org_id = v_currentOrgId)
+                                                    AND cd.dateacct >= p_StartDateAcct);
                         GET DIAGNOSTICS rowcount_mcostdetail_deleted = ROW_COUNT;
 
                         UPDATE m_cost c
-                        SET currentcostprice=v_firstCostDetail.prev_currentcostprice,
+                        SET currentcostprice=(CASE
+                                                  WHEN v_IsManualCostPrice THEN c.currentcostprice -- don't change the M_Cost.CurrentCostPrice if it's a manual cost price
+                                                                           ELSE v_firstCostDetail.prev_currentcostprice
+                                              END),
                             currentcostpricell=v_firstCostDetail.prev_currentcostpricell,
                             currentqty=v_firstCostDetail.prev_currentqty,
                             cumulatedamt=v_firstCostDetail.prev_cumulatedamt,
-                            cumulatedqty=v_firstCostDetail.prev_cumulatedqty
+                            cumulatedqty=v_firstCostDetail.prev_cumulatedqty,
+                            updated=NOW(),
+                            updatedby=0
                         WHERE c.c_acctschema_id = p_C_AcctSchema_ID
                           AND c.m_costelement_id = p_M_CostElement_ID
-                          AND c.M_Product_ID = p_M_Product_ID
+                          AND c.M_Product_ID = v_currentProduct.m_product_id
                           AND c.ad_client_id = 1000000
                           AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
                         GET DIAGNOSTICS rowcount_mcost_updated = ROW_COUNT;
@@ -198,6 +232,26 @@ BEGIN
                           AND (v_currentOrgId <= 0 OR cd.ad_org_id = v_currentOrgId);
                         GET DIAGNOSTICS rowcount_mcostdetail_deleted = ROW_COUNT;
 
+                        IF (v_IsManualCostPrice) THEN
+                            -- In case it's a manual cost price (i.e. Standard Costing)
+                            -- then we need to preserve the CurrentCostPrice (which was set by user)
+                            -- but ZEROify all the other fields.
+                            UPDATE m_cost c
+                            SET
+                                -- currentcostprice=... keep it unchanged
+                                currentcostpricell=0,
+                                currentqty=0,
+                                cumulatedamt=0,
+                                cumulatedqty=0,
+                                updated=NOW(),
+                                updatedby=0
+                            WHERE c.c_acctschema_id = p_C_AcctSchema_ID
+                              AND c.m_costelement_id = p_M_CostElement_Id
+                              AND c.M_Product_ID = v_currentProduct.m_product_id
+                              AND c.ad_client_id = 1000000
+                              AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
+                            GET DIAGNOSTICS rowcount_mcost_updated = ROW_COUNT;
+                        ELSE
                         DELETE
                         FROM m_cost c
                         WHERE c.c_acctschema_id = p_C_AcctSchema_ID
@@ -205,10 +259,11 @@ BEGIN
                           AND c.M_Product_ID = v_currentProduct.m_product_id
                           AND c.ad_client_id = 1000000
                           AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
-                        GET DIAGNOSTICS rowcount_mcost_updated = ROW_COUNT;
+                            GET DIAGNOSTICS rowcount_mcost_deleted = ROW_COUNT;
+                        END IF;
                     END IF;
 
-                    RAISE NOTICE 'Product=%, Org=%: % M_CostDetails deleted, % M_Costs deleted, % M_Costs updated. Last cost price: %',
+                    RAISE NOTICE 'Product=%, Org=%: % M_CostDetails deleted, % M_Costs deleted, % M_Costs updated. Last cost price (from Cost Detail): %',
                         v_currentProduct.productInfo, v_currentOrgId,
                         rowcount_mcostdetail_deleted,rowcount_mcost_deleted,rowcount_mcost_updated,
                         v_firstCostDetail.prev_currentcostprice;
@@ -230,37 +285,38 @@ BEGIN
     --
     DELETE
     FROM pp_order_cost poc
-    WHERE EXISTS(
-                  SELECT 1
-                  FROM pp_order o
-                  WHERE o.pp_order_id = poc.pp_order_id
-                    AND o.m_product_id = ANY (v_productIds)
-                    AND o.dateordered >= p_StartDateAcct
-              );
+    WHERE EXISTS(SELECT 1
+                 FROM pp_order o
+                 WHERE o.pp_order_id = poc.pp_order_id
+                   AND o.m_product_id = ANY (v_productIds)
+                   AND o.dateordered >= p_StartDateAcct);
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     RAISE NOTICE 'Deleted % PP_Order_Cost records', rowcount;
     v_result := v_result || rowcount || ' PP_Order_Cost(s) deleted; ';
 
+    --
+    -- Stop here and ROLLBACK if DryRun
+    IF (p_DryRun = 'Y') THEN
+        RAISE EXCEPTION 'ROLLBACK because p_DryRun=Y';
+    END IF;
 
     --
     -- Un-post documents and enqueue them to posting queue.
     --
     SELECT COUNT(1)
     INTO rowcount
-    FROM (
-             SELECT "de_metas_acct".fact_acct_unpost(
-                            p_tablename := t.tablename,
-                            p_record_id := t.record_id,
-                            p_force := 'Y',
-                            p_checkPeriodOpen := 'N' -- don't check it because we checked it above
-                        )
-             FROM TMP_documents_to_unpost t
-             ORDER BY m_product_id,
-                      dateacct,
-                      tablename_prio,
-                      LEAST(t.record_id, t.reversal_id),
-                      t.record_id
-         ) t;
+    FROM (SELECT "de_metas_acct".fact_acct_unpost(
+                         p_tablename := t.tablename,
+                         p_record_id := t.record_id,
+                         p_force := 'Y',
+                         p_checkPeriodOpen := 'N' -- don't check it because we checked it above
+                     )
+          FROM TMP_documents_to_unpost t
+          ORDER BY m_product_id,
+                   dateacct,
+                   tablename_prio,
+                   LEAST(t.record_id, t.reversal_id),
+                   t.record_id) t;
     RAISE NOTICE 'Un-posted % documents', rowcount;
     v_result := v_result || rowcount || ' document(s) un-posted; ';
 
@@ -269,7 +325,9 @@ BEGIN
     -- This step it's very important in order to get correct costs.
     --
     IF (p_ReorderDocs = 'Y') THEN
-        PERFORM "de_metas_acct".accounting_docs_to_repost_reorder();
+        PERFORM "de_metas_acct".accounting_docs_to_repost_reorder(
+                p_DateAcct_Trunc := p_ReorderDocs_DateAcct_Trunc
+            );
         v_result := v_result || 'reordered enqueued docs';
     END IF;
 

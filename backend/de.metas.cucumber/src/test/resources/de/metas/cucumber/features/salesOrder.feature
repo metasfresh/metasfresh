@@ -11,23 +11,23 @@ Feature: sales order
   Scenario: we can create and complete a sales order
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
-      | Identifier | Name            |
-      | p_1        | salesProduct_12 |
+      | Identifier | Name                  |
+      | p_1        | salesProduct_17082021 |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
-      | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_15112022_2 | pricing_system_value_15112022_2 | pricing_system_description_15112022_2 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_15112022_2 | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name                      | ValidFrom  |
+      | plv_1      | pl_1                      | salesOrder-PLV_15112022_2 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | Endcustomer | N            | Y              | ps_1                          |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_15112022_2 | N            | Y              | ps_1                          |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -83,7 +83,7 @@ Feature: sales order
     Then the order is created:
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.DocStatus |
       | o_2                      | false   | POO         | MED        | DR            |
-    And the purchase order with document subtype 'MED' linked to order 'o_2' has lines:
+    And the purchase order 'orderPO_2' with document subtype 'MED' linked to order 'o_2' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier |
       | 10         | 100        | p_2                     | endcustomer_2                |
     And the sales order identified by 'o_2' is closed
@@ -138,7 +138,7 @@ Feature: sales order
     Then the order is created:
       | Link_Order_ID.Identifier | IsSOTrx | OPT.DropShip_BPartner_ID.Identifier | OPT.IsDropShip | DocBaseType | DocSubType | OPT.DocStatus |
       | o_26                     | false   | shiptopartner_26                    | true           | POO         | MED        | DR            |
-    And the purchase order with document subtype 'MED' linked to order 'o_26' has lines:
+    And the purchase order 'orderPO_26' with document subtype 'MED' linked to order 'o_26' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Location_Value_ID.Identifier |
       | 10         | 100        | p_26                    | shiptopartner_26             | bpl_26                                | l_26                                        |
     And the sales order identified by 'o_26' is closed
@@ -192,10 +192,10 @@ Feature: sales order
       | endcustomer_67 | Endcustomer_67 | N            | Y              | ps_3                          |
       | vendor_67      | vendor_67      | Y            | Y              | ps_3                          |
     And metasfresh contains C_BPartner_Products:
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | vendor_67                | p_31                    |
-      | vendor_67                | p_32                    |
-      | vendor_67                | p_31_1                  |
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.UsedForVendor |
+      | vendor_67                | p_31                    | true              |
+      | vendor_67                | p_32                    | true              |
+      | vendor_67                | p_31_1                  | true              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | POReference     | C_Payment_ID |
       | o_3        | true    | endcustomer_67           | 2021-04-17  | po_ref_BOM_mock | 1000002      |
@@ -213,7 +213,7 @@ Feature: sales order
     Then the order is created:
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType |
       | o_3                      | false   | POO         |            |
-    And the purchase order with document subtype '' linked to order 'o_3' has lines:
+    And the purchase order 'orderPO_3' with document subtype '' linked to order 'o_3' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |
       | 150        | 0          | p_31_1                  |
       | 100        | 0          | p_32                    |

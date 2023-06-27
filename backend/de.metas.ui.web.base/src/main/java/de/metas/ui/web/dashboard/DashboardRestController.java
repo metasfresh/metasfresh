@@ -26,11 +26,11 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.websocket.producers.WebSocketProducersRegistry;
-import de.metas.websocket.sender.WebsocketSender;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
-import io.swagger.annotations.ApiParam;
+import de.metas.websocket.producers.WebSocketProducersRegistry;
+import de.metas.websocket.sender.WebsocketSender;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -259,9 +259,9 @@ public class DashboardRestController
 	@GetMapping("/kpis/{itemId}/data")
 	public JsonKPIDataResult getKPIData(
 			@PathVariable("itemId") final int itemId,
-			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case ofValueAndField temporal data") final long fromMillis,
-			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case ofValueAndField temporal data") final long toMillis,
-			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues)
+			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage start, in case ofValueAndField temporal data") final long fromMillis,
+			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage end, in case ofValueAndField temporal data") final long toMillis,
+			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @Parameter(description = "if true, the server will format the values") final boolean prettyValues)
 	{
 		return getKPIData(
 				DashboardWidgetType.KPI,
@@ -274,9 +274,9 @@ public class DashboardRestController
 	@GetMapping("/targetIndicators/{itemId}/data")
 	public JsonKPIDataResult getTargetIndicatorData(
 			@PathVariable("itemId") final int itemId,
-			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case ofValueAndField temporal data") final long fromMillis,
-			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case ofValueAndField temporal data") final long toMillis,
-			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues)
+			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage start, in case ofValueAndField temporal data") final long fromMillis,
+			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage end, in case ofValueAndField temporal data") final long toMillis,
+			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @Parameter(description = "if true, the server will format the values") final boolean prettyValues)
 	{
 		return getKPIData(
 				DashboardWidgetType.TargetIndicator,

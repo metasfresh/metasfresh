@@ -36,8 +36,8 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -92,7 +92,7 @@ import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 
 @RestController
 @RequestMapping(MailRestController.ENDPOINT)
-@ApiModel("Outbound email endpoint")
+@Schema(description = "Outbound email endpoint")
 public class MailRestController
 {
 	private static final Logger logger = LogManager.getLogger(MailRestController.class);
@@ -157,7 +157,7 @@ public class MailRestController
 	}
 
 	@PostMapping()
-	@ApiOperation("Creates a new email")
+	@Operation(summary = "Creates a new email")
 	public JSONEmail createNewEmail(@RequestBody final JSONEmailRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -200,7 +200,7 @@ public class MailRestController
 	}
 
 	@GetMapping("/{emailId}")
-	@ApiOperation("Gets email by ID")
+	@Operation(summary = "Gets email by ID")
 	public JSONEmail getEmail(@PathVariable("emailId") final String emailId)
 	{
 		userSession.assertLoggedIn();
@@ -210,7 +210,7 @@ public class MailRestController
 	}
 
 	@PostMapping("/{emailId}/send")
-	@ApiOperation("Sends the email")
+	@Operation(summary = "Sends the email")
 	public void sendEmail(@PathVariable("emailId") final String emailId)
 	{
 		userSession.assertLoggedIn();
@@ -302,7 +302,7 @@ public class MailRestController
 	}
 
 	@PatchMapping("/{emailId}")
-	@ApiOperation("Changes the email")
+	@Operation(summary = "Changes the email")
 	public JSONEmail changeEmail(@PathVariable("emailId") final String emailId, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
@@ -398,7 +398,7 @@ public class MailRestController
 	}
 
 	@GetMapping("/{emailId}/field/to/typeahead")
-	@ApiOperation("Typeahead endpoint for any To field")
+	@Operation(summary = "Typeahead endpoint for any To field")
 	public JSONLookupValuesPage getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
 	{
 		userSession.assertLoggedIn();
@@ -411,7 +411,7 @@ public class MailRestController
 	}
 
 	@PostMapping("/{emailId}/field/attachments")
-	@ApiOperation("Attaches a file to email")
+	@Operation(summary = "Attaches a file to email")
 	public JSONEmail attachFile(@PathVariable("emailId") final String emailId, @RequestParam("file") final MultipartFile file)
 	{
 		userSession.assertLoggedIn();
@@ -445,11 +445,12 @@ public class MailRestController
 	}
 
 	@GetMapping("/templates")
-	@ApiOperation("Available Email templates")
+	@Operation(summary = "Available Email templates")
 	public JSONLookupValuesList getTemplates()
 	{
-		return MADBoilerPlate.getAll(Env.getCtx())
-				.stream()
+		userSession.assertLoggedIn();
+
+		return MADBoilerPlate.streamAllReadable(userSession.getUserRolePermissions())
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect());
 	}

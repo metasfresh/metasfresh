@@ -33,7 +33,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -102,4 +101,7 @@ public interface IUserDAO extends ISingletonService
 			@NonNull OrgId targetOrgId);
 
 	ImmutableSet<UserId> retrieveUsersByJobId(JobId jobId);
+
+	@NonNull
+	ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull String externalId, @NonNull OrgId orgId);
 }

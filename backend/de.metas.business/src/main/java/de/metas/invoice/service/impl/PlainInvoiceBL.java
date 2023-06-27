@@ -49,12 +49,6 @@ public class PlainInvoiceBL extends AbstractInvoiceBL
 	}
 
 	@Override
-	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice, final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice, final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef,
 			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> ilCopyHandler)
 	{

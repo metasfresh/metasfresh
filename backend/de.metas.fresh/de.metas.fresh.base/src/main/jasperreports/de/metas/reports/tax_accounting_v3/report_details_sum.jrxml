@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/tax_accounting_v3/report" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\hotifx.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<parameter name="vatcode" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="account_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DateFrom" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DateTo" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="c_tax_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select *
+             from report.tax_accounting_report_details_sum($P{DateFrom}, 
+             	                               $P{DateTo},
+                                               $P{vatcode},
+                                               $P{account_id}, 
+                                               $P{c_tax_id}, 
+											   $P{AD_Org_ID})
+
+order by vatcode, kontono, taxname
+;]]>
+	</queryString>
+	<field name="vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
+	</field>
+	<field name="kontono" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="kontono"/>
+	</field>
+	<field name="kontoname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="kontoname"/>
+	</field>
+	<field name="taxname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
+	</field>
+	<field name="taxrate" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxrate"/>
+	</field>
+	<field name="taxbaseamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxbaseamt"/>
+	</field>
+	<field name="taxamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt"/>
+	</field>
+	<field name="taxamtperaccount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamtperaccount"/>
+	</field>
+	<field name="c_tax_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_tax_id"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<variable name="taxbaseamt_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="Group1" calculation="Sum">
+		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<group name="Group1">
+		<groupExpression><![CDATA[$F{kontono}]]></groupExpression>
+		<groupFooter>
+			<band height="16">
+				<textField pattern="#,##0.00">
+					<reportElement x="185" y="0" width="96" height="12" uuid="5b41f040-1901-4a34-8495-336384161f4c"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{taxbaseamt_sum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+</jasperReport>
