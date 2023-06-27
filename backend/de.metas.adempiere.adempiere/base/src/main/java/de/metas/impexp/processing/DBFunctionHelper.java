@@ -47,9 +47,6 @@ public class DBFunctionHelper
 
 	/**
 	 * Used to call import DB functions using c_dataimport_id and record_id as parameters
-	 * @param function
-	 * @param dataImportConfigId
-	 * @param recordId
 	 */
 	public static void doDBFunctionCall(
 			@NonNull final DBFunction function,
@@ -74,8 +71,6 @@ public class DBFunctionHelper
 
 	/**
 	 * Used to call import DB functions using c_dataimport_run_id
-	 * @param function
-	 * @param dataImportRunId
 	 */
 	public static void doDBFunctionCall(
 			@NonNull final DBFunction function,

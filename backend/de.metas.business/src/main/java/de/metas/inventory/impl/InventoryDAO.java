@@ -5,12 +5,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.product.ProductId;
-import de.metas.util.NumberUtils;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
@@ -24,7 +22,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -106,24 +103,23 @@ public class InventoryDAO implements IInventoryDAO
 	}
 
 	@Override
-	public void setInventoryLinesCounted(@NonNull final InventoryId inventoryId, final boolean counted)
+	public void setInventoryLinesCounted(@NonNull final InventoryId inventoryId)
 	{
 		queryBL.createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.addNotEqualsFilter(I_M_InventoryLine.COLUMNNAME_IsCounted, counted)
 				.create()
 				.updateDirectly()
-				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_IsCounted, counted)
+				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_IsCounted, true)
 				.execute();
 	}
 
 	@Override
-	public ImmutableSet<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<Integer> invetoryIds)
+	public List<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<Integer> invetoryIds)
 	{
 		if (invetoryIds.isEmpty())
 		{
-			return ImmutableSet.of();
+			return ImmutableList.of();
 		}
 
 		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
@@ -132,24 +128,10 @@ public class InventoryDAO implements IInventoryDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
-				.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID)
-				.stream()
-				.map(this::extractProductIdorNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
+				.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID,  ProductId.class)
+				;
 	}
 
-	@Nullable
-	private ProductId extractProductIdorNull(@NonNull final Map<String, Object> map)
-	{
-		final int productId = NumberUtils.asInt(map.get(I_M_Product.COLUMNNAME_M_Product_ID), -1);
-		if (productId <= 0)
-		{
-			// shall not happen
-			return null;
-		}
-		return ProductId.ofRepoId(productId);
-	}
 
 	@Override
 	public void save(I_M_InventoryLine inventoryLine)

@@ -356,6 +356,9 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		// run whatever after import code
 		afterImport();
 
+		//
+		runSQLAfterAllImport();
+
 		final ImportProcessResult result = resultCollector.toResult();
 		loggable.addLog("" + resultCollector);
 		return result;
@@ -690,7 +693,6 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 	protected void afterImport()
 	{
-		runSQLAfterAllImport();
 	}
 
 	private void runSQLAfterAllImport()

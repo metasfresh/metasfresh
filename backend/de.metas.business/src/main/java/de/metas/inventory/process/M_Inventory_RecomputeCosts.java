@@ -33,6 +33,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_M_Inventory;
 
+import java.util.List;
 import java.util.Set;
 
 public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessPrecondition
@@ -53,7 +54,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ImmutableSet<ProductId> productIds = inventoryDAO.retrieveUsedProductsByInventoryIds(getSelectedInventoryIds());
+		final List<ProductId> productIds = inventoryDAO.retrieveUsedProductsByInventoryIds(getSelectedInventoryIds());
 
 		return MSG_OK;
 	}

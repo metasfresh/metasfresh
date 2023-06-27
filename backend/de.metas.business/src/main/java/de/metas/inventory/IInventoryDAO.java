@@ -3,7 +3,6 @@ package de.metas.inventory;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.compiere.model.I_M_Inventory;
@@ -53,9 +52,8 @@ public interface IInventoryDAO extends ISingletonService
 
 	void setInventoryLinesProcessed(InventoryId inventoryId, boolean processed);
 
-	void setInventoryLinesCounted(@NonNull InventoryId inventoryId, boolean counted);
-
-	ImmutableSet<ProductId> retrieveUsedProductsByInventoryIds(@NonNull Collection<Integer> invetoryIds);
+	void setInventoryLinesCounted(@NonNull InventoryId inventoryId);
+	List<ProductId> retrieveUsedProductsByInventoryIds(@NonNull Collection<Integer> invetoryIds);
 
 	void save(I_M_InventoryLine inventoryLine);
 }
