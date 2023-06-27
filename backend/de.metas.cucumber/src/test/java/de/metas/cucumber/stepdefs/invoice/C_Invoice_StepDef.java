@@ -145,6 +145,11 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
+<<<<<<< HEAD
+=======
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocumentNo;
+>>>>>>> c599496d331 (country based docno tax departure country (#15697))
 
 public class C_Invoice_StepDef
 {
@@ -616,6 +621,7 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getM_SectionCode_ID()).as("M_SectionCode_ID").isEqualTo(sectionCode.getM_SectionCode_ID());
 		}
 
+<<<<<<< HEAD
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(projectIdentifier))
 		{
@@ -638,6 +644,12 @@ public class C_Invoice_StepDef
 					.orElse(0);
 
 			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID").isEqualTo(expectedSalesRep_RepoId);
+=======
+		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
+		if (Check.isNotBlank(documentNo))
+		{
+			softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo);
+>>>>>>> c599496d331 (country based docno tax departure country (#15697))
 		}
 
 		softly.assertAll();
@@ -851,6 +863,15 @@ public class C_Invoice_StepDef
 			invoice.setExternalId(externalId);
 		}
 
+<<<<<<< HEAD
+=======
+		final int taxDepartureCountry = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID);
+		if (taxDepartureCountry > 0)
+		{
+			invoice.setC_Tax_Departure_Country_ID(taxDepartureCountry);
+		}
+		
+>>>>>>> c599496d331 (country based docno tax departure country (#15697))
 		invoiceDAO.save(invoice);
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
@@ -898,6 +919,12 @@ public class C_Invoice_StepDef
 		if (dueDate != null)
 		{
 			invoice.setDueDate(dueDate);
+		}
+
+		final int taxDepartureCountry = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID);
+		if (taxDepartureCountry > 0)
+		{
+			invoice.setC_Tax_Departure_Country_ID(taxDepartureCountry);
 		}
 
 		InterfaceWrapperHelper.save(invoice);

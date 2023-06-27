@@ -24,10 +24,7 @@ package de.metas.invoice.sequence;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.sequence.ICountryIdProvider;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.location.CountryId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -40,8 +37,6 @@ import java.util.Objects;
 
 public class InvoiceCountryIdProvider implements ICountryIdProvider
 {
-
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
 
 	@Override
@@ -57,10 +52,8 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 			return ProviderResult.EMPTY;
 		}
 
-		final LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(eval.get_ValueAsInt(I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID, 0));
-		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId should be present");
-
-		return ProviderResult.of(locationDAO.getCountryIdByLocationId(bpartnerLocationValueId));
+		final CountryId countryId = CountryId.ofRepoIdOrNull(eval.get_ValueAsInt(I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID, 0));
+		return countryId == null ?  ProviderResult.EMPTY : ProviderResult.of(countryId);
 	}
 
 	@Override
@@ -77,15 +70,8 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 			return ProviderResult.EMPTY;
 		}
 
-		LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(invoice.getC_BPartner_Location_Value_ID());
-		if(bpartnerLocationValueId == null)
-		{
-			bpartnerLocationValueId = LocationId.ofRepoIdOrNull(invoice.getC_BPartner_Location_ID());
-		}
-
-		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId or bpartnerLocationId should be present");
-
-		return ProviderResult.of(locationDAO.getCountryIdByLocationId(bpartnerLocationValueId));
+		final CountryId countryId = CountryId.ofRepoIdOrNull(invoice.getC_Tax_Departure_Country_ID());
+		return countryId == null ?  ProviderResult.EMPTY : ProviderResult.of(countryId);
 	}
 
 	@Override
