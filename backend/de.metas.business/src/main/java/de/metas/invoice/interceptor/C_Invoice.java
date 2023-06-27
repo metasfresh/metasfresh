@@ -95,7 +95,7 @@ public class C_Invoice // 03771
 		documentNoBuilderFactory.registerCountryIdProvider(new InvoiceCountryIdProvider());
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { InvoiceCountryIdProvider.UPDATE_TRIGGER_COLUMN })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID })
 	public void updateDocNo(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_DocType docTypeRecord = loadOutOfTrx(invoice.getC_DocTypeTarget_ID(), I_C_DocType.class);

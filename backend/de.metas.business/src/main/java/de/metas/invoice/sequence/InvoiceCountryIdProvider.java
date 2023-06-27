@@ -38,7 +38,6 @@ import java.util.Objects;
 public class InvoiceCountryIdProvider implements ICountryIdProvider
 {
 	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
-	public static final String UPDATE_TRIGGER_COLUMN = I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID;
 
 	@Override
 	public ProviderResult computeValueInfo(@NonNull final Evaluatee eval)
