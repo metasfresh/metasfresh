@@ -86,7 +86,7 @@ public class DBFunctionHelper
 				.append(function.getSchema())
 				.append(".")
 				.append(function.getName())
-				.append("(?,?)")
+				.append("(?)")
 				.toString();
 
 		final Object[] sqlParams = new Object[] {
