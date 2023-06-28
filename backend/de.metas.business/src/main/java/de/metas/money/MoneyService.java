@@ -29,6 +29,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRate;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
@@ -271,4 +272,15 @@ public class MoneyService
 				currencyPrecision.round(netAmt),
 				money.getCurrencyId());
 	}
+
+	public CurrencyRate getCurrencyRate(
+			@NonNull final CurrencyCode fromCurrency,
+			@NonNull final CurrencyCode targetCurrency,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyId fromCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(fromCurrency);
+		final CurrencyId targetCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(targetCurrency);
+		return currencyBL.getCurrencyRate(context, fromCurrencyId, targetCurrencyId);
+	}
+
 }
