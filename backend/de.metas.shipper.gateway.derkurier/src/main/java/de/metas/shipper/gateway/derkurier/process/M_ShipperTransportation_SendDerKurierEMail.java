@@ -1,11 +1,5 @@
 package de.metas.shipper.gateway.derkurier.process;
 
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
@@ -19,11 +13,16 @@ import de.metas.process.SelectionSize;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -56,7 +55,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final transient DerKurierDeliveryOrderEmailer //
-	derKurierDeliveryOrderEmailer = SpringContextHolder.instance.getBean(DerKurierDeliveryOrderEmailer.class);
+			derKurierDeliveryOrderEmailer = SpringContextHolder.instance.getBean(DerKurierDeliveryOrderEmailer.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -74,8 +73,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 		}
 
 		final boolean atLeastOneRecordHasEmail = context
-				.getSelectedModels(I_M_ShipperTransportation.class)
-				.stream()
+				.streamSelectedModels(I_M_ShipperTransportation.class)
 				.filter(this::isCompleted)
 				.anyMatch(this::hasDerKurierMailAddress);
 		if (!atLeastOneRecordHasEmail)

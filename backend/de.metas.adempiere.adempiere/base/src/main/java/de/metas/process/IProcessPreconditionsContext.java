@@ -4,6 +4,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -67,6 +73,9 @@ public interface IProcessPreconditionsContext
 	 */
 	@Deprecated
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
+	
+	@NonNull
+	<T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass);
 
 	/**
 	 * @return single Record_ID; throws exception otherwise
