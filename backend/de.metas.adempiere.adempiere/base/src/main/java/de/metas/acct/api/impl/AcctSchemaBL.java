@@ -61,14 +61,25 @@ public class AcctSchemaBL implements IAcctSchemaBL
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	@Override
-	public CurrencyId getAcctCurrencyId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = acctSchemaDAO.getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
 		{
 			throw new AdempiereException("No Accounting Schema found for " + clientId + " and " + orgId);
 		}
+		return acctSchemaId;
+	}
 
+	@Override
+	public CurrencyId getAcctCurrencyId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return getAcctCurrencyId(getAcctSchemaIdByClientAndOrg(clientId, orgId));
+	}
+
+	@Override
+	public CurrencyId getAcctCurrencyId(@NonNull final AcctSchemaId acctSchemaId)
+	{
 		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
 		return acctSchema.getCurrencyId();
 	}

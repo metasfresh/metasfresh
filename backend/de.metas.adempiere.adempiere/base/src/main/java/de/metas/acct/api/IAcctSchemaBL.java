@@ -33,7 +33,11 @@ import javax.annotation.Nullable;
 
 public interface IAcctSchemaBL extends ISingletonService
 {
+	AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
 	CurrencyId getAcctCurrencyId(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
+	CurrencyId getAcctCurrencyId(@NonNull AcctSchemaId acctSchemaId);
 
 	void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable OrgId orgId);
 
