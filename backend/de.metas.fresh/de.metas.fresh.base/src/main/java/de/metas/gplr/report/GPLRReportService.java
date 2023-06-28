@@ -53,7 +53,7 @@ public class GPLRReportService
 		return GPLRReportCreateCommand.builder()
 				.gplrReportRepository(gplrReportRepository)
 				.departmentService(departmentService)
-				.moneyService(moneyService)
+				.currencyCodeConverter(moneyService)
 				//
 				.source(source)
 				//

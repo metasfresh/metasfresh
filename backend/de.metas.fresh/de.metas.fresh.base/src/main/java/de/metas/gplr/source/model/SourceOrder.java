@@ -46,4 +46,12 @@ public class SourceOrder
 				.reduce(Amount::add)
 				.orElseGet(() -> Amount.zero(currencyInfo.getForeignCurrencyCode()));
 	}
+
+	public Amount getCOGS_LC()
+	{
+		return lines.stream()
+				.map(SourceOrderLine::getCogsLC)
+				.reduce(Amount::add)
+				.orElseGet(() -> Amount.zero(currencyInfo.getLocalCurrencyCode()));
+	}
 }

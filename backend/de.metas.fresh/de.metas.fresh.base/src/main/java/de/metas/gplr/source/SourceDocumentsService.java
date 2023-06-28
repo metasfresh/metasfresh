@@ -3,12 +3,12 @@ package de.metas.gplr.source;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyRate;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.location.DocumentLocation;
@@ -27,6 +27,7 @@ import de.metas.gplr.source.model.SourceOrderCost;
 import de.metas.gplr.source.model.SourceOrderLine;
 import de.metas.gplr.source.model.SourceShipment;
 import de.metas.gplr.source.model.SourceShipperInfo;
+import de.metas.gplr.source.model.SourceTaxInfo;
 import de.metas.gplr.source.model.SourceUserInfo;
 import de.metas.gplr.source.model.SourceWarehouseInfo;
 import de.metas.incoterms.IncotermsId;
@@ -50,6 +51,7 @@ import de.metas.order.costs.OrderCost;
 import de.metas.order.costs.OrderCostDetail;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -61,13 +63,15 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
@@ -80,7 +84,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -102,7 +105,7 @@ public class SourceDocumentsService
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	@NonNull final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	@NonNull final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	@NonNull private final SectionCodeService sectionCodeService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -179,11 +182,10 @@ public class SourceDocumentsService
 	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Order order)
 	{
 		final CurrencyConversionContext conversionCtx = orderBL.getCurrencyConversionContext(order);
-
 		final CurrencyId foreignCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
 		CurrencyCode foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
 		final CurrencyCode localCurrency;
-		final BigDecimal currencyRate;
+		final CurrencyRate currencyRate;
 		final String forexContractNo;
 
 		final ImmutableList<ForexContract> forexContracts = forexContractService.getContractsByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -193,17 +195,25 @@ public class SourceDocumentsService
 		{
 			forexContractNo = null;
 
-			final CurrencyId localCurrencyId = acctSchemaBL.getAcctCurrencyId(ClientId.ofRepoId(order.getAD_Client_ID()), OrgId.ofRepoId(order.getAD_Org_ID()));
+			final CurrencyId localCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
 			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
 
-			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx).getConversionRate();
+			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx);
 		}
 		else
 		{
 			forexContractNo = forexContract.getDocumentNo();
 			final CurrencyId localCurrencyId = forexContract.getLocalCurrencyIdByForeignCurrencyId(foreignCurrencyId);
 			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
-			currencyRate = forexContract.getCurrencyRate(foreignCurrencyId, localCurrencyId);
+			currencyRate = CurrencyRate.builder()
+					.fromCurrencyId(foreignCurrencyId)
+					.fromCurrencyPrecision(moneyService.getStdPrecision(foreignCurrencyId))
+					.toCurrencyId(localCurrencyId)
+					.toCurrencyPrecision(moneyService.getStdPrecision(localCurrencyId))
+					.conversionRate(forexContract.getCurrencyRate(foreignCurrencyId, localCurrencyId))
+					.conversionDate(conversionCtx.getConversionDate())
+					.conversionTypeId(conversionCtx.getConversionTypeId())
+					.build();
 		}
 
 		return SourceCurrencyInfo.builder()
@@ -211,7 +221,6 @@ public class SourceDocumentsService
 				.foreignCurrencyCode(foreignCurrency)
 				.localCurrencyCode(localCurrency)
 				.fecDocumentNo(forexContractNo)
-				.conversionCtx(conversionCtx)
 				.build();
 	}
 
@@ -235,10 +244,12 @@ public class SourceDocumentsService
 				.orElseThrow(() -> new AdempiereException("Failed extracting document location from " + order));
 	}
 
-	private SourceOrderLine toSourceOrderLine(final I_C_OrderLine orderLine)
+	private SourceOrderLine toSourceOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final I_M_Product product = productBL.getById(productId);
+
+		final CurrencyCode currency = moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
 		return SourceOrderLine.builder()
 				.id(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
@@ -247,6 +258,22 @@ public class SourceDocumentsService
 				.productCode(product.getValue())
 				.productName(product.getName())
 				.qtyEntered(orderBL.getQtyEntered(orderLine))
+				.priceFC(Amount.of(orderLine.getPriceActual(), currency))
+				.cogsLC(Amount.zero(moneyService.getBaseCurrencyCode(ClientAndOrgId.ofClientAndOrg(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID())))) // TODO fetch it from shipment's Fact_Acct
+				.batchNo(null) // TODO fetch it from M_Delivery_Planning.Batch
+				.lineNetAmtFC(Amount.of(orderLine.getLineNetAmt(), currency))
+				.taxAmtFC(Amount.of(orderLine.getTaxAmtInfo(), currency))
+				.tax(extractSourceTaxInfo(orderLine))
+				.build();
+	}
+
+	private SourceTaxInfo extractSourceTaxInfo(final I_C_OrderLine orderLine)
+	{
+		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
+		final Tax tax = taxBL.getTaxById(taxId);
+		return SourceTaxInfo.builder()
+				.vatCode(tax.getTaxCode())
+				.rate(tax.getRate())
 				.build();
 	}
 
@@ -374,10 +401,10 @@ public class SourceDocumentsService
 
 	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Invoice invoice)
 	{
-		final CurrencyConversionContext conversionCtx = invoiceBL.getCurrencyConversionCtx(invoice);
 		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		final CurrencyConversionContext conversionCtx = invoiceBL.getCurrencyConversionCtx(invoice);
 
-		final BigDecimal currencyRate;
+		final CurrencyRate currencyRate;
 		final CurrencyCode localCurrency;
 		final CurrencyCode foreignCurrency;
 		final String forexContractNo;
@@ -387,11 +414,11 @@ public class SourceDocumentsService
 		{
 			forexContractNo = null;
 
-			final CurrencyId localCurrencyId = acctSchemaBL.getAcctCurrencyId(ClientId.ofRepoId(invoice.getAD_Client_ID()), OrgId.ofRepoId(invoice.getAD_Org_ID()));
+			final CurrencyId localCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(invoice.getAD_Client_ID(), invoice.getAD_Org_ID()));
 			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
 			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(invoiceCurrencyId);
 
-			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx).getConversionRate();
+			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx);
 		}
 		else
 		{
@@ -412,7 +439,15 @@ public class SourceDocumentsService
 			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
 			final CurrencyId localCurrencyId = forexContractRef.getLocalCurrencyId();
 			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
-			currencyRate = forexContractRef.getCurrencyRate(foreignCurrencyId, localCurrencyId);
+			currencyRate = CurrencyRate.builder()
+					.fromCurrencyId(foreignCurrencyId)
+					.fromCurrencyPrecision(moneyService.getStdPrecision(foreignCurrencyId))
+					.toCurrencyId(localCurrencyId)
+					.toCurrencyPrecision(moneyService.getStdPrecision(localCurrencyId))
+					.conversionRate(forexContractRef.getCurrencyRate(foreignCurrencyId, localCurrencyId))
+					.conversionDate(conversionCtx.getConversionDate())
+					.conversionTypeId(conversionCtx.getConversionTypeId())
+					.build();
 		}
 
 		return SourceCurrencyInfo.builder()
@@ -420,7 +455,6 @@ public class SourceDocumentsService
 				.foreignCurrencyCode(foreignCurrency)
 				.localCurrencyCode(localCurrency)
 				.fecDocumentNo(forexContractNo)
-				.conversionCtx(conversionCtx)
 				.build();
 	}
 

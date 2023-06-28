@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.department.Department;
 import de.metas.department.DepartmentService;
 import de.metas.gplr.report.model.GPLRBPartnerName;
@@ -36,7 +35,7 @@ import de.metas.gplr.source.model.SourceShipment;
 import de.metas.gplr.source.model.SourceShipperInfo;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
-import de.metas.money.MoneyService;
+import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
 import de.metas.order.OrderLineId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -53,8 +52,8 @@ final class GPLRReportCreateCommand
 	// Services
 	@NonNull private final GPLRReportRepository gplrReportRepository;
 	@NonNull private final DepartmentService departmentService;
-	@NonNull private final MoneyService moneyService;
-	//
+	@NonNull private final CurrencyCodeToCurrencyIdBiConverter currencyCodeConverter;
+
 	// Params
 	@NonNull private final SourceDocuments source;
 
@@ -67,12 +66,12 @@ final class GPLRReportCreateCommand
 	private GPLRReportCreateCommand(
 			final @NonNull GPLRReportRepository gplrReportRepository,
 			final @NonNull DepartmentService departmentService,
-			final @NonNull MoneyService moneyService,
+			final @NonNull CurrencyCodeToCurrencyIdBiConverter currencyCodeConverter,
 			final @NonNull SourceDocuments source)
 	{
 		this.gplrReportRepository = gplrReportRepository;
 		this.departmentService = departmentService;
-		this.moneyService = moneyService;
+		this.currencyCodeConverter = currencyCodeConverter;
 		//
 		this.source = source;
 	}
@@ -112,24 +111,38 @@ final class GPLRReportCreateCommand
 		final SourceCurrencyInfo currencyInfo = salesInvoice.getCurrencyInfo();
 		final CurrencyCode localCurrency = currencyInfo.getLocalCurrencyCode();
 		final CurrencyCode foreignCurrency = currencyInfo.getForeignCurrencyCode();
-		final CurrencyConversionContext currencyConversionCtx = currencyInfo.getConversionCtx();
-		final UnaryOperator<Amount> toLocal = amountFC -> moneyService.convertToCurrency(amountFC, localCurrency, currencyConversionCtx);
+		final UnaryOperator<Amount> toLocal = amountFC -> currencyInfo.convertToLocal(amountFC, currencyCodeConverter);
+
+		final Amount salesFC = salesInvoice.getLinesNetAmtFC();
+		final Amount salesLC = toLocal.apply(salesFC);
+
+		final Amount taxesFC = salesInvoice.getTaxAmtFC();
+		final Amount taxesLC = toLocal.apply(taxesFC);
 
 		final Amount estimatedFC = salesOrder.getEstimatedOrderCostAmountFC();
+		final Amount estimatedLC = toLocal.apply(estimatedFC);
+
+		final Amount cogsLC = salesOrder.getCOGS_LC();
+
+		final Amount chargesFC = Amount.zero(foreignCurrency); // TODO: understand/compute charges
+		final Amount chargesLC = toLocal.apply(chargesFC);
+
+		final Amount profitOrLossLC = salesLC.subtract(estimatedLC).subtract(cogsLC);
+		final Percent profitRate = Percent.of(profitOrLossLC.toBigDecimal(), salesLC.toBigDecimal(), 2);
 
 		return GPLRReportSummary.builder()
 				.localCurrency(localCurrency)
 				.foreignCurrency(foreignCurrency)
-				.salesFC(salesInvoice.getLinesNetAmtFC())
-				.salesLC(toLocal.apply(salesInvoice.getLinesNetAmtFC()))
-				.taxesLC(toLocal.apply(salesInvoice.getTaxAmtFC()))
+				.salesFC(salesFC)
+				.salesLC(salesLC)
+				.taxesLC(taxesLC)
 				.estimatedFC(estimatedFC)
-				.estimatedLC(toLocal.apply(estimatedFC))
-				.cogsLC(Amount.zero(localCurrency)) // TODO: get them from shipment accounting
-				.chargesFC(Amount.zero(foreignCurrency)) // TODO
-				.chargesLC(Amount.zero(localCurrency)) // TODO
-				.profitOrLossLC(Amount.zero(localCurrency)) // TODO
-				.profitRate(Percent.ZERO) // TODO
+				.estimatedLC(estimatedLC)
+				.cogsLC(cogsLC)
+				.chargesFC(chargesFC)
+				.chargesLC(chargesLC)
+				.profitOrLossLC(profitOrLossLC)
+				.profitRate(profitRate)
 				.build();
 	}
 
@@ -169,7 +182,7 @@ final class GPLRReportCreateCommand
 	{
 		return GPLRCurrencyInfo.builder()
 				.foreignCurrency(currencyInfo.getForeignCurrencyCode())
-				.currencyRate(currencyInfo.getCurrencyRate())
+				.currencyRate(currencyInfo.getCurrencyRate().toBigDecimal())
 				.fecDocumentNo(currencyInfo.getFecDocumentNo())
 				.build();
 	}
@@ -251,7 +264,7 @@ final class GPLRReportCreateCommand
 				.vendorReference(purchaseOrder.getPoReference()) // is it OK?
 				.paymentTerm(GPLRPaymentTermRenderedString.of(purchaseOrder.getPaymentTerm()))
 				.incoterms(toIncotermsInfo(purchaseOrder.getIncotermsAndLocation()))
-				.currencyInfo(null) // TODO get it from assigned contract.. better solve it on source loading level
+				.currencyInfo(toCurrencyInfo(purchaseOrder.getCurrencyInfo()))
 				.build();
 	}
 
@@ -262,60 +275,81 @@ final class GPLRReportCreateCommand
 		//
 		// Sales Order
 		{
+			final SourceCurrencyInfo currencyInfo = source.getSalesInvoice().getCurrencyInfo();
 			final SourceOrder salesOrder = source.getSalesOrder();
 			for (final SourceOrderLine salesOrderLine : salesOrder.getLines())
 			{
-				//
-				// Document line
-				result.add(GPLRReportLineItem.builder()
-						.documentNo(salesOrder.getDocumentNo())
-						.lineCode(formatOrderLineNo(salesOrderLine.getLineNo()))
-						.description(salesOrderLine.getProductName())
-						.qty(salesOrderLine.getQtyEntered())
-						.priceFC(null) // TODO
-						.batchNo(null) // TODO
-						.amountLC(null) // TODO
-						.amountFC(null) // TODO
-						.build());
-
-				//
-				// PR00 - Price
-				result.add(GPLRReportLineItem.builder()
-						.lineCode("PR00")
-						.description("Price")
-						.amountLC(null) // TODO
-						.amountFC(null) // TODO
-						.build());
-
-				//
-				// MWST - VAT
-				result.add(GPLRReportLineItem.builder()
-						.lineCode("MWST")
-						.description("VAT name") // TODO
-						.amountLC(null) // TODO
-						.amountFC(null) // TODO
-						.build());
-
-				//
-				// VPRS - COGS
-				result.add(GPLRReportLineItem.builder()
-						.lineCode("VPRS")
-						.description("Cost")
-						.amountLC(null) // TODO
-						.amountFC(null) // TODO
-						.build());
+				result.add(createGPLRReportLine_DocumentLine(salesOrderLine, salesOrder));
+				result.add(createGPLRReportLine_Price(salesOrderLine, currencyInfo));
+				result.add(createGPLRReportLine_VAT(salesOrderLine, currencyInfo));
+				result.add(createGPLRReportLine_COGS(salesOrderLine));
 			}
 		}
 
 		//
-		// Purchase Order
+		// Purchase Order(s)
+		for (final SourceOrder purchaseOrder : source.getPurchaseOrders())
 		{
-			// TODO implement
+			final SourceCurrencyInfo currencyInfo = purchaseOrder.getCurrencyInfo();
+
+			for (final SourceOrderLine purchaseOrderLine : purchaseOrder.getLines())
+			{
+				result.add(createGPLRReportLine_DocumentLine(purchaseOrderLine, purchaseOrder));
+				result.add(createGPLRReportLine_Price(purchaseOrderLine, currencyInfo));
+				result.add(createGPLRReportLine_VAT(purchaseOrderLine, currencyInfo));
+			}
 		}
 
 		//
 		//
 		return result.build();
+	}
+
+	private GPLRReportLineItem createGPLRReportLine_COGS(final SourceOrderLine orderLine)
+	{
+		final Amount cogsLC = orderLine.getCogsLC();
+		return GPLRReportLineItem.builder()
+				.lineCode("VPRS")
+				.description("Cost")
+				.amountFC(null)
+				.amountLC(cogsLC)
+				.build();
+	}
+
+	private GPLRReportLineItem createGPLRReportLine_VAT(final SourceOrderLine salesOrderLine, final SourceCurrencyInfo currencyInfo)
+	{
+		final Amount taxAmtFC = salesOrderLine.getTaxAmtFC();
+		return GPLRReportLineItem.builder()
+				.lineCode("MWST")
+				.description(salesOrderLine.getTax().toRenderedString())
+				.amountFC(taxAmtFC)
+				.amountLC(currencyInfo.convertToLocal(taxAmtFC, currencyCodeConverter))
+				.build();
+	}
+
+	private GPLRReportLineItem createGPLRReportLine_Price(final SourceOrderLine orderLine, final SourceCurrencyInfo currencyInfo)
+	{
+		final Amount lineNetAmtFC = orderLine.getLineNetAmtFC();
+		return GPLRReportLineItem.builder()
+				.lineCode("PR00")
+				.description("Price")
+				.amountFC(lineNetAmtFC)
+				.amountLC(currencyInfo.convertToLocal(lineNetAmtFC, currencyCodeConverter))
+				.build();
+	}
+
+	private static GPLRReportLineItem createGPLRReportLine_DocumentLine(final SourceOrderLine orderLine, final SourceOrder order)
+	{
+		return GPLRReportLineItem.builder()
+				.documentNo(order.getDocumentNo())
+				.lineCode(formatOrderLineNo(orderLine.getLineNo()))
+				.description(orderLine.getProductName())
+				.qty(orderLine.getQtyEntered())
+				.priceFC(orderLine.getPriceFC())
+				.batchNo(orderLine.getBatchNo())
+				.amountFC(null)
+				.amountLC(null)
+				.build();
 	}
 
 	private ImmutableList<GPLRReportCharge> createGPLRReportCharges()
@@ -357,13 +391,15 @@ final class GPLRReportCreateCommand
 			@NonNull final SourceOrder purchaseOrder,
 			@Nullable final SourceOrderLine purchaseOrderLine)
 	{
+		final SourceCurrencyInfo currencyInfo = purchaseOrder.getCurrencyInfo();
+
 		return GPLRReportCharge.builder()
 				.purchaseOrderDocumentNo(purchaseOrder.getDocumentNo())
 				.orderLineNo(purchaseOrderLine != null ? formatOrderLineNo(purchaseOrderLine.getLineNo()) : null)
 				.costTypeName(purchaseOrderCost.getCostTypeName())
 				.vendor(purchaseOrderCost.getVendor() != null ? toBPartnerName(purchaseOrderCost.getVendor()) : null)
 				.amountFC(purchaseOrderCost.getCostAmountFC())
-				.amountLC(null) // TODO
+				.amountLC(currencyInfo.convertToLocal(purchaseOrderCost.getCostAmountFC(), currencyCodeConverter))
 				.build();
 	}
 
