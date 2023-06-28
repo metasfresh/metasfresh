@@ -84,6 +84,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIds(productIds);
+	}
+
+	@Override
 	public ProductId getProductIdByValue(
 			@NonNull final OrgId orgId,
 			@NonNull final String productValue)
@@ -528,7 +534,7 @@ public final class ProductBL implements IProductBL
 	{
 		final I_M_Product product = productsRepo.getById(productId);
 
-		if(!product.isRequiresSupplierApproval())
+		if (!product.isRequiresSupplierApproval())
 		{
 			return ImmutableList.of();
 		}
