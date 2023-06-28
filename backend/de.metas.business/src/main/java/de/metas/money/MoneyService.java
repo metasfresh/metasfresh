@@ -54,7 +54,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 @Service
-public class MoneyService
+public class MoneyService implements CurrencyCodeToCurrencyIdBiConverter
 {
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final CurrencyRepository currencyRepository;
@@ -64,11 +64,13 @@ public class MoneyService
 		this.currencyRepository = currencyRepository;
 	}
 
+	@Override
 	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
 		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
+	@Override
 	public CurrencyCode getCurrencyCodeByCurrencyId(@NonNull final CurrencyId currencyId)
 	{
 		return currencyRepository.getCurrencyCodeById(currencyId);
@@ -77,6 +79,11 @@ public class MoneyService
 	public CurrencyId getBaseCurrencyId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return currencyBL.getBaseCurrencyId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+	}
+
+	public CurrencyCode getBaseCurrencyCode(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return currencyRepository.getCurrencyCodeById(getBaseCurrencyId(clientAndOrgId));
 	}
 
 	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyCode currencyCode)
