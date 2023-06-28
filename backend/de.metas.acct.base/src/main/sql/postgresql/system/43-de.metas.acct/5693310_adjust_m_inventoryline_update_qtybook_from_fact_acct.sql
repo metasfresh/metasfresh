@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtycount_from_fact_acct(
+DROP FUNCTION IF EXISTS m_inventoryline_update_qtybook_from_fact_acct(
     p_M_Inventory_ID      numeric,
     p_ProductAssetAccount varchar,
     p_RecreateLines       char(1),
@@ -8,7 +8,17 @@ DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtycount_from_fact_
 )
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtycount_from_fact_acct(
+DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
+    p_M_Inventory_ID      numeric,
+    p_ProductAssetAccount varchar,
+    p_RecreateLines       char(1),
+    p_DryRun              char(1),
+    p_DateAcctFrom        date,
+    p_DateAcctTo          date
+)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
     p_M_Inventory_ID      numeric,
     p_ProductAssetAccount varchar,
     p_RecreateLines       char(1) = 'N',
@@ -204,7 +214,7 @@ BEGIN
                NULL                                                                                   AS externalid,
                NULL                                                                                   AS costprice,
                --
-               prev_invl.qtybook                                                                      AS qtybook,
+               0                                                                                      AS qtybook,
                prev_invl.qtycount                                                                     AS qtycount,
                'Y'                                                                                    AS iscounted,
                'Y'                                                                                    AS processed,

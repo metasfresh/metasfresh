@@ -81,7 +81,11 @@ class M_Cost
 			}
 			else if (CostingLevel.BatchLot.equals(costingLevel))
 			{
+<<<<<<< HEAD
 				if (asiId.isNone() && costElement != null && costElement.isMaterialElement())
+=======
+				if (asiId.isNone() && costElement != null && costElement.isMaterial())
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 				{
 					throw new FillMandatoryException(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID);
 				}
@@ -97,7 +101,11 @@ class M_Cost
 
 		// Percentage
 		if (costElement != null
+<<<<<<< HEAD
 				&& (!costElement.isAllowUserChangingCurrentCosts() || costElement.isMaterialElement())
+=======
+				&& (!costElement.isAllowUserChangingCurrentCosts() || costElement.isMaterial())
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 				&& costRecord.getPercent() != 0)
 		{
 			costRecord.setPercent(0);

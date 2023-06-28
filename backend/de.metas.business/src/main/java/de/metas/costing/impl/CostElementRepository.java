@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+<<<<<<< HEAD
 import de.metas.ad_reference.ADReferenceService;
+=======
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 import de.metas.cache.CCache;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
@@ -17,13 +20,23 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.service.IADReferenceDAO;
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostElement;
+<<<<<<< HEAD
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+=======
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -98,12 +111,20 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
+<<<<<<< HEAD
 	@NonNull
 	public CostElement getOrCreateMaterialCostElement(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
 		final List<CostElement> materialCostElements = getIndexedCostElements()
 				.streamByClientIdAndCostingMethod(clientId, costingMethod)
 				.filter(CostElement::isMaterialElement)
+=======
+	public @NonNull CostElement getOrCreateMaterialCostElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
+	{
+		final List<CostElement> costElements = getIndexedCostElements()
+				.streamForClientId(clientId)
+				.filter(ce -> ce.isMaterialCostingMethod(costingMethod))
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 				.collect(ImmutableList.toImmutableList());
 		if (materialCostElements.isEmpty())
 		{
@@ -121,8 +142,15 @@ public class CostElementRepository implements ICostElementRepository
 
 	private CostElement createDefaultMaterialCostingElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
+<<<<<<< HEAD
 		String name = adReferenceService.retrieveListNameTranslatableString(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode())
 				.translate(Language.getBaseAD_Language());
+=======
+		final I_M_CostElement newCostElementPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		InterfaceWrapperHelper.setValue(newCostElementPO, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
+		newCostElementPO.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+		String name = adReferenceDAO.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 		if (Check.isBlank(name))
 		{
 			name = costingMethod.name();
@@ -165,8 +193,13 @@ public class CostElementRepository implements ICostElementRepository
 		final List<CostElementType> typesList = Arrays.asList(types);
 
 		return getIndexedCostElements()
+<<<<<<< HEAD
 				.streamByClientId(clientId)
 				.filter(costElement -> typesList.contains(costElement.getCostElementType()))
+=======
+				.streamForClientId(clientId)
+				// .filter(ce -> ce.getCostingMethod() != null) // commenting out because costingMethod is not null
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -174,6 +207,7 @@ public class CostElementRepository implements ICostElementRepository
 	public List<CostElement> getByCostingMethod(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
 		return getIndexedCostElements()
+<<<<<<< HEAD
 				.streamByClientIdAndCostingMethod(clientId, costingMethod)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -183,6 +217,10 @@ public class CostElementRepository implements ICostElementRepository
 	{
 		return getIndexedCostElements()
 				.streamByClientId(clientId)
+=======
+				.streamForClientId(clientId)
+				.filter(CostElement::isMaterial)
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -204,6 +242,27 @@ public class CostElementRepository implements ICostElementRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return getIndexedCostElements()
+				.streamForClientId(clientId)
+				.filter(ce -> ce.isMaterialCostingMethod(costingMethod))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Stream<CostElement> streamByCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return getIndexedCostElements()
+				.streamForClientId(clientId)
+				.filter(ce -> ce.getCostingMethod() == costingMethod);
+	}
+
+>>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 	private static class IndexedCostElements
 	{
 		private final ImmutableMap<CostElementId, CostElement> costElementsById;
