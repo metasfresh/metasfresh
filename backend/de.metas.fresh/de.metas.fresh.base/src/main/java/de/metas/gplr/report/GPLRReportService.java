@@ -1,6 +1,7 @@
 package de.metas.gplr.report;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.BaseEncoding;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.department.DepartmentService;
@@ -99,6 +100,16 @@ public class GPLRReportService
 	{
 		try
 		{
+			// FIXME DEBUGGING
+			if (true)
+			{
+				return ReportResult.builder()
+						.reportFilename("GPLR_Report.pdf")
+						.outputType(OutputType.PDF)
+						.reportContentBase64(BaseEncoding.base64().encode(new byte[] {}))
+						.build();
+			}
+
 			final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
 					PInstanceRequest.builder()
 							.processId(JASPER_PROCESS_ID)
