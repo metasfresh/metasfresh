@@ -79,9 +79,14 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 		//
 		// Fetch the receipt schedules which have some qty available for receiving
+<<<<<<< HEAD
 		final List<I_M_ReceiptSchedule> receiptSchedules = context.getSelectedModels(I_M_ReceiptSchedule.class)
 				.stream()
 				.filter(receiptSchedule -> allowNoQuantityAvailable || getDefaultAvailableQtyToReceive(receiptSchedule).isPositive())
+=======
+		final List<I_M_ReceiptSchedule> receiptSchedules = context.streamSelectedModels(I_M_ReceiptSchedule.class)
+				.filter(receiptSchedule -> allowNoQuantityAvailable || getDefaultAvailableQtyToReceive(receiptSchedule).signum() > 0)
+>>>>>>> 97bdedf2359 (Avoid OOME (#15737))
 				.collect(ImmutableList.toImmutableList());
 		if (receiptSchedules.isEmpty())
 		{
