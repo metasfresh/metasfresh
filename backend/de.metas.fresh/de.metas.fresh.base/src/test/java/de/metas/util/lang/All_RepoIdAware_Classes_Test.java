@@ -112,8 +112,7 @@ public class All_RepoIdAware_Classes_Test
 			.skip(CostRevaluationLineId.class)
 			.skip(CostRevaluationDetailId.class)
 			//
-			.skip(PaySelectionLineId.class)
-			;
+			.skip(PaySelectionLineId.class);
 
 	private static ObjectMapper jsonMapper;
 
@@ -221,17 +220,17 @@ public class All_RepoIdAware_Classes_Test
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
-																	.addUrls(ClasspathHelper.forClassLoader())
-																	//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
-																	.forPackages("de")
-																	.setScanners(new SubTypesScanner()));
+					.addUrls(ClasspathHelper.forClassLoader())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
+					.setScanners(new SubTypesScanner()));
 
 			final Set<Class<? extends RepoIdAware>> classes = reflections.getSubTypesOf(RepoIdAware.class);
 
 			if (classes.isEmpty())
 			{
 				throw new RuntimeException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
-												   + "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+						+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
 			}
 
 			stopwatch.stop();

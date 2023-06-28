@@ -22,11 +22,20 @@
 
 package de.metas.contracts.modular;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractType;
+import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ModularContractService
@@ -37,41 +46,78 @@ public class ModularContractService
 	}
 
 	private final ModularContractLogDAO contractLogDAO;
-	private final List<IModularContractTypeHandler> knownHandlers;
+	private final ModularContractHandlerFactory modularContractHandlerFactory;
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	public ModularContractService(
 			@NonNull final ModularContractLogDAO contractLogDAO,
-			@NonNull final List<IModularContractTypeHandler> knownHandlers)
+			@NonNull final ModularContractHandlerFactory modularContractHandlerFactory,
+			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
 		this.contractLogDAO = contractLogDAO;
-		this.knownHandlers = knownHandlers;
+		this.modularContractHandlerFactory = modularContractHandlerFactory;
+		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 
 	public void invokeWithModel(@NonNull final Object model, @NonNull final ModelAction action)
 	{
-		knownHandlers.stream()
-				.filter(handler -> handler.probablyAppliesTo(model))
-				.forEach(handler -> invokeWithModel(model, action, handler));
+		modularContractHandlerFactory.getApplicableHandlersFor(model)
+				.forEach(handler -> invokeWithModel(handler, model, action));
 	}
 
-	private <T> void invokeWithModel(final @NonNull T model, final @NonNull ModelAction action, final IModularContractTypeHandler<T> handler)
+	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action)
+	{
+		handler.getContractIds(model)
+				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
+				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId));
+	}
+
+	private <T> boolean isApplicableContract(@NonNull final IModularContractTypeHandler<T> handler, @NonNull final FlatrateTermId flatrateTermId)
+	{
+		if (!isModularContract(flatrateTermId))
+		{
+			return false;
+		}
+
+		final ModularContractSettings settings = modularContractSettingsDAO.getFor(flatrateTermId);
+		return isHandlerApplicableForSettings(handler, settings);
+	}
+
+	private boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(flatrateTermId);
+		return Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, flatrateTerm.getType_Conditions());
+	}
+
+	private <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, final ModularContractSettings settings)
+	{
+		final String handlerClassName = handler.getClass().getName();
+		return settings.getModuleConfigs()
+				.stream()
+				.map(ModuleConfig::getModularContractType)
+				.map(ModularContractType::getClassName)
+				.anyMatch(handlerClassName::equals);
+	}
+
+	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		switch (action)
 		{
 			case COMPLETED ->
 			{
-				handler.createLogEntryCreateRequest(model)
-						.forEach(contractLogDAO::create);
+				handler.createLogEntryCreateRequest(model, flatrateTermId)
+						.ifPresent(contractLogDAO::create);
 			}
 			case REVERSED ->
 			{
-				handler.createLogEntryReverseRequest(model)
-						.forEach(contractLogDAO::reverse);
+				handler.createLogEntryReverseRequest(model, flatrateTermId)
+						.ifPresent(contractLogDAO::reverse);
 			}
 			case REACTIVATED ->
 			{
-				handler.createLogEntryDeleteRequest(model)
-						.forEach(contractLogDAO::delete);
+				handler.createLogEntryDeleteRequest(model, flatrateTermId)
+						.ifPresent(contractLogDAO::delete);
 			}
 		}
 	}

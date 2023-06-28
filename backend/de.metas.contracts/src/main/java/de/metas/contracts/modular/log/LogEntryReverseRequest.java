@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.log;
 
+import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -29,7 +30,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 
 @Builder
-public record LogEntryReverseRequest(@Nullable ModularContractLogEntryId id, @Nullable TableRecordReference referencedModel)
+public record LogEntryReverseRequest(@Nullable ModularContractLogEntryId id, @Nullable TableRecordReference referencedModel, @Nullable FlatrateTermId flatrateTermId)
 {
 	public LogEntryReverseRequest
 	{

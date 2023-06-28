@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.calendar.standard.YearId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -97,7 +97,7 @@ class ModularContractSettingsDAOTest
 		final ModularContractSettings settings = new ModularContractSettingsDAO().getFor(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
 
 		assertThat(settings).isNotNull();
-		assertThat(settings.getYearId()).isEqualTo(YearId.ofRepoId(calendarRecord.getC_Calendar_ID(), yearRecord.getC_Year_ID()));
+		assertThat(settings.getYearAndCalendarId()).isEqualTo(YearAndCalendarId.ofRepoId(calendarRecord.getC_Calendar_ID(), yearRecord.getC_Year_ID()));
 		assertThat(settings.getId().getRepoId()).isEqualTo(settingsRecord.getModCntr_Settings_ID());
 		assertThat(settings.getModuleConfigs()).hasSize(1);
 
@@ -105,9 +105,8 @@ class ModularContractSettingsDAOTest
 		assertThat(moduleConfig.getSeqNo()).isEqualTo(10);
 		assertThat(moduleConfig.getProductId().getRepoId()).isEqualTo(130);
 
-		final IModularContractTypeHandler handlerImpl = moduleConfig.getHandlerImpl();
-		assertThat(handlerImpl).isNotNull();
-		assertThat(handlerImpl).isInstanceOf(HandlerImpl.class);
+		final String handlerImpl = moduleConfig.getModularContractType().getClassName();
+		assertThat(handlerImpl).isEqualTo(HandlerImpl.class.getName());
 	}
 
 	public static class HandlerImpl implements IModularContractTypeHandler<Object>
@@ -126,15 +125,15 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
-		public @NonNull Stream<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final Object model)
+		public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final Object model, final @NonNull FlatrateTermId flatrateTermId)
 		{
-			return Stream.empty();
+			return Optional.empty();
 		}
 
 		@Override
-		public @NonNull Stream<LogEntryDeleteRequest> createLogEntryDeleteRequest(final Object model)
+		public @NonNull Optional<LogEntryDeleteRequest> createLogEntryDeleteRequest(final Object model, final @NonNull FlatrateTermId flatrateTermId)
 		{
-			return Stream.empty();
+			return Optional.empty();
 		}
 
 		@Override

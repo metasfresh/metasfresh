@@ -22,22 +22,19 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class ModuleConfig
+public class ModularContractType
 {
-	int seqNo;
+	@NonNull ModularContractTypeId id;
+	@Nullable String className;
+	@Nullable String value;
+	@Nullable String name;
 
-	@NonNull String name;
-
-	@NonNull String invoicingGroup;
-
-	@NonNull ProductId productId;
-
-	@NonNull ModularContractType modularContractType;
 }

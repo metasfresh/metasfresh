@@ -23,8 +23,9 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.settings.ModuleConfigId;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -49,16 +50,16 @@ public class ModularContractLogEntry
 	@NonNull
 	ModularContractLogEntryId id;
 
-	@NonNull
+	@Nullable
 	FlatrateTermId contractId;
 
-	@NonNull
+	@Nullable
 	ProductId productId;
 
 	@NonNull
 	TableRecordReference referencedRecord;
 
-	@NonNull
+	@Nullable
 	BPartnerId collectionPointBPartnerId;
 
 	@Nullable
@@ -67,11 +68,8 @@ public class ModularContractLogEntry
 	@Nullable
 	BPartnerId invoicingBPartnerId;
 
-	@NonNull
+	@Nullable
 	WarehouseId collectionPoint;
-
-	@NonNull
-	ModuleConfigId moduleConfigId;
 
 	@NonNull
 	LogEntryDocumentType documentType;
@@ -93,8 +91,9 @@ public class ModularContractLogEntry
 	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
 
-/*
-	Contract module	type:C_Flatrate_Term.Contract_module_Type_ID See	https://github.com/metasfresh/me03/issues/15645 TODO
-	Active:Y: instead of having this, maybe just ignore inactive record in the DAO
-*/
+	@NonNull YearId year;
+
+	@Nullable String description;
+
+	@Nullable ModularContractTypeId contractTypeId;
 }

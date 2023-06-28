@@ -22,19 +22,17 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.calendar.standard.YearId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.lang.ClassLoaderUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
@@ -73,7 +71,7 @@ public class ModularContractSettingsDAO
 		final ModularContractSettings.ModularContractSettingsBuilder result = ModularContractSettings.builder()
 				.id(ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID()))
 				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
-				.yearId(YearId.ofRepoId(settingsRecord.getC_Calendar_ID(), settingsRecord.getC_Year_ID()))
+				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Calendar_ID(), settingsRecord.getC_Year_ID()))
 				.pricingSystemId(PricingSystemId.ofRepoId(settingsRecord.getM_PricingSystem_ID()))
 				.productId(ProductId.ofRepoId(settingsRecord.getM_Product_ID()))
 				.name(settingsRecord.getName());
@@ -81,15 +79,18 @@ public class ModularContractSettingsDAO
 		for (final I_ModCntr_Module moduleRecord : moduleRecords)
 		{
 			final I_ModCntr_Type modCntrType = moduleRecord.getModCntr_Type();
-			final Class<?> handlerImplClass = ClassLoaderUtil.validateJavaClassname(modCntrType.getClassname(), IModularContractTypeHandler.class);
-			final IModularContractTypeHandler handlerImpl = (IModularContractTypeHandler)ClassLoaderUtil.newInstanceFromNoArgConstructor(handlerImplClass);
 
 			final ModuleConfig moduleConfig = ModuleConfig.builder()
 					.name(moduleRecord.getName())
 					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
 					.seqNo(moduleRecord.getSeqNo())
 					.invoicingGroup(moduleRecord.getInvoicingGroup())
-					.handlerImpl(handlerImpl)
+					.modularContractType(ModularContractType.builder()
+							.id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
+							.value(modCntrType.getValue())
+							.name(modCntrType.getName())
+							.className(modCntrType.getClassname())
+							.build())
 					.build();
 
 			result.moduleConfig(moduleConfig);

@@ -23,8 +23,9 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.settings.ModuleConfigId;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -38,22 +39,21 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
-import java.time.Year;
 
 @Value
 @Builder
 public class LogEntryCreateRequest
 {
-	@NonNull
+	@Nullable
 	FlatrateTermId contractId;
 
-	@NonNull
+	@Nullable
 	ProductId productId;
 
 	@NonNull
 	TableRecordReference referencedRecord;
 
-	@NonNull
+	@Nullable
 	BPartnerId collectionPointBPartnerId;
 
 	@Nullable
@@ -62,16 +62,11 @@ public class LogEntryCreateRequest
 	@Nullable
 	BPartnerId invoicingBPartnerId;
 
-	@NonNull
+	@Nullable
 	WarehouseId collectionPoint;
 
 	@NonNull
-	ModuleConfigId moduleConfigId;
-
-	@NonNull
 	LogEntryDocumentType documentType;
-
-	@NonNull Year year;
 
 	@NonNull
 	SOTrx soTrx;
@@ -89,4 +84,10 @@ public class LogEntryCreateRequest
 
 	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
+
+	@NonNull YearId year;
+
+	@Nullable String description;
+
+	@Nullable ModularContractTypeId modularContractTypeId;
 }

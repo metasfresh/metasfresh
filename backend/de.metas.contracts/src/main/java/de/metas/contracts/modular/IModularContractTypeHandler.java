@@ -23,24 +23,17 @@
 package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Implementors
- * <ul>
- * <li>should be annotated with {@link org.springframework.stereotype.Component},
- * so that one instance per class is initialized and injected into {@link ModularContractService}.</li>
- * <li><b>OR?</b> they might be loaded from {@code Contract_Module_Type} (TODO create ContractModuleTypeDAO in this case)</li>
- * </ul>
+ * Implementors should be annotated with {@link org.springframework.stereotype.Component},
+ * so that one instance per class is initialized and injected into {@link ModularContractService}.
  * <p>
  * At this stage I think there will be one implementation for {@link org.compiere.model.I_C_Order},
  * one for {@link de.metas.inout.model.I_M_InOut} and so on.
@@ -54,34 +47,24 @@ public interface IModularContractTypeHandler<T>
 	boolean probablyAppliesTo(@NonNull Object model);
 
 	/**
-	 * Return a Stream of request if the framework shall create one or more logs, or {@link Stream#empty()} otherwise.
+	 * Return a request if the framework shall create the log, or {@link Optional#empty()} otherwise.
 	 */
-	@NonNull
-	default Stream<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model)
-	{
-		return getContractIds(model)
-				.filter(flatrateTermId -> X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract.equals(Services.get(IFlatrateDAO.class).retrieveTerm(flatrateTermId).getType_Conditions()))
-				.map(flatrateTermId -> createLogEntryCreateRequest(model, flatrateTermId))
-				.filter(Optional::isPresent)
-				.map(Optional::get);
-	}
-
 	@NonNull
 	Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 
 	/**
-	 * Return a Stream of requests if the framework shall create one or more reversal-record log records, or {@link Stream#empty()} otherwise.
+	 * Return a Stream of requests if the framework shall create one or more reversal-record log records, or {@link Optional#empty()} otherwise.
 	 * This method has no {@code settings} parameter because i *think* there are existing log records that have to be reversed independently of settings.
 	 */
 	@NonNull
-	Stream<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull T model);
+	Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 
 	/**
-	 * Return a request if the framework shall delete one or more logs, or {@link Stream#empty()}  otherwise.
+	 * Return a request if the framework shall delete one or more logs, or {@link Optional#empty()}  otherwise.
 	 * This method has no {@code settings} parameter because i *think* there are existing log records that have to be deleted independently of settings.
 	 */
 	@NonNull
-	Stream<LogEntryDeleteRequest> createLogEntryDeleteRequest(T model);
+	Optional<LogEntryDeleteRequest> createLogEntryDeleteRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):

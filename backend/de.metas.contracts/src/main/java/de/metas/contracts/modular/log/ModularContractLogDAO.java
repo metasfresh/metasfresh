@@ -23,8 +23,10 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -38,6 +40,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -72,8 +75,8 @@ public class ModularContractLogDAO
 		log.setAD_Table_ID(request.getReferencedRecord().getAD_Table_ID());
 		log.setRecord_ID(request.getReferencedRecord().getRecord_ID());
 		log.setCollectionPoint_BPartner_ID(BPartnerId.toRepoId(request.getCollectionPointBPartnerId()));
-		log.setBill_BPartner_ID(BPartnerId.toRepoId(request.getInvoicingBPartnerId()));
 		log.setProducer_BPartner_ID(BPartnerId.toRepoId(request.getProducerBPartnerId()));
+		log.setBill_BPartner_ID(BPartnerId.toRepoId(request.getInvoicingBPartnerId()));
 		log.setM_Warehouse_ID(WarehouseId.toRepoId(request.getCollectionPoint()));
 		log.setModCntr_Log_DocumentType(request.getDocumentType().getCode());
 		log.setIsSOTrx(request.getSoTrx().isSales());
@@ -99,6 +102,9 @@ public class ModularContractLogDAO
 			log.setQty(quantity.toBigDecimal());
 			log.setC_UOM_ID(quantity.getUomId().getRepoId());
 		}
+		log.setHarvesting_Year_ID(YearId.toRepoId(request.getYear()));
+		log.setDescription(request.getDescription());
+		log.setModCntr_Type_ID(ModularContractTypeId.toRepoId(request.getModularContractTypeId()));
 
 		return log;
 	}
@@ -107,26 +113,27 @@ public class ModularContractLogDAO
 	{
 		return ModularContractLogEntry.builder()
 				.id(ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID()))
-				.contractId(FlatrateTermId.ofRepoId(log.getC_Flatrate_Term_ID()))
-				.productId(ProductId.ofRepoId(log.getM_Product_ID()))
+				.contractId(FlatrateTermId.ofRepoIdOrNull(log.getC_Flatrate_Term_ID()))
+				.productId(ProductId.ofRepoIdOrNull(log.getM_Product_ID()))
 				.referencedRecord(TableRecordReference.of(log.getAD_Table_ID(), log.getRecord_ID()))
-				.collectionPointBPartnerId(BPartnerId.ofRepoId(log.getCollectionPoint_BPartner_ID())) // TODO check if this is mandatory, I think not
-				.producerBPartnerId(BPartnerId.ofRepoIdOrNull(log.getProducer_BPartner_ID())) // TODO make ModCntr_Log.Producer_BPartner_ID
-				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(log.getBill_BPartner_ID()))// TODO make ModCntr_Log.Bill_BPartner_ID
-				.collectionPoint(WarehouseId.ofRepoId(log.getM_Warehouse_ID()))
-				.documentType(LogEntryDocumentType.ofCode(log.getModCntr_Log_DocumentType())) // TODO make ModCntr_Log.ModCntr_Log_DocumentType mandatory in DB
+				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(log.getCollectionPoint_BPartner_ID()))
+				.producerBPartnerId(BPartnerId.ofRepoIdOrNull(log.getProducer_BPartner_ID()))
+				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(log.getBill_BPartner_ID()))
+				.collectionPoint(WarehouseId.ofRepoIdOrNull(log.getM_Warehouse_ID()))
+				.documentType(LogEntryDocumentType.ofCode(log.getModCntr_Log_DocumentType()))
 				.soTrx(SOTrx.ofBoolean(log.isSOTrx()))
 				.processed(log.isProcessed())
 				.quantity(Quantity.ofOrNull(log.getQty(), uomDAO.getById(log.getC_UOM_ID())))
-				.amount(Money.ofOrNull(log.getAmount(), CurrencyId.ofRepoIdOrNull(log.getC_Currency_ID()))) // TODO make ModCntr_Log.Amount & ModCntr_Log.C_Currency_ID optional in DB
-				.transactionDate(LocalDateAndOrgId.ofTimestamp(log.getDateTrx(), OrgId.ofRepoId(log.getAD_Org_ID()), orgDAO::getTimeZone)) // TODO make ModCntr_Log.TrxDate mandatory in DB
+				.amount(Money.ofOrNull(log.getAmount(), CurrencyId.ofRepoIdOrNull(log.getC_Currency_ID())))
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(log.getDateTrx(), OrgId.ofRepoId(log.getAD_Org_ID()), orgDAO::getTimeZone))
+				.year(YearId.ofRepoId(log.getHarvesting_Year_ID()))
 				.build();
 	}
 
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest logEntryReverseRequest)
 	{
-		final I_ModCntr_Log oldLog = InterfaceWrapperHelper.load(logEntryReverseRequest.id().getRepoId(), I_ModCntr_Log.class);
+		final I_ModCntr_Log oldLog = getQuery(logEntryReverseRequest).firstOnly();
 
 		final I_ModCntr_Log reversedLog = InterfaceWrapperHelper.newInstance(I_ModCntr_Log.class);
 		InterfaceWrapperHelper.copyValues(oldLog, reversedLog);
@@ -139,20 +146,18 @@ public class ModularContractLogDAO
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
 	}
 
+	private IQueryBuilder<I_ModCntr_Log> getQuery(final @NonNull LogEntryReverseRequest logEntryReverseRequest)
+	{
+		return getLookupQuery(logEntryReverseRequest.id(), logEntryReverseRequest.referencedModel(), logEntryReverseRequest.flatrateTermId());
+	}
+
 	/**
 	 * @return the log entry that was just deleted; might be helpful for testing.
 	 */
 	@Nullable
 	public ModularContractLogEntry delete(final LogEntryDeleteRequest logEntryDeleteRequest)
 	{
-		final TableRecordReference referencedModel = logEntryDeleteRequest.getReferencedModel();
-		final I_ModCntr_Log recordToDelete = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, referencedModel.getAdTableId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, referencedModel.getRecord_ID())
-				.orderBy(I_ModCntr_Log.COLUMNNAME_Created)
-				.create()
-				.first();
+		final I_ModCntr_Log recordToDelete = getQuery(logEntryDeleteRequest).firstOnly();
 		if (recordToDelete != null)
 		{
 			final ModularContractLogEntry logEntry = fromDB(recordToDelete);
@@ -160,5 +165,30 @@ public class ModularContractLogDAO
 			return logEntry;
 		}
 		return null;
+	}
+
+	private IQueryBuilder<I_ModCntr_Log> getQuery(final @NonNull LogEntryDeleteRequest logEntryReverseRequest)
+	{
+		return getLookupQuery(logEntryReverseRequest.id(), logEntryReverseRequest.referencedModel(), logEntryReverseRequest.flatrateTermId());
+	}
+
+	private IQueryBuilder<I_ModCntr_Log> getLookupQuery(@Nullable final ModularContractLogEntryId id, @Nullable final TableRecordReference tableRecordReference, @Nullable final FlatrateTermId flatrateTermId)
+	{
+		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter();
+		if (id != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, id);
+		}
+		if (tableRecordReference != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId());
+			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID());
+		}
+		if (flatrateTermId != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId);
+		}
+		return queryBuilder;
 	}
 }

@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.calendar.standard.YearId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -47,7 +47,7 @@ public class ModularContractSettings
 	String name;
 
 	@NonNull
-	YearId yearId; // this includes the calendar
+	YearAndCalendarId yearAndCalendarId; // this includes the calendar
 
 	@NonNull
 	PricingSystemId pricingSystemId;

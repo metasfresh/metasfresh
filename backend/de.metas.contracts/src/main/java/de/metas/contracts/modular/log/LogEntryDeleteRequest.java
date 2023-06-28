@@ -22,13 +22,21 @@
 
 package de.metas.contracts.modular.log;
 
+import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
-import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-@Value
+import javax.annotation.Nullable;
+
 @Builder
-public class LogEntryDeleteRequest
+public record LogEntryDeleteRequest(@Nullable ModularContractLogEntryId id, @Nullable TableRecordReference referencedModel, @Nullable FlatrateTermId flatrateTermId)
 {
-	TableRecordReference referencedModel;
+	public LogEntryDeleteRequest
+	{
+		if (id == null && referencedModel == null)
+		{
+			throw new AdempiereException("LogEntryReverseRequest - either an ID or a tableRecordReference must be present.");
+		}
+	}
 }

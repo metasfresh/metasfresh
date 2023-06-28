@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.contracts
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,49 +20,45 @@
  * #L%
  */
 
-package de.metas.calendar.standard;
+package de.metas.contracts.modular.settings;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Value
-public class YearId implements RepoIdAware
+public class ModularContractTypeId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static YearId ofRepoId(final int repoId)
+	public static ModularContractTypeId ofRepoId(final int repoId)
 	{
-		return new YearId(repoId);
+		return new ModularContractTypeId(repoId);
 	}
 
 	@Nullable
-	public static YearId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static ModularContractTypeId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return
-				repoId != null && repoId > 0
-						? ofRepoId(repoId)
-						: null;
+		return repoId != null && repoId > 0 ? new ModularContractTypeId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final YearId yearId)
+	private ModularContractTypeId(final int repoId)
 	{
-		return yearId != null ? yearId.getRepoId() : -1;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "modularContractTypeId");
 	}
 
-	private YearId(final int repoId)
+	public static int toRepoId(@Nullable final ModularContractTypeId modularContractTypeId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "yearId");
+		return modularContractTypeId != null ? modularContractTypeId.getRepoId() : -1;
 	}
 
+	@Override
 	@JsonValue
-	public int toJson()
+	public int getRepoId()
 	{
-		return getRepoId();
+		return repoId;
 	}
 }
