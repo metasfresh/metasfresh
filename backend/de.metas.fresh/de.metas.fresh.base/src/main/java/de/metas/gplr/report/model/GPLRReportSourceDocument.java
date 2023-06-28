@@ -39,8 +39,7 @@ public class GPLRReportSourceDocument
 
 	// 008 - Commodity (Product Hierarchy) - Product hierarchy from material master
 	// e.g. 327 55
-	// TODO need to clarify what it is
-	@Nullable String product;
+	@Nullable String sapProductHierarchy;
 
 	// 009 - Terms of Payment - (1) Terms of payment code, (2) payment term description, (3) payment method text
 	// e.g. B075 75 days after BL

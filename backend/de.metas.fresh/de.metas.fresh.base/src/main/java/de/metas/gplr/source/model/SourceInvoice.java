@@ -25,6 +25,7 @@ public class SourceInvoice
 	@NonNull SourceUserInfo createdBy;
 	@NonNull LocalDateAndOrgId created;
 	@NonNull LocalDateAndOrgId dateInvoiced;
+	@Nullable String sapProductHierarchy;
 	@NonNull PaymentTerm paymentTerm;
 	@Nullable LocalDateAndOrgId dueDate;
 	@Nullable String descriptionBottom;

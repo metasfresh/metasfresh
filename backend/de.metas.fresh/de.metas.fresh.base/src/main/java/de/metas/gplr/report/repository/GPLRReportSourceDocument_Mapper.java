@@ -9,6 +9,7 @@ import de.metas.gplr.report.model.GPLRSectionCodeRenderedString;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.model.I_GPLR_Report;
@@ -35,9 +36,9 @@ class GPLRReportSourceDocument_Mapper
 		record.setCreatedByName(from.getCreatedByName());
 		record.setDateDoc(from.getDocumentDate().toTimestamp(orgId2timeZoneMapper));
 		record.setDocCreateDate(from.getCreated().toTimestamp(orgId2timeZoneMapper));
-		//record.setProduct ... // TODO
+		record.setSAP_ProductHierarchy(from.getSapProductHierarchy());
 		record.setPaymentTermInfo(from.getPaymentTerm().toRenderedString());
-		record.setDueDate(from.getDueDate().toTimestamp(orgId2timeZoneMapper));
+		record.setDueDate(from.getDueDate() != null ? from.getDueDate().toTimestamp(orgId2timeZoneMapper) : null);
 		updateRecord_CurrencyInfo(record, from.getCurrencyInfo());
 	}
 
@@ -68,7 +69,7 @@ class GPLRReportSourceDocument_Mapper
 				.createdByName(record.getCreatedByName())
 				.documentDate(toLocalDateAndOrgId.apply(record.getDateDoc()))
 				.created(toLocalDateAndOrgId.apply(record.getDocCreateDate()))
-				// .product hierarchy .... // TODO
+				.sapProductHierarchy(StringUtils.trimBlankToNull(record.getSAP_ProductHierarchy()))
 				.paymentTerm(GPLRPaymentTermRenderedString.ofRenderedString(record.getPaymentTermInfo()))
 				.dueDate(toLocalDateAndOrgId.apply(record.getDueDate()))
 				.currencyInfo(extractCurrencyInfo(record))

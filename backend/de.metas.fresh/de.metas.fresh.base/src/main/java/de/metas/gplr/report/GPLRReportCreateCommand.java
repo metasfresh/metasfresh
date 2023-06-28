@@ -139,7 +139,7 @@ final class GPLRReportCreateCommand
 				.createdByName(salesInvoice.getCreatedBy().getName())
 				.documentDate(salesInvoice.getDateInvoiced())
 				.created(salesInvoice.getCreated())
-				.product("TODO") // TODO find out how to set it here since the SAP_ProductHierarchy is on M_Product which is not on document header level!
+				.sapProductHierarchy(salesInvoice.getSapProductHierarchy())
 				.paymentTerm(GPLRPaymentTermRenderedString.of(salesInvoice.getPaymentTerm()))
 				.dueDate(salesInvoice.getDueDate())
 				.currencyInfo(toCurrencyInfo(salesInvoice.getCurrencyInfo()))

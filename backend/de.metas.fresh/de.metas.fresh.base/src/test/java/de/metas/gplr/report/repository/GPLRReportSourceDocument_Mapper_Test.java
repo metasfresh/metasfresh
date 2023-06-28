@@ -48,7 +48,7 @@ public class GPLRReportSourceDocument_Mapper_Test
 				.createdByName("createdByName")
 				.documentDate(localDateAndOrgId("2023-05-10", orgId))
 				.created(localDateAndOrgId("2023-05-11", orgId))
-				//.product() // TODO
+				.sapProductHierarchy("sapProductHierarchy")
 				.paymentTerm(GPLRPaymentTermRenderedString.ofRenderedString("paymentTerm"))
 				.dueDate(localDateAndOrgId("2023-05-21", orgId))
 				.currencyInfo(GPLRCurrencyInfo.builder()

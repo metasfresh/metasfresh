@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_GPLR_Report extends org.compiere.model.PO implements I_GPLR_Report, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 521646748L;
+	private static final long serialVersionUID = 2025062053L;
 
     /** Standard Constructor */
     public X_GPLR_Report (final Properties ctx, final int GPLR_Report_ID, @Nullable final String trxName)
@@ -63,7 +63,7 @@ public class X_GPLR_Report extends org.compiere.model.PO implements I_GPLR_Repor
 	}
 
 	@Override
-	public void setCreatedByName (final @Nullable java.lang.String CreatedByName)
+	public void setCreatedByName (final java.lang.String CreatedByName)
 	{
 		set_ValueNoCheck (COLUMNNAME_CreatedByName, CreatedByName);
 	}
@@ -124,7 +124,7 @@ public class X_GPLR_Report extends org.compiere.model.PO implements I_GPLR_Repor
 	}
 
 	@Override
-	public void setDocTypeName (final @Nullable java.lang.String DocTypeName)
+	public void setDocTypeName (final java.lang.String DocTypeName)
 	{
 		set_Value (COLUMNNAME_DocTypeName, DocTypeName);
 	}
@@ -187,7 +187,7 @@ public class X_GPLR_Report extends org.compiere.model.PO implements I_GPLR_Repor
 	}
 
 	@Override
-	public void setInvoiceDocumentNo (final @Nullable java.lang.String InvoiceDocumentNo)
+	public void setInvoiceDocumentNo (final java.lang.String InvoiceDocumentNo)
 	{
 		set_Value (COLUMNNAME_InvoiceDocumentNo, InvoiceDocumentNo);
 	}
@@ -208,6 +208,18 @@ public class X_GPLR_Report extends org.compiere.model.PO implements I_GPLR_Repor
 	public java.lang.String getPaymentTermInfo() 
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentTermInfo);
+	}
+
+	@Override
+	public void setSAP_ProductHierarchy (final @Nullable java.lang.String SAP_ProductHierarchy)
+	{
+		set_Value (COLUMNNAME_SAP_ProductHierarchy, SAP_ProductHierarchy);
+	}
+
+	@Override
+	public java.lang.String getSAP_ProductHierarchy() 
+	{
+		return get_ValueAsString(COLUMNNAME_SAP_ProductHierarchy);
 	}
 
 	@Override

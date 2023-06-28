@@ -3,10 +3,12 @@ package de.metas.gplr.source;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.location.DocumentLocation;
@@ -64,6 +66,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
@@ -76,8 +79,10 @@ import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -96,6 +101,8 @@ public class SourceDocumentsService
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+
 	@NonNull private final SectionCodeService sectionCodeService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final MoneyService moneyService;
@@ -222,14 +229,48 @@ public class SourceDocumentsService
 	private SourceInvoice getSalesInvoice(final InvoiceId invoiceId)
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+		final I_C_Invoice salesInvoice;
 		if (invoice.isSOTrx())
 		{
-			return toSourceInvoice(invoice);
+			salesInvoice = invoice;
 		}
 		else
 		{
-			throw new UnsupportedOperationException("starting from purchase invoice not yet implemented"); // TODO
+			final OrderId purchaseOrderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
+			if (purchaseOrderId == null)
+			{
+				throw new AdempiereException("Cannot determine purchase order");
+			}
+
+			//
+			// Determine Sales Order
+			final Set<OrderId> salesOrderIds = orderBL.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
+			if (salesOrderIds.isEmpty())
+			{
+				throw new AdempiereException("No Sales Order found");
+			}
+			else if (salesOrderIds.size() != 1)
+			{
+				throw new AdempiereException("More than one Sales Order found");
+			}
+			final OrderId salesOrderId = salesOrderIds.iterator().next();
+
+			//
+			// Determine Sales Invoice
+			final List<? extends I_C_Invoice> salesInvoices = invoiceBL.getByOrderId(salesOrderId);
+			if (salesInvoices.isEmpty())
+			{
+				throw new AdempiereException("No Sales Invoice found for " + salesOrderId);
+			}
+			else if (salesInvoices.size() != 1)
+			{
+				throw new AdempiereException("More than one Sales Invoice found for " + salesOrderId);
+			}
+			salesInvoice = salesInvoices.iterator().next();
 		}
+
+		//
+		return toSourceInvoice(invoice);
 	}
 
 	private SourceInvoice toSourceInvoice(@NonNull final I_C_Invoice invoice)
@@ -238,8 +279,10 @@ public class SourceDocumentsService
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 		final CurrencyCode currencyCode = moneyService.getCurrencyCodeByCurrencyId(currencyId);
 
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
 		return SourceInvoice.builder()
-				.id(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.id(invoiceId)
 				.orderId(OrderId.ofRepoId(invoice.getC_Order_ID()))
 				.orgId(orgId)
 				.documentNo(invoice.getDocumentNo())
@@ -248,6 +291,7 @@ public class SourceDocumentsService
 				.createdBy(getUserInfo(invoice.getCreatedBy()))
 				.created(LocalDateAndOrgId.ofTimestamp(invoice.getCreated(), orgId, orgDAO::getTimeZone))
 				.dateInvoiced(LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(), orgId, orgDAO::getTimeZone))
+				.sapProductHierarchy(getSapProductHierarchy(invoiceId))
 				.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(invoice.getC_PaymentTerm_ID())))
 				.dueDate(LocalDateAndOrgId.ofNullableTimestamp(invoice.getDueDate(), orgId, orgDAO::getTimeZone))
 				.descriptionBottom(StringUtils.trimBlankToNull(invoice.getDescriptionBottom()))
@@ -256,28 +300,65 @@ public class SourceDocumentsService
 				.build();
 	}
 
+	@Nullable
+	private String getSapProductHierarchy(final InvoiceId invoiceId)
+	{
+		final ImmutableSet<ProductId> productIds = invoiceBL.getLines(invoiceId)
+				.stream()
+				.map(line -> ProductId.ofRepoIdOrNull(line.getM_Product_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<String> sapProductHierarchies = productBL.getByIds(productIds)
+				.stream()
+				.map(product -> StringUtils.trimBlankToNull(product.getSAP_ProductHierarchy()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return sapProductHierarchies.size() == 1
+				? sapProductHierarchies.iterator().next()
+				: null;
+	}
+
 	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Invoice invoice)
 	{
+		final CurrencyConversionContext conversionCtx = invoiceBL.getCurrencyConversionCtx(invoice);
+
+		final BigDecimal currencyRate;
+		final CurrencyCode localCurrency;
+		final CurrencyCode foreignCurrency;
+		final String forexContractNo;
+
 		final ForexContractRef forexContractRef = InvoiceDAO.extractForeignContractRef(invoice);
 		if (forexContractRef == null)
 		{
-			// TODO fallback and
-			//  * use the acct schema currency for Local Currency
-			//  * use order currency for Foreign Currency
-			throw new AdempiereException("No FEC set. Cannot determine local currency");
+			forexContractNo = null;
+
+			final CurrencyId localCurrencyId = acctSchemaBL.getAcctCurrencyId(ClientId.ofRepoId(invoice.getAD_Client_ID()), OrgId.ofRepoId(invoice.getAD_Org_ID()));
+			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
+			final CurrencyId foreignCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
+
+			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx).getConversionRate();
+		}
+		else
+		{
+			final ForexContractId forexContractId = forexContractRef.getForexContractId();
+			forexContractNo = forexContractId != null
+					? forexContractService.getById(forexContractId).getDocumentNo()
+					: null;
+
+			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getForeignCurrencyId());
+			localCurrency = moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getLocalCurrencyId());
+			currencyRate = forexContractRef.getCurrencyRate();
 		}
 
-		final ForexContractId forexContractId = forexContractRef.getForexContractId();
-		final String forexContractNo = forexContractId != null
-				? forexContractService.getById(forexContractId).getDocumentNo()
-				: null;
-
 		return SourceCurrencyInfo.builder()
-				.currencyRate(forexContractRef.getCurrencyRate())
-				.foreignCurrencyCode(moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getForeignCurrencyId()))
-				.localCurrencyCode(moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getLocalCurrencyId()))
+				.currencyRate(currencyRate)
+				.foreignCurrencyCode(foreignCurrency)
+				.localCurrencyCode(localCurrency)
 				.fecDocumentNo(forexContractNo)
-				.conversionCtx(invoiceBL.getCurrencyConversionCtx(invoice))
+				.conversionCtx(conversionCtx)
 				.build();
 	}
 
@@ -341,6 +422,7 @@ public class SourceDocumentsService
 					.name(shipperDAO.getShipperName(shipperId))
 					.build();
 		}
+
 		// TODO get the M_MeansOfTransportation_ID (via M_Delivery_Planning.M_MeansOfTransportation_ID? ask Ruxi)
 
 		return null;

@@ -107,19 +107,19 @@ public interface I_GPLR_Report
 	 * Set Created By.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCreatedByName (@Nullable java.lang.String CreatedByName);
+	void setCreatedByName (java.lang.String CreatedByName);
 
 	/**
 	 * Get Created By.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCreatedByName();
+	java.lang.String getCreatedByName();
 
 	ModelColumn<I_GPLR_Report, Object> COLUMN_CreatedByName = new ModelColumn<>(I_GPLR_Report.class, "CreatedByName", null);
 	String COLUMNNAME_CreatedByName = "CreatedByName";
@@ -213,20 +213,20 @@ public interface I_GPLR_Report
 	 * Name of the Document Type
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocTypeName (@Nullable java.lang.String DocTypeName);
+	void setDocTypeName (java.lang.String DocTypeName);
 
 	/**
 	 * Get Document Type Name.
 	 * Name of the Document Type
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocTypeName();
+	java.lang.String getDocTypeName();
 
 	ModelColumn<I_GPLR_Report, Object> COLUMN_DocTypeName = new ModelColumn<>(I_GPLR_Report.class, "DocTypeName", null);
 	String COLUMNNAME_DocTypeName = "DocTypeName";
@@ -322,20 +322,20 @@ public interface I_GPLR_Report
 	 * Document Number of the Invoice
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInvoiceDocumentNo (@Nullable java.lang.String InvoiceDocumentNo);
+	void setInvoiceDocumentNo (java.lang.String InvoiceDocumentNo);
 
 	/**
 	 * Get Invoice Document No.
 	 * Document Number of the Invoice
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getInvoiceDocumentNo();
+	java.lang.String getInvoiceDocumentNo();
 
 	ModelColumn<I_GPLR_Report, Object> COLUMN_InvoiceDocumentNo = new ModelColumn<>(I_GPLR_Report.class, "InvoiceDocumentNo", null);
 	String COLUMNNAME_InvoiceDocumentNo = "InvoiceDocumentNo";
@@ -383,6 +383,27 @@ public interface I_GPLR_Report
 
 	ModelColumn<I_GPLR_Report, Object> COLUMN_PaymentTermInfo = new ModelColumn<>(I_GPLR_Report.class, "PaymentTermInfo", null);
 	String COLUMNNAME_PaymentTermInfo = "PaymentTermInfo";
+
+	/**
+	 * Set SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_ProductHierarchy (@Nullable java.lang.String SAP_ProductHierarchy);
+
+	/**
+	 * Get SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_ProductHierarchy();
+
+	ModelColumn<I_GPLR_Report, Object> COLUMN_SAP_ProductHierarchy = new ModelColumn<>(I_GPLR_Report.class, "SAP_ProductHierarchy", null);
+	String COLUMNNAME_SAP_ProductHierarchy = "SAP_ProductHierarchy";
 
 	/**
 	 * Set Section Code.
