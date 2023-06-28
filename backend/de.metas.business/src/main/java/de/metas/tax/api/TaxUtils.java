@@ -54,6 +54,7 @@ public class TaxUtils
 				.rate(from.getRate())
 				.boilerPlateId(BoilerPlateId.ofRepoIdOrNull(from.getAD_BoilerPlate_ID()))
 				.seqNo(from.getSeqNo())
+				.taxCode(StringUtils.trimBlankToNull(from.getTaxCode()))
 				.build();
 	}
 }
