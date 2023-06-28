@@ -1,6 +1,7 @@
 package de.metas.gplr.report.model;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -23,4 +24,7 @@ public class GPLRReport
 	@NonNull private final ImmutableList<GPLRReportLineItem> lineItems;
 	@NonNull private final ImmutableList<GPLRReportCharge> charges;
 	@NonNull private final ImmutableList<GPLRReportNote> otherNotes;
+
+	@NonNull
+	public GPLRReportId getIdNotNull() {return Check.assumeNotNull(getId(), "Report shall be saved: {}", this);}
 }

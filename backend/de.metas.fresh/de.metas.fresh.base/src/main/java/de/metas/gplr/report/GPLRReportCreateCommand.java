@@ -98,8 +98,6 @@ final class GPLRReportCreateCommand
 
 		gplrReportRepository.createNew(report);
 
-		// TODO generate jasper and attach it to Sales Invoice
-
 		return report;
 	}
 
