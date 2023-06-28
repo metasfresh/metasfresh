@@ -1,6 +1,8 @@
 package de.metas.inout;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
@@ -78,6 +80,8 @@ public interface IInOutBL extends ISingletonService
 	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
 
 	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -191,4 +195,8 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull OrderLineId orderLineId);
 
 	Instant getDateAcct(InOutId inoutId);
+
+	Money getCOGSBySalesOrderId(
+			@NonNull OrderLineId salesOrderLineId,
+			@NonNull AcctSchemaId acctSchemaId);
 }

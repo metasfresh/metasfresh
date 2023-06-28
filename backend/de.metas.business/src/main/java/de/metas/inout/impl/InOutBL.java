@@ -1,5 +1,9 @@
 package de.metas.inout.impl;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.FactAcctQuery;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -20,6 +24,7 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.lang.SOTrx;
 import de.metas.material.MovementType;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -45,6 +50,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -59,6 +65,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_M_InOut;
@@ -76,6 +83,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -114,6 +122,8 @@ public class InOutBL implements IInOutBL
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -162,6 +172,12 @@ public class InOutBL implements IInOutBL
 	public List<I_M_InOutLine> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds)
 	{
 		return inOutDAO.getLinesByIds(inoutLineIds, I_M_InOutLine.class);
+	}
+
+	@Override
+	public Set<InOutAndLineId> getLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		return inOutDAO.retrieveLineIdsByOrderLineIds(orderLineIds);
 	}
 
 	@Override
@@ -664,4 +680,25 @@ public class InOutBL implements IInOutBL
 	{
 		return inOutDAO.retrieveCompleteOrClosedLinesForOrderLine(orderLineId, I_M_InOutLine.class);
 	}
+
+	@Override
+	public Money getCOGSBySalesOrderId(
+			@NonNull final OrderLineId salesOrderLineId,
+			@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final List<FactAcctQuery> factAcctQueries = getLineIdsByOrderLineIds(ImmutableSet.of(salesOrderLineId))
+				.stream()
+				.map(inoutAndLineId -> FactAcctQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.accountConceptualName(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct)
+						.tableName(I_M_InOut.Table_Name)
+						.recordId(inoutAndLineId.getInOutId().getRepoId())
+						.lineId(inoutAndLineId.getInOutLineId().getRepoId())
+						.build())
+				.collect(Collectors.toList());
+
+		return factAcctBL.getAcctBalance(factAcctQueries)
+				.orElseGet(() -> Money.zero(acctSchemaBL.getAcctCurrencyId(acctSchemaId)));
+	}
+
 }
