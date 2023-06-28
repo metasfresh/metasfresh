@@ -422,12 +422,13 @@ public class SourceDocumentsService
 		}
 		else
 		{
-			if (CurrencyId.equals(forexContractRef.getOrderCurrencyId(), invoiceCurrencyId))
+			if (!CurrencyId.equals(forexContractRef.getOrderCurrencyId(), invoiceCurrencyId))
 			{
 				throw new AdempiereException("FEC contract and invoice currency does not match")
 						.appendParametersToMessage()
 						.setParameter("forexContractRef", forexContractRef)
-						.setParameter("invoiceCurrencyId", invoiceCurrencyId);
+						.setParameter("invoiceCurrencyId", invoiceCurrencyId)
+						.setParameter("invoice", invoice);
 			}
 
 			final ForexContractId forexContractId = forexContractRef.getForexContractId();

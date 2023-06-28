@@ -161,13 +161,14 @@ public class AmountTest
 		void sameCurrency_and_nulls()
 		{
 			final CurrencyCode currency = Amount.getCommonCurrencyCodeOfAll(
-					amt("1", "EUR"),
-					null,
-					amt("2", "EUR"),
-					null,
-					null,
-					amt("3", "EUR")
-			);
+							amt("1", "EUR"),
+							null,
+							amt("2", "EUR"),
+							null,
+							null,
+							amt("3", "EUR")
+					)
+					.orElse(null);
 			assertThat(currency).isEqualTo(CurrencyCode.EUR);
 		}
 

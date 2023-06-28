@@ -37,8 +37,8 @@ public class GPLRReportLineItem
 	@Nullable String batchNo;
 
 	@Nullable
-	public CurrencyCode getForeignCurrency() {return Amount.getCommonCurrencyCodeOfAll(priceFC, amountFC);}
+	public CurrencyCode getForeignCurrency() {return Amount.getCommonCurrencyCodeOfAll(priceFC, amountFC).orElse(null);}
 
 	@Nullable
-	public CurrencyCode getLocalCurrency() {return Amount.getCommonCurrencyCodeOfAll(amountLC);}
+	public CurrencyCode getLocalCurrency() {return Amount.getCommonCurrencyCodeOfAll(amountLC).orElse(null);}
 }

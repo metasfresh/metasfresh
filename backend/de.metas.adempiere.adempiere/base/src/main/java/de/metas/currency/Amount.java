@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -138,7 +139,7 @@ public class Amount implements Comparable<Amount>
 		}
 	}
 
-	public static CurrencyCode getCommonCurrencyCodeOfAll(@Nullable final Amount... amounts)
+	public static Optional<CurrencyCode> getCommonCurrencyCodeOfAll(@Nullable final Amount... amounts)
 	{
 		if (amounts == null || amounts.length <= 0)
 		{
@@ -152,11 +153,11 @@ public class Amount implements Comparable<Amount>
 				.collect(ImmutableList.toImmutableList());
 		if (currencies.isEmpty())
 		{
-			throw new AdempiereException("The given moneys may not be empty");
+			return Optional.empty();
 		}
 		else if (currencies.size() == 1)
 		{
-			return currencies.get(0);
+			return Optional.of(currencies.get(0));
 		}
 		else
 		{
