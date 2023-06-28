@@ -28,6 +28,7 @@ class GPLRReportLineItem_Mapper
 		record.setLine(from.getLineCode());
 		record.setDescription(from.getDescription());
 		record.setC_UOM_ID(from.getQty() != null ? from.getQty().getUomId().getRepoId() : -1);
+		record.setUOMSymbol(from.getQty() != null ? from.getQty().getUOMSymbol() : null);
 		record.setQty(from.getQty() != null ? from.getQty().toBigDecimal() : null);
 
 		final CurrencyCode localCurrency = from.getLocalCurrency();

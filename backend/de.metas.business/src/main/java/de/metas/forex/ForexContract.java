@@ -135,4 +135,40 @@ public class ForexContract
 				.build();
 	}
 
+	public CurrencyId getLocalCurrencyIdByForeignCurrencyId(final CurrencyId foreignCurrencyId)
+	{
+		if (CurrencyId.equals(currencyId, foreignCurrencyId))
+		{
+			return toCurrencyId;
+		}
+		else if (CurrencyId.equals(toCurrencyId, foreignCurrencyId))
+		{
+			return currencyId;
+		}
+		else
+		{
+			throw new AdempiereException("FEC contract and foreign currency are not matching")
+					.appendParametersToMessage()
+					.setParameter("contact", this)
+					.setParameter("foreignCurrencyId", foreignCurrencyId);
+		}
+	}
+
+	public BigDecimal getCurrencyRate(final CurrencyId fromCurrencyId, final CurrencyId toCurrencyId)
+	{
+		if (CurrencyId.equals(this.currencyId, fromCurrencyId)
+				&& CurrencyId.equals(this.toCurrencyId, toCurrencyId))
+		{
+			return currencyRate;
+		}
+		else
+		{
+			throw new AdempiereException("Cannot determine currency rate")
+					.appendParametersToMessage()
+					.setParameter("contact", this)
+					.setParameter("fromCurrencyId", fromCurrencyId)
+					.setParameter("toCurrencyId", toCurrencyId);
+		}
+	}
+
 }

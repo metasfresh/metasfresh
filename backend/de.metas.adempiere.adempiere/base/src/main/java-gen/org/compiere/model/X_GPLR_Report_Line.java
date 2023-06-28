@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_GPLR_Report_Line extends org.compiere.model.PO implements I_GPLR_Report_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1588563245L;
+	private static final long serialVersionUID = -1654777739L;
 
     /** Standard Constructor */
     public X_GPLR_Report_Line (final Properties ctx, final int GPLR_Report_Line_ID, @Nullable final String trxName)
@@ -226,5 +226,17 @@ public class X_GPLR_Report_Line extends org.compiere.model.PO implements I_GPLR_
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setUOMSymbol (final @Nullable java.lang.String UOMSymbol)
+	{
+		set_Value (COLUMNNAME_UOMSymbol, UOMSymbol);
+	}
+
+	@Override
+	public java.lang.String getUOMSymbol() 
+	{
+		return get_ValueAsString(COLUMNNAME_UOMSymbol);
 	}
 }

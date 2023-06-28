@@ -407,6 +407,27 @@ public interface I_GPLR_Report_Line
 	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
+	 * Set UOM Symbol.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUOMSymbol (@Nullable java.lang.String UOMSymbol);
+
+	/**
+	 * Get UOM Symbol.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUOMSymbol();
+
+	ModelColumn<I_GPLR_Report_Line, Object> COLUMN_UOMSymbol = new ModelColumn<>(I_GPLR_Report_Line.class, "UOMSymbol", null);
+	String COLUMNNAME_UOMSymbol = "UOMSymbol";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

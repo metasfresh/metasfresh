@@ -2,7 +2,6 @@ package de.metas.gplr.source.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.order.OrderLineId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.sectionCode.SectionCode;
@@ -24,7 +23,7 @@ public class SourceOrder
 	@NonNull SourceBPartnerInfo bpartner;
 	@Nullable String frameContractNo;
 	@NonNull Optional<SectionCode> sectionCode;
-	@NonNull CurrencyCode currencyCode;
+	@NonNull SourceCurrencyInfo currencyInfo;
 	@NonNull Instant dateOrdered;
 	@Nullable String poReference;
 	@NonNull PaymentTerm paymentTerm;
@@ -40,11 +39,11 @@ public class SourceOrder
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Amount getEstimatedOrderCostAmount()
+	public Amount getEstimatedOrderCostAmountFC()
 	{
 		return orderCosts.stream()
-				.map(SourceOrderCost::getCostAmount)
+				.map(SourceOrderCost::getCostAmountFC)
 				.reduce(Amount::add)
-				.orElseGet(() -> Amount.zero(currencyCode));
+				.orElseGet(() -> Amount.zero(currencyInfo.getForeignCurrencyCode()));
 	}
 }

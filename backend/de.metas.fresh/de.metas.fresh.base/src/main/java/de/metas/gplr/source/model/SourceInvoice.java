@@ -29,6 +29,6 @@ public class SourceInvoice
 	@NonNull PaymentTerm paymentTerm;
 	@Nullable LocalDateAndOrgId dueDate;
 	@Nullable String descriptionBottom;
-	@NonNull Amount linesNetAmt;
-	@NonNull Amount taxAmt;
+	@NonNull Amount linesNetAmtFC;
+	@NonNull Amount taxAmtFC;
 }

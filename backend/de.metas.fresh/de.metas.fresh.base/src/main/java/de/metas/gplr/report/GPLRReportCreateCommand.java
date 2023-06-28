@@ -115,14 +115,14 @@ final class GPLRReportCreateCommand
 		final CurrencyConversionContext currencyConversionCtx = currencyInfo.getConversionCtx();
 		final UnaryOperator<Amount> toLocal = amountFC -> moneyService.convertToCurrency(amountFC, localCurrency, currencyConversionCtx);
 
-		final Amount estimatedFC = salesOrder.getEstimatedOrderCostAmount();
+		final Amount estimatedFC = salesOrder.getEstimatedOrderCostAmountFC();
 
 		return GPLRReportSummary.builder()
 				.localCurrency(localCurrency)
 				.foreignCurrency(foreignCurrency)
-				.salesFC(salesInvoice.getLinesNetAmt())
-				.salesLC(toLocal.apply(salesInvoice.getLinesNetAmt()))
-				.taxesLC(toLocal.apply(salesInvoice.getTaxAmt()))
+				.salesFC(salesInvoice.getLinesNetAmtFC())
+				.salesLC(toLocal.apply(salesInvoice.getLinesNetAmtFC()))
+				.taxesLC(toLocal.apply(salesInvoice.getTaxAmtFC()))
 				.estimatedFC(estimatedFC)
 				.estimatedLC(toLocal.apply(estimatedFC))
 				.cogsLC(Amount.zero(localCurrency)) // TODO: get them from shipment accounting
@@ -165,8 +165,7 @@ final class GPLRReportCreateCommand
 		return salesOrder.getSectionCode().flatMap(sectionCode -> departmentService.getDepartmentBySectionCodeId(sectionCode.getSectionCodeId(), salesOrder.getDateOrdered()));
 	}
 
-	@Nullable
-	private GPLRCurrencyInfo toCurrencyInfo(final SourceCurrencyInfo currencyInfo)
+	private static GPLRCurrencyInfo toCurrencyInfo(final SourceCurrencyInfo currencyInfo)
 	{
 		return GPLRCurrencyInfo.builder()
 				.foreignCurrency(currencyInfo.getForeignCurrencyCode())
@@ -363,7 +362,7 @@ final class GPLRReportCreateCommand
 				.orderLineNo(purchaseOrderLine != null ? formatOrderLineNo(purchaseOrderLine.getLineNo()) : null)
 				.costTypeName(purchaseOrderCost.getCostTypeName())
 				.vendor(purchaseOrderCost.getVendor() != null ? toBPartnerName(purchaseOrderCost.getVendor()) : null)
-				.amountFC(purchaseOrderCost.getCostAmount())
+				.amountFC(purchaseOrderCost.getCostAmountFC())
 				.amountLC(null) // TODO
 				.build();
 	}

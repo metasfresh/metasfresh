@@ -70,4 +70,22 @@ public class ForexContractRef
 	 */
 	@NonNull
 	public CurrencyId getLocalCurrencyId() {return CurrencyId.equals(fromCurrencyId, orderCurrencyId) ? toCurrencyId : fromCurrencyId;}
+
+	public BigDecimal getCurrencyRate(final CurrencyId fromCurrencyId, final CurrencyId toCurrencyId)
+	{
+		if (CurrencyId.equals(this.fromCurrencyId, fromCurrencyId)
+				&& CurrencyId.equals(this.toCurrencyId, toCurrencyId))
+		{
+			return currencyRate;
+		}
+		else
+		{
+			throw new AdempiereException("Cannot determine currency rate")
+					.appendParametersToMessage()
+					.setParameter("contact", this)
+					.setParameter("fromCurrencyId", fromCurrencyId)
+					.setParameter("toCurrencyId", toCurrencyId);
+		}
+	}
+
 }

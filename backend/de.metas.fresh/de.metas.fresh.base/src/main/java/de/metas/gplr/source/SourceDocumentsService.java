@@ -13,6 +13,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.forex.ForexContract;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
 import de.metas.forex.ForexContractService;
@@ -152,7 +153,7 @@ public class SourceDocumentsService
 					.bpartner(getBPartnerInfo(order))
 					.frameContractNo(extractFrameContractNo(order))
 					.sectionCode(SectionCodeId.optionalOfRepoId(order.getM_SectionCode_ID()).map(sectionCodeService::getById))
-					.currencyCode(moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(order.getC_Currency_ID())))
+					.currencyInfo(extractCurrencyInfo(order))
 					.dateOrdered(order.getDateOrdered().toInstant())
 					.poReference(StringUtils.trimBlankToNull(order.getPOReference()))
 					.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID())))
@@ -172,6 +173,45 @@ public class SourceDocumentsService
 				.purchaseOrders(purchaseOrders.stream()
 						.map(toOrderAndLines)
 						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Order order)
+	{
+		final CurrencyConversionContext conversionCtx = orderBL.getCurrencyConversionContext(order);
+
+		final CurrencyId foreignCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
+		CurrencyCode foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
+		final CurrencyCode localCurrency;
+		final BigDecimal currencyRate;
+		final String forexContractNo;
+
+		final ImmutableList<ForexContract> forexContracts = forexContractService.getContractsByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+		// TODO: what to do when an order is assigned to multiple FEC contacts?
+		ForexContract forexContract = forexContracts.size() == 1 ? forexContracts.get(0) : null;
+		if (forexContract == null)
+		{
+			forexContractNo = null;
+
+			final CurrencyId localCurrencyId = acctSchemaBL.getAcctCurrencyId(ClientId.ofRepoId(order.getAD_Client_ID()), OrgId.ofRepoId(order.getAD_Org_ID()));
+			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
+
+			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx).getConversionRate();
+		}
+		else
+		{
+			forexContractNo = forexContract.getDocumentNo();
+			final CurrencyId localCurrencyId = forexContract.getLocalCurrencyIdByForeignCurrencyId(foreignCurrencyId);
+			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
+			currencyRate = forexContract.getCurrencyRate(foreignCurrencyId, localCurrencyId);
+		}
+
+		return SourceCurrencyInfo.builder()
+				.currencyRate(currencyRate)
+				.foreignCurrencyCode(foreignCurrency)
+				.localCurrencyCode(localCurrency)
+				.fecDocumentNo(forexContractNo)
+				.conversionCtx(conversionCtx)
 				.build();
 	}
 
@@ -214,7 +254,7 @@ public class SourceDocumentsService
 	{
 		return SourceOrderCost.builder()
 				.costTypeName(orderCostService.getCostTypeById(orderCost.getCostTypeId()).getName())
-				.costAmount(orderCost.getCostAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
+				.costAmountFC(orderCost.getCostAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.vendor(orderCost.getBpartnerId() != null ? prepareBPartnerInfo(orderCost.getBpartnerId()).build() : null)
 				.basedOnOrderLineIds(orderCost.getDetails()
 						.stream()
@@ -307,8 +347,8 @@ public class SourceDocumentsService
 				.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(invoice.getC_PaymentTerm_ID())))
 				.dueDate(LocalDateAndOrgId.ofNullableTimestamp(invoice.getDueDate(), orgId, orgDAO::getTimeZone))
 				.descriptionBottom(StringUtils.trimBlankToNull(invoice.getDescriptionBottom()))
-				.linesNetAmt(Amount.of(invoice.getTotalLines(), currencyCode))
-				.taxAmt(Amount.of(invoice.getGrandTotal().subtract(invoice.getTotalLines()), currencyCode)) // TODO shall we consider reverse charge taxes too? in that case we shall sum up the ReverseChargeTaxAmt and TaxAmt from C_Invoice_Tax
+				.linesNetAmtFC(Amount.of(invoice.getTotalLines(), currencyCode))
+				.taxAmtFC(Amount.of(invoice.getGrandTotal().subtract(invoice.getTotalLines()), currencyCode))
 				.build();
 	}
 
@@ -335,6 +375,7 @@ public class SourceDocumentsService
 	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Invoice invoice)
 	{
 		final CurrencyConversionContext conversionCtx = invoiceBL.getCurrencyConversionCtx(invoice);
+		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
 		final BigDecimal currencyRate;
 		final CurrencyCode localCurrency;
@@ -348,21 +389,30 @@ public class SourceDocumentsService
 
 			final CurrencyId localCurrencyId = acctSchemaBL.getAcctCurrencyId(ClientId.ofRepoId(invoice.getAD_Client_ID()), OrgId.ofRepoId(invoice.getAD_Org_ID()));
 			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
-			final CurrencyId foreignCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
+			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(invoiceCurrencyId);
 
 			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx).getConversionRate();
 		}
 		else
 		{
+			if (CurrencyId.equals(forexContractRef.getOrderCurrencyId(), invoiceCurrencyId))
+			{
+				throw new AdempiereException("FEC contract and invoice currency does not match")
+						.appendParametersToMessage()
+						.setParameter("forexContractRef", forexContractRef)
+						.setParameter("invoiceCurrencyId", invoiceCurrencyId);
+			}
+
 			final ForexContractId forexContractId = forexContractRef.getForexContractId();
 			forexContractNo = forexContractId != null
 					? forexContractService.getById(forexContractId).getDocumentNo()
 					: null;
 
-			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getForeignCurrencyId());
-			localCurrency = moneyService.getCurrencyCodeByCurrencyId(forexContractRef.getLocalCurrencyId());
-			currencyRate = forexContractRef.getCurrencyRate();
+			final CurrencyId foreignCurrencyId = forexContractRef.getForeignCurrencyId();
+			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
+			final CurrencyId localCurrencyId = forexContractRef.getLocalCurrencyId();
+			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
+			currencyRate = forexContractRef.getCurrencyRate(foreignCurrencyId, localCurrencyId);
 		}
 
 		return SourceCurrencyInfo.builder()

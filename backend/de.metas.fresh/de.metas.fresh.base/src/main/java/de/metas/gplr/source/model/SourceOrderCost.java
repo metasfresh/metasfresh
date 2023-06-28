@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 public class SourceOrderCost
 {
 	@NonNull String costTypeName;
-	@NonNull Amount costAmount;
+	@NonNull Amount costAmountFC;
 	@Nullable SourceBPartnerInfo vendor;
 	@NonNull ImmutableSet<OrderLineId> basedOnOrderLineIds;
 
