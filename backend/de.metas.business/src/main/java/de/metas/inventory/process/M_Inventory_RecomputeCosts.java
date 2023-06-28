@@ -114,7 +114,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 						+ ", p_M_CostElement_ID:=" + costElement.getId().getRepoId()
 						+ ", p_m_product_selection_id:=" + productsSelectionId.getRepoId()
 						+ " , p_ReorderDocs_DateAcct_Trunc:='MM'"
-						+ ", p_StartDateAcct:='" + DB.TO_SQL(startDate) + "'::date)"  //
+						+ ", p_StartDateAcct:=" + DB.TO_SQL(startDate) + "::date)"  //
 				, null //
 		);
 	}
