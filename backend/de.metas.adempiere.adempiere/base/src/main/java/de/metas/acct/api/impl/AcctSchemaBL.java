@@ -26,8 +26,11 @@ import ch.qos.logback.classic.Level;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -38,7 +41,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -53,6 +58,20 @@ public class AcctSchemaBL implements IAcctSchemaBL
 {
 	private final Logger logger = LogManager.getLogger(AcctSchemaBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+
+	@Override
+	public CurrencyId getAcctCurrencyId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		final AcctSchemaId acctSchemaId = acctSchemaDAO.getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
+		if (acctSchemaId == null)
+		{
+			throw new AdempiereException("No Accounting Schema found for " + clientId + " and " + orgId);
+		}
+
+		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
+		return acctSchema.getCurrencyId();
+	}
 
 	@Override
 	public void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable final OrgId orgId)
