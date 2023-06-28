@@ -361,7 +361,7 @@ public interface I_GPLR_Report
 	 * Set Purchase Invoice.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setPurchase_Invoice_ID (int Purchase_Invoice_ID);
@@ -370,14 +370,14 @@ public interface I_GPLR_Report
 	 * Get Purchase Invoice.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getPurchase_Invoice_ID();
 
-	org.compiere.model.I_C_Invoice getPurchase_Invoice();
+	@Nullable org.compiere.model.I_C_Invoice getPurchase_Invoice();
 
-	void setPurchase_Invoice(org.compiere.model.I_C_Invoice Purchase_Invoice);
+	void setPurchase_Invoice(@Nullable org.compiere.model.I_C_Invoice Purchase_Invoice);
 
 	ModelColumn<I_GPLR_Report, org.compiere.model.I_C_Invoice> COLUMN_Purchase_Invoice_ID = new ModelColumn<>(I_GPLR_Report.class, "Purchase_Invoice_ID", org.compiere.model.I_C_Invoice.class);
 	String COLUMNNAME_Purchase_Invoice_ID = "Purchase_Invoice_ID";

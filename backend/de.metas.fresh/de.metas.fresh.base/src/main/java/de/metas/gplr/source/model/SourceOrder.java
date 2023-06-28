@@ -12,6 +12,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value
@@ -51,6 +52,7 @@ public class SourceOrder
 	{
 		return lines.stream()
 				.map(SourceOrderLine::getCogsLC)
+				.filter(Objects::nonNull)
 				.reduce(Amount::add)
 				.orElseGet(() -> Amount.zero(currencyInfo.getLocalCurrencyCode()));
 	}

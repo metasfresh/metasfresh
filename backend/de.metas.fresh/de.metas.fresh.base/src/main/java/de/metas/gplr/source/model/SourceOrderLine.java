@@ -21,7 +21,7 @@ public class SourceOrderLine
 	@NonNull String productName;
 	@NonNull Quantity qtyEntered;
 	@NonNull Amount priceFC;
-	@NonNull Amount cogsLC;
+	@Nullable Amount cogsLC;
 	@Nullable String batchNo;
 	@NonNull Amount lineNetAmtFC;
 	@NonNull Amount taxAmtFC;

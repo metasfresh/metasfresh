@@ -278,9 +278,9 @@ final class GPLRReportCreateCommand
 			for (final SourceOrderLine salesOrderLine : salesOrder.getLines())
 			{
 				result.add(createGPLRReportLine_DocumentLine(salesOrderLine, salesOrder));
-				result.add(createGPLRReportLine_Price(salesOrderLine, currencyInfo));
-				result.add(createGPLRReportLine_VAT(salesOrderLine, currencyInfo));
-				result.add(createGPLRReportLine_COGS(salesOrderLine));
+				result.add(createGPLRReportLine_Price(salesOrderLine, salesOrder, currencyInfo));
+				result.add(createGPLRReportLine_VAT(salesOrderLine, salesOrder, currencyInfo));
+				result.add(createGPLRReportLine_COGS(salesOrderLine, salesOrder));
 			}
 		}
 
@@ -293,8 +293,8 @@ final class GPLRReportCreateCommand
 			for (final SourceOrderLine purchaseOrderLine : purchaseOrder.getLines())
 			{
 				result.add(createGPLRReportLine_DocumentLine(purchaseOrderLine, purchaseOrder));
-				result.add(createGPLRReportLine_Price(purchaseOrderLine, currencyInfo));
-				result.add(createGPLRReportLine_VAT(purchaseOrderLine, currencyInfo));
+				result.add(createGPLRReportLine_Price(purchaseOrderLine, purchaseOrder, currencyInfo));
+				result.add(createGPLRReportLine_VAT(purchaseOrderLine, purchaseOrder, currencyInfo));
 			}
 		}
 
@@ -303,10 +303,11 @@ final class GPLRReportCreateCommand
 		return result.build();
 	}
 
-	private GPLRReportLineItem createGPLRReportLine_COGS(final SourceOrderLine orderLine)
+	private GPLRReportLineItem createGPLRReportLine_COGS(final SourceOrderLine salesOrderLine, final SourceOrder salesOrder)
 	{
-		final Amount cogsLC = orderLine.getCogsLC();
+		final Amount cogsLC = salesOrderLine.getCogsLC();
 		return GPLRReportLineItem.builder()
+				.documentNo(salesOrder.getDocumentNo())
 				.lineCode("VPRS")
 				.description("Cost")
 				.amountFC(null)
@@ -314,10 +315,11 @@ final class GPLRReportCreateCommand
 				.build();
 	}
 
-	private GPLRReportLineItem createGPLRReportLine_VAT(final SourceOrderLine salesOrderLine, final SourceCurrencyInfo currencyInfo)
+	private GPLRReportLineItem createGPLRReportLine_VAT(final SourceOrderLine salesOrderLine, final SourceOrder order, final SourceCurrencyInfo currencyInfo)
 	{
 		final Amount taxAmtFC = salesOrderLine.getTaxAmtFC();
 		return GPLRReportLineItem.builder()
+				.documentNo(order.getDocumentNo())
 				.lineCode("MWST")
 				.description(salesOrderLine.getTax().toRenderedString())
 				.amountFC(taxAmtFC)
@@ -325,10 +327,11 @@ final class GPLRReportCreateCommand
 				.build();
 	}
 
-	private GPLRReportLineItem createGPLRReportLine_Price(final SourceOrderLine orderLine, final SourceCurrencyInfo currencyInfo)
+	private GPLRReportLineItem createGPLRReportLine_Price(final SourceOrderLine orderLine, final SourceOrder order, final SourceCurrencyInfo currencyInfo)
 	{
 		final Amount lineNetAmtFC = orderLine.getLineNetAmtFC();
 		return GPLRReportLineItem.builder()
+				.documentNo(order.getDocumentNo())
 				.lineCode("PR00")
 				.description("Price")
 				.amountFC(lineNetAmtFC)

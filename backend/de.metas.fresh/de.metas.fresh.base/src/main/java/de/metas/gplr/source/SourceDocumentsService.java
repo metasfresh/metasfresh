@@ -3,6 +3,8 @@ package de.metas.gplr.source;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.Amount;
@@ -40,6 +42,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.InvoiceDAO;
+import de.metas.lang.SOTrx;
 import de.metas.location.ILocationBL;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
@@ -72,6 +75,10 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
@@ -99,13 +106,16 @@ public class SourceDocumentsService
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	@NonNull final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 
 	@NonNull private final SectionCodeService sectionCodeService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -146,7 +156,7 @@ public class SourceDocumentsService
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID()),
-						this::toSourceOrderLine
+						orderLine -> toSourceOrderLine(orderLine, SOTrx.ofBoolean(orderLine.getC_Order_ID() == salesOrderId.getRepoId()))
 				));
 
 		final Function<I_C_Order, SourceOrder> toOrderAndLines = order -> {
@@ -244,10 +254,11 @@ public class SourceDocumentsService
 				.orElseThrow(() -> new AdempiereException("Failed extracting document location from " + order));
 	}
 
-	private SourceOrderLine toSourceOrderLine(@NonNull final I_C_OrderLine orderLine)
+	private SourceOrderLine toSourceOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final SOTrx soTrx)
 	{
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final I_M_Product product = productBL.getById(productId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 
 		final CurrencyCode currency = moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
@@ -259,8 +270,8 @@ public class SourceDocumentsService
 				.productName(product.getName())
 				.qtyEntered(orderBL.getQtyEntered(orderLine))
 				.priceFC(Amount.of(orderLine.getPriceActual(), currency))
-				.cogsLC(Amount.zero(moneyService.getBaseCurrencyCode(ClientAndOrgId.ofClientAndOrg(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID())))) // TODO fetch it from shipment's Fact_Acct
-				.batchNo(null) // TODO fetch it from M_Delivery_Planning.Batch
+				.cogsLC(soTrx.isSales() ? getCOGS_LC(orderLine) : null)
+				.batchNo(attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId))
 				.lineNetAmtFC(Amount.of(orderLine.getLineNetAmt(), currency))
 				.taxAmtFC(Amount.of(orderLine.getTaxAmtInfo(), currency))
 				.tax(extractSourceTaxInfo(orderLine))
@@ -578,4 +589,16 @@ public class SourceDocumentsService
 				.lastName(StringUtils.trimBlankToNull(user.getLastname()))
 				.build();
 	}
+
+	private Amount getCOGS_LC(@NonNull final I_C_OrderLine salesOrderLine)
+	{
+		final OrderLineId salesOrderLineId = OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID());
+		final AcctSchemaId acctSchemaId = acctSchemaBL.getAcctSchemaIdByClientAndOrg(
+				ClientId.ofRepoId(salesOrderLine.getAD_Client_ID()),
+				OrgId.ofRepoId(salesOrderLine.getAD_Org_ID()));
+
+		return inoutBL.getCOGSBySalesOrderId(salesOrderLineId, acctSchemaId)
+				.toAmount(moneyService::getCurrencyCodeByCurrencyId);
+	}
+
 }
