@@ -9,14 +9,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -103,43 +103,39 @@ public class InventoryDAO implements IInventoryDAO
 	}
 
 	@Override
-	public Set<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<Integer> invetoryIds)
+	public Set<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<InventoryId> inventoryIds)
 	{
-		if (invetoryIds.isEmpty())
+		if (inventoryIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final List<ProductId> list =
-				queryBL.createQueryBuilder(I_M_InventoryLine.class)
-						.addInArrayFilter(I_M_InventoryLine.COLUMN_M_Inventory_ID, invetoryIds)
-						.andCollectChildren(I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_Product.class)
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
-						.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID, ProductId.class);
+		final List<ProductId> productIds = queryBL.createQueryBuilder(I_M_InventoryLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InventoryLine.COLUMN_M_Inventory_ID, inventoryIds)
+				.create()
+				.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID, ProductId.class);
 
-		return ImmutableSet.copyOf(list);
+		return ImmutableSet.copyOf(productIds);
 	}
 
 	@Override
-	public Timestamp retrieveMinInvetoryDateFromSelection(@NonNull final Collection<Integer> invetoryIds)
+	public Optional<Instant> getMinInventoryDate(@NonNull final Collection<InventoryId> inventoryIds)
 	{
-		if (invetoryIds.isEmpty())
+		if (inventoryIds.isEmpty())
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		return queryBL.createQueryBuilder(I_M_Inventory.class)
-				.addInArrayFilter(I_M_Inventory.COLUMN_M_Inventory_ID, invetoryIds)
+				.addInArrayFilter(I_M_Inventory.COLUMN_M_Inventory_ID, inventoryIds)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_Inventory.COLUMN_MovementDate)
 				.create()
 				.stream()
 				.limit(1)
-				.map(inventory -> inventory.getMovementDate())
-				.findFirst()
-				.orElse(null);
+				.map(inventory -> inventory.getMovementDate().toInstant())
+				.findFirst();
 	}
 
 	@Override

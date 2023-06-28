@@ -23,9 +23,7 @@
 package de.metas.inventory.process;
 
 import de.metas.inventory.IInventoryBL;
-import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
-import de.metas.invoice.InvoiceId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -57,7 +55,7 @@ public class M_Inventory_Mark_As_Counted extends JavaProcess implements IProcess
 	protected String doIt() throws Exception
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-		inventoryBL.setInventoryLinesCounted(inventoryId);
+		inventoryBL.markInventoryLinesAsCounted(inventoryId);
 
 		return MSG_OK;
 	}

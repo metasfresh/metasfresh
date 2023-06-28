@@ -30,38 +30,36 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
-import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessPrecondition
 {
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final ICostElementRepository costElementRepository = SpringContextHolder.instance.getBean(ICostElementRepository.class);
 
 	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID, mandatory = true)
-	private int acctSchemaId;
+	private AcctSchemaId p_C_AcctSchema_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -77,56 +75,54 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Set<ProductId> productIds = inventoryDAO.retrieveUsedProductsByInventoryIds(getSelectedInventoryIds());
-		createProductsSelection(productIds);
+		final PInstanceId productsSelectionId = createProductsSelection();
+		final Instant startDate = getStartDate().minus(1, ChronoUnit.DAYS);
 
-		recomputeCosts();
+		getCostElements().forEach(costElement -> recomputeCosts(costElement, productsSelectionId, startDate));
 
 		return MSG_OK;
 	}
 
-	private int createProductsSelection(@NonNull final Set<ProductId> productIds)
+	private PInstanceId createProductsSelection()
 	{
-		final IQueryBuilder<I_M_Product> queryBuilder = queryBL
-				.createQueryBuilder(I_M_Product.class)
-				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, productIds)
-				.addOnlyActiveRecordsFilter();
+		final Set<ProductId> productIds = inventoryDAO.retrieveUsedProductsByInventoryIds(getSelectedInventoryIds());
+		if (productIds.isEmpty())
+		{
+			throw new AdempiereException("No Products");
+		}
 
-		return createSelection(queryBuilder, getPinstanceId());
+		return DB.createT_Selection(productIds, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private Set<Integer> getSelectedInventoryIds()
+	private Set<InventoryId> getSelectedInventoryIds()
 	{
 		return retrieveSelectedRecordsQueryBuilder(I_M_Inventory.class)
 				.create()
 				.listIds()
 				.stream()
+				.map(InventoryId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void recomputeCosts()
+	private void recomputeCosts(
+			@NonNull final CostElement costElement,
+			@NonNull final PInstanceId productsSelectionId,
+			@NonNull final Instant startDate)
 	{
-
-		final List<CostElement> costElements = getCostElements();
-		final Timestamp startDate = TimeUtil.addDays(getStartDate(), -1);
-
-		costElements.forEach(costElement -> {
-
-			DB.executeFunctionCallEx(getTrxName()
-					, "select \"de_metas_acct\".product_costs_recreate_from_date( p_C_AcctSchema_ID :="+getAccountingSchemaId().getRepoId()
-											 + ", p_M_CostElement_ID:=" + costElement.getId().getRepoId()
-											 + ", p_m_product_selection_id:=" + getPinstanceId().getRepoId()
-											 +" , p_ReorderDocs_DateAcct_Trunc:='MM'"
-									 		 + ", p_StartDateAcct:='"+startDate +"'::date)"  //
-					, null //
-			);
-		});
-
+		DB.executeFunctionCallEx(getTrxName()
+				, "select \"de_metas_acct\".product_costs_recreate_from_date( p_C_AcctSchema_ID :=" + getAccountingSchemaId().getRepoId()
+						+ ", p_M_CostElement_ID:=" + costElement.getId().getRepoId()
+						+ ", p_m_product_selection_id:=" + productsSelectionId.getRepoId()
+						+ " , p_ReorderDocs_DateAcct_Trunc:='MM'"
+						+ ", p_StartDateAcct:='" + DB.TO_SQL(startDate) + "'::date)"  //
+				, null //
+		);
 	}
 
-	private Timestamp getStartDate()
+	private Instant getStartDate()
 	{
-		return inventoryDAO.retrieveMinInvetoryDateFromSelection(getSelectedInventoryIds());
+		return inventoryDAO.getMinInventoryDate(getSelectedInventoryIds())
+				.orElseThrow(() -> new AdempiereException("Cannot determine Start Date"));
 	}
 
 	private List<CostElement> getCostElements()
@@ -137,9 +133,5 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 		return costElementRepository.getMaterialCostingElementsForCostingMethod(costingMethod);
 	}
 
-	private AcctSchemaId getAccountingSchemaId()
-	{
-		return AcctSchemaId.ofRepoId(acctSchemaId);
-	}
-
+	private AcctSchemaId getAccountingSchemaId() {return p_C_AcctSchema_ID;}
 }

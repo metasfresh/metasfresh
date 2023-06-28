@@ -44,8 +44,6 @@ public interface ICostElementRepository
 
 	List<CostElement> getMaterialCostingMethods(ClientId adClientId);
 
-	List<CostElement> getNonCostingMethods(ClientId adClientId);
-
 	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
 
 	Set<CostElementId> getActiveCostElementIds();

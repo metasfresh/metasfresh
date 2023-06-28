@@ -47,5 +47,5 @@ public interface IInventoryBL extends ISingletonService
 
 	void setDefaultInternalChargeId(I_M_InventoryLine inventoryLine);
 
-	void setInventoryLinesCounted(@NonNull InventoryId inventoryId);
+	void markInventoryLinesAsCounted(@NonNull InventoryId inventoryId);
 }
