@@ -76,7 +76,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 	<title>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="120" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="330d385b-e922-417a-a2d6-01b6b42de7a5"/>
+				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="100" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="330d385b-e922-417a-a2d6-01b6b42de7a5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -85,6 +85,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Courier New" size="9" isBold="true"/>
+					<paragraph leftIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{so}]]></textFieldExpression>
 			</textField>
@@ -103,7 +104,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				</graphicElement>
 			</rectangle>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-66" x="10" y="0" width="120" height="12" forecolor="#000000" uuid="b46161f0-4d9e-45a5-91b6-3efdcb844d59"/>
+				<reportElement key="textField-66" x="20" y="0" width="100" height="12" forecolor="#000000" uuid="b46161f0-4d9e-45a5-91b6-3efdcb844d59"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -116,7 +117,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				<textFieldExpression><![CDATA[$R{order}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-67" x="130" y="0" width="209" height="12" forecolor="#000000" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
+				<reportElement key="textField-67" x="120" y="0" width="219" height="12" forecolor="#000000" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -142,7 +143,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				<textFieldExpression><![CDATA[$R{contract}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-70" x="480" y="1" width="119" height="12" forecolor="#000000" uuid="702bb2f4-7b83-403d-b760-efc240fa593f"/>
+				<reportElement key="textField-70" x="480" y="1" width="89" height="12" forecolor="#000000" uuid="702bb2f4-7b83-403d-b760-efc240fa593f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -155,7 +156,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				<textFieldExpression><![CDATA[$R{customerspo}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-72" x="620" y="0" width="160" height="12" forecolor="#000000" uuid="1b779eb3-8090-47b4-96fa-07a2a2b3b03f"/>
+				<reportElement key="textField-72" x="569" y="0" width="210" height="12" forecolor="#000000" uuid="1b779eb3-8090-47b4-96fa-07a2a2b3b03f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -173,7 +174,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 		<band height="14" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-66" isPrintRepeatedValues="false" x="10" y="0" width="120" height="12" forecolor="#000000" uuid="b78e12f5-4ca9-4628-8c41-ae9bd692b19c"/>
+				<reportElement key="textField-66" isPrintRepeatedValues="false" x="20" y="0" width="100" height="12" forecolor="#000000" uuid="b78e12f5-4ca9-4628-8c41-ae9bd692b19c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -186,7 +187,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-67" x="130" y="0" width="209" height="12" forecolor="#000000" uuid="726e8f52-6ffb-498a-879a-be979fa2127d"/>
+				<reportElement key="textField-67" x="120" y="0" width="219" height="12" forecolor="#000000" uuid="726e8f52-6ffb-498a-879a-be979fa2127d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -213,7 +214,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				<textFieldExpression><![CDATA[$F{framecontractno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-70" x="480" y="1" width="119" height="12" forecolor="#000000" uuid="66939f75-b163-4dd5-834d-2ca59f9dcd34"/>
+				<reportElement key="textField-70" x="480" y="1" width="89" height="12" forecolor="#000000" uuid="66939f75-b163-4dd5-834d-2ca59f9dcd34"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -226,7 +227,7 @@ FROM GPLR_Report_SalesOrder order by GPLR_Report_SalesOrder_id
 				<textFieldExpression><![CDATA[$F{poreference}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-72" x="620" y="0" width="160" height="12" forecolor="#000000" uuid="c5ccfc5e-fc0f-4d46-9310-a827eb9b0b63"/>
+				<reportElement key="textField-72" x="569" y="0" width="210" height="12" forecolor="#000000" uuid="c5ccfc5e-fc0f-4d46-9310-a827eb9b0b63"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
