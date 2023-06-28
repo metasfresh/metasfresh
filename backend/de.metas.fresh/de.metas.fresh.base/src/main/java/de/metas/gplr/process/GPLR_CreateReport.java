@@ -1,6 +1,6 @@
 package de.metas.gplr.process;
 
-import de.metas.gplr.GPLRReportService;
+import de.metas.gplr.report.GPLRReportService;
 import de.metas.invoice.InvoiceId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
