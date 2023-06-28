@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 24361568L;
+	private static final long serialVersionUID = 523988552L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -643,6 +643,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public org.compiere.model.I_C_Country getC_Tax_Departure_Country()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Tax_Departure_Country(final org.compiere.model.I_C_Country C_Tax_Departure_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class, C_Tax_Departure_Country);
+	}
+
+	@Override
+	public void setC_Tax_Departure_Country_ID (final int C_Tax_Departure_Country_ID)
+	{
+		if (C_Tax_Departure_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+	}
+
+	@Override
+	public int getC_Tax_Departure_Country_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Tax_Departure_Country_ID);
+	}
+
+	@Override
 	public void setDateAcct (final java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
@@ -1125,7 +1152,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return get_ValueAsBoolean(COLUMNNAME_IsPrinted);
 	}
 
-	/**
+	/** 
 	 * IsPrintLocalCurrencyInfo AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1141,7 +1168,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getIsPrintLocalCurrencyInfo()
+	public java.lang.String getIsPrintLocalCurrencyInfo() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsPrintLocalCurrencyInfo);
 	}
@@ -1558,7 +1585,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString1()
+	public java.lang.String getUserElementString1() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString1);
 	}
@@ -1570,7 +1597,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString2()
+	public java.lang.String getUserElementString2() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString2);
 	}
@@ -1582,7 +1609,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString3()
+	public java.lang.String getUserElementString3() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString3);
 	}
@@ -1594,7 +1621,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString4()
+	public java.lang.String getUserElementString4() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString4);
 	}
@@ -1606,7 +1633,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString5()
+	public java.lang.String getUserElementString5() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString5);
 	}
@@ -1618,7 +1645,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString6()
+	public java.lang.String getUserElementString6() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString6);
 	}
@@ -1630,7 +1657,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString7()
+	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}

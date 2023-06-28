@@ -857,6 +857,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreditMemoReason = "CreditMemoReason";
 
 	/**
+	 * Set Tax Departure Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_Departure_Country_ID (int C_Tax_Departure_Country_ID);
+
+	/**
+	 * Get Tax Departure Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_Departure_Country_ID();
+
+	@Nullable org.compiere.model.I_C_Country getC_Tax_Departure_Country();
+
+	void setC_Tax_Departure_Country(@Nullable org.compiere.model.I_C_Country C_Tax_Departure_Country);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Country> COLUMN_C_Tax_Departure_Country_ID = new ModelColumn<>(I_C_Invoice.class, "C_Tax_Departure_Country_ID", org.compiere.model.I_C_Country.class);
+	String COLUMNNAME_C_Tax_Departure_Country_ID = "C_Tax_Departure_Country_ID";
+
+	/**
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *
@@ -1320,7 +1345,6 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Additional Text for Invoice.
-	 * If several invoice candidates are aggregated, add text to only one of them.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1330,7 +1354,6 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Additional Text for Invoice.
-	 * If several invoice candidates are aggregated, add text to only one of them.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1613,7 +1636,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1623,7 +1646,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2231,7 +2254,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
-	 * Set UserElementString1.
+	 * Set Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2240,7 +2263,7 @@ public interface I_C_Invoice
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get UserElementString1.
+	 * Get Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2252,7 +2275,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set UserElementString2.
+	 * Set Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2261,7 +2284,7 @@ public interface I_C_Invoice
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get UserElementString2.
+	 * Get Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2273,7 +2296,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set UserElementString3.
+	 * Set Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2282,7 +2305,7 @@ public interface I_C_Invoice
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get UserElementString3.
+	 * Get Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

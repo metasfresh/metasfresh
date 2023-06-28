@@ -236,7 +236,7 @@ pull_request_rules:
 # Act on PRs
 ############
 
-  - name: After UAT- or master-PR is integrated, add branch-label and delete the branch
+  - name: After UAT-PR is integrated, add branch-label and delete the branch
     conditions:
       - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
       - or: &ALL_BASE_BRANCHES # this rule should apply to both the project-branches from above, and master
@@ -254,11 +254,21 @@ pull_request_rules:
           - base=tenacious_d_hotfix
           - base=tasty_ham_hotfix
           - base=yoyo_hotfix
-          - base=master
     actions:
       label:
         add:
           - "branch:{{base}}"
+      delete_head_branch:
+
+  - name: After master-PR is integrated, add branch:master and in:5.177_master labels; also delete the branch
+    conditions:
+      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
+      - base=master
+    actions:
+      label:
+        add:
+          - "branch:{{base}}"
+          - "in:5.177_master"
       delete_head_branch:
 
   - name: Automatic squash-merge successful PRs into the base-branch
