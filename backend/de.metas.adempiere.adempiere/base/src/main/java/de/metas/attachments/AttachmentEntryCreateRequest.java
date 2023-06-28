@@ -1,23 +1,21 @@
 package de.metas.attachments;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Collection;
-
-import javax.activation.DataSource;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.report.server.ReportResult;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import com.google.common.collect.ImmutableList;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import javax.activation.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Collection;
 
 /*
  * #%L
@@ -43,28 +41,26 @@ import lombok.Value;
 
 @Value
 @Builder
-@ToString(exclude="data")
+@ToString(exclude = "data")
 public class AttachmentEntryCreateRequest
 {
 	public static AttachmentEntryCreateRequest fromURI(
 			@NonNull final String fileName,
 			@NonNull final URI uri)
 	{
-		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
+		return AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntryType.URL)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
 				.url(uri)
 				.build();
-		return request;
 	}
 
 	public static AttachmentEntryCreateRequest fromByteArray(
 			@NonNull final String fileName,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
-		final AttachmentEntryCreateRequest request = builderFromByteArray(fileName, data).build();
-		return request;
+		return builderFromByteArray(fileName, data).build();
 	}
 
 	public static AttachmentEntryCreateRequestBuilder builderFromByteArray(
@@ -89,7 +85,7 @@ public class AttachmentEntryCreateRequest
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed reading data from " + dataSource);
+			throw new AdempiereException("Failed reading data from " + dataSource, e);
 		}
 
 		return builder()
@@ -119,7 +115,7 @@ public class AttachmentEntryCreateRequest
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed reading data from " + resource);
+			throw new AdempiereException("Failed reading data from " + resource, e);
 		}
 
 		return builder()
@@ -149,6 +145,16 @@ public class AttachmentEntryCreateRequest
 				.filename(filename)
 				.contentType(contentType)
 				.data(data)
+				.build();
+	}
+
+	public static AttachmentEntryCreateRequest fromReport(@NonNull final ReportResult report)
+	{
+		return builder()
+				.type(AttachmentEntryType.Data)
+				.filename(report.getReportFilename())
+				.contentType(report.getOutputType().getContentType())
+				.data(report.getReportContent())
 				.build();
 	}
 
