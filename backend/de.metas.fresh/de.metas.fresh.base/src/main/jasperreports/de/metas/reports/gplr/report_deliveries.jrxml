@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_deliveries" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/gplr/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="GPLR_Report_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT *
+FROM GPLR_Report_Shipment order by GPLR_Report_ID, GPLR_Report_Shipment_ID
+;]]>
+	</queryString>
+	<field name="ad_client_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_client_id"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="created" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="created"/>
+	</field>
+	<field name="createdby" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="createdby"/>
+	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="gplr_report_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="gplr_report_id"/>
+	</field>
+	<field name="gplr_report_shipment_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="gplr_report_shipment_id"/>
+	</field>
+	<field name="incoterm_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="incoterm_code"/>
+	</field>
+	<field name="incotermlocation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="incotermlocation"/>
+	</field>
+	<field name="isactive" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isactive"/>
+	</field>
+	<field name="movementdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="movementdate"/>
+	</field>
+	<field name="shippinginfo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="shippinginfo"/>
+	</field>
+	<field name="shipto_bpartnername" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="shipto_bpartnername"/>
+	</field>
+	<field name="shipto_bpartnervalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="shipto_bpartnervalue"/>
+	</field>
+	<field name="shipto_countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="shipto_countrycode"/>
+	</field>
+	<field name="updated" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="updated"/>
+	</field>
+	<field name="updatedby" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="updatedby"/>
+	</field>
+	<field name="warehousename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="warehousename"/>
+	</field>
+	<field name="warehousevalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="warehousevalue"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="22" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="0" width="782" height="13" backcolor="#4788BA" uuid="078ce6a7-6df0-4eb0-9cb4-a21b2054e6df"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-66" x="0" y="0" width="150" height="12" forecolor="#000000" uuid="b46161f0-4d9e-45a5-91b6-3efdcb844d59"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{sales_org}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-67" x="150" y="0" width="90" height="12" forecolor="#000000" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{division}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-68" x="240" y="0" width="99" height="12" forecolor="#000000" uuid="56fc55f7-e408-480c-82fb-c08909c1a770"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-69" x="339" y="0" width="141" height="12" forecolor="#000000" uuid="d0d86baf-aa32-4d59-9184-1f3bfbf6c4ad"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-70" x="480" y="1" width="104" height="12" forecolor="#000000" uuid="702bb2f4-7b83-403d-b760-efc240fa593f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{createdby}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-71" x="585" y="1" width="102" height="12" forecolor="#000000" uuid="ec94d0b8-e1e9-4faf-8f3c-8accd424ad38"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{docdate}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-72" x="687" y="0" width="94" height="12" forecolor="#000000" uuid="1b779eb3-8090-47b4-96fa-07a2a2b3b03f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{created}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="24" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		</band>
+	</detail>
+</jasperReport>

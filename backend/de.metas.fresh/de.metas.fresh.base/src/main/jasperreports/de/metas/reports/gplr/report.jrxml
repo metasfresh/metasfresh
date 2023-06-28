@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/gplr/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="0.9090909090909095"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="GPLR_Report_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT '';]]>
+	</queryString>
+	<field name="?column?" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="92" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-106" x="0" y="30" width="782" height="30" uuid="d7b7f09c-a4f6-4cd2-92ea-337e3a25556f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Courier New" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="0" y="49" width="180" height="13" uuid="98991c9f-6898-4546-91a4-f88526d9e6ed"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + ":    " + $V{PAGE_NUMBER} ]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="639" y="45" width="48" height="13" uuid="73f41ae9-9b65-49ac-9313-f03bd64d7214"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{time} ]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="639" y="31" width="48" height="13" uuid="f16a2180-5ab8-405d-863f-50fa23077f2d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="textField" x="688" y="31" width="81" height="13" uuid="06da7b6e-f841-4aea-88bc-0217cfecc09b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[TODAY( )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="HH:mm:ss" isBlankWhenNull="true">
+				<reportElement key="textField" x="688" y="45" width="81" height="13" uuid="00ee8884-0f91-4e8f-82b0-be57fb0397b2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[TODAY( )]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="26" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="32b25760-2ebf-48fa-bc24-0cf726a3ca0b"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_document.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="26">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="aa6af2a1-6b5f-4632-ab47-51746586f674"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_salesorders.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="25">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="24fa010c-5db2-49b5-bf83-1014ae8367d5"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_deliveries.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="22">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="5c559038-69ab-48b5-99a3-4f5b9b184f08"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_purchaseorders.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="26">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="f7cc2a27-6fbc-49a5-af86-ba8745f44b70"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_summary.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="26">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="455c444c-7b20-4d5d-a9eb-e6b67d8b3457"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_lines.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="24">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="0618831f-d05c-41e2-b1bb-31f29723745e"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_charges.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="26">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="5739ae9d-f833-4673-8c45-78c8694d80eb"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_others.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
