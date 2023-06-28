@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -139,6 +139,102 @@
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_salesorders.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="25">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="24fa010c-5db2-49b5-bf83-1014ae8367d5"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_deliveries.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="22">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="5c559038-69ab-48b5-99a3-4f5b9b184f08"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_purchaseorders.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="26">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="f7cc2a27-6fbc-49a5-af86-ba8745f44b70"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_summary.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="26">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="455c444c-7b20-4d5d-a9eb-e6b67d8b3457"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_lines.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="24">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="0618831f-d05c-41e2-b1bb-31f29723745e"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_charges.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="26">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="19" uuid="5739ae9d-f833-4673-8c45-78c8694d80eb"/>
+				<subreportParameter name="REPORT_LOCALE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="GPLR_Report_ID">
+					<subreportParameterExpression><![CDATA[$P{GPLR_Report_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/gplr/report_others.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
