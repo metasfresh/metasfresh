@@ -1,6 +1,7 @@
 package de.metas.gplr.process;
 
 import de.metas.gplr.report.GPLRReportService;
+import de.metas.gplr.report.model.GPLRReport;
 import de.metas.invoice.InvoiceId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -63,7 +64,8 @@ public class GPLR_CreateReport extends JavaProcess implements IProcessPreconditi
 		final InvoiceId invoiceId = getInvoiceId(getRecordRef())
 				.orElseThrow(() -> new AdempiereException("Cannot determine invoice ID")); // shall not happen
 
-		gplrReportService.createReport(invoiceId);
+		final GPLRReport report = gplrReportService.createReport(invoiceId);
+		log.debug("Generated report: {}", report);
 
 		return MSG_OK;
 	}

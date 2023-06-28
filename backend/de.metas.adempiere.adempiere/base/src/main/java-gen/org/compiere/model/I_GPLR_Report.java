@@ -52,33 +52,6 @@ public interface I_GPLR_Report
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Invoice.
-	 * Invoice Identifier
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Invoice_ID (int C_Invoice_ID);
-
-	/**
-	 * Get Invoice.
-	 * Invoice Identifier
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Invoice_ID();
-
-	org.compiere.model.I_C_Invoice getC_Invoice();
-
-	void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
-
-	ModelColumn<I_GPLR_Report, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_GPLR_Report.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
-	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -383,6 +356,56 @@ public interface I_GPLR_Report
 
 	ModelColumn<I_GPLR_Report, Object> COLUMN_PaymentTermInfo = new ModelColumn<>(I_GPLR_Report.class, "PaymentTermInfo", null);
 	String COLUMNNAME_PaymentTermInfo = "PaymentTermInfo";
+
+	/**
+	 * Set Purchase Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPurchase_Invoice_ID (int Purchase_Invoice_ID);
+
+	/**
+	 * Get Purchase Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPurchase_Invoice_ID();
+
+	org.compiere.model.I_C_Invoice getPurchase_Invoice();
+
+	void setPurchase_Invoice(org.compiere.model.I_C_Invoice Purchase_Invoice);
+
+	ModelColumn<I_GPLR_Report, org.compiere.model.I_C_Invoice> COLUMN_Purchase_Invoice_ID = new ModelColumn<>(I_GPLR_Report.class, "Purchase_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_Purchase_Invoice_ID = "Purchase_Invoice_ID";
+
+	/**
+	 * Set Sales Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSales_Invoice_ID (int Sales_Invoice_ID);
+
+	/**
+	 * Get Sales Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSales_Invoice_ID();
+
+	org.compiere.model.I_C_Invoice getSales_Invoice();
+
+	void setSales_Invoice(org.compiere.model.I_C_Invoice Sales_Invoice);
+
+	ModelColumn<I_GPLR_Report, org.compiere.model.I_C_Invoice> COLUMN_Sales_Invoice_ID = new ModelColumn<>(I_GPLR_Report.class, "Sales_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_Sales_Invoice_ID = "Sales_Invoice_ID";
 
 	/**
 	 * Set SAP Product Hierarchy.

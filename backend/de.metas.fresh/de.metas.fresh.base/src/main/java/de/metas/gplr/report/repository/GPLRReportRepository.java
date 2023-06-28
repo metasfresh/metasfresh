@@ -8,6 +8,7 @@ import de.metas.gplr.report.model.GPLRReportLineItem;
 import de.metas.gplr.report.model.GPLRReportNote;
 import de.metas.gplr.report.model.GPLRReportPurchaseOrder;
 import de.metas.gplr.report.model.GPLRReportShipment;
+import de.metas.invoice.InvoiceId;
 import de.metas.location.ICountryCodeFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -16,6 +17,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_GPLR_Report;
 import org.compiere.model.I_GPLR_Report_Charge;
@@ -214,5 +216,17 @@ public class GPLRReportRepository
 		//
 		//
 		return result.build();
+	}
+
+	public boolean isReportGeneratedForInvoice(@NonNull final InvoiceId invoiceId)
+	{
+		final IQueryBuilder<I_GPLR_Report> queryBuilder = queryBL.createQueryBuilder(I_GPLR_Report.class);
+
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addEqualsFilter(I_GPLR_Report.COLUMNNAME_Sales_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_GPLR_Report.COLUMNNAME_Purchase_Invoice_ID, invoiceId);
+
+		return queryBuilder.anyMatch();
 	}
 }

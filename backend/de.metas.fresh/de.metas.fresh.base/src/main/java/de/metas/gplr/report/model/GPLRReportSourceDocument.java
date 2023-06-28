@@ -13,7 +13,8 @@ import javax.annotation.Nullable;
 @Builder
 public class GPLRReportSourceDocument
 {
-	@NonNull InvoiceId invoiceId;
+	@NonNull InvoiceId salesInvoiceId;
+	@Nullable InvoiceId purchaseInvoiceId;
 	@NonNull OrgId orgId;
 
 	// 001 - Department - Display department “Name” from department master for the section code as of document date

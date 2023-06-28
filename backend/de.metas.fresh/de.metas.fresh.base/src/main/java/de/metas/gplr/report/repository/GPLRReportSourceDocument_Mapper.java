@@ -28,7 +28,8 @@ class GPLRReportSourceDocument_Mapper
 			@NonNull final Function<OrgId, ZoneId> orgId2timeZoneMapper)
 	{
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
-		record.setC_Invoice_ID(from.getInvoiceId().getRepoId());
+		record.setSales_Invoice_ID(from.getSalesInvoiceId().getRepoId());
+		record.setPurchase_Invoice_ID(InvoiceId.toRepoId(from.getPurchaseInvoiceId()));
 		record.setDepartmentName(from.getDepartmentName());
 		record.setSectionCodeAndName(from.getSectionCode() != null ? from.getSectionCode().toRenderedString() : null);
 		record.setInvoiceDocumentNo(from.getDocumentNo());
@@ -60,7 +61,8 @@ class GPLRReportSourceDocument_Mapper
 		final Function<Timestamp, LocalDateAndOrgId> toLocalDateAndOrgId = timestamp -> LocalDateAndOrgId.ofTimestamp(timestamp, orgId, orgId2timeZoneMapper);
 
 		return GPLRReportSourceDocument.builder()
-				.invoiceId(InvoiceId.ofRepoId(record.getC_Invoice_ID()))
+				.salesInvoiceId(InvoiceId.ofRepoId(record.getSales_Invoice_ID()))
+				.purchaseInvoiceId(InvoiceId.ofRepoIdOrNull(record.getPurchase_Invoice_ID()))
 				.orgId(orgId)
 				.departmentName(record.getDepartmentName())
 				.sectionCode(GPLRSectionCodeRenderedString.ofNullableRenderedString(record.getSectionCodeAndName()))

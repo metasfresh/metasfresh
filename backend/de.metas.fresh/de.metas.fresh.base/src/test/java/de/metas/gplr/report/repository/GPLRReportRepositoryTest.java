@@ -28,11 +28,14 @@ import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -59,14 +62,24 @@ class GPLRReportRepositoryTest
 
 	private LocalDateAndOrgId localDateAndOrgId(String localDate, OrgId orgId) {return LocalDateAndOrgId.ofLocalDate(LocalDate.parse(localDate), orgId);}
 
-	@Test
-	void save_load()
+	private $DummyReport dummyReport()
 	{
-		final GPLRReport report = GPLRReport.builder()
+		return dummyReport0()
+				.salesInvoiceId(InvoiceId.ofRepoId(123))
+				.purchaseInvoiceId(InvoiceId.ofRepoId(124));
+	}
+
+	@Builder(builderMethodName = "dummyReport0", builderClassName = "$DummyReport")
+	private GPLRReport generateDummyReport(
+			@NonNull InvoiceId salesInvoiceId,
+			@Nullable InvoiceId purchaseInvoiceId)
+	{
+		return GPLRReport.builder()
 				.id(null)
 				.created(SystemTime.asInstant())
 				.sourceDocument(GPLRReportSourceDocument.builder()
-						.invoiceId(InvoiceId.ofRepoId(123))
+						.salesInvoiceId(salesInvoiceId)
+						.purchaseInvoiceId(purchaseInvoiceId)
 						.orgId(orgId)
 						.departmentName("departmentName")
 						.sectionCode(GPLRSectionCodeRenderedString.ofNullableRenderedString("sectionCode"))
@@ -75,7 +88,7 @@ class GPLRReportRepositoryTest
 						.createdByName("createdByName")
 						.documentDate(localDateAndOrgId("2023-05-10", orgId))
 						.created(localDateAndOrgId("2023-05-11", orgId))
-						//.product() // TODO
+						.sapProductHierarchy("sapProductHierarchy")
 						.paymentTerm(GPLRPaymentTermRenderedString.ofRenderedString("paymentTerm"))
 						.dueDate(localDateAndOrgId("2023-05-21", orgId))
 						.currencyInfo(GPLRCurrencyInfo.builder()
@@ -186,6 +199,12 @@ class GPLRReportRepositoryTest
 				))
 				//
 				.build();
+	}
+
+	@Test
+	void createNew_getById()
+	{
+		final GPLRReport report = dummyReport().build();
 
 		gplrReportRepository.createNew(report);
 		System.out.println("Report: " + report);
@@ -193,6 +212,25 @@ class GPLRReportRepositoryTest
 
 		final GPLRReport report2 = gplrReportRepository.getById(report.getId());
 		assertThat(report2).usingRecursiveComparison().isEqualTo(report);
+	}
+
+	@Test
+	void isReportGeneratedForInvoice()
+	{
+		final InvoiceId salesInvoiceId = InvoiceId.ofRepoId(1);
+		final InvoiceId purchaseInvoiceId = InvoiceId.ofRepoId(2);
+
+		assertThat(gplrReportRepository.isReportGeneratedForInvoice(salesInvoiceId)).isFalse();
+		assertThat(gplrReportRepository.isReportGeneratedForInvoice(purchaseInvoiceId)).isFalse();
+
+		gplrReportRepository.createNew(
+				dummyReport()
+						.salesInvoiceId(salesInvoiceId)
+						.purchaseInvoiceId(purchaseInvoiceId)
+						.build());
+
+		assertThat(gplrReportRepository.isReportGeneratedForInvoice(salesInvoiceId)).isTrue();
+		assertThat(gplrReportRepository.isReportGeneratedForInvoice(purchaseInvoiceId)).isTrue();
 	}
 
 }

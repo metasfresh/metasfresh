@@ -23,6 +23,7 @@ import de.metas.gplr.report.model.GPLRReportSummary;
 import de.metas.gplr.report.model.GPLRSectionCodeRenderedString;
 import de.metas.gplr.report.model.GPLRShipperRenderedString;
 import de.metas.gplr.report.model.GPLRWarehouseName;
+import de.metas.gplr.report.repository.GPLRReportRepository;
 import de.metas.gplr.source.model.SourceBPartnerInfo;
 import de.metas.gplr.source.model.SourceCurrencyInfo;
 import de.metas.gplr.source.model.SourceDocuments;
@@ -50,6 +51,7 @@ final class GPLRReportCreateCommand
 {
 	//
 	// Services
+	@NonNull private final GPLRReportRepository gplrReportRepository;
 	@NonNull private final DepartmentService departmentService;
 	@NonNull private final MoneyService moneyService;
 	//
@@ -63,17 +65,19 @@ final class GPLRReportCreateCommand
 
 	@Builder
 	private GPLRReportCreateCommand(
+			final @NonNull GPLRReportRepository gplrReportRepository,
 			final @NonNull DepartmentService departmentService,
 			final @NonNull MoneyService moneyService,
 			final @NonNull SourceDocuments source)
 	{
+		this.gplrReportRepository = gplrReportRepository;
 		this.departmentService = departmentService;
 		this.moneyService = moneyService;
 		//
 		this.source = source;
 	}
 
-	public void execute()
+	public GPLRReport execute()
 	{
 		final GPLRReport report = GPLRReport.builder()
 				.created(reportDate)
@@ -93,7 +97,11 @@ final class GPLRReportCreateCommand
 				.otherNotes(createGPLRReportNotes())
 				.build();
 
-		System.out.println(report); // FIXME DEBUG
+		gplrReportRepository.createNew(report);
+
+		// TODO generate jasper and attach it to Sales Invoice
+
+		return report;
 	}
 
 	private GPLRReportSummary createGPLRReportSummary()
@@ -130,7 +138,7 @@ final class GPLRReportCreateCommand
 		final SourceInvoice salesInvoice = source.getSalesInvoice();
 
 		return GPLRReportSourceDocument.builder()
-				.invoiceId(salesInvoice.getId())
+				.salesInvoiceId(salesInvoice.getId())
 				.orgId(salesInvoice.getOrgId())
 				.departmentName(getDepartment().map(Department::getName).orElse(null))
 				.sectionCode(getSectionCode().orElse(null))

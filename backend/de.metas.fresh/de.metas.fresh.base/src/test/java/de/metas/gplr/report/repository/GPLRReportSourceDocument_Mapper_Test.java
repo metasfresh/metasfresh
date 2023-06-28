@@ -39,7 +39,8 @@ public class GPLRReportSourceDocument_Mapper_Test
 	{
 		final OrgId orgId = OrgId.ofRepoId(111);
 		final GPLRReportSourceDocument reportPart = GPLRReportSourceDocument.builder()
-				.invoiceId(InvoiceId.ofRepoId(123))
+				.salesInvoiceId(InvoiceId.ofRepoId(123))
+				.purchaseInvoiceId(InvoiceId.ofRepoId(124))
 				.orgId(orgId)
 				.departmentName("departmentName")
 				.sectionCode(GPLRSectionCodeRenderedString.ofNullableRenderedString("sectionCode"))
