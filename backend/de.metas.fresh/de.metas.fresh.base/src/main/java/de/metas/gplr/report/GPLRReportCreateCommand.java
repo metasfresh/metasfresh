@@ -182,9 +182,7 @@ final class GPLRReportCreateCommand
 		return GPLRReportSalesOrder.builder()
 				.documentNo(salesOrder.getDocumentNo())
 				.customer(toBPartnerName(salesOrder.getBpartner()))
-				// TODO figure out how to fetch it... is it C_Order.C_FrameAgreement_Order_ID.DocumentNo?
-				// Ruxi sais: C_OrderLine.C_FlatrateTerm_ID.DocumentNo
-				.frameContractNo(null)
+				.frameContractNo(salesOrder.getFrameContractNo())
 				.poReference(salesOrder.getPoReference())
 				.incoterms(toIncotermsInfo(salesOrder.getIncotermsAndLocation()))
 				.build();

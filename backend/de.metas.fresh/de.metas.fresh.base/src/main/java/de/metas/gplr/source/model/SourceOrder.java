@@ -22,6 +22,7 @@ public class SourceOrder
 {
 	@NonNull String documentNo;
 	@NonNull SourceBPartnerInfo bpartner;
+	@Nullable String frameContractNo;
 	@NonNull Optional<SectionCode> sectionCode;
 	@NonNull CurrencyCode currencyCode;
 	@NonNull Instant dateOrdered;

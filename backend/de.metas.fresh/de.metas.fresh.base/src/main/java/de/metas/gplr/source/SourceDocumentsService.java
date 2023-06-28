@@ -138,19 +138,19 @@ public class SourceDocumentsService
 		allOrderIds.add(salesOrderId);
 		allOrderIds.addAll(purchaseOrderIds);
 
-		final ImmutableListMultimap<OrderId, SourceOrderLine> linesByOrderId =
-				orderBL.getLinesByOrderIds(allOrderIds)
-						.stream()
-						.collect(ImmutableListMultimap.toImmutableListMultimap(
-								orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID()),
-								this::toSourceOrderLine
-						));
+		final ImmutableListMultimap<OrderId, SourceOrderLine> linesByOrderId = orderBL.getLinesByOrderIds(allOrderIds)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID()),
+						this::toSourceOrderLine
+				));
 
 		final Function<I_C_Order, SourceOrder> toOrderAndLines = order -> {
 			final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 			return SourceOrder.builder()
 					.documentNo(order.getDocumentNo())
 					.bpartner(getBPartnerInfo(order))
+					.frameContractNo(extractFrameContractNo(order))
 					.sectionCode(SectionCodeId.optionalOfRepoId(order.getM_SectionCode_ID()).map(sectionCodeService::getById))
 					.currencyCode(moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(order.getC_Currency_ID())))
 					.dateOrdered(order.getDateOrdered().toInstant())
@@ -173,6 +173,18 @@ public class SourceDocumentsService
 						.map(toOrderAndLines)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	@Nullable
+	private String extractFrameContractNo(final I_C_Order order)
+	{
+		final OrderId frameAgreementOrderId = OrderId.ofRepoIdOrNull(order.getC_FrameAgreement_Order_ID());
+		if (frameAgreementOrderId == null)
+		{
+			return null;
+		}
+
+		return orderBL.getById(frameAgreementOrderId).getDocumentNo();
 	}
 
 	private SourceBPartnerInfo getBPartnerInfo(final I_C_Order order)
@@ -270,7 +282,7 @@ public class SourceDocumentsService
 		}
 
 		//
-		return toSourceInvoice(invoice);
+		return toSourceInvoice(salesInvoice);
 	}
 
 	private SourceInvoice toSourceInvoice(@NonNull final I_C_Invoice invoice)
