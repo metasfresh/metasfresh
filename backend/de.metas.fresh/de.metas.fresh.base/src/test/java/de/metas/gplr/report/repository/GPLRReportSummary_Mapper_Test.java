@@ -3,7 +3,6 @@ package de.metas.gplr.report.repository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.gplr.report.model.GPLRReportSummary;
-import de.metas.gplr.report.repository.GPLRReportSummary_Mapper;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.Percent;
 import org.adempiere.model.InterfaceWrapperHelper;

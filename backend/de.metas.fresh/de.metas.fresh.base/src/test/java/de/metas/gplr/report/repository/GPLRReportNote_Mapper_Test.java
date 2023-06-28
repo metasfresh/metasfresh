@@ -1,7 +1,6 @@
 package de.metas.gplr.report.repository;
 
 import de.metas.gplr.report.model.GPLRReportNote;
-import de.metas.gplr.report.repository.GPLRReportNote_Mapper;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;

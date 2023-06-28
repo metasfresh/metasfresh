@@ -1,8 +1,8 @@
 package de.metas.gplr.report;
 
 import de.metas.department.DepartmentService;
-import de.metas.gplr.source.model.SourceDocuments;
 import de.metas.gplr.source.SourceDocumentsService;
+import de.metas.gplr.source.model.SourceDocuments;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.MoneyService;
 import lombok.NonNull;

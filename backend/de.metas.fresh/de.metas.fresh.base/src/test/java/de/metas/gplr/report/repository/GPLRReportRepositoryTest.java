@@ -21,7 +21,6 @@ import de.metas.gplr.report.model.GPLRReportSummary;
 import de.metas.gplr.report.model.GPLRSectionCodeRenderedString;
 import de.metas.gplr.report.model.GPLRShipperRenderedString;
 import de.metas.gplr.report.model.GPLRWarehouseName;
-import de.metas.gplr.report.repository.GPLRReportRepository;
 import de.metas.invoice.InvoiceId;
 import de.metas.location.ICountryCodeFactory;
 import de.metas.organization.LocalDateAndOrgId;

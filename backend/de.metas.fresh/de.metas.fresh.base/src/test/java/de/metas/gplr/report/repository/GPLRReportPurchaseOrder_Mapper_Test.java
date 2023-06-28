@@ -6,7 +6,6 @@ import de.metas.gplr.report.model.GPLRCurrencyInfo;
 import de.metas.gplr.report.model.GPLRIncotermsInfo;
 import de.metas.gplr.report.model.GPLRPaymentTermRenderedString;
 import de.metas.gplr.report.model.GPLRReportPurchaseOrder;
-import de.metas.gplr.report.repository.GPLRReportPurchaseOrder_Mapper;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;

@@ -5,7 +5,6 @@ import de.metas.gplr.report.model.GPLRCurrencyInfo;
 import de.metas.gplr.report.model.GPLRPaymentTermRenderedString;
 import de.metas.gplr.report.model.GPLRReportSourceDocument;
 import de.metas.gplr.report.model.GPLRSectionCodeRenderedString;
-import de.metas.gplr.report.repository.GPLRReportSourceDocument_Mapper;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;

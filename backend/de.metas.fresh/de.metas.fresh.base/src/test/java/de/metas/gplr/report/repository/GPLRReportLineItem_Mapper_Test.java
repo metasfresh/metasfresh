@@ -4,7 +4,6 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.gplr.report.model.GPLRReportLineItem;
-import de.metas.gplr.report.repository.GPLRReportLineItem_Mapper;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import org.adempiere.model.InterfaceWrapperHelper;

@@ -4,7 +4,6 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.gplr.report.model.GPLRBPartnerName;
 import de.metas.gplr.report.model.GPLRReportCharge;
-import de.metas.gplr.report.repository.GPLRReportCharge_Mapper;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;

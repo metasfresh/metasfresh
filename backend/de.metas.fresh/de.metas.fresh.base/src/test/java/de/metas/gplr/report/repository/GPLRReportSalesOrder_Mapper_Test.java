@@ -3,7 +3,6 @@ package de.metas.gplr.report.repository;
 import de.metas.gplr.report.model.GPLRBPartnerName;
 import de.metas.gplr.report.model.GPLRIncotermsInfo;
 import de.metas.gplr.report.model.GPLRReportSalesOrder;
-import de.metas.gplr.report.repository.GPLRReportSalesOrder_Mapper;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;

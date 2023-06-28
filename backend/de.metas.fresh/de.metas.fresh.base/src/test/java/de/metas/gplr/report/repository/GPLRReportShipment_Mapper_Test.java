@@ -5,7 +5,6 @@ import de.metas.gplr.report.model.GPLRIncotermsInfo;
 import de.metas.gplr.report.model.GPLRReportShipment;
 import de.metas.gplr.report.model.GPLRShipperRenderedString;
 import de.metas.gplr.report.model.GPLRWarehouseName;
-import de.metas.gplr.report.repository.GPLRReportShipment_Mapper;
 import de.metas.location.ICountryCodeFactory;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
