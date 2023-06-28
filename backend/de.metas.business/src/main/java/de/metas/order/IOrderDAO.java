@@ -137,8 +137,6 @@ public interface IOrderDAO extends ISingletonService
 
 	Set<OrderLineId> retrieveSOLineIdsByPOLineId(OrderLineId orderLineId);
 
-	Set<OrderId> getSalesOrderIdsViaPOAllocation(OrderId purchaseOrderId);
-
 	void allocatePOLineToSOLine(OrderAndLineId purchaseOrderLineId, OrderAndLineId salesOrderLineId);
 
 	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
@@ -146,6 +144,8 @@ public interface IOrderDAO extends ISingletonService
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 
 	Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull OrderId salesOrderId);
+
+	Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull OrderId purchaseOrderId);
 
 	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
 }

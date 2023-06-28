@@ -301,6 +301,8 @@ public interface IOrderBL extends ISingletonService
 
 	Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull OrderId salesOrderId);
 
+	Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull OrderId purchaseOrderId);
+
 	void updateIsOnConsignmentFromLines(OrderId orderId);
 
 	/**

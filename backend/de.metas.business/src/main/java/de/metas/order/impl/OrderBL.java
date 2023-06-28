@@ -1281,6 +1281,12 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
+	{
+		return orderDAO.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
+	}
+
+	@Override
 	public void updateIsOnConsignmentFromLines(OrderId orderId)
 	{
 		final boolean isOnConsignment = orderDAO.hasIsOnConsignmentLines(orderId);

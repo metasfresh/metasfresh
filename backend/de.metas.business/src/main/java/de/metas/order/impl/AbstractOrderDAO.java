@@ -428,19 +428,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@NonNull
-	public ImmutableSet<OrderId> getSalesOrderIdsViaPOAllocation(@NonNull final OrderId purchaseOrderId)
-	{
-		return retrieveOrderLines(purchaseOrderId)
-				.stream()
-				.map(I_C_OrderLine::getC_OrderLine_ID)
-				.map(OrderLineId::ofRepoId)
-				.map(this::retrieveSOLineIdsByPOLineId)
-				.map(this::retrieveIdsByOrderLineIds)
-				.flatMap(Set::stream)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	@Override
 	public void allocatePOLineToSOLine(
 			@NonNull final OrderAndLineId purchaseOrderLineId,
@@ -474,6 +461,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_OrderSO_ID, salesOrderId)
 				.stream()
 				.map(allocRecord -> OrderId.ofRepoId(allocRecord.getC_OrderPO_ID()))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_OrderPO_ID, purchaseOrderId)
+				.stream()
+				.map(allocRecord -> OrderId.ofRepoId(allocRecord.getC_OrderSO_ID()))
 				.distinct()
 				.collect(ImmutableSet.toImmutableSet());
 	}
