@@ -329,7 +329,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$R{commodity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-68" x="130" y="0" width="290" height="12" forecolor="#000000" uuid="70777190-6756-4ac7-83fe-65b6e7001af4"/>
+				<reportElement key="textField-68" x="130" y="0" width="268" height="12" forecolor="#000000" uuid="70777190-6756-4ac7-83fe-65b6e7001af4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -342,7 +342,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$R{termspaym}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-70" x="420" y="1" width="90" height="12" forecolor="#000000" uuid="eed9d327-8357-436c-ae53-0d276b17c87e"/>
+				<reportElement key="textField-70" x="399" y="1" width="90" height="12" forecolor="#000000" uuid="eed9d327-8357-436c-ae53-0d276b17c87e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -355,7 +355,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$R{duedate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-72" x="550" y="0" width="99" height="12" forecolor="#000000" uuid="08e71b0a-b196-4d3a-97d8-52e291c180e9"/>
+				<reportElement key="textField-72" x="492" y="0" width="99" height="12" forecolor="#000000" uuid="08e71b0a-b196-4d3a-97d8-52e291c180e9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -368,7 +368,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$R{curencyRate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-72" x="650" y="1" width="130" height="12" forecolor="#000000" uuid="5cbfa81a-370b-4ae5-9d2a-13722ebc36f2"/>
+				<reportElement key="textField-72" x="591" y="1" width="188" height="12" forecolor="#000000" uuid="5cbfa81a-370b-4ae5-9d2a-13722ebc36f2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -396,7 +396,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$F{sap_producthierarchy}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-68" x="130" y="0" width="290" height="12" forecolor="#000000" uuid="fa8cead9-14d3-4ae2-9bf7-728001b622d7"/>
+				<reportElement key="textField-68" x="130" y="0" width="268" height="12" forecolor="#000000" uuid="fa8cead9-14d3-4ae2-9bf7-728001b622d7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -409,7 +409,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$F{paymentterminfo}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-70" x="420" y="1" width="90" height="12" forecolor="#000000" uuid="8a2300e2-efa9-4726-bb39-bf5e1a2436e5"/>
+				<reportElement key="textField-70" x="399" y="1" width="90" height="12" forecolor="#000000" uuid="8a2300e2-efa9-4726-bb39-bf5e1a2436e5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -422,7 +422,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$F{duedate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-72" x="550" y="0" width="39" height="12" forecolor="#000000" uuid="20f6bb92-4444-4fad-a5c9-0e815e452dea"/>
+				<reportElement key="textField-72" x="492" y="0" width="39" height="12" forecolor="#000000" uuid="20f6bb92-4444-4fad-a5c9-0e815e452dea"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -435,7 +435,7 @@ order by GPLR_Report_ID
 				<textFieldExpression><![CDATA[$F{foreigncurrencycode}+"  / "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-72" x="650" y="1" width="130" height="12" forecolor="#000000" uuid="f8b7afc2-bdcf-40b6-9128-6bd5074f8cde"/>
+				<reportElement key="textField-72" x="591" y="1" width="188" height="12" forecolor="#000000" uuid="f8b7afc2-bdcf-40b6-9128-6bd5074f8cde"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -447,8 +447,8 @@ order by GPLR_Report_ID
 				</textElement>
 				<textFieldExpression><![CDATA[$F{fec_documentno}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-72" x="589" y="0" width="60" height="12" forecolor="#000000" uuid="15e092b1-4365-4f31-860f-6b95e200ce31"/>
+			<textField isStretchWithOverflow="true" pattern="#,##0.0000" isBlankWhenNull="true">
+				<reportElement key="textField-72" x="531" y="0" width="60" height="12" forecolor="#000000" uuid="15e092b1-4365-4f31-860f-6b95e200ce31"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
