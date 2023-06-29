@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Objects;
 
 /*
  * #%L
@@ -40,7 +41,7 @@ import java.util.Collection;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @ToString(exclude = "data")
 public class AttachmentEntryCreateRequest
 {
@@ -168,4 +169,17 @@ public class AttachmentEntryCreateRequest
 	URI url;
 
 	AttachmentTags tags;
+
+	public AttachmentEntryCreateRequest withFilename(@NonNull final String filename)
+	{
+		if (Objects.equals(this.filename, filename))
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.filename(filename)
+				.contentType(MimeType.getMimeType(filename))
+				.build();
+	}
 }
