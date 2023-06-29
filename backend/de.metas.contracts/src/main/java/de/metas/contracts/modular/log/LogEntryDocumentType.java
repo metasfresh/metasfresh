@@ -22,16 +22,16 @@
 
 package de.metas.contracts.modular.log;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.contracts.model.X_ModCntr_Log;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 
+@AllArgsConstructor
 public enum LogEntryDocumentType implements ReferenceListAwareEnum
 {
 	PURCHASE_ORDER(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_PurchaseOrder),
@@ -47,30 +47,15 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	DEFINITIVE_FINAL_SETTLEMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement),
 	;
 
-	private static final ImmutableMap<String, LogEntryDocumentType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), LogEntryDocumentType::getCode);
+	private static final ReferenceListAwareEnums.ValuesIndex<LogEntryDocumentType> index = ReferenceListAwareEnums.index(values());
 
-	LogEntryDocumentType(final String code)
-	{
-		this.code = code;
-	}
-
+	@Getter
 	private final String code;
-
-	@Override
-	public String getCode()
-	{
-		return code;
-	}
 
 	@NonNull
 	public static LogEntryDocumentType ofCode(@NonNull final String code)
 	{
-		final LogEntryDocumentType type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + LogEntryDocumentType.class + " found for code: " + code);
-		}
-		return type;
+		return index.ofCode(code);
 	}
 
 	@Nullable

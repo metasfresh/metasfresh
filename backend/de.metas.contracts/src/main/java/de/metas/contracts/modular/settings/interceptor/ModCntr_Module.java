@@ -22,11 +22,11 @@
 
 package de.metas.contracts.modular.settings.interceptor;
 
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_ModCntr_Module;
-import de.metas.contracts.model.I_ModCntr_Settings;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.util.Services;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -37,21 +37,22 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Interceptor(I_ModCntr_Module.class)
+@AllArgsConstructor
 public class ModCntr_Module
 {
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	public static final String MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = "@ModCntr_Settings_cannot_be_changed@";
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateSettingsNotUsedAlready(@NonNull final I_ModCntr_Module type)
 	{
-		if (queryBL.createQueryBuilder(I_ModCntr_Settings.class)
-				.addEqualsFilter(I_ModCntr_Settings.COLUMN_ModCntr_Settings_ID, type.getModCntr_Settings_ID())
-				.andCollectChildren(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
-				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
-				.anyMatch())
+		final ModularContractSettingsId modCntrSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
+
+		if (modularContractSettingsDAO.isSettingsUsedInCompletedFlatrateTerm(modCntrSettingsId))
 		{
 			throw new AdempiereException(MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED);
 		}
 	}
+
 }

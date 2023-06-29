@@ -24,7 +24,6 @@ package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import lombok.NonNull;
 
@@ -47,24 +46,16 @@ public interface IModularContractTypeHandler<T>
 	boolean probablyAppliesTo(@NonNull Object model);
 
 	/**
-	 * Return a request if the framework shall create the log, or {@link Optional#empty()} otherwise.
+	 * Return a {@code LogEntryCreateRequest} if the framework shall create the log, or {@link Optional#empty()} otherwise.
 	 */
 	@NonNull
 	Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 
 	/**
-	 * Return a Stream of requests if the framework shall create one or more reversal-record log records, or {@link Optional#empty()} otherwise.
-	 * This method has no {@code settings} parameter because i *think* there are existing log records that have to be reversed independently of settings.
+	 * Return a {@code LogEntryReverseRequest} of requests if the framework shall create one or more reversal-record log records, or {@link Optional#empty()} otherwise.
 	 */
 	@NonNull
 	Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
-
-	/**
-	 * Return a request if the framework shall delete one or more logs, or {@link Optional#empty()}  otherwise.
-	 * This method has no {@code settings} parameter because i *think* there are existing log records that have to be deleted independently of settings.
-	 */
-	@NonNull
-	Optional<LogEntryDeleteRequest> createLogEntryDeleteRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):

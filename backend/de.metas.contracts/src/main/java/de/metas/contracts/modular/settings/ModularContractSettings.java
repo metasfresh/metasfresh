@@ -47,7 +47,7 @@ public class ModularContractSettings
 	String name;
 
 	@NonNull
-	YearAndCalendarId yearAndCalendarId; // this includes the calendar
+	YearAndCalendarId yearAndCalendarId;
 
 	@NonNull
 	PricingSystemId pricingSystemId;

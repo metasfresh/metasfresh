@@ -31,7 +31,6 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -57,7 +56,7 @@ class ModularContractSettingsDAOTest
 	}
 
 	@Test
-	void getFor()
+	void getByFlatrateTermId()
 	{
 		final I_C_Calendar calendarRecord = newInstance(I_C_Calendar.class);
 		saveRecord(calendarRecord);
@@ -96,7 +95,7 @@ class ModularContractSettingsDAOTest
 		contractRecord.setC_Flatrate_Conditions_ID(conditionsRecord.getC_Flatrate_Conditions_ID());
 		saveRecord(contractRecord);
 
-		final ModularContractSettings settings = new ModularContractSettingsDAO().getFor(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
+		final ModularContractSettings settings = new ModularContractSettingsDAO().getByFlatrateTermIdOrNull(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
 
 		assertThat(settings).isNotNull();
 		assertThat(settings.getYearAndCalendarId()).isEqualTo(YearAndCalendarId.ofRepoId(calendarRecord.getC_Calendar_ID(), yearRecord.getC_Year_ID()));
@@ -104,7 +103,7 @@ class ModularContractSettingsDAOTest
 		assertThat(settings.getModuleConfigs()).hasSize(1);
 
 		final ModuleConfig moduleConfig = settings.getModuleConfigs().get(0);
-		assertThat(moduleConfig.getSeqNo()).isEqualTo(10);
+		assertThat(moduleConfig.getSeqNo().toInt()).isEqualTo(10);
 		assertThat(moduleConfig.getProductId().getRepoId()).isEqualTo(130);
 
 		final String handlerImpl = moduleConfig.getModularContractType().getClassName();
@@ -128,12 +127,6 @@ class ModularContractSettingsDAOTest
 
 		@Override
 		public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final Object model, final @NonNull FlatrateTermId flatrateTermId)
-		{
-			return Optional.empty();
-		}
-
-		@Override
-		public @NonNull Optional<LogEntryDeleteRequest> createLogEntryDeleteRequest(final Object model, final @NonNull FlatrateTermId flatrateTermId)
 		{
 			return Optional.empty();
 		}

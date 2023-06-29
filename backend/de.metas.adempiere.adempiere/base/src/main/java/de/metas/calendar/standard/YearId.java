@@ -26,11 +26,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
+@RepoIdAwares.SkipTest
 public class YearId implements RepoIdAware
 {
 	int repoId;

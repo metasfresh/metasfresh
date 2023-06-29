@@ -68,12 +68,9 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.bpartner.BPartnerBankAccountId.class)
 			.skip(de.metas.bpartner.user.role.UserAssignedRoleId.class)
 			//
-			.skip(de.metas.calendar.standard.YearId.class)
-			//
 			.skip(de.metas.contracts.commission.licensefee.model.LicenseFeeSettingsLineId.class)
 			.skip(de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId.class)
 			.skip(de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLineId.class)
-			.skip(de.metas.contracts.modular.settings.ModuleConfigId.class)
 			//
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			.skip(de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId.class)

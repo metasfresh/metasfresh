@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Service
@@ -80,7 +81,7 @@ public class ModularContractService
 			return false;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getFor(flatrateTermId);
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
 		return isHandlerApplicableForSettings(handler, settings);
 	}
 
@@ -90,8 +91,12 @@ public class ModularContractService
 		return Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, flatrateTerm.getType_Conditions());
 	}
 
-	private <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, final ModularContractSettings settings)
+	private <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, @Nullable final ModularContractSettings settings)
 	{
+		if (settings == null)
+		{
+			return false;
+		}
 		final String handlerClassName = handler.getClass().getName();
 		return settings.getModuleConfigs()
 				.stream()
@@ -113,11 +118,6 @@ public class ModularContractService
 			{
 				handler.createLogEntryReverseRequest(model, flatrateTermId)
 						.ifPresent(contractLogDAO::reverse);
-			}
-			case REACTIVATED ->
-			{
-				handler.createLogEntryDeleteRequest(model, flatrateTermId)
-						.ifPresent(contractLogDAO::delete);
 			}
 		}
 	}

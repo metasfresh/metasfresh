@@ -27,8 +27,6 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 @UtilityClass
 public class ClassLoaderUtil
@@ -39,7 +37,7 @@ public class ClassLoaderUtil
 	{
 		if (Check.isBlank(classname))
 		{
-			throw new RuntimeException("Given classname is blank");
+			throw Check.mkEx("Given classname is blank");
 		}
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		if (cl == null)
@@ -54,40 +52,17 @@ public class ClassLoaderUtil
 		}
 		catch (final ClassNotFoundException e)
 		{
-			throw new RuntimeException("Classname not found: " + classname, e);
+			throw Check.mkEx("Classname not found: " + classname, e);
 		}
 
 		if (parentClass != null)
 		{
 			if (!parentClass.isAssignableFrom(clazz))
 			{
-				throw new RuntimeException("Class " + clazz + " is not assignable from " + parentClass);
+				throw Check.mkEx("Class " + clazz + " is not assignable from " + parentClass);
 			}
 		}
 
 		return clazz;
-	}
-
-	public <T> T newInstanceFromNoArgConstructor(@NonNull final Class<T> clazz)
-	{
-		final Constructor<T> declaredConstructor;
-
-		try
-		{
-			declaredConstructor = clazz.getDeclaredConstructor();
-		}
-		catch (final NoSuchMethodException e)
-		{
-			throw new RuntimeException("Class " + clazz + " does not have a no-arg-constructor" + e);
-		}
-
-		try
-		{
-			return declaredConstructor.newInstance();
-		}
-		catch (final InstantiationException | IllegalAccessException | InvocationTargetException e)
-		{
-			throw new RuntimeException("The constructor " + declaredConstructor + " of class " + clazz + " could not be executed", e);
-		}
 	}
 }

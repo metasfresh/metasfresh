@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.product.ProductId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,7 +32,7 @@ import lombok.Value;
 @Builder
 public class ModuleConfig
 {
-	int seqNo;
+	@NonNull SeqNo seqNo;
 
 	@NonNull String name;
 

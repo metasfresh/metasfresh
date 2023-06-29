@@ -29,38 +29,47 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ModularContractSettingsDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public ModularContractSettings getFor(@NonNull final FlatrateTermId contractId)
+	@Nullable
+	public ModularContractSettings getByFlatrateTermIdOrNull(@NonNull final FlatrateTermId contractId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final I_ModCntr_Settings settingsRecord = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+		final Optional<I_ModCntr_Settings> settingsOptional = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, contractId)
 				.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
 				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
 				.create()
-				.firstOnly();
+				.firstOptional();
 
+		if (settingsOptional.isEmpty())
+		{
+			return null;
+		}
+		final I_ModCntr_Settings settings = settingsOptional.get();
 		final List<I_ModCntr_Module> moduleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, settingsRecord.getModCntr_Settings_ID())
+				.addEqualsFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, settings.getModCntr_Settings_ID())
 				.create()
 				.list();
 
-		return fromPOs(settingsRecord, moduleRecords);
+		return fromPOs(settings, moduleRecords);
 	}
 
 	private static ModularContractSettings fromPOs(
@@ -83,7 +92,7 @@ public class ModularContractSettingsDAO
 			final ModuleConfig moduleConfig = ModuleConfig.builder()
 					.name(moduleRecord.getName())
 					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
-					.seqNo(moduleRecord.getSeqNo())
+					.seqNo(SeqNo.ofInt(moduleRecord.getSeqNo()))
 					.invoicingGroup(moduleRecord.getInvoicingGroup())
 					.modularContractType(ModularContractType.builder()
 							.id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
@@ -97,6 +106,15 @@ public class ModularContractSettingsDAO
 		}
 
 		return result.build();
+	}
+
+	public boolean isSettingsUsedInCompletedFlatrateTerm(final ModularContractSettingsId modCntrSettingsId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addEqualsFilter(I_ModCntr_Settings.COLUMN_ModCntr_Settings_ID, modCntrSettingsId)
+				.andCollectChildren(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
+				.anyMatch();
 	}
 
 }

@@ -62,7 +62,7 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	@Nullable
-	public static Quantity ofOrNull(@Nullable final BigDecimal qty, @Nullable final I_C_UOM uom)
+	public static Quantity ofNullable(@Nullable final BigDecimal qty, @Nullable final I_C_UOM uom)
 	{
 		if (qty == null || uom == null)
 		{

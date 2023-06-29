@@ -22,35 +22,35 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 @Service
 public class ModularContractHandlerFactory
 {
-	private final Map<String, IModularContractTypeHandler<Object>> knownHandlersMap;
-	private final List<IModularContractTypeHandler<Object>> knownHandlers;
+	private final ImmutableMap<String, IModularContractTypeHandler> knownHandlersMap;
+	private final ImmutableList<IModularContractTypeHandler> knownHandlers;
 
-	public ModularContractHandlerFactory(final List<IModularContractTypeHandler<Object>> knownHandlers)
+	public ModularContractHandlerFactory(final List<IModularContractTypeHandler> knownHandlers)
 	{
-		this.knownHandlers = knownHandlers;
-		this.knownHandlersMap = knownHandlers.stream().collect(ImmutableMap.toImmutableMap(handler -> handler.getClass().getName(), Function.identity()));
+		this.knownHandlers = ImmutableList.copyOf(knownHandlers);
+		this.knownHandlersMap = Maps.uniqueIndex(knownHandlers, handler -> handler.getClass().getName());
 	}
 
 	@Nullable
-	public IModularContractTypeHandler<Object> getByClassName(@NonNull final String name)
+	public IModularContractTypeHandler getByClassName(@NonNull final String name)
 	{
 		return knownHandlersMap.get(name);
 	}
 
-	public Stream<IModularContractTypeHandler<Object>> getApplicableHandlersFor(@NonNull final Object model)
+	public Stream<IModularContractTypeHandler> getApplicableHandlersFor(@NonNull final Object model)
 	{
 		return knownHandlers.stream()
 				.filter(handler -> handler.probablyAppliesTo(model));
