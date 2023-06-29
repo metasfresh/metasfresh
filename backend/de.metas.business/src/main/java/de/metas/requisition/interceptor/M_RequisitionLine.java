@@ -24,13 +24,14 @@ package de.metas.requisition.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.requisition.RequisitionRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
@@ -45,6 +46,13 @@ import java.util.List;
 public class M_RequisitionLine
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final RequisitionRepository requisitionRepository;
+
+	public M_RequisitionLine(@NonNull final RequisitionRepository requisitionRepository)
+	{
+		this.requisitionRepository = requisitionRepository;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_RequisitionLine.COLUMNNAME_C_BPartner_ID })
 	public void updateIsVendor(@NonNull final I_M_RequisitionLine requisitionLine)
 	{
@@ -65,7 +73,8 @@ public class M_RequisitionLine
 	private void calculateTotalLines(@NonNull final I_M_RequisitionLine requisitionLine)
 	{
 		final I_M_Requisition requisition = requisitionLine.getM_Requisition();
-		final List<I_M_RequisitionLine> lines = getRequisitionRepository().getLinesByRequisitionId(requisition.getM_Requisition_ID());
+		final int requisitionId = requisition.getM_Requisition_ID();
+		final List<I_M_RequisitionLine> lines = requisitionRepository.getLinesByRequisitionId(requisitionId);
 
 		BigDecimal calculatedTotalAmt = BigDecimal.ZERO;
 		for (final I_M_RequisitionLine line : lines)
@@ -76,12 +85,7 @@ public class M_RequisitionLine
 		requisition.setTotalLines(calculatedTotalAmt);
 		InterfaceWrapperHelper.save(requisition);
 
-		// CacheMgt.get().reset();
-	}
-
-	private RequisitionRepository getRequisitionRepository()
-	{
-		return Adempiere.getBean(RequisitionRepository.class);
+		CacheMgt.get().reset(CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_M_Requisition.Table_Name, requisitionId));
 	}
 
 }
