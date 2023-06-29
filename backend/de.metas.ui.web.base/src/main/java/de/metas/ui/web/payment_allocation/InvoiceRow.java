@@ -47,6 +47,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -157,7 +158,8 @@ public class InvoiceRow implements IViewRow
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
 		this.invoiceAmtMultiplier = invoiceAmtMultiplier;
-		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt)
+				.orElseThrow(() -> new AdempiereException("Cannot determine currency"));
 		this.currencyCodeString = currencyCode.toThreeLetterCode();
 
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
@@ -249,9 +251,9 @@ public class InvoiceRow implements IViewRow
 		return bpartner.getIdAs(BPartnerId::ofRepoId);
 	}
 
-	public InvoiceRow withPreparedForAllocationSet() { return withPreparedForAllocation(true); }
+	public InvoiceRow withPreparedForAllocationSet() {return withPreparedForAllocation(true);}
 
-	public InvoiceRow withPreparedForAllocationUnset() { return withPreparedForAllocation(false); }
+	public InvoiceRow withPreparedForAllocationUnset() {return withPreparedForAllocation(false);}
 
 	public InvoiceRow withPreparedForAllocation(final boolean isPreparedForAllocation)
 	{

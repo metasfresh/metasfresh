@@ -33,6 +33,11 @@ public class OrderCostRepository
 		return newSession().getByOrderId(orderId);
 	}
 
+	public List<OrderCost> getByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		return newSession().getByOrderIds(orderIds);
+	}
+
 	public List<OrderCost> getByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
 	{
 		return newSession().getByOrderLineIds(orderLineIds);

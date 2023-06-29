@@ -47,6 +47,8 @@ public class CurrencyRate
 	@NonNull Instant conversionDate;
 	@NonNull CurrencyConversionTypeId conversionTypeId;
 
+	public BigDecimal toBigDecimal() {return getConversionRate();}
+
 	@NonNull
 	public BigDecimal convertAmount(final BigDecimal amount)
 	{
@@ -78,18 +80,28 @@ public class CurrencyRate
 	 */
 	public Money convertAmount(@NonNull final Money amount)
 	{
-		if (amount.getCurrencyId().equals(toCurrencyId))
+		if (CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
 		{
 			return amount;
 		}
 
-		if (!amount.getCurrencyId().equals(fromCurrencyId))
+		if (!CurrencyId.equals(amount.getCurrencyId(), fromCurrencyId))
 		{
 			throw new AdempiereException("Cannot convert " + amount + " to " + toCurrencyId + " using " + this);
 		}
 
 		final BigDecimal convertedAmount = convertAmount(amount.toBigDecimal());
 		return Money.of(convertedAmount, toCurrencyId);
+	}
+
+	public Money convertAmount(@NonNull final Money amount, @NonNull final CurrencyId toCurrencyId)
+	{
+		if (!CurrencyId.equals(this.toCurrencyId, toCurrencyId))
+		{
+			throw new AdempiereException("Cannot convert " + amount + " to " + toCurrencyId + " using " + this);
+		}
+
+		return convertAmount(amount);
 	}
 
 	/**
@@ -109,12 +121,12 @@ public class CurrencyRate
 	 */
 	public Money reverseConvertAmount(@NonNull final Money amount)
 	{
-		if (amount.getCurrencyId().equals(fromCurrencyId))
+		if (CurrencyId.equals(amount.getCurrencyId(), fromCurrencyId))
 		{
 			return amount;
 		}
 
-		if (!amount.getCurrencyId().equals(toCurrencyId))
+		if (!CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
 		{
 			throw new AdempiereException("Cannot convert " + amount + " to " + fromCurrencyId + " using " + this);
 		}

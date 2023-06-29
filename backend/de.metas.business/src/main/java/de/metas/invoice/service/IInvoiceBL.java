@@ -18,6 +18,7 @@ import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -135,6 +136,10 @@ public interface IInvoiceBL extends ISingletonService
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
 	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
+
+	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 

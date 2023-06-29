@@ -20,6 +20,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -55,6 +56,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 /**
  * Java Process base class.
@@ -810,6 +812,18 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
 
+	@NonNull
+	protected final TableRecordReference getRecordRef() {return getProcessInfo().getRecordRefNotNull();}
+
+	@NonNull
+	protected final <ID extends RepoIdAware> ID getRecordIdAssumingTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<ID> mapper)
+	{
+		return getProcessInfo().getRecordRefNotNull().getIdAssumingTableName(expectedTableName, mapper);
+	}
+
+
 	/**
 	 * @return selected included row IDs of current single selected document
 	 */
@@ -1014,7 +1028,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		return retrieveSelectedRecordsQueryBuilder(modelClass, false);
 	}
-	
+
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
 	 * If this exception is thrown:

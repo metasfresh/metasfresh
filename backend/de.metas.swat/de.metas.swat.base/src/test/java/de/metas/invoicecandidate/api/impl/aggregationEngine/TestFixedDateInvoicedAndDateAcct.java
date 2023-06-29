@@ -187,6 +187,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 	{
 		I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
 		pt.setC_PaymentTerm_ID(100);
+		pt.setValue("payment term");
+		pt.setName("payment term");
 		pt.setIsAllowOverrideDueDate(true);
 		pt.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
 		pt.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
