@@ -88,7 +88,7 @@
 				<textElement>
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[TODAY( )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="HH:mm:ss" isBlankWhenNull="true">
 				<reportElement key="textField" x="688" y="45" width="81" height="13" uuid="00ee8884-0f91-4e8f-82b0-be57fb0397b2"/>
@@ -101,7 +101,7 @@
 				<textElement>
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[TODAY( )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
