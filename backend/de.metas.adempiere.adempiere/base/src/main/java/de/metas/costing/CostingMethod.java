@@ -1,13 +1,10 @@
 package de.metas.costing;
 
 
-<<<<<<< HEAD
 import de.metas.ad_reference.ReferenceId;
-=======
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
->>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 import org.compiere.model.X_M_CostElement;
 
 import lombok.Getter;
@@ -45,11 +42,7 @@ public enum CostingMethod implements ReferenceListAwareEnum
 	LastInvoice(X_M_CostElement.COSTINGMETHOD_LastInvoice), //
 	UserDefined(X_M_CostElement.COSTINGMETHOD_UserDefined), //
 	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__), //
-<<<<<<< HEAD
-	MovingAverageInvoice(X_M_CostElement.COSTINGMETHOD_MovingAverageInvoice)
-=======
 	MovingAverageInvoice(X_M_CostElement.COSTINGMETHOD_MovingAverageInvoice)//
->>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 
 	;
 

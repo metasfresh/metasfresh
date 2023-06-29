@@ -54,22 +54,9 @@ public class CostElement
 		this.clientId = clientId;
 	}
 
-<<<<<<< HEAD
-	public boolean isMaterialElement()
-	{
-		return getCostElementType().isMaterial();
-	}
-
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean isActivityControlElement()
-	{
-		return getCostElementType().isActivityControlElement();
-	}
-=======
 	public boolean isMaterial() {return this.costElementType.isMaterial();}
 
 	public boolean isMaterialCostingMethod(@NonNull final CostingMethod costingMethod) {return isMaterial() && costingMethod.equals(this.costingMethod);}
->>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isActivityControlElement() {return this.costElementType.isActivityControlElement();}
