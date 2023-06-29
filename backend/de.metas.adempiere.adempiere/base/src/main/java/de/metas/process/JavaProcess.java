@@ -817,6 +817,18 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
 
+	@NonNull
+	protected final TableRecordReference getRecordRef() {return getProcessInfo().getRecordRefNotNull();}
+
+	@NonNull
+	protected final <ID extends RepoIdAware> ID getRecordIdAssumingTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<ID> mapper)
+	{
+		return getProcessInfo().getRecordRefNotNull().getIdAssumingTableName(expectedTableName, mapper);
+	}
+
+
 	/**
 	 * @return selected included row IDs of current single selected document
 	 */
@@ -1068,7 +1080,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		return retrieveSelectedRecordsQueryBuilder(modelClass, false);
 	}
-	
+
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
 	 * <p>

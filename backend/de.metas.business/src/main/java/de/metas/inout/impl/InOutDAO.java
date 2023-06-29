@@ -96,6 +96,12 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	public List<I_M_InOut> getByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderIds(ImmutableSet.of(orderId)).list();
+	}
+
+	@Override
 	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
@@ -248,6 +254,7 @@ public class InOutDAO implements IInOutDAO
 		return queryBuilder.create()
 				.list(clazz);
 	}
+
 	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(final I_C_OrderLine orderLine, final Class<T> clazz)
 	{
@@ -260,6 +267,22 @@ public class InOutDAO implements IInOutDAO
 
 		return queryBuilder.create()
 				.list(clazz);
+	}
+
+	@Override
+	public Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.addOnlyActiveRecordsFilter()
+				.stream()
+				.map(inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -479,12 +502,12 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public List<I_M_InOutLine> retrieveShipmentLinesForOrderId(@NonNull final Set<OrderId> orderIds)
 	{
-		final List<Integer> shipmentIds = queryBL.createQueryBuilder(I_M_InOut.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderIds)
-				.create()
-				.listDistinct(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.class);
+		if (orderIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
+		final List<InOutId> shipmentIds = queryByOrderIds(orderIds).listDistinct(I_M_InOut.COLUMNNAME_M_InOut_ID, InOutId.class);
 		if (shipmentIds.isEmpty())
 		{
 			return ImmutableList.of();
@@ -494,6 +517,16 @@ public class InOutDAO implements IInOutDAO
 				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, shipmentIds)
 				.create()
 				.listImmutable(I_M_InOutLine.class);
+	}
+
+	private IQuery<I_M_InOut> queryByOrderIds(final @NonNull Set<OrderId> orderIds)
+	{
+		Check.assumeNotEmpty(orderIds, "orderIds not empty");
+
+		return queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderIds)
+				.create();
 	}
 
 	@NonNull

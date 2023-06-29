@@ -39,6 +39,7 @@ import org.compiere.model.I_M_Product;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -52,6 +53,8 @@ public interface IProductBL extends ISingletonService
 	I_M_Product getById(ProductId productId);
 
 	I_M_Product getByIdInTrx(ProductId productId);
+
+	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 
 	ProductId getProductIdByValue(OrgId orgId, String productValue);
 

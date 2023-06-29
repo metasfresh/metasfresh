@@ -113,7 +113,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;

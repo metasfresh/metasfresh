@@ -1,6 +1,5 @@
 package de.metas.payment.paymentterm;
 
-import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;

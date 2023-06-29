@@ -1,6 +1,7 @@
 package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -19,6 +20,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
@@ -62,6 +64,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -99,7 +102,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
-import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -202,6 +204,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
+	}
+
+	@Override
+	public List<? extends I_C_Invoice> getByOrderId(@NonNull final OrderId orderId)
+	{
+		return invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(orderId));
+	}
+
+	@Override
+	public List<I_C_InvoiceLine> getLines(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveLines(invoiceId);
 	}
 
 	@Override

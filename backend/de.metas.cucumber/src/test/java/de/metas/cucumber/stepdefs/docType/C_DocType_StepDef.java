@@ -27,8 +27,12 @@ import de.metas.cucumber.stepdefs.seqNo.AD_Sequence_StepDefData;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeBL;
 import de.metas.util.Check;
+import de.metas.cucumber.stepdefs.seqNo.AD_Sequence_StepDefData;
+import de.metas.document.DocBaseType;
+import de.metas.document.IDocTypeBL;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -37,9 +41,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.IQuery;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_GL_Category;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
+import org.compiere.model.I_GL_Category;
 
 import java.util.List;
 import java.util.Map;
@@ -52,6 +59,8 @@ import static org.compiere.model.I_C_DocType.COLUMNNAME_DocNoSequence_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_GL_Category_ID;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_DocNoSequence_ID;
 
 public class C_DocType_StepDef
 {
@@ -176,6 +185,59 @@ public class C_DocType_StepDef
 		saveRecord(docTypeRecord);
 
 		docTypeTable.putOrReplace(docTypeIdentifier, docTypeRecord);
+	}
+
+	@Given("metasfresh contains C_DocType:")
+	public void metasfresh_contains_c_doctype(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createC_DocType(tableRow);
+		}
+	}
+
+	private void createC_DocType(@NonNull final Map<String, String> tableRow)
+	{
+		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+
+		final DocBaseType docBaseType = DocBaseType.ofCode(DataTableUtil.extractStringForColumnName(tableRow, I_C_DocType.COLUMNNAME_DocBaseType));
+		docTypeRecord.setDocBaseType(docBaseType.getCode());
+		docTypeRecord.setIsSOTrx(docBaseType.isSOTrx());
+
+		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_DocType.COLUMNNAME_Name);
+		docTypeRecord.setName(name);
+		docTypeRecord.setPrintName(name);
+
+		final String glCategoryName = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_GL_Category_ID + "." + I_GL_Category.COLUMNNAME_Name);
+		final int glCategoryId = queryBL.createQueryBuilder(I_GL_Category.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_GL_Category.COLUMNNAME_Name, glCategoryName)
+				.orderBy(I_GL_Category.COLUMNNAME_Name)
+				.create()
+				.firstId();
+		docTypeRecord.setGL_Category_ID(glCategoryId);
+
+		final String sequenceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocNoSequence_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer sequenceId = sequenceTable.getOptional(sequenceIdentifier)
+				.map(I_AD_Sequence::getAD_Sequence_ID)
+				.orElseGet(() -> Integer.parseInt(sequenceIdentifier));
+
+		docTypeRecord.setDocNoSequence_ID(sequenceId);
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_DocType.COLUMNNAME_Description);
+		if (de.metas.util.Check.isNotBlank(description))
+		{
+			docTypeRecord.setDescription(description);
+		}
+
+
+		docTypeRecord.setEntityType("D");
+		docTypeRecord.setIsDocNoControlled(true);
+		InterfaceWrapperHelper.saveRecord(docTypeRecord);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_DocType");
+		docTypeTable.putOrReplace(recordIdentifier, docTypeRecord);
 	}
 
 	@Given("metasfresh contains C_DocType:")
