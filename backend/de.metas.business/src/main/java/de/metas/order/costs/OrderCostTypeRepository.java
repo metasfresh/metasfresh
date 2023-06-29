@@ -50,6 +50,7 @@ public class OrderCostTypeRepository
 	{
 		return OrderCostType.builder()
 				.id(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
+				.code(record.getValue())
 				.name(record.getName())
 				.distributionMethod(CostDistributionMethod.ofCode(record.getCostDistributionMethod()))
 				.calculationMethod(CostCalculationMethod.ofCode(record.getCostCalculationMethod()))

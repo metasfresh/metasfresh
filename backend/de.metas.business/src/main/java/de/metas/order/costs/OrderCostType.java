@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 public class OrderCostType
 {
 	@NonNull OrderCostTypeId id;
+	@NonNull String code;
 	@NonNull String name;
 	@NonNull CostDistributionMethod distributionMethod;
 	@NonNull CostCalculationMethod calculationMethod;

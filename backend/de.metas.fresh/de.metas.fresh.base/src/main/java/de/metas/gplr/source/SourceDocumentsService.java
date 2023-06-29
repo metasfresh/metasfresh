@@ -55,6 +55,7 @@ import de.metas.order.OrderLineId;
 import de.metas.order.costs.OrderCost;
 import de.metas.order.costs.OrderCostDetail;
 import de.metas.order.costs.OrderCostService;
+import de.metas.order.costs.OrderCostType;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
@@ -319,9 +320,10 @@ public class SourceDocumentsService
 
 	private SourceOrderCost toSourceOrderCost(final OrderCost orderCost)
 	{
+		final OrderCostType costType = orderCostService.getCostTypeById(orderCost.getCostTypeId());
 		return SourceOrderCost.builder()
 				.orderId(orderCost.getOrderId())
-				.costTypeName(orderCostService.getCostTypeById(orderCost.getCostTypeId()).getName())
+				.costTypeName(costType.getCode() + " " + costType.getName())
 				.costAmountFC(orderCost.getCostAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.vendor(orderCost.getBpartnerId() != null ? prepareBPartnerInfo(orderCost.getBpartnerId()).build() : null)
 				.basedOnOrderLineIds(orderCost.getDetails()
