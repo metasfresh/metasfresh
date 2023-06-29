@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor2
 Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
 
   Background:
