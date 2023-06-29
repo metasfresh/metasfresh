@@ -8,6 +8,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -62,6 +63,7 @@ public class GPLR_CreateReport extends JavaProcess implements IProcessPreconditi
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 		final InvoiceId invoiceId = getInvoiceId(getRecordRef())

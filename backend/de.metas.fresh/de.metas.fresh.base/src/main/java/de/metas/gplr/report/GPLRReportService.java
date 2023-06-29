@@ -1,7 +1,6 @@
 package de.metas.gplr.report;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.BaseEncoding;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.department.DepartmentService;
@@ -24,6 +23,7 @@ import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -42,8 +42,9 @@ public class GPLRReportService
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final AttachmentEntryService attachmentService;
 	@NonNull private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	@NonNull final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private static final AdProcessId JASPER_PROCESS_ID = AdProcessId.ofRepoId(999999); // TODO implement and set the right process ID
+	private static final AdProcessId JASPER_PROCESS_ID = AdProcessId.ofRepoId(585277);
 	private static final String JASPER_PROCESS_PARAM_GPLR_Report_ID = I_GPLR_Report.COLUMNNAME_GPLR_Report_ID;
 
 	public GPLRReportService(
@@ -80,17 +81,22 @@ public class GPLRReportService
 
 	private GPLRReport createReport(@NonNull final SourceDocuments source)
 	{
+		// IMPORTANT: make sure we are running out-of-trx because
+		// the PDF is generated on other server, so we need generated data to be committed
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		checkEligibleToGenerateReport(source.getSalesInvoiceId()).assertTrue();
 
-		final GPLRReport report = GPLRReportCreateCommand.builder()
-				.gplrReportRepository(gplrReportRepository)
-				.departmentService(departmentService)
-				.currencyCodeConverter(moneyService)
-				//
-				.source(source)
-				//
-				.build()
-				.execute();
+		final GPLRReport report = trxManager.callInThreadInheritedTrx(
+				() -> GPLRReportCreateCommand.builder()
+						.gplrReportRepository(gplrReportRepository)
+						.departmentService(departmentService)
+						.currencyCodeConverter(moneyService)
+						//
+						.source(source)
+						//
+						.build()
+						.execute());
 
 		final ReportResult pdf = createPDF(report.getIdNotNull());
 
@@ -104,18 +110,10 @@ public class GPLRReportService
 
 	private ReportResult createPDF(@NonNull final GPLRReportId gplrReportId)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		try
 		{
-			// FIXME DEBUGGING
-			if (true)
-			{
-				return ReportResult.builder()
-						.reportFilename("GPLR_Report.pdf")
-						.outputType(OutputType.PDF)
-						.reportContentBase64(BaseEncoding.base64().encode(new byte[] {}))
-						.build();
-			}
-
 			final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
 					PInstanceRequest.builder()
 							.processId(JASPER_PROCESS_ID)
