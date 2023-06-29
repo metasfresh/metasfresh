@@ -5,6 +5,7 @@ import de.metas.document.dimension.DimensionTest;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,7 @@ class ShipmentScheduleDimensionFactoryTest
 				.userElementString5(null)
 				.userElementString6(null)
 				.userElementString7(null)
+				.projectId(ProjectId.ofRepoId(1))
 				.build();
 		assertThat(dimensionFromRecord).usingRecursiveComparison().isEqualTo(dimensionFromRecordExpected);
 		assertThat(dimensionFromRecord).isEqualTo(dimensionFromRecordExpected);
