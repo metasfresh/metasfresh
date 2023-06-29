@@ -369,7 +369,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		// NotInvoicedReceipt CR
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
-				.setAccount(costElement.isMaterialElement()
+				.setAccount(costElement.isMaterial()
 									? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
 									: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
 				.setAmt(null, roundToStdPrecision(costs))

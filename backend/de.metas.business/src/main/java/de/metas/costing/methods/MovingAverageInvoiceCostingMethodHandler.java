@@ -425,7 +425,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final MatchInvType type = matchInv.getType();
 		if (type.isMaterial())
 		{
-			Check.assume(costElement.isMaterialElement(), "Cost Element shall be material: {}", costElement);
+			Check.assume(costElement.isMaterial(), "Cost Element shall be material: {}", costElement);
 
 			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
 					.map(orderLineBL::getOrderLineById)
