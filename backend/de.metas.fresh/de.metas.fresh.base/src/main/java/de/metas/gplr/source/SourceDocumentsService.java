@@ -192,28 +192,33 @@ public class SourceDocumentsService
 	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Order order)
 	{
 		final CurrencyConversionContext conversionCtx = orderBL.getCurrencyConversionContext(order);
+		final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
 		final CurrencyId foreignCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
-		CurrencyCode foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
+		final CurrencyCode foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(foreignCurrencyId);
 		final CurrencyCode localCurrency;
 		final CurrencyRate currencyRate;
 		final String forexContractNo;
 
 		final ImmutableList<ForexContract> forexContracts = forexContractService.getContractsByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
-		// TODO: what to do when an order is assigned to multiple FEC contacts?
-		ForexContract forexContract = forexContracts.size() == 1 ? forexContracts.get(0) : null;
+		final ForexContract forexContract = forexContracts.size() == 1 ? forexContracts.get(0) : null; // TODO: what to do when an order is assigned to multiple FEC contacts?
 		if (forexContract == null)
 		{
 			forexContractNo = null;
-
-			final CurrencyId localCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
-			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
-
+			localCurrency = moneyService.getCurrencyCodeByCurrencyId(baseCurrencyId);
 			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx);
 		}
 		else
 		{
 			forexContractNo = forexContract.getDocumentNo();
 			final CurrencyId localCurrencyId = forexContract.getLocalCurrencyIdByForeignCurrencyId(foreignCurrencyId);
+			if (!CurrencyId.equals(localCurrencyId, baseCurrencyId))
+			{
+				throw new AdempiereException("FEC local currency is not matching base/accounting currency")
+						.appendParametersToMessage()
+						.setParameter("forexContract", forexContract)
+						.setParameter("baseCurrencyId", baseCurrencyId)
+						.setParameter("order", order);
+			}
 			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
 			currencyRate = CurrencyRate.builder()
 					.fromCurrencyId(foreignCurrencyId)
@@ -413,6 +418,7 @@ public class SourceDocumentsService
 	private SourceCurrencyInfo extractCurrencyInfo(final I_C_Invoice invoice)
 	{
 		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(invoice.getAD_Client_ID(), invoice.getAD_Org_ID()));
 		final CurrencyConversionContext conversionCtx = invoiceBL.getCurrencyConversionCtx(invoice);
 
 		final CurrencyRate currencyRate;
@@ -425,8 +431,7 @@ public class SourceDocumentsService
 		{
 			forexContractNo = null;
 
-			final CurrencyId localCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(invoice.getAD_Client_ID(), invoice.getAD_Org_ID()));
-			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
+			localCurrency = moneyService.getCurrencyCodeByCurrencyId(baseCurrencyId);
 			foreignCurrency = moneyService.getCurrencyCodeByCurrencyId(invoiceCurrencyId);
 
 			currencyRate = moneyService.getCurrencyRate(foreignCurrency, localCurrency, conversionCtx);
@@ -439,6 +444,14 @@ public class SourceDocumentsService
 						.appendParametersToMessage()
 						.setParameter("forexContractRef", forexContractRef)
 						.setParameter("invoiceCurrencyId", invoiceCurrencyId)
+						.setParameter("invoice", invoice);
+			}
+			if (!CurrencyId.equals(forexContractRef.getLocalCurrencyId(), baseCurrencyId))
+			{
+				throw new AdempiereException("FEC local currency is not matching base/accounting currency")
+						.appendParametersToMessage()
+						.setParameter("forexContractRef", forexContractRef)
+						.setParameter("baseCurrencyId", baseCurrencyId)
 						.setParameter("invoice", invoice);
 			}
 
