@@ -96,7 +96,7 @@ order by GPLR_Report_ID
 	<title>
 		<band height="17">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="63" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="897dc94a-8f5a-4c8f-8a8f-2c429ff2b338"/>
+				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="60" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="897dc94a-8f5a-4c8f-8a8f-2c429ff2b338"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

@@ -81,7 +81,7 @@ order by lineno
 	<title>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="70" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="69741537-580a-4e2b-9e82-c016c73380df"/>
+				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="60" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="69741537-580a-4e2b-9e82-c016c73380df"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
