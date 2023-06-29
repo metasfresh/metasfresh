@@ -108,6 +108,11 @@ public class OrderCostService
 		return orderCostRepository.getByOrderId(orderId);
 	}
 
+	public List<OrderCost> getByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		return orderCostRepository.getByOrderIds(orderIds);
+	}
+
 	public InOutCost getInOutCostsById(@NonNull final InOutCostId inoutCostId)
 	{
 		return inOutCostRepository.getById(inoutCostId);
