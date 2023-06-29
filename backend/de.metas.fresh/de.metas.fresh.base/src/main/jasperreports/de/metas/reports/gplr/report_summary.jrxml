@@ -16,7 +16,9 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT *
-FROM GPLR_Report_Summary order by GPLR_Report_Summary_ID
+FROM GPLR_Report_Summary 
+WHERE GPLR_Report_ID=$P{GPLR_Report_ID}
+order by GPLR_Report_Summary_ID
 ;]]>
 	</queryString>
 	<field name="ad_client_id" class="java.math.BigDecimal">
