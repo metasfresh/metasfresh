@@ -16,7 +16,9 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT *
-FROM GPLR_Report_PurchaseOrder order by GPLR_Report_PurchaseOrder_id
+FROM GPLR_Report_PurchaseOrder
+WHERE GPLR_Report_ID=$P{GPLR_Report_ID}
+ order by GPLR_Report_PurchaseOrder_id
 ;]]>
 	</queryString>
 	<field name="ad_client_id" class="java.math.BigDecimal">
@@ -99,7 +101,7 @@ FROM GPLR_Report_PurchaseOrder order by GPLR_Report_PurchaseOrder_id
 				<textFieldExpression><![CDATA[$R{po}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="0" y="0" width="781" height="1" uuid="9b9f39e7-a675-49d3-b047-8f8b305c8e95"/>
+				<reportElement x="0" y="-1" width="781" height="1" uuid="9b9f39e7-a675-49d3-b047-8f8b305c8e95"/>
 			</line>
 		</band>
 	</title>

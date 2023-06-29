@@ -16,7 +16,9 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT *
-FROM GPLR_Report_Line order by seqno
+FROM GPLR_Report_Line 
+WHERE GPLR_Report_ID=$P{GPLR_Report_ID}
+order by seqno
 ;]]>
 	</queryString>
 	<field name="ad_client_id" class="java.math.BigDecimal">
@@ -81,6 +83,9 @@ FROM GPLR_Report_Line order by seqno
 	</field>
 	<field name="updatedby" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="updatedby"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
