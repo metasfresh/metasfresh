@@ -22,6 +22,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
+import de.metas.order.invoicecandidate.OrderLineHandlerExtension;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
@@ -64,7 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 @ExtendWith(AdempiereTestWatcher.class)
@@ -112,6 +113,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		SpringContextHolder.registerJUnitBean(OrderLineHandlerExtension.class, Mockito.mock(OrderLineHandlerExtension.class));
 
 		olHandler = new C_OrderLine_Handler();
 		initHandlers();
