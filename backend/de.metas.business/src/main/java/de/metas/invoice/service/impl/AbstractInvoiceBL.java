@@ -1,6 +1,7 @@
 package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -62,6 +63,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -205,6 +207,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public List<? extends I_C_Invoice> getByOrderId(@NonNull final OrderId orderId)
+	{
+		return invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(orderId));
+	}
+
+	@Override
+	public List<I_C_InvoiceLine> getLines(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveLines(invoiceId);
+	}
+
+	@Override
 	public I_C_InvoiceLine getLineById(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return invoiceDAO.retrieveLineById(invoiceLineId);
@@ -230,7 +244,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			//
 			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
 			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice,
+<<<<<<< HEAD
 																										   false).toBigDecimal(); // creditMemoAdjusted = false
+=======
+					false).toBigDecimal(); // creditMemoAdjusted = false
+>>>>>>> ae6b83e5403 (GPLR Report (#15725))
 
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)

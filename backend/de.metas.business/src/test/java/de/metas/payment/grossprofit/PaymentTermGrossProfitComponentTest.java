@@ -64,6 +64,8 @@ public class PaymentTermGrossProfitComponentTest
 	public void applyToInput_subtract_3percent()
 	{
 		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("3%");
+		paymentTermRecord.setName("3%");
 		paymentTermRecord.setDiscount(new BigDecimal("3"));
 		paymentTermRecord.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
 		paymentTermRecord.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);

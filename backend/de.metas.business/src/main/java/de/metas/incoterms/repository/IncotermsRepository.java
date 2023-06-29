@@ -22,46 +22,115 @@
 
 package de.metas.incoterms.repository;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Incoterms;
 import org.springframework.stereotype.Repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Repository
 public class IncotermsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<Integer, IncotermsMap> cache = CCache.<Integer, IncotermsMap>builder()
+			.tableName(I_C_Incoterms.Table_Name)
+			.build();
+
 	@NonNull
 	public Incoterms getById(@NonNull final IncotermsId incotermsId)
 	{
-		return ofRecord(loadOutOfTrx(incotermsId, I_C_Incoterms.class));
+		return getMap().getById(incotermsId);
 	}
 
 	@NonNull
-	public Incoterms getIncotermsByValue(@NonNull final String value)
+	public Incoterms getByValue(@NonNull final String value)
 	{
-		final I_C_Incoterms incotermsRecord = queryBL.createQueryBuilder(I_C_Incoterms.class)
-				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_Value, value)
-				.create()
-				.firstOnlyNotNull(I_C_Incoterms.class);
+		return getMap().getByValue(value);
+	}
 
-		return ofRecord(incotermsRecord);
+	private IncotermsMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
+
+	private IncotermsMap retrieveMap()
+	{
+		final List<Incoterms> list = queryBL.createQueryBuilder(I_C_Incoterms.class)
+				.stream()
+				.map(IncotermsRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return new IncotermsMap(list);
 	}
 
 	@NonNull
-	private static Incoterms ofRecord(@NonNull final I_C_Incoterms incotermsRecord)
+	private static Incoterms ofRecord(@NonNull final I_C_Incoterms record)
 	{
 		return Incoterms.builder()
-				.incotermsId(IncotermsId.ofRepoId(incotermsRecord.getC_Incoterms_ID()))
-				.name(incotermsRecord.getName())
-				.value(incotermsRecord.getValue())
-				.description(incotermsRecord.getDescription())
+				.incotermsId(IncotermsId.ofRepoId(record.getC_Incoterms_ID()))
+				.value(record.getValue())
+				.name(record.getName())
+				.description(record.getDescription())
+				.isActive(record.isActive())
 				.build();
+	}
+
+	//
+	//
+	//
+
+	private static class IncotermsMap
+	{
+
+		private final ImmutableList<Incoterms> list;
+		private final ImmutableMap<IncotermsId, Incoterms> byId;
+
+		public IncotermsMap(final List<Incoterms> list)
+		{
+			this.list = ImmutableList.copyOf(list);
+			this.byId = Maps.uniqueIndex(list, Incoterms::getIncotermsId);
+		}
+
+		public Incoterms getById(@NonNull final IncotermsId incotermsId)
+		{
+			final Incoterms incoterms = byId.get(incotermsId);
+			if (incoterms == null)
+			{
+				throw new AdempiereException("No Incoterms found for " + incotermsId);
+			}
+			return incoterms;
+		}
+
+		@NonNull
+		public Incoterms getByValue(@NonNull final String value)
+		{
+			final List<Incoterms> result = list.stream()
+					.filter(incoterms -> incoterms.isActive()
+							&& Objects.equals(incoterms.getValue(), value))
+					.collect(Collectors.toList());
+
+			if (result.isEmpty())
+			{
+				throw new AdempiereException("No active Incoterms found for `" + value + "`");
+			}
+			else if (result.size() != 1)
+			{
+				throw new AdempiereException("More than one Incoterms found for `" + value + "`: " + result);
+			}
+			else
+			{
+				return result.get(0);
+			}
+		}
+
 	}
 }

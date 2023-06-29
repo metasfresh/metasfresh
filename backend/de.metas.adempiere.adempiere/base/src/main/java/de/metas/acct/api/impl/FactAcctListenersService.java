@@ -38,8 +38,6 @@ public class FactAcctListenersService implements IFactAcctListenersService
 
 	public FactAcctListenersService()
 	{
-		super();
-
 		registerListener(FactAcctListener2ModelValidationEngineAdapter.instance);
 	}
 
@@ -82,13 +80,13 @@ public class FactAcctListenersService implements IFactAcctListenersService
 	 */
 	private static final class FactAcctListener2ModelValidationEngineAdapter implements IFactAcctListener
 	{
-		public static final transient FactAcctListener2ModelValidationEngineAdapter instance = new FactAcctListener2ModelValidationEngineAdapter();
+		public static final FactAcctListener2ModelValidationEngineAdapter instance = new FactAcctListener2ModelValidationEngineAdapter();
 
 		private FactAcctListener2ModelValidationEngineAdapter()
 		{
 		}
 
-		private final void fireDocValidate(final Object document, final int timing)
+		private void fireDocValidate(final Object document, final int timing)
 		{
 			final Object model;
 			if(document instanceof IDocument)

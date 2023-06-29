@@ -115,6 +115,10 @@ public class ForexContractRepository
 		{
 			queryBuilder.addEqualsFilter(I_C_ForeignExchangeContract.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
 		}
+		if (query.getCurrencyToId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_ForeignExchangeContract.COLUMNNAME_To_Currency_ID, query.getCurrencyToId());
+		}
 		if (query.isOnlyWithOpenAmount())
 		{
 			queryBuilder.addCompareFilter(I_C_ForeignExchangeContract.COLUMN_FEC_Amount_Open, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);

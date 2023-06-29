@@ -27,16 +27,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class SectionCode
 {
-	@NonNull
-	SectionCodeId sectionCodeId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	String value;
+	@NonNull SectionCodeId sectionCodeId;
+	@NonNull OrgId orgId;
+	@NonNull String value;
+	@Nullable String name;
+	@Builder.Default boolean isActive = true;
 }

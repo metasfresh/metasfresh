@@ -527,6 +527,7 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
+<<<<<<< HEAD
 	public static <T> ImmutableSet<T> ofCommaSeparatedSet(
 			@Nullable final String commaSeparatedStr,
 			@NonNull final Function<String, T> mapper)
@@ -547,15 +548,18 @@ public final class CollectionUtils
 
 	@Nullable
 	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
+=======
+	public static <T> Optional<T> emptyOrSingleElement(@NonNull final Collection<T> collection)
+>>>>>>> ae6b83e5403 (GPLR Report (#15725))
 	{
 		final int size = collection.size();
 		if (size == 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 		else if (size == 1)
 		{
-			return collection.iterator().next();
+			return Optional.of(collection.iterator().next());
 		}
 		else
 		{

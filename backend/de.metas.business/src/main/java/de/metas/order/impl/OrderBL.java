@@ -120,6 +120,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -167,10 +168,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public I_C_Order getById(@NonNull final OrderId orderId)
-	{
-		return orderDAO.getById(orderId);
-	}
+	public I_C_Order getById(@NonNull final OrderId orderId) {return orderDAO.getById(orderId);}
+
+	@Override
+	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds) {return orderDAO.getByIds(orderIds);}
+
+	@Override
+	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds) {return orderDAO.retrieveOrderLinesByOrderIds(orderIds);}
 
 	@Override
 	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds)
@@ -183,7 +187,6 @@ public class OrderBL implements IOrderBL
 	{
 		return orderDAO.getOrderLineById(orderAndLineId);
 	}
-
 
 	@Override
 	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystemAndDontThrowExIfNotFound)
@@ -1268,6 +1271,18 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		return orderDAO.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
+	}
+
+	@Override
+	public Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
+	{
+		return orderDAO.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
+	}
+
+	@Override
 	public void updateIsOnConsignmentFromLines(OrderId orderId)
 	{
 		final boolean isOnConsignment = orderDAO.hasIsOnConsignmentLines(orderId);
@@ -1327,4 +1342,7 @@ public class OrderBL implements IOrderBL
 	{
 		orderDAO.deleteByLineId(orderAndLineId);
 	}
+
+	@Override
+	public Quantity getQtyEntered(final org.compiere.model.I_C_OrderLine orderLine) {return orderLineBL.getQtyEntered(orderLine);}
 }
