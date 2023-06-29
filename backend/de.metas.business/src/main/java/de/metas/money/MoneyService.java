@@ -24,6 +24,7 @@ package de.metas.money;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
@@ -290,4 +291,8 @@ public class MoneyService implements CurrencyCodeToCurrencyIdBiConverter
 		return currencyBL.getCurrencyRate(context, fromCurrencyId, targetCurrencyId);
 	}
 
+	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
+	{
+		return currencyBL.getCurrencyConversionTypeId(type);
+	}
 }
