@@ -84,7 +84,7 @@ order by  GPLR_Report_Shipment_ID
 	<title>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="65" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="b4a4ea9d-d1af-4134-9f70-b76b754e893e"/>
+				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="62" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="b4a4ea9d-d1af-4134-9f70-b76b754e893e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

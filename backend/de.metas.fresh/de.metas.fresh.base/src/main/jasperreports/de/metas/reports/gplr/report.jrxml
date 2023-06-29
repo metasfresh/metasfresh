@@ -24,7 +24,7 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="92" splitType="Stretch">
+		<band height="76" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-106" x="0" y="30" width="782" height="30" uuid="d7b7f09c-a4f6-4cd2-92ea-337e3a25556f"/>
 				<box>
@@ -109,7 +109,7 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="20" splitType="Stretch">
+		<band height="17" splitType="Stretch">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="32b25760-2ebf-48fa-bc24-0cf726a3ca0b"/>
 				<subreportParameter name="REPORT_LOCALE">
@@ -125,7 +125,7 @@
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_document.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="20">
+		<band height="17">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="aa6af2a1-6b5f-4632-ab47-51746586f674"/>
 				<subreportParameter name="REPORT_LOCALE">
@@ -141,7 +141,7 @@
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_salesorders.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="20">
+		<band height="17">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="24fa010c-5db2-49b5-bf83-1014ae8367d5"/>
 				<subreportParameter name="REPORT_LOCALE">
@@ -157,7 +157,7 @@
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_deliveries.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="20">
+		<band height="17">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="5c559038-69ab-48b5-99a3-4f5b9b184f08"/>
 				<subreportParameter name="REPORT_LOCALE">
@@ -173,7 +173,7 @@
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_purchaseorders.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="20">
+		<band height="17">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="f7cc2a27-6fbc-49a5-af86-ba8745f44b70"/>
 				<subreportParameter name="REPORT_LOCALE">
@@ -189,7 +189,7 @@
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_summary.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="20">
+		<band height="17">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="455c444c-7b20-4d5d-a9eb-e6b67d8b3457"/>
 				<subreportParameter name="REPORT_LOCALE">
@@ -205,7 +205,7 @@
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_lines.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="20">
+		<band height="17">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="0618831f-d05c-41e2-b1bb-31f29723745e"/>
 				<subreportParameter name="REPORT_LOCALE">
@@ -221,7 +221,7 @@
 				<subreportExpression><![CDATA["de/metas/reports/gplr/report_charges.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="20">
+		<band height="17">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="1" width="781" height="10" uuid="5739ae9d-f833-4673-8c45-78c8694d80eb"/>
 				<subreportParameter name="REPORT_LOCALE">

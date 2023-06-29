@@ -93,7 +93,7 @@ order by GPLR_Report_Summary_ID
 				<reportElement x="0" y="0" width="781" height="1" uuid="3882ebf6-ff05-4ee7-81e6-96d5053c62ae"/>
 			</line>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="65" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="505d7b4a-ff99-4e6e-9410-a47a9ef8f8e1"/>
+				<reportElement key="textField-66" mode="Opaque" x="0" y="4" width="60" height="12" forecolor="#000000" backcolor="#C19BCC" uuid="505d7b4a-ff99-4e6e-9410-a47a9ef8f8e1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
