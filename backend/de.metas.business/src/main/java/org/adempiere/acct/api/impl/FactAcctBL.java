@@ -106,6 +106,7 @@ public class FactAcctBL implements IFactAcctBL
 
 		final AcctSchemaId acctSchemaId = factLines.stream()
 				.map(factLine -> AcctSchemaId.ofRepoId(factLine.getC_AcctSchema_ID()))
+				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Mixing multiple Accounting Schemas when summing amounts is not allowed")));
 		final CurrencyId acctCurrencyId = Services.get(IAcctSchemaBL.class).getAcctCurrencyId(acctSchemaId);
 
