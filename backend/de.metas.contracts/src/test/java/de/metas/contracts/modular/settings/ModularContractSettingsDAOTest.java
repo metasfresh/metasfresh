@@ -75,10 +75,12 @@ class ModularContractSettingsDAOTest
 		saveRecord(settingsRecord);
 
 		final I_ModCntr_Type typeRecord = newInstance(I_ModCntr_Type.class);
+		typeRecord.setName("ModCntr_Settings");
 		typeRecord.setClassname(HandlerImpl.class.getName());
 		saveRecord(typeRecord);
 
 		final I_ModCntr_Module moduleRecord = newInstance(I_ModCntr_Module.class);
+		moduleRecord.setName("ModCntr_Module");
 		moduleRecord.setModCntr_Settings_ID(settingsRecord.getModCntr_Settings_ID());
 		moduleRecord.setModCntr_Type_ID(typeRecord.getModCntr_Type_ID());
 		moduleRecord.setM_Product_ID(130);
