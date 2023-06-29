@@ -41,21 +41,17 @@ public interface ICostElementRepository
 
 	List<CostElement> getByTypes(@NonNull ClientId clientId, @NonNull CostElementType... types);
 
-	List<CostElement> getByCostingMethod(ClientId clientId, CostingMethod costingMethod);
-
-<<<<<<< HEAD
 	List<CostElement> getByClientId(@NonNull ClientId clientId);
 
-	Set<CostElementId> getIdsByClientId(@NonNull ClientId clientId);
-
-	Set<CostElementId> getIdsByCostingMethod(ClientId adClientId, CostingMethod costingMethod);
-=======
 	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
+
+	List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull CostingMethod costingMethod);
 
 	Set<CostElementId> getActiveCostElementIds();
 
 	Set<CostElementId> getIdsByCostingMethod(CostingMethod costingMethod);
 
-	List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull CostingMethod costingMethod);
->>>>>>> 67ba6bd603e (Import inventory based on fact acct (#15708))
+	Set<CostElementId> getIdsByClientId(@NonNull ClientId clientId);
+
+
 }
