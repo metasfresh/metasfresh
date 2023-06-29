@@ -220,7 +220,8 @@ public class GPLRReportRepository
 
 	public boolean isReportGeneratedForInvoice(@NonNull final InvoiceId invoiceId)
 	{
-		final IQueryBuilder<I_GPLR_Report> queryBuilder = queryBL.createQueryBuilder(I_GPLR_Report.class);
+		final IQueryBuilder<I_GPLR_Report> queryBuilder = queryBL.createQueryBuilder(I_GPLR_Report.class)
+				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.addCompositeQueryFilter()
 				.setJoinOr()
@@ -228,5 +229,17 @@ public class GPLRReportRepository
 				.addEqualsFilter(I_GPLR_Report.COLUMNNAME_Purchase_Invoice_ID, invoiceId);
 
 		return queryBuilder.anyMatch();
+	}
+
+	public void deleteById(@NonNull final GPLRReportId reportId)
+	{
+		queryBL.createQueryBuilder(I_GPLR_Report_SalesOrder.class).addEqualsFilter(I_GPLR_Report_SalesOrder.COLUMNNAME_GPLR_Report_ID, reportId).create().deleteDirectly();
+		queryBL.createQueryBuilder(I_GPLR_Report_Shipment.class).addEqualsFilter(I_GPLR_Report_Shipment.COLUMNNAME_GPLR_Report_ID, reportId).create().deleteDirectly();
+		queryBL.createQueryBuilder(I_GPLR_Report_PurchaseOrder.class).addEqualsFilter(I_GPLR_Report_PurchaseOrder.COLUMNNAME_GPLR_Report_ID, reportId).create().deleteDirectly();
+		queryBL.createQueryBuilder(I_GPLR_Report_Summary.class).addEqualsFilter(I_GPLR_Report_Summary.COLUMNNAME_GPLR_Report_ID, reportId).create().deleteDirectly();
+		queryBL.createQueryBuilder(I_GPLR_Report_Line.class).addEqualsFilter(I_GPLR_Report_Line.COLUMNNAME_GPLR_Report_ID, reportId).create().deleteDirectly();
+		queryBL.createQueryBuilder(I_GPLR_Report_Charge.class).addEqualsFilter(I_GPLR_Report_Charge.COLUMNNAME_GPLR_Report_ID, reportId).create().deleteDirectly();
+		queryBL.createQueryBuilder(I_GPLR_Report_Note.class).addEqualsFilter(I_GPLR_Report_Note.COLUMNNAME_GPLR_Report_ID, reportId).create().deleteDirectly();
+		queryBL.createQueryBuilder(I_GPLR_Report.class).addEqualsFilter(I_GPLR_Report.COLUMNNAME_GPLR_Report_ID, reportId).create().delete();
 	}
 }

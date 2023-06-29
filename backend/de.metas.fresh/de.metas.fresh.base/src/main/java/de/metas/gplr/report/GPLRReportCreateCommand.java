@@ -412,7 +412,7 @@ final class GPLRReportCreateCommand
 		return ImmutableList.of(
 				GPLRReportNote.builder()
 						.sourceDocument("Billing Document " + salesInvoice.getDocumentNo())
-						.text(salesInvoice.getDescriptionBottom()) // TODO check if that's correct
+						.text(salesInvoice.getDescriptionBottom())
 						.build()
 		);
 	}

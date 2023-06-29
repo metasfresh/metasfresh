@@ -98,14 +98,28 @@ public class GPLRReportService
 						.build()
 						.execute());
 
+		try
+		{
+			attachPDF(report);
+		}
+		catch (Exception ex)
+		{
+			gplrReportRepository.deleteById(report.getIdNotNull());
+
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+
+		return report;
+	}
+
+	private void attachPDF(@NonNull final GPLRReport report)
+	{
 		final ReportResult pdf = createPDF(report.getIdNotNull());
 
 		attachmentService.createNewAttachment(
 				TableRecordReference.of(I_C_Invoice.Table_Name, report.getSourceDocument().getSalesInvoiceId()),
-				AttachmentEntryCreateRequest.fromReport(pdf)
+				AttachmentEntryCreateRequest.fromReport(pdf).withFilename("GPLR.pdf")
 		);
-
-		return report;
 	}
 
 	private ReportResult createPDF(@NonNull final GPLRReportId gplrReportId)

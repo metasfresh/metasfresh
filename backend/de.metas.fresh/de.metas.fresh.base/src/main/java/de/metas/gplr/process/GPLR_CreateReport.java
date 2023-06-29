@@ -72,6 +72,6 @@ public class GPLR_CreateReport extends JavaProcess implements IProcessPreconditi
 		final GPLRReport report = gplrReportService.createReport(invoiceId);
 		log.debug("Generated report: {}", report);
 
-		return MSG_OK;
+		return "GPLR created";
 	}
 }
