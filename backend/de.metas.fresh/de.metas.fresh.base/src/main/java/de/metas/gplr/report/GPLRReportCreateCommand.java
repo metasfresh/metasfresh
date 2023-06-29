@@ -122,7 +122,7 @@ final class GPLRReportCreateCommand
 
 		final Amount cogsLC = salesOrder.getCOGS_LC();
 
-		final Amount chargesFC = Amount.zero(foreignCurrency); // TODO: understand/compute charges
+		final Amount chargesFC = salesOrder.getInvoicedCostsFC();
 		final Amount chargesLC = toLocal.apply(chargesFC);
 
 		final Amount profitOrLossLC = salesLC.subtract(estimatedLC).subtract(cogsLC);

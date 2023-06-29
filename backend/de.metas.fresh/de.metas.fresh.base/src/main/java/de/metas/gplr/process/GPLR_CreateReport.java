@@ -2,6 +2,7 @@ package de.metas.gplr.process;
 
 import de.metas.gplr.report.GPLRReportService;
 import de.metas.gplr.report.model.GPLRReport;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.invoice.InvoiceId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -27,9 +28,11 @@ public class GPLR_CreateReport extends JavaProcess implements IProcessPreconditi
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot determine invoice ID");
 		}
-		if (gplrReportService.isReportGeneratedFor(invoiceId))
+
+		final BooleanWithReason eligible = gplrReportService.checkEligibleToGenerateReport(invoiceId);
+		if (eligible.isFalse())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Report already generated");
+			return ProcessPreconditionsResolution.rejectWithInternalReason(eligible.getReason());
 		}
 
 		return ProcessPreconditionsResolution.accept();

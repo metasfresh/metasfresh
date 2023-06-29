@@ -13,6 +13,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.forex.ForexContract;
@@ -32,6 +33,7 @@ import de.metas.gplr.source.model.SourceShipperInfo;
 import de.metas.gplr.source.model.SourceTaxInfo;
 import de.metas.gplr.source.model.SourceUserInfo;
 import de.metas.gplr.source.model.SourceWarehouseInfo;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.inout.IInOutBL;
@@ -140,6 +142,22 @@ public class SourceDocumentsService
 		this.forexContractService = forexContractService;
 	}
 
+	public BooleanWithReason checkEligible(final InvoiceId invoiceId)
+	{
+		return checkEligible(invoiceBL.getById(invoiceId));
+	}
+
+	private static BooleanWithReason checkEligible(final I_C_Invoice invoice)
+	{
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
+		if (!docStatus.isCompleted() && !docStatus.isReversed())
+		{
+			return BooleanWithReason.falseBecause("Invoice shall be Completed or Reversed");
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
 	public SourceDocuments getByInvoiceId(final InvoiceId invoiceId)
 	{
 		final SourceInvoice salesInvoice = getSalesInvoice(invoiceId);
@@ -151,6 +169,14 @@ public class SourceDocumentsService
 		final HashSet<OrderId> allOrderIds = new HashSet<>();
 		allOrderIds.add(salesOrderId);
 		allOrderIds.addAll(purchaseOrderIds);
+
+		final ImmutableListMultimap<OrderId, SourceOrderCost> orderCostsByOrderId = orderCostService.getByOrderIds(allOrderIds)
+				.stream()
+				.map(this::toSourceOrderCost)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						SourceOrderCost::getOrderId,
+						orderCost -> orderCost
+				));
 
 		final ImmutableListMultimap<OrderId, SourceOrderLine> linesByOrderId = orderBL.getLinesByOrderIds(allOrderIds)
 				.stream()
@@ -172,10 +198,7 @@ public class SourceDocumentsService
 					.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID())))
 					.incotermsAndLocation(extractIncotermsAndLocation(order))
 					.lines(linesByOrderId.get(orderId))
-					.orderCosts(orderCostService.getByOrderId(orderId)
-							.stream()
-							.map(this::toSourceOrderCost)
-							.collect(ImmutableList.toImmutableList()))
+					.orderCosts(orderCostsByOrderId.get(orderId))
 					.build();
 		};
 
@@ -215,8 +238,9 @@ public class SourceDocumentsService
 			{
 				throw new AdempiereException("FEC local currency is not matching base/accounting currency")
 						.appendParametersToMessage()
-						.setParameter("forexContract", forexContract)
 						.setParameter("baseCurrencyId", baseCurrencyId)
+						.setParameter("localCurrencyId", localCurrencyId)
+						.setParameter("forexContract", forexContract)
 						.setParameter("order", order);
 			}
 			localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
@@ -296,6 +320,7 @@ public class SourceDocumentsService
 	private SourceOrderCost toSourceOrderCost(final OrderCost orderCost)
 	{
 		return SourceOrderCost.builder()
+				.orderId(orderCost.getOrderId())
 				.costTypeName(orderCostService.getCostTypeById(orderCost.getCostTypeId()).getName())
 				.costAmountFC(orderCost.getCostAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.vendor(orderCost.getBpartnerId() != null ? prepareBPartnerInfo(orderCost.getBpartnerId()).build() : null)
@@ -303,6 +328,7 @@ public class SourceDocumentsService
 						.stream()
 						.map(OrderCostDetail::getOrderLineId)
 						.collect(ImmutableSet.toImmutableSet()))
+				.createdOrderLineId(orderCost.getCreatedOrderLineId())
 				.build();
 	}
 
@@ -324,6 +350,8 @@ public class SourceDocumentsService
 	private SourceInvoice getSalesInvoice(final InvoiceId invoiceId)
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+		checkEligible(invoice).assertTrue();
+
 		final I_C_Invoice salesInvoice;
 		if (invoice.isSOTrx())
 		{

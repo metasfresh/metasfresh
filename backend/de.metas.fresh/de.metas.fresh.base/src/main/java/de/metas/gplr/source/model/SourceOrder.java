@@ -56,4 +56,18 @@ public class SourceOrder
 				.reduce(Amount::add)
 				.orElseGet(() -> Amount.zero(currencyInfo.getLocalCurrencyCode()));
 	}
+
+	public Amount getInvoicedCostsFC()
+	{
+		return lines.stream()
+				.filter(this::isLineCreatedFromOrderCosts)
+				.map(SourceOrderLine::getLineNetAmtFC)
+				.reduce(Amount::add)
+				.orElseGet(() -> Amount.zero(currencyInfo.getForeignCurrencyCode()));
+	}
+
+	private boolean isLineCreatedFromOrderCosts(final SourceOrderLine line)
+	{
+		return orderCosts.stream().anyMatch(orderCost -> OrderLineId.equals(orderCost.getCreatedOrderLineId(), line.getId()));
+	}
 }

@@ -10,6 +10,7 @@ import de.metas.gplr.report.model.GPLRReportId;
 import de.metas.gplr.report.repository.GPLRReportRepository;
 import de.metas.gplr.source.SourceDocumentsService;
 import de.metas.gplr.source.model.SourceDocuments;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.MoneyService;
 import de.metas.process.AdProcessId;
@@ -59,9 +60,17 @@ public class GPLRReportService
 		this.attachmentService = attachmentService;
 	}
 
-	public boolean isReportGeneratedFor(final InvoiceId invoiceId)
+	public BooleanWithReason checkEligibleToGenerateReport(final InvoiceId invoiceId)
 	{
-		return gplrReportRepository.isReportGeneratedForInvoice(invoiceId);
+		return sourceDocumentsService.checkEligible(invoiceId)
+				.and(() -> checkReportNotAlreadyGenerated(invoiceId));
+	}
+
+	private BooleanWithReason checkReportNotAlreadyGenerated(final InvoiceId invoiceId)
+	{
+		return gplrReportRepository.isReportGeneratedForInvoice(invoiceId)
+				? BooleanWithReason.falseBecause("GPLR Report was already generated")
+				: BooleanWithReason.TRUE;
 	}
 
 	public GPLRReport createReport(@NonNull final InvoiceId invoiceId)
@@ -71,10 +80,7 @@ public class GPLRReportService
 
 	private GPLRReport createReport(@NonNull final SourceDocuments source)
 	{
-		if (isReportGeneratedFor(source.getSalesInvoiceId()))
-		{
-			throw new AdempiereException("Report was already generated");
-		}
+		checkEligibleToGenerateReport(source.getSalesInvoiceId()).assertTrue();
 
 		final GPLRReport report = GPLRReportCreateCommand.builder()
 				.gplrReportRepository(gplrReportRepository)
