@@ -4,12 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -18,6 +12,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L

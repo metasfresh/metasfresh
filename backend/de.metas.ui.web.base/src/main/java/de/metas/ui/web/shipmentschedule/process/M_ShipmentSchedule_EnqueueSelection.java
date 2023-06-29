@@ -127,8 +127,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean foundAtLeastOneUnprocessedSchedule = context.getSelectedModels(I_M_ShipmentSchedule.class)
-				.stream()
+		final boolean foundAtLeastOneUnprocessedSchedule = context.streamSelectedModels(I_M_ShipmentSchedule.class)
 				.anyMatch(sched -> sched.isActive() &&
 						!sched.isProcessed() &&
 						!bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(sched.getC_BPartner_ID())));
