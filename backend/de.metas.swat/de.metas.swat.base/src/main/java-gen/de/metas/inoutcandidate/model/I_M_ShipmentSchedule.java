@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -718,6 +719,28 @@ public interface I_M_ShipmentSchedule
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Set Date.
