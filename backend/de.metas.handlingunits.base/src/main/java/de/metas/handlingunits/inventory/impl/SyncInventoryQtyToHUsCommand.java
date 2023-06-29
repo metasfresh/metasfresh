@@ -129,8 +129,12 @@ public class SyncInventoryQtyToHUsCommand
 		for (final InventoryLineHU inventoryLineHU : inventoryLine.getInventoryLineHUs())
 		{
 			final Quantity qtyCountMinusBooked = inventoryLineHU.getQtyCountMinusBooked();
-			final boolean transferAttributes = qtyCountMinusBooked.signum() <= 0 && !isIgnoreOnInventoryMinusAndNoHU();
-			if (transferAttributes)
+			final boolean noHU= inventoryLineHU.getHuId()==null;
+			final boolean isMinusQty = qtyCountMinusBooked.signum()>0;
+
+			final boolean doNotTransferAttributes = noHU && isMinusQty && isIgnoreOnInventoryMinusAndNoHU();
+
+			if (!doNotTransferAttributes)
 			{
 				final HuId huId = Check.assumeNotNull(inventoryLineHU.getHuId(), "Every inventoryLineHU instance needs to have an HuId; inventoryLineHU={}", inventoryLineHU);
 
