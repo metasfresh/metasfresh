@@ -96,7 +96,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 
 	private Set<InventoryId> getSelectedInventoryIds()
 	{
-		return retrieveSelectedRecordsQueryBuilder(I_M_Inventory.class)
+		return retrieveAllSelectedRecordsQueryBuilder(I_M_Inventory.class)
 				.create()
 				.listIds()
 				.stream()
