@@ -27,6 +27,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -1046,6 +1047,16 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
 				.create()
 				.list(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public I_C_Flatrate_Term getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID, orderLineId)
+				.create()
+				.firstOnly();
 	}
 
 	@Override

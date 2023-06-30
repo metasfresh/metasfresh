@@ -79,17 +79,17 @@ public interface I_ModCntr_Log
 	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAmount (BigDecimal Amount);
+	void setAmount (@Nullable BigDecimal Amount);
 
 	/**
 	 * Get Amount.
 	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getAmount();
@@ -257,20 +257,20 @@ public interface I_ModCntr_Log
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateTrx (@Nullable java.sql.Timestamp DateTrx);
+	void setDateTrx (java.sql.Timestamp DateTrx);
 
 	/**
 	 * Get Date.
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateTrx();
+	java.sql.Timestamp getDateTrx();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_ModCntr_Log.class, "DateTrx", null);
 	String COLUMNNAME_DateTrx = "DateTrx";
@@ -371,19 +371,19 @@ public interface I_ModCntr_Log
 	 * Set Document Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setModCntr_Log_DocumentType (@Nullable java.lang.String ModCntr_Log_DocumentType);
+	void setModCntr_Log_DocumentType (java.lang.String ModCntr_Log_DocumentType);
 
 	/**
 	 * Get Document Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getModCntr_Log_DocumentType();
+	java.lang.String getModCntr_Log_DocumentType();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_ModCntr_Log_DocumentType = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Log_DocumentType", null);
 	String COLUMNNAME_ModCntr_Log_DocumentType = "ModCntr_Log_DocumentType";

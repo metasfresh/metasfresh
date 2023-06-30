@@ -23,43 +23,30 @@
 package de.metas.calendar.standard;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
-@Value
-public class CalendarId implements RepoIdAware
+public record YearAndCalendarId(@NonNull YearId yearId, @NonNull CalendarId calendarId)
 {
-	int repoId;
+	@JsonCreator
+	public static YearAndCalendarId ofRepoId(final int yearId, final int calendarId)
+	{
+		return ofRepoId(YearId.ofRepoId(yearId), CalendarId.ofRepoId(calendarId));
+	}
 
 	@JsonCreator
-	public static CalendarId ofRepoId(final int repoId)
+	public static YearAndCalendarId ofRepoId(@NonNull final YearId yearId, @NonNull final CalendarId calendarId)
 	{
-		return new CalendarId(repoId);
+		return new YearAndCalendarId(yearId, calendarId);
 	}
 
 	@Nullable
-	public static CalendarId ofRepoIdOrNull(final int repoId)
+	public static YearAndCalendarId ofRepoIdOrNull(@Nullable final Integer yearId, @Nullable final Integer calendarId)
 	{
-		return repoId > 0 ? new CalendarId(repoId) : null;
-	}
-
-	public static int toRepoId(@Nullable final CalendarId calendarId)
-	{
-		return calendarId != null ? calendarId.getRepoId() : -1;
-	}
-
-	private CalendarId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Calendar_ID");
-	}
-
-	@JsonValue
-	public int toJson()
-	{
-		return getRepoId();
+		return
+				calendarId != null && calendarId > 0 && yearId != null && yearId > 0
+						? new YearAndCalendarId(YearId.ofRepoId(yearId), CalendarId.ofRepoId(calendarId))
+						: null;
 	}
 }

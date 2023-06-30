@@ -35,6 +35,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
@@ -254,4 +255,6 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Conditions getConditionsById(int flatrateConditionsId);
 
 	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
+
+	I_C_Flatrate_Term getByOrderLineId(@NonNull OrderLineId orderLineId);
 }
