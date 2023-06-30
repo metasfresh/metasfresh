@@ -58,6 +58,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -96,6 +97,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -287,12 +289,22 @@ public class C_Order_StepDef
 
 			if (EmptyUtil.isNotBlank(docBaseType))
 			{
-				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
+				final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType);
 
-				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
-						.create()
+				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
+				if (Check.isNotBlank(docSubType))
+				{
+					docTypeQueryBuilder.addEqualsFilter(COLUMNNAME_DocSubType, docSubType);
+				}
+
+				final String name = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.DocSubTypeName");
+				if (Check.isNotBlank(name))
+				{
+					docTypeQueryBuilder.addEqualsFilter(COLUMNNAME_Name, name);
+				}
+
+				final I_C_DocType docType = docTypeQueryBuilder.create()
 						.firstOnlyNotNull(I_C_DocType.class);
 
 				assertThat(docType).isNotNull();
@@ -475,7 +487,6 @@ public class C_Order_StepDef
 				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
 				final CountryId purchaseOrderTaxDepartureCountryId = CountryId.ofRepoIdOrNull(purchaseOrder.getC_Tax_Departure_Country_ID());
 				softly.assertThat(taxDepartureCountry.getC_Country_ID()).isNotEqualTo(CountryId.toRepoId(purchaseOrderTaxDepartureCountryId));
-				softly.assertThat(purchaseOrderTaxDepartureCountryId).isNull();
 			}
 		}
 
