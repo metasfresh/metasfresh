@@ -262,14 +262,14 @@ BEGIN
                hu.m_hu_id,
                NEXTVAL('m_inventoryline_hu_seq') AS m_inventoryline_hu_id,
                invl.m_inventoryline_id,
-               hu.qty                            AS qtybook,
-               hu.qty                            AS qtycount,
+               coalesce(hu.qty,0)                            AS qtybook,
+               coalesce(hu.qty,0)                            AS qtycount,
                NOW()                             AS updated,
                99                                AS updatedby,
                NULL                              AS qtyinternaluse,
                invl.m_inventory_id
         FROM m_inventoryline invl
-                 INNER JOIN tmp_hu hu ON hu.m_product_id = invl.m_product_id
+                 LEFT JOIN tmp_hu hu ON hu.m_product_id = invl.m_product_id
         WHERE invl.m_inventory_id = p_M_Inventory_ID
           AND invl.isactive = 'Y'
         ORDER BY invl.m_inventoryline_id, hu.m_hu_id;
