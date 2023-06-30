@@ -7,10 +7,13 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -99,6 +102,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class SourceDocumentsService
@@ -119,6 +123,7 @@ public class SourceDocumentsService
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	@NonNull final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@NonNull private final SectionCodeService sectionCodeService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -192,7 +197,7 @@ public class SourceDocumentsService
 			return SourceOrder.builder()
 					.documentNo(order.getDocumentNo())
 					.bpartner(getBPartnerInfo(order))
-					.frameContractNo(extractFrameContractNo(order))
+					.frameContractNo(extractFrameContractNo(linesByOrderId.get(orderId)))
 					.sectionCode(SectionCodeId.optionalOfRepoId(order.getM_SectionCode_ID()).map(sectionCodeService::getById))
 					.currencyInfo(extractCurrencyInfo(order))
 					.dateOrdered(order.getDateOrdered().toInstant())
@@ -266,15 +271,20 @@ public class SourceDocumentsService
 	}
 
 	@Nullable
-	private String extractFrameContractNo(final I_C_Order order)
+	private String extractFrameContractNo(final List<SourceOrderLine> orderLines)
 	{
-		final OrderId frameAgreementOrderId = OrderId.ofRepoIdOrNull(order.getC_FrameAgreement_Order_ID());
-		if (frameAgreementOrderId == null)
+		final Set<FlatrateTermId> contractIds = orderLines.stream()
+				.map(SourceOrderLine::getContractId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (contractIds.size() != 1)
 		{
 			return null;
 		}
 
-		return orderBL.getById(frameAgreementOrderId).getDocumentNo();
+		final FlatrateTermId contractId = contractIds.iterator().next();
+
+		return flatrateBL.getById(contractId).getDocumentNo();
 	}
 
 	private SourceBPartnerInfo getBPartnerInfo(final I_C_Order order)
@@ -306,6 +316,7 @@ public class SourceDocumentsService
 				.lineNetAmtFC(Amount.of(orderLine.getLineNetAmt(), currency))
 				.taxAmtFC(Amount.of(orderLine.getTaxAmtInfo(), currency))
 				.tax(extractSourceTaxInfo(orderLine))
+				.contractId(FlatrateTermId.ofRepoIdOrNull(orderLine.getC_Flatrate_Term_ID()))
 				.build();
 	}
 
@@ -525,6 +536,8 @@ public class SourceDocumentsService
 	private SourceShipment toSourceShipment(final I_M_InOut shipment, final boolean isBackToBack)
 	{
 		final OrgId orgId = OrgId.ofRepoId(shipment.getAD_Org_ID());
+
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(shipment.getM_Delivery_Planning_ID());
 
 		return SourceShipment.builder()
 				.orgId(orgId)
