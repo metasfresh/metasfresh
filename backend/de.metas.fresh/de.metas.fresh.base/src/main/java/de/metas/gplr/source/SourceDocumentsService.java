@@ -165,6 +165,7 @@ public class SourceDocumentsService
 		final OrderId salesOrderId = salesInvoice.getOrderId();
 		final I_C_Order salesOrder = orderBL.getById(salesOrderId);
 		final Set<OrderId> purchaseOrderIds = orderBL.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
+		final boolean isBackToBack = !purchaseOrderIds.isEmpty();
 		final List<I_C_Order> purchaseOrders = orderBL.getByIds(purchaseOrderIds);
 
 		final HashSet<OrderId> allOrderIds = new HashSet<>();
@@ -206,7 +207,7 @@ public class SourceDocumentsService
 		return SourceDocuments.builder()
 				.salesInvoice(salesInvoice)
 				.salesOrder(toOrderAndLines.apply(salesOrder))
-				.shipments(getSourceShipments(salesOrderId))
+				.shipments(getSourceShipments(salesOrderId, isBackToBack))
 				.purchaseOrders(purchaseOrders.stream()
 						.map(toOrderAndLines)
 						.collect(ImmutableList.toImmutableList()))
@@ -513,15 +514,15 @@ public class SourceDocumentsService
 				.build();
 	}
 
-	private ImmutableList<SourceShipment> getSourceShipments(final OrderId salesOrderId)
+	private ImmutableList<SourceShipment> getSourceShipments(final OrderId salesOrderId, final boolean isBackToBack)
 	{
 		return inOutBL.getByOrderId(salesOrderId)
 				.stream()
-				.map(this::toSourceShipment)
+				.map(shipment -> toSourceShipment(shipment, isBackToBack))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private SourceShipment toSourceShipment(final I_M_InOut shipment)
+	private SourceShipment toSourceShipment(final I_M_InOut shipment, final boolean isBackToBack)
 	{
 		final OrgId orgId = OrgId.ofRepoId(shipment.getAD_Org_ID());
 
@@ -531,6 +532,7 @@ public class SourceDocumentsService
 				.movementDate(LocalDateAndOrgId.ofTimestamp(shipment.getMovementDate(), orgId, orgDAO::getTimeZone))
 				.shipFrom(getWarehouseInfo(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID())))
 				.shipTo(getShipTo(shipment))
+				.isBackToBack(isBackToBack)
 				.incoterms(extractIncotermsAndLocation(shipment))
 				.shipper(extractShipperIdAndName(shipment))
 				.build();
@@ -544,6 +546,7 @@ public class SourceDocumentsService
 				.warehouseId(warehouseId)
 				.warehouseCode(warehouse.getValue())
 				.warehouseName(warehouse.getName())
+				.warehouseExternalId(warehouse.getExternalId())
 				.build();
 	}
 
