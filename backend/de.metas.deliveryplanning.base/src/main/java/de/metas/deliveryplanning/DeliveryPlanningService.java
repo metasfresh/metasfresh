@@ -140,6 +140,7 @@ public class DeliveryPlanningService
 	private final DimensionService dimensionService;
 
 	final MoneyService moneyService;
+	private final MeansOfTransportationService meansOfTransportationService;
 
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
@@ -161,7 +162,8 @@ public class DeliveryPlanningService
 			@NonNull final BPartnerStatsService bPartnerStatsService,
 			@NonNull final MoneyService moneyService,
 			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final DimensionService dimensionService,
+			@NonNull final MeansOfTransportationService meansOfTransportationService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
@@ -169,6 +171,7 @@ public class DeliveryPlanningService
 		this.moneyService = moneyService;
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 		this.dimensionService = dimensionService;
+		this.meansOfTransportationService = meansOfTransportationService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -432,7 +435,7 @@ public class DeliveryPlanningService
 	}
 
 	private Money computeCreditUsedByDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request,
-			@NonNull final CurrencyId currencyId)
+														 @NonNull final CurrencyId currencyId)
 	{
 		if (request.getOrderLineId() == null)
 		{
@@ -808,4 +811,10 @@ public class DeliveryPlanningService
 		}
 	}
 
+	public Optional<MeansOfTransportation> getMeansOfTransportationByDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
+		return MeansOfTransportationId.optionalOfRepoId(deliveryPlanning.getM_MeansOfTransportation_ID())
+				.map(meansOfTransportationService::getById);
+	}
 }
