@@ -715,7 +715,7 @@ public class M_ShipmentSchedule_StepDef
 			softly.assertThat(shipmentSchedule.getQtyReserved().stripTrailingZeros()).as("QtyReserved for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyReserved.stripTrailingZeros());
 		}
 
-		if(isClosed != null)
+		if (isClosed != null)
 		{
 			assertThat(shipmentSchedule.isClosed()).as("IsClosed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isClosed);
 		}
