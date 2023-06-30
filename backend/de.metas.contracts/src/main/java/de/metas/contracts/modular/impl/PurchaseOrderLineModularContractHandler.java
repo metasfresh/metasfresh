@@ -120,7 +120,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.quantity(quantity)
 				.amount(amount)
 				.transactionDate(InstantAndOrgId.ofTimestamp(order.getDateOrdered(), OrgId.ofRepoId(model.getAD_Org_ID())).toLocalDateAndOrgId(orgDAO::getTimeZone))
-				.year(modularContractSettings.getYearAndCalendarId().getYearId())
+				.year(modularContractSettings.getYearAndCalendarId().yearId())
 				.description(null)
 				.modularContractTypeId(contractTypeId)
 				.build());

@@ -98,7 +98,7 @@ class ModularContractSettingsDAOTest
 		final ModularContractSettings settings = new ModularContractSettingsDAO().getByFlatrateTermIdOrNull(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
 
 		assertThat(settings).isNotNull();
-		assertThat(settings.getYearAndCalendarId()).isEqualTo(YearAndCalendarId.ofRepoId(calendarRecord.getC_Calendar_ID(), yearRecord.getC_Year_ID()));
+		assertThat(settings.getYearAndCalendarId()).isEqualTo(YearAndCalendarId.ofRepoId(yearRecord.getC_Year_ID(), calendarRecord.getC_Calendar_ID()));
 		assertThat(settings.getId().getRepoId()).isEqualTo(settingsRecord.getModCntr_Settings_ID());
 		assertThat(settings.getModuleConfigs()).hasSize(1);
 

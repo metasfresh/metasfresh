@@ -80,7 +80,7 @@ public class ModularContractSettingsDAO
 		final ModularContractSettings.ModularContractSettingsBuilder result = ModularContractSettings.builder()
 				.id(ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID()))
 				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
-				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Calendar_ID(), settingsRecord.getC_Year_ID()))
+				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Year_ID(), settingsRecord.getC_Calendar_ID()))
 				.pricingSystemId(PricingSystemId.ofRepoId(settingsRecord.getM_PricingSystem_ID()))
 				.productId(ProductId.ofRepoId(settingsRecord.getM_Product_ID()))
 				.name(settingsRecord.getName());
