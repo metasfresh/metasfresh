@@ -214,6 +214,7 @@ final class GPLRReportCreateCommand
 				.shipTo(toBPartnerName(shipment.getShipTo()))
 				.shipToCountry(shipment.getShipTo().getCountryCode())
 				.warehouse(toWarehouseName(shipment))
+				.isBackToBack(shipment.isBackToBack())
 				.movementDate(shipment.getMovementDate())
 				.incoterms(toIncotermsInfo(shipment.getIncoterms()))
 				.shipper(toShipperName(shipment.getShipper()))
@@ -225,6 +226,7 @@ final class GPLRReportCreateCommand
 		return GPLRWarehouseName.builder()
 				.code(shipment.getShipFrom().getWarehouseCode())
 				.name(shipment.getShipFrom().getWarehouseName())
+				.externalId(shipment.getShipFrom().getWarehouseExternalId())
 				.build();
 	}
 
