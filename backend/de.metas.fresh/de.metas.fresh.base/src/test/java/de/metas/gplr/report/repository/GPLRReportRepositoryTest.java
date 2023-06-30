@@ -124,6 +124,7 @@ class GPLRReportRepositoryTest
 										.name("wh_name")
 										.externalId("wh_externalId")
 										.build())
+								.isBackToBack(true)
 								.movementDate(localDateAndOrgId("2022-06-11", orgId))
 								.incoterms(GPLRIncotermsInfo.builder()
 										.code("incoterms_code")
