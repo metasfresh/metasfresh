@@ -672,7 +672,7 @@ public final class ProcessInfo implements Serializable
 		{
 			whereFilter = defaultQueryFilter;
 
-			// In case te default filter is null, return null
+			// In case the default filter is null, return null
 			if (whereFilter == null)
 			{
 				return null;

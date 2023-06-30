@@ -53,14 +53,24 @@ public class OrderCostRepositorySession
 
 	public List<OrderCost> getByOrderId(@NonNull final OrderId orderId)
 	{
-		final ImmutableSet<OrderCostId> orderCostIds = retrieveOrderCostIdsByOrderId(orderId);
+		return getByOrderIds(ImmutableSet.of(orderId));
+	}
+
+	public List<OrderCost> getByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		final ImmutableSet<OrderCostId> orderCostIds = retrieveOrderCostIdsByOrderIds(orderIds);
 		return getByIds(orderCostIds);
 	}
 
-	private ImmutableSet<OrderCostId> retrieveOrderCostIdsByOrderId(final @NonNull OrderId orderId)
+	private ImmutableSet<OrderCostId> retrieveOrderCostIdsByOrderIds(final @NonNull Set<OrderId> orderIds)
 	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		return queryBL.createQueryBuilder(I_C_Order_Cost.class)
-				.addEqualsFilter(I_C_Order_Cost.COLUMNNAME_C_Order_ID, orderId)
+				.addInArrayFilter(I_C_Order_Cost.COLUMNNAME_C_Order_ID, orderIds)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds(OrderCostId::ofRepoId);

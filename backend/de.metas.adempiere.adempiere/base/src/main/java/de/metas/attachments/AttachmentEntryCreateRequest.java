@@ -1,6 +1,7 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.report.server.ReportResult;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Objects;
 
 /*
  * #%L
@@ -39,29 +41,27 @@ import java.util.Collection;
  */
 
 @Value
-@Builder
-@ToString(exclude="data")
+@Builder(toBuilder = true)
+@ToString(exclude = "data")
 public class AttachmentEntryCreateRequest
 {
 	public static AttachmentEntryCreateRequest fromURI(
 			@NonNull final String fileName,
 			@NonNull final URI uri)
 	{
-		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
+		return AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntryType.URL)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
 				.url(uri)
 				.build();
-		return request;
 	}
 
 	public static AttachmentEntryCreateRequest fromByteArray(
 			@NonNull final String fileName,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
-		final AttachmentEntryCreateRequest request = builderFromByteArray(fileName, data).build();
-		return request;
+		return builderFromByteArray(fileName, data).build();
 	}
 
 	public static AttachmentEntryCreateRequest.AttachmentEntryCreateRequestBuilder builderFromByteArray(
@@ -86,7 +86,7 @@ public class AttachmentEntryCreateRequest
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed reading data from " + dataSource);
+			throw new AdempiereException("Failed reading data from " + dataSource, e);
 		}
 
 		return builder()
@@ -116,7 +116,7 @@ public class AttachmentEntryCreateRequest
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed reading data from " + resource);
+			throw new AdempiereException("Failed reading data from " + resource, e);
 		}
 
 		return builder()
@@ -149,6 +149,16 @@ public class AttachmentEntryCreateRequest
 				.build();
 	}
 
+	public static AttachmentEntryCreateRequest fromReport(@NonNull final ReportResult report)
+	{
+		return builder()
+				.type(AttachmentEntryType.Data)
+				.filename(report.getReportFilename())
+				.contentType(report.getOutputType().getContentType())
+				.data(report.getReportContent())
+				.build();
+	}
+
 	@NonNull
 	AttachmentEntryType type;
 
@@ -159,4 +169,17 @@ public class AttachmentEntryCreateRequest
 	URI url;
 
 	AttachmentTags tags;
+
+	public AttachmentEntryCreateRequest withFilename(@NonNull final String filename)
+	{
+		if (Objects.equals(this.filename, filename))
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.filename(filename)
+				.contentType(MimeType.getMimeType(filename))
+				.build();
+	}
 }

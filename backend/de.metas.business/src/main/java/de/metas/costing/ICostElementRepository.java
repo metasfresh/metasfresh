@@ -41,11 +41,17 @@ public interface ICostElementRepository
 
 	List<CostElement> getByTypes(@NonNull ClientId clientId, @NonNull CostElementType... types);
 
-	List<CostElement> getByCostingMethod(ClientId clientId, CostingMethod costingMethod);
-
 	List<CostElement> getByClientId(@NonNull ClientId clientId);
+
+	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
+
+	List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull CostingMethod costingMethod);
+
+	Set<CostElementId> getActiveCostElementIds();
+
+	Set<CostElementId> getIdsByCostingMethod(CostingMethod costingMethod);
 
 	Set<CostElementId> getIdsByClientId(@NonNull ClientId clientId);
 
-	Set<CostElementId> getIdsByCostingMethod(ClientId adClientId, CostingMethod costingMethod);
+
 }

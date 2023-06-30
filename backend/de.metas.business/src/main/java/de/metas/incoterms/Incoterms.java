@@ -35,12 +35,8 @@ public class Incoterms
 	@NonNull
 	IncotermsId incotermsId;
 
-	@NonNull
-	String name;
-
-	@NonNull
-	String value;
-
-	@Nullable
-	String description;
+	@NonNull String value;
+	@NonNull String name;
+	@Nullable String description;
+	@Builder.Default boolean isActive = true;
 }

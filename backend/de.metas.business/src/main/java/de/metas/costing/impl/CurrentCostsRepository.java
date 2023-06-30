@@ -205,7 +205,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
@@ -232,7 +232,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);

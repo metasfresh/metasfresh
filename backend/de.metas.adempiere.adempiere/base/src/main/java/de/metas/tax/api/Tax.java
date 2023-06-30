@@ -71,6 +71,7 @@ public class Tax
 	BigDecimal rate;
 	BoilerPlateId boilerPlateId;
 	@NonNull Integer seqNo;
+	@Nullable String taxCode;
 
 	@Builder
 	public Tax(
@@ -91,7 +92,7 @@ public class Tax
 			final boolean isDocumentLevel,
 			@NonNull final BigDecimal rate,
 			@Nullable final BoilerPlateId boilerPlateId,
-			@NonNull final Integer seqNo)
+			@NonNull final Integer seqNo, @Nullable final String taxCode)
 	{
 		this.taxId = taxId;
 		this.orgId = orgId;
@@ -111,6 +112,7 @@ public class Tax
 		this.rate = rate;
 		this.boilerPlateId = boilerPlateId;
 		this.seqNo = seqNo;
+		this.taxCode = taxCode;
 	}
 
 	public boolean isTaxNotFound()

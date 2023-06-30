@@ -1,18 +1,3 @@
-package de.metas.requisition.callout;
-
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.compiere.model.I_M_Requisition;
-import org.compiere.model.I_M_RequisitionLine;
-import org.compiere.model.MProductPricing;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
 /*
  * #%L
  * de.metas.business
@@ -35,6 +20,21 @@ import java.sql.Timestamp;
  * #L%
  */
 
+package de.metas.requisition.callout;
+
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.model.I_M_Requisition;
+import org.compiere.model.I_M_RequisitionLine;
+import org.compiere.model.MProductPricing;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 @Callout(I_M_RequisitionLine.class)
 public class M_RequisitionLine
 {
@@ -50,7 +50,7 @@ public class M_RequisitionLine
 
 		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(line.getM_Product_ID());
 		line.setC_UOM_ID(uomId.getRepoId());
-	}	// product
+	}    // product
 
 	@CalloutMethod(columnNames = I_M_RequisitionLine.COLUMNNAME_Qty)
 	public void onQtyChanged(final I_M_RequisitionLine line)

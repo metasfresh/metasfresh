@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.docType;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.seqNo.AD_Sequence_StepDefData;
 import de.metas.document.DocBaseType;
-import de.metas.document.IDocTypeBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -35,11 +34,11 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_GL_Category;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
+import org.compiere.model.I_GL_Category;
 
 import java.util.List;
 import java.util.Map;
@@ -47,10 +46,10 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.compiere.model.I_C_DocType.COLUMNNAME_GL_Category_ID;
-import static org.compiere.model.I_C_DocType.COLUMNNAME_DocNoSequence_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_DocNoSequence_ID;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_GL_Category_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
 
 public class C_DocType_StepDef

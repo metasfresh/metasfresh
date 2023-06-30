@@ -1,435 +1,545 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Requisition
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_Requisition 
 {
 
-    /** TableName=M_Requisition */
-    public static final String Table_Name = "M_Requisition";
+	String Table_Name = "M_Requisition";
 
-    /** AD_Table_ID=702 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=702 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_Client>(I_M_Requisition.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_Org>(I_M_Requisition.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Ansprechpartner.
+	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Ansprechpartner.
+	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_User>(I_M_Requisition.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Belegart.
+	 * Set Author.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAuthor_ID (int Author_ID);
+
+	/**
+	 * Get Author.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAuthor_ID();
+
+	String COLUMNNAME_Author_ID = "Author_ID";
+
+	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Document Type.
 	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_DocType_ID (int C_DocType_ID);
+	void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Belegart.
+	 * Get Document Type.
 	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_DocType_ID();
+	int getC_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_C_DocType>(I_M_Requisition.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Project Type.
+	 * Set Project Type and for Service Projects copy Phases and Tasks of Project Type into Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ProjectType_ID (int C_ProjectType_ID);
+
+	/**
+	 * Get Project Type.
+	 * Set Project Type and for Service Projects copy Phases and Tasks of Project Type into Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ProjectType_ID();
+
+	@Nullable org.compiere.model.I_C_ProjectType getC_ProjectType();
+
+	void setC_ProjectType(@Nullable org.compiere.model.I_C_ProjectType C_ProjectType);
+
+	ModelColumn<I_M_Requisition, org.compiere.model.I_C_ProjectType> COLUMN_C_ProjectType_ID = new ModelColumn<>(I_M_Requisition.class, "C_ProjectType_ID", org.compiere.model.I_C_ProjectType.class);
+	String COLUMNNAME_C_ProjectType_ID = "C_ProjectType_ID";
+
+	/**
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_Requisition, Object> COLUMN_Created = new ModelColumn<>(I_M_Requisition.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_User>(I_M_Requisition.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Belegdatum.
-	 * Datum des Belegs
+	 * Set Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateDoc (java.sql.Timestamp DateDoc);
+	void setDateDoc (java.sql.Timestamp DateDoc);
 
 	/**
-	 * Get Belegdatum.
-	 * Datum des Belegs
+	 * Get Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateDoc();
+	java.sql.Timestamp getDateDoc();
 
-    /** Column definition for DateDoc */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_DateDoc = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "DateDoc", null);
-    /** Column name DateDoc */
-    public static final String COLUMNNAME_DateDoc = "DateDoc";
+	ModelColumn<I_M_Requisition, Object> COLUMN_DateDoc = new ModelColumn<>(I_M_Requisition.class, "DateDoc", null);
+	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
-	 * Set Zieldatum.
+	 * Set Date Required.
+	 * Date when required
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateRequired (java.sql.Timestamp DateRequired);
+	void setDateRequired (java.sql.Timestamp DateRequired);
 
 	/**
-	 * Get Zieldatum.
+	 * Get Date Required.
+	 * Date when required
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateRequired();
+	java.sql.Timestamp getDateRequired();
 
-    /** Column definition for DateRequired */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_DateRequired = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "DateRequired", null);
-    /** Column name DateRequired */
-    public static final String COLUMNNAME_DateRequired = "DateRequired";
+	ModelColumn<I_M_Requisition, Object> COLUMN_DateRequired = new ModelColumn<>(I_M_Requisition.class, "DateRequired", null);
+	String COLUMNNAME_DateRequired = "DateRequired";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_M_Requisition, Object> COLUMN_Description = new ModelColumn<>(I_M_Requisition.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Belegverarbeitung.
-	 * The targeted status of the document
+	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocAction (java.lang.String DocAction);
+	void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Belegverarbeitung.
-	 * The targeted status of the document
+	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocAction();
+	java.lang.String getDocAction();
 
-    /** Column definition for DocAction */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "DocAction", null);
-    /** Column name DocAction */
-    public static final String COLUMNNAME_DocAction = "DocAction";
+	ModelColumn<I_M_Requisition, Object> COLUMN_DocAction = new ModelColumn<>(I_M_Requisition.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocStatus (java.lang.String DocStatus);
+	void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocStatus();
+	java.lang.String getDocStatus();
 
-    /** Column definition for DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "DocStatus", null);
-    /** Column name DocStatus */
-    public static final String COLUMNNAME_DocStatus = "DocStatus";
+	ModelColumn<I_M_Requisition, Object> COLUMN_DocStatus = new ModelColumn<>(I_M_Requisition.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentNo();
+	java.lang.String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_M_Requisition, Object> COLUMN_DocumentNo = new ModelColumn<>(I_M_Requisition.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHelp (java.lang.String Help);
+	void setHelp (@Nullable java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHelp();
+	@Nullable java.lang.String getHelp();
 
-    /** Column definition for Help */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "Help", null);
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_M_Requisition, Object> COLUMN_Help = new ModelColumn<>(I_M_Requisition.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_Requisition, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Requisition.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Freigegeben.
+	 * Set Approved.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsApproved (boolean IsApproved);
+	void setIsApproved (boolean IsApproved);
 
 	/**
-	 * Get Freigegeben.
+	 * Get Approved.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isApproved();
+	boolean isApproved();
 
-    /** Column definition for IsApproved */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "IsApproved", null);
-    /** Column name IsApproved */
-    public static final String COLUMNNAME_IsApproved = "IsApproved";
+	ModelColumn<I_M_Requisition, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_Requisition.class, "IsApproved", null);
+	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Preisliste.
+	 * Set Geplant in Kostenstelle Budget.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsBudgetPlanned (boolean IsBudgetPlanned);
+
+	/**
+	 * Get Geplant in Kostenstelle Budget.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBudgetPlanned();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_IsBudgetPlanned = new ModelColumn<>(I_M_Requisition.class, "IsBudgetPlanned", null);
+	String COLUMNNAME_IsBudgetPlanned = "IsBudgetPlanned";
+
+	/**
+	 * Set Supplier quotes existing?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsQuotesExist (boolean IsQuotesExist);
+
+	/**
+	 * Get Supplier quotes existing?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQuotesExist();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_IsQuotesExist = new ModelColumn<>(I_M_Requisition.class, "IsQuotesExist", null);
+	String COLUMNNAME_IsQuotesExist = "IsQuotesExist";
+
+	/**
+	 * Set Missing Budget Note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMissingBudgetNote (@Nullable java.lang.String MissingBudgetNote);
+
+	/**
+	 * Get Missing Budget Note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMissingBudgetNote();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_MissingBudgetNote = new ModelColumn<>(I_M_Requisition.class, "MissingBudgetNote", null);
+	String COLUMNNAME_MissingBudgetNote = "MissingBudgetNote";
+
+	/**
+	 * Set Missing quote note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMissingQuoteNote (@Nullable java.lang.String MissingQuoteNote);
+
+	/**
+	 * Get Missing quote note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMissingQuoteNote();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_MissingQuoteNote = new ModelColumn<>(I_M_Requisition.class, "MissingQuoteNote", null);
+	String COLUMNNAME_MissingQuoteNote = "MissingQuoteNote";
+
+	/**
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_PriceList_ID (int M_PriceList_ID);
+	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_PriceList_ID();
+	int getM_PriceList_ID();
 
-	public org.compiere.model.I_M_PriceList getM_PriceList();
-
-	public void setM_PriceList(org.compiere.model.I_M_PriceList M_PriceList);
-
-    /** Column definition for M_PriceList_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_M_PriceList> COLUMN_M_PriceList_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_M_PriceList>(I_M_Requisition.class, "M_PriceList_ID", org.compiere.model.I_M_PriceList.class);
-    /** Column name M_PriceList_ID */
-    public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
 	/**
-	 * Set Bedarf.
+	 * Set Requisition.
 	 * Material Requisition
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Requisition_ID (int M_Requisition_ID);
+	void setM_Requisition_ID (int M_Requisition_ID);
 
 	/**
-	 * Get Bedarf.
+	 * Get Requisition.
 	 * Material Requisition
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Requisition_ID();
+	int getM_Requisition_ID();
 
-    /** Column definition for M_Requisition_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_M_Requisition_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "M_Requisition_ID", null);
-    /** Column name M_Requisition_ID */
-    public static final String COLUMNNAME_M_Requisition_ID = "M_Requisition_ID";
+	ModelColumn<I_M_Requisition, Object> COLUMN_M_Requisition_ID = new ModelColumn<>(I_M_Requisition.class, "M_Requisition_ID", null);
+	String COLUMNNAME_M_Requisition_ID = "M_Requisition_ID";
 
 	/**
 	 * Set M_Requisition_includedTab.
@@ -438,7 +548,7 @@ public interface I_M_Requisition
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Requisition_includedTab (java.lang.String M_Requisition_includedTab);
+	void setM_Requisition_includedTab (@Nullable java.lang.String M_Requisition_includedTab);
 
 	/**
 	 * Get M_Requisition_includedTab.
@@ -447,192 +557,335 @@ public interface I_M_Requisition
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getM_Requisition_includedTab();
+	@Nullable java.lang.String getM_Requisition_includedTab();
 
-    /** Column definition for M_Requisition_includedTab */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_M_Requisition_includedTab = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "M_Requisition_includedTab", null);
-    /** Column name M_Requisition_includedTab */
-    public static final String COLUMNNAME_M_Requisition_includedTab = "M_Requisition_includedTab";
+	ModelColumn<I_M_Requisition, Object> COLUMN_M_Requisition_includedTab = new ModelColumn<>(I_M_Requisition.class, "M_Requisition_includedTab", null);
+	String COLUMNNAME_M_Requisition_includedTab = "M_Requisition_includedTab";
 
 	/**
-	 * Set Lager.
+	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
+	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Warehouse_ID();
+	int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_M_Warehouse>(I_M_Requisition.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Verbucht.
+	 * Set Note.
+	 * Optional additional user defined information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNote (@Nullable java.lang.String Note);
+
+	/**
+	 * Get Note.
+	 * Optional additional user defined information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNote();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_Note = new ModelColumn<>(I_M_Requisition.class, "Note", null);
+	String COLUMNNAME_Note = "Note";
+
+	/**
+	 * Set Order Note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrderNote (@Nullable java.lang.String OrderNote);
+
+	/**
+	 * Get Order Note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOrderNote();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_OrderNote = new ModelColumn<>(I_M_Requisition.class, "OrderNote", null);
+	String COLUMNNAME_OrderNote = "OrderNote";
+
+	/**
+	 * Set Posting status.
 	 * Posting status
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPosted (boolean Posted);
+	void setPosted (boolean Posted);
 
 	/**
-	 * Get Verbucht.
+	 * Get Posting status.
 	 * Posting status
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPosted();
+	boolean isPosted();
 
-    /** Column definition for Posted */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_Posted = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "Posted", null);
-    /** Column name Posted */
-    public static final String COLUMNNAME_Posted = "Posted";
+	ModelColumn<I_M_Requisition, Object> COLUMN_Posted = new ModelColumn<>(I_M_Requisition.class, "Posted", null);
+	String COLUMNNAME_Posted = "Posted";
 
 	/**
-	 * Set Priorität.
+	 * Set Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPostingError_Issue_ID (int PostingError_Issue_ID);
+
+	/**
+	 * Get Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPostingError_Issue_ID();
+
+	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
+
+	/**
+	 * Set Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPriorityRule (java.lang.String PriorityRule);
+	void setPriorityRule (java.lang.String PriorityRule);
 
 	/**
-	 * Get Priorität.
+	 * Get Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPriorityRule();
+	java.lang.String getPriorityRule();
 
-    /** Column definition for PriorityRule */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_PriorityRule = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "PriorityRule", null);
-    /** Column name PriorityRule */
-    public static final String COLUMNNAME_PriorityRule = "PriorityRule";
+	ModelColumn<I_M_Requisition, Object> COLUMN_PriorityRule = new ModelColumn<>(I_M_Requisition.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_M_Requisition, Object> COLUMN_Processed = new ModelColumn<>(I_M_Requisition.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Verarbeiten.
+	 * Set Process Now.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
-	 * Get Verarbeiten.
+	 * Get Process Now.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_M_Requisition, Object> COLUMN_Processing = new ModelColumn<>(I_M_Requisition.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Summe Zeilen.
+	 * Set Purchase Order No.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchaseOrderNo (@Nullable java.lang.String PurchaseOrderNo);
+
+	/**
+	 * Get Purchase Order No.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPurchaseOrderNo();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_PurchaseOrderNo = new ModelColumn<>(I_M_Requisition.class, "PurchaseOrderNo", null);
+	String COLUMNNAME_PurchaseOrderNo = "PurchaseOrderNo";
+
+	/**
+	 * Set Quote date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQuoteDate (@Nullable java.sql.Timestamp QuoteDate);
+
+	/**
+	 * Get Quote date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getQuoteDate();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_QuoteDate = new ModelColumn<>(I_M_Requisition.class, "QuoteDate", null);
+	String COLUMNNAME_QuoteDate = "QuoteDate";
+
+	/**
+	 * Set Quote number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQuoteNumber (@Nullable java.lang.String QuoteNumber);
+
+	/**
+	 * Get Quote number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQuoteNumber();
+
+	ModelColumn<I_M_Requisition, Object> COLUMN_QuoteNumber = new ModelColumn<>(I_M_Requisition.class, "QuoteNumber", null);
+	String COLUMNNAME_QuoteNumber = "QuoteNumber";
+
+	/**
+	 * Set Receiver.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiver_ID (int Receiver_ID);
+
+	/**
+	 * Get Receiver.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReceiver_ID();
+
+	String COLUMNNAME_Receiver_ID = "Receiver_ID";
+
+	/**
+	 * Set Total Lines.
 	 * Total of all document lines
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setTotalLines (java.math.BigDecimal TotalLines);
+	void setTotalLines (BigDecimal TotalLines);
 
 	/**
-	 * Get Summe Zeilen.
+	 * Get Total Lines.
 	 * Total of all document lines
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getTotalLines();
+	BigDecimal getTotalLines();
 
-    /** Column definition for TotalLines */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_TotalLines = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "TotalLines", null);
-    /** Column name TotalLines */
-    public static final String COLUMNNAME_TotalLines = "TotalLines";
+	ModelColumn<I_M_Requisition, Object> COLUMN_TotalLines = new ModelColumn<>(I_M_Requisition.class, "TotalLines", null);
+	String COLUMNNAME_TotalLines = "TotalLines";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Requisition, Object>(I_M_Requisition.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_Requisition, Object> COLUMN_Updated = new ModelColumn<>(I_M_Requisition.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_User>(I_M_Requisition.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Warehouse Address.
+	 * Warehouse Location/Address
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWarehouse_Location_ID (int Warehouse_Location_ID);
+
+	/**
+	 * Get Warehouse Address.
+	 * Warehouse Location/Address
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWarehouse_Location_ID();
+
+	String COLUMNNAME_Warehouse_Location_ID = "Warehouse_Location_ID";
 }
