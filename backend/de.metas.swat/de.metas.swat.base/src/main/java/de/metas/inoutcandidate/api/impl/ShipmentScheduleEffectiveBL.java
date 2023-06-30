@@ -97,7 +97,6 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		return sched.getQtyToDeliver();
 	}
 
-	@Nullable
 	@Override
 	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
 	{

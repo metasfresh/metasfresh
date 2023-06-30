@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -441,17 +442,16 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Nullable
-	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
+	public static <T> Optional<T> emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{
 		final int size = collection.size();
 		if (size == 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 		else if (size == 1)
 		{
-			return collection.iterator().next();
+			return Optional.of(collection.iterator().next());
 		}
 		else
 		{

@@ -12,6 +12,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
@@ -41,6 +42,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
@@ -53,6 +55,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -73,18 +77,44 @@ public class C_Invoice // 03771
 
 	private final IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
-			@NonNull final IDocumentLocationBL documentLocationBL)
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
 	{
 		this.paymentReservationService = paymentReservationService;
 		this.documentLocationBL = documentLocationBL;
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
 	}
 
 	@Init
 	void init()
 	{
-		Services.get(IDocumentNoBuilderFactory.class).registerCountryIdProvider(new InvoiceCountryIdProvider());
+		documentNoBuilderFactory.registerCountryIdProvider(new InvoiceCountryIdProvider());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID })
+	public void updateDocNo(@NonNull final I_C_Invoice invoice)
+	{
+		final I_C_DocType docTypeRecord = loadOutOfTrx(invoice.getC_DocTypeTarget_ID(), I_C_DocType.class);
+
+		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(docTypeRecord)
+				.setOldDocumentNo(invoice.getDocumentNo())
+				.setDocumentModel(invoice)
+				.buildOrNull();
+		if (documentNoInfo == null)
+		{
+			return;
+		}
+
+		if (documentNoInfo.isDocNoControlled())
+		{
+			invoice.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -488,7 +518,7 @@ public class C_Invoice // 03771
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_PREPARE })
-	public void updateBPartnerStats(@NonNull I_C_Invoice invoice)
+	public void updateBPartnerStats(@NonNull final I_C_Invoice invoice)
 	{
 		bPartnerStatisticsUpdater
 				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()

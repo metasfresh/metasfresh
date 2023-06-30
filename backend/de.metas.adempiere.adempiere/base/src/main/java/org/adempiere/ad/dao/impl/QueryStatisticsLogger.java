@@ -1,15 +1,12 @@
 package org.adempiere.ad.dao.impl;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
+import com.google.common.base.Stopwatch;
 import de.metas.common.util.time.SystemTime;
+import de.metas.dao.sql.SqlParamsInliner;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
@@ -23,11 +20,15 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
@@ -37,6 +38,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private static final TimeUnit TIMEUNIT_Internal = TimeUnit.NANOSECONDS;
 	private static final TimeUnit TIMEUNIT_Display = TimeUnit.MILLISECONDS;
+	private static final String nl = "\n";
+	private static final SqlParamsInliner SQL_PARAMS_INLINER = SqlParamsInliner.builder().failOnError(false).build();
 
 	private boolean enabled = false;
 	private final ConcurrentHashMap<String, QueryStatistics> sql2statistics = new ConcurrentHashMap<>();
@@ -86,9 +89,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			return;
 		}
 
-		final Map<Integer, Object> sqlParams = null;
-		final String trxName = "?";
-		collect(sql, sqlParams, trxName, duration);
+		collect(sql, null, "?", duration);
 	}
 
 	private void collect(final String sql, final Map<Integer, Object> sqlParams, final String trxName, final Stopwatch durationStopwatch)
@@ -108,7 +109,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			return;
 		}
 
-		final QueryStatistics queryStatistics = sql2statistics.computeIfAbsent(sql, (sqlKey) -> new QueryStatistics(sqlKey));
+		final QueryStatistics queryStatistics = sql2statistics.computeIfAbsent(sql, QueryStatistics::new);
 		final CountAndDuration duration = queryStatistics.incrementAndGet(durationValue);
 
 		if (traceSqlQueries)
@@ -140,16 +141,14 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		final int countPrev = traceSqlQueries_Count.get();
 		traceSqlQueries_Count.set(0);
 
-		logMessage(new StringBuilder()
-				.append("\n\n")
-				.append("\n*********************************************************************************************")
-				.append("\n*** Enabled SQL Tracing in " + getClass())
-				.append("\n")
-				.append("\nBefore calling this method it was " + (traceSqlQueriesOld ? "enabled" : "disabled"))
-				.append("\nPrevious SQLs counter was " + countPrev + " and now was reset to ZERO.")
-				.append("\n*********************************************************************************************")
-				.append("\n\n")
-				.toString());
+		logMessage("\n\n"
+				+ "\n*********************************************************************************************"
+				+ "\n*** Enabled SQL Tracing in " + getClass()
+				+ "\n"
+				+ "\nBefore calling this method it was " + (traceSqlQueriesOld ? "enabled" : "disabled")
+				+ "\nPrevious SQLs counter was " + countPrev + " and now was reset to ZERO."
+				+ "\n*********************************************************************************************"
+				+ "\n\n");
 	}
 
 	@Override
@@ -200,7 +199,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		setFilterBy(null);
 	}
 
-	private final boolean isSqlAccepted(final String sql)
+	private boolean isSqlAccepted(final String sql)
 	{
 		if (sql == null)
 		{
@@ -236,7 +235,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		final int count = traceSqlQueries_Count.incrementAndGet();
 		final String prefix = "-- SQL[" + count + "]-" + threadName + "-";
 		final String prefixSQL = "                 ";
-		final String nl = "\n";
 
 		final StringBuilder message = new StringBuilder();
 
@@ -261,17 +259,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		}
 		else
 		{
-			final String sqlNorm = sql
-					.trim()
-					.replace("\r\n", "\n").replace("\n", nl); // make sure we always have `nl`
+			String sqlNorm = normalizeAndInlineSqlParams(sql, sqlParams);
 			message.append(nl).append(sqlNorm);
-		}
-
-		//
-		// SQL query parameters
-		if (sqlParams != null && !sqlParams.isEmpty())
-		{
-			message.append(nl + "-- Parameters[").append(sqlParams.size()).append("]: ").append(sqlParams);
 		}
 
 		//
@@ -284,6 +273,19 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	}
 
+	private static String normalizeAndInlineSqlParams(@NonNull final String sql, @Nullable final Map<Integer, Object> sqlParams)
+	{
+		String sqlNorm = sql
+				.trim()
+				.replace("\r\n", "\n").replace("\n", nl); // make sure we always have `nl`
+
+		if (sqlParams != null && !sqlParams.isEmpty())
+		{
+			sqlNorm = SQL_PARAMS_INLINER.inline(sqlNorm, sqlParams.values().toArray());
+		}
+		return sqlNorm;
+	}
+
 	private String extractTrxNameInfo(final String trxName)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -291,15 +293,15 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		{
 			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 			final String trxNameEffective = trxManager.isNull(trx) ? "out-of-transaction" : trx.getTrxName();
-			return "" + trxName + " (resolved as: " + trxNameEffective + ")";
+			return trxName + " (resolved as: " + trxNameEffective + ")";
 		}
-		else if (trxManager.isNull(trxName))
+		else if (trxName == null || trxManager.isNull(trxName))
 		{
 			return "out-of-transaction";
 		}
 		else
 		{
-			return "" + trxName;
+			return trxName;
 		}
 	}
 
@@ -313,7 +315,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			case NANOSECONDS:
 				return "ns";
 			case MICROSECONDS:
-				return "\u03bcs"; // Î¼s
+				return "μs";
 			case MILLISECONDS:
 				return "ms";
 			case SECONDS:
@@ -329,20 +331,20 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		}
 	}
 
-	private static final double convert(final double duration, final TimeUnit fromUnit, final TimeUnit unit)
+	private static double convert(final double duration, final TimeUnit fromUnit, final TimeUnit unit)
 	{
-		final double durationConv = duration / fromUnit.convert(1, unit);
-		return durationConv;
+		return duration / fromUnit.convert(1, unit);
 	}
 
-	private static final String format(final double duration, final TimeUnit fromUnit, final TimeUnit toUnit)
+	@SuppressWarnings("SameParameterValue")
+	private static String format(final double duration, final TimeUnit fromUnit, final TimeUnit toUnit)
 	{
 		final double durationConv = convert(duration, fromUnit, toUnit);
 		return String.format("%.4g %s", durationConv, abbreviate(toUnit));
 	}
 
 	@Override
-	@ManagedOperation(description = "Gets top SQL queries ordered by their total summed executon time (descending)")
+	@ManagedOperation(description = "Gets top SQL queries ordered by their total summed execution time (descending)")
 	public String[] getTopTotalDurationQueriesAsString()
 	{
 		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getTotalDuration));
@@ -367,8 +369,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return sql2statistics.values()
 				.stream()
 				.sorted(comparing.reversed())
-				.map(stat -> stat.toString())
-				.toArray(size -> new String[size]);
+				.map(QueryStatistics::toString)
+				.toArray(String[]::new);
 	}
 
 	private static final class CountAndDuration
@@ -430,7 +432,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 				return count;
 			}
 
-			return durationTotal / count;
+			return (double)durationTotal / count;
 		}
 
 		private long getTotalDuration()

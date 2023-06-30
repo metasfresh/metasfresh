@@ -1,6 +1,9 @@
 package de.metas.inout;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -10,7 +13,6 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PricingSystem;
@@ -55,6 +57,8 @@ public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
 
+	List<I_M_InOut> getByOrderId(@NonNull OrderId orderId);
+
 	void save(I_M_InOut inout);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
@@ -76,6 +80,8 @@ public interface IInOutBL extends ISingletonService
 	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
 
 	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -189,4 +195,8 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull OrderLineId orderLineId);
 
 	Instant getDateAcct(InOutId inoutId);
+
+	Money getCOGSBySalesOrderId(
+			@NonNull OrderLineId salesOrderLineId,
+			@NonNull AcctSchemaId acctSchemaId);
 }

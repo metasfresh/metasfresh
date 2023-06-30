@@ -60,9 +60,7 @@ public class M_ShipperTransportation
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(shipperTransportation.getM_Delivery_Planning_ID());
 		if (deliveryPlanningId != null)
 		{
-			trxManager.runAfterCommit(() ->
-					deliveryPlanningService.updateICFromDeliveryPlanningId(deliveryPlanningId));
+			trxManager.runAfterCommit(() -> deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryPlanningId));
 		}
 	}
-
 }

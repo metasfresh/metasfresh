@@ -38,15 +38,13 @@ class CollectionUtilsTest
 		@Test
 		void empty()
 		{
-			final Object result = CollectionUtils.emptyOrSingleElement(ImmutableList.of());
-			assertThat(result).isNull();
+			assertThat(CollectionUtils.emptyOrSingleElement(ImmutableList.of())).isEmpty();
 		}
 
 		@Test
 		void oneElement()
 		{
-			final String result = CollectionUtils.emptyOrSingleElement(ImmutableList.of("1"));
-			assertThat(result).isEqualTo("1");
+			assertThat(CollectionUtils.emptyOrSingleElement(ImmutableList.of("1"))).contains("1");
 		}
 
 		@Test

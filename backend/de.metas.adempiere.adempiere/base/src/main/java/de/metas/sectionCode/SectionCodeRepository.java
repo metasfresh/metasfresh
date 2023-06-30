@@ -22,40 +22,59 @@
 
 package de.metas.sectionCode;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_SectionCode;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class SectionCodeRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<Integer, SectionCodesMap> cache = CCache.<Integer, SectionCodesMap>builder()
+			.tableName(I_M_SectionCode.Table_Name)
+			.build();
+
 	@NonNull
 	public SectionCode getById(@NonNull final SectionCodeId sectionCodeId)
 	{
-		final I_M_SectionCode record = InterfaceWrapperHelper.load(sectionCodeId, I_M_SectionCode.class);
-
-		return ofRecord(record);
+		return getMap().getById(sectionCodeId);
 	}
 
 	@NonNull
 	public Optional<SectionCodeId> getSectionCodeIdByValue(@NonNull final OrgId orgId, @NonNull final String value)
 	{
-		return queryBL.createQueryBuilder(I_M_SectionCode.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_SectionCode.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_M_SectionCode.COLUMNNAME_Value, value)
-				.create()
-				.firstOnlyOptional(I_M_SectionCode.class)
-				.map(I_M_SectionCode::getM_SectionCode_ID)
-				.map(SectionCodeId::ofRepoId);
+		return getMap().getByOrgIdAndValue(orgId, value).map(SectionCode::getSectionCodeId);
+	}
+
+	private SectionCodesMap getMap()
+	{
+		return cache.getOrLoad(0, this::retrieveMap);
+	}
+
+	private SectionCodesMap retrieveMap()
+	{
+		final List<SectionCode> list = queryBL.createQueryBuilder(I_M_SectionCode.class)
+				//.addOnlyActiveRecordsFilter() // all!
+				.stream()
+				.map(SectionCodeRepository::ofRecord)
+				.collect(Collectors.toList());
+
+		return new SectionCodesMap(list);
 	}
 
 	@NonNull
@@ -65,6 +84,46 @@ public class SectionCodeRepository
 				.sectionCodeId(SectionCodeId.ofRepoId(record.getM_SectionCode_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.value(record.getValue())
+				.name(record.getName())
+				.isActive(record.isActive())
 				.build();
+	}
+
+	//
+	//
+	//
+
+	private static class SectionCodesMap
+	{
+		private final ImmutableList<SectionCode> list;
+		private final ImmutableMap<SectionCodeId, SectionCode> byId;
+
+		public SectionCodesMap(@NonNull final List<SectionCode> list)
+		{
+			this.list = ImmutableList.copyOf(list);
+			this.byId = Maps.uniqueIndex(list, SectionCode::getSectionCodeId);
+		}
+
+		public SectionCode getById(@NonNull final SectionCodeId sectionCodeId)
+		{
+			final SectionCode sectionCode = byId.get(sectionCodeId);
+			if (sectionCode == null)
+			{
+				throw new AdempiereException("No section code found for " + sectionCodeId);
+			}
+			return sectionCode;
+		}
+
+		public Optional<SectionCode> getByOrgIdAndValue(@NonNull final OrgId orgId, @NonNull final String value)
+		{
+			final List<SectionCode> result = list.stream()
+					.filter(sectionCode -> sectionCode.isActive()
+							&& OrgId.equals(sectionCode.getOrgId(), orgId)
+							&& Objects.equals(sectionCode.getValue(), value))
+					.collect(Collectors.toList());
+
+			return CollectionUtils.emptyOrSingleElement(result);
+		}
+
 	}
 }

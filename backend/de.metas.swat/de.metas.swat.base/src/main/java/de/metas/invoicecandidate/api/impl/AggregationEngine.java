@@ -53,7 +53,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;

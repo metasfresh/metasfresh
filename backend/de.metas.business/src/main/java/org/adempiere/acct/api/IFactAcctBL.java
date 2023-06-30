@@ -24,9 +24,15 @@ package org.adempiere.acct.api;
 
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.FactAcctQuery;
+import de.metas.money.Money;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface IFactAcctBL extends ISingletonService
 {
@@ -35,4 +41,6 @@ public interface IFactAcctBL extends ISingletonService
 	 * Gets/creates the account (i.e. {@link I_C_ValidCombination}) of given fact line.
 	 */
 	Account getAccount(I_Fact_Acct factAcct);
+
+	Optional<Money> getAcctBalance(@NonNull List<FactAcctQuery> queries);
 }

@@ -1081,7 +1081,7 @@ public class JsonPersisterService
 			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomerValue())
 					.filter(Check::isNotBlank)
 					.map(StringUtils::trim)
-					.map(incotermsRepository::getIncotermsByValue)
+					.map(incotermsRepository::getByValue)
 					.map(Incoterms::getIncotermsId)
 					.orElse(null);
 
@@ -1093,7 +1093,7 @@ public class JsonPersisterService
 			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendorValue())
 					.filter(Check::isNotBlank)
 					.map(StringUtils::trim)
-					.map(incotermsRepository::getIncotermsByValue)
+					.map(incotermsRepository::getByValue)
 					.map(Incoterms::getIncotermsId)
 					.orElse(null);
 
