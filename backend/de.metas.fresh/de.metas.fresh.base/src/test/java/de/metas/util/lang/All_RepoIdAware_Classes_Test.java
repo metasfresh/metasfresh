@@ -14,6 +14,7 @@ import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.undertest.WOProjectObjectUnderTestId;
+import de.metas.requisition.RequisitionId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.util.Check;
@@ -110,6 +111,8 @@ public class All_RepoIdAware_Classes_Test
 			.skip(CostRevaluationDetailId.class)
 			//
 			.skip(PaySelectionLineId.class)
+			//
+			.skip(RequisitionId.class)
 			;
 
 	private static ObjectMapper jsonMapper;
