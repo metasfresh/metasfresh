@@ -78,6 +78,12 @@ order by  GPLR_Report_Shipment_ID
 	<field name="warehousevalue" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="warehousevalue"/>
 	</field>
+	<field name="warehouseexternalid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="warehouseexternalid"/>
+	</field>
+	<field name="isb2b" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isb2b"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -257,9 +263,6 @@ order by  GPLR_Report_Shipment_ID
 				<textElement textAlignment="Left">
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-<<<<<<< HEAD
-				<textFieldExpression><![CDATA[$F{warehousevalue}+" "+$F{warehousename}]]></textFieldExpression>
-=======
 				<textFieldExpression><![CDATA[$F{isb2b}.equals("Y") ? "XXXX" :
 (
 	($F{warehouseexternalid}!=null ?
@@ -272,7 +275,6 @@ order by  GPLR_Report_Shipment_ID
 	 : ""
    )    +	$F{warehousevalue}+" "+$F{warehousename}
 )]]></textFieldExpression>
->>>>>>> 2b9c5b07783 (Add warehouseexternalid in front of the entire string (#15781))
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-71" x="390" y="0" width="70" height="12" forecolor="#000000" uuid="033a8a76-f451-43a0-874a-3aa3bb97c722"/>
