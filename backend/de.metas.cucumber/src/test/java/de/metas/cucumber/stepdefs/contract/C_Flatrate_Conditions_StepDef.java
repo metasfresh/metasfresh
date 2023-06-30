@@ -30,6 +30,7 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.model.I_C_LicenseFeeSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -76,6 +77,7 @@ public class C_Flatrate_Conditions_StepDef
 	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 	private final M_PricingSystem_StepDefData pricingSysTable;
 	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
+	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
@@ -84,7 +86,8 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
-			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable)
+			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable,
+			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
@@ -93,6 +96,7 @@ public class C_Flatrate_Conditions_StepDef
 		this.conditionsTable = conditionsTable;
 		this.pricingSysTable = pricingSysTable;
 		this.interimInvoiceSettingsTable = interimInvoiceSettingsTable;
+		this.modCntrSettingsTable = modCntrSettingsTable;
 	}
 
 	@Given("metasfresh contains C_Flatrate_Conditions:")
@@ -185,6 +189,13 @@ public class C_Flatrate_Conditions_StepDef
 			{
 				final I_C_Interim_Invoice_Settings interimInvoiceSettings = interimInvoiceSettingsTable.get(interimInvoiceSettingsIdentifier);
 				flatrateConditions.setC_Interim_Invoice_Settings_ID(interimInvoiceSettings.getC_Interim_Invoice_Settings_ID());
+			}
+
+			final String modCntrSetttingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(modCntrSetttingsIdentifier))
+			{
+				final I_ModCntr_Settings modCntrSettingsRecord = modCntrSettingsTable.get(modCntrSetttingsIdentifier);
+				flatrateConditions.setModCntr_Settings_ID(modCntrSettingsRecord.getModCntr_Settings_ID());
 			}
 
 			InterfaceWrapperHelper.saveRecord(flatrateConditions);

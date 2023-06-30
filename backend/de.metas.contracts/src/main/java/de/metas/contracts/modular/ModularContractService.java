@@ -31,6 +31,7 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -41,7 +42,7 @@ public class ModularContractService
 {
 	public enum ModelAction
 	{
-		COMPLETED, REVERSED, REACTIVATED
+		COMPLETED, REVERSED, REACTIVATED, VOIDED
 	}
 
 	private final ModularContractLogDAO contractLogDAO;
@@ -105,16 +106,10 @@ public class ModularContractService
 	{
 		switch (action)
 		{
-			case COMPLETED ->
-			{
-				handler.createLogEntryCreateRequest(model, flatrateTermId)
-						.ifPresent(contractLogDAO::create);
-			}
-			case REVERSED ->
-			{
-				handler.createLogEntryReverseRequest(model, flatrateTermId)
-						.ifPresent(contractLogDAO::reverse);
-			}
+			case COMPLETED -> handler.createLogEntryCreateRequest(model, flatrateTermId)
+					.ifPresent(contractLogDAO::create);
+			case VOIDED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
+					.ifPresent(contractLogDAO::reverse);
 		}
 	}
 }

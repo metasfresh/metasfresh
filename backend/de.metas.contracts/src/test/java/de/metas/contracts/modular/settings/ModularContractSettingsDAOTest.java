@@ -113,10 +113,11 @@ class ModularContractSettingsDAOTest
 	public static class HandlerImpl implements IModularContractTypeHandler<Object>
 	{
 
+		@NonNull
 		@Override
-		public boolean probablyAppliesTo(@NonNull final Object model)
+		public Class<Object> getType()
 		{
-			return true;
+			return Object.class;
 		}
 
 		@Override

@@ -40,10 +40,8 @@ import java.util.stream.Stream;
  */
 public interface IModularContractTypeHandler<T>
 {
-	/**
-	 * Implementations of this method should be very fast. It's OK to return {@code true} even if not 100% sure that there will be a log record coming out of this.
-	 */
-	boolean probablyAppliesTo(@NonNull Object model);
+	@NonNull
+	Class<T> getType();
 
 	/**
 	 * Return a {@code LogEntryCreateRequest} if the framework shall create the log, or {@link Optional#empty()} otherwise.

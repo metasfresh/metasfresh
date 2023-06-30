@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -357,26 +358,29 @@ public class C_Order_StepDef
 
 		switch (StepDefDocAction.valueOf(action))
 		{
-			case reactivated:
+			case reactivated ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
-				break;
-			case completed:
+			}
+			case completed ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-				break;
-			case closed:
+			}
+			case closed ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
-				break;
-			case voided:
+			}
+			case voided ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
-				break;
-			default:
-				throw new AdempiereException("Unhandled C_Order action")
-						.appendParametersToMessage()
-						.setParameter("action:", action);
+			}
+			default -> throw new AdempiereException("Unhandled C_Order action")
+					.appendParametersToMessage()
+					.setParameter("action:", action);
 		}
 	}
 
