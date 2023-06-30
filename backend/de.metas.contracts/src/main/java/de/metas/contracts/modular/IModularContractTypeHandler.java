@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 /**
  * Implementors should be annotated with {@link org.springframework.stereotype.Component},
- * so that one instance per class is initialized and injected into {@link ModularContractService}.
+ * so that one instance per class is initialized and injected into {@link ModularContractHandlerFactory}.
  * <p>
  * At this stage I think there will be one implementation for {@link org.compiere.model.I_C_Order},
  * one for {@link de.metas.inout.model.I_M_InOut} and so on.

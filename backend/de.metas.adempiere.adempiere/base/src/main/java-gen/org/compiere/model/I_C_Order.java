@@ -1021,33 +1021,6 @@ public interface I_C_Order
 	String COLUMNNAME_CreateNewFromProposal = "CreateNewFromProposal";
 
 	/**
-	 * Set Year.
-	 * Calendar Year
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Year_ID (int C_Year_ID);
-
-	/**
-	 * Get Year.
-	 * Calendar Year
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Year_ID();
-
-	@Nullable org.compiere.model.I_C_Year getC_Year();
-
-	void setC_Year(@Nullable org.compiere.model.I_C_Year C_Year);
-
-	ModelColumn<I_C_Order, org.compiere.model.I_C_Year> COLUMN_C_Year_ID = new ModelColumn<>(I_C_Order.class, "C_Year_ID", org.compiere.model.I_C_Year.class);
-	String COLUMNNAME_C_Year_ID = "C_Year_ID";
-
-	/**
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *
@@ -1117,7 +1090,7 @@ public interface I_C_Order
 	String COLUMNNAME_DatePrinted = "DatePrinted";
 
 	/**
-	 * Set Date Promised From.
+	 * Set Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -1127,7 +1100,7 @@ public interface I_C_Order
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Date Promised From.
+	 * Get Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -1739,7 +1712,7 @@ public interface I_C_Order
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 
 	/**
-	 * Set Incoterm Location.
+	 * Set IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1749,7 +1722,7 @@ public interface I_C_Order
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get Incoterm Location.
+	 * Get IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1782,6 +1755,28 @@ public interface I_C_Order
 	ModelColumn<I_C_Order, Object> COLUMN_InvoiceAdditionalText = new ModelColumn<>(I_C_Order.class, "InvoiceAdditionalText", null);
 	String COLUMNNAME_InvoiceAdditionalText = "InvoiceAdditionalText";
 
+	/**
+	 * Set Do not show Country of Origin.
+	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNotShowOriginCountry (boolean IsNotShowOriginCountry);
+
+	/**
+	 * Get Do not show Country of Origin.
+	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNotShowOriginCountry();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsNotShowOriginCountry = new ModelColumn<>(I_C_Order.class, "IsNotShowOriginCountry", null);
+	String COLUMNNAME_IsNotShowOriginCountry = "IsNotShowOriginCountry";
 	/**
 	 * Set Invoice Rule.
 	 * Frequency and method of invoicing
@@ -1988,29 +1983,6 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsInvoiced = new ModelColumn<>(I_C_Order.class, "IsInvoiced", null);
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
-
-	/**
-	 * Set Do not show Country of Origin.
-	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsNotShowOriginCountry (boolean IsNotShowOriginCountry);
-
-	/**
-	 * Get Do not show Country of Origin.
-	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isNotShowOriginCountry();
-
-	ModelColumn<I_C_Order, Object> COLUMN_IsNotShowOriginCountry = new ModelColumn<>(I_C_Order.class, "IsNotShowOriginCountry", null);
-	String COLUMNNAME_IsNotShowOriginCountry = "IsNotShowOriginCountry";
 
 	/**
 	 * Set Goods on consignment.
@@ -3100,6 +3072,11 @@ public interface I_C_Order
 	 */
 	int getUser1_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser1();
+
+	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_Order.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -3120,6 +3097,11 @@ public interface I_C_Order
 	 */
 	int getUser2_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser2();
+
+	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_Order.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
