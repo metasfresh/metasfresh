@@ -76,7 +76,7 @@ Feature: tax departure country for SO and PO
       | s_ol_1                           | shipment_1            |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
-      | ic_1                              | ol_1                      | 0            | Romania                                   |
+      | ic_1                              | ol_1                      | 10           | Romania                                   |
     When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic_1                              |
@@ -120,6 +120,51 @@ Feature: tax departure country for SO and PO
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.C_Tax_Departure_Country_ID.Identifier |
       | invoice_1               | endvendor_1              | l_2                               | 1000002     | true      | CO        | Romania                                   |
+
+  @from:cucumber
+  Scenario: if we have different tax departure country in 2 invoice candidates of the same product, the invoice candidates will not be aggregated into 1 invoice, but 2 invoices are created
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   | 1000012              |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 10         |
+      | ol_2       | o_1                   | p_1                     | 10         |
+    When the order identified by o_1 is completed
+    Then after not more than 30s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_ol_1     | ol_1                      | N             |
+      | s_ol_2     | ol_2                      | N             |
+    When 'generate shipments' process is invoked for multiple shipments
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_ol_1                           | D            | true                | false       |
+      | s_ol_2                           | D            | true                | false       |
+    Then after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_ol_1                           | shipment_1            |
+      | s_ol_2                           | shipment_2            |
+    And load C_Country by country code:
+      | C_Country_ID.Identifier | CountryCode |
+      | Albania                 | AL          |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | ic_1                              | ol_1                      | 10           | Romania                                   |
+      | ic_2                              | ol_2                      | 10           | Romania                                   |
+    And update C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | ic_2                              | Albania                                   |
+    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+      | ic_2                              |
+    Then after not more than 30s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic_1                              | invoice_1               |
+      | ic_2                              | invoice_2               |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | invoice_1               | endcustomer_1            | l_1                               | 1000002     | true      | CO        | Romania                                   |
+      | invoice_2               | endcustomer_1            | l_1                               | 1000002     | true      | CO        | Albania                                   |
 
   @from:cucumber
   Scenario: after generating PO from SO, the tax departure country is not propagated from sales order to purchase order
