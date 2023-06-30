@@ -10,6 +10,5 @@ import lombok.Value;
 @Builder
 public class SourceShipperInfo
 {
-	@NonNull ShipperId shipperId;
 	@NonNull ITranslatableString name;
 }
