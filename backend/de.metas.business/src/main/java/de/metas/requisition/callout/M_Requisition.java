@@ -35,8 +35,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Requisition;
 
-import java.util.Optional;
-
 @Callout(I_M_Requisition.class)
 public class M_Requisition
 {
@@ -68,14 +66,8 @@ public class M_Requisition
 	@CalloutMethod(columnNames = I_M_Requisition.COLUMNNAME_M_Warehouse_ID)
 	public void onWarehouseChanged(@NonNull final I_M_Requisition requisition)
 	{
-		//
-		// M_Warehouse_ID is a mandatory column
-		final Optional<WarehouseId> warehouseId = WarehouseId.optionalOfRepoId(requisition.getM_Warehouse_ID());
-		if (warehouseId.isPresent())
-		{
 			WarehouseId.optionalOfRepoId(requisition.getM_Warehouse_ID())
 					.map(warehouseDAO::getById)
 					.ifPresent(warehouse -> requisition.setWarehouse_Location_ID(warehouse.getC_BPartner_Location_ID()) );
-		}
 	}
 }
