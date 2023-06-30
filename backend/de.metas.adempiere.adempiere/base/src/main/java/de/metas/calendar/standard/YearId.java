@@ -26,35 +26,40 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-public class CalendarId implements RepoIdAware
+@RepoIdAwares.SkipTest
+public class YearId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static CalendarId ofRepoId(final int repoId)
+	public static YearId ofRepoId(final int repoId)
 	{
-		return new CalendarId(repoId);
+		return new YearId(repoId);
 	}
 
 	@Nullable
-	public static CalendarId ofRepoIdOrNull(final int repoId)
+	public static YearId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId > 0 ? new CalendarId(repoId) : null;
+		return
+				repoId != null && repoId > 0
+						? ofRepoId(repoId)
+						: null;
 	}
 
-	public static int toRepoId(@Nullable final CalendarId calendarId)
+	public static int toRepoId(@Nullable final YearId yearId)
 	{
-		return calendarId != null ? calendarId.getRepoId() : -1;
+		return yearId != null ? yearId.getRepoId() : -1;
 	}
 
-	private CalendarId(final int repoId)
+	private YearId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Calendar_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Year_ID");
 	}
 
 	@JsonValue
