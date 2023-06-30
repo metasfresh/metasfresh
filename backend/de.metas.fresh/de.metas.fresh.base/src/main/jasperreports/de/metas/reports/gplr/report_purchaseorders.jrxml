@@ -177,7 +177,7 @@ WHERE GPLR_Report_ID=$P{GPLR_Report_ID}
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{termspaym}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{termdeliv}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-72" x="695" y="0" width="86" height="12" forecolor="#000000" uuid="1b779eb3-8090-47b4-96fa-07a2a2b3b03f"/>
@@ -261,7 +261,9 @@ WHERE GPLR_Report_ID=$P{GPLR_Report_ID}
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{paymentterminfo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{incoterm_code}!=null ? $F{incoterm_code}:"" )
++"\n"
++($F{incotermlocation}!=null ? "STORAGE LOCATION : "+$F{incotermlocation}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-72" x="695" y="1" width="34" height="12" forecolor="#000000" uuid="76cc4d0a-9b16-41cd-bbca-cb3e8211819c"/>
