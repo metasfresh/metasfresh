@@ -265,13 +265,16 @@ order by  GPLR_Report_Shipment_ID
 				</textElement>
 				<textFieldExpression><![CDATA[$F{isb2b}.equals("Y") ? "XXXX" :
 (
-	$F{warehousevalue}+" "+$F{warehousename}
-+($F{warehouseexternalid}!=null ? 
-	 ($F{warehouseexternalid}.length() > 4 ? $F{warehouseexternalid}.substring($F{warehouseexternalid}.length() - 4) : $F{warehouseexternalid})
-	 : ""	 )
-)
-
-]]></textFieldExpression>
+	($F{warehouseexternalid}!=null ?
+        (
+	        ($F{warehouseexternalid}.length() > 4 ?
+                    $F{warehouseexternalid}.substring($F{warehouseexternalid}.length() - 4)
+                    : $F{warehouseexternalid}
+            )
+        )+" "
+	 : ""
+   )    +	$F{warehousevalue}+" "+$F{warehousename}
+)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-71" x="390" y="0" width="70" height="12" forecolor="#000000" uuid="033a8a76-f451-43a0-874a-3aa3bb97c722"/>
