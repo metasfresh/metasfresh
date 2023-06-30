@@ -35,6 +35,8 @@ class GPLRReportShipment_Mapper
 		record.setShipTo_CountryCode(from.getShipToCountry() != null ? from.getShipToCountry().getAlpha2() : null);
 		record.setWarehouseValue(from.getWarehouse().getCode());
 		record.setWarehouseName(from.getWarehouse().getName());
+		record.setWarehouseExternalId(from.getWarehouse().getExternalId());
+		record.setIsB2B(from.isBackToBack());
 		record.setMovementDate(from.getMovementDate().toTimestamp(orgId2timeZoneMapper));
 		updateRecord_Incoterms(record, from.getIncoterms());
 		record.setShippingInfo(from.getShipper() != null ? from.getShipper().toRenderedString() : null);
@@ -65,7 +67,9 @@ class GPLRReportShipment_Mapper
 				.warehouse(GPLRWarehouseName.builder()
 						.code(record.getWarehouseValue())
 						.name(record.getWarehouseName())
+						.externalId(record.getWarehouseExternalId())
 						.build())
+				.isBackToBack(record.isB2B())
 				.movementDate(LocalDateAndOrgId.ofTimestamp(record.getMovementDate(), orgId, orgId2timeZoneMapper))
 				.incoterms(extractIncoterms(record))
 				.shipper(GPLRShipperRenderedString.ofNullableRenderedString(record.getShippingInfo()))
