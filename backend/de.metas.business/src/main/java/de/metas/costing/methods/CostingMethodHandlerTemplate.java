@@ -152,7 +152,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchInv))
 		{
 			final CostElement costElement = request.getCostElement();
-			if (costElement == null || costElement.isMaterialElement())
+			if (costElement == null || costElement.isMaterial())
 			{
 				return createCostForMatchInvoice_MaterialCosts(request);
 			}
@@ -171,7 +171,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			else
 			{
 				final CostElement costElement = request.getCostElement();
-				if (costElement == null || costElement.isMaterialElement())
+				if (costElement == null || costElement.isMaterial())
 				{
 					return createCostForMaterialReceipt(request);
 				}

@@ -148,7 +148,7 @@ final class CreatePPOrderCostsCommand
 			final PPOrderCosts orderCosts,
 			final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(ClientId.METASFRESH, costingMethod);
+		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			return;

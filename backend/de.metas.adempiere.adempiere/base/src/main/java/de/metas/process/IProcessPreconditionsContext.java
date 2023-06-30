@@ -12,6 +12,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -67,6 +68,9 @@ public interface IProcessPreconditionsContext
 	 */
 	@Deprecated
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
+	
+	@NonNull
+	<T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass);
 
 	/**
 	 * @return single Record_ID; throws exception otherwise

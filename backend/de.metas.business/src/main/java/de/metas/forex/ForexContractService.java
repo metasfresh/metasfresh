@@ -3,14 +3,15 @@ package de.metas.forex;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -27,16 +28,18 @@ public class ForexContractService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final ForexContractRepository forexContractRepository;
 	@NonNull private final ForexContractAllocationRepository forexContractAllocationRepository;
+	@NonNull private final MoneyService moneyService;
 
 	public ForexContractService(
 			final @NonNull ForexContractRepository forexContractRepository,
-			final @NonNull ForexContractAllocationRepository forexContractAllocationRepository)
+			final @NonNull ForexContractAllocationRepository forexContractAllocationRepository,
+			final @NonNull MoneyService moneyService)
 	{
 		this.forexContractRepository = forexContractRepository;
 		this.forexContractAllocationRepository = forexContractAllocationRepository;
+		this.moneyService = moneyService;
 	}
 
 	public ForexContract getById(@NonNull final ForexContractId id)
@@ -76,7 +79,7 @@ public class ForexContractService
 		final I_C_Order order = orderBL.getById(orderId);
 		checkOrderEligibleToAllocate(order).assertTrue();
 
-		final CurrencyConversionTypeId fecConversionTypeId = currencyBL.getCurrencyConversionTypeId(ConversionTypeMethod.ForeignExchangeContract);
+		final CurrencyConversionTypeId fecConversionTypeId = moneyService.getCurrencyConversionTypeId(ConversionTypeMethod.ForeignExchangeContract);
 		order.setC_ConversionType_ID(fecConversionTypeId.getRepoId());
 		orderBL.save(order);
 
@@ -156,10 +159,13 @@ public class ForexContractService
 		final I_C_Order order = orderBL.getById(orderId);
 		checkOrderEligibleToAllocate(order).assertTrue();
 
+		final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
+
 		return forexContractRepository.queryIds(
 				ForexContractQuery.builder()
 						.docStatus(DocStatus.Completed)
 						.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
+						.currencyToId(baseCurrencyId)
 						.onlyWithOpenAmount(true)
 						.build());
 	}

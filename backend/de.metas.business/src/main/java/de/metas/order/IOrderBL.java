@@ -52,6 +52,8 @@ import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -120,6 +122,10 @@ public interface IOrderBL extends ISingletonService
 	 * @return true if set
 	 */
 	boolean setBill_User_ID(I_C_Order order);
+
+	List<I_C_Order> getByIds(@NonNull Collection<OrderId> orderIds);
+
+	List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderIds(@NonNull Set<OrderId> orderIds);
 
 	Map<OrderAndLineId, de.metas.interfaces.I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds);
 
@@ -295,6 +301,10 @@ public interface IOrderBL extends ISingletonService
 
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 
+	Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull OrderId salesOrderId);
+
+	Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull OrderId purchaseOrderId);
+
 	void updateIsOnConsignmentFromLines(OrderId orderId);
 
 	/**
@@ -323,4 +333,6 @@ public interface IOrderBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
+
+	Quantity getQtyEntered(I_C_OrderLine orderLine);
 }

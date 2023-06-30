@@ -50,7 +50,7 @@ import java.util.Properties;
 
 public class VATCodeDAO implements IVATCodeDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(VATCodeDAO.class);
+	private static final Logger logger = LogManager.getLogger(VATCodeDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -60,7 +60,7 @@ public class VATCodeDAO implements IVATCodeDAO
 		final Properties ctx = Env.getCtx();
 
 		final List<I_C_VAT_Code> matchings = retriveVATCodeMatchingsForSchema(ctx, request.getC_AcctSchema_ID());
-		
+
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("Request={}", request);

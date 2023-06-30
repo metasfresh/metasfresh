@@ -461,6 +461,11 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Nullable
 	public String getAttributeValueOrNull(@NonNull final AttributeCode attributeCode, @NonNull final AttributeSetInstanceId asiId)
 	{
+		if (asiId.isNone())
+		{
+			return null;
+		}
+
 		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
 		if (attributeId == null)
 		{
