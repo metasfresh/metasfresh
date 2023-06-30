@@ -131,7 +131,7 @@ order by seqno
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{material}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{document}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-67" x="112" y="0" width="98" height="12" forecolor="#000000" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
