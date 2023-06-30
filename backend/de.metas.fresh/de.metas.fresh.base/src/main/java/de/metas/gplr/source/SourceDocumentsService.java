@@ -11,6 +11,12 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+<<<<<<< HEAD
+=======
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.deliveryplanning.MeansOfTransportation;
+>>>>>>> 6284e052054 (GPLR use Means of Transportation if no Shipper set (#15777))
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -126,6 +132,7 @@ public class SourceDocumentsService
 	@NonNull private final OrderCostService orderCostService;
 	@NonNull private final IncotermsRepository incotermsRepository;
 	@NonNull private final ForexContractService forexContractService;
+	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 
 	public SourceDocumentsService(
 			@NonNull final SectionCodeService sectionCodeService,
@@ -133,7 +140,8 @@ public class SourceDocumentsService
 			@NonNull final MoneyService moneyService,
 			@NonNull final OrderCostService orderCostService,
 			@NonNull final IncotermsRepository incotermsRepository,
-			@NonNull final ForexContractService forexContractService)
+			@NonNull final ForexContractService forexContractService,
+			@NonNull final DeliveryPlanningService deliveryPlanningService)
 	{
 		this.sectionCodeService = sectionCodeService;
 		this.documentLocationBL = documentLocationBL;
@@ -141,6 +149,7 @@ public class SourceDocumentsService
 		this.orderCostService = orderCostService;
 		this.incotermsRepository = incotermsRepository;
 		this.forexContractService = forexContractService;
+		this.deliveryPlanningService = deliveryPlanningService;
 	}
 
 	public BooleanWithReason checkEligible(final InvoiceId invoiceId)
@@ -532,7 +541,7 @@ public class SourceDocumentsService
 				.shipFrom(getWarehouseInfo(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID())))
 				.shipTo(getShipTo(shipment))
 				.incoterms(extractIncotermsAndLocation(shipment))
-				.shipper(extractShipperIdAndName(shipment))
+				.shipper(extractShipperInfo(shipment))
 				.build();
 	}
 
@@ -563,18 +572,27 @@ public class SourceDocumentsService
 	}
 
 	@Nullable
-	private SourceShipperInfo extractShipperIdAndName(final I_M_InOut shipment)
+	private SourceShipperInfo extractShipperInfo(final I_M_InOut shipment)
 	{
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipment.getM_Shipper_ID());
 		if (shipperId != null)
 		{
 			return SourceShipperInfo.builder()
-					.shipperId(shipperId)
 					.name(shipperDAO.getShipperName(shipperId))
 					.build();
 		}
 
-		// TODO get the M_MeansOfTransportation_ID (via M_Delivery_Planning.M_MeansOfTransportation_ID? ask Ruxi)
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(shipment.getM_Delivery_Planning_ID());
+		if (deliveryPlanningId != null)
+		{
+			final MeansOfTransportation meansOfTransportation = deliveryPlanningService.getMeansOfTransportationByDeliveryPlanningId(deliveryPlanningId).orElse(null);
+			if (meansOfTransportation != null)
+			{
+				return SourceShipperInfo.builder()
+						.name(meansOfTransportation.toDisplayableString())
+						.build();
+			}
+		}
 
 		return null;
 	}
