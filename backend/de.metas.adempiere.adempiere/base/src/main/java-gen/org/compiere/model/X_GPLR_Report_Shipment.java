@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_GPLR_Report_Shipment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -293172243L;
+	private static final long serialVersionUID = 1289844517L;
 
     /** Standard Constructor */
     public X_GPLR_Report_Shipment (final Properties ctx, final int GPLR_Report_Shipment_ID, @Nullable final String trxName)
@@ -110,6 +110,18 @@ public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_G
 	public java.lang.String getIncotermLocation() 
 	{
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	@Override
+	public void setIsB2B (final boolean IsB2B)
+	{
+		set_Value (COLUMNNAME_IsB2B, IsB2B);
+	}
+
+	@Override
+	public boolean isB2B() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsB2B);
 	}
 
 	@Override
