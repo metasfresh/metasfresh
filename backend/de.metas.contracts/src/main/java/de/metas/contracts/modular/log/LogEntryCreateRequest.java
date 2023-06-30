@@ -63,7 +63,7 @@ public class LogEntryCreateRequest
 	BPartnerId invoicingBPartnerId;
 
 	@Nullable
-	WarehouseId collectionPoint;
+	WarehouseId warehouseId;
 
 	@NonNull
 	LogEntryDocumentType documentType;

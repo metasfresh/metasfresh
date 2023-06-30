@@ -79,7 +79,7 @@ public class ModularContractLogDAO
 		log.setCollectionPoint_BPartner_ID(BPartnerId.toRepoId(request.getCollectionPointBPartnerId()));
 		log.setProducer_BPartner_ID(BPartnerId.toRepoId(request.getProducerBPartnerId()));
 		log.setBill_BPartner_ID(BPartnerId.toRepoId(request.getInvoicingBPartnerId()));
-		log.setM_Warehouse_ID(WarehouseId.toRepoId(request.getCollectionPoint()));
+		log.setM_Warehouse_ID(WarehouseId.toRepoId(request.getWarehouseId()));
 		log.setModCntr_Log_DocumentType(request.getDocumentType().getCode());
 		log.setIsSOTrx(request.getSoTrx().isSales());
 		log.setProcessed(request.isProcessed());
@@ -121,7 +121,7 @@ public class ModularContractLogDAO
 				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(log.getCollectionPoint_BPartner_ID()))
 				.producerBPartnerId(BPartnerId.ofRepoIdOrNull(log.getProducer_BPartner_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(log.getBill_BPartner_ID()))
-				.collectionPoint(WarehouseId.ofRepoIdOrNull(log.getM_Warehouse_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(log.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.ofCode(log.getModCntr_Log_DocumentType()))
 				.soTrx(SOTrx.ofBoolean(log.isSOTrx()))
 				.processed(log.isProcessed())

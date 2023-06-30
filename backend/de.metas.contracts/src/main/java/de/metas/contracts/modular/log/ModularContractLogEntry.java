@@ -69,7 +69,7 @@ public class ModularContractLogEntry
 	BPartnerId invoicingBPartnerId;
 
 	@Nullable
-	WarehouseId collectionPoint;
+	WarehouseId warehouseId;
 
 	@NonNull
 	LogEntryDocumentType documentType;

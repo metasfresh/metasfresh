@@ -113,7 +113,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
 				.collectionPointBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.collectionPoint(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
+				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.PURCHASE_ORDER)
 				.soTrx(SOTrx.PURCHASE)
 				.processed(false)
