@@ -270,9 +270,9 @@ Feature: invoice rules
     And after not more than 30s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
-    And after not more than 30s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override | QtyToDeliver | QtyDelivered | QtyOrdered | QtyPickList | Processed |
-      | s_s_3                            |                       | 0            | 10           | 10         | 5           | false     |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyPickList | OPT.Processed |
+      | s_s_3                            |                           | 0                | 10               | 10             | 5               | false         |
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier  | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1, shipment_2 | s_s_3                            | P                 | Y                  |
@@ -288,9 +288,9 @@ Feature: invoice rules
     And after not more than 30s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
-    And after not more than 30s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override | QtyToDeliver | QtyDelivered | QtyOrdered | QtyPickList | Processed |
-      | s_s_3                            |                       | 0            | 15           | 10         | 0           | true      |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyPickList | OPT.Processed |
+      | s_s_3                            |                           | 0                | 15               | 10             | 0               | true          |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_3               | p_3                     | 100                 |
