@@ -1,0 +1,81 @@
+@from:cucumber
+@taxDepartureCountry
+Feature: tax departure country for SO and PO
+
+  Background:
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
+    And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+
+    And load C_Country by country code:
+      | C_Country_ID.Identifier | CountryCode |
+      | Romania                 | RO          |
+    And metasfresh contains M_Products:
+      | Identifier | Name                |
+      | p_1        | salesProduct_290622 |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                       | Value                       | OPT.Description                   | OPT.IsActive |
+      | ps_1       | pricing_system_name_290622 | pricing_system_value_290622 | pricing_system_description_290622 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                   | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_290622 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                  | ValidFrom  |
+      | plv_1      | pl_1                      | salesOrder-PLV_290622 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_290622 | N            | Y              | ps_1                          |
+      | endvendor_1   | Endvendor_290622   | Y            | N              | ps_1                          |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 2906202289012 | endcustomer_1            | Y                   | Y                   |
+      | l_2        | 2906202289011 | endvendor_1              | Y                   | Y                   |
+
+  @from:cucumber
+  Scenario: tax departure country is propagated from sales order to sales invoice candidate and sales invoice
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 10         |
+    When the order identified by o_1 is completed
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | ic_1                              | ol_1                      | 0            | Romania                                   |
+
+  @from:cucumber
+  Scenario: tax departure country is propagated from purchase order to purchase invoice candidate and purchase invoice
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.DocSubType |
+      | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-17  | Romania                                   | MED            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 10         |
+    When the order identified by o_1 is completed
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | ic_1                              | ol_1                      | 0            | Romania                                   |
+
+  @from:cucumber
+  Scenario: after generating PO from SO, the tax departure country is not propagated from sales order to purchase order
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsCurrentVendor |
+      | endvendor_1              | p_1                     | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 10         |
+    When the order identified by o_1 is completed
+    Then generate PO from SO is invoked with parameters:
+      | C_BPartner_ID.Identifier | C_Order_ID.Identifier | PurchaseType |
+      | endvendor_1              | o_1                   | Standard     |
+    And the order is created:
+      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | po_1                     | false   | POO         | Romania                                   |
