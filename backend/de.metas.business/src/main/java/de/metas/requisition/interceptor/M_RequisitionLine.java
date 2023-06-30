@@ -22,23 +22,21 @@
 
 package de.metas.requisition.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.requisition.RequisitionRepository;
+import de.metas.requisition.RequisitionId;
+import de.metas.requisition.RequisitionService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -46,11 +44,12 @@ import java.util.List;
 public class M_RequisitionLine
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final RequisitionRepository requisitionRepository;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final RequisitionService requisitionService;
 
-	public M_RequisitionLine(@NonNull final RequisitionRepository requisitionRepository)
+	public M_RequisitionLine(@NonNull final RequisitionService requisitionService)
 	{
-		this.requisitionRepository = requisitionRepository;
+		this.requisitionService = requisitionService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_RequisitionLine.COLUMNNAME_C_BPartner_ID })
@@ -64,28 +63,24 @@ public class M_RequisitionLine
 		}
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_RequisitionLine.COLUMNNAME_LineNetAmt })
-	public void updateRequisitionTotalLines(@NonNull final I_M_RequisitionLine line)
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged = { I_M_RequisitionLine.COLUMNNAME_LineNetAmt })
+	public void updateRequisitionTotalLines(@NonNull final I_M_RequisitionLine requisitionLine)
 	{
-		calculateTotalLines(line);
+		final RequisitionId requisitionId = RequisitionId.ofRepoId(requisitionLine.getM_Requisition_ID());
+
+		trxManager.accumulateAndProcessAfterCommit(
+				"requisitionIdsToUpdateTotalAmt",
+				ImmutableSet.of(requisitionId),
+				this::updateTotalAmtFromLines
+		);
 	}
 
-	private void calculateTotalLines(@NonNull final I_M_RequisitionLine requisitionLine)
+	private void updateTotalAmtFromLines( final List<RequisitionId> requisitionIds)
 	{
-		final I_M_Requisition requisition = requisitionLine.getM_Requisition();
-		final int requisitionId = requisition.getM_Requisition_ID();
-		final List<I_M_RequisitionLine> lines = requisitionRepository.getLinesByRequisitionId(requisitionId);
-
-		BigDecimal calculatedTotalAmt = BigDecimal.ZERO;
-		for (final I_M_RequisitionLine line : lines)
+		for (final RequisitionId requisitionId : ImmutableSet.copyOf(requisitionIds))
 		{
-			calculatedTotalAmt = calculatedTotalAmt.add(line.getLineNetAmt());
+			requisitionService.updateTotalAmtFromLines(requisitionId);
 		}
-
-		requisition.setTotalLines(calculatedTotalAmt);
-		InterfaceWrapperHelper.save(requisition);
-
-		CacheMgt.get().reset(CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_M_Requisition.Table_Name, requisitionId));
 	}
 
 }
