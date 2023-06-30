@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.Null;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -41,7 +42,7 @@ import de.metas.i18n.TranslatableStrings;
 
 public class AdempiereExceptionTests
 {
-	private static final List<Class<?>> boxingExceptionClasses = ImmutableList.<Class<?>> of(ExecutionException.class, InvocationTargetException.class);
+	private static final List<Class<?>> boxingExceptionClasses = ImmutableList.of(ExecutionException.class, InvocationTargetException.class);
 	private final Random random = new Random(System.currentTimeMillis());
 
 	private AdempiereException newAdempiereException()
@@ -106,7 +107,7 @@ public class AdempiereExceptionTests
 		Assertions.assertEquals(rootEx.getLocalizedMessage(), actual.getCause().getLocalizedMessage());
 	}
 
-	private final Throwable box(final Throwable throwable, final int depth) throws Exception
+	private Throwable box(final Throwable throwable, final int depth) throws Exception
 	{
 		if (depth == 0)
 		{
@@ -198,5 +199,17 @@ public class AdempiereExceptionTests
 				.isEqualTo(ImmutableMap.<String, Object> builder()
 						.put(AdempiereException.PARAMETER_RecordRef, recordRef)
 						.build());
+	}
+
+	@Nested
+	class getParameter
+	{
+		@Test
+		void setParameterAsNull_thenGetIt()
+		{
+			final AdempiereException ex = new AdempiereException("exception");
+			ex.setParameter("param", null);
+			assertThat(ex.getParameter("param")).isNull();
+		}
 	}
 }

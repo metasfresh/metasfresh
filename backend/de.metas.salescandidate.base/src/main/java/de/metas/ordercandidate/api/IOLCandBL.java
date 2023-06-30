@@ -56,7 +56,7 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 */
-	void process(OLCandProcessorDescriptor processor, AsyncBatchId asyncBatchId);
+	void process(OLCandProcessorDescriptor processor, @Nullable AsyncBatchId asyncBatchId);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 

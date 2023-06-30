@@ -3,6 +3,7 @@ package de.metas.contracts.pricing;
 import ch.qos.logback.classic.Level;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.SubscriptionDiscountLine;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.repository.ISubscriptionDiscountRepository;
 import de.metas.contracts.repository.SubscriptionDiscountQuery;
@@ -62,9 +63,16 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		final Object referencedObject = pricingCtx.getReferencedObject();
 		final I_C_Flatrate_Conditions flatrateConditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
+
 		if (flatrateConditions == null)
 		{
 			loggable.addLog("Not applying because referencedObject has no C_Flatrate_Conditions; referencedObject={}", referencedObject);
+			return false;
+		}
+
+		if (!TypeConditions.SUBSCRIPTION.getCode().equals(flatrateConditions.getType_Conditions()))
+		{
+			loggable.addLog("Not applying because referenced C_Flatrate_Conditions.Type_Conditions={} (should be: {})", flatrateConditions.getType_Conditions(), TypeConditions.SUBSCRIPTION.getCode());
 			return false;
 		}
 
@@ -119,9 +127,13 @@ public class SubscriptionPricingRule implements IPricingRule
 	{
 		if (subscriptionDiscountLine != null
 				&& !subscriptionPricingResult.isDisallowDiscount()
-				&& (!subscriptionPricingResult.isDiscountCalculated() || subscriptionDiscountLine.isPrioritiseOwnDiscount()))
+				&& (subscriptionDiscountLine.isPrioritiseOwnDiscount() || !subscriptionPricingResult.isDiscountCalculated()))
 		{
 			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
+			if (subscriptionDiscountLine.isPrioritiseOwnDiscount())
+			{
+				subscriptionPricingResult.setDontOverrideDiscountAdvice(true);
+			}
 		}
 		return subscriptionPricingResult;
 	}
@@ -218,7 +230,6 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setTaxCategoryId(subscriptionPricingResult.getTaxCategoryId());
 
 		result.setPriceEditable(subscriptionPricingResult.isPriceEditable());
-		result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
 	}
 
 	private static void copyDiscountIntoResultIfAllowedByPricingContext(
@@ -228,7 +239,12 @@ public class SubscriptionPricingRule implements IPricingRule
 	{
 		if (!pricingCtx.isDisallowDiscount())
 		{
-			result.setDiscount(subscriptionPricingResult.getDiscount());
+			if (result.isDiscountEditable())
+			{
+				result.setDiscount(subscriptionPricingResult.getDiscount());
+				result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
+				result.setDontOverrideDiscountAdvice(subscriptionPricingResult.isDontOverrideDiscountAdvice());
+			}
 		}
 	}
 

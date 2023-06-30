@@ -7,18 +7,19 @@ Map build(
         final MvnConf mvnConf,
         final Map scmVars,
         final boolean forceBuild = false,
-        final boolean forceSkip = false,
+        final boolean forceSkipBackend = false,
+        final boolean forceSkipCucumber = false,
         final String multithreadParam = "-T 2C") {
+
     final dockerImages = [:]
     String publishedDBInitDockerImageName
-    final def misc = new de.metas.jenkins.Misc()
 
     stage('Build backend')
             {
                 currentBuild.description = """${currentBuild.description}<p/>
 				<h2>Backend</h2>
 			"""
-                if (forceSkip) {
+                if (forceSkipBackend) {
                     currentBuild.description = """${currentBuild.description}<p/>
             Forced to skip.
             """
@@ -86,15 +87,19 @@ Map build(
                         .withWorkDir('metasfresh-webui-api/target/docker');
                 final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
 
-//                // postgres DB init container
+final DockerConf appDockerConf = reportDockerConf
+                        .withArtifactName('metasfresh-app')
+                        .withWorkDir('metasfresh-dist/dist/target/docker/app');
+                final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // postgres DB init container
 //                final DockerConf dbInitDockerConf = reportDockerConf
-//                        .withArtifactName('metasfresh-db-init-pg-9-5')
+//                        .withArtifactName('metasfresh-db-init-pg-14-2')
 //                        .withWorkDir('metasfresh-dist/dist/target/docker/db-init')
 //                publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
                 dockerImages['report'] = publishedReportDockerImageName
                 dockerImages['msv3Server'] = publishedMsv3ServerImageName
                 dockerImages['webuiApi'] = publishedWebuiApiImageName
+                dockerImages['app'] = publishedAppImageName
 //                dockerImages['dbInit'] = publishedDBInitDockerImageName
 
                 currentBuild.description = """${currentBuild.description}<br/>
@@ -103,15 +108,19 @@ Map build(
 				<li><code>${publishedMsv3ServerImageName}</code></li>
 				<li><code>${publishedWebuiApiImageName}</code></li>
 				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
+				<li><code>${publishedAppImageName}</code></li>
 				<!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
 				</ul>
 				"""
 
-                dir('de.metas.cucumber') {
-                    def cucumberBuildFile = load('buildfile.groovy')
-                    cucumberBuildFile.build(mvnConf, scmVars)
+                if(forceSkipCucumber) {
+                    echo "forced to skip cucumber testing";
+                } else {
+                    dir('de.metas.cucumber') {
+                        def cucumberBuildFile = load('buildfile.groovy')
+                        cucumberBuildFile.build(mvnConf, scmVars)
+                    }
                 }
-
 //                final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 //                testSQLMigrationScripts(
 //                        params.MF_SQL_SEED_DUMP_URL,

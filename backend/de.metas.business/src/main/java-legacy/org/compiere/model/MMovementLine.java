@@ -1,13 +1,11 @@
 package org.compiere.model;
 
-import de.metas.lang.SOTrx;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UOMPrecision;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -65,6 +63,7 @@ public class MMovementLine extends X_M_MovementLine
 	 * @param rs result set
 	 * @param trxName transaction
 	 */
+	@SuppressWarnings("unused")
 	public MMovementLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -81,11 +80,6 @@ public class MMovementLine extends X_M_MovementLine
 		setClientOrg(parent);
 		setM_Movement_ID(parent.getM_Movement_ID());
 	}	// MMovementLine
-
-	public MMovementLine(I_M_Movement parent)
-	{
-		this(LegacyAdapters.convertToPO(parent));
-	}
 
 	/**
 	 * Get AttributeSetInstance To
@@ -207,34 +201,9 @@ public class MMovementLine extends X_M_MovementLine
 
 		// Qty Precision
 		if (newRecord || is_ValueChanged(COLUMNNAME_MovementQty))
+		{
 			setMovementQty(getMovementQty());
-
-		// Mandatory Instance
-		if (getM_AttributeSetInstance_ID() <= 0)
-		{
-			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
-			if (Services.get(IProductBL.class).isASIMandatory(productId, SOTrx.PURCHASE.toBoolean()))
-			{
-				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstance_ID);
-			}
 		}
-		if (getM_AttributeSetInstanceTo_ID() <= 0)
-		{
-			// instance id default to same for movement between locator
-			if (getM_Locator_ID() != getM_LocatorTo_ID())
-			{
-				if (getM_AttributeSetInstance_ID() > 0)        // set to from
-				{
-					setM_AttributeSetInstanceTo_ID(getM_AttributeSetInstance_ID());
-				}
-			}
-
-			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
-			if (Services.get(IProductBL.class).isASIMandatory(productId, SOTrx.SALES.toBoolean()) && getM_AttributeSetInstanceTo_ID() <= 0)
-			{
-				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstanceTo_ID);
-			}
-		}       // ASI
 
 		return true;
 	}	// beforeSave

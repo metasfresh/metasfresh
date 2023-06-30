@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
+import { unboxAxiosResponse } from '../utils';
 
 /**
  * @method userConfirmation
@@ -7,6 +8,8 @@ import { apiBasePath } from '../constants';
  * @param {object} `token` - The token to use for authentication
  * @returns
  */
-export function userConfirmation({ wfProcessId, wfActivityId }) {
-  return axios.post(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}/${wfActivityId}/userConfirmation`);
+export function postUserConfirmation({ wfProcessId, activityId }) {
+  return axios
+    .post(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}/${activityId}/userConfirmation`)
+    .then((response) => unboxAxiosResponse(response));
 }

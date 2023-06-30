@@ -1,5 +1,8 @@
 package de.metas.currency;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Nested;
@@ -7,8 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -104,8 +106,9 @@ public class AmountTest
 	@Test
 	public void test_compareTo()
 	{
-		assertThat(euro(5)).isLessThan(euro(6));
-		assertThat(euro(5)).isGreaterThan(euro(4));
+		assertThat(euro(5))
+				.isLessThan(euro(6))
+				.isGreaterThan(euro(4));
 		//noinspection ResultOfMethodCallIgnored
 		assertThrowsAmountShallHaveSameCurrencyException(() -> euro(5).compareTo(usd(5)));
 	}
@@ -131,6 +134,19 @@ public class AmountTest
 		{
 			final Amount amt = euro(10);
 			assertThat(amt.abs()).isSameAs(amt);
+		}
+	}
+
+	@Nested
+	class toMoney
+	{
+		@Test
+		void test()
+		{
+			final Amount amt = Amount.of("1.23456789", CurrencyCode.EUR);
+			final ImmutableMap<CurrencyCode, CurrencyId> currencyIdByCode = ImmutableMap.of(CurrencyCode.EUR, CurrencyId.ofRepoId(555));
+			final Money money = amt.toMoney(currencyIdByCode::get);
+			assertThat(money).isEqualTo(Money.of("1.23456789", CurrencyId.ofRepoId(555)));
 		}
 	}
 }

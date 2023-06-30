@@ -12,11 +12,12 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mmovement.MovementAndLineId;
+import org.adempiere.mmovement.MovementId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Getter
 @EqualsAndHashCode
@@ -32,56 +33,49 @@ public class DDOrderMoveSchedule
 	@NonNull private final ProductId productId;
 
 	//
-	// Pick From
+	// Pick From Specs
 	@NonNull private final LocatorId pickFromLocatorId;
 	@NonNull private final HuId pickFromHUId;
 	@NonNull private final Quantity qtyToPick;
-	// Pick From Status
-	@Nullable private HuId actualHUIdPicked;
-	private boolean isPickWholeHU;
-	@NonNull private Quantity qtyPicked;
-	@Nullable private QtyRejectedReasonCode qtyNotPickedReason;
-	@Nullable private MovementAndLineId pickFromMovementLineId;
-	@Nullable private LocatorId inTransitLocatorId;
+	private final boolean isPickWholeHU;
 
 	//
-	// Drop To
+	// Drop To Specs
 	@NonNull private final LocatorId dropToLocatorId;
-	// Drop To Status
-	@Nullable private MovementAndLineId dropToMovementLineId;
+
+	//
+	// State
+	@Nullable private QtyRejectedReasonCode qtyNotPickedReason;
+	@Nullable private DDOrderMoveSchedulePickedHUs pickedHUs;
 
 	public I_C_UOM getUOM() {return getQtyToPick().getUOM();}
 
-	public boolean isPickedFrom()
-	{
-		return pickFromMovementLineId != null;
-	}
+	public Quantity getQtyPicked() {return pickedHUs != null ? pickedHUs.getQtyPicked() : getQtyToPick().toZero();}
+
+	public boolean isPickedFrom() {return pickedHUs != null;}
 
 	public void assertNotPickedFrom()
 	{
 		if (isPickedFrom()) {throw new AdempiereException("Already Picked From");}
 	}
 
-	private void assertPickedFrom()
+	public void assertPickedFrom()
 	{
 		if (!isPickedFrom()) {throw new AdempiereException("Pick from required first");}
 	}
 
 	public void markAsPickedFrom(
-			@NonNull final Quantity qtyPicked,
 			@Nullable final QtyRejectedReasonCode qtyNotPickedReason,
-			@NonNull final HuId actualHuIdPicked,
-			@NonNull final MovementAndLineId pickFromMovementLineId,
-			@Nullable final LocatorId inTransitLocatorId)
+			@NonNull final DDOrderMoveSchedulePickedHUs pickedHUs)
 	{
 		assertNotPickedFrom();
 
+		final Quantity qtyPicked = pickedHUs.getQtyPicked();
 		Quantity.assertSameUOM(this.qtyToPick, qtyPicked);
 		if (qtyPicked.signum() <= 0)
 		{
 			throw new AdempiereException("QtyPicked must be greater than zero");
 		}
-		this.qtyPicked = qtyPicked;
 
 		if (!this.qtyToPick.qtyAndUomCompareToEquals(qtyPicked))
 		{
@@ -96,18 +90,14 @@ public class DDOrderMoveSchedule
 			this.qtyNotPickedReason = null;
 		}
 
-		this.actualHUIdPicked = actualHuIdPicked;
-		this.isPickWholeHU = HuId.equals(this.pickFromHUId, actualHUIdPicked);
-
-		this.pickFromMovementLineId = pickFromMovementLineId;
-		this.inTransitLocatorId = inTransitLocatorId;
+		this.pickedHUs = pickedHUs;
 
 		updateStatus();
 	}
 
 	public boolean isDropTo()
 	{
-		return dropToMovementLineId != null;
+		return pickedHUs != null && pickedHUs.isDroppedTo();
 	}
 
 	public void assertNotDroppedTo()
@@ -118,12 +108,12 @@ public class DDOrderMoveSchedule
 		}
 	}
 
-	public void markAsDroppedTo(@NonNull final MovementAndLineId dropToMovementLineId)
+	public void markAsDroppedTo(@NonNull final MovementId dropToMovementId)
 	{
 		assertPickedFrom();
 		assertNotDroppedTo();
 
-		this.dropToMovementLineId = dropToMovementLineId;
+		Objects.requireNonNull(pickedHUs).setDropToMovementId(dropToMovementId);
 
 		updateStatus();
 	}

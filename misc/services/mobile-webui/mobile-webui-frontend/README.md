@@ -14,3 +14,13 @@
   Once this is installed you can run `yarn build`:
 
   then `serve -s build`
+
+
+## Running the unit tests
+
+`cd metasfresh/misc/services/mobile-webui/mobile-webui-frontend`
+
+Considering that you already installed the dependencies ( with `yarn install`) just run this to initiate the unit tests run:
+`yarn test`
+
+

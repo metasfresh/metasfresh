@@ -24,16 +24,18 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-@EqualsAndHashCode
+@Value
 public class PickingJobStepId implements RepoIdAware
 {
 	@JsonCreator
@@ -82,4 +84,8 @@ public class PickingJobStepId implements RepoIdAware
 
 	public static boolean equals(@Nullable final PickingJobStepId id1, @Nullable final PickingJobStepId id2) {return Objects.equals(id1, id2);}
 
+	public TableRecordReference toTableRecordReference()
+	{
+		return TableRecordReference.of(I_M_Picking_Job_Step.Table_Name, repoId);
+	}
 }

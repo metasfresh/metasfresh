@@ -2,7 +2,9 @@ package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -28,6 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -837,7 +840,7 @@ public class TimeUtil
 	{
 		if (dateTime == null)
 		{
-			dateTime = new Timestamp(System.currentTimeMillis());
+			dateTime = new Timestamp(Instant.now().toEpochMilli());
 		}
 		if (offset == 0)
 		{
@@ -1296,6 +1299,11 @@ public class TimeUtil
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
+		return asTimestamp(obj, null);
+	}
+
+	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1314,7 +1322,8 @@ public class TimeUtil
 		}
 		else
 		{
-			return Timestamp.from(asInstant(obj));
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId,SystemTime.zoneId());
+			return Timestamp.from(asInstant(obj, zoneIdNonNull));
 		}
 	}
 
@@ -1501,13 +1510,27 @@ public class TimeUtil
 	}
 
 	/**
-	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * @deprecated please use {@link #parseTimestamp(String, ZoneId)} with the respective org's timezone isntead.
+	 * Otherwise, the resulting {@code 00:00:00}-timestamp might assume the wrong timezone.
 	 */
+	@Deprecated
 	public static Timestamp parseTimestamp(@NonNull final String date)
+	{
+		return parseTimestamp(date, SystemTime.zoneId());
+	}
+
+	/**
+	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * The returned timestamp is 00:00 at the given date and timezone.
+	 */
+	public static Timestamp parseTimestamp(@NonNull final String date, @NonNull final ZoneId zoneId)
 	{
 		try
 		{
-			final Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+			final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			simpleDateFormat.setTimeZone(TimeZone.getTimeZone(zoneId));
+
+			final Date parsedDate = simpleDateFormat.parse(date);
 			return new Timestamp(parsedDate.getTime());
 		}
 		catch (final ParseException e)
@@ -1631,6 +1654,12 @@ public class TimeUtil
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
+		return asLocalDate(obj, null);
+	}
+
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Object obj, @Nullable final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1645,7 +1674,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalDate();
+			return asLocalDateTime(obj,zoneId).toLocalDate();
 		}
 	}
 
@@ -1672,7 +1701,14 @@ public class TimeUtil
 		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
 	}
 
+	@Nullable
 	public static LocalTime asLocalTime(@Nullable final Object obj)
+	{
+		return asLocalTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1684,7 +1720,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalTime();
+			return asLocalDateTime(obj, zoneId).toLocalTime();
 		}
 	}
 
@@ -1699,6 +1735,12 @@ public class TimeUtil
 
 	@Nullable
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
+	{
+		return asLocalDateTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1722,7 +1764,10 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(de.metas.common.util.time.SystemTime.zoneId()).toLocalDateTime();
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
+
+			return asInstant(obj, zoneIdNonNull)
+					.atZone(zoneIdNonNull).toLocalDateTime();
 		}
 	}
 
@@ -1861,6 +1906,10 @@ public class TimeUtil
 		if (obj == null)
 		{
 			return null;
+		}
+		else if (obj instanceof InstantAndOrgId)
+		{
+			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else if (obj instanceof Instant)
 		{
@@ -2063,16 +2112,18 @@ public class TimeUtil
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
+	public static Range<Instant> toInstantsRange(
 			@Nullable final java.sql.Timestamp from,
 			@Nullable final java.sql.Timestamp to)
 	{
-		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+		return toInstantsRange(
+				from != null ? from.toInstant() : null,
+				to != null ? to.toInstant() : null);
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
-			@Nullable final LocalDate from,
-			@Nullable final LocalDate to)
+	public static Range<Instant> toInstantsRange(
+			@Nullable final Instant from,
+			@Nullable final Instant to)
 	{
 		if (from == null)
 		{
@@ -2084,4 +2135,8 @@ public class TimeUtil
 		}
 	}
 
+	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
+	{
+		return timestamp2.getTime() - timestamp1.getTime();
+	}
 }    // TimeUtil

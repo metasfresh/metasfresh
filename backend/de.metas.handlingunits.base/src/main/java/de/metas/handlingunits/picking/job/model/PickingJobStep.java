@@ -25,8 +25,10 @@ package de.metas.handlingunits.picking.job.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -34,10 +36,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
+import lombok.extern.jackson.Jacksonized;
 import org.compiere.model.I_C_UOM;
 
-import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 @Value
 @ToString
@@ -57,13 +60,16 @@ public class PickingJobStep
 
 	//
 	// Pick From
-	@NonNull LocatorInfo pickFromLocator;
-	@NonNull HUInfo pickFromHU;
-	@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds;
+	@NonNull PickingJobStepPickFromMap pickFroms;
 
-	@Nullable PickingJobStepPickedInfo picked;
+	//
+	// Pick To Specification
+	@NonNull PackToSpec packToSpec;
+
+	@NonNull PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
+	@Jacksonized
 	private PickingJobStep(
 			@NonNull final PickingJobStepId id,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
@@ -75,11 +81,10 @@ public class PickingJobStep
 			@NonNull final Quantity qtyToPick,
 			//
 			// Pick From
-			@NonNull final LocatorInfo pickFromLocator,
-			@NonNull final HUInfo pickFromHU,
-			@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds,
+			@NonNull final PickingJobStepPickFromMap pickFroms,
 			//
-			@Nullable PickingJobStepPickedInfo picked)
+			// Pick To Specification
+			@NonNull final PackToSpec packToSpec)
 	{
 		this.id = id;
 		this.salesOrderAndLineId = salesOrderAndLineId;
@@ -87,40 +92,49 @@ public class PickingJobStep
 		this.productId = productId;
 		this.productName = productName;
 		this.qtyToPick = qtyToPick;
+		this.pickFroms = pickFroms;
+		this.packToSpec = packToSpec;
 
-		this.pickFromLocator = pickFromLocator;
-		this.pickFromHU = pickFromHU;
-		this.pickFromAlternativeIds = pickFromAlternativeIds;
-		this.picked = picked;
-
-		if (this.picked != null)
-		{
-			Quantity.assertSameUOM(qtyToPick, this.picked.getQtyPicked()); // make sure they have the same UOM
-			this.picked.validateQtyRejectedReasonCode(this.qtyToPick);
-		}
+		this.progress = this.pickFroms.getProgress();
 	}
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
 
-	public void assertNotPicked()
+	public PickingJobStep reduceWithPickedEvent(
+			@NonNull PickingJobStepPickFromKey key,
+			@NonNull PickingJobStepPickedTo pickedTo)
 	{
-		if (isPicked())
-		{
-			throw new AdempiereException("Step already picked: " + getId());
-		}
+		return withChangedPickFroms(pickFroms -> pickFroms.reduceWithPickedEvent(key, pickedTo));
 	}
 
-	public void assertPicked()
+	public PickingJobStep reduceWithUnpickEvent(
+			@NonNull PickingJobStepPickFromKey key,
+			@NonNull PickingJobStepUnpickInfo unpicked)
 	{
-		if (!isPicked())
-		{
-			throw new AdempiereException("Step was not picked: " + getId());
-		}
+		return withChangedPickFroms(pickFroms -> pickFroms.reduceWithUnpickEvent(key, unpicked));
 	}
 
-	public boolean isPicked() {return picked != null;}
+	private PickingJobStep withChangedPickFroms(@NonNull final UnaryOperator<PickingJobStepPickFromMap> mapper)
+	{
+		final PickingJobStepPickFromMap newPickFroms = mapper.apply(this.pickFroms);
+		return !Objects.equals(this.pickFroms, newPickFroms)
+				? toBuilder().pickFroms(newPickFroms).build()
+				: this;
+	}
 
-	public PickingJobStep reduceWithPickedEvent(@NonNull PickingJobStepPickedInfo picked) {return toBuilder().picked(picked).build();}
+	public ImmutableSet<PickingJobStepPickFromKey> getPickFromKeys()
+	{
+		return pickFroms.getKeys();
+	}
 
-	public PickingJobStep reduceWithUnpickEvent() {return toBuilder().picked(null).build();}
+	public PickingJobStepPickFrom getPickFrom(@NonNull final PickingJobStepPickFromKey key)
+	{
+		return pickFroms.getPickFrom(key);
+	}
+
+	public PickingJobStepPickFrom getPickFromByHUQRCode(@NonNull final HUQRCode qrCode)
+	{
+		return pickFroms.getPickFromByHUQRCode(qrCode);
+	}
+
 }

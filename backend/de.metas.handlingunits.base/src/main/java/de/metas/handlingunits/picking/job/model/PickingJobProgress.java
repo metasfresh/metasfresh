@@ -22,6 +22,8 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+import java.util.Set;
+
 public enum PickingJobProgress
 {
 	NOT_STARTED,
@@ -29,4 +31,20 @@ public enum PickingJobProgress
 	DONE;
 
 	public boolean isDone() {return DONE.equals(this);}
+
+	public static PickingJobProgress reduce(Set<PickingJobProgress> progresses)
+	{
+		if (progresses.isEmpty())
+		{
+			return NOT_STARTED;
+		}
+		else if (progresses.size() == 1)
+		{
+			return progresses.iterator().next();
+		}
+		else
+		{
+			return IN_PROGRESS;
+		}
+	}
 }

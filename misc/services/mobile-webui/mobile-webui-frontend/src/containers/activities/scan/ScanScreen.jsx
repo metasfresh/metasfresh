@@ -1,30 +1,40 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import { goBack } from 'connected-react-router';
+import React, { useEffect } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { toastError } from '../../../utils/toast';
-
 import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { postScannedBarcode } from '../../../api/scanner';
+import { getActivityById } from '../../../reducers/wfProcesses';
 
-import CodeScanner from './CodeScanner';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 
-class ScanScreen extends Component {
-  onBarcodeScanned = ({ scannedBarcode }) => {
-    const { wfProcessId, activityId, setScannedBarcode, updateWFProcess, goBack } = this.props;
+const ScanScreen = () => {
+  const {
+    url,
+    params: { workflowId: wfProcessId, activityId },
+  } = useRouteMatch();
 
-    setScannedBarcode({ wfProcessId, activityId, scannedBarcode });
+  const activityCaption = useSelector((state) => getActivityById(state, wfProcessId, activityId))?.caption;
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(pushHeaderEntry({ location: url, caption: activityCaption }));
+  }, [activityCaption]);
+
+  const history = useHistory();
+  const onBarcodeScanned = ({ scannedBarcode }) => {
+    dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode }));
 
     postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
       .then((wfProcess) => {
-        updateWFProcess({ wfProcess });
-        goBack();
+        dispatch(updateWFProcess({ wfProcess }));
+        history.goBack();
       })
       .catch((error) => {
-        setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null });
+        dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null }));
 
         toastError({
           axiosError: error,
@@ -33,38 +43,7 @@ class ScanScreen extends Component {
       });
   };
 
-  render() {
-    return (
-      <div className="mt-0">
-        <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
-      </div>
-    );
-  }
-}
-
-const mapStateToProps = (state, { match }) => {
-  const { workflowId: wfProcessId, activityId } = match.params;
-
-  return { wfProcessId, activityId };
+  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
 };
 
-ScanScreen.propTypes = {
-  //
-  // Props
-  componentProps: PropTypes.object,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string,
-  //
-  // Actions
-  setScannedBarcode: PropTypes.func.isRequired,
-  updateWFProcess: PropTypes.func.isRequired,
-  goBack: PropTypes.func.isRequired,
-};
-
-export default withRouter(
-  connect(mapStateToProps, {
-    setScannedBarcode,
-    updateWFProcess,
-    goBack,
-  })(ScanScreen)
-);
+export default ScanScreen;

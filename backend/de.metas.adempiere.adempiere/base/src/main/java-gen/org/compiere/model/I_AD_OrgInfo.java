@@ -121,7 +121,7 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
 
 	/**
-	 * Set Partner Created From Another Org Notify UserGroup.
+	 * Set Notification group for externally recorded partners.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -130,7 +130,7 @@ public interface I_AD_OrgInfo
 	void setC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID (int C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID);
 
 	/**
-	 * Get Partner Created From Another Org Notify UserGroup.
+	 * Get Notification group for externally recorded partners.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -146,7 +146,7 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID = "C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID";
 
 	/**
-	 * Set Supplier Approval Expiration Notify User Group.
+	 * Set Notification group for expiring supplier approvals.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -155,7 +155,7 @@ public interface I_AD_OrgInfo
 	void setC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID (int C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID);
 
 	/**
-	 * Get Supplier Approval Expiration Notify User Group.
+	 * Get Notification group for expiring supplier approvals.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -266,6 +266,27 @@ public interface I_AD_OrgInfo
 
 	ModelColumn<I_AD_OrgInfo, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_OrgInfo.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Automatische Abrechnung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoiceFlatrateTerm (boolean IsAutoInvoiceFlatrateTerm);
+
+	/**
+	 * Get Automatische Abrechnung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoiceFlatrateTerm();
+
+	ModelColumn<I_AD_OrgInfo, Object> COLUMN_IsAutoInvoiceFlatrateTerm = new ModelColumn<>(I_AD_OrgInfo.class, "IsAutoInvoiceFlatrateTerm", null);
+	String COLUMNNAME_IsAutoInvoiceFlatrateTerm = "IsAutoInvoiceFlatrateTerm";
 
 	/**
 	 * Set Logo.

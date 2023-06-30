@@ -31,8 +31,8 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -59,7 +59,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
@@ -112,12 +114,12 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		orderLineHandler = new C_OrderLine_Handler();
 
 		// current DB structure for OLHandler
-		final I_C_ILCandHandler handler = InterfaceWrapperHelper.create(Env.getCtx(), I_C_ILCandHandler.class, ITrx.TRXNAME_None);
+		final I_C_ILCandHandler handler = create(Env.getCtx(), I_C_ILCandHandler.class, ITrx.TRXNAME_None);
 		handler.setC_ILCandHandler_ID(540001);
 		handler.setClassname(C_OrderLine_Handler.class.getName());
 		handler.setName("Auftragszeilen");
 		handler.setTableName(I_C_OrderLine.Table_Name);
-		InterfaceWrapperHelper.save(handler);
+		save(handler);
 
 		// configure olHandler
 		orderLineHandler.setHandlerRecord(handler);
@@ -145,8 +147,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 	private LocationId createLocation()
 	{
-		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		InterfaceWrapperHelper.saveRecord(location);
+		final I_C_Location location = newInstance(I_C_Location.class);
+		saveRecord(location);
 		return LocationId.ofRepoId(location.getC_Location_ID());
 	}
 
@@ -167,13 +169,13 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
-			InterfaceWrapperHelper.save(order1);
+			save(order1);
 
 			orderLine1 = orderLine("1");
 			orderLine1.setAD_Org_ID(orgId.getRepoId());
 			orderLine1.setC_Order(order1);
 			orderLine1.setM_Product_ID(productId.getRepoId());
-			InterfaceWrapperHelper.save(orderLine1);
+			save(orderLine1);
 			setUpActivityAndTaxRetrieval(order1, orderLine1);
 		}
 
@@ -189,13 +191,13 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order2.setC_Currency_ID(10);
 			order2.setM_PricingSystem_ID(20);
-			InterfaceWrapperHelper.save(order2);
+			save(order2);
 
 			orderLine2 = orderLine("2");
 			orderLine2.setAD_Org_ID(orgId.getRepoId());
 			orderLine2.setC_Order(order2);
 			orderLine2.setM_Product_ID(productId.getRepoId());
-			InterfaceWrapperHelper.save(orderLine2);
+			save(orderLine2);
 
 			setUpActivityAndTaxRetrieval(order2, orderLine2);
 		}
@@ -212,9 +214,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic2 = iCands2.get(0);
 
 		ic1.setC_Order_ID(orderLine1.getC_Order_ID());
-		InterfaceWrapperHelper.save(ic1);
+		save(ic1);
 		ic2.setC_Order_ID(orderLine2.getC_Order_ID());
-		InterfaceWrapperHelper.save(ic2);
+		save(ic2);
 
 		final String key1 = headerAggregationKeyBuilder.buildKey(ic1);
 		final String key2 = headerAggregationKeyBuilder.buildKey(ic2);
@@ -238,7 +240,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
-						ctx,
 						order1,
 						(TaxCategoryId)null,
 						oL1.getM_Product_ID(),
@@ -255,11 +256,11 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	{
 		final I_C_DocType auftrag = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
 		auftrag.setC_DocType_ID(1);
-		InterfaceWrapperHelper.save(auftrag);
+		save(auftrag);
 
 		final I_C_DocType bestellung = docType(X_C_DocType.DOCBASETYPE_PurchaseOrder, null);
 		bestellung.setC_DocType_ID(2);
-		InterfaceWrapperHelper.save(bestellung);
+		save(bestellung);
 
 		final BPartnerLocationAndCaptureId bpartnerAndLocationId = createBPartnerAndLocation();
 
@@ -277,7 +278,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order1.setC_Currency_ID(10);
 		order1.setM_PricingSystem_ID(20);
-		InterfaceWrapperHelper.save(order1);
+		save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
 		oL1.setAD_Org_ID(orgId.getRepoId());
@@ -285,7 +286,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		oL1.setM_Product_ID(productId.getRepoId());
 		oL1.setQtyOrdered(new BigDecimal(5));
 		oL1.setQtyInvoiced(new BigDecimal(0));
-		InterfaceWrapperHelper.save(oL1);
+		save(oL1);
 
 		setUpActivityAndTaxRetrieval(order1, oL1);
 
@@ -303,7 +304,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order2.setC_Currency_ID(10);
 		order2.setM_PricingSystem_ID(20);
-		InterfaceWrapperHelper.save(order2);
+		save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
 		oL2.setAD_Org_ID(orgId.getRepoId());
@@ -311,7 +312,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		oL2.setM_Product_ID(productId.getRepoId());
 		oL2.setQtyOrdered(new BigDecimal(5));
 		oL2.setQtyInvoiced(new BigDecimal(0));
-		InterfaceWrapperHelper.save(oL2);
+		save(oL2);
 
 		setUpActivityAndTaxRetrieval(order2, oL2);
 
@@ -329,7 +330,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order3.setC_Currency_ID(10);
 		order3.setM_PricingSystem_ID(20);
-		InterfaceWrapperHelper.save(order3);
+		save(order3);
 
 		final I_C_OrderLine oL3 = orderLine("3");
 		oL3.setAD_Org_ID(orgId.getRepoId());
@@ -337,7 +338,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		oL3.setM_Product_ID(productId.getRepoId());
 		oL3.setQtyOrdered(new BigDecimal(5));
 		oL3.setQtyInvoiced(new BigDecimal(0));
-		InterfaceWrapperHelper.save(oL3);
+		save(oL3);
 
 		setUpActivityAndTaxRetrieval(order3, oL3);
 
@@ -355,7 +356,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order4.setC_Currency_ID(10);
 		order4.setM_PricingSystem_ID(20);
-		InterfaceWrapperHelper.save(order4);
+		save(order4);
 
 		final I_C_OrderLine oL4 = orderLine("4");
 		oL4.setAD_Org_ID(orgId.getRepoId());
@@ -363,11 +364,11 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		oL4.setM_Product_ID(productId.getRepoId());
 		oL4.setQtyOrdered(new BigDecimal(5));
 		oL4.setQtyInvoiced(new BigDecimal(5));
-		InterfaceWrapperHelper.save(oL4);
+		save(oL4);
 
 		setUpActivityAndTaxRetrieval(order4, oL4);
 
-		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(orderLineHandler, 5);
+		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(orderLineHandler, QueryLimit.ofInt(5));
 
 		assertEquals(2, candidates.size());
 
@@ -405,14 +406,14 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
-			InterfaceWrapperHelper.save(order1);
+			save(order1);
 
 			orderLine1 = orderLine("1");
 			orderLine1.setAD_Org_ID(orgId.getRepoId());
 			orderLine1.setC_Order_ID(order1.getC_Order_ID());
 			orderLine1.setM_Product_ID(productId.getRepoId());
 			orderLine1.setPresetDateInvoiced(TimeUtil.asTimestamp(presetDateInvoiced));
-			InterfaceWrapperHelper.save(orderLine1);
+			save(orderLine1);
 			setUpActivityAndTaxRetrieval(order1, orderLine1);
 		}
 
@@ -443,13 +444,13 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
-			InterfaceWrapperHelper.save(order1);
+			save(order1);
 
 			orderLine1 = orderLine("1");
 			orderLine1.setAD_Org_ID(orgId.getRepoId());
 			orderLine1.setC_Order(order1);
 			orderLine1.setM_Product_ID(productId.getRepoId());
-			InterfaceWrapperHelper.save(orderLine1);
+			save(orderLine1);
 			setUpActivityAndTaxRetrieval(order1, orderLine1);
 		}
 

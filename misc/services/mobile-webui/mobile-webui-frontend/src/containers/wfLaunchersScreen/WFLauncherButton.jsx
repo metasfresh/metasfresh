@@ -1,73 +1,49 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import { pushHeaderEntry } from '../../actions/HeaderActions';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 
-import { getWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
-import { updateWFProcess } from '../../actions/WorkflowActions';
-
-import ButtonWithIndicator from '../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { toastError } from '../../utils/toast';
+import { getWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
+import { updateWFProcess } from '../../actions/WorkflowActions';
+import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 
-class WFLauncherButton extends PureComponent {
-  handleClick = () => {
-    const { startedWFProcessId, wfParameters } = this.props;
-    const { updateWFProcess } = this.props;
+import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 
+const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, caption, showWarningSign }) => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const handleClick = () => {
     const wfProcessPromise = startedWFProcessId
       ? getWorkflowRequest(startedWFProcessId)
       : startWorkflowRequest({ wfParameters });
 
     wfProcessPromise
       .then((wfProcess) => {
-        updateWFProcess({ wfProcess });
-        this.gotoWFProcessScreen({ wfProcess });
+        dispatch(updateWFProcess({ wfProcess }));
+        history.push(getWFProcessScreenLocation({ applicationId, wfProcessId: wfProcess.id }));
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  gotoWFProcessScreen = ({ wfProcess }) => {
-    const { push, pushHeaderEntry } = this.props;
-    const location = `/workflow/${wfProcess.id}`;
-    push(location);
-    pushHeaderEntry({
-      location,
-      values: wfProcess.headerProperties.entries,
-    });
-  };
-
-  render() {
-    const { id, caption, startedWFProcessId } = this.props;
-    const wfCompleteStatus = startedWFProcessId ? CompleteStatus.IN_PROGRESS : CompleteStatus.NOT_STARTED;
-
-    return (
-      <div className="buttons">
-        <button key={id} className="button is-outlined complete-btn" disabled={false} onClick={this.handleClick}>
-          <ButtonWithIndicator caption={caption} completeStatus={wfCompleteStatus} />
-        </button>
-      </div>
-    );
-  }
-}
-
-WFLauncherButton.propTypes = {
-  //
-  // Props
-  id: PropTypes.string.isRequired,
-  caption: PropTypes.string.isRequired,
-  startedWFProcessId: PropTypes.string,
-  wfParameters: PropTypes.object.isRequired,
-  //
-  // Actions
-  updateWFProcess: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
-  pushHeaderEntry: PropTypes.func.isRequired,
+  return (
+    <ButtonWithIndicator
+      caption={caption}
+      showWarningSign={showWarningSign}
+      completeStatus={startedWFProcessId ? CompleteStatus.IN_PROGRESS : CompleteStatus.NOT_STARTED}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
 };
 
-export default connect(null, {
-  updateWFProcess,
-  push,
-  pushHeaderEntry,
-})(WFLauncherButton);
+WFLauncherButton.propTypes = {
+  applicationId: PropTypes.string.isRequired,
+  startedWFProcessId: PropTypes.string,
+  wfParameters: PropTypes.object,
+  caption: PropTypes.string.isRequired,
+  showWarningSign: PropTypes.bool,
+};
+
+export default WFLauncherButton;

@@ -178,7 +178,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setCumulatedQty(from.getAccumulatedQty().toBigDecimal());
 		record.setPostCalculationAmt(from.getPostCalculationAmount().getValue());
 
-		if (from.getTrxType().isCoProduct())
+		if (from.getTrxType().isCoProduct() && from.getCoProductCostDistributionPercent() != null)
 		{
 			record.setCostDistributionPercent(from.getCoProductCostDistributionPercent().toBigDecimal());
 		}

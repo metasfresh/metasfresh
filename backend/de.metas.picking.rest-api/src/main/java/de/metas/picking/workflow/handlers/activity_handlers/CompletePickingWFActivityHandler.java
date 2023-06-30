@@ -22,20 +22,19 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
-import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
+import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
-import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
-import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
@@ -65,19 +64,23 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 			final @NonNull WFActivity wfActivity,
 			final @NonNull JsonOpts jsonOpts)
 	{
-		return UIComponent.builder()
-				.type(UIComponentType.CONFIRM_BUTTON)
-				.properties(Params.builder()
-						.value("question", "Are you sure?")
-						.build())
-				.build();
+		return UserConfirmationSupportUtil.createUIComponent(
+				UserConfirmationSupportUtil.UIComponentProps.builder()
+						.question("Are you sure?")
+						.confirmed(wfActivity.getStatus().isCompleted())
+						.build());
 	}
 
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity completePickingWFActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		return pickingJob.getDocStatus().isProcessed() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
+		return computeActivityState(pickingJob);
+	}
+
+	public static WFActivityStatus computeActivityState(final PickingJob pickingJob)
+	{
+		return pickingJob.getDocStatus().isCompleted() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override

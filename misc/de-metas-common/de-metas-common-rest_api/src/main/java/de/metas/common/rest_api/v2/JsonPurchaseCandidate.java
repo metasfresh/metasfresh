@@ -48,7 +48,7 @@ public class JsonPurchaseCandidate
 
 	@JsonProperty("externalLineId")
 	JsonExternalId externalLineId;
-
+	
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
 

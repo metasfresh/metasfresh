@@ -84,6 +84,23 @@
             <artifactId>camel-jackson</artifactId>
             <version>${camel.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.common.manufacturing</groupId>
+            <artifactId>de-metas-common-manufacturing</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-http-common</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-http-starter</artifactId>
+            <version>${camel.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

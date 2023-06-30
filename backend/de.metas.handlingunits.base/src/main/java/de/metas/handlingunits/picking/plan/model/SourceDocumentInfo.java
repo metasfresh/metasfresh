@@ -22,9 +22,10 @@
 
 package de.metas.handlingunits.picking.plan.model;
 
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateSnapshot;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
@@ -41,6 +42,7 @@ public class SourceDocumentInfo
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable OrderAndLineId salesOrderLineId;
 	@Nullable ShipperId shipperId;
+	@NonNull PackToSpec packToSpec;
 	@Nullable PickingCandidateSnapshot existingPickingCandidate;
 
 	public SourceDocumentInfo withExistingPickingCandidate(@Nullable final PickingCandidateSnapshot existingPickingCandidate)

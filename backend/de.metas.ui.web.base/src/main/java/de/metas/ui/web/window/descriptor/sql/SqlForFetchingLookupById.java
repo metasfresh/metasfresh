@@ -57,14 +57,16 @@ import java.util.Optional;
 @ToString
 public class SqlForFetchingLookupById
 {
+	private static final int INDEX_Name = 2; // in SQL indices are 1-based
+
 	private final String keyColumnNameFQ;
 	private final boolean numericKey;
 	private final String additionalWhereClause;
 
 	private final IStringExpression sqlSelectFrom;
+	private final IStringExpression sqlOrderBySelectFrom;
 	@Getter
 	private final ImmutableSet<CtxName> parameters;
-
 	private static final ConstantStringExpression SQL_NULL = ConstantStringExpression.of("NULL");
 
 	@Builder
@@ -85,21 +87,37 @@ public class SqlForFetchingLookupById
 				.composer()
 				.append("SELECT ")
 				.append("\n ARRAY[")
-				.append(keyColumnNameFQ).append("::text") // 0
-				.append(", ").append(displayColumn) // 1
-				.append(", ").append(descriptionColumn != null ? descriptionColumn : SQL_NULL) // 2
-				.append(",").append(activeColumn != null ? activeColumn : "NULL") // 3
-				.append(", ").append(validationMsgColumn != null ? validationMsgColumn : SQL_NULL) // 4
-				.append("]")
+				.append(keyColumnNameFQ).append("::text") // 1
+				.append(", ").append(displayColumn) // 2 = INDEX_Name
+				.append(", ").append(descriptionColumn != null ? descriptionColumn : SQL_NULL) // 3
+				.append(",").append(activeColumn != null ? activeColumn : "NULL") // 4
+				.append(", ").append(validationMsgColumn != null ? validationMsgColumn : SQL_NULL) // 5
+				.append("] ")
+				.append("\n FROM ").append(sqlFrom)
+				.build();
+		this.sqlOrderBySelectFrom = IStringExpression
+				.composer()
+				.append("SELECT \n ")
+				.append(displayColumn)
 				.append("\n FROM ").append(sqlFrom)
 				.build();
 
 		parameters = ImmutableSet.copyOf(sqlSelectFrom.getParameters());
 	}
 
+	public int getNameSqlArrayIndex()
+	{
+		return INDEX_Name;
+	}
+
 	public IStringExpression toStringExpression(@NonNull final String joinOnColumnNameFQ)
 	{
 		return buildSql(keyColumnNameFQ + "=" + joinOnColumnNameFQ);
+	}
+
+	public IStringExpression toOrderByStringExpression(@NonNull final String joinOnColumnNameFQ)
+	{
+		return buildOrderBySql(keyColumnNameFQ + "=" + joinOnColumnNameFQ);
 	}
 
 	public boolean requiresParameter(@NonNull final String parameterName)
@@ -137,6 +155,18 @@ public class SqlForFetchingLookupById
 				return Optional.of(SqlAndParams.of(sql, sqlParams));
 			}
 		}
+	}
+
+	private IStringExpression buildOrderBySql(final String keyColumnWhereClause)
+	{
+		return IStringExpression.composer()
+				.append(sqlOrderBySelectFrom)
+				.append("\n WHERE ")
+				.append(keyColumnWhereClause)
+				.append(additionalWhereClause != null && !Check.isBlank(additionalWhereClause)
+						? " AND " + additionalWhereClause
+						: "")
+				.build();
 	}
 
 	private IStringExpression buildSql(final String keyColumnWhereClause)

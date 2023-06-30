@@ -78,7 +78,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 		ppOrderBOMLine.setPP_Order(ppOrder);
 		ppOrderBOMLine.setComponentType(BOMComponentType.Packing.getCode());
 		ppOrderBOMLine.setM_Product_ID(pFolie.getRepoId());
-		ppOrderBOMLine.setC_UOM(uomMm);
+		ppOrderBOMLine.setC_UOM_ID(uomMm.getC_UOM_ID());
 		ppOrderBOMLine.setQtyRequiered(null);
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrderBOMLine);
 		InterfaceWrapperHelper.saveRecord(ppOrderBOMLine);
@@ -183,7 +183,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
 			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM(), DraftPPOrderQuantities.NONE).toBigDecimal())
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
 					.as("QtyRequired projected")
 					// Expected: ZERO because nothing was received yet
 					.isZero();
@@ -207,7 +207,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
 			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM(), DraftPPOrderQuantities.NONE).toBigDecimal())
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
 					.as("QtyRequired projected")
 					// Expected: 50(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 					.isEqualByComparingTo("8580");
@@ -232,7 +232,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
 			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM(), DraftPPOrderQuantities.NONE).toBigDecimal())
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
 					.as("QtyRequired projected")
 					// Expected: 100(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 					.isEqualByComparingTo("28600");
@@ -257,7 +257,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
 			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM(), DraftPPOrderQuantities.NONE).toBigDecimal())
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
 					.as("QtyRequired projected")
 					// Expected: 130(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 					.isEqualByComparingTo("37180");
@@ -288,7 +288,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 									.build())
 					.build();
 
-			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM(), draftQtys).toBigDecimal())
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, draftQtys).toBigDecimal())
 					.as("QtyRequired projected")
 					// Expected: 30(finished goods received) x 260(mm/finished good) - 2000mm (already issued)
 					.isEqualByComparingTo("5800");

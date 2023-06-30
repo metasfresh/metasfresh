@@ -8,13 +8,28 @@ import { loginRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
 import { setToken, clearToken } from '../actions/TokenActions';
 import { setLanguage } from '../utils/translations';
+import { getIsLoggedInFromState, getTokenFromState } from '../reducers/appHandler';
 
 const authContext = createContext();
 
 // Provider component that wraps your app and makes auth object ...
 // ... available to any child component that calls useAuth().
 export function ProvideAuth({ children }) {
-  const auth = useProvideAuth();
+  const auth = createAuthObject();
+
+  //
+  // If there is no token in the store but we have one in the cookie,
+  // then use the cookied and "login" the store.
+  // This is useful in order to not lose the token while browser refreshing (F5).
+  const token = auth.userToken();
+  if (!token) {
+    const tokenFromCookie = Cookies.get('Token');
+    const languageFromCookie = Cookies.get('Language');
+    if (tokenFromCookie) {
+      auth.loginByToken({ token: tokenFromCookie, language: languageFromCookie });
+      console.log('ProvideAuth: Logged in by token from cookie');
+    }
+  }
 
   return <authContext.Provider value={auth}>{children}</authContext.Provider>;
 }
@@ -31,24 +46,21 @@ export const useAuth = () => {
 };
 
 // Provider hook that creates auth object and handles state
-function useProvideAuth() {
+function createAuthObject() {
   const store = useStore();
   const dispatch = useDispatch();
 
-  const localLogin = ({ token, language }) => {
+  const loginByToken = async ({ token, language }) => {
+    //console.log('auth.loginByToken: token=', { token, language });
+
     if (language) {
       setLanguage(language);
+      Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });
     }
 
-    dispatch(setToken(token));
-
-    Cookies.set('Token', token, {
-      expires: COOKIE_EXPIRATION,
-    });
-
+    await dispatch(setToken(token));
+    Cookies.set('Token', token, { expires: COOKIE_EXPIRATION });
     axios.defaults.headers.common['Authorization'] = token;
-
-    return Promise.resolve();
   };
 
   const login = (username, password) => {
@@ -59,7 +71,8 @@ function useProvideAuth() {
         if (error) {
           return Promise.reject(error);
         } else {
-          return localLogin({ token, language });
+          loginByToken({ token, language });
+          return Promise.resolve();
         }
       })
       .catch((error) => {
@@ -78,12 +91,16 @@ function useProvideAuth() {
     return Promise.resolve();
   };
 
-  const getToken = () => store.getState().appHandler.token;
+  const getToken = () => getTokenFromState(store.getState());
+
+  const isLoggedIn = () => getIsLoggedInFromState(store.getState());
 
   return {
     userToken: getToken,
+    isLoggedIn,
+    isLoggedInNow: isLoggedIn,
     login,
+    loginByToken,
     logout,
-    localLogin,
   };
 }

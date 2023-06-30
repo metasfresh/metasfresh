@@ -142,7 +142,7 @@ public class MediatedCommissionConfigFactoryTest
 
 		return TestCommissionContractBuilder.commissionContractBuilder()
 				.commissionProductId(commissionProductId)
-				.vendorId(vendorId)
+				.contractBPartnerId(vendorId)
 				.orgId(orgId)
 				.mediatedCommissionSettingsId(MediatedCommissionSettingsId.ofRepoId(mediatedCommissionSettings.getC_MediatedCommissionSettings_ID()))
 				.typeConditions(TypeConditions.MEDIATED_COMMISSION)

@@ -18,18 +18,16 @@
  *****************************************************************************/
 package org.compiere.db;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.time.Duration;
-import java.util.List;
-
-import javax.sql.DataSource;
-
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.resourcepool.BasicResourcePool_MetasfreshObserver;
+import de.metas.connection.impl.DB_PostgreSQL_ConnectionCustomizer;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.SystemUtils;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBConnectionAcquireTimeoutException;
 import org.adempiere.exceptions.DBException;
@@ -39,20 +37,18 @@ import org.compiere.dbPort.Convert_PostgreSQL;
 import org.compiere.dbPort.Convert_PostgreSQL_Native;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.mchange.v2.resourcepool.BasicResourcePool_MetasfreshObserver;
-
-import de.metas.connection.impl.DB_PostgreSQL_ConnectionCustomizer;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.SystemUtils;
-import lombok.NonNull;
+import javax.sql.DataSource;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.time.Duration;
+import java.util.List;
 
 /**
  * PostgreSQL Database Port
@@ -586,26 +582,26 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			// cpds.setTestConnectionOnCheckout(true);
 			cpds.setAcquireRetryAttempts(2);
 
-			if (Ini.isSwingClient())
-			{
-				// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
-				cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout_SwingClient, 20 * 1000));
-
-				cpds.setInitialPoolSize(1);
-				cpds.setMinPoolSize(1);
-				cpds.setMaxPoolSize(20);
-				cpds.setMaxIdleTimeExcessConnections(1200);
-				cpds.setMaxIdleTime(900);
-			}
-			else
-			{
+			// if (Ini.isSwingClient())
+			// {
+			// 	// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
+			// 	cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout_SwingClient, 20 * 1000));
+			//
+			// 	cpds.setInitialPoolSize(1);
+			// 	cpds.setMinPoolSize(1);
+			// 	cpds.setMaxPoolSize(20);
+			// 	cpds.setMaxIdleTimeExcessConnections(1200);
+			// 	cpds.setMaxIdleTime(900);
+			// }
+			// else
+			// {
 				// these are set in c3p0.properties files
 				// cpds.setInitialPoolSize(10);
 				// cpds.setMinPoolSize(5);
 				// cpds.setMaxPoolSize(150);
 				cpds.setMaxIdleTimeExcessConnections(1200);
 				cpds.setMaxIdleTime(1200);
-			}
+			// }
 
 			//
 			// Timeout unreturned connections

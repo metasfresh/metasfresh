@@ -25,7 +25,7 @@ package de.metas.rest_api.v1.product;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.v1.product.command.GetProductsCommand;
-import de.metas.rest_api.product.response.JsonGetProductsResponse;
+import de.metas.rest_api.v1.product.response.JsonGetProductsResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.compiere.util.Env;

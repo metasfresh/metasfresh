@@ -1,37 +1,5 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
-import java.util.Optional;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_PriceList_Version;
-
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -44,6 +12,15 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_PriceList_Version;
+
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Note: currently this implementation is used to update a given record's ASI when its {@link I_M_HU_PI_Item_Product} changes.
@@ -142,6 +119,12 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 
 		final I_M_AttributeSetInstance asi = attributePricingBL.generateASI(productPrice);
 		orderLine.setM_AttributeSetInstance(asi);
+
+		//dev-note: making sure price attributes are preserved
+		if (asi != null)
+		{
+			IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.setValue(orderLine, true);
+		}
 	}
 
 	/**
@@ -176,10 +159,9 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 			}
 		}
 
-		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
 		return ProductPrices.newQuery(plv)
 				.setProductId(productId)
 				.onlyAttributePricing()
-				.retrieveStrictDefault(I_M_ProductPrice.class);
+				.retrieveDefault(I_M_ProductPrice.class);
 	}
 }

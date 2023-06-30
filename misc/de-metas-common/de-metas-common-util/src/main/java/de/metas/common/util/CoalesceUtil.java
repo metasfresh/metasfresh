@@ -28,6 +28,7 @@ import lombok.experimental.UtilityClass;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -135,6 +136,14 @@ public class CoalesceUtil
 				firstValidValue(Objects::nonNull, values),
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
+
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
+	{
+		return Optional.ofNullable(coalesceSuppliers(values));
+	}
+
 	
 	@SafeVarargs
 	@Nullable
@@ -225,7 +234,6 @@ public class CoalesceUtil
 		return null;
 	}
 
-	@Nullable
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{

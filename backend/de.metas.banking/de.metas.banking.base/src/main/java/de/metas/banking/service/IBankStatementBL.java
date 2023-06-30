@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.FixedConversionRate;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -36,7 +35,6 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public interface IBankStatementBL extends ISingletonService

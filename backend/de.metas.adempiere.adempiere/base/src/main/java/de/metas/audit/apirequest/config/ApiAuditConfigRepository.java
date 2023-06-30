@@ -38,6 +38,7 @@ import org.springframework.stereotype.Repository;
 public class ApiAuditConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<Integer, ApiAuditConfigsMap> cache = CCache.<Integer, ApiAuditConfigsMap>builder()
 			.tableName(I_API_Audit_Config.Table_Name)
 			.build();
@@ -45,6 +46,18 @@ public class ApiAuditConfigRepository
 	public ImmutableList<ApiAuditConfig> getActiveConfigsByOrgId(@NonNull final OrgId orgId)
 	{
 		return getMap().getActiveConfigsByOrgId(orgId);
+	}
+
+	public ImmutableList<ApiAuditConfig> getAllConfigsByOrgId(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_API_Audit_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_API_Audit_Config.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.list()
+				.stream()
+				.map(ApiAuditConfigRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -76,15 +89,18 @@ public class ApiAuditConfigRepository
 				.active(record.isActive())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.seqNo(record.getSeqNo())
-				.isInvokerWaitsForResponse(record.isInvokerWaitsForResult())
+				.forceProcessedAsync(record.isForceProcessedAsync())
 				.keepRequestDays(record.getKeepRequestDays())
 				.keepRequestBodyDays(record.getKeepRequestBodyDays())
 				.keepResponseDays(record.getKeepResponseDays())
 				.keepResponseBodyDays(record.getKeepResponseBodyDays())
+				.keepErroredRequestDays(record.getKeepErroredRequestDays())
 				.method(HttpMethod.ofNullableCode(record.getMethod()))
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))
 				.userGroupInChargeId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_InCharge_ID()))
+				.performAuditAsync(!record.isSynchronousAuditLoggingEnabled())
+				.wrapApiResponse(record.isWrapApiResponse())
 				.build();
 	}
 }

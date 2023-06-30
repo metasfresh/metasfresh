@@ -159,7 +159,11 @@
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
             <version>10.0.0</version>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.manufacturing</groupId>
+            <artifactId>de-metas-common-manufacturing</artifactId>
+            <version>${metasfresh-common.version}</version>
         </dependency>
     </dependencies>
 

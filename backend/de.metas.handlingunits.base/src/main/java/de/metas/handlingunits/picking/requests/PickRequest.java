@@ -2,11 +2,11 @@ package de.metas.handlingunits.picking.requests;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -51,7 +51,7 @@ public class PickRequest
 	@NonNull PickFrom pickFrom;
 	@Nullable ImmutableList<IssueToPickingOrderRequest> issuesToPickingOrder;
 
-	@Nullable HuPackingInstructionsId packToId;
+	@Nullable PackToSpec packToSpec;
 
 	@Nullable PickingSlotId pickingSlotId;
 
@@ -69,7 +69,7 @@ public class PickRequest
 			@NonNull ShipmentScheduleId shipmentScheduleId,
 			@NonNull PickFrom pickFrom,
 			@Nullable List<IssueToPickingOrderRequest> issuesToPickingOrder,
-			@Nullable HuPackingInstructionsId packToId,
+			@Nullable PackToSpec packToSpec,
 			@Nullable PickingSlotId pickingSlotId,
 			@Nullable Quantity qtyToPick,
 			@Nullable QtyRejectedWithReason qtyRejected,
@@ -102,7 +102,7 @@ public class PickRequest
 
 		this.qtyRejected = qtyRejected;
 
-		this.packToId = packToId;
+		this.packToSpec = packToSpec;
 
 		this.pickingSlotId = pickingSlotId;
 

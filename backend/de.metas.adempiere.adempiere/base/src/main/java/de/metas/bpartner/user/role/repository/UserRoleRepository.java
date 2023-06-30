@@ -118,4 +118,16 @@ public class UserRoleRepository
 				.userAssignedRoleId(assignedRoleId)
 				.build();
 	}
+
+	public List<UserId> getAssignedUsers(@NonNull final UserRoleId userRoleId)
+	{
+		return queryBL.createQueryBuilder(I_C_User_Assigned_Role.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_User_Assigned_Role.COLUMNNAME_C_User_Role_ID, userRoleId)
+				.create()
+				.listDistinct(I_C_User_Assigned_Role.COLUMNNAME_AD_User_ID, Integer.class)
+				.stream()
+				.map(UserId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

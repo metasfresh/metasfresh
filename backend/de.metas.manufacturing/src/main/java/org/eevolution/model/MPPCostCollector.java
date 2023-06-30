@@ -44,20 +44,13 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.workflow.WFDurationUnit;
-import lombok.NonNull;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
+import de.metas.workflow.WFDurationUnit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MTransaction;
@@ -73,6 +66,8 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.api.PPOrderActivityProcessReport;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -82,7 +77,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Properties;
 
@@ -171,18 +165,18 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocTypeTarget_ID(), getAD_Org_ID());
 		setC_DocType_ID(getC_DocTypeTarget_ID());
 
-		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
-		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
-
-		if (costCollectorType.isMaterial(orderBOMLineId))
-		{
-			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
-			final boolean isSOTrx = costCollectorType.isMaterialReceipt();
-			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(productId, isSOTrx))
-			{
-				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + Services.get(IProductBL.class).getProductValueAndName(productId));
-			}
-		}
+		// Don't check if ASI is mandatory because we have our attributes on HU level and not here.
+		// final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
+		// final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
+		// if (costCollectorType.isMaterial(orderBOMLineId))
+		// {
+		// 	final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+		// 	final boolean isSOTrx = costCollectorType.isMaterialReceipt();
+		// 	if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(productId, isSOTrx))
+		// 	{
+		// 		throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + Services.get(IProductBL.class).getProductValueAndName(productId));
+		// 	}
+		// }
 
 		m_justPrepared = true;
 		setDocAction(DOCACTION_Complete);
@@ -369,7 +363,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activity.getId())
-				.finishDate(TimeUtil.asLocalDateTime(getMovementDate()))
+				.finishDate(getMovementDate().toInstant())
 				.qtyProcessed(qtys.getMovementQty())
 				.qtyScrapped(qtys.getScrappedQty())
 				.qtyRejected(qtys.getRejectedQty())

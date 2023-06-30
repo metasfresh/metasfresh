@@ -13,6 +13,7 @@ import lombok.ToString;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
@@ -48,6 +49,8 @@ public class AlternativePickFromKeys implements Iterable<AlternativePickFromKey>
 
 	@Override
 	public UnmodifiableIterator<AlternativePickFromKey> iterator() {return keys.iterator();}
+
+	public Stream<AlternativePickFromKey> stream() {return keys.stream();}
 
 	public ImmutableSet<HuId> getHuIds() {return keys.stream().map(AlternativePickFromKey::getHuId).collect(ImmutableSet.toImmutableSet());}
 }

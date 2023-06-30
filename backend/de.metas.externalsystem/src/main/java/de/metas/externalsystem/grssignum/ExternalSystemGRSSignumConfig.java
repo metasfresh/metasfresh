@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.grssignum;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import lombok.Builder;
@@ -35,14 +36,42 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 {
 	@NonNull
 	ExternalSystemGRSSignumConfigId id;
+
 	@NonNull
 	ExternalSystemParentConfigId parentId;
+
 	@NonNull
 	String value;
+
 	@NonNull
 	String baseUrl;
+
+	@NonNull
+	String tenantId;
+
 	@Nullable
 	String camelHttpResourceAuthKey;
+
+	@Nullable
+	String authToken;
+
+	@Nullable
+	String basePathForExportDirectories;
+
+	@Nullable
+	String bPartnerExportDirectories;
+
+	boolean syncBPartnersToRestEndpoint;
+
+	boolean autoSendVendors;
+
+	boolean autoSendCustomers;
+
+	boolean syncHUsOnMaterialReceipt;
+
+	boolean syncHUsOnProductionReceipt;
+
+	boolean createBPartnerFolders;
 
 	@Builder
 	ExternalSystemGRSSignumConfig(
@@ -50,17 +79,43 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
 			@NonNull final String baseUrl,
-			@Nullable final String camelHttpResourceAuthKey)
+			@NonNull final String tenantId,
+			@Nullable final String camelHttpResourceAuthKey,
+			@Nullable final String authToken,
+			@Nullable final String basePathForExportDirectories,
+			@Nullable final String bPartnerExportDirectories,
+			final boolean syncBPartnersToRestEndpoint,
+			final boolean autoSendVendors,
+			final boolean autoSendCustomers,
+			final boolean syncHUsOnMaterialReceipt,
+			final boolean syncHUsOnProductionReceipt,
+			final boolean createBPartnerFolders)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.value = value;
 		this.baseUrl = baseUrl;
+		this.tenantId = tenantId;
 		this.camelHttpResourceAuthKey = camelHttpResourceAuthKey;
+		this.authToken = authToken;
+		this.bPartnerExportDirectories = bPartnerExportDirectories;
+		this.basePathForExportDirectories = basePathForExportDirectories;
+		this.syncBPartnersToRestEndpoint = syncBPartnersToRestEndpoint;
+		this.autoSendVendors = autoSendVendors;
+		this.autoSendCustomers = autoSendCustomers;
+		this.syncHUsOnMaterialReceipt = syncHUsOnMaterialReceipt;
+		this.syncHUsOnProductionReceipt = syncHUsOnProductionReceipt;
+		this.createBPartnerFolders = createBPartnerFolders;
 	}
 
 	public static ExternalSystemGRSSignumConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		return (ExternalSystemGRSSignumConfig)childConfig;
+	}
+
+	@JsonIgnore
+	public boolean isHUsSyncEnabled()
+	{
+		return syncHUsOnMaterialReceipt || syncHUsOnProductionReceipt;
 	}
 }

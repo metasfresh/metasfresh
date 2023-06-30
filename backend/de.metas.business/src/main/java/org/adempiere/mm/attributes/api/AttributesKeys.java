@@ -232,6 +232,7 @@ public final class AttributesKeys
 		}
 	}
 
+	@NonNull
 	public AttributeSetInstanceId createAttributeSetInstanceFromAttributesKey(@NonNull final AttributesKey attributesKey)
 	{
 		if (attributesKey.isNone())

@@ -16,6 +16,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -99,10 +100,10 @@ public class UserNotificationsQueue
 		logger.trace("Fired notification to WS {}: {}", websocketEndpoint, event);
 	}
 
-	public UserNotificationsList getNotificationsAsList(final int limit)
+	public UserNotificationsList getNotificationsAsList(@NonNull final QueryLimit limit)
 	{
 		final List<UserNotification> notifications = notificationsRepo.getByUserId(userId, limit);
-		final boolean fullyLoaded = limit <= 0 || notifications.size() <= limit;
+		final boolean fullyLoaded = limit.isNoLimit() || notifications.size() <= limit.toInt();
 
 		final int totalCount;
 		final int unreadCount;

@@ -36,7 +36,9 @@ const PrivateRoute = (props) => {
 
       // check if user is not already authenticated via another session
       if (!authRequestPending()) {
-        const url = location.pathname;
+        const url = location.search
+          ? `${location.pathname}/${location.search}`
+          : location.pathname;
 
         auth.checkAuthentication().then((authenticated) => {
           if (!authenticated) {

@@ -33,15 +33,15 @@ import org.compiere.model.IQuery;
 public class DetailDataRecordIdentifier
 {
 	public static DetailDataRecordIdentifier createForShipmentSchedule(
-			MainDataRecordIdentifier mainDataRecordIdentifier,
-			int shipmentScheduleId)
+			@NonNull final MainDataRecordIdentifier mainDataRecordIdentifier,
+			final int shipmentScheduleId)
 	{
 		return new DetailDataRecordIdentifier(mainDataRecordIdentifier, shipmentScheduleId, 0);
 	}
 
 	public static DetailDataRecordIdentifier createForReceiptSchedule(
-			MainDataRecordIdentifier mainDataRecordIdentifier,
-			int receiptScheduleId)
+			@NonNull final MainDataRecordIdentifier mainDataRecordIdentifier,
+			final int receiptScheduleId)
 	{
 		return new DetailDataRecordIdentifier(mainDataRecordIdentifier, 0, receiptScheduleId);
 	}

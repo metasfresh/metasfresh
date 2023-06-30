@@ -1,7 +1,7 @@
 package de.metas.util.web.security;
 
 import de.metas.security.UserNotAuthorizedException;
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -19,6 +19,7 @@ import java.io.IOException;
 public class UserAuthTokenFilter implements Filter
 {
 	public static final String HEADER_Authorization = "Authorization";
+	public static final String QUERY_PARAM_API_KEY = "apiKey";
 
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserAuthTokenFilterConfiguration configuration;
@@ -74,27 +75,42 @@ public class UserAuthTokenFilter implements Filter
 
 	private static String extractTokenString(final HttpServletRequest httpRequest)
 	{
-		final String authorizationString = httpRequest.getHeader(HEADER_Authorization);
-		if (Check.isBlank(authorizationString))
+		//
+		// Check Authorization header first
 		{
-			throw new AdempiereException("Provide token in `" + HEADER_Authorization + "` HTTP header");
+			final String authorizationString = StringUtils.trimBlankToNull(httpRequest.getHeader(HEADER_Authorization));
+			if (authorizationString != null)
+			{
+				if (authorizationString.startsWith("Token "))
+				{
+					return authorizationString.substring(5).trim();
+				}
+				else if (authorizationString.startsWith("Basic "))
+				{
+					final String userAndTokenString = new String(DatatypeConverter.parseBase64Binary(authorizationString.substring(5).trim()));
+					final int index = userAndTokenString.indexOf(':');
+
+					return userAndTokenString.substring(index + 1);
+				}
+				else
+				{
+					return authorizationString;
+				}
+			}
 		}
 
-		if (authorizationString.startsWith("Token "))
+		//
+		// Check apiKey query parameter
 		{
-			return authorizationString.substring(5).trim();
+			final String apiKey = StringUtils.trimBlankToNull(httpRequest.getParameter(QUERY_PARAM_API_KEY));
+			if (apiKey != null)
+			{
+				return apiKey;
+			}
 		}
-		else if (authorizationString.startsWith("Basic "))
-		{
-			final String userAndTokenString = new String(DatatypeConverter.parseBase64Binary(authorizationString.substring(5).trim()));
-			final int index = userAndTokenString.indexOf(':');
 
-			return userAndTokenString.substring(index + 1);
-		}
-		else
-		{
-			return authorizationString;
-		}
+		throw new AdempiereException("Provide token in `" + HEADER_Authorization + "` HTTP header"
+				+ " or `" + QUERY_PARAM_API_KEY + "` query parameter");
 	}
 
 }

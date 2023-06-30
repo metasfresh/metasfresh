@@ -117,7 +117,7 @@ public class OrgChangeRepository
 			@NonNull final Instant orgChangeDate,
 			@NonNull final OrgId orgId)
 	{
-		final Set<FlatrateTermId> flatrateTermIds = retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
+		final Set<FlatrateTermId> flatrateTermIds = flatrateDAO.retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return flatrateTermIds.stream()
 				.map(this::createFlatrateTerm)
 				.collect(ImmutableList.toImmutableList());
@@ -168,19 +168,8 @@ public class OrgChangeRepository
 	{
 		return membershipContractRepo.queryMembershipProducts(orgId).anyMatch();
 	}
-	private Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
-			@NonNull final BPartnerId bPartnerId,
-			@NonNull final Instant orgChangeDate,
-			@NonNull final OrgId orgId)
-	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
-				.create()
-				.listIds(FlatrateTermId::ofRepoId);
-	}
+
+
+
 
 }

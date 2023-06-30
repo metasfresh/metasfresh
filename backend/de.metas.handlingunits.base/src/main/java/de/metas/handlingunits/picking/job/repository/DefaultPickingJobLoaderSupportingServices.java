@@ -3,9 +3,10 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -39,6 +40,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final PickingJobSlotService pickingSlotService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final HUQRCodesService huQRCodeService;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
 	private final HashMap<BPartnerId, String> bpartnerNamesCache = new HashMap<>();
@@ -48,10 +50,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 
 	public DefaultPickingJobLoaderSupportingServices(
 			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final PickingJobSlotService pickingSlotService)
+			@NonNull final PickingJobSlotService pickingSlotService,
+			@NonNull final HUQRCodesService huQRCodeService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
+		this.huQRCodeService = huQRCodeService;
 	}
 
 	@Override
@@ -103,5 +107,11 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public String getLocatorName(@NonNull final LocatorId locatorId)
 	{
 		return locatorNamesCache.computeIfAbsent(locatorId, warehouseBL::getLocatorNameById);
+	}
+
+	@Override
+	public HUQRCode getQRCodeByHUId(final HuId huId)
+	{
+		return huQRCodeService.getQRCodeByHuId(huId);
 	}
 }

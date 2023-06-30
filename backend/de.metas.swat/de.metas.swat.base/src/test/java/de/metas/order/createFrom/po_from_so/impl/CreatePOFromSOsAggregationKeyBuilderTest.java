@@ -36,9 +36,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP;
-import static de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder.SYSCONFIG_ON_MISSING_C_B_PARTNER_PRODUCT;
 import static de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder.ON_MISSING_C_B_PARTNER_PRODUCT_ERROR;
+import static de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder.SYSCONFIG_ON_MISSING_C_B_PARTNER_PRODUCT;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -92,7 +91,7 @@ public class CreatePOFromSOsAggregationKeyBuilderTest
 	}
 
 	@Test
-	public void givenOrderLineVendorMissing_andIsVendorRequired_whenBuildKey_thenReturnSkipValue()
+	public void givenOrderLineVendorMissing_andIsVendorRequired_whenBuildKey_thenThrowExeception()
 	{
 		//given
 		final boolean isVendorInOrderLinesRequired = true;
@@ -105,10 +104,7 @@ public class CreatePOFromSOsAggregationKeyBuilderTest
 		saveRecord(salesOrderLineRecord);
 
 		//when
-		final String vendorValue = createPOFromSOsAggregationKeyBuilder.buildKey(salesOrderLineRecord);
-
-		//then
-		assertThat(vendorValue).isEqualTo(KEY_SKIP);
+		Assertions.assertThrows(AdempiereException.class, () -> createPOFromSOsAggregationKeyBuilder.buildKey(salesOrderLineRecord));
 	}
 
 	@Test

@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -28,6 +29,27 @@ public interface I_C_Order
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Order.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
 	 * Set Organisation.
@@ -288,6 +310,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_BPartnerAddress = new ModelColumn<>(I_C_Order.class, "BPartnerAddress", null);
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
+
+	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_Order.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
 	 * Set Activity.
@@ -629,7 +672,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Zielbelegart.
+	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -639,7 +682,7 @@ public interface I_C_Order
 	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
+	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -697,6 +740,31 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Order.class, "ChargeAmt", null);
 	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Order.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
 	 * Set Rabatt %.
@@ -999,7 +1067,7 @@ public interface I_C_Order
 	String COLUMNNAME_DatePrinted = "DatePrinted";
 
 	/**
-	 * Set Zugesagter Termin.
+	 * Set Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -1009,7 +1077,7 @@ public interface I_C_Order
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
+	 * Get Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -1066,7 +1134,7 @@ public interface I_C_Order
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferadresse.
+	 * Set Diff. Shipment Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1075,7 +1143,7 @@ public interface I_C_Order
 	void setDeliveryToAddress (@Nullable java.lang.String DeliveryToAddress);
 
 	/**
-	 * Get Lieferadresse.
+	 * Get Diff. Shipment Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1194,6 +1262,31 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Order.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDocSubType (@Nullable java.lang.String DocSubType);
+
+	/**
+	 * Get Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getDocSubType();
+
+	ModelColumn<I_C_Order, Object> COLUMN_DocSubType = new ModelColumn<>(I_C_Order.class, "DocSubType", null);
+	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
 	 * Set Document No.
@@ -1329,6 +1422,27 @@ public interface I_C_Order
 	int getDropShip_User_ID();
 
 	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+
+	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_C_Order, Object> COLUMN_EMail = new ModelColumn<>(I_C_Order.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set External ID.
@@ -1575,29 +1689,6 @@ public interface I_C_Order
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 
 	/**
-	 * Set Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIncoterm (@Nullable java.lang.String Incoterm);
-
-	/**
-	 * Get Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIncoterm();
-
-	ModelColumn<I_C_Order, Object> COLUMN_Incoterm = new ModelColumn<>(I_C_Order.class, "Incoterm", null);
-	String COLUMNNAME_Incoterm = "Incoterm";
-
-	/**
 	 * Set IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
@@ -1782,7 +1873,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
-	 * Set Streckengeschäft.
+	 * Set Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -1792,7 +1883,7 @@ public interface I_C_Order
 	void setIsDropShip (boolean IsDropShip);
 
 	/**
-	 * Get Streckengeschäft.
+	 * Get Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -2125,7 +2216,7 @@ public interface I_C_Order
 	String COLUMNNAME_M_FreightCategory_ID = "M_FreightCategory_ID";
 
 	/**
-	 * Set Preisliste.
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -2135,7 +2226,7 @@ public interface I_C_Order
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -2370,6 +2461,29 @@ public interface I_C_Order
 	String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
+	 * Set Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhone (@Nullable java.lang.String Phone);
+
+	/**
+	 * Get Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPhone();
+
+	ModelColumn<I_C_Order, Object> COLUMN_Phone = new ModelColumn<>(I_C_Order.class, "Phone", null);
+	String COLUMNNAME_Phone = "Phone";
+
+	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
@@ -2436,7 +2550,7 @@ public interface I_C_Order
 	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
-	 * Set Bereitstellungsdatum.
+	 * Set Date ready.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -2445,7 +2559,7 @@ public interface I_C_Order
 	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
 
 	/**
-	 * Get Bereitstellungsdatum.
+	 * Get Date ready.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false

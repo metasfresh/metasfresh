@@ -22,23 +22,21 @@
 
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.compiere.util.Evaluatee;
-
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 
-/** Field's SQL expression to be used in ORDER BY constructions */
+import javax.annotation.Nullable;
+import java.util.Objects;
+
+/**
+ * Field's SQL expression to be used in ORDER BY constructions
+ */
 @EqualsAndHashCode
 @ToString
 public class SqlOrderByValue
@@ -56,57 +54,70 @@ public class SqlOrderByValue
 	private final String columnName;
 	private final String joinOnTableNameOrAlias;
 
-	private final String columnNameFQ; // computed
-	private final String columnNameAliasFQ; // computed
+	//
+	// Computed values
+	private final String sqlOrderByColumnNameFQ;
+	private final IStringExpression sourceSqlExpression;
 
 	@Builder(toBuilder = true)
 	private SqlOrderByValue(
-			final SqlSelectDisplayValue sqlSelectDisplayValue,
-			final SqlSelectValue sqlSelectValue,
-			final String columnName,
-			final String joinOnTableNameOrAlias)
+			@Nullable final SqlSelectDisplayValue sqlSelectDisplayValue,
+			@Nullable final SqlSelectValue sqlSelectValue,
+			@Nullable final String columnName,
+			@Nullable final String joinOnTableNameOrAlias)
 	{
 		this.joinOnTableNameOrAlias = StringUtils.trimBlankToNull(joinOnTableNameOrAlias);
 
 		if (sqlSelectDisplayValue != null)
 		{
-			this.sqlSelectDisplayValue = sqlSelectDisplayValue.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias);
+			final SqlSelectDisplayValue sqlSelectDisplayValueEffective = sqlSelectDisplayValue.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias);
+
+			this.sqlSelectDisplayValue = sqlSelectDisplayValueEffective;
 			this.sqlSelectValue = null;
 			this.columnName = null;
-			this.columnNameFQ = null;
-			this.columnNameAliasFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, sqlSelectDisplayValue.getColumnNameAlias());
+
+			// computed values:
+			this.sqlOrderByColumnNameFQ = sqlSelectDisplayValueEffective.toSqlOrderByUsingColumnNameAlias();
+			this.sourceSqlExpression = sqlSelectDisplayValueEffective.toOrderByStringExpression();
 		}
 		else if (sqlSelectValue != null)
 		{
+			final SqlSelectValue sqlSelectValueEffective = sqlSelectValue.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias);
+
 			this.sqlSelectDisplayValue = null;
-			this.sqlSelectValue = sqlSelectValue.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias);
+			this.sqlSelectValue = sqlSelectValueEffective;
 			this.columnName = null;
-			this.columnNameFQ = null;
-			this.columnNameAliasFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, sqlSelectValue.getColumnNameAlias());
+
+			// computed values:
+			this.sqlOrderByColumnNameFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, sqlSelectValueEffective.getColumnNameAlias());
+			this.sourceSqlExpression = ConstantStringExpression.of(sqlSelectValueEffective.toSqlString());
 		}
-		else if (Check.isNotBlank(columnName))
+		else if (columnName != null && Check.isNotBlank(columnName))
 		{
 			this.sqlSelectDisplayValue = null;
 			this.sqlSelectValue = null;
 			this.columnName = columnName;
-			this.columnNameFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, this.columnName);
-			this.columnNameAliasFQ = this.columnNameFQ;
+
+			// computed values:
+			final String columnNameFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, this.columnName);
+			this.sqlOrderByColumnNameFQ = columnNameFQ;
+			this.sourceSqlExpression = ConstantStringExpression.of(columnNameFQ);
 		}
 		else
 		{
 			this.sqlSelectDisplayValue = null;
 			this.sqlSelectValue = null;
 			this.columnName = null;
-			this.columnNameFQ = null;
-			this.columnNameAliasFQ = null;
+
+			// computed values:
+			this.sqlOrderByColumnNameFQ = null;
+			this.sourceSqlExpression = IStringExpression.NULL;
 		}
 	}
 
 	private static String computeColumnNameFQ(@Nullable final String tableName, @NonNull final String columnName)
 	{
-		return tableName != null
-				? tableName + "." + columnName
-				: columnName;
+		return tableName != null ? tableName + "." + columnName : columnName;
 	}
 
 	public SqlOrderByValue withJoinOnTableNameOrAlias(final String joinOnTableNameOrAlias)
@@ -117,38 +128,18 @@ public class SqlOrderByValue
 				: this;
 	}
 
-	public boolean isNullExpression()
+	public boolean isNull()
 	{
-		return toStringExpression().isNullExpression();
+		return sourceSqlExpression.isNullExpression();
 	}
 
-	public IStringExpression toStringExpression()
+	public String toSqlUsingColumnNameAlias()
 	{
-		if (sqlSelectDisplayValue != null)
-		{
-			return sqlSelectDisplayValue.toStringExpression();
-		}
-		else if (sqlSelectValue != null)
-		{
-			return ConstantStringExpression.of(sqlSelectValue.toSqlString());
-		}
-		else if (columnNameFQ != null)
-		{
-			return ConstantStringExpression.of(columnNameFQ);
-		}
-		else
-		{
-			return IStringExpression.NULL;
-		}
+		return sqlOrderByColumnNameFQ;
 	}
 
-	public String toSqlString(@NonNull final Evaluatee ctx)
-	{
-		return toStringExpression().evaluate(ctx, OnVariableNotFound.Fail);
-	}
-
-	public String toSqlStringUsingColumnAlias()
-	{
-		return columnNameAliasFQ;
-	}
+	/**
+	 * @return (source sql expression)
+	 */
+	public IStringExpression toSourceSqlExpression() {return sourceSqlExpression;}
 }

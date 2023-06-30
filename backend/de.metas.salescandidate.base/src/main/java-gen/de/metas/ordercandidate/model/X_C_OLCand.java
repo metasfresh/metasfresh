@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1680974602L;
+	private static final long serialVersionUID = 1656813470L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -221,30 +221,15 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_Location getC_BP_Location_Override_Value()
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class);
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
 	}
 
 	@Override
-	public void setC_BP_Location_Override_Value(final org.compiere.model.I_C_Location C_BP_Location_Override_Value)
+	public java.lang.String getBPartnerName() 
 	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class, C_BP_Location_Override_Value);
-	}
-
-	@Override
-	public void setC_BP_Location_Override_Value_ID (final int C_BP_Location_Override_Value_ID)
-	{
-		if (C_BP_Location_Override_Value_ID < 1)
-			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, null);
-		else
-			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, C_BP_Location_Override_Value_ID);
-	}
-
-	@Override
-	public int getC_BP_Location_Override_Value_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_Value_ID);
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
 
 	@Override
@@ -260,32 +245,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_Async_Batch_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
-	}
-
-	@Override
-	public void setC_BP_Location_Effective_ID (final int C_BP_Location_Effective_ID)
-	{
-		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
-
-	@Override
-	public int getC_BP_Location_Effective_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Effective_ID);
-	}
-
-	@Override
-	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
-	}
-
-	@Override
-	public int getC_BP_Location_Override_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
 	}
 
 	@Override
@@ -389,16 +348,69 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_BPartner_SalesRep_Internal_ID (final int C_BPartner_SalesRep_Internal_ID)
 	{
-		if (C_BPartner_SalesRep_Internal_ID < 1)
+		if (C_BPartner_SalesRep_Internal_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, C_BPartner_SalesRep_Internal_ID);
 	}
 
 	@Override
-	public int getC_BPartner_SalesRep_Internal_ID()
+	public int getC_BPartner_SalesRep_Internal_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_Internal_ID);
+	}
+
+	@Override
+	public void setC_BP_Location_Effective_ID (final int C_BP_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
+
+	@Override
+	public int getC_BP_Location_Effective_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Effective_ID);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
+	}
+
+	@Override
+	public int getC_BP_Location_Override_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BP_Location_Override_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_Value(final org.compiere.model.I_C_Location C_BP_Location_Override_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class, C_BP_Location_Override_Value);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_Value_ID (final int C_BP_Location_Override_Value_ID)
+	{
+		if (C_BP_Location_Override_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, C_BP_Location_Override_Value_ID);
+	}
+
+	@Override
+	public int getC_BP_Location_Override_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_Value_ID);
 	}
 
 	@Override
@@ -492,6 +504,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setCompensationGroupKey (final @Nullable java.lang.String CompensationGroupKey)
+	{
+		set_Value (COLUMNNAME_CompensationGroupKey, CompensationGroupKey);
+	}
+
+	@Override
+	public java.lang.String getCompensationGroupKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_CompensationGroupKey);
+	}
+
+	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -549,18 +573,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_UOM_Internal_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_Internal_ID);
-	}
-
-	@Override
-	public void setCompensationGroupKey (final @Nullable java.lang.String CompensationGroupKey)
-	{
-		set_Value (COLUMNNAME_CompensationGroupKey, CompensationGroupKey);
-	}
-
-	@Override
-	public java.lang.String getCompensationGroupKey() 
-	{
-		return get_ValueAsString(COLUMNNAME_CompensationGroupKey);
 	}
 
 	@Override
@@ -881,6 +893,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public java.lang.String getEMail() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
 	public void setErrorMsg (final @Nullable java.lang.String ErrorMsg)
 	{
 		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
@@ -917,6 +941,19 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setGroupCompensationDiscountPercentage (final @Nullable BigDecimal GroupCompensationDiscountPercentage)
+	{
+		set_Value (COLUMNNAME_GroupCompensationDiscountPercentage, GroupCompensationDiscountPercentage);
+	}
+
+	@Override
+	public BigDecimal getGroupCompensationDiscountPercentage() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationDiscountPercentage);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setGroupingErrorMessage (final @Nullable java.lang.String GroupingErrorMessage)
 	{
 		set_Value (COLUMNNAME_GroupingErrorMessage, GroupingErrorMessage);
@@ -926,19 +963,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getGroupingErrorMessage() 
 	{
 		return get_ValueAsString(COLUMNNAME_GroupingErrorMessage);
-	}
-
-	@Override
-	public void setGroupCompensationDiscountPercentage (final @Nullable BigDecimal GroupCompensationDiscountPercentage)
-	{
-		set_Value (COLUMNNAME_GroupCompensationDiscountPercentage, GroupCompensationDiscountPercentage);
-	}
-
-	@Override
-	public BigDecimal getGroupCompensationDiscountPercentage()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationDiscountPercentage);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1505,6 +1529,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setPhone (final @Nullable java.lang.String Phone)
+	{
+		set_Value (COLUMNNAME_Phone, Phone);
+	}
+
+	@Override
+	public java.lang.String getPhone() 
+	{
+		return get_ValueAsString(COLUMNNAME_Phone);
+	}
+
+	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
@@ -1538,21 +1574,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.sql.Timestamp getPresetDateShipped() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_PresetDateShipped);
-	}
-
-	@Override
-	public void setPrice_UOM_Internal_ID (final int Price_UOM_Internal_ID)
-	{
-		if (Price_UOM_Internal_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Price_UOM_Internal_ID);
-	}
-
-	@Override
-	public int getPrice_UOM_Internal_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Price_UOM_Internal_ID);
 	}
 
 	@Override
@@ -1607,6 +1628,21 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setPrice_UOM_Internal_ID (final int Price_UOM_Internal_ID)
+	{
+		if (Price_UOM_Internal_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Price_UOM_Internal_ID);
+	}
+
+	@Override
+	public int getPrice_UOM_Internal_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Price_UOM_Internal_ID);
+	}
+
+	@Override
 	public void setProcessed (final boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Processed);
@@ -1653,6 +1689,19 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public BigDecimal getQtyItemCapacity() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyItemCapacityInternal (final @Nullable BigDecimal QtyItemCapacityInternal)
+	{
+		set_Value (COLUMNNAME_QtyItemCapacityInternal, QtyItemCapacityInternal);
+	}
+
+	@Override
+	public BigDecimal getQtyItemCapacityInternal() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacityInternal);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

@@ -24,6 +24,7 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -36,7 +37,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	private final ProductsToPickRowsService rowsService = SpringContextHolder.instance.getBean(ProductsToPickRowsService.class);
 
 	@Param(parameterName = "M_HU_PI_ID", mandatory = true)
-	private int p_M_HU_PI_ID;
+	private HuPackingInstructionsId p_M_HU_PI_ID;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -58,7 +59,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getSelectedRows(), getHuPackingInstructionsId());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getSelectedRows(), getPackToSpec());
 
 		updateViewRowFromPickingCandidate(result);
 
@@ -67,9 +68,6 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 		return MSG_OK;
 	}
 
-	private HuPackingInstructionsId getHuPackingInstructionsId()
-	{
-		return HuPackingInstructionsId.ofRepoId(p_M_HU_PI_ID);
-	}
+	private PackToSpec getPackToSpec() {return PackToSpec.ofGenericPackingInstructionsId(p_M_HU_PI_ID);}
 
 }

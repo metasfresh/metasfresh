@@ -22,12 +22,12 @@ package de.metas.handlingunits.storage;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Generic Handling Unit Storage.
@@ -63,6 +63,8 @@ public interface IGenericHUStorage
 	{
 		return Quantity.of(getQty(productId, uom), uom);
 	}
+
+	Optional<Quantity> getQuantity(ProductId productId);
 
 	/**
 	 *

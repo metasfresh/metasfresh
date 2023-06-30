@@ -23,7 +23,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,6 +38,13 @@ public class GenerateShipmentsForSchedulesRequest
 
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
+
+	/**
+	 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
+	 * If {@code true}, then the on-the-fly picked HUs are in addition created as TUs, using the respective shipment schedules' packing instructions.
+	 */
+	@Builder.Default
+	boolean onTheFlyPickToPackingInstructions = false;
 
 	@NonNull
 	Boolean isCompleteShipment;

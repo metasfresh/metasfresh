@@ -16,6 +16,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -122,7 +123,7 @@ public class UserNotificationsService
 		return notificationsQueue;
 	}
 
-	public UserNotificationsList getNotifications(final UserId adUserId, final int limit)
+	public UserNotificationsList getNotifications(final UserId adUserId, final QueryLimit limit)
 	{
 		return getNotificationsQueue(adUserId).getNotificationsAsList(limit);
 	}

@@ -51,7 +51,7 @@ class Header extends PureComponent {
     isUDOpen: false,
     tooltipOpen: '',
     isEmailOpen: false,
-    prompt: { open: false },
+    deletePrompt: { open: false },
   };
 
   udRef = React.createRef();
@@ -243,11 +243,6 @@ class Header extends PureComponent {
     }
   };
 
-  /**
-   * @method toggleTooltip
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   */
   toggleTooltip = (tooltip) => {
     this.setState({ tooltipOpen: tooltip });
   };
@@ -318,6 +313,7 @@ class Header extends PureComponent {
    * @param {string} tabId
    * @param {string} rowId
    * @param {string} rowId
+   * @param {*} staticModalType
    */
   openModalRow = (
     windowId,
@@ -408,16 +404,6 @@ class Header extends PureComponent {
   };
 
   /**
-   * @method handleDelete
-   * @summary ToDo: Describe the method
-   */
-  handleDelete = () => {
-    this.setState({
-      prompt: Object.assign({}, this.state.prompt, { open: true }),
-    });
-  };
-
-  /**
    * @method handleEmail
    * @summary ToDo: Describe the method
    */
@@ -449,41 +435,30 @@ class Header extends PureComponent {
     this.setState({ isLetterOpen: false });
   };
 
-  /**
-   * @method handlePromptCancelClick
-   * @summary ToDo: Describe the method
-   */
-  handlePromptCancelClick = () => {
+  handleDelete = () => {
+    this.setState({ deletePrompt: { ...this.state.deletePrompt, open: true } });
+  };
+
+  handleDeletePromptCancelClick = () => {
     this.setState({
-      prompt: Object.assign({}, this.state.prompt, { open: false }),
+      deletePrompt: { ...this.state.deletePrompt, open: false },
     });
   };
 
-  /**
-   * @method handlePromptSubmitClick
-   * @summary Hanndler for the prompt submit action
-   */
-  handlePromptSubmitClick = () => {
+  handleDeletePromptSubmitClick = () => {
     const { handleDeletedStatus, windowId, dataId } = this.props;
 
     this.setState(
-      {
-        prompt: Object.assign({}, this.state.prompt, { open: false }),
-      },
+      { deletePrompt: { ...this.state.deletePrompt, open: false } },
       () => {
         deleteRequest('window', windowId, null, null, [dataId]).then(() => {
           handleDeletedStatus(true);
-          this.redirect(`/window/${windowId}`);
+          this.redirectBackAfterDelete({ windowId });
         });
       }
     );
   };
 
-  /**
-   * @method handleDocStatusToggle
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   */
   handleDocStatusToggle = (close) => {
     const elem = document.getElementsByClassName('js-dropdown-toggler')[0];
 
@@ -516,11 +491,6 @@ class Header extends PureComponent {
     });
   };
 
-  /**
-   * @method closeOverlays
-   * @summary ToDo: Describe the method
-   * @param {object} clickedItem
-   */
   closeOverlays = (clickedItem, callback) => {
     const { isSubheaderShow } = this.state;
 
@@ -561,6 +531,20 @@ class Header extends PureComponent {
     history.push(where);
   };
 
+  redirectBackAfterDelete = ({ windowId }) => {
+    if (!history.length) {
+      // history length not available, be optimistic and go back
+      history.go(-1);
+    } else if (history.length > 1) {
+      history.go(-1);
+    } else if (windowId) {
+      // we are at first page => create a new view
+      history.push(`/window/${windowId}`);
+    } else {
+      history.push(`/`);
+    }
+  };
+
   /**
    * @method render
    * @summary ToDo: Describe the method
@@ -599,7 +583,7 @@ class Header extends PureComponent {
       scrolled,
       isMenuOverlayShow,
       tooltipOpen,
-      prompt,
+      deletePrompt,
       sideListTab,
       isUDOpen,
       isEmailOpen,
@@ -608,7 +592,7 @@ class Header extends PureComponent {
 
     return (
       <div>
-        {prompt.open && (
+        {deletePrompt && deletePrompt.open && (
           <Prompt
             title={counterpart.translate('window.Delete.caption')}
             text={counterpart.translate('window.delete.message')}
@@ -616,8 +600,8 @@ class Header extends PureComponent {
               submit: counterpart.translate('window.delete.confirm'),
               cancel: counterpart.translate('window.delete.cancel'),
             }}
-            onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={this.handlePromptSubmitClick}
+            onCancelClick={this.handleDeletePromptCancelClick}
+            onSubmitClick={this.handleDeletePromptSubmitClick}
           />
         )}
 
@@ -681,6 +665,7 @@ class Header extends PureComponent {
               <div className="header-center js-not-unselect">
                 <img
                   src={logo}
+                  alt="logo"
                   className="header-logo pointer"
                   onClick={this.handleDashboardLink}
                 />
@@ -879,7 +864,13 @@ class Header extends PureComponent {
           handleUDToggle={this.handleUDToggle}
           openModal={
             dataId
-              ? () => this.openModal(windowId, 'window', 'Advanced edit', true)
+              ? () =>
+                  this.openModal(
+                    windowId,
+                    'window',
+                    counterpart.translate('window.advancedEdit.caption'),
+                    true
+                  )
               : undefined
           }
           handlePrint={

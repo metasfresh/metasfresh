@@ -4,21 +4,21 @@
   "private": true,
   "license": "GPL 2",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
     "@redux-offline/redux-offline": "^2.6.0",
     "@reduxjs/toolkit": "^1.6.1",
     "@stomp/stompjs": "^6.1.2",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "@zxing/browser": "^0.0.9",
+    "@zxing/browser": "^0.0.10",
     "@zxing/library": "^0.18.6",
     "axios": "^0.21.4",
     "bulma": "^0.9.3",
     "classnames": "^2.3.1",
     "connected-react-router": "^6.9.1",
     "counterpart": "^0.18.6",
-    "cross-env": "^7.0.3",
-    "immer": "^9.0.6",
+    "immer": "9.0.7",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
@@ -47,8 +47,8 @@
     "workbox-streams": "^5.1.3"
   },
   "scripts": {
-    "start": "cross-env REACT_APP_COMMIT_VERSION=$(git rev-parse HEAD) react-scripts start",
-    "build": "cross-env REACT_APP_COMMIT_VERSION=$(git rev-parse HEAD) react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "lint": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --quiet",
     "lintfix": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --fix",
     "test": "react-scripts test",
@@ -58,7 +58,11 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "env": {
+      "browser": true,
+      "node": true
+    }
   },
   "browserslist": {
     "production": [
@@ -88,9 +92,9 @@
     "eslint-plugin-jsx-a11y": "6.4.1",
     "eslint-plugin-prettier": "3.4.0",
     "eslint-plugin-react": "7.24.0",
-    "node-sass": "^6.0.1",
     "prettier": "2.3.2",
-    "react-hot-loader": "4.13.0"
+    "react-hot-loader": "4.13.0",
+    "sass": "^1.46.0"
   },
   "homepage": "/mobile"
 }

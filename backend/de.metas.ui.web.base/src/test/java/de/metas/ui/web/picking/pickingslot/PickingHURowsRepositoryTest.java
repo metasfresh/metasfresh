@@ -13,7 +13,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.product.ProductId;
 
 /*
@@ -61,7 +61,7 @@ public class PickingHURowsRepositoryTest
 				.shipmentScheduleId(shipmentScheduleId2)
 				.build());
 
-		assertThat(query.getWarehouseId()).isEqualTo(warehouseId);
+		assertThat(query.getWarehouseIds()).containsExactly(warehouseId);
 		assertThat(query.getProductIds()).containsExactly(productId);
 	}
 

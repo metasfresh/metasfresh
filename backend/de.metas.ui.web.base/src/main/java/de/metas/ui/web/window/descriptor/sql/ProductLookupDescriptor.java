@@ -68,11 +68,15 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -391,9 +395,21 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		sqlWhereClause.append("\n p.").append(I_M_Product_Lookup_V.COLUMNNAME_IsActive).append("=").append(sqlWhereClauseParams.placeholder(true));
 	}
 
-	private static void appendFilterByDiscontinued(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams)
+	private void appendFilterByDiscontinued(@NonNull final StringBuilder sqlWhereClause, @NonNull final SqlParamsCollector sqlWhereClauseParams,@NonNull final LookupDataSourceContext evalCtx)
 	{
-		sqlWhereClause.append("\n AND p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append("=").append(sqlWhereClauseParams.placeholder(false));
+		final Timestamp priceDate = TimeUtil.asTimestamp(getEffectivePricingDate(evalCtx));
+
+		sqlWhereClause.append("\n AND ")
+		//@formatter:off
+				.append(" ( ")
+					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(false))
+				.append(" OR ")
+					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(true))
+					// note: if DiscontinuedFrom='Y' and DiscontinuedFrom is null, then the SQL does not match, which is what we want
+				.append(" AND ")
+					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom).append(" > ").append(sqlWhereClauseParams.placeholder(priceDate))
+				.append(" ) ");
+		//@formatter:on
 	}
 
 	private static IntegerLookupValue createProductLookupValue(final ProductWithAvailabilityInfo productWithAvailabilityInfo, final String adLanguage)
@@ -641,7 +657,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByIsActive(sqlWhereClause, sqlWhereClauseParams);
 		if (this.isHideDiscontinued())
 		{
-			appendFilterByDiscontinued(sqlWhereClause, sqlWhereClauseParams);
+			appendFilterByDiscontinued(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		}
 		appendFilterBySearchString(sqlWhereClause, sqlWhereClauseParams, evalCtx.getFilter(), isFullTextSearchEnabled());
 		appendFilterById(sqlWhereClause, sqlWhereClauseParams, evalCtx);
@@ -668,6 +684,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
@@ -981,6 +998,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
 		String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 		String COLUMNNAME_Discontinued = "Discontinued";
+		String COLUMNNAME_DiscontinuedFrom = "DiscontinuedFrom";
 
 		String COLUMNNAME_IsBOM = "IsBOM";
 	}

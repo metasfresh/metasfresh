@@ -149,11 +149,11 @@ public class AFSProductLookupEnricher
 	{
 		final IQueryBuilder<I_MD_Stock> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.addCompareFilter(I_MD_Stock.COLUMN_QtyOnHand, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
 		if (warehouseId != null)
 		{
-			queryBuilder.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, warehouseId.getRepoId());
+			queryBuilder.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouseId.getRepoId());
 		}
 		return queryBuilder
 				.create()

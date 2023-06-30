@@ -81,7 +81,7 @@ public class JsonOLCandCreateRequest
 					+ "It's the business partner that places/placed the order which this candidate is about.\n"
 					+ "\n"
 					+ "Note that the given partner's *location* can also be left empty, if the partner can be found in metasfresh and has an address there.\n"
-					+ "If there are multiple adresses, the default shipTo address is preferred.")
+					+ "If there are multiple addresses, the default shipTo address is preferred.")
 	JsonRequestBPartnerLocationAndContact bpartner;
 
 	@ApiModelProperty(position = 70, // //
@@ -176,7 +176,7 @@ public class JsonOLCandCreateRequest
 	BigDecimal discount;
 
 	@ApiModelProperty(position = 230, required = true, //
-			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
+			value = "External reference (document number) on a remote system. Not necessarily unique, but but the external user will want to filter records using it")
 	String poReference;
 
 	@ApiModelProperty(position = 240,  //
@@ -267,14 +267,34 @@ public class JsonOLCandCreateRequest
 	BigDecimal qtyShipped;
 
 	@ApiModelProperty(position = 430, //
+			value = "Translates to C_OLCand.qtyItemCapacity")
+	@JsonInclude(Include.NON_NULL)
+	BigDecimal qtyItemCapacity;
+
+	@ApiModelProperty(position = 440, //
 			value = "Translates to C_OLCand.ApplySalesRepFrom. If not specified default value is `CandidateFirst`")
 	@JsonInclude(Include.NON_NULL)
 	JsonApplySalesRepFrom applySalesRepFrom;
 
-	@ApiModelProperty(position = 440)
+	@ApiModelProperty(position = 450, //
+			value = "Translates to `C_OLCand.BPartnerName`. If omitted, it will fallback to `C_BPartner_Location.BPartnerName` of the referenced shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
+	@JsonInclude(Include.NON_NULL)
+	String bpartnerName;
+
+	@ApiModelProperty(position = 460, //
+			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Email` of the referenced shipping location`")
+	@JsonInclude(Include.NON_NULL)
+	String email;
+
+	@ApiModelProperty(position = 470, //
+			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Phone` of the referenced shipping location`")
+	@JsonInclude(Include.NON_NULL)
+	String phone;
+
+	@ApiModelProperty(position = 480)
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
-	
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -321,7 +341,11 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
-			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom)
+			@JsonProperty("qtyItemCapacity") final @Nullable BigDecimal qtyItemCapacity,
+			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
+			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
+			@JsonProperty("email") final @Nullable String email,
+			@JsonProperty("phone") final @Nullable String phone)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -351,6 +375,9 @@ public class JsonOLCandCreateRequest
 		this.invoiceDocType = invoiceDocType;
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;
+		this.bpartnerName = bpartnerName;
+		this.email = email;
+		this.phone = phone;
 
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;
@@ -368,6 +395,7 @@ public class JsonOLCandCreateRequest
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
 		this.qtyShipped = qtyShipped;
+		this.qtyItemCapacity = qtyItemCapacity;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 	}
 

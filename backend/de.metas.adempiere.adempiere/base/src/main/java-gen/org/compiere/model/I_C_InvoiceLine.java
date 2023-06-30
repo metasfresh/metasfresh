@@ -115,6 +115,27 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_A_CreateAsset = "A_CreateAsset";
 
 	/**
+	 * Set A_Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setA_Processed (boolean A_Processed);
+
+	/**
+	 * Get A_Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isA_Processed();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_A_Processed = new ModelColumn<>(I_C_InvoiceLine.class, "A_Processed", null);
+	String COLUMNNAME_A_Processed = "A_Processed";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -169,27 +190,6 @@ public interface I_C_InvoiceLine
 	int getAD_OrgTrx_ID();
 
 	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
-
-	/**
-	 * Set A_Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setA_Processed (boolean A_Processed);
-
-	/**
-	 * Get A_Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isA_Processed();
-
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_A_Processed = new ModelColumn<>(I_C_InvoiceLine.class, "A_Processed", null);
-	String COLUMNNAME_A_Processed = "A_Processed";
 
 	/**
 	 * Set Pricing system.
@@ -434,53 +434,6 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_Created = new ModelColumn<>(I_C_InvoiceLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_TaxCategory_ID();
-
-	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
-
-	/**
 	 * Set Tax.
 	 * Tax identifier
 	 *
@@ -501,6 +454,48 @@ public interface I_C_InvoiceLine
 	int getC_Tax_ID();
 
 	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
+	 * Set BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_BPartner_ID (int C_UOM_BPartner_ID);
+
+	/**
+	 * Get BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_BPartner_ID();
+
+	String COLUMNNAME_C_UOM_BPartner_ID = "C_UOM_BPartner_ID";
 
 	/**
 	 * Set Shipping Location.
@@ -544,6 +539,31 @@ public interface I_C_InvoiceLine
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_Created = new ModelColumn<>(I_C_InvoiceLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -620,7 +640,7 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Set Description Only.
-	 * if true, the line is just description and no transaction
+	 * Nur Beschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -630,7 +650,7 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Get Description Only.
-	 * if true, the line is just description and no transaction
+	 * Nur Beschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -896,8 +916,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_PriceActual = "PriceActual";
 
 	/**
-	 * Set Preis.
-	 * Price Entered - the price based on the selected/base UoM
+	 * Set Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -906,8 +925,7 @@ public interface I_C_InvoiceLine
 	void setPriceEntered (BigDecimal PriceEntered);
 
 	/**
-	 * Get Preis.
-	 * Price Entered - the price based on the selected/base UoM
+	 * Get Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -1028,6 +1046,27 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_QtyEntered = new ModelColumn<>(I_C_InvoiceLine.class, "QtyEntered", null);
 	String COLUMNNAME_QtyEntered = "QtyEntered";
+
+	/**
+	 * Set Qty Entered In BPartner UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredInBPartnerUOM (@Nullable BigDecimal QtyEnteredInBPartnerUOM);
+
+	/**
+	 * Get Qty Entered In BPartner UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEnteredInBPartnerUOM();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_QtyEnteredInBPartnerUOM = new ModelColumn<>(I_C_InvoiceLine.class, "QtyEnteredInBPartnerUOM", null);
+	String COLUMNNAME_QtyEnteredInBPartnerUOM = "QtyEnteredInBPartnerUOM";
 
 	/**
 	 * Set Quantity Invoiced.
@@ -1388,4 +1427,26 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
 }

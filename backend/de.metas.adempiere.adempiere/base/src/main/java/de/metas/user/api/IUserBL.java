@@ -1,5 +1,6 @@
 package de.metas.user.api;
 
+import de.metas.util.Check;
 import org.compiere.model.I_AD_User;
 
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -36,7 +37,25 @@ public interface IUserBL extends ISingletonService
 
 	void changePasswordAndSave(I_AD_User user, String newPassword);
 
-	String buildContactName(@Nullable final String firstName, @Nullable final String lastName);
+	static String buildContactName(@Nullable final String firstName, @Nullable final String lastName)
+	{
+		final StringBuilder contactName = new StringBuilder();
+		if (lastName != null && !Check.isBlank(lastName))
+		{
+			contactName.append(lastName.trim());
+		}
+
+		if (firstName != null && !Check.isBlank(firstName))
+		{
+			if (contactName.length() > 0)
+			{
+				contactName.append(", ");
+			}
+			contactName.append(firstName.trim());
+		}
+
+		return contactName.toString();
+	}
 
 	/**
 	 * Is the email valid

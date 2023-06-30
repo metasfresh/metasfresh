@@ -22,23 +22,7 @@ package de.metas.fresh.ordercheckup.impl;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.slf4j.Logger;
-
+import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
@@ -57,6 +41,25 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -66,17 +69,32 @@ import de.metas.util.Services;
 public class OrderCheckupBL implements IOrderCheckupBL
 {
 	private static final transient Logger logger = LogManager.getLogger(OrderCheckupBL.class);
+	public static final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+
+	final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
+	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+	final IMsgBL msgBL = Services.get(IMsgBL.class);
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
+	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant
 	private static final String SYSCONFIG_ORDERCHECKUP_COPIES = "de.metas.fresh.ordercheckup.Copies";
+
+	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse
+	private static final String SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES = "de.metas.fresh.ordercheckup_barcode.Copies";
 
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
 
 	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
 
+	private static final int BARCODE_ORDERCHECHUP_PROCESS_ID= 540814; // hardcoded ordercheckup_with_barcode/report.jasper
+
 	@Override
-	public void generateReportsIfEligible(final I_C_Order order)
+	public void generateReportsIfEligible(@NonNull final I_C_Order order)
 	{
 		// Make sure the order is eligible for reporting
 		if (!isEligibleForReporting(order))
@@ -88,9 +106,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// Void all previous reports, because we will generate them again.
 		voidReports(order);
 
-		// services
-		final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		//
 		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
@@ -160,9 +175,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 			if (plantId == null)
 			{
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
-				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 				final boolean throwIt = sysConfigBL.getBooleanValue(SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT, true);
 
 				new AdempiereException(
@@ -200,7 +212,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public boolean isEligibleForReporting(final I_C_Order order)
+	public boolean isEligibleForReporting(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
 		{
@@ -215,14 +227,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public final boolean isGenerateReportsOnOrderComplete(final I_C_Order order)
+	public final boolean isGenerateReportsOnOrderComplete(@NonNull final I_C_Order order)
 	{
 		if (!isEligibleForReporting(order))
 		{
 			return false; // nothing to do; log messages were already created in isEligibleForReporting
 		}
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean sysConfigValueIsTrue = sysConfigBL.getBooleanValue(
 				SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE,
 				false, // by default, do nothing. This needs to set up and tested by the customer to make sense
@@ -240,7 +251,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return false; // nothing to do
 		}
 		
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Services.get(IOrderBL.class).getBPartner(order), I_C_BPartner.class);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(orderBL.getBPartner(order), I_C_BPartner.class);
 		if (bpartner.isDisableOrderCheckup())
 		{
 			logger.debug("C_BPartner {} has IsDisableOrderCheckup='Y'; nothing to do for C_Order_ID {}.",
@@ -255,9 +266,9 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public void voidReports(final I_C_Order order)
+	public void voidReports(@NonNull final I_C_Order order)
 	{
-		final List<I_C_Order_MFGWarehouse_Report> reports = Services.get(IOrderCheckupDAO.class).retrieveAllReports(order);
+		final List<I_C_Order_MFGWarehouse_Report> reports = orderCheckupDAO.retrieveAllReports(order);
 		for (final I_C_Order_MFGWarehouse_Report report : reports)
 		{
 			report.setIsActive(false);
@@ -266,9 +277,35 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public int getNumberOfCopies(final I_C_Printing_Queue queueItem)
+	public int getNumberOfCopies(@NonNull final I_C_Printing_Queue queueItem, @NonNull final I_AD_Archive printOut)
 	{
+		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);
+
+		if (report != null && report.getDocumentType().equals(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse))
+		{
+			final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+			return copies;
+		}
+
 		final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		return copies;
+	}
+
+	@Override
+	public final I_C_Order_MFGWarehouse_Report getReportOrNull(@NonNull final I_AD_Archive printOut)
+	{
+		if (!tableDAO.isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
+		{
+			return null;
+		}
+
+		final I_C_Order_MFGWarehouse_Report report = archiveDAO.retrieveReferencedModel(printOut, I_C_Order_MFGWarehouse_Report.class);
+		if (report == null)
+		{
+			new AdempiereException("No report was found for " + printOut)
+					.throwIfDeveloperModeOrLogWarningElse(logger);
+		}
+
+		return report;
 	}
 }

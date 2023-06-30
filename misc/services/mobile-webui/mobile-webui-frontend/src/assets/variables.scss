@@ -1,24 +1,18 @@
-$base-color: #000000;
-$base-elements: #479F42;
-$base-mf-green: #72b62c;
+$base-mf-green: #74b727;
 
-$header-green-one: #8ec456;
+//
+// Customize Bulma:
+// see https://bulma.io/documentation/overview/colors/
+$green: $base-mf-green;
+$red: #cc0f35;
+$grey-light: #b5b5b5;
+$grey-lighter: #e6e6e6;
 
-$danger-red: hsl(348, 86%, 43%);
-$grey-light: hsl(0, 0%, 71%);
-$grey-lighter: hsl(0, 0%, 90%);
-$product-input: #43423d;
-$custom-dk-green: #4b830d;
-$arrow-down: #9E5E2A;
-$arrow-right: #1A605D;
-$disabled: #9D2A2D;
-$white-background: #ffffff;
-$yellow-background: #FAFFBD;
-$base-border: $grey-light;
-
-$indicator-red: #C9404D;
-$indicator-red-border:#C42C3B;
-$indicator-green: #479F42;
-$indicator-green-border:#4b830d;
+//
+// Others
+$indicator-red: $red;
+$indicator-red-border: #C42C3B;
+$indicator-green: $green;
+$indicator-green-border: #4b830d;
 $indicator-yellow: #ffd500;
-$indicator-yellow-border:#ffea00;
+$indicator-yellow-border: #ffea00;

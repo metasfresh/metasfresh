@@ -1,8 +1,7 @@
 package de.metas.handlingunits.model;
 
-import org.adempiere.model.ModelColumn;
-
 import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job_HUAlternative
  *  @author metasfresh (generated) 

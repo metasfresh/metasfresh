@@ -1,0 +1,51 @@
+de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response.Invoice450ToCrossVersionModelToolTest.toCrossVersionResponse=[
+  {
+    "payload" : {
+      "invoice" : {
+        "requestTimestamp" : 1535971639,
+        "requestDate" : 1535925600000,
+        "requestId" : "KV_12345"
+      },
+      "body" : {
+        "rejected" : {
+          "statusIn" : "received",
+          "statusOut" : "canceled",
+          "errors" : [
+            {
+              "code" : "Error-Code",
+              "text" : "Error-Text"
+            }
+          ]
+        },
+        "patient" : {
+          "person" : {
+            "familyName" : "Patient-FamilyName",
+            "givenName" : "Patient-GivenName"
+          }
+        },
+        "biller" : {
+          "eanParty" : "1234567890123"
+        },
+        "contact" : {
+          "company" : {
+            "companyName" : "Contact-CompanyName"
+          },
+          "employee" : {
+            "familyName" : "Contact-FamilyName",
+            "givenName" : "Contact-GivenName",
+            "telecom" : {
+              "phone" : [
+                "Contact-Phone"
+              ]
+            },
+            "online" : {
+              "email" : [
+                "Contact@Email"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+]

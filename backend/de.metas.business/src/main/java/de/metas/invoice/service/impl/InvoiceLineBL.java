@@ -541,6 +541,19 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
 	}
 
+	@NonNull
+	public Quantity getQtyEnteredInStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final Quantity qtyEntered = Quantitys.create(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+
+		final UomId stockUOMId = productBL.getStockUOMId(invoiceLine.getM_Product_ID());
+
+		return Quantitys.create(
+				qtyEntered,
+				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
+				stockUOMId);
+	}
+
 
 	@NonNull
 	@Override

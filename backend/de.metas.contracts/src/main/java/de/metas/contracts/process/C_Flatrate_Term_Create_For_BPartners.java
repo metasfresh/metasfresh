@@ -12,6 +12,7 @@ import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.Param;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -62,6 +63,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 	private final RefundConfigRepository refundConfigRepository = SpringContextHolder.instance.getBean(RefundConfigRepository.class);
 	private final CommissionProductService commissionProductService = SpringContextHolder.instance.getBean(CommissionProductService.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private static final String PARAM_C_FLATRATE_CONDITIONS_ID = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
 	@Param(parameterName = PARAM_C_FLATRATE_CONDITIONS_ID, mandatory = true)
@@ -131,6 +133,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			case COMMISSION:
 			case MEDIATED_COMMISSION:
 			case MARGIN_COMMISSION:
+			case LICENSE_FEE:
 				final I_M_Product commissionProductRecord = loadOutOfTrx(commissionProductService.getCommissionProduct(conditionsId), I_M_Product.class);
 				addProduct(commissionProductRecord);
 				break;
@@ -142,7 +145,8 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 				if (matchings.size() == 1 && matchings.get(0).getM_Product_ID() > 0)
 				{
 					// this is the case for quality-based contracts
-					addProduct(matchings.get(0).getM_Product());
+					final I_M_Product productRecord = productDAO.getById(matchings.get(0).getM_Product_ID());
+					addProduct(productRecord);
 				}
 		}
 

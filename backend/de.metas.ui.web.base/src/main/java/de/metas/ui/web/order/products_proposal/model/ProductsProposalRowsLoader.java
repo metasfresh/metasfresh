@@ -40,9 +40,11 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
@@ -66,9 +68,12 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -84,6 +89,9 @@ public final class ProductsProposalRowsLoader
 
 	// services
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
@@ -157,11 +165,11 @@ public final class ProductsProposalRowsLoader
 			logger.debug("order!=null; -> add bpartnerName={} to headerProperties", order.getBpartnerName());
 			headerProperties
 					.group(ViewHeaderPropertiesGroup.builder()
-							.entry(ViewHeaderProperty.builder()
-									.caption(msgBL.translatable("C_BPartner_ID"))
-									.value(order.getBpartnerName())
-									.build())
-							.build());
+								   .entry(ViewHeaderProperty.builder()
+												  .caption(msgBL.translatable("C_BPartner_ID"))
+												  .value(order.getBpartnerName())
+												  .build())
+								   .build());
 		}
 
 		return ProductsProposalRowsData.builder()
@@ -183,11 +191,14 @@ public final class ProductsProposalRowsLoader
 
 	private List<ProductsProposalRow> loadRows()
 	{
+		final ZoneId zoneId = orgDAO.getTimeZone(Env.getOrgId());
+		final LocalDate currentDate = LocalDate.now(zoneId);
+
 		return priceListVersionIds.stream()
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
-						.thenComparing(ProductsProposalRow::getProductName))
-				.filter(p -> !Services.get(IProductDAO.class).getById(p.getProductId()).isDiscontinued())
+								.thenComparing(ProductsProposalRow::getProductName))
+				.filter(p -> !productBL.isDiscontinuedAt(productsRepo.getById(p.getProductId()), currentDate))
 				.collect(ImmutableList.toImmutableList());
 	}
 

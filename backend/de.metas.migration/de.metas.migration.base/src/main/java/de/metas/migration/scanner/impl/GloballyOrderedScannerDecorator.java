@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 
-import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;

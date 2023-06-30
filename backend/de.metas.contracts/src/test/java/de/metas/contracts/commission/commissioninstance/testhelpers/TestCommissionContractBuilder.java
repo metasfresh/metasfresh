@@ -23,6 +23,7 @@
 package de.metas.contracts.commission.commissioninstance.testhelpers;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.commission.licensefee.model.LicenseFeeSettingsId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -41,12 +42,13 @@ public class TestCommissionContractBuilder
 {
 	@Builder(builderMethodName = "commissionContractBuilder")
 	private I_C_Flatrate_Term createCommissionContract(
-			final BPartnerId vendorId,
+			final BPartnerId contractBPartnerId,
 			final ProductId commissionProductId,
 			final OrgId orgId,
 			final TypeConditions typeConditions,
 			final CustomerTradeMarginId marginConfigId,
-			final MediatedCommissionSettingsId mediatedCommissionSettingsId)
+			final MediatedCommissionSettingsId mediatedCommissionSettingsId,
+			final LicenseFeeSettingsId licenseFeeSettingsId)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setAD_Org_ID(orgId.getRepoId());
@@ -60,11 +62,15 @@ public class TestCommissionContractBuilder
 		{
 			conditions.setC_MediatedCommissionSettings_ID(mediatedCommissionSettingsId.getRepoId());
 		}
+		else if (licenseFeeSettingsId != null)
+		{
+			conditions.setC_LicenseFeeSettings_ID(LicenseFeeSettingsId.toRepoId(licenseFeeSettingsId));
+		}
 
 		saveRecord(conditions);
 
 		final I_C_Flatrate_Term contract = newInstance(I_C_Flatrate_Term.class);
-		contract.setBill_BPartner_ID(vendorId.getRepoId());
+		contract.setBill_BPartner_ID(contractBPartnerId.getRepoId());
 		contract.setAD_Org_ID(orgId.getRepoId());
 		contract.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 		contract.setType_Conditions(typeConditions.getCode());

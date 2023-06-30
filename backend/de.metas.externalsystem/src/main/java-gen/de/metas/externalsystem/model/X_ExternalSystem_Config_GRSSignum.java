@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
@@ -34,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO implements I_ExternalSystem_Config_GRSSignum, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -591859223L;
+	private static final long serialVersionUID = -1896949101L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_GRSSignum (final Properties ctx, final int ExternalSystem_Config_GRSSignum_ID, @Nullable final String trxName)
@@ -57,6 +35,30 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	}
 
 	@Override
+	public void setAuthToken (final @Nullable java.lang.String AuthToken)
+	{
+		set_Value (COLUMNNAME_AuthToken, AuthToken);
+	}
+
+	@Override
+	public java.lang.String getAuthToken() 
+	{
+		return get_ValueAsString(COLUMNNAME_AuthToken);
+	}
+
+	@Override
+	public void setBasePathForExportDirectories (final @Nullable java.lang.String BasePathForExportDirectories)
+	{
+		set_Value (COLUMNNAME_BasePathForExportDirectories, BasePathForExportDirectories);
+	}
+
+	@Override
+	public java.lang.String getBasePathForExportDirectories() 
+	{
+		return get_ValueAsString(COLUMNNAME_BasePathForExportDirectories);
+	}
+
+	@Override
 	public void setBaseURL (final java.lang.String BaseURL)
 	{
 		set_Value (COLUMNNAME_BaseURL, BaseURL);
@@ -66,6 +68,18 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public java.lang.String getBaseURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_BaseURL);
+	}
+
+	@Override
+	public void setBPartnerExportDirectories (final @Nullable java.lang.String BPartnerExportDirectories)
+	{
+		set_Value (COLUMNNAME_BPartnerExportDirectories, BPartnerExportDirectories);
+	}
+
+	@Override
+	public java.lang.String getBPartnerExportDirectories() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerExportDirectories);
 	}
 
 	@Override
@@ -132,5 +146,94 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public java.lang.String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setIsAutoSendCustomers (final boolean IsAutoSendCustomers)
+	{
+		set_Value (COLUMNNAME_IsAutoSendCustomers, IsAutoSendCustomers);
+	}
+
+	@Override
+	public boolean isAutoSendCustomers() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendCustomers);
+	}
+
+	@Override
+	public void setIsAutoSendVendors (final boolean IsAutoSendVendors)
+	{
+		set_Value (COLUMNNAME_IsAutoSendVendors, IsAutoSendVendors);
+	}
+
+	@Override
+	public boolean isAutoSendVendors() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendVendors);
+	}
+
+	@Override
+	public void setIsCreateBPartnerFolders (final boolean IsCreateBPartnerFolders)
+	{
+		set_Value (COLUMNNAME_IsCreateBPartnerFolders, IsCreateBPartnerFolders);
+	}
+
+	@Override
+	public boolean isCreateBPartnerFolders() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateBPartnerFolders);
+	}
+
+	@Override
+	public void setIsSyncBPartnersToRestEndpoint (final boolean IsSyncBPartnersToRestEndpoint)
+	{
+		set_Value (COLUMNNAME_IsSyncBPartnersToRestEndpoint, IsSyncBPartnersToRestEndpoint);
+	}
+
+	@Override
+	public boolean isSyncBPartnersToRestEndpoint() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncBPartnersToRestEndpoint);
+	}
+
+	@Override
+	public void setIsSyncHUsOnMaterialReceipt (final boolean IsSyncHUsOnMaterialReceipt)
+	{
+		set_Value (COLUMNNAME_IsSyncHUsOnMaterialReceipt, IsSyncHUsOnMaterialReceipt);
+	}
+
+	@Override
+	public boolean isSyncHUsOnMaterialReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncHUsOnMaterialReceipt);
+	}
+
+	@Override
+	public void setIsSyncHUsOnProductionReceipt (final boolean IsSyncHUsOnProductionReceipt)
+	{
+		set_Value (COLUMNNAME_IsSyncHUsOnProductionReceipt, IsSyncHUsOnProductionReceipt);
+	}
+
+	@Override
+	public boolean isSyncHUsOnProductionReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncHUsOnProductionReceipt);
+	}
+
+	/** 
+	 * TenantId AD_Reference_ID=276
+	 * Reference name: AD_Org (all)
+	 */
+	public static final int TENANTID_AD_Reference_ID=276;
+	@Override
+	public void setTenantId (final java.lang.String TenantId)
+	{
+		set_Value (COLUMNNAME_TenantId, TenantId);
+	}
+
+	@Override
+	public java.lang.String getTenantId() 
+	{
+		return get_ValueAsString(COLUMNNAME_TenantId);
 	}
 }

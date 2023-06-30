@@ -61,7 +61,7 @@ public class ReserveHUsRequest
 			@Singular @NonNull final ImmutableSet<HuId> huIds)
 	{
 		Check.assumeNotEmpty(huIds, "huIds needs to be not empty; this={}", this);
-		Check.assume(qtyToReserve.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyToReserve, this);
+		Check.assume(qtyToReserve.signum() > 0, "Parameter qtyCU={} needs to be >0; this={}", qtyToReserve, this);
 
 		this.qtyToReserve = qtyToReserve;
 		this.documentRef = documentRef;

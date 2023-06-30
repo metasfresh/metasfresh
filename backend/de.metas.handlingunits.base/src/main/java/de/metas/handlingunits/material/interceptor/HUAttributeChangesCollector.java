@@ -1,19 +1,6 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -27,6 +14,17 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -89,7 +87,7 @@ final class HUAttributeChangesCollector
 			events.addAll(createMaterialEvent(huAttributeChanges));
 		}
 
-		materialEventService.postEventsNow(events);
+		events.forEach(materialEventService::postEventAsync);
 	}
 
 	private List<AttributesChangedEvent> createMaterialEvent(final HUAttributeChanges changes)
@@ -128,7 +126,7 @@ final class HUAttributeChangesCollector
 				.getProductStorages();
 
 		final List<AttributesChangedEvent> events = new ArrayList<>();
-		for (IHUProductStorage productStorage : productStorages)
+		for (final IHUProductStorage productStorage : productStorages)
 		{
 			events.add(AttributesChangedEvent.builder()
 					.eventDescriptor(eventDescriptor)

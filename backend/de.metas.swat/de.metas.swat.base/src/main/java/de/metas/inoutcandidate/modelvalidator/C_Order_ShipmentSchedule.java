@@ -1,7 +1,7 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;

@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class DDOrderMovePlanCreateCommandTest
@@ -115,8 +115,9 @@ class DDOrderMovePlanCreateCommandTest
 	}
 
 	@Test
-	void scenario_3HUs()
+	void scenario_3_TopLevelHUs()
 	{
+		// NOTE: we use createCU for convenience, but we could also create LU. That would be more appropriate.
 		final HuId huId1 = createCU("30", wh1_loc1);
 		final HuId huId2 = createCU("30", wh1_loc1);
 		final HuId huId3 = createCU("999", wh1_loc1);
@@ -125,10 +126,15 @@ class DDOrderMovePlanCreateCommandTest
 		createDDOrderLine(ddOrder, Quantity.of("100", uomKg), wh1_loc1, wh2_loc1);
 
 		final DDOrderMovePlan plan = createPlan(ddOrder);
-		final ImmutableList<DDOrderMovePlanStep> steps = plan.getLines().stream().flatMap(line -> line.getSteps().stream()).collect(ImmutableList.toImmutableList());
-		System.out.println("PLAN:\n" + Joiner.on("\n").join(steps));
-		POJOLookupMap.get().dumpStatus("After run", "M_HU", "M_HU_Storage", "M_HU_Reservation");
 
+		final ImmutableList<DDOrderMovePlanLine> lines = plan.getLines();
+		assertThat(lines).hasSize(1);
+		final DDOrderMovePlanLine line = lines.get(0);
+		assertThat(line.getQtyToPick()).isEqualTo(Quantity.of(30 + 30 + 999, uomKg));
+
+		final ImmutableList<DDOrderMovePlanStep> steps = line.getSteps();
+		System.out.println("PLAN Steps:\n" + Joiner.on("\n").join(steps));
+		POJOLookupMap.get().dumpStatus("After run", "M_HU", "M_HU_Storage", "M_HU_Reservation");
 		assertThat(steps).hasSize(3);
 
 		final DDOrderMovePlanStep.DDOrderMovePlanStepBuilder expectedLineBuilder = DDOrderMovePlanStep.builder()
@@ -154,8 +160,8 @@ class DDOrderMovePlanCreateCommandTest
 				.usingRecursiveComparison()
 				.isEqualTo(expectedLineBuilder
 						.pickFromHU(handlingUnitsDAO.getById(huId3))
-						.qtyToPick(Quantity.of("40.000", uomKg))
-						.isPickWholeHU(false)
+						.qtyToPick(Quantity.of("999.000", uomKg))
+						.isPickWholeHU(true)
 						.build());
 	}
 

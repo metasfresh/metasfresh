@@ -47,7 +47,7 @@ public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapt
 		final IRequestBL requestBL = Services.get(IRequestBL.class);
 
 		// retrieve the items (DDOrder lines) that were enqueued and put them in a list
-		final List<I_DD_OrderLine> lines = queueDAO.retrieveItems(workPackage, I_DD_OrderLine.class, localTrxName);
+		final List<I_DD_OrderLine> lines = queueDAO.retrieveAllItems(workPackage, I_DD_OrderLine.class);
 
 		// for each line that was enqueued, create a R_Request containing the information from the DDOrder line and DDOrder
 		for (final I_DD_OrderLine line : lines)

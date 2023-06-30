@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-class WFActivityHandlersRegistry
+public class WFActivityHandlersRegistry
 {
 	private static final Logger logger = LogManager.getLogger(WFActivityHandlersRegistry.class);
 

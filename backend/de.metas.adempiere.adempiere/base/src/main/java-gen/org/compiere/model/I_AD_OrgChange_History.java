@@ -248,6 +248,27 @@ public interface I_AD_OrgChange_History
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Close Invoice Candidate.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCloseInvoiceCandidate (boolean IsCloseInvoiceCandidate);
+
+	/**
+	 * Get Close Invoice Candidate.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCloseInvoiceCandidate();
+
+	ModelColumn<I_AD_OrgChange_History, Object> COLUMN_IsCloseInvoiceCandidate = new ModelColumn<>(I_AD_OrgChange_History.class, "IsCloseInvoiceCandidate", null);
+	String COLUMNNAME_IsCloseInvoiceCandidate = "IsCloseInvoiceCandidate";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

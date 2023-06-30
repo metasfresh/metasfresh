@@ -2,6 +2,9 @@ package de.metas.handlingunits.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 /** Generated Interface for M_Picking_Job_Step_HUAlternative
  *  @author metasfresh (generated) 
  */
@@ -48,6 +51,28 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Created.
@@ -192,6 +217,113 @@ public interface I_M_Picking_Job_Step_HUAlternative
 
 	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_Picking_Job_Step> COLUMN_M_Picking_Job_Step_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "M_Picking_Job_Step_ID", de.metas.handlingunits.model.I_M_Picking_Job_Step.class);
 	String COLUMNNAME_M_Picking_Job_Step_ID = "M_Picking_Job_Step_ID";
+
+	/**
+	 * Set Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_HU_ID (int PickFrom_HU_ID);
+
+	/**
+	 * Get Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_HU_ID();
+
+	de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
+
+	void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU);
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Locator_ID (int PickFrom_Locator_ID);
+
+	/**
+	 * Get Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Locator_ID();
+
+	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
+
+	/**
+	 * Set Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Warehouse_ID (int PickFrom_Warehouse_ID);
+
+	/**
+	 * Get Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Warehouse_ID();
+
+	String COLUMNNAME_PickFrom_Warehouse_ID = "PickFrom_Warehouse_ID";
+
+	/**
+	 * Set Qty Rejected To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyRejectedToPick (@Nullable BigDecimal QtyRejectedToPick);
+
+	/**
+	 * Get Qty Rejected To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyRejectedToPick();
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_QtyRejectedToPick = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "QtyRejectedToPick", null);
+	String COLUMNNAME_QtyRejectedToPick = "QtyRejectedToPick";
+
+	/**
+	 * Set Reject Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRejectReason (@Nullable java.lang.String RejectReason);
+
+	/**
+	 * Get Reject Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRejectReason();
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_RejectReason = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "RejectReason", null);
+	String COLUMNNAME_RejectReason = "RejectReason";
 
 	/**
 	 * Get Updated.

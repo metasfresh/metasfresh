@@ -4,7 +4,9 @@ export const initialState = {
   version: null,
 };
 
-export default function appHandler(state = initialState, action) {
+export const getVersionFromState = (state) => state.update.version;
+
+export default function reducer(state = initialState, action) {
   const { payload } = action;
 
   switch (action.type) {

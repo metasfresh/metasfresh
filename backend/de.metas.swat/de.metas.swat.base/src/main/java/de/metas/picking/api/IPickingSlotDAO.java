@@ -5,12 +5,15 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 public interface IPickingSlotDAO extends ISingletonService
 {
 	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
+
+	Optional<PickingSlotIdAndCaption> getPickingSlotIdAndCaptionByCode(@NonNull String pickingSlotCode);
 
 	I_M_PickingSlot getById(PickingSlotId pickingSlotId);
 
@@ -27,4 +30,6 @@ public interface IPickingSlotDAO extends ISingletonService
 	List<I_M_PickingSlot> retrievePickingSlots(PickingSlotQuery query);
 
 	Set<PickingSlotId> retrievePickingSlotIds(PickingSlotQuery query);
+
+	Set<PickingSlotIdAndCaption> retrievePickingSlotIdAndCaptions(@NonNull PickingSlotQuery query);
 }

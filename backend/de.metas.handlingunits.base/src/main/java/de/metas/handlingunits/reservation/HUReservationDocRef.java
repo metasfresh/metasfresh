@@ -23,6 +23,7 @@
 package de.metas.handlingunits.reservation;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
@@ -41,6 +42,7 @@ public class HUReservationDocRef
 	@Nullable OrderLineId salesOrderLineId;
 	@Nullable ProjectId projectId;
 	@Nullable PickingJobStepId pickingJobStepId;
+	@Nullable DDOrderLineId ddOrderLineId;
 
 	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderLineId salesOrderLineId) {return HUReservationDocRef.builder().salesOrderLineId(salesOrderLineId).build();}
 
@@ -50,24 +52,29 @@ public class HUReservationDocRef
 
 	public static HUReservationDocRef ofPickingJobStepId(@NonNull final PickingJobStepId pickingJobStepId) {return HUReservationDocRef.builder().pickingJobStepId(pickingJobStepId).build();}
 
+	public static HUReservationDocRef ofDDOrderLineId(@NonNull final DDOrderLineId ddOrderLineId) {return HUReservationDocRef.builder().ddOrderLineId(ddOrderLineId).build();}
+
 	@Builder
 	private HUReservationDocRef(
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final ProjectId projectId,
-			@Nullable final PickingJobStepId pickingJobStepId)
+			@Nullable final PickingJobStepId pickingJobStepId,
+			@Nullable DDOrderLineId ddOrderLineId)
 	{
-		if (CoalesceUtil.countNotNulls(salesOrderLineId, projectId, pickingJobStepId) != 1)
+		if (CoalesceUtil.countNotNulls(salesOrderLineId, projectId, pickingJobStepId, ddOrderLineId) != 1)
 		{
 			throw new AdempiereException("One and only one document shall be set")
 					.appendParametersToMessage()
 					.setParameter("salesOrderLineId", salesOrderLineId)
 					.setParameter("projectId", projectId)
-					.setParameter("pickingJobStepId", pickingJobStepId);
+					.setParameter("pickingJobStepId", pickingJobStepId)
+					.setParameter("ddOrderLineId", ddOrderLineId);
 		}
 
 		this.salesOrderLineId = salesOrderLineId;
 		this.projectId = projectId;
 		this.pickingJobStepId = pickingJobStepId;
+		this.ddOrderLineId = ddOrderLineId;
 	}
 
 	public static boolean equals(@Nullable final HUReservationDocRef ref1, @Nullable final HUReservationDocRef ref2) {return Objects.equals(ref1, ref2);}
@@ -79,6 +86,8 @@ public class HUReservationDocRef
 		R projectId(@NonNull ProjectId projectId);
 
 		R pickingJobStepId(@NonNull PickingJobStepId pickingJobStepId);
+
+		R ddOrderLineId(@NonNull DDOrderLineId ddOrderLineId);
 	}
 
 	public <R> R map(@NonNull final CaseMappingFunction<R> mappingFunction)
@@ -94,6 +103,10 @@ public class HUReservationDocRef
 		else if (pickingJobStepId != null)
 		{
 			return mappingFunction.pickingJobStepId(pickingJobStepId);
+		}
+		else if (ddOrderLineId != null)
+		{
+			return mappingFunction.ddOrderLineId(ddOrderLineId);
 		}
 		else
 		{

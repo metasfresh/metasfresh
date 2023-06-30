@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Picking_Job_Step
  *  @author metasfresh (generated) 
@@ -174,31 +175,6 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Picking candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
-
-	/**
-	 * Get Picking candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Picking_Candidate_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
-
-	void setM_Picking_Candidate(@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
-
-	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
-	String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
-
-	/**
 	 * Set Picking Job.
 	 *
 	 * <br>Type: Search
@@ -334,6 +310,26 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
+	 * Set Pick To Packing Instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackTo_HU_PI_Item_Product_ID (int PackTo_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Pick To Packing Instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPackTo_HU_PI_Item_Product_ID();
+
+	String COLUMNNAME_PackTo_HU_PI_Item_Product_ID = "PackTo_HU_PI_Item_Product_ID";
+
+	/**
 	 * Set Picked HU.
 	 *
 	 * <br>Type: Search
@@ -443,27 +439,6 @@ public interface I_M_Picking_Job_Step
 
 	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_Processed = new ModelColumn<>(I_M_Picking_Job_Step.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
-
-	/**
-	 * Set Quantity (stock unit).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setQtyPicked (BigDecimal QtyPicked);
-
-	/**
-	 * Get Quantity (stock unit).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyPicked();
-
-	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_QtyPicked = new ModelColumn<>(I_M_Picking_Job_Step.class, "QtyPicked", null);
-	String COLUMNNAME_QtyPicked = "QtyPicked";
 
 	/**
 	 * Set Qty Rejected To Pick.

@@ -3,16 +3,18 @@ package de.metas.handlingunits.picking;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -148,13 +150,31 @@ public class PickingCandidateRepository
 				.qtyReview(qtyReview)
 				.qtyRejected(extractQtyRejected(record, uom))
 				//
-				.packToInstructionsId(HuPackingInstructionsId.ofRepoIdOrNull(record.getPackTo_HU_PI_ID()))
+				.packToSpec(extractPackToSpecOrNull(record))
 				.packedToHuId(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
 				//
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.pickingSlotId(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
 				//
 				.build();
+	}
+
+	@Nullable
+	private static PackToSpec extractPackToSpecOrNull(final @NonNull I_M_Picking_Candidate record)
+	{
+		final HUPIItemProductId tuPackingInstructionsId = HUPIItemProductId.ofRepoIdOrNull(record.getPackTo_HU_PI_Item_Product_ID());
+		if (tuPackingInstructionsId != null)
+		{
+			return PackToSpec.ofTUPackingInstructionsId(tuPackingInstructionsId);
+		}
+
+		final HuPackingInstructionsId genericPackingInstructionsId = HuPackingInstructionsId.ofRepoIdOrNull(record.getPackTo_HU_PI_ID());
+		if (genericPackingInstructionsId != null)
+		{
+			return PackToSpec.ofGenericPackingInstructionsId(genericPackingInstructionsId);
+		}
+
+		return null;
 	}
 
 	@Nullable
@@ -196,7 +216,10 @@ public class PickingCandidateRepository
 			record.setRejectReason(from.getQtyRejected().getReasonCode().getCode());
 		}
 
-		record.setPackTo_HU_PI_ID(HuPackingInstructionsId.toRepoId(from.getPackToInstructionsId()));
+		final Optional<PackToSpec> packToSpec = Optional.ofNullable(from.getPackToSpec());
+		record.setPackTo_HU_PI_ID(packToSpec.map(PackToSpec::getGenericPackingInstructionsId).map(HuPackingInstructionsId::toRepoId).orElse(-1));
+		record.setPackTo_HU_PI_Item_Product_ID(packToSpec.map(PackToSpec::getTuPackingInstructionsId).map(HUPIItemProductId::toRepoId).orElse(-1));
+
 		record.setM_HU_ID(HuId.toRepoId(from.getPackedToHuId()));
 
 		record.setM_ShipmentSchedule_ID(from.getShipmentScheduleId().getRepoId());
@@ -423,13 +446,20 @@ public class PickingCandidateRepository
 		}
 
 		//
+		// Only Picking Slots
+		if(!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingCandidatesQuery.getOnlyPickingSlotIds());
+		}
+
+		//
 		// Picking slot Barcode filter
-		final String pickingSlotBarcode = pickingCandidatesQuery.getPickingSlotBarcode();
-		if (!Check.isEmpty(pickingSlotBarcode, true))
+		final PickingSlotQRCode pickingSlotQRCode = pickingCandidatesQuery.getPickingSlotQRCode();
+		if (pickingSlotQRCode != null)
 		{
 			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
-					.barcode(pickingSlotBarcode)
+					.qrCode(pickingSlotQRCode)
 					.build());
 			if (pickingSlotIds.isEmpty())
 			{

@@ -43,7 +43,10 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.InvoiceRule;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
@@ -63,6 +66,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -124,24 +128,25 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
@@ -157,7 +162,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<org.compiere.model.I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<org.compiere.model.I_M_InOutLine> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		final InOutLinesWithMissingInvoiceCandidate dao = SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class);
 		return dao.retrieveLinesThatNeedAnInvoiceCandidate(limit);
@@ -366,10 +371,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		else
 		{
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
-			final String invoiceRule = billBPartner.getInvoiceRule();
-			if (!Check.isEmpty(invoiceRule))
+
+			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
+					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
+					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
+
+			if (invoiceRule!= null)
 			{
-				icRecord.setInvoiceRule(invoiceRule);
+				icRecord.setInvoiceRule(invoiceRule.getCode());
 			}
 			else
 			{
@@ -395,6 +404,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
+		else
+		{
+			setDefaultInvoiceDocType(icRecord);
+		}
+
+		icRecord.setC_Incoterms_ID(inOut.getC_Incoterms_ID());
+		icRecord.setIncotermLocation(inOut.getIncotermLocation());
 
 		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 
@@ -433,6 +449,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			iciol.setQtyDeliveredInUOM_Nominal(icRecord.getQtyEntered().multiply(qtyMultiplier));
 
 			saveRecord(iciol);
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("Setting qtyDelivered={} on icIol_ID={}",
+							icRecord.getQtyOrdered().multiply(qtyMultiplier), iciol.getC_InvoiceCandidate_InOutLine_ID());
 		}
 		else
 		{
@@ -594,7 +613,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (inOut.getC_Order_ID() > 0)
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
+			icRecord.setPaymentRule(order.getPaymentRule());
 			icRecord.setDateOrdered(order.getDateOrdered());
+
+			final boolean propagateToCInvoice = orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
+			if (Check.isBlank(icRecord.getEMail()) && propagateToCInvoice)
+			{
+				icRecord.setEMail(order.getEMail());
+			}
 		}
 		else if (icRecord.getC_Order_ID() <= 0)
 		{
@@ -607,7 +633,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (docStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(icRecord);
-			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
+			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> forcedQtyOrdered,
 					() -> extractQtyDelivered(icRecord, callerCanCreateAdditionalICs));
 
@@ -863,9 +889,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			);
 
 			final User billUser = bPartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-					.bpartnerId(billLocationFromInOut.getBpartnerId())
-					.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-					.build());
+																		   .bpartnerId(billLocationFromInOut.getBpartnerId())
+																		   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+																		   .build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;
@@ -927,7 +953,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				icRecord,
 				pricingResult.getTaxCategoryId(),
 				ProductId.toRepoId(pricingResult.getProductId()),

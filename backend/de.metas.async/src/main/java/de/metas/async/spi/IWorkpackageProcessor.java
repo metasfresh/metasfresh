@@ -57,7 +57,7 @@ public interface IWorkpackageProcessor
 	 * NOTE: never call this method directly, it will be called by API.
 	 * 
 	 * @param workpackage the package to be processed. Note that this package's context contains the <code>AD_Client_ID</code>, <code>AD_Org_ID</code> and <code>AD_User_ID</code> from the context in
-	 *            which the package's <code>C_Queue_Block</code> record was created.
+	 *            which the package record was created.
 	 * @param localTrxName transaction to be used while processing
 	 * @return the processing's outcome
 	 * @see Result

@@ -116,7 +116,8 @@ public final class OLCand implements IProductPriceAware
 	private final Quantity qty;
 
 	@Getter
-	private final BigDecimal qtyItemCapacity;
+	@Nullable
+	private final Quantity qtyItemCapacityEff;
 
 	@Getter
 	private final DocTypeId orderDocTypeId;
@@ -136,6 +137,15 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final BPartnerId salesRepInternalId;
 
+	@Getter
+	private final String bpartnerName;
+
+	@Getter
+	private final String phone;
+
+	@Getter
+	private final String email;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -154,8 +164,12 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final OrderLineGroup orderLineGroup,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
+			@Nullable final Quantity qtyItemCapacityEff,
 			@NonNull final AssignSalesRepRule assignSalesRepRule,
-			@Nullable final BPartnerId salesRepInternalId)
+			@Nullable final BPartnerId salesRepInternalId,
+			@Nullable final String bpartnerName,
+			@Nullable final String phone,
+			@Nullable final String email)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -183,7 +197,7 @@ public final class OLCand implements IProductPriceAware
 				olCandRecord.getQtyEntered(),
 				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
 
-		this.qtyItemCapacity = olCandRecord.getQtyItemCapacity();
+		this.qtyItemCapacityEff = qtyItemCapacityEff;
 
 		this.shipperId = shipperId;
 
@@ -197,6 +211,10 @@ public final class OLCand implements IProductPriceAware
 
 		this.assignSalesRepRule = assignSalesRepRule;
 		this.salesRepInternalId = salesRepInternalId;
+
+		this.bpartnerName = bpartnerName;
+		this.email = email;
+		this.phone = phone;
 	}
 
 	@Override
@@ -394,6 +412,18 @@ public final class OLCand implements IProductPriceAware
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
 		{
 			return getDatePromised();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_BPartnerName))
+		{
+			return getBpartnerName();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_EMail))
+		{
+			return getEmail();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Phone))
+		{
+			return getPhone();
 		}
 		else
 		{

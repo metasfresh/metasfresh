@@ -61,15 +61,21 @@ public interface IParams
 	/** @return boolean value or <code>false</code> if parameter is missing */
 	boolean getParameterAsBool(String parameterName);
 
+	@Nullable
+	Boolean getParameterAsBoolean(String parameterName, @Nullable Boolean defaultValue);
+
 	/** @return timestamp value or <code>null</code> if parameter is missing */
+	@Nullable
 	Timestamp getParameterAsTimestamp(String parameterName);
 
 	/** @return local date value or <code>null</code> if parameter is missing */
+	@Nullable
 	LocalDate getParameterAsLocalDate(String parameterName);
 
-	/** @return local date value or <code>null</code> if parameter is missing */
+	@Nullable
 	ZonedDateTime getParameterAsZonedDateTime(String parameterName);
 
+	@Nullable
 	Instant getParameterAsInstant(String parameterName);
 
 	/** @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal} */

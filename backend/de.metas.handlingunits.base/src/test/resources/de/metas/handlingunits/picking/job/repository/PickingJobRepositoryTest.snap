@@ -1,77 +1,119 @@
 de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[ {
-  "id" : 100002,
+  "docStatus" : "Drafted",
   "header" : {
-    "salesOrderDocumentNo" : "docno-2",
-    "preparationDate" : "2021-11-02T07:39:16Z",
     "customerName" : "bpname-3",
     "deliveryBPLocationId" : {
-      "repoId" : 4,
-      "bpartnerId" : 3
+      "bpartnerId" : 3,
+      "repoId" : 4
     },
     "deliveryRenderedAddress" : "deliveryRenderedAddress",
-    "lockedBy" : 5
+    "lockedBy" : 5,
+    "preparationDate" : "2021-11-02T07:39:16Z",
+    "salesOrderDocumentNo" : "docno-2"
   },
-  "pickingSlot" : null,
+  "id" : 1000000,
   "lines" : [ {
-    "id" : 100004,
+    "id" : 1000000,
     "productId" : 6,
-    "productName" : {
-      "ad_Languages" : [ ],
-      "defaultValue" : "productName-6"
-    },
+    "productName" : "productName-6",
+    "progress" : "NOT_STARTED",
+    "qtyToPick" : "100 Ea",
     "steps" : [ {
-      "id" : 100005,
+      "id" : 1000000,
+      "packToSpec" : {
+        "tuPackingInstructionsId" : 6789
+      },
+      "pickFroms" : {
+        "map" : {
+          "1000000" : {
+            "pickFromHU" : {
+              "id" : 1001,
+              "qrCode" : {
+                "attributes" : [ ],
+                "id" : "f18c5be34403b0f4fb25fb33a5fa-12562",
+                "packingInfo" : {
+                  "caption" : "Some TU",
+                  "huUnitType" : "TU",
+                  "packingInstructionsId" : 12340
+                },
+                "product" : {
+                  "code" : "product value",
+                  "id" : 12341,
+                  "name" : "product name"
+                }
+              }
+            },
+            "pickFromKey" : "1000000",
+            "pickFromLocator" : {
+              "caption" : "locatorName-22",
+              "id" : "21_22"
+            }
+          },
+          "MAIN" : {
+            "pickFromHU" : {
+              "id" : 11,
+              "qrCode" : {
+                "attributes" : [ ],
+                "id" : "7a71c087f45da0b8814896b31659-20155",
+                "packingInfo" : {
+                  "caption" : "Some TU",
+                  "huUnitType" : "TU",
+                  "packingInstructionsId" : 12340
+                },
+                "product" : {
+                  "code" : "product value",
+                  "id" : 12341,
+                  "name" : "product name"
+                }
+              }
+            },
+            "pickFromKey" : "MAIN",
+            "pickFromLocator" : {
+              "caption" : "locatorName-10",
+              "id" : "9_10"
+            }
+          }
+        },
+        "progress" : "NOT_STARTED",
+        "qtyPickedSum" : null
+      },
+      "productId" : 6,
+      "productName" : "productName-6",
+      "progress" : "NOT_STARTED",
+      "qtyToPick" : "100 Ea",
       "salesOrderAndLineId" : {
         "orderId" : 2,
         "orderLineId" : 8
       },
-      "shipmentScheduleId" : 7,
-      "productId" : 6,
-      "productName" : {
-        "ad_Languages" : [ ],
-        "defaultValue" : "productName-6"
-      },
-      "qtyToPick" : {
-        "qty" : "100",
-        "uomId" : 100001
-      },
-      "pickFromLocator" : {
-        "id" : "9_10",
-        "caption" : "locatorName-10"
-      },
-      "pickFromHU" : {
-        "id" : 11,
-        "barcode" : "11"
-      },
-      "pickFromAlternativeIds" : [ 100003 ],
-      "picked" : null
-    } ],
-    "qtyToPick" : {
-      "qty" : "100",
-      "uomId" : 100001
-    },
-    "qtyPicked" : {
-      "qty" : "0",
-      "uomId" : 100001
-    },
-    "progress" : "NOT_STARTED"
+      "shipmentScheduleId" : 7
+    } ]
   } ],
   "pickFromAlternatives" : [ {
-    "id" : 100003,
+    "id" : 1000000,
     "locatorInfo" : {
-      "id" : "21_22",
-      "caption" : "locatorName-22"
+      "caption" : "locatorName-22",
+      "id" : "21_22"
     },
     "pickFromHU" : {
       "id" : 1001,
-      "barcode" : "1001"
+      "qrCode" : {
+        "attributes" : [ ],
+        "id" : "f18c5be34403b0f4fb25fb33a5fa-12562",
+        "packingInfo" : {
+          "caption" : "Some TU",
+          "huUnitType" : "TU",
+          "packingInstructionsId" : 12340
+        },
+        "product" : {
+          "code" : "product value",
+          "id" : 12341,
+          "name" : "product name"
+        }
+      }
     },
     "productId" : 6,
-    "qtyAvailable" : {
-      "qty" : "999",
-      "uomId" : 100001
-    }
+    "qtyAvailable" : "999 Ea"
   } ],
-  "docStatus" : "Drafted",
+  "pickingSlot" : null,
   "progress" : "NOT_STARTED"
 } ]

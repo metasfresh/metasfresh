@@ -63,33 +63,32 @@ public class PaymentRequestProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<JsonOrderPaymentCreateRequest> buildOrderPaymentCreateRequest(
-			@NonNull final ImportOrdersRouteContext context)
+	private Optional<JsonOrderPaymentCreateRequest> buildOrderPaymentCreateRequest(@NonNull final ImportOrdersRouteContext context)
 	{
 		final JsonPaymentMethod paymentMethod = context.getCompositeOrderNotNull().getJsonPaymentMethod();
 		final JsonOrderTransaction orderTransaction = context.getCompositeOrderNotNull().getOrderTransaction();
+		final JsonOrder order = context.getOrderNotNull().getJsonOrder();
 
 		final boolean isPaypalType = PaymentMethodType.PAY_PAL_PAYMENT_HANDLER.getValue().equals(paymentMethod.getShortName());
 		final boolean isPaid = TechnicalNameEnum.PAID.getValue().equals(orderTransaction.getStateMachine().getTechnicalName());
 
-		if (!isPaypalType || !isPaid)
+		if (!(isPaypalType && isPaid))
 		{
-			processLogger.logMessage("*** Skipping the current payment based on paid status & paypal type!"
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Not sending current payment to metasfresh; it would have to be 'paypal' and 'paid'!"
 											 + " PaymentId = " + orderTransaction.getId()
 											 + " paidStatus = " + isPaid
 											 + " paypalType = " + isPaypalType, JsonMetasfreshId.toValue(context.getPInstanceId()));
 			return Optional.empty();
 		}
 
-		final JsonOrder order = context.getOrderNotNull().getJsonOrder();
-
 		final String currencyCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(order.getCurrencyId());
-		final String bPartnerIdentifier = context.getOrderNotNull().getEffectiveCustomerId();
+
+		final String bPartnerIdentifier = context.getBPExternalIdentifier().getIdentifier();
 
 		return Optional.of(JsonOrderPaymentCreateRequest.builder()
 								   .orgCode(context.getOrgCode())
 								   .externalPaymentId(orderTransaction.getId())
-								   .bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerIdentifier))
+								   .bpartnerIdentifier(bPartnerIdentifier)
 
 								   .amount(orderTransaction.getAmount().getTotalPrice())
 								   .currencyCode(currencyCode)

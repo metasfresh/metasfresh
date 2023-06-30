@@ -22,20 +22,19 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 {
@@ -44,14 +43,16 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 	@Override
 	protected void setup()
 	{
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+
 		orderReceiptScheduleProducer = createReceiptScheduleProducer();
 	}
 
 	protected IReceiptScheduleProducer createReceiptScheduleProducer()
 	{
-		final IReceiptScheduleProducer rsProducer = Services.get(IReceiptScheduleProducerFactory.class)
-				.createProducer(I_C_Order.Table_Name, false); // async=false
-		return rsProducer;
+		return Services.get(IReceiptScheduleProducerFactory.class)
+				.createProducer(I_C_Order.Table_Name, false);
 	}
 
 	protected void assertOrderMatches(final I_M_ReceiptSchedule rc, final I_C_Order fromOrder)

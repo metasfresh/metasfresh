@@ -1,6 +1,5 @@
 package de.metas.error.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.PreparedStatement;
@@ -14,6 +13,7 @@ import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.EmptyUtil;
+import de.metas.error.AdIssueFactory;
 import de.metas.error.InsertRemoteIssueRequest;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -24,6 +24,7 @@ import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -79,7 +80,7 @@ public class ErrorManager implements IErrorManager
 	@NonNull
 	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
 	{
-		final I_AD_Issue issue = newInstance(I_AD_Issue.class);
+		final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
 
 		final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(request.getIssueCategory());
 		issue.setIssueCategory(issueCategory.getCode());
@@ -110,7 +111,7 @@ public class ErrorManager implements IErrorManager
 		// Create AD_Issue
 		final AdIssueId adIssueId;
 		{
-			final I_AD_Issue issue = newInstance(I_AD_Issue.class);
+			final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
 
 			final IssueCategory issueCategory = extractIssueCategory(throwable);
 			issue.setIssueCategory(issueCategory.getCode());

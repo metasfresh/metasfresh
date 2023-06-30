@@ -114,8 +114,8 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.device.adempiere</groupId>
-            <artifactId>de.metas.device.adempiere</artifactId>
+            <groupId>de.metas.device.webui</groupId>
+            <artifactId>de.metas.device.webui</artifactId>
             <version>10.0.0</version>
         </dependency>
 

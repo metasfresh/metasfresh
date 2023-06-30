@@ -1,76 +1,22 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import classnames from 'classnames';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { getEntryItemsFromState } from '../reducers/headers';
 
-class ViewHeader extends Component {
-  render() {
-    const { headersEntries } = this.props;
-    //console.log('************* renderHeaderLanes: ', headersEntries);
+export const ViewHeader = () => {
+  const entryItems = useSelector((state) => getEntryItemsFromState(state));
 
-    return (
-      <div className={classnames({ 'header-caption': headersEntries })}>{this.renderHeaderLanes(headersEntries)}</div>
-    );
-  }
+  if (entryItems.length <= 0) return null;
 
-  renderHeaderLanes(headersEntries) {
-    if (!headersEntries) {
-      return null;
-    }
-
-    let nextIndex = 0;
-    return headersEntries.map((headersEntry) => {
-      const laneComponent = this.renderHeaderLane(headersEntry, nextIndex);
-
-      if (laneComponent) {
-        nextIndex++;
-      }
-
-      return laneComponent;
-    });
-  }
-
-  renderHeaderLane(headersEntry, idx) {
-    if (headersEntry.hidden) {
-      return null;
-    }
-
-    return (
-      <div
-        key={idx}
-        className={classnames(
-          'picking-step-details centered-text is-size-6',
-          `py-4`,
-          `px-${idx + 4}`,
-          `header_info_${idx}`
-        )}
-      >
-        {headersEntry.values &&
-          headersEntry.values.map(({ caption, value, bold }, i) => {
-            return (
-              <div key={i} className="columns is-mobile is-size-7">
-                <div className="column is-half has-text-left has-text-weight-bold pt-0 pb-0 pl-1 pr-0">{caption}:</div>
-                <div className={classnames('column is-half has-text-left pt-0 pb-0', { 'is-size-4': bold })}>
-                  {value}
-                </div>
-              </div>
-            );
-          })}
-      </div>
-    );
-  }
-}
-
-const mapStateToProps = (state) => {
-  return {
-    headersEntries: state.headers.entries,
-  };
+  return (
+    <table className="table view-header is-size-6">
+      <tbody>
+        {entryItems.map((entry, i) => (
+          <tr key={i}>
+            <th>{entry.caption}</th>
+            <td>{entry.value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 };
-
-ViewHeader.propTypes = {
-  //
-  // Props:
-  headersEntries: PropTypes.array.isRequired,
-};
-
-export default connect(mapStateToProps, null)(ViewHeader);

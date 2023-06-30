@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -523280635L;
+	private static final long serialVersionUID = 1341313327L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -41,7 +41,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getAddress() 
+	public java.lang.String getAddress()
 	{
 		return get_ValueAsString(COLUMNNAME_Address);
 	}
@@ -302,6 +302,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsEphemeral (final boolean IsEphemeral)
+	{
+		set_Value (COLUMNNAME_IsEphemeral, IsEphemeral);
+	}
+
+	@Override
+	public boolean isEphemeral()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEphemeral);
+	}
+
+	@Override
 	public void setIsHandOverLocation (final boolean IsHandOverLocation)
 	{
 		set_Value (COLUMNNAME_IsHandOverLocation, IsHandOverLocation);
@@ -311,6 +323,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isHandOverLocation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHandOverLocation);
+	}
+
+	@Override
+	public void setIsNameReadWrite (final boolean IsNameReadWrite)
+	{
+		set_Value (COLUMNNAME_IsNameReadWrite, IsNameReadWrite);
+	}
+
+	@Override
+	public boolean isNameReadWrite() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNameReadWrite);
 	}
 
 	@Override
@@ -335,6 +359,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isRemitTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRemitTo);
+	}
+
+	@Override
+	public void setIsReplicationLookupDefault (final boolean IsReplicationLookupDefault)
+	{
+		set_Value (COLUMNNAME_IsReplicationLookupDefault, IsReplicationLookupDefault);
+	}
+
+	@Override
+	public boolean isReplicationLookupDefault() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReplicationLookupDefault);
 	}
 
 	@Override

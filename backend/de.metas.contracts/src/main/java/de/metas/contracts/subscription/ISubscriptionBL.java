@@ -63,8 +63,6 @@ public interface ISubscriptionBL extends ISingletonService
 	 * Iterate the given deliveries, sum up their price (using their orderline's product and priceActual). Then compute
 	 * the price that would be payable with the given pricing system and return the difference.
 	 *
-	 * @param ctx
-	 * @param pricingSystemId
 	 * @param deliveries      instances with {@link I_C_SubscriptionProgress#COLUMNNAME_EventType} =
 	 *                        {@link X_C_SubscriptionProgress#EVENTTYPE_Delivery}.
 	 * @return a positive number if the deliveries would be more expensive with the given pricing system. A negative
@@ -80,9 +78,6 @@ public interface ISubscriptionBL extends ISingletonService
 	 * "Next" means the next record after the given date. If the sc doesn't have a next record and the subscription is
 	 * supposed to go on, new records are created. If the next record's event date is the current date, the sc's
 	 * subscriptionStatus is set to the next record's subscription status.
-	 *
-	 * @param sc
-	 * @param currentDate
 	 */
 	void evalCurrentSPs(I_C_Flatrate_Term sc, Timestamp currentDate);
 
@@ -97,11 +92,9 @@ public interface ISubscriptionBL extends ISingletonService
 	 * <code>TermDuration</code>, <code>FrequencyType</code> and <code>Frequency</code> values to compute the number of
 	 * subscription deliveries, starting from the given date.
 	 *
-	 * @param trans
 	 * @param date  note that the method uses a {@link GregorianCalendar} to make the computations. Because different
 	 *              months have different numbers of days, the result might be different for different <code>date</code>
 	 *              values.
-	 * @return
 	 */
 	int computeNumberOfRuns(I_C_Flatrate_Transition trans, Timestamp date);
 
@@ -110,19 +103,15 @@ public interface ISubscriptionBL extends ISingletonService
 	/**
 	 * Creates a new term for the given order line
 	 *
-	 * @param ol
 	 * @param completeIt if <code>true</code>, then the new term is completed
-	 * @return
 	 */
 	I_C_Flatrate_Term createSubscriptionTerm(I_C_OrderLine ol, boolean completeIt);
 
 	I_C_Flatrate_Term createSubscriptionTerm(I_C_OLCand olCand, boolean completeIt);
 
 	/**
-	 * @param ctx
 	 * @param completeIt      if <code>true</code>, the new terms will directly be completed.
 	 * @param AD_PInstance_ID the process instance ID of the process that called this method. Will be stored for documentation.
-	 * @param trxName
 	 * @return the number of <code>C_OLCand</code> records that were processed.
 	 */
 	int createMissingTermsForOLCands(Properties ctx, boolean completeIt, PInstanceId AD_PInstance_ID, String trxName);
@@ -140,14 +129,13 @@ public interface ISubscriptionBL extends ISingletonService
 
 	/**
 	 * Creates a Price change record in <code>C_SubscriptionProgress</code>
-	 * @param term
 	 */
 	void createPriceChange(@NonNull final I_C_Flatrate_Term term);
 
 	/**
 	 * Creates a Price change record in <code>C_SubscriptionProgress</code>
-	 * @param term
 	 */
-	void createQtyChange(@NonNull final I_C_Flatrate_Term term,
-			@Nullable final BigDecimal newQty);
+	void createQtyChange(@NonNull final I_C_Flatrate_Term term,	@Nullable final BigDecimal newQty);
+
+	boolean isSubscription(final I_C_OrderLine ol);
 }
