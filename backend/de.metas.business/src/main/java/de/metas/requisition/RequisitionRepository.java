@@ -48,7 +48,7 @@ public class RequisitionRepository
 
 	public List<I_M_RequisitionLine> getLinesByRequisitionId(final int requisitionId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_RequisitionLine.class)
 				.addEqualsFilter(I_M_RequisitionLine.COLUMNNAME_M_Requisition_ID, requisitionId)
 				.orderBy(I_M_RequisitionLine.COLUMNNAME_Line)
