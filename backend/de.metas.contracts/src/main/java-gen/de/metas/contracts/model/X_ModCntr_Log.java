@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 453313620L;
+	private static final long serialVersionUID = 1784155537L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -51,7 +51,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public void setAmount (final BigDecimal Amount)
+	public void setAmount (final @Nullable BigDecimal Amount)
 	{
 		set_Value (COLUMNNAME_Amount, Amount);
 	}
@@ -166,7 +166,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public void setDateTrx (final @Nullable java.sql.Timestamp DateTrx)
+	public void setDateTrx (final java.sql.Timestamp DateTrx)
 	{
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
 	}
@@ -258,7 +258,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	/** Definitive Final Settlement = DefinitiveFinalSettlement */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement = "DefinitiveFinalSettlement";
 	@Override
-	public void setModCntr_Log_DocumentType (final @Nullable java.lang.String ModCntr_Log_DocumentType)
+	public void setModCntr_Log_DocumentType (final java.lang.String ModCntr_Log_DocumentType)
 	{
 		set_Value (COLUMNNAME_ModCntr_Log_DocumentType, ModCntr_Log_DocumentType);
 	}
