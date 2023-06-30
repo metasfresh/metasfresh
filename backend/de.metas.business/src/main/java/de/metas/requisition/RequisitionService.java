@@ -22,12 +22,9 @@
 
 package de.metas.requisition;
 
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MCharge;
@@ -105,8 +102,7 @@ public class RequisitionService
 
 		final I_M_Requisition requisition = requisitionRepository.getById(requisitionId);
 		requisition.setTotalLines(calculatedTotalAmt);
-		InterfaceWrapperHelper.save(requisition);
 
-		CacheMgt.get().reset(CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_M_Requisition.Table_Name, requisitionId.getRepoId()));
+		requisitionRepository.save(requisition);
 	}
 }
