@@ -544,6 +544,7 @@ public class SourceDocumentsService
 				.warehouseId(warehouseId)
 				.warehouseCode(warehouse.getValue())
 				.warehouseName(warehouse.getName())
+				.warehouseExternalId(warehouse.getExternalId())
 				.build();
 	}
 

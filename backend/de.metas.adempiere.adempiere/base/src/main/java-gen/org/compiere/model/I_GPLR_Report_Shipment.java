@@ -344,6 +344,27 @@ public interface I_GPLR_Report_Shipment
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
+	 * Set Warehouse External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWarehouseExternalId (@Nullable java.lang.String WarehouseExternalId);
+
+	/**
+	 * Get Warehouse External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWarehouseExternalId();
+
+	ModelColumn<I_GPLR_Report_Shipment, Object> COLUMN_WarehouseExternalId = new ModelColumn<>(I_GPLR_Report_Shipment.class, "WarehouseExternalId", null);
+	String COLUMNNAME_WarehouseExternalId = "WarehouseExternalId";
+
+	/**
 	 * Set Warehouse Name.
 	 *
 	 * <br>Type: String

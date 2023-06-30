@@ -225,6 +225,7 @@ final class GPLRReportCreateCommand
 		return GPLRWarehouseName.builder()
 				.code(shipment.getShipFrom().getWarehouseCode())
 				.name(shipment.getShipFrom().getWarehouseName())
+				.externalId(shipment.getShipFrom().getWarehouseExternalId())
 				.build();
 	}
 

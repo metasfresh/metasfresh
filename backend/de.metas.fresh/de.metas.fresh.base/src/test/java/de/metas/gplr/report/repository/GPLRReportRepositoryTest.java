@@ -122,6 +122,7 @@ class GPLRReportRepositoryTest
 								.warehouse(GPLRWarehouseName.builder()
 										.code("wh_code")
 										.name("wh_name")
+										.externalId("wh_externalId")
 										.build())
 								.movementDate(localDateAndOrgId("2022-06-11", orgId))
 								.incoterms(GPLRIncotermsInfo.builder()

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_GPLR_Report_Shipment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1959906795L;
+	private static final long serialVersionUID = -293172243L;
 
     /** Standard Constructor */
     public X_GPLR_Report_Shipment (final Properties ctx, final int GPLR_Report_Shipment_ID, @Nullable final String trxName)
@@ -170,6 +170,18 @@ public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_G
 	public java.lang.String getShipTo_CountryCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_ShipTo_CountryCode);
+	}
+
+	@Override
+	public void setWarehouseExternalId (final @Nullable java.lang.String WarehouseExternalId)
+	{
+		set_Value (COLUMNNAME_WarehouseExternalId, WarehouseExternalId);
+	}
+
+	@Override
+	public java.lang.String getWarehouseExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_WarehouseExternalId);
 	}
 
 	@Override
