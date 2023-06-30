@@ -29,8 +29,6 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractType;
-import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -69,7 +67,7 @@ public class ModularContractService
 
 	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action)
 	{
-		handler.getContractIds(model)
+		handler.streamContractIds(model)
 				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
 				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId));
 	}
@@ -91,7 +89,7 @@ public class ModularContractService
 		return Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, flatrateTerm.getType_Conditions());
 	}
 
-	private <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, @Nullable final ModularContractSettings settings)
+	private static <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, @Nullable final ModularContractSettings settings)
 	{
 		if (settings == null)
 		{
@@ -100,9 +98,7 @@ public class ModularContractService
 		final String handlerClassName = handler.getClass().getName();
 		return settings.getModuleConfigs()
 				.stream()
-				.map(ModuleConfig::getModularContractType)
-				.map(ModularContractType::getClassName)
-				.anyMatch(handlerClassName::equals);
+				.anyMatch(config -> config.isMatchingClassName(handlerClassName));
 	}
 
 	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)

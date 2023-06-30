@@ -54,7 +54,7 @@ public class CalendarId implements RepoIdAware
 
 	private CalendarId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "calendarId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Calendar_ID");
 	}
 
 	@JsonValue

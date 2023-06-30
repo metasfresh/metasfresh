@@ -132,7 +132,7 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
-		public @NonNull Stream<FlatrateTermId> getContractIds(@NonNull final Object model)
+		public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final Object model)
 		{
 			return Stream.empty();
 		}

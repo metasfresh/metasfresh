@@ -41,4 +41,9 @@ public class ModuleConfig
 	@NonNull ProductId productId;
 
 	@NonNull ModularContractType modularContractType;
+
+	public boolean isMatchingClassName(@NonNull final String className)
+	{
+		return modularContractType.isMatchingClassName(className);
+	}
 }

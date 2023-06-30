@@ -10,12 +10,12 @@ package org.adempiere.appdict.validation.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,12 +24,12 @@ package org.adempiere.appdict.validation.spi.impl;
 
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
-import de.metas.util.lang.ClassLoaderUtil;
 import lombok.NonNull;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
+import org.compiere.util.Util;
 
 public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 {
@@ -50,7 +50,7 @@ public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 			return;
 		}
 
-		ClassLoaderUtil.validateJavaClassname(process.getClassname(), JavaProcess.class);
+		Util.validateJavaClassname(process.getClassname(), JavaProcess.class);
 	}
 
 	@Override

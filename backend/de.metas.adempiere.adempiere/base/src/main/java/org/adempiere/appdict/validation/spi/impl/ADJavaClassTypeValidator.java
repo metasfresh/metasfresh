@@ -24,11 +24,11 @@ package org.adempiere.appdict.validation.spi.impl;
 
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Check;
-import de.metas.util.lang.ClassLoaderUtil;
 import lombok.NonNull;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Util;
 
 public class ADJavaClassTypeValidator extends AbstractADValidator<I_AD_JavaClass_Type>
 {
@@ -67,7 +67,7 @@ public class ADJavaClassTypeValidator extends AbstractADValidator<I_AD_JavaClass
 			return;
 		}
 
-		ClassLoaderUtil.validateJavaClassname(item.getClassname(), null);
+		Util.validateJavaClassname(item.getClassname(), null);
 	}
 
 }

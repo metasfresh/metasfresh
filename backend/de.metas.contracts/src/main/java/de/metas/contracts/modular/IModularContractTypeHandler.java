@@ -65,6 +65,6 @@ public interface IModularContractTypeHandler<T>
 	 * </ul>
 	 */
 	@NonNull
-	Stream<FlatrateTermId> getContractIds(@NonNull T model);
+	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
 
 }

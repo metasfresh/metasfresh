@@ -22,20 +22,19 @@ package org.adempiere.appdict.validation.spi.impl;
  * #L%
  */
 
-
-import de.metas.util.lang.ClassLoaderUtil;
 import lombok.NonNull;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_ModelValidator;
+import org.compiere.util.Util;
 
 public class ADModelValidatorADValidator extends AbstractADValidator<I_AD_ModelValidator>
 {
 	@Override
 	public void validate(@NonNull final I_AD_ModelValidator modelValidator)
 	{
-		ClassLoaderUtil.validateJavaClassname(modelValidator.getModelValidationClass(), null);
+		Util.validateJavaClassname(modelValidator.getModelValidationClass(), null);
 	}
 
 	@Override

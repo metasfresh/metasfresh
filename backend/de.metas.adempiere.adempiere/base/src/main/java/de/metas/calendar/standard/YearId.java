@@ -59,7 +59,7 @@ public class YearId implements RepoIdAware
 
 	private YearId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "yearId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Year_ID");
 	}
 
 	@JsonValue

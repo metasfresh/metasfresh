@@ -22,47 +22,10 @@
 
 package de.metas.util.lang;
 
-import de.metas.util.Check;
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-
-import javax.annotation.Nullable;
 
 @UtilityClass
 public class ClassLoaderUtil
 {
-	public Class<?> validateJavaClassname(
-			@NonNull final String classname,
-			@Nullable final Class<?> parentClass)
-	{
-		if (Check.isBlank(classname))
-		{
-			throw Check.mkEx("Given classname is blank");
-		}
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		if (cl == null)
-		{
-			cl = ClassLoaderUtil.class.getClassLoader();
-		}
 
-		final Class<?> clazz;
-		try
-		{
-			clazz = cl.loadClass(classname);
-		}
-		catch (final ClassNotFoundException e)
-		{
-			throw Check.mkEx("Classname not found: " + classname, e);
-		}
-
-		if (parentClass != null)
-		{
-			if (!parentClass.isAssignableFrom(clazz))
-			{
-				throw Check.mkEx("Class " + clazz + " is not assignable from " + parentClass);
-			}
-		}
-
-		return clazz;
-	}
 }

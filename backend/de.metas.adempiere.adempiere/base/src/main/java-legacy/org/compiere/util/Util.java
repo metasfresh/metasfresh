@@ -16,6 +16,18 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import com.google.common.io.BaseEncoding;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.lang.ClassLoaderUtil;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.reflect.ClassInstanceProvider;
+import org.adempiere.util.reflect.IClassInstanceProvider;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -27,18 +39,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.reflect.ClassInstanceProvider;
-import org.adempiere.util.reflect.IClassInstanceProvider;
-import org.slf4j.Logger;
-
-import com.google.common.io.BaseEncoding;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
 /**
  * General Utilities
@@ -180,6 +180,41 @@ public class Util
 		{
 			throw new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, e);
 		}
+	}
+
+	public static  Class<?> validateJavaClassname(
+			@NonNull final String classname,
+			@Nullable final Class<?> parentClass)
+	{
+		if (Check.isBlank(classname))
+		{
+			throw Check.mkEx("Given classname is blank");
+		}
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		if (cl == null)
+		{
+			cl = ClassLoaderUtil.class.getClassLoader();
+		}
+
+		final Class<?> clazz;
+		try
+		{
+			clazz = cl.loadClass(classname);
+		}
+		catch (final ClassNotFoundException e)
+		{
+			throw Check.mkEx("Classname not found: " + classname, e);
+		}
+
+		if (parentClass != null)
+		{
+			if (!parentClass.isAssignableFrom(clazz))
+			{
+				throw Check.mkEx("Class " + clazz + " is not assignable from " + parentClass);
+			}
+		}
+
+		return clazz;
 	}
 
 	/**

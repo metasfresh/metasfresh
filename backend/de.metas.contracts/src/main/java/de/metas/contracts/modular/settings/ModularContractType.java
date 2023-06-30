@@ -27,6 +27,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -37,4 +38,8 @@ public class ModularContractType
 	@Nullable String value;
 	@Nullable String name;
 
+	public boolean isMatchingClassName(@NonNull final String className)
+	{
+		return Objects.equals(this.className, className);
+	}
 }

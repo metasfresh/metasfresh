@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -59,7 +58,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -99,8 +97,8 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(model.getC_Order_ID()));
 		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
 				.stream()
+				.filter(config -> config.isMatchingClassName(PurchaseOrderLineModularContractHandler.class.getName()))
 				.map(ModuleConfig::getModularContractType)
-				.filter(moduleConfig -> Objects.equals(moduleConfig.getClassName(), PurchaseOrderLineModularContractHandler.class.getName()))
 				.map(ModularContractType::getId)
 				.findFirst();
 
@@ -122,7 +120,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.quantity(quantity)
 				.amount(amount)
 				.transactionDate(InstantAndOrgId.ofTimestamp(order.getDateOrdered(), OrgId.ofRepoId(model.getAD_Org_ID())).toLocalDateAndOrgId(orgDAO::getTimeZone))
-				.year(YearId.ofRepoId(order.getC_Year_ID()))
+				.year(modularContractSettings.getYearAndCalendarId().getRepoId())
 				.description(null)
 				.modularContractTypeId(contractTypeId)
 				.build());
@@ -138,7 +136,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> getContractIds(@NonNull final I_C_OrderLine model)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine model)
 	{
 		if (!probablyAppliesTo(model))
 		{
