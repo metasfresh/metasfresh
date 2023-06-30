@@ -131,7 +131,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$R{basecurrency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-67" x="100" y="0" width="102" height="12" forecolor="#000000" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
+				<reportElement key="textField-67" x="95" y="0" width="102" height="12" forecolor="#000000" uuid="0520be83-a103-4ad8-bac8-fec739bc0b98"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -144,7 +144,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$R{sales}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-68" x="202" y="1" width="88" height="12" forecolor="#000000" uuid="56fc55f7-e408-480c-82fb-c08909c1a770"/>
+				<reportElement key="textField-68" x="202" y="1" width="78" height="12" forecolor="#000000" uuid="56fc55f7-e408-480c-82fb-c08909c1a770"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -157,7 +157,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$R{taxes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-69" x="290" y="1" width="140" height="12" forecolor="#000000" uuid="d0d86baf-aa32-4d59-9184-1f3bfbf6c4ad"/>
+				<reportElement key="textField-69" x="283" y="1" width="96" height="12" forecolor="#000000" uuid="d0d86baf-aa32-4d59-9184-1f3bfbf6c4ad"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -170,7 +170,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$R{estimated}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-70" x="434" y="1" width="104" height="12" forecolor="#000000" uuid="702bb2f4-7b83-403d-b760-efc240fa593f"/>
+				<reportElement key="textField-70" x="470" y="1" width="75" height="12" forecolor="#000000" uuid="702bb2f4-7b83-403d-b760-efc240fa593f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,6 +210,19 @@ order by GPLR_Report_Summary_ID
 				</textElement>
 				<textFieldExpression><![CDATA[$R{profit_rate}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-69" x="380" y="1" width="90" height="12" forecolor="#000000" uuid="d847ae0a-bdb4-4ca1-9360-9d47db146ebb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{costgoods}]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<detail>
@@ -229,7 +242,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$F{localcurrencycode}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-67" x="90" y="0" width="112" height="12" forecolor="#000000" uuid="13d2ba4b-75a8-4487-b568-f7d7be6853da"/>
+				<reportElement key="textField-67" x="85" y="0" width="112" height="12" forecolor="#000000" uuid="13d2ba4b-75a8-4487-b568-f7d7be6853da"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -255,7 +268,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$F{foreigncurrencycode}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-67" x="90" y="15" width="112" height="12" forecolor="#000000" uuid="3f20b79b-f7e3-4782-bcef-5e529ae97955"/>
+				<reportElement key="textField-67" x="85" y="15" width="112" height="12" forecolor="#000000" uuid="3f20b79b-f7e3-4782-bcef-5e529ae97955"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -268,7 +281,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$F{sales_fc}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-68" x="202" y="1" width="88" height="12" forecolor="#000000" uuid="f4f45dc7-2a7a-46c7-909d-5a1b95d91026"/>
+				<reportElement key="textField-68" x="202" y="1" width="78" height="12" forecolor="#000000" uuid="f4f45dc7-2a7a-46c7-909d-5a1b95d91026"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -281,7 +294,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$F{taxes_lc}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-68" x="290" y="1" width="140" height="12" forecolor="#000000" uuid="f221b760-d691-4a9f-8d75-aa41872d6347"/>
+				<reportElement key="textField-68" x="283" y="1" width="96" height="12" forecolor="#000000" uuid="f221b760-d691-4a9f-8d75-aa41872d6347"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -294,7 +307,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$F{estimated_lc}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-68" x="290" y="15" width="140" height="12" forecolor="#000000" uuid="b6f4805c-78bc-44e1-9e83-5b11e5e40106"/>
+				<reportElement key="textField-68" x="283" y="15" width="96" height="12" forecolor="#000000" uuid="b6f4805c-78bc-44e1-9e83-5b11e5e40106"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -307,7 +320,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$F{estimated_fc}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-70" x="434" y="1" width="104" height="12" forecolor="#000000" uuid="2e3e8cef-bd56-4ac6-833e-75ef647b12b7"/>
+				<reportElement key="textField-70" x="470" y="1" width="75" height="12" forecolor="#000000" uuid="2e3e8cef-bd56-4ac6-833e-75ef647b12b7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -320,7 +333,7 @@ order by GPLR_Report_Summary_ID
 				<textFieldExpression><![CDATA[$F{charges_lc}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-70" x="434" y="15" width="104" height="12" forecolor="#000000" uuid="05d626a2-183e-4d14-b982-3ebdf7de248e"/>
+				<reportElement key="textField-70" x="470" y="15" width="75" height="12" forecolor="#000000" uuid="05d626a2-183e-4d14-b982-3ebdf7de248e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -372,6 +385,19 @@ order by GPLR_Report_Summary_ID
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" %"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-68" x="380" y="1" width="90" height="12" forecolor="#000000" uuid="11b40bc4-a1e5-4d42-8742-73a1d5398170"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cogs_lc}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
