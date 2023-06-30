@@ -23,7 +23,6 @@ package org.adempiere.acct.api;
  */
 
 import de.metas.acct.Account;
-import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.money.Money;
 import de.metas.util.ISingletonService;
