@@ -257,7 +257,22 @@ order by  GPLR_Report_Shipment_ID
 				<textElement textAlignment="Left">
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
+<<<<<<< HEAD
 				<textFieldExpression><![CDATA[$F{warehousevalue}+" "+$F{warehousename}]]></textFieldExpression>
+=======
+				<textFieldExpression><![CDATA[$F{isb2b}.equals("Y") ? "XXXX" :
+(
+	($F{warehouseexternalid}!=null ?
+        (
+	        ($F{warehouseexternalid}.length() > 4 ?
+                    $F{warehouseexternalid}.substring($F{warehouseexternalid}.length() - 4)
+                    : $F{warehouseexternalid}
+            )
+        )+" "
+	 : ""
+   )    +	$F{warehousevalue}+" "+$F{warehousename}
+)]]></textFieldExpression>
+>>>>>>> 2b9c5b07783 (Add warehouseexternalid in front of the entire string (#15781))
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-71" x="390" y="0" width="70" height="12" forecolor="#000000" uuid="033a8a76-f451-43a0-874a-3aa3bb97c722"/>
