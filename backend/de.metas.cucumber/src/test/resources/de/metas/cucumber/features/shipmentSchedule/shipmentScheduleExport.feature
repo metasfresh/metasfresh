@@ -39,9 +39,9 @@ Feature: Shipment schedule export rest-api
       | shipLocation             | DE          | addr ship 10 | 123        | shipCity |
       | billLocation             | DE          | addr bill 11 | 456        | billCity |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier     | GLN              | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail         | OPT.BPartnerName | OPT.Phone |
-      | shipBPLocation | ship_location123 | customer_so_25_02        | shipLocation                 | true         | false        | ship@location.com | shipBPName       | 321       |
-      | billBPLocation | bill_location123 | customer_so_25_02        | billLocation                 | false        | true         | bill@location.com | billBPName       | 654       |
+      | Identifier     | GLN                 | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail         | OPT.BPartnerName | OPT.Phone |
+      | shipBPLocation | ship_location_S0150 | customer_so_25_02        | shipLocation                 | true         | false        | ship@location.com | shipBPName       | 321       |
+      | billBPLocation | bill_location_S0150 | customer_so_25_02        | billLocation                 | false        | true         | bill@location.com | billBPName       | 654       |
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name     | OPT.EMail     | OPT.AD_Language | OPT.C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.Phone |
       | shipUser              | shipUser | ship@user.com | de_DE           | customer_so_25_02            | shipBPLocation               | 123       |
@@ -71,13 +71,13 @@ Feature: Shipment schedule export rest-api
     "externalLineId": 1111,
     "dataSource": "int-Shopware",
     "bpartner": {
-        "bpartnerIdentifier": "gln-ship_location123",
-        "bpartnerLocationIdentifier": "gln-ship_location123",
+        "bpartnerIdentifier": "gln-ship_location_S0150",
+        "bpartnerLocationIdentifier": "gln-ship_location_S0150",
         "contactIdentifier": "ext-Shopware6-shipUser_reference"
     },
     "billBPartner": {
-        "bpartnerIdentifier": "gln-bill_location123",
-        "bpartnerLocationIdentifier": "gln-bill_location123",
+        "bpartnerIdentifier": "gln-bill_location_S0150",
+        "bpartnerLocationIdentifier": "gln-bill_location_S0150",
         "contactIdentifier": "ext-Shopware6-billUser_reference"
     },
     "dateRequired": "2022-02-10",
@@ -118,9 +118,9 @@ Feature: Shipment schedule export rest-api
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
-    And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | PENDING      | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
     And update AD_User:
       | AD_User_ID.Identifier | OPT.EMail           | OPT.Phone |
@@ -145,9 +145,9 @@ Feature: Shipment schedule export rest-api
       | M_ShipmentSchedule_ExportAudit_Item_ID.Identifier | M_ShipmentSchedule_ExportAudit_ID.Identifier | M_ShipmentSchedule_ID.Identifier | ExportStatus |
       | schedule_export_item_1                            | schedule_export_1                            | schedule_1                       | EXPORTED     |
 
-    And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | EXPORTED     | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | EXPORTED         | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
     And set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
 
@@ -164,13 +164,13 @@ Feature: Shipment schedule export rest-api
     "externalLineId": 2222,
     "dataSource": "int-Shopware",
     "bpartner": {
-        "bpartnerIdentifier": "gln-ship_location123",
-        "bpartnerLocationIdentifier": "gln-ship_location123",
+        "bpartnerIdentifier": "gln-ship_location_S0150",
+        "bpartnerLocationIdentifier": "gln-ship_location_S0150",
         "contactIdentifier": "ext-Shopware6-shipUser_reference"
     },
     "billBPartner": {
-        "bpartnerIdentifier": "gln-bill_location123",
-        "bpartnerLocationIdentifier": "gln-bill_location123",
+        "bpartnerIdentifier": "gln-bill_location_S0150",
+        "bpartnerLocationIdentifier": "gln-bill_location_S0150",
         "contactIdentifier": "ext-Shopware6-billUser_reference"
     },
     "dateRequired": "2022-02-10",
@@ -210,9 +210,9 @@ Feature: Shipment schedule export rest-api
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
-    And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | PENDING      | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
     And update AD_User:
       | AD_User_ID.Identifier | OPT.EMail           | OPT.Phone |
@@ -237,9 +237,9 @@ Feature: Shipment schedule export rest-api
       | M_ShipmentSchedule_ExportAudit_Item_ID.Identifier | M_ShipmentSchedule_ExportAudit_ID.Identifier | M_ShipmentSchedule_ID.Identifier | ExportStatus |
       | schedule_export_item_1                            | schedule_export_1                            | schedule_1                       | EXPORTED     |
 
-    And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | EXPORTED     | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | EXPORTED         | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
   Scenario: Export non-oxid shipment schedule from order
     Given set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
@@ -285,9 +285,9 @@ Feature: Shipment schedule export rest-api
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
-    And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | shipBPLocation              | product_25_02           | PENDING      | order_1                   | orderLine_1                   | shipUser                  | olASI                                    |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | shipBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | olASI                                    |
 
     When the metasfresh REST-API endpoint path 'api/v2/shipments/shipmentCandidates' receives a 'GET' request
 
@@ -306,6 +306,6 @@ Feature: Shipment schedule export rest-api
       | M_ShipmentSchedule_ExportAudit_Item_ID.Identifier | M_ShipmentSchedule_ExportAudit_ID.Identifier | M_ShipmentSchedule_ID.Identifier | ExportStatus |
       | schedule_export_item_1                            | schedule_export_1                            | schedule_1                       | EXPORTED     |
 
-    And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | shipBPLocation              | product_25_02           | EXPORTED     | order_1                   | orderLine_1                   | shipUser                  | olASI                                    |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | shipBPLocation                  | product_25_02               | EXPORTED         | order_1                   | orderLine_1                   | shipUser                  | olASI                                    |
