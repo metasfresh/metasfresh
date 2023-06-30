@@ -22,18 +22,8 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -44,6 +34,16 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+
+import java.util.List;
+import java.util.Properties;
 
 @Validator(I_C_Flatrate_Conditions.class)
 public class C_Flatrate_Conditions
@@ -123,6 +123,13 @@ public class C_Flatrate_Conditions
 				throw new AdempiereException(MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P);
 			}
 
+		}
+
+		// todo fp: workaround in order to complete modular contract conditions, will be addressed with another task
+		final TypeConditions typeConditions = TypeConditions.ofCode(cond.getType_Conditions());
+		if (TypeConditions.MODULAR_CONTRACT.equals(typeConditions))
+		{
+			cond.setC_Flatrate_Transition_ID(1000003);
 		}
 
 		final boolean hasHoCompletedTransition = cond.getC_Flatrate_Transition_ID() <= 0 || !X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus());

@@ -23,6 +23,8 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.order.IOrderDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -54,7 +56,10 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	void afterComplete(@NonNull final I_C_Order orderRecord)
 	{
-		contractService.invokeWithModel(orderRecord, COMPLETED);
+		// todo fp
+		Services.get(IOrderDAO.class)
+				.retrieveOrderLines(orderRecord)
+				.forEach(line -> contractService.invokeWithModel(line, COMPLETED));
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })

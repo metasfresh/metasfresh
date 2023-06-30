@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular;
 
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -67,4 +68,8 @@ public interface IModularContractTypeHandler<T>
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
 
+	@NonNull
+	Stream<ConditionsId> getContractConditionIds(@NonNull T model);
+
+	void createModularContractIfRequired(@NonNull T model);
 }
