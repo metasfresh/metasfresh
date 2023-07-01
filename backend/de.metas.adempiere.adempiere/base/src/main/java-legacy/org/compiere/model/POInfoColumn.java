@@ -4,6 +4,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
@@ -11,7 +12,6 @@ import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.copy.ColumnCloningStrategy;
 import org.compiere.util.DisplayType;
-import de.metas.util.StringUtils;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -58,7 +58,8 @@ public final class POInfoColumn implements Serializable
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
 			final boolean isRestAPICustomColumn,
-			@NonNull final ColumnCloningStrategy cloningStrategy)
+			@NonNull final ColumnCloningStrategy cloningStrategy,
+			final boolean isIdentifier)
 	{
 		this.AD_Column_ID = AD_Column_ID;
 		ColumnName = columnName;
@@ -117,6 +118,7 @@ public final class POInfoColumn implements Serializable
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
+		IsIdentifier = isIdentifier;
 		this.cloningStrategy = cloningStrategy;
 
 		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
@@ -258,6 +260,7 @@ public final class POInfoColumn implements Serializable
 	final BigDecimal ValueMax_BD;
 
 	final boolean IsRestAPICustomColumn;
+	final boolean IsIdentifier;
 	@Getter private final ColumnCloningStrategy cloningStrategy;
 
 	/* package */ boolean IsCalculated = false;
@@ -376,6 +379,11 @@ public final class POInfoColumn implements Serializable
 	public boolean isRestAPICustomColumn()
 	{
 		return IsRestAPICustomColumn;
+	}
+
+	public boolean isIdentifier()
+	{
+		return IsIdentifier;
 	}
 
 	@Nullable

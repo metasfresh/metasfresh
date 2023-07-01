@@ -19,6 +19,7 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -46,8 +47,6 @@ public class C_Order_AllocateToForexContract extends JavaProcess
 	private static final String PARAM_FEC_RemainingAmount = "FEC_RemainingAmount";
 	@Param(parameterName = PARAM_FEC_RemainingAmount)
 	private BigDecimal p_RemainingAmount;
-
-	private ImmutableSet<ForexContractId> _eligibleForexContractIds;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -94,19 +93,15 @@ public class C_Order_AllocateToForexContract extends JavaProcess
 	}
 
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
-	public LookupValuesList getEligibleForexContracts()
+	public LookupValuesList getEligibleForexContracts(@NonNull final LookupDataSourceContext context)
 	{
-		return forexContractLookup.findByIdsOrdered(getEligibleForexContractIds());
+		return forexContractLookup.findByIdsOrdered(getEligibleForexContractIds(context.getFilter()));
 	}
 
-	private ImmutableSet<ForexContractId> getEligibleForexContractIds()
+	@NonNull
+	private ImmutableSet<ForexContractId> getEligibleForexContractIds(@Nullable final String userInput)
 	{
-		ImmutableSet<ForexContractId> eligibleForexContractIds = this._eligibleForexContractIds;
-		if (eligibleForexContractIds == null)
-		{
-			eligibleForexContractIds = this._eligibleForexContractIds = forexContractService.getContractIdsEligibleToAllocateOrder(getSelectedOrderId());
-		}
-		return eligibleForexContractIds;
+		return forexContractService.getContractIdsEligibleToAllocateOrder(getSelectedOrderId(), userInput);
 	}
 
 	@NonNull
