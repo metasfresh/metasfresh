@@ -234,6 +234,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
 				+ ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy
 				+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
+				+ ", c." + I_AD_Column.COLUMNNAME_IsIdentifier + " AS columnIsIdentifier"
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
@@ -469,7 +470,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
+<<<<<<< HEAD
 		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
+=======
+		final boolean isIdentifier = StringUtils.toBoolean(rs.getString("columnIsIdentifier"));
+>>>>>>> 1da1e71cc97 (FEC allocation: use user input to filter by display name (#15787))
 		final ColumnCloningStrategy cloningStrategy = ColumnCloningStrategy.ofCode(rs.getString("columnCloningStrategy"));
 
 		final POInfoColumn col = new POInfoColumn(
@@ -493,8 +498,13 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsEncrypted,
 				IsAllowLogging,
 				isRestAPICustomColumn,
+<<<<<<< HEAD
 				adSequenceID,
 				cloningStrategy);
+=======
+				cloningStrategy,
+				isIdentifier);
+>>>>>>> 1da1e71cc97 (FEC allocation: use user input to filter by display name (#15787))
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133

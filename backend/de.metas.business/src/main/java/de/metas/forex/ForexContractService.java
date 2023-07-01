@@ -19,6 +19,7 @@ import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -154,7 +155,10 @@ public class ForexContractService
 		ForexContractRepository.updateRecordNoSave(record, updater);
 	}
 
-	public ImmutableSet<ForexContractId> getContractIdsEligibleToAllocateOrder(@NonNull final OrderId orderId)
+	@NonNull
+	public ImmutableSet<ForexContractId> getContractIdsEligibleToAllocateOrder(
+			@NonNull final OrderId orderId,
+			@Nullable final String displayNameSearchTerm)
 	{
 		final I_C_Order order = orderBL.getById(orderId);
 		checkOrderEligibleToAllocate(order).assertTrue();
@@ -167,6 +171,7 @@ public class ForexContractService
 						.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
 						.currencyToId(baseCurrencyId)
 						.onlyWithOpenAmount(true)
+						.displayNameSearchTerm(displayNameSearchTerm)
 						.build());
 	}
 }

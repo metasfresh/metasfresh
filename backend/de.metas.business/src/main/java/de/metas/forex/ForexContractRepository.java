@@ -7,11 +7,13 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.DisplayNameQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -101,7 +103,7 @@ public class ForexContractRepository
 		return toSqlQuery(query).listIds(ForexContractId::ofRepoId);
 	}
 
-	private IQuery<I_C_ForeignExchangeContract> toSqlQuery(@NonNull ForexContractQuery query)
+	private IQuery<I_C_ForeignExchangeContract> toSqlQuery(@NonNull final ForexContractQuery query)
 	{
 		final IQueryBuilder<I_C_ForeignExchangeContract> queryBuilder = queryBL.createQueryBuilder(I_C_ForeignExchangeContract.class)
 				.addOnlyActiveRecordsFilter()
@@ -122,6 +124,11 @@ public class ForexContractRepository
 		if (query.isOnlyWithOpenAmount())
 		{
 			queryBuilder.addCompareFilter(I_C_ForeignExchangeContract.COLUMN_FEC_Amount_Open, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		}
+
+		if (Check.isNotBlank(query.getDisplayNameSearchTerm()))
+		{
+			queryBuilder.addFilter(DisplayNameQueryFilter.of(I_C_ForeignExchangeContract.class, query.getDisplayNameSearchTerm()));
 		}
 
 		return queryBuilder.create();
