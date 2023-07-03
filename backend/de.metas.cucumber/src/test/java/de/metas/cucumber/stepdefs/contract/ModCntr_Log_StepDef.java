@@ -178,7 +178,7 @@ public class ModCntr_Log_StepDef
 		if (Check.isNotBlank(billBPartnerIdentifier))
 		{
 			final I_C_BPartner billBPartnerRecord = bpartnerTable.get(billBPartnerIdentifier);
-			softly.assertThat(modCntrLogRecord.getBill_BPartner_ID()).as(I_ModCntr_Log.COLUMNNAME_Producer_BPartner_ID).isEqualTo(billBPartnerRecord.getC_BPartner_ID());
+			softly.assertThat(modCntrLogRecord.getBill_BPartner_ID()).as(I_ModCntr_Log.COLUMNNAME_Bill_BPartner_ID).isEqualTo(billBPartnerRecord.getC_BPartner_ID());
 		}
 
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);

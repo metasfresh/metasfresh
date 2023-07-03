@@ -219,7 +219,7 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(billBPartnerIdentifier))
 			{
 				final I_C_BPartner billBPartner = bpartnerTable.get(billBPartnerIdentifier);
-				order.setC_BPartner_ID(billBPartner.getC_BPartner_ID());
+				order.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
 			}
 
 			final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
