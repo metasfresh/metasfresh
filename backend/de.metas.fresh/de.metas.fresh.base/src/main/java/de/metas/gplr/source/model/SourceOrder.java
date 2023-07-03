@@ -3,6 +3,7 @@ package de.metas.gplr.source.model;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.order.OrderLineId;
+import de.metas.payment.paymentinstructions.PaymentInstructions;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.sectionCode.SectionCode;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class SourceOrder
 	@NonNull Instant dateOrdered;
 	@Nullable String poReference;
 	@NonNull PaymentTerm paymentTerm;
+	@Nullable PaymentInstructions paymentInstructions;
 	@Nullable SourceIncotermsAndLocation incotermsAndLocation;
 
 	@NonNull List<SourceOrderLine> lines;

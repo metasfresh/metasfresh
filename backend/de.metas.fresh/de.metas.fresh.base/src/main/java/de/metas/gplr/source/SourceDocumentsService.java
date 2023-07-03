@@ -66,6 +66,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentinstructions.PaymentInstructionsId;
+import de.metas.payment.paymentinstructions.PaymentInstructionsService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
@@ -123,6 +125,7 @@ public class SourceDocumentsService
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final PaymentInstructionsService paymentInstructionsService;
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
@@ -137,6 +140,7 @@ public class SourceDocumentsService
 	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 
 	public SourceDocumentsService(
+			@NonNull final PaymentInstructionsService paymentInstructionsService,
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final MoneyService moneyService,
@@ -145,6 +149,7 @@ public class SourceDocumentsService
 			@NonNull final ForexContractService forexContractService,
 			@NonNull final DeliveryPlanningService deliveryPlanningService)
 	{
+		this.paymentInstructionsService = paymentInstructionsService;
 		this.sectionCodeService = sectionCodeService;
 		this.documentLocationBL = documentLocationBL;
 		this.moneyService = moneyService;
@@ -161,6 +166,11 @@ public class SourceDocumentsService
 
 	private static BooleanWithReason checkEligible(final I_C_Invoice invoice)
 	{
+		if (!invoice.isSOTrx())
+		{
+			return BooleanWithReason.falseBecause("Invoice shall be a sales invoice");
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
 		if (!docStatus.isCompleted() && !docStatus.isReversed())
 		{
@@ -214,6 +224,9 @@ public class SourceDocumentsService
 					.dateOrdered(order.getDateOrdered().toInstant())
 					.poReference(StringUtils.trimBlankToNull(order.getPOReference()))
 					.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID())))
+					.paymentInstructions(PaymentInstructionsId.optionalOfRepoId(order.getC_PaymentInstruction_ID())
+							.map(paymentInstructionsService::getById)
+							.orElse(null))
 					.incotermsAndLocation(extractIncotermsAndLocation(order))
 					.lines(linesByOrderId.get(orderId))
 					.orderCosts(orderCostsByOrderId.get(orderId))
@@ -374,50 +387,8 @@ public class SourceDocumentsService
 
 	private SourceInvoice getSalesInvoice(final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		checkEligible(invoice).assertTrue();
-
-		final I_C_Invoice salesInvoice;
-		if (invoice.isSOTrx())
-		{
-			salesInvoice = invoice;
-		}
-		else
-		{
-			final OrderId purchaseOrderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
-			if (purchaseOrderId == null)
-			{
-				throw new AdempiereException("Cannot determine purchase order");
-			}
-
-			//
-			// Determine Sales Order
-			final Set<OrderId> salesOrderIds = orderBL.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
-			if (salesOrderIds.isEmpty())
-			{
-				throw new AdempiereException("No Sales Order found");
-			}
-			else if (salesOrderIds.size() != 1)
-			{
-				throw new AdempiereException("More than one Sales Order found");
-			}
-			final OrderId salesOrderId = salesOrderIds.iterator().next();
-
-			//
-			// Determine Sales Invoice
-			final List<? extends I_C_Invoice> salesInvoices = invoiceBL.getByOrderId(salesOrderId);
-			if (salesInvoices.isEmpty())
-			{
-				throw new AdempiereException("No Sales Invoice found for " + salesOrderId);
-			}
-			else if (salesInvoices.size() != 1)
-			{
-				throw new AdempiereException("More than one Sales Invoice found for " + salesOrderId);
-			}
-			salesInvoice = salesInvoices.iterator().next();
-		}
-
-		//
+		final I_C_Invoice salesInvoice = invoiceBL.getById(invoiceId);
+		checkEligible(salesInvoice).assertTrue();
 		return toSourceInvoice(salesInvoice);
 	}
 
@@ -441,8 +412,11 @@ public class SourceDocumentsService
 				.dateInvoiced(LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(), orgId, orgDAO::getTimeZone))
 				.sapProductHierarchy(getSapProductHierarchy(invoiceId))
 				.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(invoice.getC_PaymentTerm_ID())))
+				.paymentInstructions(PaymentInstructionsId.optionalOfRepoId(invoice.getC_PaymentInstruction_ID())
+						.map(paymentInstructionsService::getById)
+						.orElse(null))
 				.dueDate(LocalDateAndOrgId.ofNullableTimestamp(invoice.getDueDate(), orgId, orgDAO::getTimeZone))
-				.descriptionBottom(StringUtils.trimBlankToNull(invoice.getDescriptionBottom()))
+				.invoiceAdditionalText(StringUtils.trimBlankToNull(invoice.getInvoiceAdditionalText()))
 				.linesNetAmtFC(Amount.of(invoice.getTotalLines(), currencyCode))
 				.taxAmtFC(Amount.of(invoice.getGrandTotal().subtract(invoice.getTotalLines()), currencyCode))
 				.build();
