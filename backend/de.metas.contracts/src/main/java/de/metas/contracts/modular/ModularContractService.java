@@ -31,7 +31,6 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -86,7 +85,7 @@ public class ModularContractService
 
 	private boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(flatrateTermId);
+		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.getById(flatrateTermId);
 		return Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, flatrateTerm.getType_Conditions());
 	}
 
