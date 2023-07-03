@@ -217,53 +217,30 @@ UPDATE AD_Field SET ReadOnlyLogic='',Updated=TO_TIMESTAMP('2023-06-30 15:59:40',
 UPDATE AD_Field SET ReadOnlyLogic='DocStatus==''DR''',Updated=TO_TIMESTAMP('2023-06-30 16:00:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=716473
 ;
 
--- Field: Purchase Invoice(541621,de.metas.ab182) -> Invoice(546648,de.metas.ab182) -> Tax Departure Country
+-- Field: Eingangsrechnung(183,D) -> Eingangsrechnung(290,D) -> Steuerabgangsland
 -- Column: C_Invoice.C_Tax_Departure_Country_ID
--- 2023-06-30T16:10:50.331Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,586847,716478,0,546648,0,TO_TIMESTAMP('2023-06-30 19:10:50','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','N','N','N','N','N','N','N','Tax Departure Country',0,410,0,1,1,TO_TIMESTAMP('2023-06-30 19:10:50','YYYY-MM-DD HH24:MI:SS'),100)
+-- 2023-07-03T11:00:35.356Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,586847,716480,0,290,0,TO_TIMESTAMP('2023-07-03 14:00:33','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','N','N','N','N','N','N','N','Steuerabgangsland',0,350,0,1,1,TO_TIMESTAMP('2023-07-03 14:00:33','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2023-06-30T16:10:50.341Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=716478 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- 2023-07-03T11:00:35.363Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=716480 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2023-06-30T16:10:50.348Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582466) 
+-- 2023-07-03T11:00:35.395Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582466)
 ;
 
--- 2023-06-30T16:10:50.357Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=716478
+-- 2023-07-03T11:00:35.410Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=716480
 ;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
--- 2023-06-30T16:10:50.363Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(716478)
+-- 2023-07-03T11:00:35.415Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(716480)
 ;
 
--- UI Element: Purchase Invoice(541621,de.metas.ab182) -> Invoice(546648,de.metas.ab182) -> main -> 10 -> preise.Tax Departure Country
+-- UI Element: Eingangsrechnung(183,D) -> Eingangsrechnung(290,D) -> main -> 10 -> preise.Steuerabgangsland
 -- Column: C_Invoice.C_Tax_Departure_Country_ID
--- 2023-06-30T16:12:04.950Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,716478,0,546648,618111,549959,'F',TO_TIMESTAMP('2023-06-30 19:12:04','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Tax Departure Country',17,0,0,TO_TIMESTAMP('2023-06-30 19:12:04','YYYY-MM-DD HH24:MI:SS'),100)
+-- 2023-07-03T11:02:07.674Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,716480,0,290,618113,540225,'F',TO_TIMESTAMP('2023-07-03 14:02:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Steuerabgangsland',17,0,0,TO_TIMESTAMP('2023-07-03 14:02:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
-
