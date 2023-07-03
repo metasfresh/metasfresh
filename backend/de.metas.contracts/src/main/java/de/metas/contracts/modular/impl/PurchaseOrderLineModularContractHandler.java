@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -35,6 +36,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -50,6 +52,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
@@ -63,6 +66,8 @@ import java.util.stream.Stream;
 @Component
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
+	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
+
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -82,6 +87,13 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	public Class<I_C_OrderLine> getType()
 	{
 		return I_C_OrderLine.class;
+	}
+
+	@Override
+	public boolean applies(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		return SOTrx.ofBoolean(order.isSOTrx()).isPurchase();
 	}
 
 	@Override
@@ -153,5 +165,15 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		return flatrateDAO.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.stream();
+	}
+
+	public void validateDocAction(
+			@NonNull final I_C_OrderLine ignored,
+			@NonNull final ModularContractService.ModelAction action)
+	{
+		if (action == ModularContractService.ModelAction.REVERSED || action == ModularContractService.ModelAction.REACTIVATED)
+		{
+			throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+		}
 	}
 }

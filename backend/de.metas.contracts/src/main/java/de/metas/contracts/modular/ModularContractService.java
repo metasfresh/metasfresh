@@ -59,7 +59,7 @@ public class ModularContractService
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 
-	public void invokeWithModel(@NonNull final Object model, @NonNull final ModelAction action)
+	public <T> void invokeWithModel(@NonNull final T model, @NonNull final ModelAction action)
 	{
 		modularContractHandlerFactory.getApplicableHandlersFor(model)
 				.forEach(handler -> invokeWithModel(handler, model, action));
@@ -102,6 +102,13 @@ public class ModularContractService
 	}
 
 	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
+	{
+		handler.validateDocAction(model, action);
+
+		createLogEntries(handler, model, action, flatrateTermId);
+	}
+
+	private <T> void createLogEntries(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		switch (action)
 		{

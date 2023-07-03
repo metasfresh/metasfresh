@@ -51,11 +51,12 @@ public class ModularContractHandlerFactory
 	}
 
 	@NonNull
-	public <T> Stream<IModularContractTypeHandler<T>> getApplicableHandlersFor(@NonNull final Object model)
+	public <T> Stream<IModularContractTypeHandler<T>> getApplicableHandlersFor(@NonNull final T model)
 	{
 		return knownHandlers.stream()
 				.filter(handler -> handler.getType().isAssignableFrom(model.getClass()))
-				.map(handler -> (IModularContractTypeHandler<T>)handler);
+				.map(handler -> (IModularContractTypeHandler<T>)handler)
+				.filter(handler -> handler.applies(model));
 	}
 
 }

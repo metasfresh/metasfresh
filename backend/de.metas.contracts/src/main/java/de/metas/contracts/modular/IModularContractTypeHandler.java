@@ -42,6 +42,8 @@ public interface IModularContractTypeHandler<T>
 {
 	@NonNull
 	Class<T> getType();
+	
+	boolean applies(@NonNull final T model);
 
 	/**
 	 * Return a {@code LogEntryCreateRequest} if the framework shall create the log, or {@link Optional#empty()} otherwise.
@@ -65,4 +67,5 @@ public interface IModularContractTypeHandler<T>
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
 
+	void validateDocAction(@NonNull final T model, @NonNull final ModularContractService.ModelAction action);
 }

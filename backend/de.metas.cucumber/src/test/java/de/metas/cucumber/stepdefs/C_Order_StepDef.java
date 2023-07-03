@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
-import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -351,7 +350,7 @@ public class C_Order_StepDef
 		}
 	}
 
-	@And("^the order identified by (.*) is (reactivated|completed|closed|voided)$")
+	@And("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
@@ -378,13 +377,18 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 			}
+			case reversed ->
+			{
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+			}
 			default -> throw new AdempiereException("Unhandled C_Order action")
 					.appendParametersToMessage()
 					.setParameter("action:", action);
 		}
 	}
 
-	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided) expecting error$")
+	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed) expecting error$")
 	public void order_action_expecting_error(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
