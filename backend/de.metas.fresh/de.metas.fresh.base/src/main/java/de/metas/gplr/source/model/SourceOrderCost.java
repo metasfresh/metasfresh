@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -24,5 +25,9 @@ public class SourceOrderCost
 	public boolean isSingleOrderLine() {return basedOnOrderLineIds.size() == 1;}
 
 	public boolean isBasedOnOrderLineId(final OrderLineId orderLineId) {return basedOnOrderLineIds.contains(orderLineId);}
+
+	public boolean isInvoiced() {return this.createdOrderLineId != null;}
+
+	public boolean isInvoicedBy(final OrderLineId orderLineId) {return Objects.equals(this.createdOrderLineId, orderLineId);}
 
 }

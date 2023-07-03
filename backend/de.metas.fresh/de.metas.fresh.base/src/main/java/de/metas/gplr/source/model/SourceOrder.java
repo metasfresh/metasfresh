@@ -42,9 +42,10 @@ public class SourceOrder
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Amount getEstimatedOrderCostAmountFC()
+	public Amount getNotInvoicedCostsFC()
 	{
 		return orderCosts.stream()
+				.filter(orderCost -> !orderCost.isInvoiced())
 				.map(SourceOrderCost::getCostAmountFC)
 				.reduce(Amount::add)
 				.orElseGet(() -> Amount.zero(currencyInfo.getForeignCurrencyCode()));
@@ -70,6 +71,6 @@ public class SourceOrder
 
 	private boolean isLineCreatedFromOrderCosts(final SourceOrderLine line)
 	{
-		return orderCosts.stream().anyMatch(orderCost -> OrderLineId.equals(orderCost.getCreatedOrderLineId(), line.getId()));
+		return orderCosts.stream().anyMatch(orderCost -> orderCost.isInvoicedBy(line.getId()));
 	}
 }

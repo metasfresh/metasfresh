@@ -118,7 +118,7 @@ final class GPLRReportCreateCommand
 		final Amount taxesFC = salesInvoice.getTaxAmtFC();
 		final Amount taxesLC = toLocal.apply(taxesFC);
 
-		final Amount estimatedFC = salesOrder.getEstimatedOrderCostAmountFC();
+		final Amount estimatedFC = salesOrder.getNotInvoicedCostsFC();
 		final Amount estimatedLC = toLocal.apply(estimatedFC);
 
 		final Amount cogsLC = salesOrder.getCOGS_LC();
