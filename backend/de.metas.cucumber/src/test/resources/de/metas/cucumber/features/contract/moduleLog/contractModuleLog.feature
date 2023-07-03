@@ -6,6 +6,7 @@ Feature: Call order contract
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
+  @Id:S0282_100
   @from:cucumber
   Scenario: Happy flow for contract module log - purchase order with two lines completed => validate the two created Log Entries
     Given metasfresh contains M_PricingSystems
@@ -78,6 +79,7 @@ Feature: Call order contract
       | log_1                     | po_orderLine         | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO       | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
       | log_2                     | po_orderLine_2       | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO       | bp_moduleLogPO                      | bp_moduleLogPO                  | 500  | C_OrderLine | moduleLogContract_2           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year                              |
 
+  @Id:S0282_200
   @from:cucumber
   Scenario: Happy flow for contract module log - purchase order with two lines voided
     Given metasfresh contains M_PricingSystems
