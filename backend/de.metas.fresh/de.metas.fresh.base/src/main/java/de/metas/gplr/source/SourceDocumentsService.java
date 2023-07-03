@@ -66,6 +66,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentinstructions.PaymentInstructionsId;
+import de.metas.payment.paymentinstructions.PaymentInstructionsService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
@@ -102,6 +104,7 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -122,6 +125,7 @@ public class SourceDocumentsService
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final PaymentInstructionsService paymentInstructionsService;
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
@@ -136,6 +140,7 @@ public class SourceDocumentsService
 	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 
 	public SourceDocumentsService(
+			@NonNull final PaymentInstructionsService paymentInstructionsService,
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final MoneyService moneyService,
@@ -144,6 +149,7 @@ public class SourceDocumentsService
 			@NonNull final ForexContractService forexContractService,
 			@NonNull final DeliveryPlanningService deliveryPlanningService)
 	{
+		this.paymentInstructionsService = paymentInstructionsService;
 		this.sectionCodeService = sectionCodeService;
 		this.documentLocationBL = documentLocationBL;
 		this.moneyService = moneyService;
@@ -160,6 +166,11 @@ public class SourceDocumentsService
 
 	private static BooleanWithReason checkEligible(final I_C_Invoice invoice)
 	{
+		if (!invoice.isSOTrx())
+		{
+			return BooleanWithReason.falseBecause("Invoice shall be a sales invoice");
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
 		if (!docStatus.isCompleted() && !docStatus.isReversed())
 		{
@@ -174,9 +185,14 @@ public class SourceDocumentsService
 		final SourceInvoice salesInvoice = getSalesInvoice(invoiceId);
 		final OrderId salesOrderId = salesInvoice.getOrderId();
 		final I_C_Order salesOrder = orderBL.getById(salesOrderId);
-		final Set<OrderId> purchaseOrderIds = orderBL.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
+		final List<I_C_Order> purchaseOrders = orderBL.getPurchaseOrdersBySalesOrderId(salesOrderId)
+				.stream()
+				.filter(purchaseOrder -> DocStatus.ofNullableCodeOrUnknown(purchaseOrder.getDocStatus()).isCompleted())
+				.collect(Collectors.toList());
+		final Set<OrderId> purchaseOrderIds = purchaseOrders.stream()
+				.map(purchaseOrder -> OrderId.ofRepoId(purchaseOrder.getC_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 		final boolean isBackToBack = !purchaseOrderIds.isEmpty();
-		final List<I_C_Order> purchaseOrders = orderBL.getByIds(purchaseOrderIds);
 
 		final HashSet<OrderId> allOrderIds = new HashSet<>();
 		allOrderIds.add(salesOrderId);
@@ -208,6 +224,9 @@ public class SourceDocumentsService
 					.dateOrdered(order.getDateOrdered().toInstant())
 					.poReference(StringUtils.trimBlankToNull(order.getPOReference()))
 					.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID())))
+					.paymentInstructions(PaymentInstructionsId.optionalOfRepoId(order.getC_PaymentInstruction_ID())
+							.map(paymentInstructionsService::getById)
+							.orElse(null))
 					.incotermsAndLocation(extractIncotermsAndLocation(order))
 					.lines(linesByOrderId.get(orderId))
 					.orderCosts(orderCostsByOrderId.get(orderId))
@@ -368,50 +387,8 @@ public class SourceDocumentsService
 
 	private SourceInvoice getSalesInvoice(final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		checkEligible(invoice).assertTrue();
-
-		final I_C_Invoice salesInvoice;
-		if (invoice.isSOTrx())
-		{
-			salesInvoice = invoice;
-		}
-		else
-		{
-			final OrderId purchaseOrderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
-			if (purchaseOrderId == null)
-			{
-				throw new AdempiereException("Cannot determine purchase order");
-			}
-
-			//
-			// Determine Sales Order
-			final Set<OrderId> salesOrderIds = orderBL.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
-			if (salesOrderIds.isEmpty())
-			{
-				throw new AdempiereException("No Sales Order found");
-			}
-			else if (salesOrderIds.size() != 1)
-			{
-				throw new AdempiereException("More than one Sales Order found");
-			}
-			final OrderId salesOrderId = salesOrderIds.iterator().next();
-
-			//
-			// Determine Sales Invoice
-			final List<? extends I_C_Invoice> salesInvoices = invoiceBL.getByOrderId(salesOrderId);
-			if (salesInvoices.isEmpty())
-			{
-				throw new AdempiereException("No Sales Invoice found for " + salesOrderId);
-			}
-			else if (salesInvoices.size() != 1)
-			{
-				throw new AdempiereException("More than one Sales Invoice found for " + salesOrderId);
-			}
-			salesInvoice = salesInvoices.iterator().next();
-		}
-
-		//
+		final I_C_Invoice salesInvoice = invoiceBL.getById(invoiceId);
+		checkEligible(salesInvoice).assertTrue();
 		return toSourceInvoice(salesInvoice);
 	}
 
@@ -435,8 +412,11 @@ public class SourceDocumentsService
 				.dateInvoiced(LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(), orgId, orgDAO::getTimeZone))
 				.sapProductHierarchy(getSapProductHierarchy(invoiceId))
 				.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(invoice.getC_PaymentTerm_ID())))
+				.paymentInstructions(PaymentInstructionsId.optionalOfRepoId(invoice.getC_PaymentInstruction_ID())
+						.map(paymentInstructionsService::getById)
+						.orElse(null))
 				.dueDate(LocalDateAndOrgId.ofNullableTimestamp(invoice.getDueDate(), orgId, orgDAO::getTimeZone))
-				.descriptionBottom(StringUtils.trimBlankToNull(invoice.getDescriptionBottom()))
+				.invoiceAdditionalText(StringUtils.trimBlankToNull(invoice.getInvoiceAdditionalText()))
 				.linesNetAmtFC(Amount.of(invoice.getTotalLines(), currencyCode))
 				.taxAmtFC(Amount.of(invoice.getGrandTotal().subtract(invoice.getTotalLines()), currencyCode))
 				.build();
@@ -534,6 +514,7 @@ public class SourceDocumentsService
 	{
 		return inOutBL.getByOrderId(salesOrderId)
 				.stream()
+				.filter(shipment -> DocStatus.ofNullableCodeOrUnknown(shipment.getDocStatus()).isCompletedOrClosed())
 				.map(shipment -> toSourceShipment(shipment, isBackToBack))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -611,7 +592,8 @@ public class SourceDocumentsService
 	{
 		final DocumentDeliveryLocationAdapter deliveryLocationAdapter = InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(shipment);
 		final DocumentLocation documentLocation;
-		if (deliveryLocationAdapter.isDropShip())
+		final boolean isDropShip = deliveryLocationAdapter.isDropShip();
+		if (isDropShip)
 		{
 			documentLocation = deliveryLocationAdapter.toPlainDocumentLocation(documentLocationBL).orElse(null);
 		}
@@ -626,7 +608,8 @@ public class SourceDocumentsService
 			throw new AdempiereException("Failed extracting Ship To location from " + shipment);
 		}
 
-		return toBPartnerInfo(documentLocation);
+		return toBPartnerInfo(documentLocation)
+				.withDropShip(isDropShip);
 	}
 
 	private SourceBPartnerInfo toBPartnerInfo(final DocumentLocation documentLocation)
@@ -637,8 +620,11 @@ public class SourceDocumentsService
 			throw new AdempiereException("No location set for " + documentLocation);
 		}
 
+		final String vatId = Optional.ofNullable(documentLocation.getBpartnerLocationId()).flatMap(bpartnerBL::getVATTaxId).orElse(null);
+
 		return prepareBPartnerInfo(documentLocation.getBpartnerId())
 				.countryCode(locationBL.getCountryCodeByLocationId(locationId))
+				.vatId(vatId)
 				.build();
 	}
 
@@ -647,8 +633,7 @@ public class SourceDocumentsService
 		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
 		return SourceBPartnerInfo.builder()
 				.code(bpartner.getValue())
-				.name(bpartner.getName())
-				.vatId(bpartner.getVATaxID());
+				.name(bpartner.getName());
 	}
 
 	private SourceUserInfo getUserInfo(final int userRepoId)

@@ -1275,15 +1275,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull final OrderId salesOrderId)
+	public List<I_C_Order> getPurchaseOrdersBySalesOrderId(@NonNull final OrderId salesOrderId)
 	{
-		return orderDAO.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
-	}
-
-	@Override
-	public Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
-	{
-		return orderDAO.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
+		final Set<OrderId> purchaseOrderIds = orderDAO.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
+		return orderDAO.getByIds(purchaseOrderIds);
 	}
 
 	@Override

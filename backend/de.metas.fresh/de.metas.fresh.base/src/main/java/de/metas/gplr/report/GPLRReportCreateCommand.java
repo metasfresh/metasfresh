@@ -37,6 +37,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
 import de.metas.order.OrderLineId;
+import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -117,7 +118,7 @@ final class GPLRReportCreateCommand
 		final Amount taxesFC = salesInvoice.getTaxAmtFC();
 		final Amount taxesLC = toLocal.apply(taxesFC);
 
-		final Amount estimatedFC = salesOrder.getEstimatedOrderCostAmountFC();
+		final Amount estimatedFC = salesOrder.getNotInvoicedCostsFC();
 		final Amount estimatedLC = toLocal.apply(estimatedFC);
 
 		final Amount cogsLC = salesOrder.getCOGS_LC();
@@ -159,7 +160,7 @@ final class GPLRReportCreateCommand
 				.documentDate(salesInvoice.getDateInvoiced())
 				.created(salesInvoice.getCreated())
 				.sapProductHierarchy(salesInvoice.getSapProductHierarchy())
-				.paymentTerm(GPLRPaymentTermRenderedString.of(salesInvoice.getPaymentTerm()))
+				.paymentTerm(GPLRPaymentTermRenderedString.of(salesInvoice.getPaymentTerm(), salesInvoice.getPaymentInstructions()))
 				.dueDate(salesInvoice.getDueDate())
 				.currencyInfo(toCurrencyInfo(salesInvoice.getCurrencyInfo()))
 				.build();
@@ -262,7 +263,7 @@ final class GPLRReportCreateCommand
 				.documentNo(purchaseOrder.getDocumentNo())
 				.purchasedFrom(toBPartnerName(purchaseOrder.getBpartner()))
 				.vendorReference(purchaseOrder.getPoReference()) // is it OK?
-				.paymentTerm(GPLRPaymentTermRenderedString.of(purchaseOrder.getPaymentTerm()))
+				.paymentTerm(GPLRPaymentTermRenderedString.of(purchaseOrder.getPaymentTerm(), purchaseOrder.getPaymentInstructions()))
 				.incoterms(toIncotermsInfo(purchaseOrder.getIncotermsAndLocation()))
 				.currencyInfo(toCurrencyInfo(purchaseOrder.getCurrencyInfo()))
 				.build();
@@ -310,7 +311,7 @@ final class GPLRReportCreateCommand
 		final Amount cogsLC = salesOrderLine.getCogsLC();
 		return GPLRReportLineItem.builder()
 				.documentNo(salesOrder.getDocumentNo())
-				.lineCode("VPRS")
+				.lineCode("COGS")
 				.description("Cost")
 				.amountFC(null)
 				.amountLC(cogsLC)
@@ -322,7 +323,7 @@ final class GPLRReportCreateCommand
 		final Amount taxAmtFC = salesOrderLine.getTaxAmtFC();
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
-				.lineCode("MWST")
+				.lineCode("VAT")
 				.description(salesOrderLine.getTax().toRenderedString())
 				.amountFC(taxAmtFC)
 				.amountLC(currencyInfo.convertToLocal(taxAmtFC, currencyCodeConverter))
@@ -334,7 +335,7 @@ final class GPLRReportCreateCommand
 		final Amount lineNetAmtFC = orderLine.getLineNetAmtFC();
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
-				.lineCode("PR00")
+				.lineCode("PR")
 				.description("Price")
 				.amountFC(lineNetAmtFC)
 				.amountLC(currencyInfo.convertToLocal(lineNetAmtFC, currencyCodeConverter))
@@ -410,12 +411,19 @@ final class GPLRReportCreateCommand
 
 	private ImmutableList<GPLRReportNote> createGPLRReportNotes()
 	{
+		final ImmutableList.Builder<GPLRReportNote> result = ImmutableList.builder();
+
 		final SourceInvoice salesInvoice = source.getSalesInvoice();
-		return ImmutableList.of(
-				GPLRReportNote.builder()
-						.sourceDocument("Billing Document " + salesInvoice.getDocumentNo())
-						.text(salesInvoice.getDescriptionBottom())
-						.build()
-		);
+		if (Check.isNotBlank(salesInvoice.getInvoiceAdditionalText()))
+		{
+			result.add(
+					GPLRReportNote.builder()
+							.sourceDocument("Billing Document " + salesInvoice.getDocumentNo())
+							.text(salesInvoice.getInvoiceAdditionalText())
+							.build()
+			);
+		}
+
+		return result.build();
 	}
 }
