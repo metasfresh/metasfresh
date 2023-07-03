@@ -233,6 +233,29 @@ public interface I_GPLR_Report_Shipment
 	String COLUMNNAME_IsB2B = "IsB2B";
 
 	/**
+	 * Set Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShip (boolean IsDropShip);
+
+	/**
+	 * Get Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShip();
+
+	ModelColumn<I_GPLR_Report_Shipment, Object> COLUMN_IsDropShip = new ModelColumn<>(I_GPLR_Report_Shipment.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
+
+	/**
 	 * Set Date.
 	 * Date a product was moved in or out of inventory
 	 *
