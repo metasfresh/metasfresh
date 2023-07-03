@@ -592,7 +592,8 @@ public class SourceDocumentsService
 	{
 		final DocumentDeliveryLocationAdapter deliveryLocationAdapter = InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(shipment);
 		final DocumentLocation documentLocation;
-		if (deliveryLocationAdapter.isDropShip())
+		final boolean isDropShip = deliveryLocationAdapter.isDropShip();
+		if (isDropShip)
 		{
 			documentLocation = deliveryLocationAdapter.toPlainDocumentLocation(documentLocationBL).orElse(null);
 		}
@@ -607,7 +608,8 @@ public class SourceDocumentsService
 			throw new AdempiereException("Failed extracting Ship To location from " + shipment);
 		}
 
-		return toBPartnerInfo(documentLocation);
+		return toBPartnerInfo(documentLocation)
+				.withDropShip(isDropShip);
 	}
 
 	private SourceBPartnerInfo toBPartnerInfo(final DocumentLocation documentLocation)

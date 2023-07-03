@@ -17,6 +17,7 @@ public class GPLRReportShipment
 
 	// 018 - Ship To - Customer code, customer name of ship-to, if no different ship-to, print business partner
 	@NonNull GPLRBPartnerName shipTo;
+	boolean isDropShip;
 
 	// 019 - Dest - 2 digit ISO code of ship-to country
 	@Nullable CountryCode shipToCountry;

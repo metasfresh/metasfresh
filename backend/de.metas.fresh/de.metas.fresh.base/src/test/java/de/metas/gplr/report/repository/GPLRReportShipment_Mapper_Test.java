@@ -47,6 +47,7 @@ class GPLRReportShipment_Mapper_Test
 						.code("bp_code")
 						.name("bp_name")
 						.build())
+				.isDropShip(true)
 				.shipToCountry(countryCodeFactory.getCountryCodeByAlpha2("RO"))
 				.warehouse(GPLRWarehouseName.builder()
 						.code("wh_code")
