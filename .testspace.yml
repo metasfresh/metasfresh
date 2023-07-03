@@ -1,24 +1,30 @@
 
 # List of branches that are not "sandbox"
 # See https://help.testspace.com/dashboard/project#configuration
-# Please keep in sync with with the branch list in .mergify.yml
+# Please keep in sync with the branch list in .mergify.yml
 release: 
   - adorable_badger_uat
+  - adorable_badger_hotfix
   - ant_pharm_uat
   - anxious_hippos_uat
   - arctic_north_uat
   - big_coconut_uat
+  - big_coconut_hotfix
   - blonde_monkey_uat
+  - blonde_monkey_hotfix
   - clone_wars_uat
   - epic_party_uat
   - hard_encoded_uat
+  - hard_encoded_hotfix
   - holy_cow_uat
   - hostile_tractor_uat
   - koala_yawn_uat
   - inner_silence_uat
   - intensive_care_uat
+  - intensive_care_hotfix
   - iron_plant_uat
   - mad_orange_uat
+  - mad_orange_hotfix
   - magic_oak_uat
   - modified_carbon_uat
   - neon_underwear_uat
@@ -26,10 +32,16 @@ release:
   - pot_hole_uat 
   - release
   - scary_plum_uat
+  - scary_plum_hotfix
   - science_vessel_uat
+  - science_vessel_hotfix
   - secondary_opinion_uat
+  - secondary_opinion_hotfix
   - tasty_ham_uat
+  - tasty_ham_hotfix
   - tenacious_d_uat
+  - tenacious_d_hotfix
   - week_end_uat
   - yoyo_uat
+  - yoyo_hotfix
   - zulu_apha_uat
