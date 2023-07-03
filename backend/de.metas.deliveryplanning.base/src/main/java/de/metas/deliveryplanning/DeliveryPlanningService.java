@@ -22,7 +22,6 @@
 
 package de.metas.deliveryplanning;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
@@ -53,7 +52,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -141,6 +140,7 @@ public class DeliveryPlanningService
 	private final DimensionService dimensionService;
 
 	final MoneyService moneyService;
+	private final MeansOfTransportationService meansOfTransportationService;
 
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
@@ -154,6 +154,7 @@ public class DeliveryPlanningService
 
 	final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	public DeliveryPlanningService(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
@@ -161,7 +162,8 @@ public class DeliveryPlanningService
 			@NonNull final BPartnerStatsService bPartnerStatsService,
 			@NonNull final MoneyService moneyService,
 			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final DimensionService dimensionService,
+			@NonNull final MeansOfTransportationService meansOfTransportationService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
@@ -169,6 +171,7 @@ public class DeliveryPlanningService
 		this.moneyService = moneyService;
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 		this.dimensionService = dimensionService;
+		this.meansOfTransportationService = meansOfTransportationService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -432,7 +435,7 @@ public class DeliveryPlanningService
 	}
 
 	private Money computeCreditUsedByDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request,
-			@NonNull final CurrencyId currencyId)
+														 @NonNull final CurrencyId currencyId)
 	{
 		if (request.getOrderLineId() == null)
 		{
@@ -759,23 +762,6 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
 	}
 
-	public void updateICFromDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
-	{
-		final I_M_Delivery_Planning currentDeliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(currentDeliveryPlanning.getC_OrderLine_ID());
-		if (orderLineId == null)
-		{
-			return;
-		}
-		final Timestamp minLoadingDateFromCompletedDeliveryInstructions = deliveryPlanningRepository.getMinLoadingDateFromCompletedDeliveryInstructions(orderLineId);
-		final ImmutableList<I_C_Invoice_Candidate> relatedICs = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId)
-				.stream()
-				.filter(ic -> !ic.isProcessed())
-				.peek(ic -> ic.setActualLoadingDate(minLoadingDateFromCompletedDeliveryInstructions))
-				.collect(ImmutableList.toImmutableList());
-		invoiceCandDAO.saveAll(relatedICs);
-	}
-
 	public boolean isExistsBlockedPartnerDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return deliveryPlanningRepository.getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
@@ -799,6 +785,24 @@ public class DeliveryPlanningService
 		}
 	}
 
+	@NonNull
+	public Optional<Timestamp> getMinActualLoadingDateFromPlanningsWithCompletedInstructions(@NonNull final OrderLineId orderLineId)
+	{
+		return deliveryPlanningRepository.getMinActualLoadingDateFromPlanningsWithCompletedInstructions(orderLineId);
+	}
+
+	public void invalidateInvoiceCandidatesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		Optional.ofNullable(OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID()))
+				.map(orderLineBL::getOrderLineById)
+				.ifPresent(invoiceCandidateHandlerBL::invalidateCandidatesFor);
+	}
+
+	public void invalidateInvoiceCandidatesFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		invalidateInvoiceCandidatesFor(deliveryPlanningRepository.getById(deliveryPlanningId));
+	}
+
 	private void validateDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		if (isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter))
@@ -807,4 +811,10 @@ public class DeliveryPlanningService
 		}
 	}
 
+	public Optional<MeansOfTransportation> getMeansOfTransportationByDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
+		return MeansOfTransportationId.optionalOfRepoId(deliveryPlanning.getM_MeansOfTransportation_ID())
+				.map(meansOfTransportationService::getById);
+	}
 }

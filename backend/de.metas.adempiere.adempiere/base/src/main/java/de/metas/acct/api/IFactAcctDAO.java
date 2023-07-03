@@ -84,4 +84,8 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @return how many {@link I_Fact_Acct} records were updated
 	 */
 	int updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
+
+	List<I_Fact_Acct> list(@NonNull List<FactAcctQuery> queries);
+
+	List<I_Fact_Acct> list(@NonNull FactAcctQuery query);
 }

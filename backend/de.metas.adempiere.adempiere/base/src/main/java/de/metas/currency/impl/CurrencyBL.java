@@ -22,8 +22,7 @@ package de.metas.currency.impl;
  * #L%
  */
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
@@ -83,11 +82,8 @@ public class CurrencyBL implements ICurrencyBL
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId)
 	{
-		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-		final AcctSchema as = acctSchemaDAO.getByClientAndOrg(adClientId, adOrgId);
-		Check.assumeNotNull(as, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
-
-		return as.getCurrencyId();
+		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+		return acctSchemaBL.getAcctCurrencyId(adClientId, adOrgId);
 	}
 
 	@Override

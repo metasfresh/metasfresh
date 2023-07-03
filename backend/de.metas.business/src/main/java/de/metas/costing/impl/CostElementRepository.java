@@ -24,6 +24,8 @@ import org.compiere.model.I_M_CostElement;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import org.compiere.util.Env;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -97,25 +99,23 @@ public class CostElementRepository implements ICostElementRepository
 				.orElseThrow(() -> new AdempiereException("No active cost element found for " + costElementId));
 	}
 
-	@Override
-	@NonNull
-	public CostElement getOrCreateMaterialCostElement(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
+	public @NonNull CostElement getOrCreateMaterialCostElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
-		final List<CostElement> materialCostElements = getIndexedCostElements()
-				.streamByClientIdAndCostingMethod(clientId, costingMethod)
-				.filter(CostElement::isMaterialElement)
+		final List<CostElement> costElements = getIndexedCostElements()
+				.streamByClientId(clientId)
+				.filter(ce -> ce.isMaterialCostingMethod(costingMethod))
 				.collect(ImmutableList.toImmutableList());
-		if (materialCostElements.isEmpty())
+		if (costElements.isEmpty())
 		{
 			return createDefaultMaterialCostingElement(clientId, costingMethod);
 		}
-		else if (materialCostElements.size() == 1)
+		else if (costElements.size() == 1)
 		{
-			return materialCostElements.get(0);
+			return costElements.get(0);
 		}
 		else
 		{
-			throw new AdempiereException("Only one cost element was expected but got " + materialCostElements);
+			throw new AdempiereException("Only one cost element was expected but got " + costElements);
 		}
 	}
 
@@ -171,10 +171,9 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
-	public List<CostElement> getByCostingMethod(@NonNull final ClientId clientId, @NonNull final CostingMethod costingMethod)
+	public List<CostElement> getByCostingMethod(@NonNull final CostingMethod costingMethod)
 	{
-		return getIndexedCostElements()
-				.streamByClientIdAndCostingMethod(clientId, costingMethod)
+		return streamByCostingMethod(costingMethod)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -196,12 +195,41 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
-	public Set<CostElementId> getIdsByCostingMethod(@NonNull ClientId adClientId, @NonNull final CostingMethod costingMethod)
+	public Set<CostElementId> getIdsByCostingMethod(@NonNull final CostingMethod costingMethod)
 	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+
 		return getIndexedCostElements()
-				.streamByClientIdAndCostingMethod(adClientId, costingMethod)
+				.streamByClientIdAndCostingMethod(clientId, costingMethod)
 				.map(CostElement::getId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return getIndexedCostElements()
+				.streamByClientId(clientId)
+				.filter(ce -> ce.isMaterialCostingMethod(costingMethod))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Set<CostElementId> getActiveCostElementIds()
+	{
+		return getIndexedCostElements()
+				.stream()
+				.map(CostElement::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private Stream<CostElement> streamByCostingMethod(@NonNull final CostingMethod costingMethod)
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return getIndexedCostElements()
+				.streamByClientId(clientId)
+				.filter(ce -> ce.getCostingMethod() == costingMethod);
 	}
 
 	private static class IndexedCostElements

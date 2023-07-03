@@ -24,7 +24,7 @@ package de.metas.util;
 
 public class SystemUtils
 {
-	public static final int getSystemProperty(final String property, final int defaultValue)
+	public static int getSystemProperty(final String property, final int defaultValue)
 	{
 		final String valueStr = System.getProperty(property);
 		if (valueStr == null)

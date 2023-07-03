@@ -194,7 +194,7 @@ public final class CollectionUtils
 			return Optional.empty();
 		}
 	}
-	
+
 	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>
@@ -270,7 +270,7 @@ public final class CollectionUtils
 			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
-		if(collection.isEmpty())
+		if (collection.isEmpty())
 		{
 			return defaultValue;
 		}
@@ -296,7 +296,7 @@ public final class CollectionUtils
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFunction)
 	{
-		if(collection.isEmpty())
+		if (collection.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -545,17 +545,16 @@ public final class CollectionUtils
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@Nullable
-	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
+	public static <T> Optional<T> emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{
 		final int size = collection.size();
 		if (size == 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 		else if (size == 1)
 		{
-			return collection.iterator().next();
+			return Optional.of(collection.iterator().next());
 		}
 		else
 		{
