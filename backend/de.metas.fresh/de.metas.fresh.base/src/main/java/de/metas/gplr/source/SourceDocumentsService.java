@@ -174,9 +174,14 @@ public class SourceDocumentsService
 		final SourceInvoice salesInvoice = getSalesInvoice(invoiceId);
 		final OrderId salesOrderId = salesInvoice.getOrderId();
 		final I_C_Order salesOrder = orderBL.getById(salesOrderId);
-		final Set<OrderId> purchaseOrderIds = orderBL.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
+		final List<I_C_Order> purchaseOrders = orderBL.getPurchaseOrdersBySalesOrderId(salesOrderId)
+				.stream()
+				.filter(purchaseOrder -> DocStatus.ofNullableCodeOrUnknown(purchaseOrder.getDocStatus()).isCompleted())
+				.collect(Collectors.toList());
+		final Set<OrderId> purchaseOrderIds = purchaseOrders.stream()
+				.map(purchaseOrder -> OrderId.ofRepoId(purchaseOrder.getC_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 		final boolean isBackToBack = !purchaseOrderIds.isEmpty();
-		final List<I_C_Order> purchaseOrders = orderBL.getByIds(purchaseOrderIds);
 
 		final HashSet<OrderId> allOrderIds = new HashSet<>();
 		allOrderIds.add(salesOrderId);
@@ -639,6 +644,7 @@ public class SourceDocumentsService
 
 		return prepareBPartnerInfo(documentLocation.getBpartnerId())
 				.countryCode(locationBL.getCountryCodeByLocationId(locationId))
+				// TODO get VAT ID from BP Location
 				.build();
 	}
 
