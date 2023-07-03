@@ -175,8 +175,6 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -187,8 +185,6 @@ public class FlatrateBL implements IFlatrateBL
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-
-	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -2107,6 +2103,10 @@ public class FlatrateBL implements IFlatrateBL
 			updateBillBPartnerForInvoiceCandidate(request);
 			invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
 		}
+
+		// we can't have this as a field,
+		// because metasfresh might try to instantiate FlatrateBL before the spring context is ready
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(

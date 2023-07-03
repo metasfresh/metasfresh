@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_GPLR_Report_Shipment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1289844517L;
+	private static final long serialVersionUID = 502518617L;
 
     /** Standard Constructor */
     public X_GPLR_Report_Shipment (final Properties ctx, final int GPLR_Report_Shipment_ID, @Nullable final String trxName)
@@ -122,6 +122,18 @@ public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_G
 	public boolean isB2B() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsB2B);
+	}
+
+	@Override
+	public void setIsDropShip (final boolean IsDropShip)
+	{
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
+	}
+
+	@Override
+	public boolean isDropShip() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
 	}
 
 	@Override
