@@ -59,7 +59,8 @@ public final class POInfoColumn implements Serializable
 			final boolean isAllowLogging,
 			final boolean isRestAPICustomColumn,
 			final int adSequenceID,
-			@NonNull final ColumnCloningStrategy cloningStrategy)
+			@NonNull final ColumnCloningStrategy cloningStrategy,
+			final boolean isIdentifier)
 	{
 		this.AD_Column_ID = AD_Column_ID;
 		ColumnName = columnName;
@@ -120,6 +121,7 @@ public final class POInfoColumn implements Serializable
 		IsRestAPICustomColumn = isRestAPICustomColumn;
 		AD_Sequence_ID = adSequenceID;
 		AD_Reference_Value_KeyColumn_DisplayType = ad_Reference_Value_KeyColumn_DisplayType;
+		IsIdentifier = isIdentifier;
 		this.cloningStrategy = cloningStrategy;
 
 		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
@@ -266,6 +268,7 @@ public final class POInfoColumn implements Serializable
 	final BigDecimal ValueMax_BD;
 
 	final boolean IsRestAPICustomColumn;
+	final boolean IsIdentifier;
 	@Getter private final ColumnCloningStrategy cloningStrategy;
 
 	/* package */ boolean IsCalculated = false;
@@ -393,6 +396,11 @@ public final class POInfoColumn implements Serializable
 	public int getAD_Sequence_ID()
 	{
 		return AD_Sequence_ID;
+	}
+
+	public boolean isIdentifier()
+	{
+		return IsIdentifier;
 	}
 
 	@Nullable

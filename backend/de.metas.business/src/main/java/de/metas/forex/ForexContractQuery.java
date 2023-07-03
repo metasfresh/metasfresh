@@ -16,6 +16,7 @@ public class ForexContractQuery
 	@Nullable DocStatus docStatus;
 	@Nullable CurrencyId currencyId;
 	@Nullable CurrencyId currencyToId;
+	@Nullable String displayNameSearchTerm;
 	boolean onlyWithOpenAmount;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.ofInt(100);
