@@ -102,6 +102,7 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -643,9 +644,11 @@ public class SourceDocumentsService
 			throw new AdempiereException("No location set for " + documentLocation);
 		}
 
+		final String vatId = Optional.ofNullable(documentLocation.getBpartnerLocationId()).flatMap(bpartnerBL::getVATTaxId).orElse(null);
+
 		return prepareBPartnerInfo(documentLocation.getBpartnerId())
 				.countryCode(locationBL.getCountryCodeByLocationId(locationId))
-				// TODO get VAT ID from BP Location
+				.vatId(vatId)
 				.build();
 	}
 
@@ -654,8 +657,7 @@ public class SourceDocumentsService
 		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
 		return SourceBPartnerInfo.builder()
 				.code(bpartner.getValue())
-				.name(bpartner.getName())
-				.vatId(bpartner.getVATaxID());
+				.name(bpartner.getName());
 	}
 
 	private SourceUserInfo getUserInfo(final int userRepoId)
