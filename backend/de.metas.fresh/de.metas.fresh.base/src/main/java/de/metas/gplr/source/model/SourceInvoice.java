@@ -5,6 +5,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentinstructions.PaymentInstructions;
 import de.metas.payment.paymentterm.PaymentTerm;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,8 +28,9 @@ public class SourceInvoice
 	@NonNull LocalDateAndOrgId dateInvoiced;
 	@Nullable String sapProductHierarchy;
 	@NonNull PaymentTerm paymentTerm;
+	@Nullable PaymentInstructions paymentInstructions;
 	@Nullable LocalDateAndOrgId dueDate;
-	@Nullable String descriptionBottom;
+	@Nullable String invoiceAdditionalText;
 	@NonNull Amount linesNetAmtFC;
 	@NonNull Amount taxAmtFC;
 }

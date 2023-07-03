@@ -33,6 +33,7 @@ class GPLRReportShipment_Mapper
 		record.setShipTo_BPartnerValue(from.getShipTo().getCode());
 		record.setShipTo_BPartnerName(from.getShipTo().getName());
 		record.setShipTo_CountryCode(from.getShipToCountry() != null ? from.getShipToCountry().getAlpha2() : null);
+		record.setIsDropShip(from.isDropShip());
 		record.setWarehouseValue(from.getWarehouse().getCode());
 		record.setWarehouseName(from.getWarehouse().getName());
 		record.setWarehouseExternalId(from.getWarehouse().getExternalId());
@@ -63,6 +64,7 @@ class GPLRReportShipment_Mapper
 						.name(record.getShipTo_BPartnerName())
 						.vatId(null) // N/A
 						.build())
+				.isDropShip(record.isDropShip())
 				.shipToCountry(StringUtils.trimBlankToOptional(record.getShipTo_CountryCode()).map(countryCodeFactory::getCountryCodeByAlpha2).orElse(null))
 				.warehouse(GPLRWarehouseName.builder()
 						.code(record.getWarehouseValue())

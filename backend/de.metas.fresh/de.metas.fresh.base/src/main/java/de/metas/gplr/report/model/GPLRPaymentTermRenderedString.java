@@ -1,13 +1,14 @@
 package de.metas.gplr.report.model;
 
+import de.metas.payment.paymentinstructions.PaymentInstructions;
 import de.metas.payment.paymentterm.PaymentTerm;
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
-import java.util.Objects;
+import javax.annotation.Nullable;
 
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -15,12 +16,12 @@ public class GPLRPaymentTermRenderedString
 {
 	@NonNull String renderedString;
 
-	public static GPLRPaymentTermRenderedString of(@NonNull final PaymentTerm paymentTerm)
+	public static GPLRPaymentTermRenderedString of(@NonNull final PaymentTerm paymentTerm, @Nullable PaymentInstructions paymentInstructions)
 	{
 		return new GPLRPaymentTermRenderedString(toRenderedString(
 				paymentTerm.getValue(),
-				paymentTerm.getName(),
-				paymentTerm.getDescription()
+				paymentTerm.getDescription(),
+				paymentInstructions != null ? paymentInstructions.getName() : null
 		));
 	}
 
@@ -29,19 +30,24 @@ public class GPLRPaymentTermRenderedString
 		return new GPLRPaymentTermRenderedString(renderedString);
 	}
 
-	private static String toRenderedString(String code, String name, String description)
+	private static String toRenderedString(
+			@NonNull String code,
+			@Nullable String description,
+			@Nullable String paymentInstructions)
 	{
 		final StringBuilder result = new StringBuilder();
 		result.append(code);
 
-		if (!Objects.equals(name, code))
-		{
-			result.append(" ").append(name.trim());
-		}
-
-		if (description != null && !Check.isBlank(description))
+		final String descriptionNorm = StringUtils.trimBlankToNull(description);
+		if (descriptionNorm != null)
 		{
 			result.append(" ").append(description);
+		}
+
+		final String paymentInstructionsNorm = StringUtils.trimBlankToNull(paymentInstructions);
+		if (paymentInstructionsNorm != null)
+		{
+			result.append(" ").append(paymentInstructionsNorm);
 		}
 
 		return result.toString();
