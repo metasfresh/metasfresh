@@ -539,6 +539,7 @@ public class SourceDocumentsService
 	{
 		return inOutBL.getByOrderId(salesOrderId)
 				.stream()
+				.filter(shipment -> DocStatus.ofNullableCodeOrUnknown(shipment.getDocStatus()).isCompletedOrClosed())
 				.map(shipment -> toSourceShipment(shipment, isBackToBack))
 				.collect(ImmutableList.toImmutableList());
 	}
