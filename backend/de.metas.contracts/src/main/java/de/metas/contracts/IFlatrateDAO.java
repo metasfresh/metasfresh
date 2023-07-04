@@ -61,6 +61,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -256,5 +257,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
 
-	I_C_Flatrate_Term getByOrderLineId(@NonNull OrderLineId orderLineId);
+	@NonNull
+	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId);
 }
