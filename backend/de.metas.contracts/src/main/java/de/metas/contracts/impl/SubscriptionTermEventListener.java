@@ -22,6 +22,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
+
 /*
  * #%L
  * de.metas.contracts
@@ -97,6 +99,12 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			next.setC_UOM_ID(predecessor.getC_UOM_ID());
 			next.setC_TaxCategory_ID(predecessor.getC_TaxCategory_ID());
 			next.setIsTaxIncluded(predecessor.isTaxIncluded());
+		}
+		else if (ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(conditions.getOnFlatrateTermExtend()))
+		{
+			throw new AdempiereException("Extension Not Allowed")
+					.appendParametersToMessage()
+					.setParameter("conditions", conditions);
 		}
 		else
 		{
