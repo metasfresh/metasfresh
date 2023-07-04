@@ -135,7 +135,7 @@ Feature: tax departure country for SO and PO
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
       | s_ol_2     | ol_2                      | N             |
-    When 'generate shipments' process is invoked for multiple shipments
+    When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
       | s_ol_2                           | D            | true                | false       |

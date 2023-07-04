@@ -289,22 +289,12 @@ public class C_Order_StepDef
 
 			if (EmptyUtil.isNotBlank(docBaseType))
 			{
-				final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
-						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType);
-
 				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
-				if (Check.isNotBlank(docSubType))
-				{
-					docTypeQueryBuilder.addEqualsFilter(COLUMNNAME_DocSubType, docSubType);
-				}
 
-				final String name = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.DocSubTypeName");
-				if (Check.isNotBlank(name))
-				{
-					docTypeQueryBuilder.addEqualsFilter(COLUMNNAME_Name, name);
-				}
-
-				final I_C_DocType docType = docTypeQueryBuilder.create()
+				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+						.create()
 						.firstOnlyNotNull(I_C_DocType.class);
 
 				assertThat(docType).isNotNull();
@@ -341,13 +331,6 @@ public class C_Order_StepDef
 				final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
 				order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
 				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
-			}
-
-			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(taxDepartureCountryIdentifier))
-			{
-				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
-				order.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
 			}
 
 			saveRecord(order);
