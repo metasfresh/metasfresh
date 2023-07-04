@@ -146,6 +146,12 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
+		public void voidLinkedDocuments(final @NonNull Object model, final @NonNull FlatrateTermId flatrateTermId)
+		{
+			return;
+		}
+
+		@Override
 		public boolean applies(final @NonNull Object model)
 		{
 			return true;
