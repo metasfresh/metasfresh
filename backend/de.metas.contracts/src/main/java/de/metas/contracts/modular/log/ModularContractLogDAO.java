@@ -41,6 +41,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
@@ -133,26 +134,39 @@ public class ModularContractLogDAO
 	}
 
 	@NonNull
-	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest logEntryReverseRequest)
+	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
-		final I_ModCntr_Log oldLog = getQuery(logEntryReverseRequest).firstOnly();
+		final I_ModCntr_Log oldLog = getQuery(request)
+				.firstOnlyOptional()
+				.orElseThrow(() -> new AdempiereException("No record found for request !")
+						.appendParametersToMessage()
+						.setParameter("LogEntryReverseRequest", request));
 
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
+		
 		copyValues(oldLog, reversedLog);
+		
 		if (reversedLog.getQty() != null)
 		{
 			reversedLog.setQty(reversedLog.getQty().negate());
 		}
+		
+		if (reversedLog.getAmount() != null)
+		{
+			reversedLog.setAmount(reversedLog.getAmount().negate());
+		}
+		
 		save(reversedLog);
 
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
 	}
 
-	private IQueryBuilder<I_ModCntr_Log> getQuery(final @NonNull LogEntryReverseRequest logEntryReverseRequest)
+	@NonNull
+	private IQueryBuilder<I_ModCntr_Log> getQuery(final @NonNull LogEntryReverseRequest request)
 	{
-		final ModularContractLogEntryId id = logEntryReverseRequest.id();
-		final TableRecordReference tableRecordReference = logEntryReverseRequest.referencedModel();
-		final FlatrateTermId flatrateTermId = logEntryReverseRequest.flatrateTermId();
+		final ModularContractLogEntryId id = request.id();
+		final TableRecordReference tableRecordReference = request.referencedModel();
+		final FlatrateTermId flatrateTermId = request.flatrateTermId();
 
 		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter();

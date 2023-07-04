@@ -65,6 +65,7 @@ import java.util.Map;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -173,6 +174,13 @@ public class C_Flatrate_Term_StepDef
 			{
 				contractRecord.setStartDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "StartDate"));
 				contractRecord.setEndDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "EndDate"));
+			}
+
+			final String orderLineIdentifier = tableRow.get("OPT." + COLUMNNAME_C_OrderLine_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				contractRecord.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
 			}
 
 			InterfaceWrapperHelper.saveRecord(contractRecord);

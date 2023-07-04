@@ -37,6 +37,7 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_I
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_LicenseFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MarginCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MediatedCommission;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Procurement;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund;
@@ -59,7 +60,8 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee),
 	CALL_ORDER(TYPE_CONDITIONS_CallOrder),
 
-	INTERIM_INVOICE(TYPE_CONDITIONS_InterimInvoice);
+	INTERIM_INVOICE(TYPE_CONDITIONS_InterimInvoice),
+	MODULAR_CONTRACT(TYPE_CONDITIONS_ModularContract);
 
 	@Getter
 	private final String code;

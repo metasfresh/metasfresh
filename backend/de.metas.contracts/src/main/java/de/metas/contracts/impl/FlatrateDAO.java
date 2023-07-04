@@ -77,6 +77,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1050,13 +1051,14 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Term getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	@NonNull
+	public Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID, orderLineId)
-				.create()
-				.firstOnly();
+				.create() 
+				.firstOnlyOptional();
 	}
 
 	@Override
