@@ -137,25 +137,25 @@ public class ModularContractLogDAO
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
 		final I_ModCntr_Log oldLog = getQuery(request)
-				.firstOnlyOptional()
+				.firstOptional()
 				.orElseThrow(() -> new AdempiereException("No record found for request !")
 						.appendParametersToMessage()
 						.setParameter("LogEntryReverseRequest", request));
 
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
-		
+
 		copyValues(oldLog, reversedLog);
-		
+
 		if (reversedLog.getQty() != null)
 		{
 			reversedLog.setQty(reversedLog.getQty().negate());
 		}
-		
+
 		if (reversedLog.getAmount() != null)
 		{
 			reversedLog.setAmount(reversedLog.getAmount().negate());
 		}
-		
+
 		save(reversedLog);
 
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
@@ -183,6 +183,10 @@ public class ModularContractLogDAO
 		{
 			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId);
 		}
+
+		queryBuilder.orderByDescending(I_ModCntr_Log.COLUMN_Created);
+		queryBuilder.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID);
+
 		return queryBuilder;
 	}
 }
