@@ -85,11 +85,12 @@ public class C_Order
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
-			if (!subscriptionBL.isSubscription(ol))
+			if (!subscriptionBL.isSubscription(ol) && !flatrateBL.isModuleContract(ol))
 			{
-				logger.debug("Order line " + ol + " has no subscription");
+				logger.debug("Order line " + ol + " has no subscription or module contract assigned");
 				continue;
 			}
+
 			handleSubscriptionOrderLine(ol);
 		}
 	}

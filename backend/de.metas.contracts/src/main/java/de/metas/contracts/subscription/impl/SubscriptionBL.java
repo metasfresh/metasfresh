@@ -128,6 +128,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setC_Order_Term_ID(ol.getC_Order_ID());
 
 		newTerm.setC_Flatrate_Conditions_ID(cond.getC_Flatrate_Conditions_ID());
+		newTerm.setType_Conditions(cond.getType_Conditions());
 
 		// important: we need to use qtyEntered here, because qtyOrdered (which
 		// is used for pricing) contains the number of goods to be delivered

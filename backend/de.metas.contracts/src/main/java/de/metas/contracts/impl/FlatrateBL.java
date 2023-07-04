@@ -35,11 +35,11 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
@@ -2198,4 +2198,18 @@ public class FlatrateBL implements IFlatrateBL
 				.anyMatch();
 	}
 
+	@Override
+	public boolean isModuleContract(final I_C_OrderLine ol)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(ol.getC_Flatrate_Conditions_ID());
+
+		if (conditionsId == null)
+		{
+			return false;
+		}
+
+		final I_C_Flatrate_Conditions typeConditions = flatrateDAO.getConditionsById(conditionsId);
+
+		return TypeConditions.MODULAR_CONTRACT.getCode().equals(typeConditions.getType_Conditions());
+	}
 }

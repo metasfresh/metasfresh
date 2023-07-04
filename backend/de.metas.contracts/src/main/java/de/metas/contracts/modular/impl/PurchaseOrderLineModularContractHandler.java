@@ -22,18 +22,11 @@
 
 package de.metas.contracts.modular.impl;
 
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -45,10 +38,9 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -61,38 +53,32 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.slf4j.Logger;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Component
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
 
-	private static final Logger logger = LogManager.getLogger(PurchaseOrderLineModularContractHandler.class);
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	public final ModularContractLogDAO modularContractLogDAO;
 	public final ModularContractSettingsDAO modularContractSettingsDAO;
 
@@ -199,86 +185,17 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@Override
-	public @NonNull Stream<ConditionsId> getContractConditionIds(@NonNull final I_C_OrderLine model)
+	public void voidLinkedDocuments(@NonNull final I_C_OrderLine model, @NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(model.getC_Order_ID()));
-		if (order.isSOTrx())
+		final List<I_M_InOutLine> generatedInOutLines = inOutDAO.retrieveLinesForOrderLine(model);
+
+		if (!generatedInOutLines.isEmpty())
 		{
-			return Stream.empty();
+			throw new AdempiereException("PO cannot be voided!");
 		}
 
-		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(model.getC_Flatrate_Conditions_ID());
-		return Stream.ofNullable(conditionsId);
-	}
+		final I_C_Flatrate_Term contract = flatrateDAO.getById(flatrateTermId);
 
-	public void createModularContractIfRequired(@NonNull final I_C_OrderLine model)
-	{
-		final OrderLineId orderLineId = OrderLineId.ofRepoId(model.getC_OrderLine_ID());
-		final I_C_Flatrate_Term existingContract = flatrateDAO.getByOrderLineId(orderLineId).orElse(null);
-
-		if (existingContract != null)
-		{
-			logger.info("Order line skipped! Contract already existing for OrderLineId={}.", orderLineId);
-			return;
-		}
-
-		createContract(model);
-	}
-
-	@NonNull
-	private I_C_Flatrate_Term createContract(@NonNull final I_C_OrderLine orderLine)
-	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		final I_C_Flatrate_Term newContract = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
-
-		//order references
-		newContract.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
-		newContract.setC_Order_Term_ID(orderLine.getC_Order_ID());
-
-		//qty of the whole contract
-		newContract.setPlannedQtyPerUnit(orderLine.getQtyEnteredInPriceUOM());
-		newContract.setC_UOM_ID(orderLine.getPrice_UOM_ID());
-
-		//price & tax
-		newContract.setM_Product_ID(orderLine.getM_Product_ID());
-		newContract.setPriceActual(orderLine.getPriceActual());
-		newContract.setC_Currency_ID(orderLine.getC_Currency_ID());
-
-		Check.assume(orderLine.getC_TaxCategory_ID() > 0, "C_TaxCategory_ID must be set!");
-		newContract.setC_TaxCategory_ID(orderLine.getC_TaxCategory_ID());
-		newContract.setIsTaxIncluded(order.isTaxIncluded());
-
-		//contract dates
-		newContract.setStartDate(order.getDatePromised());
-		newContract.setMasterStartDate(order.getDatePromised());
-
-		//bill partner info
-		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
-
-		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), order.getBill_User_ID());
-		ContractDocumentLocationAdapterFactory
-				.billLocationAdapter(newContract)
-				.setFrom(billToLocationId, billToContactId);
-
-		final I_C_BPartner billPartner = bPartnerDAO.getById(billToLocationId.getBpartnerId());
-		final I_C_Flatrate_Data existingData = flatrateDAO.retrieveOrCreateFlatrateData(billPartner);
-		newContract.setC_Flatrate_Data(existingData);
-
-		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID());
-		Check.assume(conditionsId != null, "ConditionsId should not be null at this stage!");
-
-		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
-		newContract.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
-		newContract.setType_Conditions(conditions.getType_Conditions());
-
-		//doc
-		newContract.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
-		newContract.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
-
-		save(newContract);
-
-		documentBL.processEx(newContract, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
-
-		return newContract;
+		flatrateBL.voidIt(contract);
 	}
 }

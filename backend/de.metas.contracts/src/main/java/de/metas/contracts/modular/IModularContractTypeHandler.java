@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular;
 
-import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -70,8 +69,5 @@ public interface IModularContractTypeHandler<T>
 
 	void validateDocAction(@NonNull final T model, @NonNull final ModularContractService.ModelAction action);
 
-	@NonNull
-	Stream<ConditionsId> getContractConditionIds(@NonNull T model);
-
-	void createModularContractIfRequired(@NonNull T model);
+	void voidLinkedDocuments(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 }

@@ -22,11 +22,8 @@
 
 package de.metas.contracts.modular;
 
-import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -73,10 +70,6 @@ public class ModularContractService
 		handler.streamContractIds(model)
 				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
 				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId));
-
-		handler.getContractConditionIds(model)
-				.filter(this::isModularContractConditions)
-				.forEach(modularContractConditionsId -> invokeWithModel(handler, model, action, modularContractConditionsId));
 	}
 
 	private <T> boolean isApplicableContract(@NonNull final IModularContractTypeHandler<T> handler, @NonNull final FlatrateTermId flatrateTermId)
@@ -96,13 +89,6 @@ public class ModularContractService
 		return Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, flatrateTerm.getType_Conditions());
 	}
 
-	private boolean isModularContractConditions(@NonNull final ConditionsId conditionsId)
-	{
-		final I_C_Flatrate_Conditions contractConditions = flatrateDAO.getConditionsById(conditionsId);
-
-		return TypeConditions.MODULAR_CONTRACT.equals(TypeConditions.ofCode(contractConditions.getType_Conditions()));
-	}
-
 	private static <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, @Nullable final ModularContractSettings settings)
 	{
 		if (settings == null)
@@ -120,6 +106,7 @@ public class ModularContractService
 		handler.validateDocAction(model, action);
 
 		createLogEntries(handler, model, action, flatrateTermId);
+		handleAction(handler, model, action, flatrateTermId);
 	}
 
 	private <T> void createLogEntries(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
@@ -133,11 +120,11 @@ public class ModularContractService
 		}
 	}
 
-	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final ConditionsId conditionsId_NOTUSED)
+	private <T> void handleAction(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		switch (action)
 		{
-			case COMPLETED -> handler.createModularContractIfRequired(model);
+			case VOIDED -> handler.voidLinkedDocuments(model, flatrateTermId);
 		}
 	}
 }
