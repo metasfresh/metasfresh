@@ -8,6 +8,9 @@ Feature: tax departure country for SO and PO
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
+    When load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
     And load C_Country by country code:
       | C_Country_ID.Identifier | CountryCode |
       | Romania                 | RO          |
@@ -29,6 +32,21 @@ Feature: tax departure country for SO and PO
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_2                             | p_1                     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name               |
+      | huPackingLU           | huPackingLU_290622 |
+      | huPackingTU           | huPackingTU_290622 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                    | HU_UnitType | IsCurrent |
+      | packingVersionLU              | huPackingLU           | packingVersionLU_290622 | LU          | Y         |
+      | packingVersionTU              | huPackingTU           | packingVersionTU_290622 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | huPiItemLU                 | packingVersionLU              | 10  | HU       | huPackingTU                      |
+      | huPiItemTU                 | packingVersionTU              | 10  | MI       |                                  |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | huItemPurchaseProduct              | huPiItemTU                 | p_1                     | 10  | 2021-01-01 |
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | Endcustomer_290622 | N            | Y              | ps_1                          |
@@ -47,18 +65,27 @@ Feature: tax departure country for SO and PO
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
+    Then after not more than 30s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_ol_1     | ol_1                      | N             |
+    When 'generate shipments' process is invoked
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_ol_1                           | D            | true                | false       |
+    Then after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_ol_1                           | shipment_1            |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
       | ic_1                              | ol_1                      | 0            | Romania                                   |
-#    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
-#      | C_Invoice_Candidate_ID.Identifier |
-#      | ic_1                              |
-#    Then after not more than 30s, C_Invoice are found:
-#      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-#      | ic_1                              | invoice_1               |
-#    And validate created invoices
-#      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.C_Tax_Departure_Country_ID.Identifier |
-#      | invoice_1               | endcustomer_1            | l_1                               | 1000002     | true      | CO        | Romania                                   |
+    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    Then after not more than 30s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic_1                              | invoice_1               |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | invoice_1               | endcustomer_1            | l_1                               | 1000002     | true      | CO        | Romania                                   |
 
   @from:cucumber
   Scenario: tax departure country is propagated from purchase order to purchase invoice candidate and purchase invoice
@@ -69,18 +96,30 @@ Feature: tax departure country for SO and PO
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
+    Then after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | receiptSchedule_PO              | o_1                   | ol_1                      | endvendor_1              | l_2                               | p_1                     | 10         | warehouseStd              |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 10    | huItemPurchaseProduct              | huPackingLU                  |
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
+    And validate the created material receipt lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | receiptLine1              | material_receipt_1    | p_1                     | 10          | true      |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
-      | ic_1                              | ol_1                      | 0            | Romania                                   |
-#    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
-#      | C_Invoice_Candidate_ID.Identifier |
-#      | ic_1                              |
-#    Then after not more than 30s, C_Invoice are found:
-#      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-#      | ic_1                              | invoice_1               |
-#    And validate created invoices
-#      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.C_Tax_Departure_Country_ID.Identifier |
-#      | invoice_1               | endvendor_1              | l_2                               | 1000002     | true      | CO        | Romania                                   |
+      | ic_1                              | ol_1                      | 10           | Romania                                   |
+    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    Then after not more than 30s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic_1                              | invoice_1               |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.C_Tax_Departure_Country_ID.Identifier |
+      | invoice_1               | endvendor_1              | l_2                               | 1000002     | true      | CO        | Romania                                   |
 
   @from:cucumber
   Scenario: after generating PO from SO, the tax departure country is not propagated from sales order to purchase order

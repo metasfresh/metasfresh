@@ -7,6 +7,7 @@ import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -108,4 +109,6 @@ public interface IInvoiceHeader
 
 	@NonNull
 	Dimension getDimension();
+
+	CountryId getC_Tax_Departure_Country_ID();
 }
