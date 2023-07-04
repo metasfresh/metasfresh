@@ -44,7 +44,7 @@ public class ModularContractService
 {
 	public enum ModelAction
 	{
-		COMPLETED, REVERSED, REACTIVATED
+		COMPLETED, REVERSED, REACTIVATED, VOIDED
 	}
 
 	private final ModularContractLogDAO contractLogDAO;
@@ -62,7 +62,7 @@ public class ModularContractService
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 
-	public void invokeWithModel(@NonNull final Object model, @NonNull final ModelAction action)
+	public <T> void invokeWithModel(@NonNull final T model, @NonNull final ModelAction action)
 	{
 		modularContractHandlerFactory.getApplicableHandlersFor(model)
 				.forEach(handler -> invokeWithModel(handler, model, action));
@@ -92,7 +92,7 @@ public class ModularContractService
 
 	private boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(flatrateTermId);
+		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.getById(flatrateTermId);
 		return Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, flatrateTerm.getType_Conditions());
 	}
 
@@ -117,18 +117,19 @@ public class ModularContractService
 
 	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
 	{
+		handler.validateDocAction(model, action);
+
+		createLogEntries(handler, model, action, flatrateTermId);
+	}
+
+	private <T> void createLogEntries(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
+	{
 		switch (action)
 		{
-			case COMPLETED ->
-			{
-				handler.createLogEntryCreateRequest(model, flatrateTermId)
-						.ifPresent(contractLogDAO::create);
-			}
-			case REVERSED ->
-			{
-				handler.createLogEntryReverseRequest(model, flatrateTermId)
-						.ifPresent(contractLogDAO::reverse);
-			}
+			case COMPLETED -> handler.createLogEntryCreateRequest(model, flatrateTermId)
+					.ifPresent(contractLogDAO::create);
+			case VOIDED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
+					.ifPresent(contractLogDAO::reverse);
 		}
 	}
 

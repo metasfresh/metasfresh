@@ -35,6 +35,7 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -44,7 +45,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -53,7 +54,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -80,8 +81,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Component
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
+	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
+
 	private static final Logger logger = LogManager.getLogger(PurchaseOrderLineModularContractHandler.class);
 
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -98,23 +102,33 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 
+	@NonNull
 	@Override
-	public boolean probablyAppliesTo(@NonNull final Object model)
+	public Class<I_C_OrderLine> getType()
 	{
-		return I_C_OrderLine.class.isAssignableFrom(model.getClass());
+		return I_C_OrderLine.class;
+	}
+
+	@Override
+	public boolean applies(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		return SOTrx.ofBoolean(order.isSOTrx()).isPurchase();
 	}
 
 	@Override
 	@NonNull
-	public Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final I_C_OrderLine model, @NonNull final FlatrateTermId flatrateTermId)
+	public Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final FlatrateTermId modularContractId)
 	{
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(modularContractId);
 		if (modularContractSettings == null)
 		{
 			return Optional.empty();
 		}
 
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(model.getC_Order_ID()));
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
 				.stream()
 				.filter(config -> config.isMatchingClassName(PurchaseOrderLineModularContractHandler.class.getName()))
@@ -122,14 +136,14 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.map(ModularContractType::getId)
 				.findFirst();
 
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(model.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(model.getQtyOrdered(), uomId);
-		final Money amount = Money.of(model.getLineNetAmt(), CurrencyId.ofRepoId(model.getC_Currency_ID()));
+		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
+		final Quantity quantity = Quantity.of(orderLine.getQtyEntered(), uomId);
+		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
-				.contractId(flatrateTermId)
-				.productId(ProductId.ofRepoId(model.getM_Product_ID()))
-				.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, model.getC_OrderLine_ID()))
+				.contractId(modularContractId)
+				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
+				.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 				.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
 				.collectionPointBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
@@ -139,7 +153,9 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.processed(false)
 				.quantity(quantity)
 				.amount(amount)
-				.transactionDate(InstantAndOrgId.ofTimestamp(order.getDateOrdered(), OrgId.ofRepoId(model.getAD_Org_ID())).toLocalDateAndOrgId(orgDAO::getTimeZone))
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
+															   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+															   orgDAO::getTimeZone))
 				.year(modularContractSettings.getYearAndCalendarId().yearId())
 				.description(null)
 				.modularContractTypeId(contractTypeId)
@@ -147,44 +163,43 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@Override
-	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final I_C_OrderLine model, final @NonNull FlatrateTermId flatrateTermId)
+	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(
+			@NonNull final I_C_OrderLine model,
+			@NonNull final FlatrateTermId flatrateTermId)
 	{
 		return Optional.of(LogEntryReverseRequest.builder()
-				.referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, model.getC_OrderLine_ID()))
-				.flatrateTermId(flatrateTermId)
-				.build());
+								   .referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, model.getC_OrderLine_ID()))
+								   .flatrateTermId(flatrateTermId)
+								   .build());
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine model)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLine)
 	{
-		if (!probablyAppliesTo(model))
-		{
-			return Stream.empty();
-		}
-
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(model.getC_Order_ID()));
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		if (order.isSOTrx())
 		{
 			return Stream.empty();
 		}
 
-		final FlatrateTermId flatrateTermId = Optional.ofNullable(flatrateDAO.getByOrderLineId(OrderLineId.ofRepoId(model.getC_OrderLine_ID())))
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoIdOrNull)
-				.orElse(null);
+		return flatrateDAO.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
+				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
+				.stream();
+	}
 
-		return Stream.ofNullable(flatrateTermId);
+	public void validateDocAction(
+			@NonNull final I_C_OrderLine ignored,
+			@NonNull final ModularContractService.ModelAction action)
+	{
+		if (action == ModularContractService.ModelAction.REVERSED || action == ModularContractService.ModelAction.REACTIVATED)
+		{
+			throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+		}
 	}
 
 	@Override
 	public @NonNull Stream<ConditionsId> getContractConditionIds(@NonNull final I_C_OrderLine model)
 	{
-		if (!probablyAppliesTo(model))
-		{
-			return Stream.empty();
-		}
-
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(model.getC_Order_ID()));
 		if (order.isSOTrx())
 		{

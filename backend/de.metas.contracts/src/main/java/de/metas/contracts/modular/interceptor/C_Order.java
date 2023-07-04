@@ -35,6 +35,7 @@ import org.springframework.stereotype.Component;
 import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModularContractService.ModelAction.REACTIVATED;
 import static de.metas.contracts.modular.ModularContractService.ModelAction.REVERSED;
+import static de.metas.contracts.modular.ModularContractService.ModelAction.VOIDED;
 
 /**
  * Glue-code that invokes the {@link ModularContractService} on certain order events.
@@ -46,6 +47,8 @@ import static de.metas.contracts.modular.ModularContractService.ModelAction.REVE
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	private final ModularContractService contractService;
 
 	public C_Order(@NonNull final ModularContractService contractService)
@@ -56,21 +59,32 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	void afterComplete(@NonNull final I_C_Order orderRecord)
 	{
-		// todo fp
-		Services.get(IOrderDAO.class)
-				.retrieveOrderLines(orderRecord)
-				.forEach(line -> contractService.invokeWithModel(line, COMPLETED));
+		invokeHandlerForEachLine(orderRecord, COMPLETED);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
+	void afterVoid(@NonNull final I_C_Order orderRecord)
+	{
+		invokeHandlerForEachLine(orderRecord, VOIDED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	void afterReverse(@NonNull final I_C_Order orderRecord)
 	{
-		contractService.invokeWithModel(orderRecord, REVERSED);
+		invokeHandlerForEachLine(orderRecord, REVERSED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE })
 	void afterReactivate(@NonNull final I_C_Order orderRecord)
 	{
-		contractService.invokeWithModel(orderRecord, REACTIVATED);
+		invokeHandlerForEachLine(orderRecord, REACTIVATED);
+	}
+
+	private void invokeHandlerForEachLine(
+			@NonNull final I_C_Order orderRecord,
+			@NonNull final ModularContractService.ModelAction modelAction)
+	{
+		orderDAO.retrieveOrderLines(orderRecord)
+				.forEach(line -> contractService.invokeWithModel(line, modelAction));
 	}
 }

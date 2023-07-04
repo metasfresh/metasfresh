@@ -61,8 +61,7 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	CALL_ORDER(TYPE_CONDITIONS_CallOrder),
 
 	INTERIM_INVOICE(TYPE_CONDITIONS_InterimInvoice),
-	MODULAR_CONTRACT(TYPE_CONDITIONS_ModularContract),
-	;
+	MODULAR_CONTRACT(TYPE_CONDITIONS_ModularContract);
 
 	@Getter
 	private final String code;

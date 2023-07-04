@@ -218,7 +218,7 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(billBPartnerIdentifier))
 			{
 				final I_C_BPartner billBPartner = bpartnerTable.get(billBPartnerIdentifier);
-				order.setC_BPartner_ID(billBPartner.getC_BPartner_ID());
+				order.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
 			}
 
 			final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -350,37 +350,45 @@ public class C_Order_StepDef
 		}
 	}
 
-	@And("^the order identified by (.*) is (reactivated|completed|closed|voided)$")
+	@And("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
 
 		switch (StepDefDocAction.valueOf(action))
 		{
-			case reactivated:
+			case reactivated ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
-				break;
-			case completed:
+			}
+			case completed ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-				break;
-			case closed:
+			}
+			case closed ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
-				break;
-			case voided:
+			}
+			case voided ->
+			{
 				order.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
-				break;
-			default:
-				throw new AdempiereException("Unhandled C_Order action")
-						.appendParametersToMessage()
-						.setParameter("action:", action);
+			}
+			case reversed ->
+			{
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+			}
+			default -> throw new AdempiereException("Unhandled C_Order action")
+					.appendParametersToMessage()
+					.setParameter("action:", action);
 		}
 	}
 
-	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided) expecting error$")
+	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed) expecting error$")
 	public void order_action_expecting_error(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
