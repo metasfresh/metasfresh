@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -13,12 +14,9 @@ import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.organization.OrgId;
-import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
@@ -34,15 +32,12 @@ import java.util.List;
  * </pre>
  *
  * @author Jorg Janke
- * @version $Id: Doc_Payment.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 {
 	// services
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
-	private TenderType _tenderType;
 	private boolean m_Prepayment = false;
 	@Nullable private CurrencyConversionContext _currencyConversionContext; // lazy
 
@@ -57,7 +52,6 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		final I_C_Payment payment = getModel(I_C_Payment.class);
 		setDateDoc(payment.getDateTrx());
 		setBPBankAccountId(BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID()));
-		_tenderType = TenderType.ofCode(payment.getTenderType());
 		m_Prepayment = payment.isPrepayment();
 
 		// Amount
@@ -110,12 +104,6 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		// create Fact Header
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 		final OrgId AD_Org_ID = getBankOrgId();        // Bank Account Org
-
-		// Cash Transfer
-		if (getTenderType().isCash() && !isCashAsPayment())
-		{
-			return ImmutableList.of(fact);
-		}
 
 		final DocBaseType docBaseType = getDocBaseType();
 		if (DocBaseType.ARReceipt.equals(docBaseType))
@@ -215,17 +203,6 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	{
 		final BankAccount bankAccount = getBankAccount();
 		return bankAccount != null ? bankAccount.getOrgId() : OrgId.ANY;
-	}
-
-	private boolean isCashAsPayment()
-	{
-		final boolean defaultValue = true;
-		return sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", defaultValue);
-	}
-
-	private TenderType getTenderType()
-	{
-		return _tenderType;
 	}
 
 	private boolean isPrepayment()
