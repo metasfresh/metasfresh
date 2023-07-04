@@ -45,6 +45,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -64,6 +65,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -85,7 +87,6 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 
 	private static final Logger logger = LogManager.getLogger(PurchaseOrderLineModularContractHandler.class);
 
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -112,7 +113,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	@Override
 	public boolean applies(@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		return SOTrx.ofBoolean(order.isSOTrx()).isPurchase();
 	}
 
@@ -128,7 +129,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			return Optional.empty();
 		}
 
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
 				.stream()
 				.filter(config -> config.isMatchingClassName(PurchaseOrderLineModularContractHandler.class.getName()))
@@ -176,7 +177,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		if (order.isSOTrx())
 		{
 			return Stream.empty();
@@ -213,7 +214,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	public void createModularContractIfRequired(@NonNull final I_C_OrderLine model)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(model.getC_OrderLine_ID());
-		final I_C_Flatrate_Term existingContract = flatrateDAO.getByOrderLineId(orderLineId);
+		final I_C_Flatrate_Term existingContract = flatrateDAO.getByOrderLineId(orderLineId).orElse(null);
 
 		if (existingContract != null)
 		{
