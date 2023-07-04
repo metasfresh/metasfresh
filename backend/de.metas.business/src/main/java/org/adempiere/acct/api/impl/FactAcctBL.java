@@ -29,6 +29,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.impl.FactAcctDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.util.Check;
@@ -57,7 +58,7 @@ public class FactAcctBL implements IFactAcctBL
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
 		final AccountDimension accountDimension = createAccountDimension(factAcct);
-		return Account.of(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()), factAcct.getAccountConceptualName());
+		return Account.of(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()), FactAcctDAO.extractAccountConceptualName(factAcct));
 	}
 
 	@Override

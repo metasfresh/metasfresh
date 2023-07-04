@@ -22,6 +22,7 @@
 
 package de.metas.invoice.acct;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -37,12 +38,12 @@ import java.util.Comparator;
 public class InvoiceAcctRuleMatcher
 {
 	public static final Comparator<InvoiceAcctRuleMatcher> ORDER_FROM_SPECIFIC_TO_GENERIC = Comparator.comparing(InvoiceAcctRuleMatcher::getAcctSchemaId)
-			.thenComparing(InvoiceAcctRuleMatcher::getAccountTypeName, Comparator.nullsLast(Comparator.naturalOrder()))
+			.thenComparing(InvoiceAcctRuleMatcher::getAccountConceptualName, Comparator.nullsLast(Comparator.naturalOrder()))
 			.thenComparing(InvoiceAcctRuleMatcher::getInvoiceLineId, Comparator.nullsLast(Comparator.naturalOrder()));
 
 	@NonNull AcctSchemaId acctSchemaId;
 	@Nullable InvoiceLineId invoiceLineId;
-	@Nullable AccountTypeName accountTypeName;
+	@Nullable AccountConceptualName accountConceptualName;
 
 	void assertInvoiceId(@NonNull InvoiceId expectedInvoiceId)
 	{
@@ -54,11 +55,11 @@ public class InvoiceAcctRuleMatcher
 
 	boolean matches(
 			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final AccountTypeName accountTypeName,
+			@NonNull final AccountConceptualName accountConceptualName,
 			@Nullable final InvoiceLineId invoiceLineId)
 	{
 		return AcctSchemaId.equals(this.acctSchemaId, acctSchemaId)
-				&& (this.accountTypeName == null || AccountTypeName.equals(this.accountTypeName, accountTypeName))
+				&& (this.accountConceptualName == null || AccountConceptualName.equals(this.accountConceptualName, accountConceptualName))
 				&& (this.invoiceLineId == null || InvoiceLineId.equals(this.invoiceLineId, invoiceLineId));
 	}
 }

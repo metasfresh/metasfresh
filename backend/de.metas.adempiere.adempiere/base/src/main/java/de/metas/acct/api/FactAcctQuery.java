@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import de.metas.acct.AccountConceptualName;
 import lombok.Builder;
 import lombok.Value;
 
@@ -10,7 +11,7 @@ import javax.annotation.Nullable;
 public class FactAcctQuery
 {
 	@Nullable AcctSchemaId acctSchemaId;
-	@Nullable String accountConceptualName;
+	@Nullable AccountConceptualName accountConceptualName;
 
 	@Nullable String tableName;
 	int recordId;

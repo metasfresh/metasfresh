@@ -1,5 +1,6 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,7 +32,6 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@AllArgsConstructor
 public enum ProductAcctType
 {
 	P_Revenue_Acct(I_M_Product_Acct.COLUMNNAME_P_Revenue_Acct),
@@ -61,6 +61,13 @@ public enum ProductAcctType
 	;
 
 	@Getter @NonNull private final String columnName;
+	@Getter @NonNull private final AccountConceptualName accountConceptualName;
+
+	ProductAcctType(@NonNull final String columnName)
+	{
+		this.columnName = columnName;
+		this.accountConceptualName = AccountConceptualName.ofString(columnName);
+	}
 
 	@Nullable
 	public static ProductAcctType ofName(@Nullable final String name)

@@ -18,6 +18,7 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
@@ -740,16 +741,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		final String sql;
-		final String accountConceptualName;
+		final AccountConceptualName accountConceptualName;
 		if (isDiscountExpense)
 		{
 			sql = "SELECT T_PayDiscount_Exp_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-			accountConceptualName = I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Exp_Acct;
+			accountConceptualName = AccountConceptualName.ofString(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Exp_Acct);
 		}
 		else
 		{
 			sql = "SELECT T_PayDiscount_Rev_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-			accountConceptualName = I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Rev_Acct;
+			accountConceptualName = AccountConceptualName.ofString(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Rev_Acct);
 		}
 
 		final int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, taxId, acctSchemaId);

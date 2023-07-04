@@ -1,12 +1,13 @@
 package de.metas.acct.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.document.engine.IDocument;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -19,6 +20,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,6 +32,8 @@ public class FactAcctDAO implements IFactAcctDAO
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+
+	private static final String ACCOUNTCONCEPTUALNAME_NULL_MARKER = "NOTSET";
 
 	@Override
 	public I_Fact_Acct getById(final int factAcctId)
@@ -175,9 +179,9 @@ public class FactAcctDAO implements IFactAcctDAO
 		{
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
 		}
-		if (!Check.isBlank(query.getAccountConceptualName()))
+		if (query.getAccountConceptualName() != null)
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, query.getAccountConceptualName());
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, query.getAccountConceptualName().getAsString());
 		}
 		if (query.getTableName() != null)
 		{
@@ -193,5 +197,19 @@ public class FactAcctDAO implements IFactAcctDAO
 		}
 
 		return queryBuilder.create();
+	}
+
+	@Nullable
+	public static AccountConceptualName extractAccountConceptualName(final I_Fact_Acct record)
+	{
+		final String accountConceptualName = StringUtils.trimBlankToNull(record.getAccountConceptualName());
+		return accountConceptualName != null && !ACCOUNTCONCEPTUALNAME_NULL_MARKER.equals(accountConceptualName)
+				? AccountConceptualName.ofString(accountConceptualName)
+				: null;
+	}
+
+	public static void setAccountConceptualName(@NonNull final I_Fact_Acct record, @Nullable final AccountConceptualName accountConceptualName)
+	{
+		record.setAccountConceptualName(accountConceptualName != null ? accountConceptualName.getAsString() : ACCOUNTCONCEPTUALNAME_NULL_MARKER);
 	}
 }
