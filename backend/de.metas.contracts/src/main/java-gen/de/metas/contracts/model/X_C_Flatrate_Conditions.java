@@ -558,6 +558,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String ONFLATRATETERMEXTEND_CopyPrice = "Co";
 	/** CalculatePrice = Ca */
 	public static final String ONFLATRATETERMEXTEND_CalculatePrice = "Ca";
+	/** Extension Not Allowed = Ex */
+	public static final String ONFLATRATETERMEXTEND_ExtensionNotAllowed = "Ex";
 	@Override
 	public void setOnFlatrateTermExtend (final java.lang.String OnFlatrateTermExtend)
 	{
