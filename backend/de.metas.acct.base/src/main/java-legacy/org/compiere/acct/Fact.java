@@ -709,7 +709,7 @@ public final class Fact
 		}
 		else
 		{
-			m_lines.forEach(line -> InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited));
+			m_lines.forEach(this::save);
 		}
 	}
 
@@ -720,11 +720,11 @@ public final class Fact
 		if (factTrxLines.getType() == FactTrxLinesType.Debit)
 		{
 			final FactLine drLine = factTrxLines.getDebitLine();
-			InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
+			save(drLine);
 
 			factTrxLines.forEachCreditLine(crLine -> {
 				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
+				save(crLine);
 			});
 
 		}
@@ -733,11 +733,11 @@ public final class Fact
 		else if (factTrxLines.getType() == FactTrxLinesType.Credit)
 		{
 			final FactLine crLine = factTrxLines.getCreditLine();
-			InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
+			save(crLine);
 
 			factTrxLines.forEachDebitLine(drLine -> {
 				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
+				save(drLine);
 			});
 		}
 		//
@@ -753,7 +753,12 @@ public final class Fact
 
 		//
 		// also save the zero lines, if they are here
-		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, ITrx.TRXNAME_ThreadInherited));
+		factTrxLines.forEachZeroLine(this::save);
+	}
+
+	private void save(@NonNull final FactLine factLine)
+	{
+		InterfaceWrapperHelper.save(factLine, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public void forEach(final Consumer<FactLine> consumer)
