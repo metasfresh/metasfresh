@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
@@ -10,6 +11,7 @@ import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.acct.api.impl.FactAcctDAO;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.acct.vatcode.VATCode;
@@ -1758,5 +1760,10 @@ public final class FactLine extends X_Fact_Acct
 		{
 			setCurrencyRate(computeCurrencyRate());
 		}
+	}
+
+	public void setAccountConceptualName(@Nullable final AccountConceptualName accountConceptualName)
+	{
+		FactAcctDAO.setAccountConceptualName(this, accountConceptualName);
 	}
 }    // FactLine

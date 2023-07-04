@@ -83,11 +83,11 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 * ARP, APP.
 	 *
 	 * <pre>
-	 *  ARP
+	 *  ARR - Account Receivables Receipt
 	 *      BankInTransit   DR
 	 *      UnallocatedCash         CR
 	 *      or Charge/C_Prepayment
-	 *  APP
+	 *  APP - Account Payable Payment
 	 *      PaymentSelect   DR
 	 *      or Charge/V_Prepayment
 	 *      BankInTransit           CR
@@ -103,20 +103,20 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	{
 		// create Fact Header
 		final Fact fact = new Fact(this, as, PostingType.Actual);
-		final OrgId AD_Org_ID = getBankOrgId();        // Bank Account Org
+		final OrgId bankOrgId = getBankOrgId();        // Bank Account Org
 
 		final DocBaseType docBaseType = getDocBaseType();
 		if (DocBaseType.ARReceipt.equals(docBaseType))
 		{
 			// Asset (DR)
 			final FactLine fl_DR = fact.createLine()
-					.setAccount(getBankAccount(as))
+					.setAccount(getBankInTransitAcct(as))
 					.setAmtSource(getCurrencyId(), getAmount(), null)
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
 					.buildAndAdd();
-			if (fl_DR != null && AD_Org_ID.isRegular())
+			if (fl_DR != null && bankOrgId.isRegular())
 			{
-				fl_DR.setAD_Org_ID(AD_Org_ID);
+				fl_DR.setAD_Org_ID(bankOrgId);
 			}
 
 			// Prepayment/UnallocatedCash (CR)
@@ -139,9 +139,9 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 					.setAmtSource(getCurrencyId(), null, getAmount())
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
 					.buildAndAdd();
-			if (fl_CR != null && AD_Org_ID.isRegular() && chargeId == null)
+			if (fl_CR != null && bankOrgId.isRegular() && chargeId == null)
 			{
-				fl_CR.setAD_Org_ID(AD_Org_ID);
+				fl_CR.setAD_Org_ID(bankOrgId);
 			}
 		}
 		// APP
@@ -167,20 +167,20 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 					.setAmtSource(getCurrencyId(), getAmount(), null)
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
 					.buildAndAdd();
-			if (fl_DR != null && AD_Org_ID.isRegular() && chargeId == null)
+			if (fl_DR != null && bankOrgId.isRegular() && chargeId == null)
 			{
-				fl_DR.setAD_Org_ID(AD_Org_ID);
+				fl_DR.setAD_Org_ID(bankOrgId);
 			}
 
 			// Asset (CR)
 			final FactLine fl_CR = fact.createLine()
-					.setAccount(getBankAccount(as))
+					.setAccount(getBankInTransitAcct(as))
 					.setAmtSource(getCurrencyId(), null, getAmount())
 					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
 					.buildAndAdd();
-			if (fl_CR != null && AD_Org_ID.isRegular())
+			if (fl_CR != null && bankOrgId.isRegular())
 			{
-				fl_CR.setAD_Org_ID(AD_Org_ID);
+				fl_CR.setAD_Org_ID(bankOrgId);
 			}
 		}
 		else
@@ -205,20 +205,8 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		return bankAccount != null ? bankAccount.getOrgId() : OrgId.ANY;
 	}
 
-	private boolean isPrepayment()
-	{
-		return m_Prepayment;
-	}
+	private boolean isPrepayment() {return m_Prepayment;}
 
-	/**
-	 * Gets the Bank Account to be used.
-	 *
-	 * @param as accounting schema
-	 * @return bank in transit account ({@link BankAccountAcctType#B_InTransit_Acct})
-	 */
 	@NonNull
-	private Account getBankAccount(final AcctSchema as)
-	{
-		return getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
-	}
+	private Account getBankInTransitAcct(final AcctSchema as) {return getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);}
 }   // Doc_Payment
