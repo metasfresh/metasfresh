@@ -37,13 +37,13 @@ import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+@Repository
 public class ModularContractSettingsDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -72,6 +72,7 @@ public class ModularContractSettingsDAO
 		return fromPOs(settings, moduleRecords);
 	}
 
+	@NonNull
 	private static ModularContractSettings fromPOs(
 			@NonNull final I_ModCntr_Settings settingsRecord,
 			@NonNull final List<I_ModCntr_Module> moduleRecords)
@@ -81,7 +82,7 @@ public class ModularContractSettingsDAO
 				.id(ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID()))
 				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Year_ID(), settingsRecord.getC_Calendar_ID()))
-				.pricingSystemId(PricingSystemId.ofRepoId(settingsRecord.getM_PricingSystem_ID()))
+				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(settingsRecord.getM_PricingSystem_ID()))
 				.productId(ProductId.ofRepoId(settingsRecord.getM_Product_ID()))
 				.name(settingsRecord.getName());
 

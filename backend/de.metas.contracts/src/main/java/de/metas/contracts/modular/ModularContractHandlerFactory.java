@@ -35,25 +35,28 @@ import java.util.stream.Stream;
 @Service
 public class ModularContractHandlerFactory
 {
-	private final ImmutableMap<String, IModularContractTypeHandler> knownHandlersMap;
-	private final ImmutableList<IModularContractTypeHandler> knownHandlers;
+	private final ImmutableMap<String, IModularContractTypeHandler<?>> knownHandlersMap;
+	private final ImmutableList<IModularContractTypeHandler<?>> knownHandlers;
 
-	public ModularContractHandlerFactory(final List<IModularContractTypeHandler> knownHandlers)
+	public ModularContractHandlerFactory(@NonNull final List<IModularContractTypeHandler<?>> knownHandlers)
 	{
 		this.knownHandlers = ImmutableList.copyOf(knownHandlers);
 		this.knownHandlersMap = Maps.uniqueIndex(knownHandlers, handler -> handler.getClass().getName());
 	}
 
 	@Nullable
-	public IModularContractTypeHandler getByClassName(@NonNull final String name)
+	public IModularContractTypeHandler<?> getByClassName(@NonNull final String name)
 	{
 		return knownHandlersMap.get(name);
 	}
 
-	public Stream<IModularContractTypeHandler> getApplicableHandlersFor(@NonNull final Object model)
+	@NonNull
+	public <T> Stream<IModularContractTypeHandler<T>> getApplicableHandlersFor(@NonNull final T model)
 	{
 		return knownHandlers.stream()
-				.filter(handler -> handler.probablyAppliesTo(model));
+				.filter(handler -> handler.getType().isAssignableFrom(model.getClass()))
+				.map(handler -> (IModularContractTypeHandler<T>)handler)
+				.filter(handler -> handler.applies(model));
 	}
 
 }

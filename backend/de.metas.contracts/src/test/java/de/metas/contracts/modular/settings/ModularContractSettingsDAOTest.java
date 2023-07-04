@@ -30,6 +30,7 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import lombok.NonNull;
@@ -113,10 +114,11 @@ class ModularContractSettingsDAOTest
 	public static class HandlerImpl implements IModularContractTypeHandler<Object>
 	{
 
+		@NonNull
 		@Override
-		public boolean probablyAppliesTo(@NonNull final Object model)
+		public Class<Object> getType()
 		{
-			return true;
+			return Object.class;
 		}
 
 		@Override
@@ -137,5 +139,16 @@ class ModularContractSettingsDAOTest
 			return Stream.empty();
 		}
 
+		@Override
+		public void validateDocAction(final @NonNull Object model, final ModularContractService.@NonNull ModelAction action)
+		{
+			return;
+		}
+
+		@Override
+		public boolean applies(final @NonNull Object model)
+		{
+			return true;
+		}
 	}
 }
