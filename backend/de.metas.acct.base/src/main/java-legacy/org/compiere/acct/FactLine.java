@@ -65,6 +65,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 /**
  * Accounting Fact Entry.
@@ -1010,15 +1011,10 @@ public final class FactLine extends X_Fact_Acct
 				m_doc.getClientId());
 	}
 
-	/**
-	 * Get Account
-	 *
-	 * @return account
-	 */
 	public MAccount getAccount()
 	{
 		return m_acct;
-	}    // getAccount
+	}
 
 	@Override
 	public String toString()
@@ -1765,5 +1761,10 @@ public final class FactLine extends X_Fact_Acct
 	public void setAccountConceptualName(@Nullable final AccountConceptualName accountConceptualName)
 	{
 		FactAcctDAO.setAccountConceptualName(this, accountConceptualName);
+	}
+
+	public Optional<AccountConceptualName> getAccountConceptualNameVO()
+	{
+		return Optional.ofNullable(FactAcctDAO.extractAccountConceptualName(this));
 	}
 }    // FactLine
