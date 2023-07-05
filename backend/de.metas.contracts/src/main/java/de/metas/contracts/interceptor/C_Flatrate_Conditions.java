@@ -34,12 +34,14 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
 
 import java.util.List;
@@ -55,6 +57,10 @@ public class C_Flatrate_Conditions
 	public static final AdMessageKey MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P = AdMessageKey.of("Conditions_Error_MatchingMissing");
 	public static final AdMessageKey MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P = AdMessageKey.of("Conditions_Error_Transition_Not_Completed");
 	public static final AdMessageKey MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P = AdMessageKey.of("Conditions_Error_Subscription_Not_Supported"); // 03204
+
+	private static final String SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE = "C_Flatrate_Conditions.MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private C_Flatrate_Conditions()
 	{
@@ -125,12 +131,7 @@ public class C_Flatrate_Conditions
 
 		}
 
-		// todo fp: workaround in order to complete modular contract conditions, will be addressed with another task
-		final TypeConditions typeConditions = TypeConditions.ofCode(cond.getType_Conditions());
-		if (TypeConditions.MODULAR_CONTRACT.equals(typeConditions))
-		{
-			cond.setC_Flatrate_Transition_ID(1000003);
-		}
+		setFlatrateTransitionForModularContract(cond);
 
 		final boolean hasHoCompletedTransition = cond.getC_Flatrate_Transition_ID() <= 0 || !X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus());
 		if (hasHoCompletedTransition)
@@ -149,5 +150,24 @@ public class C_Flatrate_Conditions
 		{
 			throw new AdempiereException(MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P);
 		}
+	}
+
+	private void setFlatrateTransitionForModularContract(@NonNull final I_C_Flatrate_Conditions conditions)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
+		if (!TypeConditions.MODULAR_CONTRACT.equals(typeConditions))
+		{
+			return;
+		}
+
+		final int flatrateTransitionId = sysConfigBL.getIntValue(SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE, -1);
+
+		if (flatrateTransitionId < 0)
+		{
+			throw new AdempiereException("Missing default value for flatrate condition configured for MODULAR CONTRACTS! Please set value for system configuration \"C_Flatrate_Conditions.MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE\"")
+					.markAsUserValidationError();
+		}
+
+		conditions.setC_Flatrate_Transition_ID(flatrateTransitionId);
 	}
 }
