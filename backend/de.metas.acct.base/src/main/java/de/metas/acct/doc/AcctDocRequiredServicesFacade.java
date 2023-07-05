@@ -11,6 +11,8 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
@@ -77,8 +79,10 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.acct.FactLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.PO;
@@ -136,7 +140,6 @@ public class AcctDocRequiredServicesFacade
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
-	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
@@ -145,6 +148,7 @@ public class AcctDocRequiredServicesFacade
 	private final MatchInvoiceService matchInvoiceService;
 	@Getter
 	private final OrderCostService orderCostService;
+	private final FAOpenItemsService faOpenItemsService;
 
 	//
 	// Needed for DocLine:
@@ -163,6 +167,7 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final InvoiceAcctRepository invoiceAcctRepository,
 			@NonNull final MatchInvoiceService matchInvoiceService,
 			@NonNull final OrderCostService orderCostService,
+			@NonNull final FAOpenItemsService faOpenItemsService,
 			@NonNull final DimensionService dimensionService)
 	{
 		this.modelCacheInvalidationService = modelCacheInvalidationService;
@@ -173,6 +178,7 @@ public class AcctDocRequiredServicesFacade
 		this.invoiceAcctRepository = invoiceAcctRepository;
 		this.matchInvoiceService = matchInvoiceService;
 		this.orderCostService = orderCostService;
+		this.faOpenItemsService = faOpenItemsService;
 		this.dimensionService = dimensionService;
 	}
 
@@ -439,4 +445,11 @@ public class AcctDocRequiredServicesFacade
 	{
 		return dimensionService.getFromRecord(model);
 	}
+
+	public Optional<FAOpenItemKey> getOrComputeOpenItemKey(FactLine factLine)
+	{
+		return faOpenItemsService.getOrComputeOpenItemKey(factLine);
+	}
+
+	public void saveNew(I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}
 }

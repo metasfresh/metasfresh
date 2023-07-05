@@ -15,6 +15,7 @@ import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -443,6 +444,16 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Fire event: BEFORE_POST
 		services.fireBeforePostEvent(getPO());
+
+		//
+		// Update Open Items Matching
+		for (final Fact fact : facts)
+		{
+			fact.forEach(factLine -> {
+				final FAOpenItemKey openItemKey = services.getOrComputeOpenItemKey(factLine).orElse(null);
+				factLine.setOpenItemKey(openItemKey != null ? openItemKey.getAsString() : null);
+			});
+		}
 
 		//
 		// Save facts

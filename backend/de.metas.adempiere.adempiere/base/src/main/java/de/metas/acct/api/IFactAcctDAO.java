@@ -41,6 +41,8 @@ public interface IFactAcctDAO extends ISingletonService
 
 	I_Fact_Acct getById(int factAcctId);
 
+	void save(I_Fact_Acct factAcct);
+
 	/**
 	 * Deletes all accounting records for given document.
 	 * 

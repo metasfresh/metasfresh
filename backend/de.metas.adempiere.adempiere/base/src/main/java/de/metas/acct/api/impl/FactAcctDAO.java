@@ -42,6 +42,12 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
+	public void save(@NonNull final I_Fact_Acct factAcct)
+	{
+		InterfaceWrapperHelper.save(factAcct, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
 	public int deleteForDocument(final IDocument document)
 	{
 		final int countDeleted = retrieveQueryForDocument(document)
@@ -183,6 +189,15 @@ public class FactAcctDAO implements IFactAcctDAO
 		{
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, query.getAccountConceptualName().getAsString());
 		}
+		if (query.getAccountId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, query.getAccountId());
+		}
+		if (query.getPostingType() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, query.getPostingType());
+		}
+
 		if (query.getTableName() != null)
 		{
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableDAO.retrieveAdTableId(query.getTableName()));
@@ -196,6 +211,10 @@ public class FactAcctDAO implements IFactAcctDAO
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, query.getLineId());
 		}
 
+		if (query.getOpenItemsKey() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKey());
+		}
 		return queryBuilder.create();
 	}
 
