@@ -41,7 +41,7 @@ public class JsonRequestLocation
 	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@Schema(nullable = true, description = "This translates to `C_BPartner_Location.Name`. If set to `null`, metasfresh will compute a name.")
+	@Schema(description = "This translates to `C_BPartner_Location.Name`")
 	private String name;
 
 	@Schema(hidden = true)

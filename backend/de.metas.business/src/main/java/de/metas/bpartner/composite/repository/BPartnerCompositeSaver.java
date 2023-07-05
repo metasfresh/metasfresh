@@ -53,7 +53,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -62,7 +61,6 @@ import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
-import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
@@ -354,15 +352,7 @@ final class BPartnerCompositeSaver
 
 			bpartnerLocationRecord.setIsActive(partnerLocation.isActive());
 			bpartnerLocationRecord.setC_BPartner_ID(request.getBpartnerId().getRepoId());
-			if (partnerLocation.getName() == null)
-			{
-				// note that a name will be computed by de.metas.bpartner.interceptor.C_BPartner_Location before the record is saved to DB
-				InterfaceWrapperHelper.setValue(partnerLocation, I_C_BPartner_Location.COLUMNNAME_Name, Null.NULL);
-			}
-			else
-			{
-				bpartnerLocationRecord.setName(partnerLocation.getName());
-			}
+			bpartnerLocationRecord.setName(partnerLocation.getName());
 			bpartnerLocationRecord.setBPartnerName(partnerLocation.getBpartnerName());
 
 			bpartnerLocationRecord.setPhone(partnerLocation.getPhone());

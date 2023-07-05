@@ -1819,7 +1819,15 @@ public class JsonPersisterService
 		// name
 		if (jsonBPartnerLocation.isNameSet())
 		{
-			location.setName(StringUtils.trimBlankToNull(jsonBPartnerLocation.getName()));
+			final String name = jsonBPartnerLocation.getName();
+			if (Check.isEmpty(name, true))
+			{
+				location.setName(".");
+			}
+			else
+			{
+				location.setName(StringUtils.trim(name));
+			}
 		}
 
 		// bpartnerName
