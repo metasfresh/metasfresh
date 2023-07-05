@@ -396,4 +396,16 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
+
+	@Override
+	public void setIsOpenItem (final boolean IsOpenItem)
+	{
+		set_Value (COLUMNNAME_IsOpenItem, IsOpenItem);
+	}
+
+	@Override
+	public boolean isOpenItem()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItem);
+	}
 }
