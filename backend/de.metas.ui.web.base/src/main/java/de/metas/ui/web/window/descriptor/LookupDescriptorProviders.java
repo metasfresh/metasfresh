@@ -93,11 +93,18 @@ public class LookupDescriptorProviders
 
 	public LookupDescriptorProvider searchInTable(final String lookupTableName)
 	{
+		return searchInTable(lookupTableName, (AdValRuleId)null);
+	}
+
+	@NonNull
+	public LookupDescriptorProvider searchInTable(final String lookupTableName, @Nullable final AdValRuleId ruleId)
+	{
 		return sql()
 				.setCtxTableName(null) // tableName
 				.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(lookupTableName))
 				.setDisplayType(DisplayType.Search)
 				.setReadOnlyAccess()
+				.setAD_Val_Rule_ID(ruleId)
 				.build();
 	}
 

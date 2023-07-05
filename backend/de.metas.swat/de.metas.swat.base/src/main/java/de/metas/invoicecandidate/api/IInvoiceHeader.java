@@ -110,5 +110,6 @@ public interface IInvoiceHeader
 	@NonNull
 	Dimension getDimension();
 
+	@Nullable
 	CountryId getC_Tax_Departure_Country_ID();
 }

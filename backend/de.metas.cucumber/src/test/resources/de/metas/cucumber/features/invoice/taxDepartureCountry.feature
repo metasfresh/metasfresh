@@ -56,7 +56,7 @@ Feature: tax departure country for SO and PO
       | l_2        | 2906202289011 | endvendor_1              | Y                   | Y                   |
 
   @from:cucumber
-  Scenario: tax departure country is propagated from sales order to sales invoice candidate and sales invoice
+  Scenario: tax departure country is propagated from sales order to sales invoice
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   | 1000012              |
@@ -87,7 +87,7 @@ Feature: tax departure country for SO and PO
       | invoice_1               | endcustomer_1            | l_1                               | 1000002     | true      | CO        | Romania                                   |
 
   @from:cucumber
-  Scenario: tax departure country is propagated from purchase order to purchase invoice candidate and purchase invoice
+  Scenario: tax departure country is propagated from purchase order to purchase invoice
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
       | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-17  | Romania                                   | 1000012              |
@@ -121,7 +121,7 @@ Feature: tax departure country for SO and PO
       | invoice_1               | endvendor_1              | l_2                               | 1000002     | true      | CO        | Romania                                   |
 
   @from:cucumber
-  Scenario: if we have different tax departure country in 2 invoice candidates of the same product, the invoice candidates will not be aggregated into 1 invoice, but 2 invoices are created
+  Scenario: Different tax departure country in invoice candidates will always result in multiple invoices
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   | 1000012              |
@@ -181,5 +181,5 @@ Feature: tax departure country for SO and PO
       | C_BPartner_ID.Identifier | C_Order_ID.Identifier | PurchaseType |
       | endvendor_1              | o_1                   | Standard     |
     And the order is created:
-      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.C_Tax_Departure_Country_ID.Identifier |
-      | o_1                      | false   | POO         | Romania                                   |
+      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType |
+      | o_1                      | false   | POO         |

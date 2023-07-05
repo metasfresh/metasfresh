@@ -608,7 +608,9 @@ public class C_Invoice_StepDef
 		if (Check.isNotBlank(taxDepartureCountryIdentifier))
 		{
 			final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
-			softly.assertThat(invoice.getC_Tax_Departure_Country_ID()).isEqualTo(taxDepartureCountry.getC_Country_ID());
+			softly.assertThat(invoice.getC_Tax_Departure_Country_ID())
+					.as(COLUMNNAME_C_Tax_Departure_Country_ID)
+					.isEqualTo(taxDepartureCountry.getC_Country_ID());
 		}
 
 		{// payment related

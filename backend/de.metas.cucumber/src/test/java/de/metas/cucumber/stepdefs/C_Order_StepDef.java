@@ -43,7 +43,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.location.CountryId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
@@ -67,7 +66,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -225,7 +223,7 @@ public class C_Order_StepDef
 			final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
 			if (Check.isNotBlank(deliveryRule))
 			{
-				// note that IF the C_BPartner has a deliveryRule set (not-mandatory there), this values will be overwritten by it
+				// note that IF the C_BPartner has a deliveryRule set, this values will be overwritten by it
 				order.setDeliveryRule(deliveryRule);
 			}
 
@@ -471,12 +469,12 @@ public class C_Order_StepDef
 				softly.assertThat(purchaseOrder.getDropShip_BPartner_ID()).as(I_C_Order.COLUMNNAME_DropShip_BPartner_ID).isEqualTo(dropShipBPLocation.getC_BPartner_ID());
 			}
 
-			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(taxDepartureCountryIdentifier))
+			final I_C_Order salesOrder = orderTable.get(linkedOrderIdentifier);
+			if (salesOrder.getC_Tax_Departure_Country_ID() > 0)
 			{
-				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
-				final CountryId purchaseOrderTaxDepartureCountryId = CountryId.ofRepoIdOrNull(purchaseOrder.getC_Tax_Departure_Country_ID());
-				softly.assertThat(taxDepartureCountry.getC_Country_ID()).isNotEqualTo(CountryId.toRepoId(purchaseOrderTaxDepartureCountryId));
+				softly.assertThat(purchaseOrder.getC_Tax_Departure_Country_ID())
+						.as(COLUMNNAME_C_Tax_Departure_Country_ID)
+						.isNotEqualTo(salesOrder.getC_Tax_Departure_Country_ID());
 			}
 		}
 

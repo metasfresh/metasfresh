@@ -100,7 +100,7 @@ public class InvoiceHeaderImplBuilder
 
 	private Dimension dimension;
 
-	private Integer C_Tax_Departure_Country_ID;
+	private int C_Tax_Departure_Country_ID;
 
 	InvoiceHeaderImplBuilder()
 	{
@@ -613,12 +613,12 @@ public class InvoiceHeaderImplBuilder
 		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
 
-	public Integer getC_Tax_Departure_Country_ID()
+	public int getC_Tax_Departure_Country_ID()
 	{
 		return C_Tax_Departure_Country_ID;
 	}
 
-	public void setC_Tax_Departure_Country_ID(final Integer C_Tax_Departure_Country_ID)
+	public void setC_Tax_Departure_Country_ID(final int C_Tax_Departure_Country_ID)
 	{
 		this.C_Tax_Departure_Country_ID = checkOverride("C_Tax_Departure_Country_ID", this.C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
 	}

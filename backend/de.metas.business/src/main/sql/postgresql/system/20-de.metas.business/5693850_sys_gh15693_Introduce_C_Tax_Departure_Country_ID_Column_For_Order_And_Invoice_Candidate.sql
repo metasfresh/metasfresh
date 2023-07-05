@@ -74,26 +74,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_UI_Element SET SeqNo=80,Updated=TO_TIMESTAMP('2023-06-30 15:34:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=618105
 ;
 
--- Name: C_Tax_Departure_Country
--- 2023-06-30T12:36:44.644Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540641,'C_Tax_ID IN (SELECT tax.C_Tax_ID from C_Tax tax where @C_Tax_Departure_Country_ID/-1@ <= 0 OR tax.C_Country_ID=@C_Tax_Departure_Country_ID/-1@)',TO_TIMESTAMP('2023-06-30 15:36:44','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','C_Tax_Departure_Country','S',TO_TIMESTAMP('2023-06-30 15:36:44','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- Column: C_Order.C_Tax_Departure_Country_ID
--- 2023-06-30T12:37:16.562Z
-UPDATE AD_Column SET AD_Val_Rule_ID=540641,Updated=TO_TIMESTAMP('2023-06-30 15:37:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587019
-;
-
--- Column: C_Invoice_Candidate.C_Tax_Departure_Country_ID
--- 2023-06-30T12:38:04.302Z
-UPDATE AD_Column SET AD_Val_Rule_ID=540641,Updated=TO_TIMESTAMP('2023-06-30 15:38:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587020
-;
-
--- Column: C_Invoice.C_Tax_Departure_Country_ID
--- 2023-06-30T12:38:33.424Z
-UPDATE AD_Column SET AD_Val_Rule_ID=540641,Updated=TO_TIMESTAMP('2023-06-30 15:38:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=586847
-;
-
 -- Field: Purchase Order_OLD(181,D) -> Purchase Order(294,D) -> Tax Departure Country
 -- Column: C_Order.C_Tax_Departure_Country_ID
 -- 2023-06-30T12:39:23.729Z
@@ -181,40 +161,11 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=716473
 /* DDL */ select AD_Element_Link_Create_Missing_Field(716473)
 ;
 
--- Name: C_Tax_Departure_Country
--- 2023-06-30T12:56:53.508Z
-DELETE FROM AD_Val_Rule WHERE AD_Val_Rule_ID=540641
-;
-
 -- Reference: C_VAT_Code
 -- Table: C_VAT_Code
 -- Key: C_VAT_Code.C_VAT_Code_ID
 -- 2023-06-30T12:57:22.801Z
 UPDATE AD_Ref_Table SET WhereClause='C_Tax_ID IN (SELECT tax.C_Tax_ID from C_Tax tax where @C_Tax_Departure_Country_ID/-1@ <= 0 OR tax.C_Country_ID=@C_Tax_Departure_Country_ID/-1@)',Updated=TO_TIMESTAMP('2023-06-30 15:57:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541071
-;
-
--- Field: Sales Invoice Candidates_OLD(540092,de.metas.invoicecandidate) -> Invoice Candidates(540279,de.metas.invoicecandidate) -> Tax Departure Country
--- Column: C_Invoice_Candidate.C_Tax_Departure_Country_ID
--- 2023-06-30T12:59:15.602Z
-UPDATE AD_Field SET ReadOnlyLogic='DocStatus==''DR''',Updated=TO_TIMESTAMP('2023-06-30 15:59:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=716472
-;
-
--- Field: Purchase Invoice Candidates_OLD(540983,de.metas.invoicecandidate) -> Invoice Candidates(543052,de.metas.invoicecandidate) -> VAT Code override
--- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
--- 2023-06-30T12:59:27.197Z
-UPDATE AD_Field SET ReadOnlyLogic='DocStatus==''DR''',Updated=TO_TIMESTAMP('2023-06-30 15:59:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708908
-;
-
--- Field: Purchase Invoice Candidates_OLD(540983,de.metas.invoicecandidate) -> Invoice Candidates(543052,de.metas.invoicecandidate) -> VAT Code override
--- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
--- 2023-06-30T12:59:40.357Z
-UPDATE AD_Field SET ReadOnlyLogic='',Updated=TO_TIMESTAMP('2023-06-30 15:59:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708908
-;
-
--- Field: Purchase Invoice Candidates_OLD(540983,de.metas.invoicecandidate) -> Invoice Candidates(543052,de.metas.invoicecandidate) -> Tax Departure Country
--- Column: C_Invoice_Candidate.C_Tax_Departure_Country_ID
--- 2023-06-30T13:00:25.694Z
-UPDATE AD_Field SET ReadOnlyLogic='DocStatus==''DR''',Updated=TO_TIMESTAMP('2023-06-30 16:00:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=716473
 ;
 
 -- Field: Eingangsrechnung(183,D) -> Eingangsrechnung(290,D) -> Steuerabgangsland
