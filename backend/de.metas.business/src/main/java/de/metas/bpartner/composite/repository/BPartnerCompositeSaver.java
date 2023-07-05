@@ -357,7 +357,7 @@ final class BPartnerCompositeSaver
 			if (partnerLocation.getName() == null)
 			{
 				// note that a name will be computed by de.metas.bpartner.interceptor.C_BPartner_Location before the record is saved to DB
-				InterfaceWrapperHelper.setValue(bpartnerLocationRecord, I_C_BPartner_Location.COLUMNNAME_Name, Null.NULL);
+				InterfaceWrapperHelper.setValue(partnerLocation, I_C_BPartner_Location.COLUMNNAME_Name, Null.NULL);
 			}
 			else
 			{
