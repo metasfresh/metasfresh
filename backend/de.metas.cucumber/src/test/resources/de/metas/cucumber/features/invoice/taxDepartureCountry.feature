@@ -1,5 +1,4 @@
 @from:cucumber
-@taxDepartureCountry
 Feature: tax departure country for SO and PO
 
   Background:
@@ -90,8 +89,8 @@ Feature: tax departure country for SO and PO
   @from:cucumber
   Scenario: tax departure country is propagated from purchase order to purchase invoice candidate and purchase invoice
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID | OPT.DocSubType |
-      | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-17  | Romania                                   | 1000012              |                |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
+      | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-17  | Romania                                   | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |

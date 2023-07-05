@@ -58,7 +58,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -97,7 +96,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
-import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_IsDefault;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -294,8 +293,9 @@ public class C_Order_StepDef
 				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
 						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+						.orderByDescending(COLUMNNAME_IsDefault)
 						.create()
-						.firstOnlyNotNull(I_C_DocType.class);
+						.firstNotNull(I_C_DocType.class);
 
 				assertThat(docType).isNotNull();
 
@@ -331,6 +331,13 @@ public class C_Order_StepDef
 				final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
 				order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
 				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
+			}
+
+			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(taxDepartureCountryIdentifier))
+			{
+				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+				order.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
 			}
 
 			saveRecord(order);
