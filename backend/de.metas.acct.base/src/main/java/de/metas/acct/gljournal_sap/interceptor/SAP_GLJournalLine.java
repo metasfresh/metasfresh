@@ -1,15 +1,17 @@
 package de.metas.acct.gljournal_sap.interceptor;
 
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournalLine;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueService;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -18,16 +20,19 @@ import org.springframework.stereotype.Component;
 public class SAP_GLJournalLine
 {
 	private final SAPGLJournalService glJournalService;
+	private final ElementValueService elementValueService;
 
-	public SAP_GLJournalLine(final SAPGLJournalService glJournalService)
+	public SAP_GLJournalLine(final SAPGLJournalService glJournalService, final ElementValueService elementValueService)
 	{
 		this.glJournalService = glJournalService;
+		this.elementValueService = elementValueService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_SAP_GLJournalLine record, final int timing)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID })
+	public void checkAccountIsOpenItem(final I_SAP_GLJournalLine record, final int timing)
 	{
-		final I_C_ElementValue account = record.getC_ValidCombination().getAccount();
+		final ElementValueId elementValueId = ElementValueId.ofRepoId(record.getC_ValidCombination().getAccount_ID());
+		final ElementValue account = elementValueService.getById(elementValueId);
 		record.setIsOpenItem(account.isOpenItem());
 	}
 
