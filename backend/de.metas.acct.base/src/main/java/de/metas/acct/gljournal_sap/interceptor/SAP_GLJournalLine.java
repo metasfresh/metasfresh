@@ -9,6 +9,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +19,16 @@ public class SAP_GLJournalLine
 {
 	private final SAPGLJournalService glJournalService;
 
-	public SAP_GLJournalLine(final SAPGLJournalService glJournalService) {this.glJournalService = glJournalService;}
+	public SAP_GLJournalLine(final SAPGLJournalService glJournalService)
+	{
+		this.glJournalService = glJournalService;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_SAP_GLJournalLine record, final int timing)
 	{
-		record.setIsOpenItem(record.getC_ValidCombination().getAccount().isOpenItem());
+		final I_C_ElementValue account = record.getC_ValidCombination().getAccount();
+		record.setIsOpenItem(account.isOpenItem());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
