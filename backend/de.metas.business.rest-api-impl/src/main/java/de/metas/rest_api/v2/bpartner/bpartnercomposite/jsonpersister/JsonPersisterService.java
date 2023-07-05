@@ -79,7 +79,6 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
@@ -1820,7 +1819,15 @@ public class JsonPersisterService
 		// name
 		if (jsonBPartnerLocation.isNameSet())
 		{
-			location.setName(StringUtils.trim(jsonBPartnerLocation.getName()));
+			final String name = jsonBPartnerLocation.getName();
+			if (Check.isEmpty(name, true))
+			{
+				location.setName(".");
+			}
+			else
+			{
+				location.setName(StringUtils.trim(name));
+			}
 		}
 
 		// bpartnerName
