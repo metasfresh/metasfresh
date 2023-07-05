@@ -20,8 +20,14 @@ public class SAP_GLJournalLine
 
 	public SAP_GLJournalLine(final SAPGLJournalService glJournalService) {this.glJournalService = glJournalService;}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final I_SAP_GLJournalLine record, final int timing)
+	{
+		record.setIsOpenItem(record.getC_ValidCombination().getAccount().isOpenItem());
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(final I_SAP_GLJournalLine record, ModelChangeType timing)
+	public void afterSave(final I_SAP_GLJournalLine record, final ModelChangeType timing)
 	{
 		if (InterfaceWrapperHelper.isUIAction(record))
 		{
