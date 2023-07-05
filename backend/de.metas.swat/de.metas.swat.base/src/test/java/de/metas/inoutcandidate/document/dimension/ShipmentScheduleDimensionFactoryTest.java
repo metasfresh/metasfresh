@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.document.dimension;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionTest;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
@@ -11,7 +12,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class ShipmentScheduleDimensionFactoryTest
 {
@@ -58,7 +59,7 @@ class ShipmentScheduleDimensionFactoryTest
 	@Test
 	void fieldsThatShallNotBeOverridden()
 	{
-		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactory();
+		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactoryTest();
 
 		final I_M_ReceiptSchedule record = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		record.setC_Order_ID(900001);

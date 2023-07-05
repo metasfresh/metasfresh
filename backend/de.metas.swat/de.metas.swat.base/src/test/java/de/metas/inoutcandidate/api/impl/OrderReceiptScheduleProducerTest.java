@@ -25,7 +25,6 @@ package de.metas.inoutcandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
@@ -37,7 +36,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 {
@@ -100,7 +99,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 				.user2_ID(0)
 				.build();
 
-		final Dimension rsDimension = new ReceiptScheduleDimensionFactory().getFromRecord(rs);
+		final Dimension rsDimension = new ReceiptScheduleDimensionFactoryTest().getFromRecord(rs);
 		assertThat(rsDimension).usingRecursiveComparison().isEqualTo(rsDimensionExpected);
 		assertThat(rsDimension).isEqualTo(rsDimensionExpected);
 	}
