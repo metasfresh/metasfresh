@@ -208,4 +208,6 @@ public interface IFlatrateBL extends ISingletonService
 	boolean existsTermForOrderLine(I_C_OrderLine ol);
 
 	boolean isModuleContract(I_C_OrderLine ol);
+
+	I_C_Flatrate_Term createContractForOrderLine(I_C_OrderLine orderLine);
 }
