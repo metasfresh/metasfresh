@@ -22,6 +22,7 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+import de.metas.contracts.FlatrateTransitionId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -160,14 +161,14 @@ public class C_Flatrate_Conditions
 			return;
 		}
 
-		final int flatrateTransitionId = sysConfigBL.getIntValue(SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE, -1);
+		final FlatrateTransitionId flatrateTransitionId = FlatrateTransitionId.ofRepoIdOrNull(sysConfigBL.getIntValue(SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE, -1));
 
-		if (flatrateTransitionId < 0)
+		if (flatrateTransitionId == null)
 		{
 			throw new AdempiereException("Missing default value for flatrate condition configured for MODULAR CONTRACTS! Please set value for system configuration \"C_Flatrate_Conditions.MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE\"")
 					.markAsUserValidationError();
 		}
 
-		conditions.setC_Flatrate_Transition_ID(flatrateTransitionId);
+		conditions.setC_Flatrate_Transition_ID(flatrateTransitionId.getRepoId());
 	}
 }
