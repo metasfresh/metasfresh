@@ -2336,6 +2336,7 @@ public class FlatrateBL implements IFlatrateBL
 				.qty(ol.getQtyEntered())
 				.term(newTerm)
 				.priceDate(TimeUtil.asLocalDate(order.getDateOrdered()))
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.build()
 				.computeOrThrowEx();
 	}
