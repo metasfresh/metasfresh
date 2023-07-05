@@ -91,6 +91,9 @@ public class BPartnerLocation
 	@Nullable
 	private GLN gln;
 
+	/**
+	 * If {@code null}, we expect a name to be computed by a {@code C_BPartner_Location} MI.
+	 */
 	@Nullable
 	private String name;
 

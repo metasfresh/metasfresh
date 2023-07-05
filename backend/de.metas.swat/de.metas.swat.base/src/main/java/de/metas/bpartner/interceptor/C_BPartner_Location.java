@@ -95,8 +95,7 @@ public class C_BPartner_Location
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		final String name = bpLocation.getName();
-		if (!bpLocation.isNameReadWrite() || ".".equals(name))
+		if (!bpLocation.isNameReadWrite() || InterfaceWrapperHelper.isNull(bpLocation, I_C_BPartner_Location.COLUMNNAME_Name))
 		{
 			updateBPLocationName(bpLocation);
 		}
