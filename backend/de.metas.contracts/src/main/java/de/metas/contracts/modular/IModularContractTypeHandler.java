@@ -69,5 +69,5 @@ public interface IModularContractTypeHandler<T>
 
 	void validateDocAction(@NonNull final T model, @NonNull final ModularContractService.ModelAction action);
 
-	void voidLinkedDocuments(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
+	void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 }

@@ -124,7 +124,7 @@ public class ModularContractService
 	{
 		switch (action)
 		{
-			case VOIDED -> handler.voidLinkedDocuments(model, flatrateTermId);
+			case VOIDED -> handler.cancelLinkedContractsIfAllowed(model, flatrateTermId);
 		}
 	}
 }
