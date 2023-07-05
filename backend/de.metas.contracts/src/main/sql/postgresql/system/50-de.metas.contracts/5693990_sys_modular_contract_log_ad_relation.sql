@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- Name: ModCntr_Log
 -- 2023-07-03T16:20:31.571232100Z
 INSERT INTO AD_Reference (AD_Client_ID, AD_Org_ID, AD_Reference_ID, Created, CreatedBy, EntityType, IsActive, IsOrderByValue, Name, Updated, UpdatedBy, ValidationType)
@@ -50,8 +28,8 @@ WHERE l.IsActive = 'Y'
 ;
 
 -- Table Validation - SQL not generated (not possible), because of missing ad_ref_table_id column
-INSERT INTO ad_ref_table (ad_reference_id, ad_client_id, ad_org_id, createdby, updatedby, ad_table_id, ad_key, ad_window_id)
-VALUES (541775, 0, 0, 100, 100, 542338, 586758, 541711)
+INSERT INTO ad_ref_table (ad_reference_id, ad_client_id, ad_org_id, created, createdby, updatedby, ad_table_id, ad_key, entitytype, ad_window_id)
+VALUES (541775, 0, 0, TO_TIMESTAMP('2023-07-03 19:59:28.709', 'YYYY-MM-DD HH24:MI:SS.US'), 100, 100, 542338, 586758, 'de.metas.contracts', 541711)
 ;
 
 -- Reference: ModCntr_Log
