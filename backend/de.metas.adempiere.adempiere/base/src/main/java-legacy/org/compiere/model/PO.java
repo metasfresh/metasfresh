@@ -20,8 +20,8 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
-import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -1171,20 +1171,16 @@ public abstract class PO
 				catch (final NumberFormatException e)
 				{
 					log.warn(ColumnName
-									 + " - Class invalid(1): " + valueToUse.getClass().toString()
-									 + ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
+							+ " - Class invalid(1): " + valueToUse.getClass().toString()
+							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 					return false;
 				}
-			}
-			else if (valueToUse.getClass() == Null.class)
-			{
-				m_newValues[index] = valueToUse;
 			}
 			else
 			{
 				log.warn(ColumnName
-								 + " - Class invalid(2): " + valueToUse.getClass().toString()
-								 + ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
+						+ " - Class invalid(2): " + valueToUse.getClass().toString()
+						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 				return false;
 			}
 			// Validate (Min/Max)

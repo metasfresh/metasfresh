@@ -37,7 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.Null;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
@@ -96,7 +95,7 @@ public class C_BPartner_Location
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		if (!bpLocation.isNameReadWrite() || Null.isNull(bpLocation.getName()))
+		if (!bpLocation.isNameReadWrite() || InterfaceWrapperHelper.isNull(bpLocation, I_C_BPartner_Location.COLUMNNAME_Name))
 		{
 			updateBPLocationName(bpLocation);
 		}
