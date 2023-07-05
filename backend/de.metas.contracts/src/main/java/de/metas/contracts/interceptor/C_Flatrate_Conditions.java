@@ -156,7 +156,7 @@ public class C_Flatrate_Conditions
 	private void setFlatrateTransitionForModularContract(@NonNull final I_C_Flatrate_Conditions conditions)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
-		if (!TypeConditions.MODULAR_CONTRACT.equals(typeConditions))
+		if (!typeConditions.isModularContractType())
 		{
 			return;
 		}

@@ -198,6 +198,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -1341,7 +1342,7 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setM_PricingSystem_ID(currentTerm.getM_PricingSystem_ID());
 
 		nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
+		attributeSetInstanceBL.cloneASI(currentTerm, nextTerm);
 
 		nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 		nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
@@ -2219,9 +2220,9 @@ public class FlatrateBL implements IFlatrateBL
 			return false;
 		}
 
-		final I_C_Flatrate_Conditions typeConditions = flatrateDAO.getConditionsById(conditionsId);
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
 
-		return TypeConditions.MODULAR_CONTRACT.getCode().equals(typeConditions.getType_Conditions());
+		return TypeConditions.ofCode(conditions.getType_Conditions()).isModularContractType();
 	}
 
 	@Override
@@ -2275,7 +2276,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_User_InCharge_ID(order.getSalesRep_ID());
 
 		newTerm.setM_Product_ID(orderLine.getM_Product_ID());
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(orderLine, newTerm);
+		attributeSetInstanceBL.cloneASI(orderLine, newTerm);
 
 		newTerm.setPriceActual(orderLine.getPriceActual());
 		newTerm.setC_Currency_ID(orderLine.getC_Currency_ID());
