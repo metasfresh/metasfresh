@@ -30,6 +30,7 @@ import de.metas.gplr.source.model.SourceCurrencyInfo;
 import de.metas.gplr.source.model.SourceDocuments;
 import de.metas.gplr.source.model.SourceIncotermsAndLocation;
 import de.metas.gplr.source.model.SourceInvoice;
+import de.metas.gplr.source.model.SourceInvoiceLine;
 import de.metas.gplr.source.model.SourceOrder;
 import de.metas.gplr.source.model.SourceOrderCost;
 import de.metas.gplr.source.model.SourceOrderLine;
@@ -47,6 +48,7 @@ import de.metas.inout.location.adapter.DocumentLocationAdapter;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -94,6 +96,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -347,6 +350,11 @@ public class SourceDocumentsService
 	private SourceTaxInfo extractSourceTaxInfo(final I_C_OrderLine orderLine)
 	{
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
+		return getSourceTaxInfo(taxId);
+	}
+
+	private SourceTaxInfo getSourceTaxInfo(final TaxId taxId)
+	{
 		final Tax tax = taxBL.getTaxById(taxId);
 		return SourceTaxInfo.builder()
 				.vatCode(tax.getTaxCode())
@@ -419,6 +427,21 @@ public class SourceDocumentsService
 				.invoiceAdditionalText(StringUtils.trimBlankToNull(invoice.getInvoiceAdditionalText()))
 				.linesNetAmtFC(Amount.of(invoice.getTotalLines(), currencyCode))
 				.taxAmtFC(Amount.of(invoice.getGrandTotal().subtract(invoice.getTotalLines()), currencyCode))
+				.lines(invoiceBL.getLines(invoiceId)
+						.stream()
+						.map(invoiceLine -> toSourceInvoiceLine(invoiceLine, currencyCode))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private SourceInvoiceLine toSourceInvoiceLine(final I_C_InvoiceLine invoiceLine, final CurrencyCode currencyCode)
+	{
+		return SourceInvoiceLine.builder()
+				.id(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.lineNetAmtFC(Amount.of(invoiceLine.getLineNetAmt(), currencyCode))
+				.taxAmtFC(Amount.of(invoiceLine.getTaxAmtInfo(), currencyCode))
+				.tax(getSourceTaxInfo(TaxId.ofRepoId(invoiceLine.getC_Tax_ID())))
+				.orderLineId(OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID()))
 				.build();
 	}
 

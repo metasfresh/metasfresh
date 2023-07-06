@@ -698,6 +698,29 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount (@Nullable BigDecimal Discount);
+
+	/**
+	 * Get Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_Discount = new ModelColumn<>(I_C_InvoiceLine.class, "Discount", null);
+	String COLUMNNAME_Discount = "Discount";
+
+	/**
 	 * Set External IDs.
 	 *
 	 * <br>Type: String
@@ -765,6 +788,52 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
+	 * Set Freight Cost Line.
+	 * This is a Freight Cost Line
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsFreightCostLine (boolean IsFreightCostLine);
+
+	/**
+	 * Get Freight Cost Line.
+	 * This is a Freight Cost Line
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isFreightCostLine();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsFreightCostLine = new ModelColumn<>(I_C_InvoiceLine.class, "IsFreightCostLine", null);
+	String COLUMNNAME_IsFreightCostLine = "IsFreightCostLine";
+
+	/**
+	 * Set Manual Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualPrice (boolean IsManualPrice);
+
+	/**
+	 * Get Manual Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualPrice();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_InvoiceLine.class, "IsManualPrice", null);
+	String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
 	 * Set IsOrderLineReadOnly.
 	 *
 	 * <br>Type: YesNo
@@ -784,6 +853,48 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsOrderLineReadOnly = new ModelColumn<>(I_C_InvoiceLine.class, "IsOrderLineReadOnly", null);
 	String COLUMNNAME_IsOrderLineReadOnly = "IsOrderLineReadOnly";
+
+	/**
+	 * Set Packaging Material .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPackagingMaterial (boolean IsPackagingMaterial);
+
+	/**
+	 * Get Packaging Material .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPackagingMaterial();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsPackagingMaterial = new ModelColumn<>(I_C_InvoiceLine.class, "IsPackagingMaterial", null);
+	String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
+
+	/**
+	 * Set Price ReadOnly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPriceReadOnly (boolean IsPriceReadOnly);
+
+	/**
+	 * Get Price ReadOnly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPriceReadOnly();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsPriceReadOnly = new ModelColumn<>(I_C_InvoiceLine.class, "IsPriceReadOnly", null);
+	String COLUMNNAME_IsPriceReadOnly = "IsPriceReadOnly";
 
 	/**
 	 * Set Printed.
@@ -807,6 +918,27 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsPrinted = new ModelColumn<>(I_C_InvoiceLine.class, "IsPrinted", null);
 	String COLUMNNAME_IsPrinted = "IsPrinted";
+
+	/**
+	 * Set Qty ReadOnly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsQtyReadOnly (boolean IsQtyReadOnly);
+
+	/**
+	 * Get Qty ReadOnly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQtyReadOnly();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsQtyReadOnly = new ModelColumn<>(I_C_InvoiceLine.class, "IsQtyReadOnly", null);
+	String COLUMNNAME_IsQtyReadOnly = "IsQtyReadOnly";
 
 	/**
 	 * Set SeqNo..
@@ -920,6 +1052,60 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_InvoiceLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_C_InvoiceLine.class, "M_HU_PI_Item_Product_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
+	 * Set Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_InOut_ID (int M_InOut_ID);
+
+	/**
+	 * Get Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getM_InOut_ID();
+
+	@Deprecated
+	@Nullable org.compiere.model.I_M_InOut getM_InOut();
+
+	@Deprecated
+	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
+
+	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_C_InvoiceLine.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
 	 * Set Receipt Line.
@@ -1111,6 +1297,26 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_PriceList = "PriceList";
 
 	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -1197,6 +1403,27 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_QtyEnteredInBPartnerUOM = "QtyEnteredInBPartnerUOM";
 
 	/**
+	 * Set Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredTU (@Nullable BigDecimal QtyEnteredTU);
+
+	/**
+	 * Get Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEnteredTU();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_QtyEnteredTU = new ModelColumn<>(I_C_InvoiceLine.class, "QtyEnteredTU", null);
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
+
+	/**
 	 * Set Quantity Invoiced.
 	 * Invoiced quantity in the product's UOM.
 	 *
@@ -1218,6 +1445,29 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_QtyInvoiced = new ModelColumn<>(I_C_InvoiceLine.class, "QtyInvoiced", null);
 	String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+
+	/**
+	 * Set Quantity in Price Unit.
+	 * Menge, die bereits in Rechnung gestellt wurde, umgerechnet in die Einheit auf die sich der Preis bezieht
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyInvoicedInPriceUOM (@Nullable BigDecimal QtyInvoicedInPriceUOM);
+
+	/**
+	 * Get Quantity in Price Unit.
+	 * Menge, die bereits in Rechnung gestellt wurde, umgerechnet in die Einheit auf die sich der Preis bezieht
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyInvoicedInPriceUOM();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_QtyInvoicedInPriceUOM = new ModelColumn<>(I_C_InvoiceLine.class, "QtyInvoicedInPriceUOM", null);
+	String COLUMNNAME_QtyInvoicedInPriceUOM = "QtyInvoicedInPriceUOM";
 
 	/**
 	 * Set Referenced Invoice Line.
@@ -1333,6 +1583,29 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_TaxAmt = "TaxAmt";
 
 	/**
+	 * Set Positions-Steuer.
+	 * Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTaxAmtInfo (@Nullable BigDecimal TaxAmtInfo);
+
+	/**
+	 * Get Positions-Steuer.
+	 * Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTaxAmtInfo();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_TaxAmtInfo = new ModelColumn<>(I_C_InvoiceLine.class, "TaxAmtInfo", null);
+	String COLUMNNAME_TaxAmtInfo = "TaxAmtInfo";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -1400,7 +1673,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
-	 * Set UserElementString1.
+	 * Set Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1409,7 +1682,7 @@ public interface I_C_InvoiceLine
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get UserElementString1.
+	 * Get Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1421,7 +1694,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set UserElementString2.
+	 * Set Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1430,7 +1703,7 @@ public interface I_C_InvoiceLine
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get UserElementString2.
+	 * Get Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1442,7 +1715,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set UserElementString3.
+	 * Set Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1451,7 +1724,7 @@ public interface I_C_InvoiceLine
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get UserElementString3.
+	 * Get Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
