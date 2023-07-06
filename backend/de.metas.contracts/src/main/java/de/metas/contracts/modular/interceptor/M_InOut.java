@@ -23,68 +23,85 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.order.IOrderDAO;
+import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModularContractService.ModelAction.REACTIVATED;
 import static de.metas.contracts.modular.ModularContractService.ModelAction.REVERSED;
 import static de.metas.contracts.modular.ModularContractService.ModelAction.VOIDED;
 
-/**
- * Glue-code that invokes the {@link ModularContractService} on certain order events.
- * <p/>
- * Note: even now where we don't yet implemented modular sales contracts, we need to act on sales orders, too.<br/>
- * That's because the eventual sales (and their totalamounts) can play a role in the purchase contracts final settlement.
- */
 @Component
-@Interceptor(I_C_Order.class)
-public class C_Order
+@Interceptor(I_M_InOut.class)
+public class M_InOut
 {
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
 	private final ModularContractService contractService;
 
-	public C_Order(@NonNull final ModularContractService contractService)
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+
+	public M_InOut(@NonNull final ModularContractService contractService)
 	{
 		this.contractService = contractService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void afterComplete(@NonNull final I_C_Order orderRecord)
+	public void afterComplete(@NonNull final I_M_InOut inOutRecord)
 	{
-		invokeHandlerForEachLine(orderRecord, COMPLETED);
-	}
+		inOutDAO.retrieveAllLines(inOutRecord)
+				.forEach(this::propagateFlatrateTerm);
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
-	public void afterVoid(@NonNull final I_C_Order orderRecord)
-	{
-		invokeHandlerForEachLine(orderRecord, VOIDED);
+		invokeHandlerForEachLine(inOutRecord, COMPLETED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
-	public void afterReverse(@NonNull final I_C_Order orderRecord)
+	public void afterReverse(@NonNull final I_M_InOut inOutRecord)
 	{
-		invokeHandlerForEachLine(orderRecord, REVERSED);
+		invokeHandlerForEachLine(inOutRecord, REVERSED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE })
-	public void afterReactivate(@NonNull final I_C_Order orderRecord)
+	public void afterReactivate(@NonNull final I_M_InOut inOutRecord)
 	{
-		invokeHandlerForEachLine(orderRecord, REACTIVATED);
+		invokeHandlerForEachLine(inOutRecord, REACTIVATED);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID })
+	public void afterVoid(@NonNull final I_M_InOut inOutRecord)
+	{
+		invokeHandlerForEachLine(inOutRecord, VOIDED);
+	}
+
+	private void propagateFlatrateTerm(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		final List<I_M_ReceiptSchedule_Alloc> lineAlloc = receiptScheduleDAO.retrieveRsaForInOutLine(inOutLineRecord);
+		if (lineAlloc.size() == 1)
+		{
+			final I_M_ReceiptSchedule receiptScheduleRecord = receiptScheduleDAO.getById(ReceiptScheduleId.ofRepoId(lineAlloc.get(0).getM_ReceiptSchedule_ID()));
+			inOutLineRecord.setC_Flatrate_Term_ID(receiptScheduleRecord.getC_Flatrate_Term_ID());
+			inOutDAO.save(inOutLineRecord);
+		}
 	}
 
 	private void invokeHandlerForEachLine(
-			@NonNull final I_C_Order orderRecord,
+			@NonNull final I_M_InOut inOutRecord,
 			@NonNull final ModularContractService.ModelAction modelAction)
 	{
-		orderDAO.retrieveOrderLines(orderRecord)
+		inOutDAO.retrieveAllLines(inOutRecord)
 				.forEach(line -> contractService.invokeWithModel(line, modelAction));
 	}
 }
+
