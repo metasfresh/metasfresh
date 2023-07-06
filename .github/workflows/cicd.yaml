@@ -1,5 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
+env:
+  PIPELINE_VERSION: '0.2'
 jobs:
 
   init:
@@ -44,7 +46,10 @@ jobs:
           echo -e "[sanitized refname]\n$OUT_REFNAME\n"
           echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
           echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
-          echo 'Artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`.' >> $GITHUB_STEP_SUMMARY
+          echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
+          echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
+          echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   java:
     runs-on: ubuntu-latest
@@ -57,12 +62,18 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
       - name: build-commons
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.common \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -72,6 +83,7 @@ jobs:
           --file docker-builds/Dockerfile.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
@@ -82,6 +94,7 @@ jobs:
           --file docker-builds/Dockerfile.camel \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
@@ -276,6 +289,13 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare
+        env:
+          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
+          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
+        run: |
+          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
+          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
       - name: build-api-compat
         run: |
           docker buildx build \
@@ -295,6 +315,16 @@ jobs:
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: build-report-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.report.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: build-mobile-compat
         run: |
@@ -322,6 +352,8 @@ jobs:
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
@@ -334,7 +366,7 @@ jobs:
           docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
       - name: produce-summary
         run: |
-          echo 'Custom images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
+          echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo 'and can be deployed on any regular system via metasfresh instances rollout using the above tag as *Baseversion*.' >> $GITHUB_STEP_SUMMARY
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
@@ -354,12 +386,18 @@ jobs:
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
       - name: run-junit-tests-j8
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
@@ -371,6 +409,7 @@ jobs:
           --file docker-builds/Dockerfile.camel.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
@@ -397,14 +436,51 @@ jobs:
         with:
           name: junit-logs
           path: junit/**/junit.log
-      - name: produce-summary
-        run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
-  cucumber:
+  cucumber-build:
+    name: build (cucumber)
+    runs-on: ubuntu-latest
+    needs: [init, java]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - name: build-cucumber
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.cucumber \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: push-images
+        run: |
+          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+  cucumber-run:
     name: test (cucumber)
     runs-on: ubuntu-latest
-    needs: [init, backend, frontend]
+    needs: [init, backend, frontend, cucumber-build]
+    strategy:
+      max-parallel: 4
+      fail-fast: false
+      matrix:
+        profile: [profile1, profile2, catchall]
+        include:
+          - profile: profile1
+            params: -Dcucumber.filter.tags="@tag1 and not @ignore"
+          - profile: profile2
+            params: -Dcucumber.filter.tags="@tag2 and not @ignore"
+          - profile: catchall
+            params: -Dcucumber.filter.tags="not @tag1 and not @tag2 and not @ignore"
     steps:
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
@@ -414,43 +490,37 @@ jobs:
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
-      - name: build-cucumber
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.cucumber \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
-          .
-      - name: push-images
-        run: |
-          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
       - name: run-tests
         env:
-          refname: ${{ needs.init.outputs.tag-fixed }}
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          cucumberparams: ${{ matrix.params }}
         timeout-minutes: 120
         run: |
           mkdir cucumber
-          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
+          docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
           docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
+          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker-compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
+      # post cucumber database will not work as is with matrix strategy
       - name: push-results
         run: |
-          find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
-          testspace "[cucumber]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code 
+          find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
+          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
+      - name: produce-summary
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         run: |
-          if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi               # print cucumber log and exit if cucumber failed
+          if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi                                     # print cucumber log and exit if cucumber failed
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: cucumber-logs
           path: cucumber.log
-      - name: produce-summary
-        run: |
-          echo 'test results can be found at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   redeploy:
     runs-on: ubuntu-latest
