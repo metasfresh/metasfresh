@@ -348,6 +348,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setPaymentRule(ic, orderLine);
 
 		setIncoterms(ic, orderLine);
+
+		setTax_Departure_Country_ID(ic, orderLine);
 	}
 
 	private void setPaymentRule(
@@ -566,6 +568,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationType(fromOrderLine.getGroupCompensationType());
 		ic.setGroupCompensationAmtType(fromOrderLine.getGroupCompensationAmtType());
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
+	}
+
+	private void setTax_Departure_Country_ID(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
+
+		ic.setC_Tax_Departure_Country_ID(order.getC_Tax_Departure_Country_ID());
 	}
 
 	private static void setC_Flatrate_Term_ID(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final org.compiere.model.I_C_OrderLine orderLine)

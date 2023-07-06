@@ -48,7 +48,7 @@ public class C_Country_StepDef
 	}
 
 	@And("load C_Country by country code:")
-	public void locate_invoice_candidates_for_invoice(@NonNull final DataTable dataTable)
+	public void load_Country_by_country_code(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
