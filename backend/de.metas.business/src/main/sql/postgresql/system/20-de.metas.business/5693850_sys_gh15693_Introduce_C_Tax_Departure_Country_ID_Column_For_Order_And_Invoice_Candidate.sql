@@ -195,3 +195,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=716480
 -- 2023-07-03T11:02:07.674Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,716480,0,290,618113,540225,'F',TO_TIMESTAMP('2023-07-03 14:02:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Steuerabgangsland',17,0,0,TO_TIMESTAMP('2023-07-03 14:02:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+-- Field: Invoice (Vendor)_OLD(183,D) -> Invoice(290,D) -> Tax Departure Country
+-- Column: C_Invoice.C_Tax_Departure_Country_ID
+-- 2023-07-06T18:02:08.020Z
+UPDATE AD_Field SET ReadOnlyLogic='@DocStatus/''''@!=''IP''',Updated=TO_TIMESTAMP('2023-07-06 21:02:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=716480
+;

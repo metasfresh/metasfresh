@@ -16,6 +16,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -29,6 +30,7 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -76,6 +78,8 @@ public class C_Order
 	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	final ITrxManager trxManager = Services.get(ITrxManager.class);
 	final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -317,6 +321,12 @@ public class C_Order
 
 			invoiceDAO.save(invoice);
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void invalidateIC(@NonNull final I_C_Order order)
+	{
+		trxManager.runAfterCommit(() -> invoiceCandidateHandlerBL.invalidateCandidatesFor(order));
 	}
 
 }
