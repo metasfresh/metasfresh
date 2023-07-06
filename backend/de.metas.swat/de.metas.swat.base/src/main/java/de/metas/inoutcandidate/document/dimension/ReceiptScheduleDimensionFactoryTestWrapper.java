@@ -20,12 +20,11 @@
  * #L%
  */
 
-package de.metas.inoutcandidate.api.impl;
+package de.metas.inoutcandidate.document.dimension;
 
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
-public class ReceiptScheduleDimensionFactoryTest extends ReceiptScheduleDimensionFactory
+public class ReceiptScheduleDimensionFactoryTestWrapper extends ReceiptScheduleDimensionFactory
 {
 	@Override
 	public void updateRecord(final I_M_ReceiptSchedule record)

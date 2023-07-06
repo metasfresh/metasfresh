@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
@@ -99,7 +100,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 				.user2_ID(0)
 				.build();
 
-		final Dimension rsDimension = new ReceiptScheduleDimensionFactoryTest().getFromRecord(rs);
+		final Dimension rsDimension = new ReceiptScheduleDimensionFactoryTestWrapper().getFromRecord(rs);
 		assertThat(rsDimension).usingRecursiveComparison().isEqualTo(rsDimensionExpected);
 		assertThat(rsDimension).isEqualTo(rsDimensionExpected);
 	}
