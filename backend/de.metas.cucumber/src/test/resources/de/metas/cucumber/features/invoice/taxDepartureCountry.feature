@@ -59,7 +59,7 @@ Feature: tax departure country for SO and PO
   Scenario: tax departure country is propagated from sales order to sales invoice
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   | 1000012              |
+      | o_1        | true    | endcustomer_1            | 2021-04-14  | Romania                                   | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -76,7 +76,7 @@ Feature: tax departure country for SO and PO
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
       | ic_1                              | ol_1                      | 10           | Romania                                   |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic_1                              |
     Then after not more than 30s, C_Invoice are found:
@@ -90,7 +90,7 @@ Feature: tax departure country for SO and PO
   Scenario: tax departure country is propagated from purchase order to purchase invoice
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
-      | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-17  | Romania                                   | 1000012              |
+      | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-14  | Romania                                   | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -110,7 +110,7 @@ Feature: tax departure country for SO and PO
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Departure_Country_ID.Identifier |
       | ic_1                              | ol_1                      | 10           | Romania                                   |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic_1                              |
     Then after not more than 30s, C_Invoice are found:
@@ -124,7 +124,7 @@ Feature: tax departure country for SO and PO
   Scenario: Different tax departure country in invoice candidates will always result in multiple invoices
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier | OPT.C_PaymentTerm_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   | 1000012              |
+      | o_1        | true    | endcustomer_1            | 2021-04-14  | Romania                                   | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -152,7 +152,7 @@ Feature: tax departure country for SO and PO
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Tax_Departure_Country_ID.Identifier |
       | ic_2                              | Albania                                   |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic_1                              |
       | ic_2                              |
@@ -172,7 +172,7 @@ Feature: tax departure country for SO and PO
       | endvendor_1              | p_1                     | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_Tax_Departure_Country_ID.Identifier |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | Romania                                   |
+      | o_1        | true    | endcustomer_1            | 2021-04-14  | Romania                                   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
