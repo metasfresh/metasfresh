@@ -24,6 +24,7 @@ package de.metas.deliveryplanning.invoicecandidate;
 
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderLineId;
 import de.metas.order.invoicecandidate.OrderLineHandlerExtension;
 import lombok.NonNull;
@@ -42,7 +43,8 @@ public class DeliveryPlanningICHandlerExtension implements OrderLineHandlerExten
 	@Override
 	public void setDeliveryRelatedData(@NonNull final OrderLineId orderLineId, @NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final Timestamp actualLoadingDate = deliveryPlanningService.getMinActualLoadingDateFromPlanningsWithCompletedInstructions(orderLineId)
+		final Timestamp actualLoadingDate = deliveryPlanningService
+				.getMinActualLoadingDateFromPlannings(orderLineId, SOTrx.ofBoolean(invoiceCandidate.isSOTrx()))
 				.orElse(null);
 
 		invoiceCandidate.setActualLoadingDate(actualLoadingDate);
