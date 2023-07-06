@@ -106,6 +106,7 @@ public class ModularContractService
 		handler.validateDocAction(model, action);
 
 		createLogEntries(handler, model, action, flatrateTermId);
+		handleAction(handler, model, action, flatrateTermId);
 	}
 
 	private <T> void createLogEntries(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
@@ -116,6 +117,14 @@ public class ModularContractService
 					.ifPresent(contractLogDAO::create);
 			case VOIDED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::reverse);
+		}
+	}
+
+	private <T> void handleAction(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
+	{
+		switch (action)
+		{
+			case VOIDED -> handler.cancelLinkedContractsIfAllowed(model, flatrateTermId);
 		}
 	}
 }

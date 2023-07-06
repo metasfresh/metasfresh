@@ -9,7 +9,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class ReceiptScheduleDimensionFactoryTest
 {
@@ -22,7 +22,7 @@ class ReceiptScheduleDimensionFactoryTest
 	@Test
 	void set_and_get()
 	{
-		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactory();
+		final ReceiptScheduleDimensionFactory dimensionFactory = new de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest();
 
 		final I_M_ReceiptSchedule record = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		record.setM_Product_ID(900002);
@@ -44,7 +44,7 @@ class ReceiptScheduleDimensionFactoryTest
 	@Test
 	void fieldsThatShallNotBeOverridden()
 	{
-		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactory();
+		final ReceiptScheduleDimensionFactory dimensionFactory = new de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest();
 
 		final I_M_ReceiptSchedule record = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		record.setC_Order_ID(900001);
