@@ -1,6 +1,11 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
+import de.metas.acct.Account;
+import de.metas.acct.api.FactAcctId;
 import de.metas.acct.gljournal_sap.PostingSign;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -9,10 +14,10 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import de.metas.acct.api.FactAcctId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -21,51 +26,76 @@ import java.util.Set;
 
 class OIRow implements IViewRow
 {
+	public static OIRow cast(IViewRow row) {return (OIRow)row;}
+
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign")
-	private final PostingSign postingSign;
-	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "Account_ID")
-	private final LookupValue account;
+	@Getter @NonNull private final PostingSign postingSign;
+
+	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Text, captionKey = "Account_ID")
+	@NonNull private final ITranslatableString accountCaption;
+
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, captionKey = "Amount")
-	private final BigDecimal amount;
+	@NonNull private final BigDecimal amount;
+
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmt")
-	private final BigDecimal openAmount;
+	@NonNull private final BigDecimal openAmount;
+
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.LocalDate, captionKey = "DateAcct")
-	private final Instant dateAcct;
+	@NonNull private final Instant dateAcct;
+
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_BPartner_ID")
-	private final LookupValue bpartner;
+	@Nullable private final LookupValue bpartner;
+
 	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Text, captionKey = "DocumentNo")
-	private final String documentNo;
+	@Nullable private final String documentNo;
+
 	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Text, captionKey = "Description")
-	private final String description;
+	@Nullable private final String description;
+
+	static final String FIELD_Selected = "selected";
+	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsSelected", fieldName = FIELD_Selected, editor = ViewEditorRenderMode.ALWAYS)
+	@Getter private final boolean selected;
+
+	static final String FIELD_OpenAmountOverrde = "openAmountOverride";
+	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmtOverride", fieldName = FIELD_OpenAmountOverrde, editor = ViewEditorRenderMode.ALWAYS)
+	@Nullable private final BigDecimal openAmountOverride;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<OIRow> values;
+
 	private final DocumentId rowId;
 	@Getter @NonNull private final FactAcctId factAcctId;
+	@Getter @NonNull private final Account account;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private OIRow(
 			@NonNull final FactAcctId factAcctId,
 			@NonNull final PostingSign postingSign,
-			@NonNull final LookupValue account,
+			@NonNull final Account account,
+			@NonNull final ITranslatableString accountCaption,
 			@NonNull final BigDecimal amount,
 			@NonNull final BigDecimal openAmount,
 			@NonNull final Instant dateAcct,
 			@Nullable final LookupValue bpartner,
 			@Nullable final String documentNo,
-			@Nullable final String description)
+			@Nullable final String description,
+			final boolean selected,
+			@Nullable final BigDecimal openAmountOverride)
 	{
 		this.postingSign = postingSign;
-		this.account = account;
+		this.accountCaption = accountCaption;
 		this.amount = amount;
 		this.openAmount = openAmount;
 		this.dateAcct = dateAcct;
 		this.bpartner = bpartner;
 		this.documentNo = documentNo;
 		this.description = description;
+		this.selected = selected;
+		this.openAmountOverride = openAmountOverride;
 
 		this.values = ViewRowFieldNameAndJsonValuesHolder.newInstance(OIRow.class);
 		this.rowId = DocumentId.of(factAcctId);
 		this.factAcctId = factAcctId;
+		this.account = account;
 	}
 
 	@Override
@@ -83,4 +113,26 @@ class OIRow implements IViewRow
 
 	@Override
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues() {return values.get(this);}
+
+	public OIRow withSelected(final boolean selected)
+	{
+		return this.selected != selected
+				? toBuilder().selected(selected).build()
+				: this;
+	}
+
+	public BigDecimal getOpenAmountEffective()
+	{
+		return CoalesceUtil.coalesceNotNull(openAmountOverride, openAmount);
+	}
+
+	public Dimension getDimension()
+	{
+		return Dimension.builder()
+				// TODO bpartner
+				// TODO product
+				// TODO section code, org, activity etc
+				.build();
+	}
+
 }

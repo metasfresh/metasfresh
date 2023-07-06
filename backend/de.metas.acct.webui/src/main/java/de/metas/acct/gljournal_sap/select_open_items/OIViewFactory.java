@@ -1,8 +1,12 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -21,6 +25,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -31,6 +36,7 @@ public class OIViewFactory implements IViewFactory
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOWID_String);
 	private static final String VIEW_PARAM_SAP_GLJournal_ID = "SAP_GLJournal_ID";
 
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 	private final OIViewDataService viewDataService;
 
@@ -64,7 +70,7 @@ public class OIViewFactory implements IViewFactory
 				.setAllowOpeningRowDetails(false)
 				.allowViewCloseAction(ViewCloseAction.DONE)
 				.addElementsFromViewRowClass(OIRow.class, viewDataType)
-				//.setFilters(ImmutableList.of(getFilterDescriptor()))
+				.setFilters(ImmutableList.of(getFilterDescriptor()))
 				.build();
 	}
 
@@ -79,7 +85,24 @@ public class OIViewFactory implements IViewFactory
 				.rowsData(getViewData(request))
 				.filterDescriptor(getFilterDescriptor())
 				.sapglJournalId(extractSAPGLJournalId(request))
-				//.relatedProcess(createProcessDescriptor(10, OIView_BlaBla.class))
+				.relatedProcess(createProcessDescriptor(10, OIView_Select.class))
+				.relatedProcess(createProcessDescriptor(20, OIView_AddToJournal.class))
+				.build();
+	}
+
+	private RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId == null)
+		{
+			throw new AdempiereException("No processId found for " + processClass);
+		}
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.anyTable().anyWindow()
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewQuickActions)
+				.sortNo(sortNo)
 				.build();
 	}
 
