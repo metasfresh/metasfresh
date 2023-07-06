@@ -147,6 +147,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static de.metas.bpartner.interceptor.MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.externalreference.ExternalIdentifier.Type.EXTERNAL_REFERENCE;
 import static de.metas.externalreference.ExternalIdentifier.Type.METASFRESH_ID;
@@ -1822,7 +1823,7 @@ public class JsonPersisterService
 			final String name = jsonBPartnerLocation.getName();
 			if (Check.isEmpty(name, true))
 			{
-				location.setName(".");
+				location.setName(BPARTNER_LOCATION_NAME_DEFAULT);
 			}
 			else
 			{
