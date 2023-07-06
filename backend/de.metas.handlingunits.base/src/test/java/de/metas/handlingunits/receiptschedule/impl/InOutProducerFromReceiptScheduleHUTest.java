@@ -49,8 +49,8 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
-import de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
@@ -552,10 +552,10 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testDimensionPropagated()
 	{
-		final ReceiptScheduleDimensionFactory receiptScheduleDimensionFactory = new ReceiptScheduleDimensionFactoryTest();
+		final ReceiptScheduleDimensionFactory receiptScheduleDimensionFactory = new ReceiptScheduleDimensionFactoryTestWrapper();
 		receiptScheduleDimensionFactory.updateRecord(receiptSchedule, DimensionTest.newFullyPopulatedDimension());
 		InterfaceWrapperHelper.save(receiptSchedule);
-		final Dimension receiptScheduleDimension = new ReceiptScheduleDimensionFactoryTest().getFromRecord(receiptSchedule);
+		final Dimension receiptScheduleDimension = new ReceiptScheduleDimensionFactoryTestWrapper().getFromRecord(receiptSchedule);
 
 		final List<I_M_HU> paloxes = create10PaloxesAndAssignThemToTheReceiptSchedule();
 

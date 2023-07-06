@@ -28,7 +28,7 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
@@ -99,7 +99,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -111,7 +110,6 @@ import org.junit.BeforeClass;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -180,7 +178,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTest());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InvoiceLineDimensionFactory());
 
