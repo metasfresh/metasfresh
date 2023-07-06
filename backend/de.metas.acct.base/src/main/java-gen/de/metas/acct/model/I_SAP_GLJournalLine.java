@@ -120,6 +120,26 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
@@ -263,6 +283,29 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItem (boolean IsOpenItem);
+
+	/**
+	 * Get Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItem();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsOpenItem", null);
+	String COLUMNNAME_IsOpenItem = "IsOpenItem";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -329,6 +372,27 @@ public interface I_SAP_GLJournalLine
 
 	ModelColumn<I_SAP_GLJournalLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
+	 * Set Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenItemKey (@Nullable java.lang.String OpenItemKey);
+
+	/**
+	 * Get Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOpenItemKey();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OpenItemKey = new ModelColumn<>(I_SAP_GLJournalLine.class, "OpenItemKey", null);
+	String COLUMNNAME_OpenItemKey = "OpenItemKey";
 
 	/**
 	 * Set Parent.
@@ -471,7 +535,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set UserElementString1.
+	 * Set Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -480,7 +544,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get UserElementString1.
+	 * Get Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -492,7 +556,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set UserElementString2.
+	 * Set Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -501,7 +565,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get UserElementString2.
+	 * Get Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -513,7 +577,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set UserElementString3.
+	 * Set Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -522,7 +586,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get UserElementString3.
+	 * Get Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -616,27 +680,4 @@ public interface I_SAP_GLJournalLine
 
 	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_SAP_GLJournalLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Set OI.
-	 * This indicator shows that the account selected is an open item managed account.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsOpenItem (boolean IsOpenItem);
-
-	/**
-	 * Get OI.
-	 * This indicator shows that the account selected is an open item managed account.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isOpenItem();
-
-	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsOpenItem", null);
-	String COLUMNNAME_IsOpenItem = "IsOpenItem";
 }

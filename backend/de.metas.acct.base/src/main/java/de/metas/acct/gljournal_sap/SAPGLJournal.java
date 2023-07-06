@@ -156,10 +156,12 @@ public class SAPGLJournal
 				.amountAcct(amountAcct)
 				.taxId(request.getTaxId())
 				.orgId(orgId)
+				.bpartnerId(request.getBpartnerId())
 				.dimension(request.getDimension().getSectionCodeId() != null
 						? request.getDimension()
 						: request.getDimension().withSectionCodeId(dimension.getSectionCodeId()))
 				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
+				.openItemKey(request.getOpenItemKey())
 				.build();
 	}
 

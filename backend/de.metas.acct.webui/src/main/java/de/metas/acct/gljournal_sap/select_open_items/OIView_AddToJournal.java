@@ -44,8 +44,9 @@ public class OIView_AddToJournal extends OIViewBasedProcess
 				.postingSign(row.getPostingSign().reverse())
 				.account(row.getAccount())
 				.amount(row.getOpenAmountEffective())
+				.bpartnerId(row.getBpartnerId())
 				.dimension(row.getDimension())
-				// TODO open item key
+				.openItemKey(row.getOpenItemKey())
 				.build();
 	}
 }

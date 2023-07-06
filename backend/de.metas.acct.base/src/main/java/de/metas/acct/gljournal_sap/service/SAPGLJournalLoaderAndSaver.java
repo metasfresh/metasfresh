@@ -16,6 +16,8 @@ import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
+import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.FixedConversionRate;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
@@ -214,9 +216,12 @@ public class SAPGLJournalLoaderAndSaver
 				.taxId(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 				//
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.dimension(extractDimension(record))
 				//
 				.determineTaxBaseSAP(record.isSAP_DetermineTaxBase())
+				//
+				.openItemKey(FAOpenItemKey.ofNullableString(record.getOpenItemKey()))
 				//
 				.build();
 	}
@@ -322,8 +327,12 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setC_Tax_ID(TaxId.toRepoId(line.getTaxId()));
 
 		lineRecord.setAD_Org_ID(line.getOrgId().getRepoId());
-		lineRecord.setSAP_DetermineTaxBase(line.isDetermineTaxBaseSAP());
+		lineRecord.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()));
 		updateLineRecordFromDimension(lineRecord, line.getDimension());
+
+		lineRecord.setSAP_DetermineTaxBase(line.isDetermineTaxBaseSAP());
+
+		lineRecord.setOpenItemKey(line.getOpenItemKey() != null ? line.getOpenItemKey().getAsString() : null);
 	}
 
 	private static void updateLineRecordFromDimension(final I_SAP_GLJournalLine lineRecord, final Dimension dimension)

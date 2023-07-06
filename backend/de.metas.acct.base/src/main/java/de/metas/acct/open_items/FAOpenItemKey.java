@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
+
 @EqualsAndHashCode
 public final class FAOpenItemKey
 {
@@ -28,10 +31,16 @@ public final class FAOpenItemKey
 		return stringNorm != null ? new FAOpenItemKey(stringNorm) : null;
 	}
 
-	public static FAOpenItemKey ofString(final String string)
+	public static Optional<FAOpenItemKey> optionalOfString(@Nullable final String string) {return Optional.ofNullable(ofNullableString(string));}
+
+	public static FAOpenItemKey ofString(@NonNull final String string)
 	{
 		final String stringNorm = StringUtils.trimBlankToNull(string);
-		return stringNorm != null ? new FAOpenItemKey(stringNorm) : null;
+		if (stringNorm == null)
+		{
+			throw new AdempiereException("empty/null Open Item Key is not allowed");
+		}
+		return new FAOpenItemKey(stringNorm);
 	}
 
 	@Override

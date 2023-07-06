@@ -4,6 +4,7 @@ import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.CostAmount;
@@ -85,6 +86,8 @@ public final class FactLineBuilder
 	private LocationId fromLocationId;
 	private LocationId toLocationId;
 	private CostElementId costElementId;
+
+	private FAOpenItemKey openItemKey;
 
 	FactLineBuilder(@NonNull final Fact fact)
 	{
@@ -251,6 +254,8 @@ public final class FactLineBuilder
 		}
 
 		line.setAccountConceptualName(account.getAccountConceptualName());
+
+		line.setOpenItemKey(openItemKey != null ? openItemKey.getAsString() : null);
 
 		//
 		log.debug("Built: {}", line);
@@ -688,5 +693,11 @@ public final class FactLineBuilder
 	public FactLineBuilder costElement(@Nullable final CostElement costElement)
 	{
 		return costElement(costElement != null ? costElement.getId() : null);
+	}
+
+	public FactLineBuilder openItemKey(@Nullable FAOpenItemKey openItemKey)
+	{
+		this.openItemKey = openItemKey;
+		return this;
 	}
 }

@@ -1,7 +1,6 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class OIView_Select extends OIViewBasedProcess

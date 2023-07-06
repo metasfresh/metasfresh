@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -816968235L;
+	private static final long serialVersionUID = -502364971L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -74,6 +74,21 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
@@ -158,6 +173,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+	public void setIsOpenItem (final boolean IsOpenItem)
+	{
+		set_Value (COLUMNNAME_IsOpenItem, IsOpenItem);
+	}
+
+	@Override
+	public boolean isOpenItem() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItem);
+	}
+
+	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -209,6 +236,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public void setOpenItemKey (final @Nullable java.lang.String OpenItemKey)
+	{
+		set_Value (COLUMNNAME_OpenItemKey, OpenItemKey);
+	}
+
+	@Override
+	public java.lang.String getOpenItemKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_OpenItemKey);
 	}
 
 	@Override
@@ -395,17 +434,5 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
-	}
-
-	@Override
-	public void setIsOpenItem (final boolean IsOpenItem)
-	{
-		set_Value (COLUMNNAME_IsOpenItem, IsOpenItem);
-	}
-
-	@Override
-	public boolean isOpenItem()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsOpenItem);
 	}
 }

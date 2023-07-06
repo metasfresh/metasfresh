@@ -11,7 +11,6 @@ import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
@@ -61,7 +60,6 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 		}
 
 		final SAPGLJournalCurrencyConversionCtx glJournalCurrencyConversionCtx = glJournal.getConversionCtx();
-		final CurrencyConversionContext currencyConversionCtx = glJournalService.getCurrencyConverter().toCurrencyConversionContext(glJournalCurrencyConversionCtx);
 		if (!CurrencyId.equals(as.getCurrencyId(), glJournalCurrencyConversionCtx.getAcctCurrencyId()))
 		{
 			throw new AdempiereException("The Accounting Currency is no longer the one from document");
@@ -103,6 +101,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 					.setAccount(line.getAccount())
 					.setAmtSource(glJournalCurrencyConversionCtx.getCurrencyId(), amtSourceDr, amtSourceCr)
 					.setAmtAcct(amtAcctDr, amtAcctCr)
+					.openItemKey(line.getOpenItemKey())
 					.buildAndAdd();
 
 			if (factLine == null)

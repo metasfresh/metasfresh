@@ -77,7 +77,6 @@ public class SAPGLJournalService
 		return lineId;
 	}
 
-	@NonNull
 	public void createLines(@NonNull final List<SAPGLJournalLineCreateRequest> requests, @NonNull final SAPGLJournalId id)
 	{
 		if (requests.isEmpty())

@@ -1,6 +1,8 @@
 package de.metas.acct.gljournal_sap;
 
 import de.metas.acct.Account;
+import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -36,8 +38,11 @@ public class SAPGLJournalLine
 	@Nullable @Getter private final TaxId taxId;
 
 	@NonNull @Getter private final OrgId orgId;
+	@Nullable @Getter private final BPartnerId bpartnerId;
 	@NonNull @Getter private final Dimension dimension;
 	@Getter private final boolean determineTaxBaseSAP;
+
+	@Nullable @Getter private final FAOpenItemKey openItemKey;
 
 	public SAPGLJournalLineId getIdNotNull()
 	{
