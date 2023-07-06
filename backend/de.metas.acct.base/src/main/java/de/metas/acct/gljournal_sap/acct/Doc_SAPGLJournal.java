@@ -9,12 +9,10 @@ import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
 import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
-import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
@@ -25,7 +23,6 @@ import java.util.List;
 
 public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 {
-	private final SAPGLJournalService glJournalService = SpringContextHolder.instance.getBean(SAPGLJournalService.class);
 	private SAPGLJournal glJournal;
 
 	public Doc_SAPGLJournal(final AcctDocContext ctx)
