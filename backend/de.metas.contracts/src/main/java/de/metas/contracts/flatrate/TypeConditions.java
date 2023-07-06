@@ -83,4 +83,9 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	}
 
 	private static final ReferenceListAwareEnums.ValuesIndex<TypeConditions> typesByCode = ReferenceListAwareEnums.index(values());
+
+	public boolean isModularContractType()
+	{
+		return MODULAR_CONTRACT.equals(this);
+	}
 }

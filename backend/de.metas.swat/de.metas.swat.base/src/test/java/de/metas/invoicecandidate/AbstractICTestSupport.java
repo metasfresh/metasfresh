@@ -29,7 +29,7 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
@@ -180,7 +180,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTest());
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InvoiceLineDimensionFactory());
 		dimensionFactories.add(new InvoiceDimensionFactory());
