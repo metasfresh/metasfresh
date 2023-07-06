@@ -127,7 +127,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 				.amount(null)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
 				.year(modularContractSettings.getYearAndCalendarId().yearId())
-				.description(null)
+				.description("Receipt completed")
 				.modularContractTypeId(contractTypeId)
 				.build());
 	}
@@ -138,6 +138,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 		return Optional.of(LogEntryReverseRequest.builder()
 								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
 								   .flatrateTermId(flatrateTermId)
+								   .description("Receipt reversed")
 								   .build());
 	}
 
