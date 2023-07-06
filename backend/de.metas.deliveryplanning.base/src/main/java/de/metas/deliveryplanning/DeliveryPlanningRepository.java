@@ -616,14 +616,14 @@ public class DeliveryPlanningRepository
 			@NonNull final OrderLineId orderLineId,
 			final boolean onlyWithCompletedInstructions)
 	{
-		final IQueryBuilder<I_M_Delivery_Planning> queryBuilder = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+		IQueryBuilder<I_M_Delivery_Planning> queryBuilder = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate);
 
 		if (onlyWithCompletedInstructions)
 		{
-			queryBuilder
+			queryBuilder = queryBuilder
 					.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
 					.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
 					.andCollect(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID);
