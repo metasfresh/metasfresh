@@ -354,6 +354,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
+<<<<<<< HEAD
+=======
+
+		setIncoterms(ic, orderLine);
+>>>>>>> 78e2dc9f322 ([CR068] VAT code in header, tax reporting country (SO & SIC) => revert (#15838))
 	}
 
 	private void setPaymentRule(

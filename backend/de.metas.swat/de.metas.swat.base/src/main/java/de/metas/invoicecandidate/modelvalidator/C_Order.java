@@ -18,8 +18,11 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+<<<<<<< HEAD
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
+=======
+>>>>>>> 78e2dc9f322 ([CR068] VAT code in header, tax reporting country (SO & SIC) => revert (#15838))
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
