@@ -543,6 +543,7 @@ public final class AggregationEngine
 			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
 			invoiceHeader.setC_PaymentInstruction_ID(icRecord.getC_PaymentInstruction_ID());
+<<<<<<< HEAD
 
 			getSectionCodeId(icRecord, headerAggregationId)
 					.ifPresent(sectionCodeId -> invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId)));
@@ -552,6 +553,9 @@ public final class AggregationEngine
 
 			getActivityId(icRecord, headerAggregationId)
 					.ifPresent(activityId -> invoiceHeader.setC_Activity_ID(ActivityId.toRepoId(activityId)));
+=======
+			invoiceHeader.setC_Tax_Departure_Country_ID(icRecord.getC_Tax_Departure_Country_ID());
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 		}
 		catch (final RuntimeException rte)
 		{

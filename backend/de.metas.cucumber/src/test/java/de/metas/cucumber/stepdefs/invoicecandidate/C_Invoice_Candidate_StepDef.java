@@ -39,11 +39,15 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
+=======
+import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -95,6 +99,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -130,6 +135,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Departure_Country_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
@@ -186,6 +192,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_DocType_StepDefData docTypeTable;
 	private final C_Tax_StepDefData taxTable;
 	private final M_InOutLine_StepDefData inoutLineTable;
+<<<<<<< HEAD
 	private final I_Invoice_Candidate_StepDefData iInvoiceCandidatetable;
 	private final AD_User_StepDefData contactTable;
 	private final AD_Org_StepDefData orgTable;
@@ -195,6 +202,9 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
 	private final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable;
+=======
+	private final C_Country_StepDefData countryTable;
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -208,6 +218,7 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
+<<<<<<< HEAD
 			@NonNull final I_Invoice_Candidate_StepDefData iInvoiceCandidateTable,
 			@NonNull final AD_User_StepDefData contactTable,
 			@NonNull final AD_Org_StepDefData orgTable,
@@ -217,6 +228,9 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Activity_StepDefData activityTable,
 			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable)
+=======
+			@NonNull final C_Country_StepDefData countryTable)
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -227,6 +241,7 @@ public class C_Invoice_Candidate_StepDef
 		this.orderLineTable = orderLineTable;
 		this.taxTable = taxTable;
 		this.inoutLineTable = inoutLineTable;
+<<<<<<< HEAD
 		this.iInvoiceCandidatetable = iInvoiceCandidateTable;
 		this.contactTable = contactTable;
 		this.docTypeTable = docTypeTable;
@@ -238,6 +253,9 @@ public class C_Invoice_Candidate_StepDef
 		this.activityTable = activityTable;
 		this.shipmentTable = shipmentTable;
 		this.invoiceCandidateListTable = invoiceCandidateListTable;
+=======
+		this.countryTable = countryTable;
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -318,6 +336,7 @@ public class C_Invoice_Candidate_StepDef
 				invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
 			}
 
+<<<<<<< HEAD
 			final BigDecimal priceEnteredOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceEntered_Override);
 			if (priceEnteredOverride != null)
 			{
@@ -337,6 +356,16 @@ public class C_Invoice_Candidate_StepDef
 			}
 
 			saveRecord(invoiceCandidate);
+=======
+			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(taxDepartureCountryIdentifier))
+			{
+				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+				invoiceCandidate.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
+			}
+
+			InterfaceWrapperHelper.saveRecord(invoiceCandidate);
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
 	}
@@ -1313,6 +1342,7 @@ public class C_Invoice_Candidate_StepDef
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
 		}
 
+<<<<<<< HEAD
 		final String isInterimInvoiceStr = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_IsInterimInvoice);
 		if (Check.isNotBlank(isInterimInvoiceStr))
 		{
@@ -1333,6 +1363,13 @@ public class C_Invoice_Candidate_StepDef
 		if (isInEffect != null)
 		{
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInEffect, isInEffect);
+=======
+		final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(taxDepartureCountryIdentifier))
+		{
+			final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_Tax_Departure_Country_ID, taxDepartureCountry.getC_Country_ID());
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 		}
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()

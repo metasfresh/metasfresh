@@ -9,6 +9,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -114,6 +115,12 @@ public class InvoiceHeaderImplBuilder
 	private int C_PaymentInstruction_ID;
 
 	private Dimension dimension;
+<<<<<<< HEAD
+=======
+
+	private int C_Tax_Departure_Country_ID;
+
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 	InvoiceHeaderImplBuilder()
 	{
 	}
@@ -176,6 +183,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+		invoiceHeader.setC_Tax_Departure_Country_ID(CountryId.ofRepoIdOrNull(getC_Tax_Departure_Country_ID()));
 
 		invoiceHeader.setDimension(this.dimension);
 
@@ -725,4 +733,16 @@ public class InvoiceHeaderImplBuilder
 		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
 
+<<<<<<< HEAD
+=======
+	public int getC_Tax_Departure_Country_ID()
+	{
+		return C_Tax_Departure_Country_ID;
+	}
+
+	public void setC_Tax_Departure_Country_ID(final int C_Tax_Departure_Country_ID)
+	{
+		this.C_Tax_Departure_Country_ID = checkOverrideID("C_Tax_Departure_Country_ID", this.C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+	}
+>>>>>>> 0716a1c3899 ([CR068] VAT code in header, tax reporting country (SO & SIC) (#15799))
 }
