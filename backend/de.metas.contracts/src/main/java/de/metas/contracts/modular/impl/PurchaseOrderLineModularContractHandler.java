@@ -229,7 +229,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	@Override
 	public void createContractIfRequired(final @NonNull I_C_OrderLine orderLine)
 	{
-		if (!isModuleContractLine(orderLine))
+		if (!isModularContractLine(orderLine))
 		{
 			return;
 		}
@@ -239,10 +239,10 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			return;
 		}
 
-		createModuleContract(orderLine);
+		createModularContract(orderLine);
 	}
 
-	private boolean isModuleContractLine(@NonNull final I_C_OrderLine orderLine)
+	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
 				.map(flatrateBL::isModularContract)
@@ -250,7 +250,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@NonNull
-	private I_C_Flatrate_Term createModuleContract(@NonNull final I_C_OrderLine orderLine)
+	private I_C_Flatrate_Term createModularContract(@NonNull final I_C_OrderLine orderLine)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
 		validateContractSettingEligible(conditionsId);
@@ -270,7 +270,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 
 		if (settings.getModuleConfigs().isEmpty())
 		{
-			throw new AdempiereException("Could not create contract! Missing module configs for contract term")
+			throw new AdempiereException("Could not create contract! Missing module configs for modular contract term")
 					.appendParametersToMessage()
 					.setParameter("ConditionsId", conditionsId)
 					.markAsUserValidationError();
