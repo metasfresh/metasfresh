@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheMgt;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -491,12 +492,14 @@ public class InOutDAO implements IInOutDAO
 	public void save(@NonNull final I_M_InOut inout)
 	{
 		InterfaceWrapperHelper.saveRecord(inout);
+		CacheMgt.get().reset(I_M_InOut.Table_Name, inout.getM_InOut_ID());
 	}
 
 	@Override
 	public void save(@NonNull final I_M_InOutLine inoutLine)
 	{
 		InterfaceWrapperHelper.saveRecord(inoutLine);
+		CacheMgt.get().reset(I_M_InOutLine.Table_Name, inoutLine.getM_InOutLine_ID());
 	}
 
 	@Override
@@ -595,7 +598,7 @@ public class InOutDAO implements IInOutDAO
 				.build();
 	}
 
-	public static void updateRecordFromForeignContractRef(@NonNull I_M_InOut record, @Nullable ForexContractRef from)
+	public static void updateRecordFromForeignContractRef(@NonNull final I_M_InOut record, @Nullable final ForexContractRef from)
 	{
 		final boolean isFEC = from != null;
 		final ForexContractId forexContractId = isFEC ? from.getForexContractId() : null;

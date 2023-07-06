@@ -114,7 +114,7 @@ public class ModularContractService
 		{
 			case COMPLETED -> handler.createLogEntryCreateRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::create);
-			case VOIDED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
+			case VOIDED, REACTIVATED, REVERSED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::reverse);
 		}
 	}

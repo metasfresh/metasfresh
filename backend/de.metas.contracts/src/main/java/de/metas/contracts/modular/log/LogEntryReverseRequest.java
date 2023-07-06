@@ -30,7 +30,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 
 @Builder
-public record LogEntryReverseRequest(@Nullable ModularContractLogEntryId id, @Nullable TableRecordReference referencedModel, @Nullable FlatrateTermId flatrateTermId)
+public record LogEntryReverseRequest(
+		@Nullable ModularContractLogEntryId id,
+		@Nullable TableRecordReference referencedModel,
+		@Nullable FlatrateTermId flatrateTermId,
+		@Nullable String description)
 {
 	public LogEntryReverseRequest
 	{
