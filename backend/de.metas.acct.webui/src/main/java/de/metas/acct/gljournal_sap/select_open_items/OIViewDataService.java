@@ -2,12 +2,14 @@ package de.metas.acct.gljournal_sap.select_open_items;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.Builder;
@@ -71,10 +73,10 @@ class OIViewDataService
 		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtAcctDr, amtAcctCr);
 
 		return OIRow.builder()
-				.factAcctId(record.getFact_Acct_ID())
-				//.isOpenItem()
+				.factAcctId(FactAcctId.ofRepoId(record.getFact_Acct_ID()))
 				.postingSign(postingSign)
-				.account(accountLookup.findById(record.getAccount_ID()))
+				.account(accountLookup.findByIdOptional(record.getAccount_ID())
+						.orElseGet(() -> LookupValue.IntegerLookupValue.unknown(record.getAccount_ID())))
 				.amount(postingSign.isDebit() ? amtAcctDr : amtAcctCr)
 				.openAmount(BigDecimal.ZERO) // TODO
 				.dateAcct(record.getDateAcct().toInstant())

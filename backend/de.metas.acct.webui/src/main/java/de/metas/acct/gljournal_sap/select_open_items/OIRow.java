@@ -12,6 +12,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import de.metas.acct.api.FactAcctId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -20,8 +21,6 @@ import java.util.Set;
 
 class OIRow implements IViewRow
 {
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsOpenItem")
-	private final boolean isOpenItem;
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign")
 	private final PostingSign postingSign;
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "Account_ID")
@@ -41,12 +40,11 @@ class OIRow implements IViewRow
 
 	private final ViewRowFieldNameAndJsonValuesHolder<OIRow> values;
 	private final DocumentId rowId;
-	@Getter @NonNull private final int factAcctId;
+	@Getter @NonNull private final FactAcctId factAcctId;
 
 	@Builder
 	private OIRow(
-			@NonNull final int factAcctId,
-			final boolean isOpenItem,
+			@NonNull final FactAcctId factAcctId,
 			@NonNull final PostingSign postingSign,
 			@NonNull final LookupValue account,
 			@NonNull final BigDecimal amount,
@@ -56,7 +54,6 @@ class OIRow implements IViewRow
 			@Nullable final String documentNo,
 			@Nullable final String description)
 	{
-		this.isOpenItem = isOpenItem;
 		this.postingSign = postingSign;
 		this.account = account;
 		this.amount = amount;
