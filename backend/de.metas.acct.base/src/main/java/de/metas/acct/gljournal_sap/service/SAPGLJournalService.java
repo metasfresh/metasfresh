@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -74,6 +75,19 @@ public class SAPGLJournalService
 		}
 
 		return lineId;
+	}
+
+	@NonNull
+	public void createLines(@NonNull final List<SAPGLJournalLineCreateRequest> requests, @NonNull final SAPGLJournalId id)
+	{
+		if (requests.isEmpty())
+		{
+			return;
+		}
+
+		glJournalRepository.updateById(id, glJournal -> {
+			glJournal.addLines(requests, currencyConverter);
+		});
 	}
 
 	public void regenerateTaxLines(final SAPGLJournalId glJournalId)
