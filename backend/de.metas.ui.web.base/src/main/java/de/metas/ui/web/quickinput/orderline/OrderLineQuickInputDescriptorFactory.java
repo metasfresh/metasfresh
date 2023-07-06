@@ -26,6 +26,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
@@ -37,6 +38,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
@@ -75,7 +77,11 @@ import java.util.Set;
 	
 	// FIXME: hardcoded "VAT_Code_for_PO"
 	public static final AdValRuleId AD_VAL_RULE_VAT_Code_for_PO = AdValRuleId.ofRepoId(540611);
+
+	private static final String SYS_CONFIG_FilterFlatrateConditionsADValRule = "OrderLineQuickInputDescriptorFactory.FilterFlatrateConditionsADValRule";
+
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
@@ -290,16 +296,23 @@ import java.util.Set;
 	private DocumentFieldDescriptor.Builder createContractConditionsField()
 	{
 		final ILogicExpression compensationGroupSchemaIsSet = LogicExpressionCompiler.instance.compile("@" + IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID + "/0@ > 0");
+
+		final boolean isMandatory = compensationGroupSchemaIsSet.toOptionalBoolean()
+				.orElse(QuickInputConstants.isContractConditionsFieldMandatory());
+
+		final boolean isDisplayLogic = compensationGroupSchemaIsSet.toOptionalBoolean()
+				.orElse(QuickInputConstants.isEnableContractConditionsField());
+
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Flatrate_Conditions.Table_Name))
+				.setLookupDescriptorProvider(getLookupDescriptorProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(compensationGroupSchemaIsSet)
-				.setDisplayLogic(compensationGroupSchemaIsSet)
+				.setMandatoryLogic(isMandatory)
+				.setDisplayLogic(isDisplayLogic)
 				.addCharacteristic(Characteristic.PublicField);
 
 	}
@@ -342,5 +355,24 @@ import java.util.Set;
 				{ IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID },
 				{ IOrderLineQuickInput.COLUMNNAME_Qty },
 		});
+	}
+
+	@NonNull
+	private LookupDescriptorProvider getLookupDescriptorProvider()
+	{
+		final AdValRuleId valueRuleId = AdValRuleId.ofRepoIdOrNull(sysConfigBL.getIntValue(SYS_CONFIG_FilterFlatrateConditionsADValRule, -1));
+
+		if (valueRuleId == null)
+		{
+			return lookupDescriptorProviders.searchInTable(I_C_Flatrate_Conditions.Table_Name);
+		}
+
+		final SqlLookupDescriptorProviderBuilder descriptorProviderBuilder = lookupDescriptorProviders.sql()
+				.setCtxTableName(I_C_Flatrate_Conditions.Table_Name)
+				.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID)
+				.setDisplayType(DisplayType.Search)
+				.setAD_Val_Rule_ID(valueRuleId);
+
+		return descriptorProviderBuilder.build();
 	}
 }

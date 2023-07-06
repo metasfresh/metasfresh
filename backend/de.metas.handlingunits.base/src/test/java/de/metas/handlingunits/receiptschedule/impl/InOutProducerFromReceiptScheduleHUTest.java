@@ -49,6 +49,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
@@ -74,7 +75,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -551,10 +552,10 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testDimensionPropagated()
 	{
-		final ReceiptScheduleDimensionFactory receiptScheduleDimensionFactory = new ReceiptScheduleDimensionFactory();
+		final ReceiptScheduleDimensionFactory receiptScheduleDimensionFactory = new ReceiptScheduleDimensionFactoryTest();
 		receiptScheduleDimensionFactory.updateRecord(receiptSchedule, DimensionTest.newFullyPopulatedDimension());
 		InterfaceWrapperHelper.save(receiptSchedule);
-		final Dimension receiptScheduleDimension = new ReceiptScheduleDimensionFactory().getFromRecord(receiptSchedule);
+		final Dimension receiptScheduleDimension = new ReceiptScheduleDimensionFactoryTest().getFromRecord(receiptSchedule);
 
 		final List<I_M_HU> paloxes = create10PaloxesAndAssignThemToTheReceiptSchedule();
 

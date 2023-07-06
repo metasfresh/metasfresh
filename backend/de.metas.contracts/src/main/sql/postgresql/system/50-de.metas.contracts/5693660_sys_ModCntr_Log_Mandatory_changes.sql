@@ -1,3 +1,12 @@
+-- Cleanup:
+-- There may be manually created log records in the DB for demo-purposes,
+-- but they have at least two columns that now need to be mandatory and make this migration script fail.
+-- From this PR onwards, the logs are created automatically (or via export and reimport)
+delete from modcntr_log where true;
+commit;
+
+---
+
 -- Column: ModCntr_Log.Amount
 -- 2023-06-28T13:56:34.833298400Z
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-06-28 16:56:34.832','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586855

@@ -42,7 +42,7 @@ public interface IModularContractTypeHandler<T>
 {
 	@NonNull
 	Class<T> getType();
-	
+
 	boolean applies(@NonNull final T model);
 
 	/**
@@ -68,4 +68,6 @@ public interface IModularContractTypeHandler<T>
 	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
 
 	void validateDocAction(@NonNull final T model, @NonNull final ModularContractService.ModelAction action);
+
+	void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
 }
