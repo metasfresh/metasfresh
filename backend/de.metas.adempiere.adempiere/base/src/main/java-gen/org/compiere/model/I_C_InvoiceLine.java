@@ -722,6 +722,10 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Set External IDs.
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -731,6 +735,10 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Get External IDs.
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1673,7 +1681,49 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
-	 * Set Assignment.
+	 * Set UserElementDate1.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementDate1 (@Nullable java.sql.Timestamp UserElementDate1);
+
+	/**
+	 * Get UserElementDate1.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getUserElementDate1();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementDate1 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementDate1", null);
+	String COLUMNNAME_UserElementDate1 = "UserElementDate1";
+
+	/**
+	 * Set UserElementDate2.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementDate2 (@Nullable java.sql.Timestamp UserElementDate2);
+
+	/**
+	 * Get UserElementDate2.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getUserElementDate2();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementDate2 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementDate2", null);
+	String COLUMNNAME_UserElementDate2 = "UserElementDate2";
+
+	/**
+	 * Set UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1682,7 +1732,7 @@ public interface I_C_InvoiceLine
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get Assignment.
+	 * Get UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1694,7 +1744,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set Ship-from.
+	 * Set UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1703,7 +1753,7 @@ public interface I_C_InvoiceLine
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get Ship-from.
+	 * Get UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1715,7 +1765,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set Ship-to.
+	 * Set UserElementString3.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1724,7 +1774,7 @@ public interface I_C_InvoiceLine
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get Ship-to.
+	 * Get UserElementString3.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
