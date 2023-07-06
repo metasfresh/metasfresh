@@ -2211,15 +2211,8 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public boolean isModuleContract(final I_C_OrderLine ol)
+	public boolean isModularContract(@NonNull final ConditionsId conditionsId)
 	{
-		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(ol.getC_Flatrate_Conditions_ID());
-
-		if (conditionsId == null)
-		{
-			return false;
-		}
-
 		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
 
 		return TypeConditions.ofCode(conditions.getType_Conditions()).isModularContractType();
