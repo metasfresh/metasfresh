@@ -145,7 +145,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		if (inOutRecord.isSOTrx() || inOutLineRecord.getC_Flatrate_Term_ID() <= 0)
+		if (inOutRecord.isSOTrx() || inOutLineRecord.getC_Flatrate_Term_ID() <= 0 || inOutLineRecord.getMovementQty().signum() < 0)
 		{
 			return Stream.empty();
 		}

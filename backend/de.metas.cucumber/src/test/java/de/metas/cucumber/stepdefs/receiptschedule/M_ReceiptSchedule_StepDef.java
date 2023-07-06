@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.receiptschedule;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -30,6 +32,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.empties.IHUEmptiesService;
@@ -47,6 +50,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -95,6 +99,8 @@ public class M_ReceiptSchedule_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_InOut_StepDefData inOutTable;
 
+	private final C_Flatrate_Term_StepDefData flatrateTermTable;
+
 	public M_ReceiptSchedule_StepDef(
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
 			@NonNull final C_Order_StepDefData orderTable,
@@ -103,7 +109,8 @@ public class M_ReceiptSchedule_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_InOut_StepDefData inOutTable)
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable)
 	{
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.orderTable = orderTable;
@@ -113,6 +120,7 @@ public class M_ReceiptSchedule_StepDef
 		this.warehouseTable = warehouseTable;
 		this.productTable = productTable;
 		this.inOutTable = inOutTable;
+		this.flatrateTermTable = flatrateTermTable;
 	}
 
 	@And("^after not more than (.*)s, M_ReceiptSchedule are found:$")
@@ -121,6 +129,8 @@ public class M_ReceiptSchedule_StepDef
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadReceiptSchedule(tableRow));
+
+			final SoftAssertions softly = new SoftAssertions();
 
 			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
@@ -174,6 +184,13 @@ public class M_ReceiptSchedule_StepDef
 			{
 				final de.metas.handlingunits.model.I_C_OrderLine orderLine1 = InterfaceWrapperHelper.load(receiptSchedule.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
 				assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
+			}
+
+			final String flatrateTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(flatrateTermIdentifier))
+			{
+				final I_C_Flatrate_Term flatrateTermRecord = flatrateTermTable.get(flatrateTermIdentifier);
+				softly.assertThat(receiptSchedule.getC_Flatrate_Term_ID()).as(I_M_ReceiptSchedule.COLUMNNAME_C_Flatrate_Term_ID).isEqualTo(flatrateTermRecord.getC_Flatrate_Term_ID());
 			}
 
 			receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
