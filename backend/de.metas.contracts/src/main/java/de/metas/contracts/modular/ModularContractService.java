@@ -67,6 +67,11 @@ public class ModularContractService
 
 	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action)
 	{
+		if (ModelAction.COMPLETED == action)
+		{
+			handler.createContractIfRequired(model);
+		}
+
 		handler.streamContractIds(model)
 				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
 				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId));
@@ -116,7 +121,7 @@ public class ModularContractService
 		{
 			case COMPLETED -> handler.createLogEntryCreateRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::create);
-			case VOIDED, REVERSED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
+			case VOIDED, REACTIVATED, REVERSED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::reverse);
 		}
 	}

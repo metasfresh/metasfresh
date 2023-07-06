@@ -2212,11 +2212,11 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public boolean isModularContract(final I_C_OrderLine ol)
+	public boolean isModularContract(@NonNull final ConditionsId conditionsId)
 	{
-		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(ol.getC_Flatrate_Conditions_ID()))
-				.map(this::isModularContract)
-				.orElse(false);
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+
+		return TypeConditions.ofCode(conditions.getType_Conditions()).isModularContractType();
 	}
 
 	@Override
@@ -2342,12 +2342,5 @@ public class FlatrateBL implements IFlatrateBL
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.build()
 				.computeOrThrowEx();
-	}
-	
-	private boolean isModularContract(@NonNull final ConditionsId conditionsId)
-	{
-		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
-
-		return TypeConditions.ofCode(conditions.getType_Conditions()).isModularContractType();
 	}
 }
