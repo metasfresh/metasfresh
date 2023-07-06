@@ -43,6 +43,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lang.ExternalIdsUtil;
+import de.metas.location.CountryId;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -447,6 +448,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
+			invoice.setC_Tax_Departure_Country_ID(CountryId.toRepoId(invoiceHeader.getC_Tax_Departure_Country_ID()));
 
 			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
 

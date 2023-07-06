@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.document.DocTypeId;
@@ -75,6 +76,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -107,6 +109,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Departure_Country_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
@@ -155,6 +158,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_Tax_StepDefData taxTable;
 	private final M_InOutLine_StepDefData inoutLineTable;
+	private final C_Country_StepDefData countryTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -165,7 +169,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final M_InOutLine_StepDefData inoutLineTable)
+			@NonNull final M_InOutLine_StepDefData inoutLineTable,
+			@NonNull final C_Country_StepDefData countryTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -176,6 +181,7 @@ public class C_Invoice_Candidate_StepDef
 		this.orderLineTable = orderLineTable;
 		this.taxTable = taxTable;
 		this.inoutLineTable = inoutLineTable;
+		this.countryTable = countryTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -254,6 +260,13 @@ public class C_Invoice_Candidate_StepDef
 			if (qtyToInvoiceOverride != null)
 			{
 				invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
+			}
+
+			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(taxDepartureCountryIdentifier))
+			{
+				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+				invoiceCandidate.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
 			}
 
 			InterfaceWrapperHelper.saveRecord(invoiceCandidate);
@@ -1013,6 +1026,13 @@ public class C_Invoice_Candidate_StepDef
 		if (qtyDelivered != null)
 		{
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
+		}
+
+		final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(taxDepartureCountryIdentifier))
+		{
+			final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_Tax_Departure_Country_ID, taxDepartureCountry.getC_Country_ID());
 		}
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()
