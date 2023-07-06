@@ -161,4 +161,10 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 			throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 		}
 	}
+
+	@Override
+	public void cancelLinkedContractsIfAllowed(final @NonNull I_M_InOutLine model, final @NonNull FlatrateTermId flatrateTermId)
+	{
+
+	}
 }
