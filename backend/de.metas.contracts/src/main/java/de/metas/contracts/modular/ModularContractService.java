@@ -67,6 +67,11 @@ public class ModularContractService
 
 	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action)
 	{
+		if(ModelAction.COMPLETED == action)
+		{
+			handler.createContractIfRequired(model);
+		}
+
 		handler.streamContractIds(model)
 				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
 				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId));

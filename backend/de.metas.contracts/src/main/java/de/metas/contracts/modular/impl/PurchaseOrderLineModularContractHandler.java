@@ -24,10 +24,14 @@ package de.metas.contracts.modular.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.Check;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -39,6 +43,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
@@ -86,6 +91,8 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	public final ModularContractLogDAO modularContractLogDAO;
 	public final ModularContractSettingsDAO modularContractSettingsDAO;
 
@@ -217,5 +224,56 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.build();
 
 		contractChangeBL.cancelContract(contract, parameters);
+	}
+
+	@Override
+	public void createContractIfRequired(final @NonNull I_C_OrderLine orderLine)
+	{
+		if (!isModularContractLine(orderLine))
+		{
+			return;
+		}
+
+		if (flatrateBL.existsTermForOrderLine(orderLine))
+		{
+			return;
+		}
+
+		createModularContract(orderLine);
+	}
+
+	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
+				.map(flatrateBL::isModularContract)
+				.orElse(false);
+	}
+
+	@NonNull
+	private I_C_Flatrate_Term createModularContract(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
+		validateContractSettingEligible(conditionsId);
+
+		final I_C_Flatrate_Term newTerm = flatrateBL.createContractForOrderLine(orderLine);
+
+		documentBL.processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
+
+		return newTerm;
+	}
+
+	private void validateContractSettingEligible(@NonNull final ConditionsId conditionsId)
+	{
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
+
+		Check.assume(settings != null, "ModularContractSettings should not be null at this stage!");
+
+		if (settings.getModuleConfigs().isEmpty())
+		{
+			throw new AdempiereException("Could not create contract! Missing module configs for modular contract term")
+					.appendParametersToMessage()
+					.setParameter("ConditionsId", conditionsId)
+					.markAsUserValidationError();
+		}
 	}
 }

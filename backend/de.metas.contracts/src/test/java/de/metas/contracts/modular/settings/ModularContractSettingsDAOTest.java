@@ -148,13 +148,19 @@ class ModularContractSettingsDAOTest
 		@Override
 		public void cancelLinkedContractsIfAllowed(final @NonNull Object model, final @NonNull FlatrateTermId flatrateTermId)
 		{
-			return;
+			return; //dev-note:do nothing
 		}
 
 		@Override
 		public boolean applies(final @NonNull Object model)
 		{
 			return true;
+		}
+
+		@Override
+		public void createContractIfRequired(final @NonNull Object model)
+		{
+			return; //dev-note:do nothing
 		}
 	}
 }
