@@ -2,7 +2,6 @@ package de.metas.inoutcandidate.document.dimension;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionTest;
-import de.metas.inoutcandidate.api.impl.ReceiptScheduleDimensionFactoryTest;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
@@ -59,7 +58,7 @@ class ShipmentScheduleDimensionFactoryTest
 	@Test
 	void fieldsThatShallNotBeOverridden()
 	{
-		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactoryTest();
+		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactoryTestWrapper();
 
 		final I_M_ReceiptSchedule record = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		record.setC_Order_ID(900001);
