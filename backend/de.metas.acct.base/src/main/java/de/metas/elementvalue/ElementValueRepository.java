@@ -109,6 +109,7 @@ public class ElementValueRepository
 				.parentId(ElementValueId.ofRepoIdOrNull(record.getParent_ID()))
 				.seqNo(record.getSeqNo())
 				.defaultAccountName(record.getDefault_Account())
+				.isOpenItem(record.isOpenItem())
 				.build();
 	}
 

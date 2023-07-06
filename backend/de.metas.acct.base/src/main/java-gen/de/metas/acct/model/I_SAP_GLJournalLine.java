@@ -616,4 +616,27 @@ public interface I_SAP_GLJournalLine
 
 	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_SAP_GLJournalLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set OI.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItem (boolean IsOpenItem);
+
+	/**
+	 * Get OI.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItem();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsOpenItem", null);
+	String COLUMNNAME_IsOpenItem = "IsOpenItem";
 }
