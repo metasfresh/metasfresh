@@ -620,6 +620,6 @@ public class InvoiceHeaderImplBuilder
 
 	public void setC_Tax_Departure_Country_ID(final int C_Tax_Departure_Country_ID)
 	{
-		this.C_Tax_Departure_Country_ID = checkOverride("C_Tax_Departure_Country_ID", this.C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+		this.C_Tax_Departure_Country_ID = checkOverrideID("C_Tax_Departure_Country_ID", this.C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
 	}
 }
