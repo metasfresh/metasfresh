@@ -1,0 +1,119 @@
+package de.metas.acct.gljournal_sap.select_open_items;
+
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.ViewCloseAction;
+import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.acct.api.IFactAcctBL;
+
+import javax.annotation.Nullable;
+
+@ViewFactory(windowId = OIViewFactory.WINDOWID_String)
+public class OIViewFactory implements IViewFactory
+{
+	public static final String WINDOWID_String = "SAPGLJournalSelectOpenItems";
+	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOWID_String);
+	private static final String VIEW_PARAM_SAP_GLJournal_ID = "SAP_GLJournal_ID";
+
+	private final LookupDataSourceFactory lookupDataSourceFactory;
+	private final OIViewDataService viewDataService;
+
+	private DocumentFilterDescriptor _filterDescriptor; // lazy
+
+	public OIViewFactory(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
+			@NonNull final SAPGLJournalService glJournalService)
+	{
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
+		this.viewDataService = OIViewDataService.builder()
+				.lookupDataSourceFactory(lookupDataSourceFactory)
+				.factAcctBL(Services.get(IFactAcctBL.class))
+				.glJournalService(glJournalService)
+				.build();
+	}
+
+	public static CreateViewRequest createViewRequest(final SAPGLJournalId sapglJournalId)
+	{
+		return CreateViewRequest.builder(OIViewFactory.WINDOW_ID)
+				.setParameter(VIEW_PARAM_SAP_GLJournal_ID, sapglJournalId)
+				.build();
+	}
+
+	@Override
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	{
+		return ViewLayout.builder()
+				.setWindowId(WINDOW_ID)
+				.setCaption(TranslatableStrings.anyLanguage("Select Open Items")) // TODO trl
+				.setAllowOpeningRowDetails(false)
+				.allowViewCloseAction(ViewCloseAction.DONE)
+				.addElementsFromViewRowClass(OIRow.class, viewDataType)
+				//.setFilters(ImmutableList.of(getFilterDescriptor()))
+				.build();
+	}
+
+	@Override
+	public IView createView(@NonNull final CreateViewRequest request)
+	{
+		final ViewId viewId = request.getViewId();
+		viewId.assertWindowId(WINDOW_ID);
+
+		return OIView.builder()
+				.viewId(viewId)
+				.rowsData(getViewData(request))
+				.filterDescriptor(getFilterDescriptor())
+				.sapglJournalId(extractSAPGLJournalId(request))
+				//.relatedProcess(createProcessDescriptor(10, OIView_BlaBla.class))
+				.build();
+	}
+
+	private OIViewData getViewData(final @NonNull CreateViewRequest request)
+	{
+		final SAPGLJournalId sapglJournalId = extractSAPGLJournalId(request);
+		final DocumentFilter effectiveFilter = getEffectiveFilter(request);
+		return viewDataService.getData(sapglJournalId, effectiveFilter);
+	}
+
+	@NonNull
+	private static SAPGLJournalId extractSAPGLJournalId(final @NonNull CreateViewRequest request)
+	{
+		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_SAP_GLJournal_ID, SAPGLJournalId.class), "No {} parameter provided", VIEW_PARAM_SAP_GLJournal_ID);
+	}
+
+	@Nullable
+	private DocumentFilter getEffectiveFilter(final @NonNull CreateViewRequest request)
+	{
+		return request.getFiltersUnwrapped(getFilterDescriptor())
+				.getFilterById(OIViewFilterHelper.FILTER_ID)
+				.orElse(null);
+	}
+
+	private DocumentFilterDescriptor getFilterDescriptor()
+	{
+		DocumentFilterDescriptor filterDescriptor = this._filterDescriptor;
+		if (filterDescriptor == null)
+		{
+			final LookupDescriptorProviders lookupDescriptorProviders = lookupDataSourceFactory.getLookupDescriptorProviders();
+			filterDescriptor = this._filterDescriptor = OIViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders);
+		}
+
+		return filterDescriptor;
+	}
+
+}

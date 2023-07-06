@@ -22,7 +22,9 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -176,6 +178,12 @@ public class FactAcctDAO implements IFactAcctDAO
 		return toSqlQuery(query).list();
 	}
 
+	@Override
+	public Stream<I_Fact_Acct> stream(@NonNull final FactAcctQuery query)
+	{
+		return toSqlQuery(query).stream();
+	}
+
 	private IQuery<I_Fact_Acct> toSqlQuery(@NonNull final FactAcctQuery query)
 	{
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
@@ -198,6 +206,13 @@ public class FactAcctDAO implements IFactAcctDAO
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, query.getPostingType());
 		}
 
+		if (query.getDateAcct() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DateAcct, query.getDateAcct());
+		}
+
+		//
+		// Referenced document
 		if (query.getTableName() != null)
 		{
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableDAO.retrieveAdTableId(query.getTableName()));
@@ -211,11 +226,60 @@ public class FactAcctDAO implements IFactAcctDAO
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, query.getLineId());
 		}
 
+		//
+		// Open Items Query
+		if (query.getIsOpenItem() != null)
+		{
+			final boolean isOpenItem = query.getIsOpenItem();
+			if (isOpenItem)
+			{
+				queryBuilder.addNotNull(I_Fact_Acct.COLUMNNAME_OpenItemKey);
+			}
+			else
+			{
+				queryBuilder.addIsNull(I_Fact_Acct.COLUMNNAME_OpenItemKey);
+			}
+		}
+		if (query.getIsOpenItemReconciled() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_IsOpenItemsReconciled, query.getIsOpenItemReconciled());
+		}
 		if (query.getOpenItemsKey() != null)
 		{
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKey());
 		}
+
+		toSqlLikeString(query.getDocumentNoLike())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_DocumentNo, pattern, true));
+		toSqlLikeString(query.getDescriptionLike())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_Description, pattern, true));
+
+		if (!query.getBpartnerIds().isAny())
+		{
+			queryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_ID, query.getBpartnerIds());
+		}
+
 		return queryBuilder.create();
+	}
+
+	private static Optional<String> toSqlLikeString(@Nullable final String string)
+	{
+		String stringNorm = StringUtils.trimBlankToNull(string);
+		if (stringNorm == null)
+		{
+			return Optional.empty();
+		}
+		else if ("%".equals(stringNorm))
+		{
+			return Optional.empty();
+		}
+
+		if (!stringNorm.contains("%"))
+		{
+			stringNorm = "%" + stringNorm + "%";
+		}
+
+		return Optional.of(stringNorm);
 	}
 
 	@Nullable

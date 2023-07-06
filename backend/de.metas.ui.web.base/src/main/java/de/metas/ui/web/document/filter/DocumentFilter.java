@@ -19,6 +19,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -136,12 +137,12 @@ public final class DocumentFilter
 		this.caption = caption != null ? caption : TranslatableStrings.empty();
 		this.facetFilter = facetFilter;
 
-		this.parameters = parameters != null ? ImmutableList.copyOf(parameters) : ImmutableList.of();
+		this.parameters = ImmutableList.copyOf(parameters);
 		this.parametersByName = this.parameters.stream()
 				.filter(parameter -> !parameter.isSqlFilter())
 				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterParam::getFieldName));
 
-		this.internalParameterNames = internalParameterNames != null ? ImmutableSet.copyOf(internalParameterNames) : ImmutableSet.of();
+		this.internalParameterNames = ImmutableSet.copyOf(internalParameterNames);
 	}
 
 	private DocumentFilter(@NonNull final DocumentFilter from, @NonNull final String filterId)
@@ -271,6 +272,19 @@ public final class DocumentFilter
 
 		return param.getValueAsLocalDateOr(defaultValue);
 	}
+
+	@Nullable
+	public Instant getParameterValueAsInstantOrNull(@NonNull final String parameterName)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getValueAsInstant();
+	}
+
 
 	@Nullable
 	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull final IntFunction<T> repoIdMapper)

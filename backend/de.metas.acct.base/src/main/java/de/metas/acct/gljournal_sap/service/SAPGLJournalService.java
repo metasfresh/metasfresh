@@ -33,6 +33,9 @@ public class SAPGLJournalService
 		this.taxProvider = taxProvider;
 	}
 
+	@NonNull
+	public SAPGLJournal getById(@NonNull final SAPGLJournalId id) {return glJournalRepository.getById(id);}
+
 	public SeqNo getNextSeqNo(@NonNull final SAPGLJournalId glJournalId)
 	{
 		return glJournalRepository.getNextSeqNo(glJournalId);
@@ -89,7 +92,7 @@ public class SAPGLJournalService
 		final SAPGLJournal journalToBeReversed = glJournalRepository.getById(reverseJournalRequest.getSourceJournalId());
 
 		final SAPGLJournal reversal = glJournalRepository.create(journalToBeReversed.getReversal(reverseJournalRequest.getDateDoc()),
-																 currencyConverter);
+				currencyConverter);
 
 		glJournalRepository.save(journalToBeReversed.withDocStatus(DocStatus.Reversed));
 

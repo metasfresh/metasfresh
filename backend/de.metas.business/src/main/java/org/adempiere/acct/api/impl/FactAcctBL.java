@@ -46,6 +46,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 public class FactAcctBL implements IFactAcctBL
 {
@@ -118,5 +119,11 @@ public class FactAcctBL implements IFactAcctBL
 				.orElse(BigDecimal.ZERO);
 
 		return Optional.of(Money.of(acctBalanceBD, acctCurrencyId));
+	}
+
+	@Override
+	public Stream<I_Fact_Acct> stream(FactAcctQuery query)
+	{
+		return factAcctDAO.stream(query);
 	}
 }
