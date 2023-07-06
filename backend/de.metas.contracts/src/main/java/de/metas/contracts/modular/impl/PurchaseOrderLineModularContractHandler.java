@@ -119,7 +119,10 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(modularContractId);
 		if (modularContractSettings == null)
 		{
-			return Optional.empty();
+			throw new AdempiereException("Invalid contract - missing settings")
+					.appendParametersToMessage()
+					.setParameter("C_OrderLine_ID", orderLine.getC_OrderLine_ID())
+					.setParameter("ModularContractID", modularContractId);
 		}
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
@@ -185,9 +188,11 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			@NonNull final I_C_OrderLine ignored,
 			@NonNull final ModularContractService.ModelAction action)
 	{
-		if (action == ModularContractService.ModelAction.REVERSED || action == ModularContractService.ModelAction.REACTIVATED)
+		switch (action)
 		{
-			throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+			case COMPLETED, VOIDED -> {}
+			case REACTIVATED, REVERSED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+			default -> throw new AdempiereException("Unsupported model action!");
 		}
 	}
 

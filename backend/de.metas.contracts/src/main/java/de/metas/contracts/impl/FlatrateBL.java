@@ -150,6 +150,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -2211,18 +2212,11 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public boolean isModuleContract(final I_C_OrderLine ol)
+	public boolean isModularContract(final I_C_OrderLine ol)
 	{
-		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(ol.getC_Flatrate_Conditions_ID());
-
-		if (conditionsId == null)
-		{
-			return false;
-		}
-
-		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
-
-		return TypeConditions.ofCode(conditions.getType_Conditions()).isModularContractType();
+		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(ol.getC_Flatrate_Conditions_ID()))
+				.map(this::isModularContract)
+				.orElse(false);
 	}
 
 	@Override
@@ -2292,6 +2286,14 @@ public class FlatrateBL implements IFlatrateBL
 		return newTerm;
 	}
 
+	@Override
+	public boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
+		
+		return isModularContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
+	}
+	
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
@@ -2340,5 +2342,12 @@ public class FlatrateBL implements IFlatrateBL
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.build()
 				.computeOrThrowEx();
+	}
+	
+	private boolean isModularContract(@NonNull final ConditionsId conditionsId)
+	{
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+
+		return TypeConditions.ofCode(conditions.getType_Conditions()).isModularContractType();
 	}
 }

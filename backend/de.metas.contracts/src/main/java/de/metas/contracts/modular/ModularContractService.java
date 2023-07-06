@@ -106,6 +106,7 @@ public class ModularContractService
 		handler.validateDocAction(model, action);
 
 		createLogEntries(handler, model, action, flatrateTermId);
+
 		handleAction(handler, model, action, flatrateTermId);
 	}
 
@@ -115,7 +116,7 @@ public class ModularContractService
 		{
 			case COMPLETED -> handler.createLogEntryCreateRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::create);
-			case VOIDED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
+			case VOIDED, REVERSED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::reverse);
 		}
 	}
