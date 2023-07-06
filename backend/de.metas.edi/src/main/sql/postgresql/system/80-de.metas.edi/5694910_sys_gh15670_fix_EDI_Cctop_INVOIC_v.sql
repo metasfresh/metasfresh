@@ -75,12 +75,12 @@ SELECT
      , cc.CountryCode as AD_Language
      , i.AD_Client_ID , i.AD_Org_ID, i.Created, i.CreatedBy, i.Updated, i.UpdatedBy, i.IsActive
      , (select string_agg(distinct edi.DocumentNo, ',') from c_invoiceline icl
-                                                        inner join c_invoice_line_alloc inalloc on icl.c_invoiceline_id = inalloc.c_invoiceline_id
-                                                        inner join C_InvoiceCandidate_InOutLine candinout
-                                                                   on inalloc.c_invoice_candidate_id = candinout.c_invoice_candidate_id
-                                                        inner join M_InOutLine inoutline on candinout.m_inoutline_id = inoutline.m_inoutline_id
-                                                        inner join m_inout inout on inoutline.m_inout_id = inout.m_inout_id
-                                                        inner join EDI_Desadv edi on inout.EDI_Desadv_ID = edi.EDI_Desadv_ID
+                                                                 inner join c_invoice_line_alloc inalloc on icl.c_invoiceline_id = inalloc.c_invoiceline_id
+                                                                 inner join C_InvoiceCandidate_InOutLine candinout
+                                                                            on inalloc.c_invoice_candidate_id = candinout.c_invoice_candidate_id
+                                                                 inner join M_InOutLine inoutline on candinout.m_inoutline_id = inoutline.m_inoutline_id
+                                                                 inner join m_inout inout on inoutline.m_inout_id = inout.m_inout_id
+                                                                 inner join EDI_Desadv edi on inout.EDI_Desadv_ID = edi.EDI_Desadv_ID
         where icl.c_invoice_id = i.c_invoice_id) as EDIDesadvDocumentNo
 FROM C_Invoice i
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypetarget_ID
