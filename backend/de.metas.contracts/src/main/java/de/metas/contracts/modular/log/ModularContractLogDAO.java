@@ -156,7 +156,7 @@ public class ModularContractLogDAO
 			reversedLog.setAmount(reversedLog.getAmount().negate());
 		}
 
-		if (reversedLog.getDescription() != null)
+		if (request.description() != null)
 		{
 			reversedLog.setDescription(request.description());
 		}
