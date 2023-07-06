@@ -59,7 +59,7 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	void afterComplete(@NonNull final I_M_InOut inOutRecord)
+	public void afterComplete(@NonNull final I_M_InOut inOutRecord)
 	{
 		inOutDAO.retrieveAllLines(inOutRecord)
 				.forEach(this::propagateFlatrateTerm);
@@ -68,19 +68,19 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
-	void afterReverse(@NonNull final I_M_InOut inOutRecord)
+	public void afterReverse(@NonNull final I_M_InOut inOutRecord)
 	{
 		invokeHandlerForEachLine(inOutRecord, REVERSED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE })
-	void afterReactivate(@NonNull final I_M_InOut inOutRecord)
+	public void afterReactivate(@NonNull final I_M_InOut inOutRecord)
 	{
 		invokeHandlerForEachLine(inOutRecord, REACTIVATED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID })
-	void afterVoid(@NonNull final I_M_InOut inOutRecord)
+	public void afterVoid(@NonNull final I_M_InOut inOutRecord)
 	{
 		invokeHandlerForEachLine(inOutRecord, VOIDED);
 	}

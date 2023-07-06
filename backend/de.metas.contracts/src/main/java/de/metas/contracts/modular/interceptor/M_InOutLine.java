@@ -43,7 +43,7 @@ public class M_InOutLine
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	void beforeDelete(@NonNull final I_M_InOutLine inOutLineRecord)
+	public void beforeDelete(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final TableRecordReference inOutLineRecordRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
 		modularContractLogService.throwErrorIfLogExistsForDocumentLine(inOutLineRecordRef);
