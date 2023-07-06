@@ -23,8 +23,18 @@
 package de.metas.contracts.modular.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.Check;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+<<<<<<< HEAD
 import de.metas.contracts.IFlatrateDAO;
+=======
+import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+>>>>>>> cad8e7b9d48 (small refactor contract terms (#15826))
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -36,6 +46,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -72,6 +83,14 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+<<<<<<< HEAD
+=======
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+>>>>>>> cad8e7b9d48 (small refactor contract terms (#15826))
 	public final ModularContractLogDAO modularContractLogDAO;
 	public final ModularContractSettingsDAO modularContractSettingsDAO;
 
@@ -176,4 +195,86 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public void cancelLinkedContractsIfAllowed(@NonNull final I_C_OrderLine model, @NonNull final FlatrateTermId flatrateTermId)
+	{
+		final List<I_M_InOutLine> generatedInOutLines = inOutDAO.retrieveLinesForOrderLine(model);
+
+		if (!generatedInOutLines.isEmpty())
+		{
+			final Set<Integer> inoutIds = generatedInOutLines.stream()
+					.map(I_M_InOutLine::getM_InOut_ID)
+					.collect(ImmutableSet.toImmutableSet());
+
+			throw new AdempiereException(MSG_VOID_NOT_ALLOWED, inoutIds);
+		}
+
+		final I_C_Flatrate_Term contract = flatrateDAO.getById(flatrateTermId);
+
+		// dev-note: for now set fallback endDate one year from start date
+		final Timestamp endDate = Optional.ofNullable(contract.getEndDate())
+				.orElse(TimeUtil.addYears(contract.getStartDate(), 1));
+
+		final IContractChangeBL.ContractChangeParameters parameters = IContractChangeBL.ContractChangeParameters.builder()
+				.changeDate(endDate)
+				.action(ChangeTerm_ACTION_VoidSingleContract)
+				.build();
+
+		contractChangeBL.cancelContract(contract, parameters);
+	}
+
+	@Override
+	public void createContractIfRequired(final @NonNull I_C_OrderLine orderLine)
+	{
+		if (!isModularContractLine(orderLine))
+		{
+			return;
+		}
+
+		if (flatrateBL.existsTermForOrderLine(orderLine))
+		{
+			return;
+		}
+
+		createModularContract(orderLine);
+	}
+
+	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
+				.map(flatrateBL::isModularContract)
+				.orElse(false);
+	}
+
+	@NonNull
+	private I_C_Flatrate_Term createModularContract(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
+		validateContractSettingEligible(conditionsId);
+
+		final I_C_Flatrate_Term newTerm = flatrateBL.createContractForOrderLine(orderLine);
+
+		documentBL.processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
+
+		return newTerm;
+	}
+
+	private void validateContractSettingEligible(@NonNull final ConditionsId conditionsId)
+	{
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
+
+		Check.assume(settings != null, "ModularContractSettings should not be null at this stage!");
+
+		if (settings.getModuleConfigs().isEmpty())
+		{
+			throw new AdempiereException("Could not create contract! Missing module configs for modular contract term")
+					.appendParametersToMessage()
+					.setParameter("ConditionsId", conditionsId)
+					.markAsUserValidationError();
+		}
+	}
+>>>>>>> cad8e7b9d48 (small refactor contract terms (#15826))
 }

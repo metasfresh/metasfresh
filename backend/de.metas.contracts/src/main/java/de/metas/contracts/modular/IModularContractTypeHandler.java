@@ -68,4 +68,12 @@ public interface IModularContractTypeHandler<T>
 	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
 
 	void validateDocAction(@NonNull final T model, @NonNull final ModularContractService.ModelAction action);
+<<<<<<< HEAD
+=======
+
+	void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
+
+	default void createContractIfRequired(@NonNull final T model)
+	{}
+>>>>>>> cad8e7b9d48 (small refactor contract terms (#15826))
 }

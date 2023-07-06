@@ -2200,4 +2200,131 @@ public class FlatrateBL implements IFlatrateBL
 				.anyMatch();
 	}
 
+<<<<<<< HEAD
+=======
+	@Override
+	public boolean isModularContract(@NonNull final ConditionsId conditionsId)
+	{
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+
+		return TypeConditions.ofCode(conditions.getType_Conditions()).isModularContractType();
+	}
+
+	@Override
+	public I_C_Flatrate_Term createContractForOrderLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, orderLine);
+
+		newTerm.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
+		newTerm.setC_Order_Term_ID(orderLine.getC_Order_ID());
+
+		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID());
+		Check.assume(conditionsId != null, "C_Flatrate_Conditions_ID must be set!");
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+		newTerm.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		newTerm.setType_Conditions(conditions.getType_Conditions());
+		newTerm.setIsSimulation(conditions.isSimulation());
+
+		// important: we need to use qtyEntered here, because qtyOrdered (which
+		// is used for pricing) contains the number of goods to be delivered
+		// over the whole subscription term
+		newTerm.setPlannedQtyPerUnit(orderLine.getQtyEntered());
+		newTerm.setC_UOM_ID(orderLine.getPrice_UOM_ID());
+
+		newTerm.setStartDate(order.getDatePromised());
+		newTerm.setMasterStartDate(order.getDatePromised());
+
+		newTerm.setDeliveryRule(order.getDeliveryRule());
+		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
+
+		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
+
+		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), order.getBill_User_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(billToLocationId, billToContactId);
+
+		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(orderLine.getC_BPartner_ID(), orderLine.getAD_User_ID());
+
+		final BPartnerLocationAndCaptureId dropshipLocationId = orderBL.getShipToLocationId(order);
+
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(newTerm)
+				.setFrom(dropshipLocationId, dropshipContactId);
+
+		final I_C_BPartner billPartner = bPartnerDAO.getById(billToLocationId.getBpartnerId());
+		final I_C_Flatrate_Data existingData = flatrateDAO.retrieveOrCreateFlatrateData(billPartner);
+		newTerm.setC_Flatrate_Data(existingData);
+
+		newTerm.setAD_User_InCharge_ID(order.getSalesRep_ID());
+
+		newTerm.setM_Product_ID(orderLine.getM_Product_ID());
+		attributeSetInstanceBL.cloneASI(orderLine, newTerm);
+
+		newTerm.setPriceActual(orderLine.getPriceActual());
+		newTerm.setC_Currency_ID(orderLine.getC_Currency_ID());
+
+		setPricingSystemTaxCategAndIsTaxIncluded(orderLine, newTerm);
+
+		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
+		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
+		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
+
+		save(newTerm);
+
+		return newTerm;
+	}
+
+	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
+	{
+		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
+		newTerm.setM_PricingSystem_ID(PricingSystemId.toRepoId(computed.getPricingSystemId()));
+		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId().getRepoId());
+		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
+	}
+
+	@Value
+	private static class PricingSystemTaxCategoryAndIsTaxIncluded
+	{
+		PricingSystemId pricingSystemId;
+		TaxCategoryId taxCategoryId;
+		boolean isTaxIncluded;
+	}
+
+	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
+	{
+		final I_C_Flatrate_Conditions cond = flatrateDAO.getConditionsById(ol.getC_Flatrate_Conditions_ID());
+		if (cond.getM_PricingSystem_ID() > 0)
+		{
+			final IPricingResult pricingInfo = calculateFlatrateTermPrice(ol, newTerm);
+			return new PricingSystemTaxCategoryAndIsTaxIncluded(
+					PricingSystemId.ofRepoId(cond.getM_PricingSystem_ID()),
+					pricingInfo.getTaxCategoryId(),
+					pricingInfo.isTaxIncluded());
+		}
+		else
+		{
+			final I_C_Order order = ol.getC_Order();
+			return new PricingSystemTaxCategoryAndIsTaxIncluded(
+					PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()),
+					TaxCategoryId.ofRepoIdOrNull(ol.getC_TaxCategory_ID()),
+					order.isTaxIncluded());
+		}
+	}
+
+	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
+	{
+		final I_C_Order order = ol.getC_Order();
+		return FlatrateTermPricing.builder()
+				.termRelatedProductId(ProductId.ofRepoId(ol.getM_Product_ID()))
+				.qty(ol.getQtyEntered())
+				.term(newTerm)
+				.priceDate(TimeUtil.asLocalDate(order.getDateOrdered()))
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.build()
+				.computeOrThrowEx();
+	}
+>>>>>>> cad8e7b9d48 (small refactor contract terms (#15826))
 }

@@ -146,9 +146,24 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
+<<<<<<< HEAD
+=======
+		public void cancelLinkedContractsIfAllowed(final @NonNull Object model, final @NonNull FlatrateTermId flatrateTermId)
+		{
+			return; //dev-note:do nothing
+		}
+
+		@Override
+>>>>>>> cad8e7b9d48 (small refactor contract terms (#15826))
 		public boolean applies(final @NonNull Object model)
 		{
 			return true;
+		}
+
+		@Override
+		public void createContractIfRequired(final @NonNull Object model)
+		{
+			return; //dev-note:do nothing
 		}
 	}
 }

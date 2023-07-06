@@ -206,4 +206,11 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
 	 */
 	boolean existsTermForOrderLine(I_C_OrderLine ol);
+<<<<<<< HEAD
+=======
+
+	boolean isModularContract(ConditionsId conditionsId);
+
+	I_C_Flatrate_Term createContractForOrderLine(I_C_OrderLine orderLine);
+>>>>>>> cad8e7b9d48 (small refactor contract terms (#15826))
 }
