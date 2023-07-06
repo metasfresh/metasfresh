@@ -28,11 +28,13 @@ import de.metas.gplr.source.model.SourceCurrencyInfo;
 import de.metas.gplr.source.model.SourceDocuments;
 import de.metas.gplr.source.model.SourceIncotermsAndLocation;
 import de.metas.gplr.source.model.SourceInvoice;
+import de.metas.gplr.source.model.SourceInvoiceLine;
 import de.metas.gplr.source.model.SourceOrder;
 import de.metas.gplr.source.model.SourceOrderCost;
 import de.metas.gplr.source.model.SourceOrderLine;
 import de.metas.gplr.source.model.SourceShipment;
 import de.metas.gplr.source.model.SourceShipperInfo;
+import de.metas.gplr.source.model.SourceTaxInfo;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
@@ -276,13 +278,16 @@ final class GPLRReportCreateCommand
 		//
 		// Sales Order
 		{
-			final SourceCurrencyInfo currencyInfo = source.getSalesInvoice().getCurrencyInfo();
+			final SourceInvoice salesInvoice = source.getSalesInvoice();
+			final SourceCurrencyInfo currencyInfo = salesInvoice.getCurrencyInfo();
 			final SourceOrder salesOrder = source.getSalesOrder();
 			for (final SourceOrderLine salesOrderLine : salesOrder.getLines())
 			{
+				final SourceInvoiceLine salesInvoiceLine = salesInvoice.getLineByOrderLineId(salesOrderLine.getId()).orElse(null);
+
 				result.add(createGPLRReportLine_DocumentLine(salesOrderLine, salesOrder));
-				result.add(createGPLRReportLine_Price(salesOrderLine, salesOrder, currencyInfo));
-				result.add(createGPLRReportLine_VAT(salesOrderLine, salesOrder, currencyInfo));
+				result.add(createGPLRReportLine_Price(salesInvoiceLine, salesOrderLine, salesOrder, currencyInfo));
+				result.add(createGPLRReportLine_VAT(salesInvoiceLine, salesOrderLine, salesOrder, currencyInfo));
 				result.add(createGPLRReportLine_COGS(salesOrderLine, salesOrder));
 			}
 		}
@@ -296,8 +301,8 @@ final class GPLRReportCreateCommand
 			for (final SourceOrderLine purchaseOrderLine : purchaseOrder.getLines())
 			{
 				result.add(createGPLRReportLine_DocumentLine(purchaseOrderLine, purchaseOrder));
-				result.add(createGPLRReportLine_Price(purchaseOrderLine, purchaseOrder, currencyInfo));
-				result.add(createGPLRReportLine_VAT(purchaseOrderLine, purchaseOrder, currencyInfo));
+				result.add(createGPLRReportLine_Price(null, purchaseOrderLine, purchaseOrder, currencyInfo));
+				result.add(createGPLRReportLine_VAT(null, purchaseOrderLine, purchaseOrder, currencyInfo));
 			}
 		}
 
@@ -318,21 +323,32 @@ final class GPLRReportCreateCommand
 				.build();
 	}
 
-	private GPLRReportLineItem createGPLRReportLine_VAT(final SourceOrderLine salesOrderLine, final SourceOrder order, final SourceCurrencyInfo currencyInfo)
+	private GPLRReportLineItem createGPLRReportLine_VAT(
+			@Nullable final SourceInvoiceLine invoiceLine,
+			@NonNull final SourceOrderLine salesOrderLine,
+			@NonNull final SourceOrder order,
+			@NonNull final SourceCurrencyInfo currencyInfo)
 	{
-		final Amount taxAmtFC = salesOrderLine.getTaxAmtFC();
+		final Amount taxAmtFC = invoiceLine != null ? invoiceLine.getTaxAmtFC() : salesOrderLine.getTaxAmtFC();
+		final SourceTaxInfo tax = invoiceLine != null ? invoiceLine.getTax() : salesOrderLine.getTax();
+
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
 				.lineCode("VAT")
-				.description(salesOrderLine.getTax().toRenderedString())
+				.description(tax.toRenderedString())
 				.amountFC(taxAmtFC)
 				.amountLC(currencyInfo.convertToLocal(taxAmtFC, currencyCodeConverter))
 				.build();
 	}
 
-	private GPLRReportLineItem createGPLRReportLine_Price(final SourceOrderLine orderLine, final SourceOrder order, final SourceCurrencyInfo currencyInfo)
+	private GPLRReportLineItem createGPLRReportLine_Price(
+			@Nullable final SourceInvoiceLine invoiceLine,
+			@NonNull final SourceOrderLine orderLine,
+			@NonNull final SourceOrder order,
+			@NonNull final SourceCurrencyInfo currencyInfo)
 	{
-		final Amount lineNetAmtFC = orderLine.getLineNetAmtFC();
+		final Amount lineNetAmtFC = invoiceLine != null ? invoiceLine.getLineNetAmtFC() : orderLine.getLineNetAmtFC();
+
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
 				.lineCode("PR")
