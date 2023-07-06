@@ -34,7 +34,7 @@ import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
@@ -95,7 +95,11 @@ public abstract class ReceiptScheduleTestBase
 		AdempiereTestHelper.get().staticInit();
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+<<<<<<< HEAD
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+=======
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 		dimensionFactories.add(new InOutLineDimensionFactory());
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
@@ -204,7 +208,11 @@ public abstract class ReceiptScheduleTestBase
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
+<<<<<<< HEAD
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+=======
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));

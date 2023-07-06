@@ -18,7 +18,11 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
+<<<<<<< HEAD
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+=======
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 import de.metas.money.MoneyService;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
@@ -147,7 +151,11 @@ public abstract class AbstractHUTest
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
+<<<<<<< HEAD
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+=======
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));

@@ -11,7 +11,11 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+<<<<<<< HEAD
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+=======
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
@@ -108,7 +112,11 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
+<<<<<<< HEAD
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+=======
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);

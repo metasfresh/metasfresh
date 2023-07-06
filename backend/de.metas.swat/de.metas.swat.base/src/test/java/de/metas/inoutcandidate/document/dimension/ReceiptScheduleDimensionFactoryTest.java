@@ -22,7 +22,11 @@ class ReceiptScheduleDimensionFactoryTest
 	@Test
 	void set_and_get()
 	{
+<<<<<<< HEAD
 		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactory();
+=======
+		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactoryTestWrapper();
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 
 		final I_M_ReceiptSchedule record = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		record.setM_Product_ID(900002);
@@ -44,7 +48,11 @@ class ReceiptScheduleDimensionFactoryTest
 	@Test
 	void fieldsThatShallNotBeOverridden()
 	{
+<<<<<<< HEAD
 		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactory();
+=======
+		final ReceiptScheduleDimensionFactory dimensionFactory = new ReceiptScheduleDimensionFactoryTestWrapper();
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 
 		final I_M_ReceiptSchedule record = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		record.setC_Order_ID(900001);

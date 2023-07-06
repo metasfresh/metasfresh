@@ -29,7 +29,11 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+<<<<<<< HEAD
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+=======
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
@@ -100,7 +104,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -180,7 +183,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
+<<<<<<< HEAD
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+=======
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InvoiceLineDimensionFactory());
 		dimensionFactories.add(new InvoiceDimensionFactory());

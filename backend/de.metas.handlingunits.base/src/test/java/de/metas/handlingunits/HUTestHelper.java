@@ -87,7 +87,11 @@ import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
+<<<<<<< HEAD
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+=======
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
@@ -453,7 +457,11 @@ public class HUTestHelper
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
+<<<<<<< HEAD
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+=======
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+>>>>>>> f6fa6a4208c (attempt to fix unit tests (#15816))
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
