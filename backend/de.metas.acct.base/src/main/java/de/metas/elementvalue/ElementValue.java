@@ -51,4 +51,5 @@ public class ElementValue
 	@Nullable ElementValueId parentId;
 	int seqNo;
 	@Nullable String defaultAccountName;
+	boolean isOpenItem;
 }
