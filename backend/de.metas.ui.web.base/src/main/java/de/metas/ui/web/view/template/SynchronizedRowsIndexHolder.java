@@ -71,9 +71,23 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		return getRowsIndex().getRecordIdsToRefresh(rowIds, idMapper);
 	}
 
+	public long count(Predicate<T> predicate) {return getRowsIndex().count(predicate);}
+
+	public boolean anyMatch(final Predicate<T> predicate) {return getRowsIndex().anyMatch(predicate);}
+
 	public void compute(@NonNull final UnaryOperator<ImmutableRowsIndex<T>> remappingFunction)
 	{
 		holder.compute(remappingFunction);
+	}
+
+	public void changeRowById(@NonNull DocumentId rowId, @NonNull final UnaryOperator<T> rowMapper)
+	{
+		compute(rows -> rows.changingRow(rowId, rowMapper));
+	}
+
+	public void changeRowsByIds(@NonNull DocumentIdsSelection rowIds, @NonNull final UnaryOperator<T> rowMapper)
+	{
+		compute(rows -> rows.changingRows(rowIds, rowMapper));
 	}
 
 	public void setRows(@NonNull final List<T> rows)

@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -266,4 +267,8 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
+
+	public long count(final Predicate<T> predicate) {return rowsById.values().stream().filter(predicate).count();}
+
+	public boolean anyMatch(final Predicate<T> predicate) {return rowsById.values().stream().anyMatch(predicate);}
 }
