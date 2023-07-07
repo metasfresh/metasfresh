@@ -69,7 +69,7 @@ public class OIView extends AbstractCustomView<OIRow> implements IEditableView
 	public void markRowsAsSelected(final DocumentIdsSelection rowIds)
 	{
 		getRowsData().markRowsAsSelected(rowIds);
-		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this); // NOTE we have to invalidate everything because the view headers were also changed
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowsAndHeaderPropertiesChanged(this, rowIds);
 	}
 
 	public boolean hasSelectedRows()

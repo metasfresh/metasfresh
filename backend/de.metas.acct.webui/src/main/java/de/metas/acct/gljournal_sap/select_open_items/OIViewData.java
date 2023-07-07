@@ -11,6 +11,7 @@ import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
 import de.metas.ui.web.view.ViewHeaderProperty;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
@@ -130,6 +131,9 @@ public class OIViewData implements IEditableRowsData<OIRow>
 	{
 		rowsHolder.changeRowById(ctx.getRowId(), row -> applyChanges(row, fieldChangeRequests));
 		headerPropertiesHolder.setValue(null);
+
+		ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(ctx.getViewId());
+		// NOTE: don't need to notify about row changed because that will be returned by the REST call
 	}
 
 	private static OIRow applyChanges(@NonNull final OIRow row, @NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
