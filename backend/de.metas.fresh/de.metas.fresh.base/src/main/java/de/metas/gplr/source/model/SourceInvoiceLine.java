@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 public class SourceInvoiceLine
 {
 	@NonNull InvoiceLineId id;
+	@NonNull Amount priceFC;
 	@NonNull Amount lineNetAmtFC;
 	@NonNull Amount taxAmtFC;
 	@NonNull SourceTaxInfo tax;
