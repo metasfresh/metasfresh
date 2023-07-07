@@ -107,6 +107,40 @@ Feature: create or update BPartner v2
                         "postal":null,
                         "vatId": "vatId_Location_l22"
                      }
+                  },
+                  {
+                     "locationIdentifier":"ext-Other-l33",
+                     "isReadOnlyInMetasfresh": false,
+                     "location":{
+                        "name":"test_location_name",
+                        "bpartnerName":"test_partner_name",
+                        "address1":"test_address1",
+                        "poBox":null,
+                        "district":null,
+                        "region":"test_region",
+                        "city":"test_city",
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId":null
+                     }
+                  },
+                     {
+                     "locationIdentifier":"ext-Other-l44",
+                     "isReadOnlyInMetasfresh": false,
+                     "location":{
+                        "name":"test_location_name2",
+                        "bpartnerName":"test_partner_name2",
+                        "address1":"test_address1",
+                        "poBox":null,
+                        "district":null,
+                        "region":"test_region",
+                        "city":"test_city",
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId":null
+                     }
                   }
                ]
             },
@@ -184,9 +218,11 @@ Feature: create or update BPartner v2
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | OPT.M_SectionCode_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.C_Incoterms_Customer_ID.Identifier | OPT.C_Incoterms_Vendor_ID.Identifier | OPT.PaymentRule | OPT.PaymentRulePO | OPT.IsStorageWarehouse | OPT.C_PaymentTerm_ID.Identifier | OPT.PO_PaymentTerm_ID.Identifier | OPT.Section_Group_Partner_ID.Identifier | OPT.IsProspect |
       | created_bpartner         | ext-ALBERTA-001    | test_code_211122 | test_name | test_company    | null         | null      | de           | null    | test-group | vatId_BPartner001 | ALBERTA_001_sectionCode         | A                | S                   | Incoterms_Customer_101122              | Incoterms_Vendor_101122              | P               | B                 | Y                      | PaymentTerm_101122              | PaymentTerm_PO_101122            | sectionGroupPartner                     | true           |
     And verify that location was created for bpartner
-      | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.IsHandOverLocation | OPT.IsRemitTo | OPT.IsReplicationLookupDefault | OPT.VATaxId        | OPT.SAP_PaymentMethod |
-      | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       | true                   | false         | false                          | null               | PAY                   |
-      | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       |                        |               |                                | vatId_Location_l22 |                       |
+      | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.IsHandOverLocation | OPT.IsRemitTo | OPT.IsReplicationLookupDefault | OPT.VATaxId        | OPT.SAP_PaymentMethod | OPT.Name                | OPT.BPartnerName   |
+      | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       | true                   | false         | false                          | null               | PAY                   | test_address1 test_name | null               |
+      | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       |                        |               |                                | vatId_Location_l22 |                       | test_city test_name     | null               |
+      | ext-ALBERTA-001    | ext-Other-l33      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       |                        |               |                                | null               |                       | test_location_name      | test_partner_name  |
+      | ext-ALBERTA-001    | ext-Other-l44      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       |                        |               |                                | null               |                       | test_location_name2     | test_partner_name2 |
     And verify that contact was created for bpartner
       | bpartnerIdentifier | contactIdentifier | Name          | OPT.Email  | OPT.Fax  | Code | OPT.InvoiceEmailEnabled |
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
@@ -280,6 +316,48 @@ Feature: create or update BPartner v2
          "remitTo":false,
          "replicationLookupDefault":false,
          "vatId": "vatId_Location_l22"
+      },
+      {
+         "name":"test_location_name",
+         "bpartnerName":"test_partner_name",
+         "active":true,
+         "address1":"test_address1",
+         "postal":null,
+         "region":"test_region",
+         "city":"test_city",
+         "gln":null,
+         "countryCode":"DE",
+         "shipTo":true,
+         "shipToDefault":false,
+         "billTo":true,
+         "billToDefault":false,
+         "ephemeral":false,
+         "visitorsAddress":false,
+         "handoverLocation":false,
+         "remitTo":false,
+         "replicationLookupDefault":false,
+         "vatId":null
+      },
+      {
+         "name":"test_location_name2",
+         "bpartnerName":"test_partner_name2",
+         "active":true,
+         "address1":"test_address1",
+         "postal":null,
+         "region":"test_region",
+         "city":"test_city",
+         "gln":null,
+         "countryCode":"DE",
+         "shipTo":true,
+         "shipToDefault":false,
+         "billTo":true,
+         "billToDefault":false,
+         "ephemeral":false,
+         "visitorsAddress":false,
+         "handoverLocation":false,
+         "remitTo":false,
+         "replicationLookupDefault":false,
+         "vatId":null
       }
    ],
    "contacts":[
@@ -357,6 +435,46 @@ Feature: create or update BPartner v2
                         "postal":null,
                         "vatId": null
                      }
+                  },
+                  {
+                     "locationIdentifier":"ext-Other-l33",
+                     "isReadOnlyInMetasfresh": false,
+                     "location":{
+                        "name":null,
+                        "bpartnerName":null,
+                        "address1":"test_address1",
+                        "poBox":null,
+                        "district":null,
+                        "region":"test_region",
+                        "city":"test_city",
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId":null
+                     }
+                  },
+                  {
+                     "locationIdentifier":"ext-Other-l44",
+                     "isReadOnlyInMetasfresh": false,
+                     "location":{
+                       "active":true,
+                       "address1":"test_address1",
+                       "postal":null,
+                       "region":"test_region",
+                       "city":"test_city",
+                       "gln":null,
+                       "countryCode":"DE",
+                       "shipTo":true,
+                       "shipToDefault":false,
+                       "billTo":true,
+                       "billToDefault":false,
+                       "ephemeral":false,
+                       "visitorsAddress":false,
+                       "handoverLocation":false,
+                       "remitTo":false,
+                       "replicationLookupDefault":false,
+                       "vatId":null
+                     }
                   }
                ]
             },
@@ -386,9 +504,11 @@ Feature: create or update BPartner v2
     Then verify that bPartner was updated for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsStorageWarehouse |
       | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      | Y                      |
-    And verify that location was created for bpartner
-      | bpartnerIdentifier | locationIdentifier | OPT.Address1 | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId |
-      | ext-ALBERTA-001    | ext-ALBERTA-l22    | null         | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        |
+    And verify that location was updated for bpartner
+      | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId | OPT.Name                                  |
+      | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_name                       |
+      | ext-ALBERTA-001    | ext-Other-l33      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_address1 test_name_updated |
+      | ext-ALBERTA-001    | ext-Other-l44      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       | null        | test_location_name2                       |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type             | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | BPartner         | 001               | www.ExternalReferenceURL.com | 540000                       | true                       |
