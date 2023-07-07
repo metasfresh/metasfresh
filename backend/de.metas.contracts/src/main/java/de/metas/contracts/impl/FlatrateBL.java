@@ -1814,7 +1814,8 @@ public class FlatrateBL implements IFlatrateBL
 		// Therefore they can overlap without causing us any problems.
 		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions);
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions)
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract.equals(typeConditions);
 		return allowedToOverlapWithOtherTerms;
 	}
 
