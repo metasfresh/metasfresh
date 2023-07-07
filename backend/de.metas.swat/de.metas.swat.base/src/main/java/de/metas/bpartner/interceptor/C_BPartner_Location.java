@@ -41,6 +41,8 @@ import org.compiere.util.Env;
 
 import java.sql.Timestamp;
 
+import static de.metas.bpartner.interceptor.MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
+
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
 {
@@ -96,7 +98,7 @@ public class C_BPartner_Location
 	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
 	{
 		final String name = bpLocation.getName();
-		if (!bpLocation.isNameReadWrite() || ".".equals(name))
+		if (!bpLocation.isNameReadWrite() || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
 		{
 			updateBPLocationName(bpLocation);
 		}
