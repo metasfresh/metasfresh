@@ -13,6 +13,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Year;
@@ -25,8 +27,8 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXT
 
 public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProcessPrecondition
 {
-
-	private final static String MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = "Extension Not Allowed";
+	public final static String MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = "@MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED@";
+	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -37,9 +39,15 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 	protected String doIt()
 	{
 		final I_C_Year newYear = InterfaceWrapperHelper.load(YearId.ofRepoId(p_C_Year_ID), I_C_Year.class);
-		final I_C_Flatrate_Conditions currentConditions = flatrateDAO.getConditionsById(ConditionsId.ofRepoId(getRecord_ID()));
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(ConditionsId.ofRepoId(getRecord_ID()));
 
-		final Optional<I_C_Flatrate_Conditions> newConditions = flatrateBL.extendConditionsToNewYear(currentConditions, newYear);
+		if (isSettingWithSameYear(conditions.getModCntr_Settings(), newYear))
+		{
+			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
+		}
+
+		final Optional<I_C_Flatrate_Conditions> newConditions = flatrateBL.extendConditionsToNewYear(conditions, newYear);
+
 		if (newConditions.isPresent())
 		{
 			final int adWindowId = getProcessInfo().getAD_Window_ID();
@@ -51,6 +59,11 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 		}
 
 		return MSG_OK;
+	}
+
+	private boolean isSettingWithSameYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year newYear)
+	{
+		return settings.getC_Year_ID() == newYear.getC_Year_ID();
 	}
 
 	@Override
@@ -75,7 +88,7 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 
 		if (!ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(currentConditions.getOnFlatrateTermExtend()))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED));
+			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED);
 		}
 
 		return ProcessPreconditionsResolution.accept();

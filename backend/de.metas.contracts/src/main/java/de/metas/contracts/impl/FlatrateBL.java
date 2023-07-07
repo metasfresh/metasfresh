@@ -2214,7 +2214,6 @@ public class FlatrateBL implements IFlatrateBL
 		PO.copyValues(from, to, true);
 
 		newModCntrSettings.setC_Year_ID(year.getC_Year_ID());
-		newModCntrSettings.setName(newModCntrSettings.getName().concat("-" + year.getFiscalYear()));
 
 		InterfaceWrapperHelper.save(newModCntrSettings);
 
@@ -2232,7 +2231,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		//
 		// make sure it's Modular Contracts first
-		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract.equals(conditions.getType_Conditions()))
+		if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract.equals(conditions.getType_Conditions()))
 		{
 			return Optional.empty();
 		}
