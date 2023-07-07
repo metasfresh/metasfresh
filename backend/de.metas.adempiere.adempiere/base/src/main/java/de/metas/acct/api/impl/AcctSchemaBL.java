@@ -72,6 +72,13 @@ public class AcctSchemaBL implements IAcctSchemaBL
 	}
 
 	@Override
+	public AcctSchema getPrimaryAcctSchema(@NonNull ClientId clientId)
+	{
+		final AcctSchemaId primaryAcctSchemaId = acctSchemaDAO.getPrimaryAcctSchemaId(clientId);
+		return acctSchemaDAO.getById(primaryAcctSchemaId);
+	}
+
+	@Override
 	public CurrencyId getAcctCurrencyId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return getAcctCurrencyId(getAcctSchemaIdByClientAndOrg(clientId, orgId));

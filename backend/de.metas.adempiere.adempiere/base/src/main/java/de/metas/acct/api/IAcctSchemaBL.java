@@ -35,6 +35,8 @@ public interface IAcctSchemaBL extends ISingletonService
 {
 	AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId);
 
+	AcctSchema getPrimaryAcctSchema(@NonNull ClientId clientId);
+
 	CurrencyId getAcctCurrencyId(@NonNull ClientId clientId, @NonNull OrgId orgId);
 
 	CurrencyId getAcctCurrencyId(@NonNull AcctSchemaId acctSchemaId);
