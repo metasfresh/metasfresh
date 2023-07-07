@@ -22,9 +22,16 @@
 
 package de.metas.contracts.modular.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.Check;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -36,11 +43,13 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -58,20 +67,32 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
+
+import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract;
 
 @Component
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
+	private static final AdMessageKey MSG_VOID_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.VoidNotAllowed");
 
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	public final ModularContractLogDAO modularContractLogDAO;
 	public final ModularContractSettingsDAO modularContractSettingsDAO;
 
@@ -92,7 +113,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	@Override
 	public boolean applies(@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		return SOTrx.ofBoolean(order.isSOTrx()).isPurchase();
 	}
 
@@ -108,7 +129,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			return Optional.empty();
 		}
 
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
 				.stream()
 				.filter(config -> config.isMatchingClassName(PurchaseOrderLineModularContractHandler.class.getName()))
@@ -156,7 +177,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		if (order.isSOTrx())
 		{
 			return Stream.empty();
@@ -174,6 +195,85 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		if (action == ModularContractService.ModelAction.REVERSED || action == ModularContractService.ModelAction.REACTIVATED)
 		{
 			throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+		}
+	}
+
+	@Override
+	public void cancelLinkedContractsIfAllowed(@NonNull final I_C_OrderLine model, @NonNull final FlatrateTermId flatrateTermId)
+	{
+		final List<I_M_InOutLine> generatedInOutLines = inOutDAO.retrieveLinesForOrderLine(model);
+
+		if (!generatedInOutLines.isEmpty())
+		{
+			final Set<Integer> inoutIds = generatedInOutLines.stream()
+					.map(I_M_InOutLine::getM_InOut_ID)
+					.collect(ImmutableSet.toImmutableSet());
+
+			throw new AdempiereException(MSG_VOID_NOT_ALLOWED, inoutIds);
+		}
+
+		final I_C_Flatrate_Term contract = flatrateDAO.getById(flatrateTermId);
+
+		// dev-note: for now set fallback endDate one year from start date
+		final Timestamp endDate = Optional.ofNullable(contract.getEndDate())
+				.orElse(TimeUtil.addYears(contract.getStartDate(), 1));
+
+		final IContractChangeBL.ContractChangeParameters parameters = IContractChangeBL.ContractChangeParameters.builder()
+				.changeDate(endDate)
+				.action(ChangeTerm_ACTION_VoidSingleContract)
+				.build();
+
+		contractChangeBL.cancelContract(contract, parameters);
+	}
+
+	@Override
+	public void createContractIfRequired(final @NonNull I_C_OrderLine orderLine)
+	{
+		if (!isModularContractLine(orderLine))
+		{
+			return;
+		}
+
+		if (flatrateBL.existsTermForOrderLine(orderLine))
+		{
+			return;
+		}
+
+		createModularContract(orderLine);
+	}
+
+	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
+				.map(flatrateBL::isModularContract)
+				.orElse(false);
+	}
+
+	@NonNull
+	private I_C_Flatrate_Term createModularContract(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
+		validateContractSettingEligible(conditionsId);
+
+		final I_C_Flatrate_Term newTerm = flatrateBL.createContractForOrderLine(orderLine);
+
+		documentBL.processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
+
+		return newTerm;
+	}
+
+	private void validateContractSettingEligible(@NonNull final ConditionsId conditionsId)
+	{
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
+
+		Check.assume(settings != null, "ModularContractSettings should not be null at this stage!");
+
+		if (settings.getModuleConfigs().isEmpty())
+		{
+			throw new AdempiereException("Could not create contract! Missing module configs for modular contract term")
+					.appendParametersToMessage()
+					.setParameter("ConditionsId", conditionsId)
+					.markAsUserValidationError();
 		}
 	}
 }

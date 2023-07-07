@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class ModularContractSettingsDAOTest
 {
@@ -146,9 +146,21 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
+		public void cancelLinkedContractsIfAllowed(final @NonNull Object model, final @NonNull FlatrateTermId flatrateTermId)
+		{
+			return; //dev-note:do nothing
+		}
+
+		@Override
 		public boolean applies(final @NonNull Object model)
 		{
 			return true;
+		}
+
+		@Override
+		public void createContractIfRequired(final @NonNull Object model)
+		{
+			return; //dev-note:do nothing
 		}
 	}
 }
