@@ -7,7 +7,7 @@ BEGIN
 	select
 		s_InvoicingGroupNo
 	into v_nextInvoicingGroupNo
-	from generate_series(1,10000000) as s_InvoicingGroupNo
+	from generate_series(1,9999999999) as s_InvoicingGroupNo
 	left outer join C_Invoice_Candidate_HeaderAggregation ha on (ha.InvoicingGroupNo=s_InvoicingGroupNo
 		and ha.C_BPartner_ID=NEW.C_BPartner_ID and ha.IsSOTrx=NEW.IsSOTrx
 	)
@@ -27,7 +27,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE
 COST 100;
-ALTER FUNCTION C_Invoice_Candidate_HeaderAggregation_InvoicingGroupNo_ft() OWNER TO adempiere;
+
 COMMENT ON FUNCTION C_Invoice_Candidate_HeaderAggregation_InvoicingGroupNo_ft() IS 'Sets C_Invoice_Candidate_HeaderAggregation.InvoicingGroupNo; TODO: come up with a more efficient way.';
 
 drop trigger if exists C_Invoice_Candidate_HeaderAggregation_InvoicingGroupNo_trigger on C_Invoice_Candidate_HeaderAggregation;
