@@ -355,7 +355,7 @@ public class CreateBPartnerV2_StepDef
 
 			if (bPartnerName != null)
 			{
-				softly.assertThat(persistedLocation.getBpartnerName()).as(I_C_BPartner_Location.COLUMNNAME_Name).isEqualTo(bPartnerName);
+				softly.assertThat(persistedLocation.getBpartnerName()).as(I_C_BPartner_Location.COLUMNNAME_BPartnerName).isEqualTo(bPartnerName);
 			}
 
 			if (name != null)
