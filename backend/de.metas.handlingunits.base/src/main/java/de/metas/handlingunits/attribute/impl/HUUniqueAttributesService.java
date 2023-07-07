@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
@@ -46,6 +47,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Product;
@@ -61,20 +63,16 @@ public class HUUniqueAttributesService
 
 	private static final String ERR_HU_Qty_Invalid_For_Unique_Attribute = "M_HU_UniqueAttribute_HUQtyError";
 	private static final String ERR_HU_Unique_Attribute_Duplicate = "M_HU_UniqueAttribute_DuplicateValue_Error";
-	private final HUUniqueAttributesRepository repo;
 	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 	final IHUStorageDAO huStorageDAO = storageFactory.getHUStorageDAO();
-
 	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 	final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
 	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-
 	final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
+	final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final HUUniqueAttributesRepository repo;
 
 	public HUUniqueAttributesService(@NonNull final HUUniqueAttributesRepository repo)
 	{
@@ -112,6 +110,7 @@ public class HUUniqueAttributesService
 
 	private void validateHUQty(@NonNull final I_M_HU_Storage huStorage, @NonNull final AttributeId attributeId)
 	{
+
 		if (!(uomDAO.isUOMEach(UomId.ofRepoId(huStorage.getC_UOM_ID()))
 				&& BigDecimal.ONE.equals(huStorage.getQty())))
 		{
@@ -129,6 +128,11 @@ public class HUUniqueAttributesService
 			return;
 		}
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+
+		if (belongsToQualityWarehouse(huRecord))
+		{
+			// don't validate unique attributes in the quality warehouse
+		}
 
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
@@ -171,6 +175,11 @@ public class HUUniqueAttributesService
 			return;
 		}
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+
+		if (belongsToQualityWarehouse(huRecord))
+		{
+			// don't validate unique attributes in the quality warehouse
+		}
 
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
@@ -223,6 +232,7 @@ public class HUUniqueAttributesService
 			final I_M_HU_Attribute huAttribute = huAttributes.next();
 
 			final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+
 			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// nothing to do for non-qtyOnHand statuses
@@ -266,5 +276,11 @@ public class HUUniqueAttributesService
 
 			validateHUUniqueAttributeValue(parameters);
 		}
+	}
+
+	private boolean belongsToQualityWarehouse(@NonNull final I_M_HU hu)
+	{
+		final I_M_Warehouse huWarehouse = IHandlingUnitsBL.extractWarehouseOrNull(hu);
+		return huWarehouse == null ? false : huWarehouse.isQualityReturnWarehouse();
 	}
 }
