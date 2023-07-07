@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -30,9 +31,11 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
@@ -46,6 +49,8 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class ModCntr_Settings_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final M_Product_StepDefData productTable;
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
@@ -87,8 +92,15 @@ public class ModCntr_Settings_StepDef
 
 		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Year yearRecord = yearTable.get(yearIdentifier);
-		
-		final I_ModCntr_Settings modCntrSettingsRecord = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class);
+
+		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliers(
+				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, calendarRecord.getC_Calendar_ID())
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearRecord.getC_Year_ID())
+						.create()
+						.firstOnlyOrNull(I_ModCntr_Settings.class),
+				() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class));
 
 		modCntrSettingsRecord.setName(name);
 		modCntrSettingsRecord.setM_Product_ID(productRecord.getM_Product_ID());
@@ -105,6 +117,6 @@ public class ModCntr_Settings_StepDef
 		InterfaceWrapperHelper.saveRecord(modCntrSettingsRecord);
 
 		final String modCntrSettingsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
-		modCntrSettingsTable.put(modCntrSettingsIdentifier, modCntrSettingsRecord);
+		modCntrSettingsTable.putOrReplace(modCntrSettingsIdentifier, modCntrSettingsRecord);
 	}
 }
