@@ -120,6 +120,11 @@ public class InventoryLineModularContractHandler implements IModularContractType
 				.map(ModularContractType::getId)
 				.findFirst();
 
+		if (modularContractTypeId.isEmpty())
+		{
+			return Optional.empty();
+		}
+
 		final Quantity quantity = inventoryBL.getMovementQty(inventoryLine);
 
 		final String description = msgBL.getMsg(MSG_DESCRIPTION, ImmutableList.of(quantity.abs().toString()));
