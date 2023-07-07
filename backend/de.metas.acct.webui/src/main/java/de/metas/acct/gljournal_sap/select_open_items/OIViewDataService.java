@@ -3,8 +3,9 @@ package de.metas.acct.gljournal_sap.select_open_items;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.FactAcctId;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
@@ -12,8 +13,11 @@ import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.document.dimension.Dimension;
 import de.metas.i18n.ITranslatableString;
+import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -38,6 +42,8 @@ import java.util.List;
 class OIViewDataService
 {
 	private final IFactAcctBL factAcctBL;
+	private final IAcctSchemaBL acctSchemaBL;
+	private final MoneyService moneyService;
 	private final LookupDataSource validCombinationsLookup;
 	private final LookupDataSource bpartnerLookup;
 	private final SAPGLJournalService glJournalService;
@@ -46,45 +52,57 @@ class OIViewDataService
 	private OIViewDataService(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final IFactAcctBL factAcctBL,
+			@NonNull final IAcctSchemaBL acctSchemaBL,
+			@NonNull final MoneyService moneyService,
 			@NonNull final SAPGLJournalService glJournalService)
 	{
 		this.factAcctBL = factAcctBL;
 		this.validCombinationsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_ValidCombination.Table_Name);
 		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.acctSchemaBL = acctSchemaBL;
+		this.moneyService = moneyService;
 		this.glJournalService = glJournalService;
 	}
 
-	public OIViewData getData(
+	OIViewData getData(
 			final SAPGLJournalId glJournalId,
 			@Nullable final DocumentFilter filter)
 	{
 		final SAPGLJournal glJournal = glJournalService.getById(glJournalId);
+		final AcctSchema acctSchema = acctSchemaBL.getById(glJournal.getAcctSchemaId());
 
 		return OIViewData.builder()
 				.viewDataService(this)
-				.acctSchemaId(glJournal.getAcctSchemaId())
+				.acctSchema(acctSchema)
 				.postingType(glJournal.getPostingType())
 				.filter(filter)
 				.build();
 	}
 
-	public List<OIRow> retrieveRows(
-			@NonNull final AcctSchemaId acctSchemaId,
+	CurrencyCode getCurrencyCode(final AcctSchema acctSchema)
+	{
+		return moneyService.getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
+	}
+
+	List<OIRow> retrieveRows(
+			@NonNull final AcctSchema acctSchema,
 			@NonNull final PostingType postingType,
 			@Nullable final DocumentFilter filter)
 	{
-		return factAcctBL.stream(OIViewFilterHelper.toFactAcctQuery(acctSchemaId, postingType, filter))
-				.map(this::toRow)
+		final CurrencyCode acctCurrencyCode = getCurrencyCode(acctSchema);
+
+		return factAcctBL.stream(OIViewFilterHelper.toFactAcctQuery(acctSchema.getId(), postingType, filter))
+				.map(record -> toRow(record, acctCurrencyCode))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private OIRow toRow(final I_Fact_Acct record)
+	private OIRow toRow(final I_Fact_Acct record, final CurrencyCode acctCurrencyCode)
 	{
 		final Account account = factAcctBL.getAccount(record);
 		final BigDecimal amtAcctDr = record.getAmtAcctDr();
 		final BigDecimal amtAcctCr = record.getAmtAcctCr();
 		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtAcctDr, amtAcctCr);
-		final BigDecimal amount = postingSign.isDebit() ? amtAcctDr : amtAcctCr;
+		final Amount amount = Amount.of(postingSign.isDebit() ? amtAcctDr : amtAcctCr, acctCurrencyCode);
 		final FAOpenItemKey openItemKey = FAOpenItemKey.optionalOfString(record.getOpenItemKey())
 				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
 

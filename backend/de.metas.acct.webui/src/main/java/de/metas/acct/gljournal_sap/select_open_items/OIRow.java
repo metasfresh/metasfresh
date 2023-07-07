@@ -6,6 +6,8 @@ import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.document.dimension.Dimension;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.IViewRow;
@@ -21,7 +23,6 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
@@ -29,17 +30,17 @@ class OIRow implements IViewRow
 {
 	public static OIRow cast(IViewRow row) {return (OIRow)row;}
 
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign")
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign", fieldName = "postingSign")
 	@Getter @NonNull private final PostingSign postingSign;
 
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Text, captionKey = "Account_ID")
 	@NonNull private final ITranslatableString accountCaption;
 
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, captionKey = "Amount")
-	@NonNull private final BigDecimal amount;
+	@NonNull private final Amount amount;
 
-	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmt")
-	@NonNull private final BigDecimal openAmount;
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmt", fieldName = "openAmount")
+	@NonNull private final Amount openAmount;
 
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.LocalDate, captionKey = "DateAcct")
 	@NonNull private final Instant dateAcct;
@@ -59,7 +60,7 @@ class OIRow implements IViewRow
 
 	static final String FIELD_OpenAmountOverrde = "openAmountOverride";
 	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmtOverride", fieldName = FIELD_OpenAmountOverrde, editor = ViewEditorRenderMode.ALWAYS)
-	@Nullable private final BigDecimal openAmountOverride;
+	@Nullable private final Amount openAmountOverride;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<OIRow> values;
 
@@ -76,15 +77,15 @@ class OIRow implements IViewRow
 			@NonNull final PostingSign postingSign,
 			@NonNull final Account account,
 			@NonNull final ITranslatableString accountCaption,
-			@NonNull final BigDecimal amount,
-			@NonNull final BigDecimal openAmount,
+			@NonNull final Amount amount,
+			@NonNull final Amount openAmount,
 			@NonNull final Instant dateAcct,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final ITranslatableString bpartnerCaption,
 			@Nullable final String documentNo,
 			@Nullable final String description,
 			final boolean selected,
-			@Nullable final BigDecimal openAmountOverride,
+			@Nullable final Amount openAmountOverride,
 			@NonNull final FAOpenItemKey openItemKey,
 			@NonNull final Dimension dimension)
 	{
@@ -131,8 +132,7 @@ class OIRow implements IViewRow
 				: this;
 	}
 
-	public BigDecimal getOpenAmountEffective()
-	{
-		return CoalesceUtil.coalesceNotNull(openAmountOverride, openAmount);
-	}
+	public CurrencyCode getAcctCurrencyCode() {return amount.getCurrencyCode();}
+
+	public Amount getOpenAmountEffective() {return CoalesceUtil.coalesceNotNull(openAmountOverride, openAmount);}
 }

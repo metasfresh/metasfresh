@@ -35,6 +35,8 @@ public class OIView_AddToJournal extends OIViewBasedProcess
 
 		sapglJournalService.createLines(createRequests, view.getSapglJournalId());
 
+		view.invalidateAll();
+
 		return MSG_OK;
 	}
 
@@ -43,7 +45,7 @@ public class OIView_AddToJournal extends OIViewBasedProcess
 		return SAPGLJournalLineCreateRequest.builder()
 				.postingSign(row.getPostingSign().reverse())
 				.account(row.getAccount())
-				.amount(row.getOpenAmountEffective())
+				.amount(row.getOpenAmountEffective().toBigDecimal())
 				.bpartnerId(row.getBpartnerId())
 				.dimension(row.getDimension())
 				.openItemKey(row.getOpenItemKey())

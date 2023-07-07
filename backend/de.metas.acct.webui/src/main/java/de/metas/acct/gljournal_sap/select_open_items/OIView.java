@@ -8,6 +8,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.AbstractCustomView;
@@ -57,6 +58,9 @@ public class OIView extends AbstractCustomView<OIRow> implements IEditableView
 	protected OIViewData getRowsData() {return OIViewData.cast(super.getRowsData());}
 
 	@Override
+	public ViewHeaderProperties getHeaderProperties() {return getRowsData().getHeaderProperties();}
+
+	@Override
 	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query) {throw new UnsupportedOperationException();}
 
 	@Override
@@ -65,7 +69,7 @@ public class OIView extends AbstractCustomView<OIRow> implements IEditableView
 	public void markRowsAsSelected(final DocumentIdsSelection rowIds)
 	{
 		getRowsData().markRowsAsSelected(rowIds);
-		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
+		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this); // NOTE we have to invalidate everything because the view headers were also changed
 	}
 
 	public boolean hasSelectedRows()

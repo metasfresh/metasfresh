@@ -6,6 +6,7 @@ import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.money.MoneyService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -48,12 +49,15 @@ public class OIViewFactory implements IViewFactory
 
 	public OIViewFactory(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
-			@NonNull final SAPGLJournalService glJournalService)
+			@NonNull final SAPGLJournalService glJournalService,
+			@NonNull final MoneyService moneyService)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
 		this.viewDataService = OIViewDataService.builder()
 				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.factAcctBL(Services.get(IFactAcctBL.class))
+				.acctSchemaBL(Services.get(IAcctSchemaBL.class))
+				.moneyService(moneyService)
 				.glJournalService(glJournalService)
 				.build();
 	}
