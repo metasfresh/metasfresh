@@ -23,8 +23,8 @@
 package de.metas.handlingunits.inout;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
 import de.metas.material.event.commons.AttributesKey;
@@ -40,9 +40,7 @@ import org.compiere.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -50,7 +48,7 @@ import java.util.Set;
  */
 public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyOnHandStorage
 {
-	private final Map<Util.ArrayKey, StockDataQuery> cachedMaterialQueries = new HashMap<>();
+	private final CCache<Util.ArrayKey, StockDataQuery> cachedMaterialQueries = CCache.newLRUCache("QtyReservedCachedMaterialQueries", 200, CCache.EXPIREMINUTES_Never);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull final ImmutableList<ShipmentScheduleAvailableStockDetail> stockDetails;
@@ -61,7 +59,7 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 	}
 
 	@Override
-	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(final @NonNull OlAndSched olAndSched)
+	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(final @NonNull I_M_ShipmentSchedule sched)
 	{
 		if (stockDetails.isEmpty())
 		{
@@ -69,8 +67,6 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 		}
 		else
 		{
-			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
 			//
 			// Reserved qty shall always be in VHUs, no need for picking BOM.
 			final StockDataQuery mainProductQuery = toQuery(sched);
@@ -120,7 +116,7 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 				I_M_ShipmentSchedule.Table_Name,
 				sched.getM_ShipmentSchedule_ID());
 
-		return cachedMaterialQueries.computeIfAbsent(materialQueryCacheKey, k -> toQuery0(sched));
+		return cachedMaterialQueries.getOrLoad(materialQueryCacheKey, k -> toQuery0(sched));
 	}
 
 	private StockDataQuery toQuery0(@NonNull final I_M_ShipmentSchedule sched)

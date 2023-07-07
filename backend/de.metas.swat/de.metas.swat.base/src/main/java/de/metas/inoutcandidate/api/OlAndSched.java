@@ -176,11 +176,10 @@ public final class OlAndSched
 		return InputDataSourceId.ofRepoIdOrNull(orderRecord.getAD_InputDataSource_ID());
 	}
 
-	@Nullable
-	public OrderLineId getOrderLineId()
+	@NonNull
+	public Optional<OrderLineId> getOrderLineId()
 	{
 		return salesOrderLine.map(org.compiere.model.I_C_OrderLine::getC_OrderLine_ID)
-				.map(OrderLineId::ofRepoId)
-				.orElse(null);
+				.map(OrderLineId::ofRepoId);
 	}
 }

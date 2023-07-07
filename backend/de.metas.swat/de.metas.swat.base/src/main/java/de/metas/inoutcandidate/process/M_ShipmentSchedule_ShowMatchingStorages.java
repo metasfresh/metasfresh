@@ -14,6 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
 import java.util.Collections;
+import java.util.Optional;
 
 public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 {
@@ -56,10 +57,10 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		//
 		// Also show the Storage Query
 		{
-			final StockDataQuery materialQuery = storagesContainer.toQuery(shipmentSchedule);
-			addLog("------------------------------------------------------------");
-			addLog("Storage Query:");
-			addLog(String.valueOf(materialQuery));
+			final Optional<StockDataQuery> materialQuery = storagesContainer.toQuery(shipmentSchedule);
+				addLog("------------------------------------------------------------");
+				addLog("Storage Query:");
+				addLog(String.valueOf(materialQuery.orElse(null)));
 		}
 
 		return MSG_OK;

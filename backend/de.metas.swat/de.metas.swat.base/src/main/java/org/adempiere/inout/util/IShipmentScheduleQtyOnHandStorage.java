@@ -22,7 +22,6 @@
 
 package org.adempiere.inout.util;
 
-import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
 import lombok.NonNull;
@@ -34,7 +33,7 @@ import java.util.List;
  */
 public interface IShipmentScheduleQtyOnHandStorage
 {
-	List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final OlAndSched olAndSched);
+	List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule shipmentSchedule);
 
 	StockDataQuery toQuery(@NonNull final I_M_ShipmentSchedule sched);
 }

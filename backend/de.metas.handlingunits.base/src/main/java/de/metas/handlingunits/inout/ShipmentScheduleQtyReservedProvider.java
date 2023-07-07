@@ -28,7 +28,6 @@ import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandProvider;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandStorage;
@@ -59,13 +58,10 @@ public class ShipmentScheduleQtyReservedProvider implements IShipmentScheduleQty
 
 		for (final OlAndSched line : lines)
 		{
-			final OrderLineId orderLineId = line.getOrderLineId();
-			if (orderLineId != null)
-			{
-				huReservationRepository.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
-						.map(huRes -> toShipmentScheduleAvailableStockDetail(huRes, line.getSched()))
-						.ifPresent(builder::add);
-			}
+			line.getOrderLineId().flatMap(orderLineId -> huReservationRepository.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
+					.map(huRes -> toShipmentScheduleAvailableStockDetail(huRes, line.getSched())))
+					.ifPresent(builder::add);
+
 		}
 
 		return new ShipmentScheduleQtyReservedStorage(builder.build());

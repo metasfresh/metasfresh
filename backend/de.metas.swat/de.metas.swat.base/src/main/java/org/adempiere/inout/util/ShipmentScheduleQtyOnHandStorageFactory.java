@@ -2,7 +2,9 @@ package org.adempiere.inout.util;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,10 +34,12 @@ import java.util.List;
 @Service
 public class ShipmentScheduleQtyOnHandStorageFactory
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleQtyOnHandStorageFactory.class);
 	private final List<IShipmentScheduleQtyOnHandProvider> providers;
 
 	public ShipmentScheduleQtyOnHandStorageFactory(@NonNull final List<IShipmentScheduleQtyOnHandProvider> providers)
 	{
+		logger.info("Providers: {}", providers);
 		this.providers = providers;
 	}
 
@@ -44,10 +48,7 @@ public class ShipmentScheduleQtyOnHandStorageFactory
 		final ImmutableList<IShipmentScheduleQtyOnHandStorage> shipmentScheduleQtyOnHandStorages = providers.stream()
 				.map(provider -> provider.ofOlAndScheds(lines))
 				.collect(ImmutableList.toImmutableList());
-		return
-				ShipmentScheduleQtyOnHandStorageHolder.builder()
-						.storages(shipmentScheduleQtyOnHandStorages)
-						.build();
+		return ShipmentScheduleQtyOnHandStorageHolder.of(shipmentScheduleQtyOnHandStorages);
 	}
 
 }
