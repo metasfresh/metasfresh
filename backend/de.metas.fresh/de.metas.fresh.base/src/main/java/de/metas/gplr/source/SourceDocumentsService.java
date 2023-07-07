@@ -438,6 +438,7 @@ public class SourceDocumentsService
 	{
 		return SourceInvoiceLine.builder()
 				.id(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.priceFC(Amount.of(invoiceLine.getPriceActual(), currencyCode))
 				.lineNetAmtFC(Amount.of(invoiceLine.getLineNetAmt(), currencyCode))
 				.taxAmtFC(Amount.of(invoiceLine.getTaxAmtInfo(), currencyCode))
 				.tax(getSourceTaxInfo(TaxId.ofRepoId(invoiceLine.getC_Tax_ID())))

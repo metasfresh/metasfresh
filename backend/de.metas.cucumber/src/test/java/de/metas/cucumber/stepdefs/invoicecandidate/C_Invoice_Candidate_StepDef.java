@@ -42,6 +42,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
+import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -95,6 +96,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -130,6 +132,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Departure_Country_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
@@ -195,6 +198,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
 	private final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable;
+	private final C_Country_StepDefData countryTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -216,7 +220,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final S_Issue_StepDefData issueTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Activity_StepDefData activityTable,
-			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable)
+			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable,
+			@NonNull final C_Country_StepDefData countryTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -238,6 +243,7 @@ public class C_Invoice_Candidate_StepDef
 		this.activityTable = activityTable;
 		this.shipmentTable = shipmentTable;
 		this.invoiceCandidateListTable = invoiceCandidateListTable;
+		this.countryTable = countryTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -334,6 +340,13 @@ public class C_Invoice_Candidate_StepDef
 			if (approvalForInvoicing != null)
 			{
 				invoiceCandidate.setApprovalForInvoicing(approvalForInvoicing);
+			}
+
+			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(taxDepartureCountryIdentifier))
+			{
+				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+				invoiceCandidate.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
 			}
 
 			saveRecord(invoiceCandidate);
@@ -1333,6 +1346,13 @@ public class C_Invoice_Candidate_StepDef
 		if (isInEffect != null)
 		{
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInEffect, isInEffect);
+		}
+
+		final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(taxDepartureCountryIdentifier))
+		{
+			final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_Tax_Departure_Country_ID, taxDepartureCountry.getC_Country_ID());
 		}
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()

@@ -89,7 +89,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
@@ -219,40 +219,42 @@ public class M_InOut_StepDef
 	@And("'generate shipments' process is invoked")
 	public void invokeGenerateShipmentsProcess(@NonNull final DataTable table)
 	{
-		final Map<String, String> tableRow = table.asMaps().get(0);
-
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-		final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-		final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override);
-
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
-
-		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
-
-		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(pinstanceDAO.createSelectionId())
-				.queryFilters(queryFilter)
-				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
-				.completeShipments(isCompleteShipments)
-				.isShipmentDateToday(isShipToday);
-
-		if (qtyToDeliverOverride != null)
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> tableRow : dataTable)
 		{
-			final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = ImmutableMap.of(
-					ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()), qtyToDeliverOverride);
-			workPackageParametersBuilder.qtysToDeliverOverride(qtysToDeliverOverride);
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
+			final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+			final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+			final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override);
+
+			final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
+
+			final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
+
+			final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
+					.adPInstanceId(pinstanceDAO.createSelectionId())
+					.queryFilters(queryFilter)
+					.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
+					.completeShipments(isCompleteShipments)
+					.isShipmentDateToday(isShipToday);
+
+			if (qtyToDeliverOverride != null)
+			{
+				final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = ImmutableMap.of(
+						ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()), qtyToDeliverOverride);
+				workPackageParametersBuilder.qtysToDeliverOverride(qtysToDeliverOverride);
+			}
+
+			final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
+					.setContext(Env.getCtx(), Trx.TRXNAME_None)
+					.createWorkpackages(workPackageParametersBuilder.build());
+
+			assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
 		}
-
-		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
-				.setContext(Env.getCtx(), Trx.TRXNAME_None)
-				.createWorkpackages(workPackageParametersBuilder.build());
-
-		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
 	}
 
 	@And("^after not more than (.*)s, M_InOut is found:$")

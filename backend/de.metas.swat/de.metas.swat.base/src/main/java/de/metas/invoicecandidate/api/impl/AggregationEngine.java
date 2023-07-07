@@ -57,8 +57,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -543,6 +543,7 @@ public final class AggregationEngine
 			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
 			invoiceHeader.setC_PaymentInstruction_ID(icRecord.getC_PaymentInstruction_ID());
+			invoiceHeader.setC_Tax_Departure_Country_ID(icRecord.getC_Tax_Departure_Country_ID());
 
 			getSectionCodeId(icRecord, headerAggregationId)
 					.ifPresent(sectionCodeId -> invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId)));
