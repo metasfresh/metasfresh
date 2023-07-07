@@ -75,7 +75,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 	@Nullable
 	public static DocStatus ofNullableCode(@Nullable final String code)
 	{
-		return Check.isNotBlank(code) ? ofCode(code) : null;
+		return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
 	}
 
 	@NonNull

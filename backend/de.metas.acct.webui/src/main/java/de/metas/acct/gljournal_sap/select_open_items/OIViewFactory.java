@@ -1,6 +1,8 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.i18n.TranslatableStrings;
@@ -26,6 +28,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +40,7 @@ public class OIViewFactory implements IViewFactory
 	private static final String VIEW_PARAM_SAP_GLJournal_ID = "SAP_GLJournal_ID";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 	private final OIViewDataService viewDataService;
 
@@ -132,8 +136,9 @@ public class OIViewFactory implements IViewFactory
 		DocumentFilterDescriptor filterDescriptor = this._filterDescriptor;
 		if (filterDescriptor == null)
 		{
+			final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(ClientId.METASFRESH);
 			final LookupDescriptorProviders lookupDescriptorProviders = lookupDataSourceFactory.getLookupDescriptorProviders();
-			filterDescriptor = this._filterDescriptor = OIViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders);
+			filterDescriptor = this._filterDescriptor = OIViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders, primaryAcctSchema);
 		}
 
 		return filterDescriptor;
