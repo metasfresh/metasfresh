@@ -30,6 +30,7 @@ import java.util.Map;
  * #L%
  */
 
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -59,6 +60,8 @@ public class InventoryBL implements IInventoryBL
 	@VisibleForTesting
 	public static final String SYSCONFIG_QuickInput_Charge_ID = "de.metas.adempiere.callout.M_Inventory.QuickInput.C_Charge_ID";
 
+	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	
 	@Override
 	public int getDefaultInternalChargeId()
 	{
@@ -211,5 +214,12 @@ public class InventoryBL implements IInventoryBL
 
 		inventoryLine.setC_Charge_ID(defaultChargeId);
 
+	}
+	
+	@NonNull
+	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
+	{
+		return Optional.ofNullable(inventoryDAO.getById(inventoryId))
+				.orElseThrow(() -> new AdempiereException("No record found for " + inventoryId));
 	}
 }

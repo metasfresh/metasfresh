@@ -150,6 +150,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -2286,6 +2287,14 @@ public class FlatrateBL implements IFlatrateBL
 		return newTerm;
 	}
 
+	@Override
+	public boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
+		
+		return isModularContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
+	}
+	
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
