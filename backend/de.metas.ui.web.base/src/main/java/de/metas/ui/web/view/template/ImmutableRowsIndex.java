@@ -268,6 +268,8 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		}
 	}
 
+	public Stream<T> stream(final Predicate<T> predicate) {return rowsById.values().stream().filter(predicate);}
+
 	public long count(final Predicate<T> predicate) {return rowsById.values().stream().filter(predicate).count();}
 
 	public boolean anyMatch(final Predicate<T> predicate) {return rowsById.values().stream().anyMatch(predicate);}

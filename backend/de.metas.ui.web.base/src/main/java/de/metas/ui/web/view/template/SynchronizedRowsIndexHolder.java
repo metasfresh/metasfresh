@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -70,6 +71,8 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 	{
 		return getRowsIndex().getRecordIdsToRefresh(rowIds, idMapper);
 	}
+
+	public Stream<T> stream(Predicate<T> predicate) {return getRowsIndex().stream(predicate);}
 
 	public long count(Predicate<T> predicate) {return getRowsIndex().count(predicate);}
 
