@@ -22,14 +22,17 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
@@ -40,6 +43,8 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class ModCntr_Module_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final ModCntr_Module_StepDefData modCntrModuleTable;
 	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 	private final ModCntr_Type_StepDefData modCntrTypeTable;
@@ -73,15 +78,22 @@ public class ModCntr_Module_StepDef
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Module.COLUMNNAME_Name);
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Module.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
-		
+
 		final String invoicingGroup = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Module.COLUMNNAME_InvoicingGroup);
 		final String modCntrSettingIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_ModCntr_Settings modCntrSettingsRecord = modCntrSettingsTable.get(modCntrSettingIdentifier); 
-		
+		final I_ModCntr_Settings modCntrSettingsRecord = modCntrSettingsTable.get(modCntrSettingIdentifier);
+
 		final String modCntrTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_ModCntr_Type modCntrTypeRecord = modCntrTypeTable.get(modCntrTypeIdentifier);
-		
-		final I_ModCntr_Module modCntrModuleRecord = InterfaceWrapperHelper.newInstance(I_ModCntr_Module.class);
+
+		final I_ModCntr_Module modCntrModuleRecord = CoalesceUtil.coalesceSuppliers(
+				() -> queryBL.createQueryBuilder(I_ModCntr_Module.class)
+						.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, modCntrSettingsRecord.getModCntr_Settings_ID())
+						.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, modCntrTypeRecord.getModCntr_Type_ID())
+						.create()
+						.firstOnlyOrNull(I_ModCntr_Module.class),
+				() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Module.class));
 
 		modCntrModuleRecord.setSeqNo(seqNo);
 		modCntrModuleRecord.setName(name);
@@ -93,6 +105,6 @@ public class ModCntr_Module_StepDef
 		InterfaceWrapperHelper.saveRecord(modCntrModuleRecord);
 
 		final String modCntrModuleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID + "." + TABLECOLUMN_IDENTIFIER);
-		modCntrModuleTable.put(modCntrModuleIdentifier, modCntrModuleRecord);
+		modCntrModuleTable.putOrReplace(modCntrModuleIdentifier, modCntrModuleRecord);
 	}
 }
