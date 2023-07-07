@@ -79,7 +79,6 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
@@ -148,6 +147,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static de.metas.bpartner.interceptor.MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.externalreference.ExternalIdentifier.Type.EXTERNAL_REFERENCE;
 import static de.metas.externalreference.ExternalIdentifier.Type.METASFRESH_ID;
@@ -1820,7 +1820,15 @@ public class JsonPersisterService
 		// name
 		if (jsonBPartnerLocation.isNameSet())
 		{
-			location.setName(StringUtils.trim(jsonBPartnerLocation.getName()));
+			final String name = jsonBPartnerLocation.getName();
+			if (Check.isEmpty(name, true))
+			{
+				location.setName(BPARTNER_LOCATION_NAME_DEFAULT);
+			}
+			else
+			{
+				location.setName(StringUtils.trim(name));
+			}
 		}
 
 		// bpartnerName
