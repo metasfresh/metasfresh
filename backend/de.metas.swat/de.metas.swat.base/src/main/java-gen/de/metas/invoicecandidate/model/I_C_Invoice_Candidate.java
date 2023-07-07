@@ -1,15 +1,14 @@
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Invoice_Candidate 
+public interface I_C_Invoice_Candidate
 {
 
 	String Table_Name = "C_Invoice_Candidate";
@@ -425,26 +424,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
-	 * Set Sales partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
-
-	/**
-	 * Get Sales partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_SalesRep_ID();
-
-	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
-
-	/**
 	 * Set Business Partner (2).
 	 *
 	 * <br>Type: Search
@@ -463,6 +442,26 @@ public interface I_C_Invoice_Candidate
 	int getC_BPartner2_ID();
 
 	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
+	 * Set Sales partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
+
+	/**
+	 * Get Sales partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_SalesRep_ID();
+
+	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
 	 * Set Campaign.
@@ -577,6 +576,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -588,6 +588,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1004,7 +1005,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
@@ -1014,7 +1015,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_PaymentTerm_ID();
@@ -1064,6 +1065,31 @@ public interface I_C_Invoice_Candidate
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Created = new ModelColumn<>(I_C_Invoice_Candidate.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Shipping Location.
@@ -1238,31 +1264,6 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_VAT_Code_Override_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_VAT_Code_Override_ID", null);
 	String COLUMNNAME_C_VAT_Code_Override_ID = "C_VAT_Code_Override_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Created = new ModelColumn<>(I_C_Invoice_Candidate.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Accounting Date.
@@ -1767,27 +1768,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
-	 * Set Header Aggregation Preset.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHeaderAggregationKey_Calc (@Nullable java.lang.String HeaderAggregationKey_Calc);
-
-	/**
-	 * Get Header Aggregation Preset.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getHeaderAggregationKey_Calc();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_HeaderAggregationKey_Calc = new ModelColumn<>(I_C_Invoice_Candidate.class, "HeaderAggregationKey_Calc", null);
-	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
-
-	/**
 	 * Set Header aggregation builder.
 	 *
 	 * <br>Type: Search
@@ -1809,7 +1789,28 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKeyBuilder_ID = "HeaderAggregationKeyBuilder_ID";
 
 	/**
-	 * Set IncotermLocation.
+	 * Set Header Aggregation Preset.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHeaderAggregationKey_Calc (@Nullable java.lang.String HeaderAggregationKey_Calc);
+
+	/**
+	 * Get Header Aggregation Preset.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHeaderAggregationKey_Calc();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_HeaderAggregationKey_Calc = new ModelColumn<>(I_C_Invoice_Candidate.class, "HeaderAggregationKey_Calc", null);
+	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
+
+	/**
+	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
@@ -1819,7 +1820,7 @@ public interface I_C_Invoice_Candidate
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
+	 * Get Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
@@ -2517,27 +2518,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_LineAggregationKey = "LineAggregationKey";
 
 	/**
-	 * Set Agrregation Suffix.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLineAggregationKey_Suffix (@Nullable java.lang.String LineAggregationKey_Suffix);
-
-	/**
-	 * Get Agrregation Suffix.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getLineAggregationKey_Suffix();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKey_Suffix = new ModelColumn<>(I_C_Invoice_Candidate.class, "LineAggregationKey_Suffix", null);
-	String COLUMNNAME_LineAggregationKey_Suffix = "LineAggregationKey_Suffix";
-
-	/**
 	 * Set Line aggregation builder.
 	 *
 	 * <br>Type: Search
@@ -2557,6 +2537,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKeyBuilder_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "LineAggregationKeyBuilder_ID", null);
 	String COLUMNNAME_LineAggregationKeyBuilder_ID = "LineAggregationKeyBuilder_ID";
+
+	/**
+	 * Set Agrregation Suffix.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLineAggregationKey_Suffix (@Nullable java.lang.String LineAggregationKey_Suffix);
+
+	/**
+	 * Get Agrregation Suffix.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLineAggregationKey_Suffix();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKey_Suffix = new ModelColumn<>(I_C_Invoice_Candidate.class, "LineAggregationKey_Suffix", null);
+	String COLUMNNAME_LineAggregationKey_Suffix = "LineAggregationKey_Suffix";
 
 	/**
 	 * Set Line Net Amount.
@@ -2898,26 +2899,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_PresetDateInvoiced = "PresetDateInvoiced";
 
 	/**
-	 * Set Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_ID (int Price_UOM_ID);
-
-	/**
-	 * Get Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_ID();
-
-	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
-
-	/**
 	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
@@ -3021,6 +3002,26 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_PriceEntered_Override = new ModelColumn<>(I_C_Invoice_Candidate.class, "PriceEntered_Override", null);
 	String COLUMNNAME_PriceEntered_Override = "PriceEntered_Override";
+
+	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Priority.
@@ -3398,48 +3399,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoice = "QtyToInvoice";
 
 	/**
-	 * Set Qty to invoice override.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyToInvoice_Override (@Nullable BigDecimal QtyToInvoice_Override);
-
-	/**
-	 * Get Qty to invoice override.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyToInvoice_Override();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoice_Override = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoice_Override", null);
-	String COLUMNNAME_QtyToInvoice_Override = "QtyToInvoice_Override";
-
-	/**
-	 * Set Qty to Invoice override fulfilled.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyToInvoice_OverrideFulfilled (@Nullable BigDecimal QtyToInvoice_OverrideFulfilled);
-
-	/**
-	 * Get Qty to Invoice override fulfilled.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyToInvoice_OverrideFulfilled();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoice_OverrideFulfilled = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoice_OverrideFulfilled", null);
-	String COLUMNNAME_QtyToInvoice_OverrideFulfilled = "QtyToInvoice_OverrideFulfilled";
-
-	/**
 	 * Set Invoice Qty before Quality Discount.
 	 *
 	 * <br>Type: Quantity
@@ -3522,6 +3481,48 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM_Calc = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM_Calc", null);
 	String COLUMNNAME_QtyToInvoiceInUOM_Calc = "QtyToInvoiceInUOM_Calc";
+
+	/**
+	 * Set Qty to invoice override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToInvoice_Override (@Nullable BigDecimal QtyToInvoice_Override);
+
+	/**
+	 * Get Qty to invoice override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToInvoice_Override();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoice_Override = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoice_Override", null);
+	String COLUMNNAME_QtyToInvoice_Override = "QtyToInvoice_Override";
+
+	/**
+	 * Set Qty to Invoice override fulfilled.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToInvoice_OverrideFulfilled (@Nullable BigDecimal QtyToInvoice_OverrideFulfilled);
+
+	/**
+	 * Get Qty to Invoice override fulfilled.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToInvoice_OverrideFulfilled();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoice_OverrideFulfilled = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoice_OverrideFulfilled", null);
+	String COLUMNNAME_QtyToInvoice_OverrideFulfilled = "QtyToInvoice_OverrideFulfilled";
 
 	/**
 	 * Set Qty with Issues.
@@ -3696,6 +3697,30 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setSalesRep_ID (int SalesRep_ID);
+
+	/**
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getSalesRep_ID();
+
+	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+
+	/**
 	 * Set Update Status.
 	 *
 	 * <br>Type: Text
@@ -3858,7 +3883,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set From Date.
+	 * Set UserElementDate1.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3867,7 +3892,7 @@ public interface I_C_Invoice_Candidate
 	void setUserElementDate1 (@Nullable java.sql.Timestamp UserElementDate1);
 
 	/**
-	 * Get From Date.
+	 * Get UserElementDate1.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3879,7 +3904,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UserElementDate1 = "UserElementDate1";
 
 	/**
-	 * Set To Date.
+	 * Set UserElementDate2.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3888,7 +3913,7 @@ public interface I_C_Invoice_Candidate
 	void setUserElementDate2 (@Nullable java.sql.Timestamp UserElementDate2);
 
 	/**
-	 * Get To Date.
+	 * Get UserElementDate2.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false

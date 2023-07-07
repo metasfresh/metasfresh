@@ -57,25 +57,25 @@ public class C_Order
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	void afterComplete(@NonNull final I_C_Order orderRecord)
+	public void afterComplete(@NonNull final I_C_Order orderRecord)
 	{
 		invokeHandlerForEachLine(orderRecord, COMPLETED);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
-	void afterVoid(@NonNull final I_C_Order orderRecord)
+	public void afterVoid(@NonNull final I_C_Order orderRecord)
 	{
 		invokeHandlerForEachLine(orderRecord, VOIDED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
-	void afterReverse(@NonNull final I_C_Order orderRecord)
+	public void afterReverse(@NonNull final I_C_Order orderRecord)
 	{
 		invokeHandlerForEachLine(orderRecord, REVERSED);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE })
-	void afterReactivate(@NonNull final I_C_Order orderRecord)
+	public void afterReactivate(@NonNull final I_C_Order orderRecord)
 	{
 		invokeHandlerForEachLine(orderRecord, REACTIVATED);
 	}

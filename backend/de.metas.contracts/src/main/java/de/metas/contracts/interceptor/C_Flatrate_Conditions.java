@@ -22,18 +22,9 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
+import de.metas.contracts.FlatrateTransitionId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -44,6 +35,18 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.ModelValidator;
+
+import java.util.List;
+import java.util.Properties;
 
 @Validator(I_C_Flatrate_Conditions.class)
 public class C_Flatrate_Conditions
@@ -55,6 +58,10 @@ public class C_Flatrate_Conditions
 	public static final AdMessageKey MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P = AdMessageKey.of("Conditions_Error_MatchingMissing");
 	public static final AdMessageKey MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P = AdMessageKey.of("Conditions_Error_Transition_Not_Completed");
 	public static final AdMessageKey MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P = AdMessageKey.of("Conditions_Error_Subscription_Not_Supported"); // 03204
+
+	private static final String SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE = "C_Flatrate_Conditions.MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private C_Flatrate_Conditions()
 	{
@@ -125,6 +132,8 @@ public class C_Flatrate_Conditions
 
 		}
 
+		setFlatrateTransitionForModularContract(cond);
+
 		final boolean hasHoCompletedTransition = cond.getC_Flatrate_Transition_ID() <= 0 || !X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus());
 		if (hasHoCompletedTransition)
 		{
@@ -142,5 +151,24 @@ public class C_Flatrate_Conditions
 		{
 			throw new AdempiereException(MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P);
 		}
+	}
+
+	private void setFlatrateTransitionForModularContract(@NonNull final I_C_Flatrate_Conditions conditions)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
+		if (!typeConditions.isModularContractType())
+		{
+			return;
+		}
+
+		final FlatrateTransitionId flatrateTransitionId = FlatrateTransitionId.ofRepoIdOrNull(sysConfigBL.getIntValue(SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE, -1));
+
+		if (flatrateTransitionId == null)
+		{
+			throw new AdempiereException("Missing default value for flatrate condition configured for MODULAR CONTRACTS! Please set value for system configuration \"C_Flatrate_Conditions.MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE\"")
+					.markAsUserValidationError();
+		}
+
+		conditions.setC_Flatrate_Transition_ID(flatrateTransitionId.getRepoId());
 	}
 }

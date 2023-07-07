@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_InventoryLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1072467396L;
+	private static final long serialVersionUID = -1368015240L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (final Properties ctx, final int M_InventoryLine_ID, @Nullable final String trxName)
@@ -343,6 +343,21 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public void setModular_Flatrate_Term_ID (final int Modular_Flatrate_Term_ID)
+	{
+		if (Modular_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getModular_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Modular_Flatrate_Term_ID);
 	}
 
 	@Override

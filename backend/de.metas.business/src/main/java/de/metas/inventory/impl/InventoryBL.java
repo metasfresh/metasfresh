@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -147,7 +148,7 @@ public class InventoryBL implements IInventoryBL
 		GuavaCollectors.groupByAndStream(inventoryLines.stream(), I_M_InventoryLine::getM_Locator_ID)
 				.forEach(
 						inventoryLinesPerLocator -> linesToLocators.put(inventoryLinesPerLocator.get(0).getM_Locator_ID(),
-								inventoryLinesPerLocator));
+																		inventoryLinesPerLocator));
 
 		final List<Integer> locatorIds = linesToLocators
 				.keySet()
@@ -195,6 +196,13 @@ public class InventoryBL implements IInventoryBL
 		inventoryDAO.retrieveLinesForInventoryId(inventoryId)
 				.forEach(this::markInventoryLineAsCounted);
 
+	}
+
+	@NonNull
+	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
+	{
+		return Optional.ofNullable(inventoryDAO.getById(inventoryId))
+				.orElseThrow(() -> new AdempiereException("No record found for " + inventoryId));
 	}
 
 	private void markInventoryLineAsCounted(final I_M_InventoryLine inventoryLine)

@@ -35,7 +35,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_ReceiptSchedule>
+public abstract class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_ReceiptSchedule>
 {
 	@Override
 	public String getHandledTableName()
@@ -89,5 +89,9 @@ public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_Rec
 		record.setUserElementString5(from.getUserElementString5());
 		record.setUserElementString6(from.getUserElementString6());
 		record.setUserElementString7(from.getUserElementString7());
+
+		updateRecord(record);
 	}
+
+	public abstract void updateRecord(final I_M_ReceiptSchedule record);
 }
