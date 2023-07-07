@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,27 +20,15 @@
  * #L%
  */
 
-package de.metas.contracts.modular.log;
+package de.metas.inoutcandidate.document.dimension;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.Builder;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
-import javax.annotation.Nullable;
-
-@Builder
-public record LogEntryReverseRequest(
-		@Nullable ModularContractLogEntryId id,
-		@Nullable TableRecordReference referencedModel,
-		@Nullable FlatrateTermId flatrateTermId,
-		@Nullable String description)
+public class ReceiptScheduleDimensionFactoryTestWrapper extends ReceiptScheduleDimensionFactory
 {
-	public LogEntryReverseRequest
+	@Override
+	public void updateRecord(final I_M_ReceiptSchedule record)
 	{
-		if (id == null && referencedModel == null)
-		{
-			throw new AdempiereException("LogEntryReverseRequest - either an ID or a tableRecordReference must be present.");
-		}
+		// do nothing;
 	}
 }
