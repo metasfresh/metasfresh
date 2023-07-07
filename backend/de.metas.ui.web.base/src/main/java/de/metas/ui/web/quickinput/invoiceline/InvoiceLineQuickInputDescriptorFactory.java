@@ -150,7 +150,9 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField);
+				.addCharacteristic(Characteristic.PublicField)
+				.usePreviousValueAsDefaultValue(LookupValue.IntegerLookupValue.class,
+												InvoiceLineQuickInputDescriptorFactory.class.getSimpleName());
 	}
 
 	private DocumentFieldDescriptor.Builder createQtyFieldDescriptor()

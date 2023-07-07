@@ -19,6 +19,7 @@ import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -248,7 +249,9 @@ import java.util.Set;
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField);
+				.addCharacteristic(Characteristic.PublicField)
+				.usePreviousValueAsDefaultValue(LookupValue.IntegerLookupValue.class,
+												OrderLineQuickInputDescriptorFactory.class.getSimpleName());
 	}
 
 	private DocumentFieldDescriptor.Builder createQuantityField()

@@ -552,6 +552,7 @@ public final class AggregationEngine
 
 			getActivityId(icRecord, headerAggregationId)
 					.ifPresent(activityId -> invoiceHeader.setC_Activity_ID(ActivityId.toRepoId(activityId)));
+			invoiceHeader.setC_Tax_Departure_Country_ID(icRecord.getC_Tax_Departure_Country_ID());
 		}
 		catch (final RuntimeException rte)
 		{

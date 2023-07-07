@@ -13,6 +13,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -130,6 +131,7 @@ import java.util.Optional;
 	private ActivityId activityId;
 
 	private int C_PaymentInstruction_ID;
+	private CountryId C_Tax_Departure_Country_ID;
 
 	@Setter @Getter @Nullable ForexContractRef forexContractRef;
 
@@ -299,7 +301,6 @@ import java.util.Optional;
 	{
 		this.isSOTrx = isSOTrx;
 	}
-
 
 	@Override
 	public int getM_InOut_ID()
@@ -516,4 +517,13 @@ import java.util.Optional;
 		return C_PaymentInstruction_ID;
 	}
 
+	public CountryId getC_Tax_Departure_Country_ID()
+	{
+		return C_Tax_Departure_Country_ID;
+	}
+
+	public void setC_Tax_Departure_Country_ID(final CountryId c_Tax_Departure_Country_ID)
+	{
+		C_Tax_Departure_Country_ID = c_Tax_Departure_Country_ID;
+	}
 }

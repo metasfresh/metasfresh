@@ -28,6 +28,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
+import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -70,6 +71,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -100,12 +102,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_IsDefault;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Tax_Departure_Country_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
@@ -138,6 +142,7 @@ public class C_Order_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final AD_Message_StepDefData messageTable;
 	private final M_SectionCode_StepDefData sectionCodeTable;
+	private final C_Country_StepDefData countryTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -149,7 +154,8 @@ public class C_Order_StepDef
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final AD_Message_StepDefData messageTable,
-			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
+			@NonNull final C_Country_StepDefData countryTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -161,6 +167,7 @@ public class C_Order_StepDef
 		this.orgTable = orgTable;
 		this.messageTable = messageTable;
 		this.sectionCodeTable = sectionCodeTable;
+		this.countryTable = countryTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -232,7 +239,7 @@ public class C_Order_StepDef
 			final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
 			if (Check.isNotBlank(deliveryRule))
 			{
-				// note that IF the C_BPartner has a deliveryRule set (not-mandatory there), this values will be overwritten by it
+				// note that IF the C_BPartner has a deliveryRule set, this values will be overwritten by it
 				order.setDeliveryRule(deliveryRule);
 			}
 
@@ -300,8 +307,9 @@ public class C_Order_StepDef
 				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
 						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+						.orderByDescending(COLUMNNAME_IsDefault)
 						.create()
-						.firstOnlyNotNull(I_C_DocType.class);
+						.firstNotNull(I_C_DocType.class);
 
 				assertThat(docType).isNotNull();
 
@@ -343,6 +351,13 @@ public class C_Order_StepDef
 			if (salesRepID > 0)
 			{
 				order.setSalesRep_ID(salesRepID);
+			}
+
+			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(taxDepartureCountryIdentifier))
+			{
+				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+				order.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
 			}
 
 			saveRecord(order);
@@ -519,6 +534,14 @@ public class C_Order_StepDef
 
 				softly.assertThat(purchaseOrder.getDropShip_Location_ID()).as(COLUMNNAME_DropShip_Location_ID).isEqualTo(dropShipBPLocation.getC_BPartner_Location_ID());
 				softly.assertThat(purchaseOrder.getDropShip_BPartner_ID()).as(I_C_Order.COLUMNNAME_DropShip_BPartner_ID).isEqualTo(dropShipBPLocation.getC_BPartner_ID());
+			}
+
+			final I_C_Order salesOrder = orderTable.get(linkedOrderIdentifier);
+			if (salesOrder.getC_Tax_Departure_Country_ID() > 0)
+			{
+				softly.assertThat(purchaseOrder.getC_Tax_Departure_Country_ID())
+						.as(COLUMNNAME_C_Tax_Departure_Country_ID)
+						.isNotEqualTo(salesOrder.getC_Tax_Departure_Country_ID());
 			}
 		}
 

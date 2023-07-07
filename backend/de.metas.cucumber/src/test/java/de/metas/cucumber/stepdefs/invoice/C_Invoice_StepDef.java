@@ -43,6 +43,7 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -93,6 +94,7 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -132,6 +134,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Currency_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateAcct;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
@@ -175,6 +178,7 @@ public class C_Invoice_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final C_Country_StepDefData countryTable;
 	private final TestContext testContext;
 
 	public C_Invoice_StepDef(
@@ -190,6 +194,7 @@ public class C_Invoice_StepDef
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Activity_StepDefData activityTable,
 			@NonNull final C_DocType_StepDefData docTypeTable,
+			@NonNull final C_Country_StepDefData countryTable,
 			@NonNull final TestContext testContext)
 	{
 		this.invoiceTable = invoiceTable;
@@ -204,6 +209,7 @@ public class C_Invoice_StepDef
 		this.activityTable = activityTable;
 		this.invoiceCandTable = invoiceCandTable;
 		this.docTypeTable = docTypeTable;
+		this.countryTable = countryTable;
 		this.testContext = testContext;
 	}
 
@@ -587,6 +593,15 @@ public class C_Invoice_StepDef
 		if (isSOTrx != null)
 		{
 			softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx);
+		}
+
+		final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(taxDepartureCountryIdentifier))
+		{
+			final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+			softly.assertThat(invoice.getC_Tax_Departure_Country_ID())
+					.as(COLUMNNAME_C_Tax_Departure_Country_ID)
+					.isEqualTo(taxDepartureCountry.getC_Country_ID());
 		}
 
 		{// payment related

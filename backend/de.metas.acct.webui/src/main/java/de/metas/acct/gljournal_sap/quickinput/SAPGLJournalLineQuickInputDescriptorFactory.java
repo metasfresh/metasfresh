@@ -5,12 +5,13 @@ import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
-import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.quickinput.config.QuickInputConfigLayout;
+import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -21,6 +22,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
@@ -34,6 +36,8 @@ import java.util.Set;
 @Component
 public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	public static final AdValRuleId AD_VAL_RULE_VAT_Tax_ID = AdValRuleId.ofRepoId(540644);
+
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final SAPGLJournalLineQuickInputConfigProvider configProvider;
 	private final LookupDescriptorProviders lookupDescriptorProviders;
@@ -85,24 +89,26 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 		return createDescriptorBuilder(documentTypeId, detailId)
 				.setIsSOTrx(soTrx)
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_PostingSign, layoutConfig)
-						.setWidgetType(DocumentFieldWidgetType.List)
-						.setLookupDescriptorProvider(getPostingSignLookup())
-						.setWidgetSize(WidgetSize.Small))
+								  .setWidgetType(DocumentFieldWidgetType.List)
+								  .setLookupDescriptorProvider(getPostingSignLookup())
+								  .setWidgetSize(WidgetSize.Small))
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID, layoutConfig)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name))
-						.setWidgetSize(WidgetSize.Large))
+								  .setWidgetType(DocumentFieldWidgetType.Lookup)
+								  .setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name))
+								  .setWidgetSize(WidgetSize.Large))
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_Amount, layoutConfig)
-						.setWidgetType(DocumentFieldWidgetType.Amount))
+								  .setWidgetType(DocumentFieldWidgetType.Amount))
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Activity_ID, layoutConfig)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Activity.Table_Name)))
+								  .setWidgetType(DocumentFieldWidgetType.Lookup)
+								  .setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Activity.Table_Name)))
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_M_SectionCode_ID, layoutConfig)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name)))
+								  .setWidgetType(DocumentFieldWidgetType.Lookup)
+								  .setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name)))
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Tax_ID, layoutConfig)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Tax.Table_Name)))
+								  .setWidgetType(DocumentFieldWidgetType.Lookup)
+								  .setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Tax.Table_Name, AD_VAL_RULE_VAT_Tax_ID))
+								  .usePreviousValueAsDefaultValue(LookupValue.IntegerLookupValue.class,
+																  SAPGLJournalLineQuickInputDescriptorFactory.class.getSimpleName()))
 				.build();
 	}
 
