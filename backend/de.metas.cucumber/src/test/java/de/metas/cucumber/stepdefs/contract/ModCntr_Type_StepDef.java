@@ -77,6 +77,6 @@ public class ModCntr_Type_StepDef
 		InterfaceWrapperHelper.saveRecord(modCntrTypeRecord);
 
 		final String modCntrTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
-		modCntrTypeTable.put(modCntrTypeIdentifier, modCntrTypeRecord);
+		modCntrTypeTable.putOrReplace(modCntrTypeIdentifier, modCntrTypeRecord);
 	}
 }
