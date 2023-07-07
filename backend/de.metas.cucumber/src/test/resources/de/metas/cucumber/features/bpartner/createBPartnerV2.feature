@@ -1,3 +1,4 @@
+@Id:S0285
 @from:cucumber
 Feature: create or update BPartner v2
   As a user
@@ -7,6 +8,7 @@ Feature: create or update BPartner v2
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @Id:S0285_100
   @from:cucumber
   Scenario: create a BPartner record
     And create M_SectionCode:
@@ -396,6 +398,7 @@ Feature: create or update BPartner v2
 }
     """
 
+  @Id:S0285_200
   Scenario: Update a BPartner record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -515,6 +518,7 @@ Feature: create or update BPartner v2
       | ALBERTA        | BPartnerLocation | l22               |                              | 540000                       | false                      |
       | ALBERTA        | UserID           | c11               |                              | 540000                       | true                       |
 
+  @Id:S0285_300
   Scenario: Update a BPartner contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -554,6 +558,7 @@ Feature: create or update BPartner v2
       | ExternalSystem | Type   | ExternalReference | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | UserID | c11               | false                      |
 
+  @Id:S0285_400
   Scenario: Update a BPartner contact record and Create another contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -612,6 +617,7 @@ Feature: create or update BPartner v2
       | ALBERTA        | UserID | c11               | false                      |
       | ALBERTA        | UserID | c33               | false                      |
 
+  @Id:S0285_500
   @from:cucumber
   Scenario: create BPartner with external reference type of code - orgCode set in path
 
@@ -653,7 +659,7 @@ Feature: create or update BPartner v2
       | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
       | bpartner                 | ext-ALBERTA-bPartner1 | BPartnerTestName1 | BPartnerTestCompany1 | providedOrg              |
 
-
+  @Id:S0285_600
   @from:cucumber
   Scenario: process CreateBPartner requests given:
   _no orgCode in path
