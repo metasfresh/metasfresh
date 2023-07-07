@@ -53,6 +53,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -786,9 +787,9 @@ public class DeliveryPlanningService
 	}
 
 	@NonNull
-	public Optional<Timestamp> getMinActualLoadingDateFromPlanningsWithCompletedInstructions(@NonNull final OrderLineId orderLineId)
+	public Optional<Timestamp> getMinActualLoadingDateFromPlannings(@NonNull final OrderLineId orderLineId, @NonNull final SOTrx soTrx)
 	{
-		return deliveryPlanningRepository.getMinActualLoadingDateFromPlanningsWithCompletedInstructions(orderLineId);
+		return deliveryPlanningRepository.getMinActualLoadingDateFromPlannings(orderLineId, soTrx.isSales());
 	}
 
 	public void invalidateInvoiceCandidatesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
