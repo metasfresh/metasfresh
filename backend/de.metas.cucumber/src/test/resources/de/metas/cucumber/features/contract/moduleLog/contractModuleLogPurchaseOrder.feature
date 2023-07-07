@@ -256,6 +256,7 @@ Feature: Modular contract log from purchase order
   validate on receipt complete, reactivate and reverse logs are created correctly
   validate on receipt void error is thrown
   validate on receiptLine delete error is thrown if modular contract log exist for this line
+  validate on `VOID` purchase order with material receipt created -> `VoidNotAllowed` error is thrown
 
     Given metasfresh contains M_Products:
       | Identifier            | Name                             |
@@ -403,3 +404,12 @@ Feature: Modular contract log from purchase order
     And the material receipt identified by material_receipt_1 is voided expecting error
       | OPT.AD_Message_ID.Identifier |
       | void_not_allowed             |
+
+    And load AD_Message:
+      | Identifier          | Value                                                                                  |
+      | po_void_not_allowed | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.VoidNotAllowed |
+
+    And the order identified by po_order is voided expecting error
+      | OPT.AD_Message_ID.Identifier | OPT.M_InOut_ID.Identifier |
+      | po_void_not_allowed          | material_receipt_1        |
+

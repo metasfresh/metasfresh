@@ -6,6 +6,7 @@ Feature: Modular contract log from inventory
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
+  @Id:S0284_100
   @Id:S0282_500
   @from:cucumber
   Scenario: Happy flow for contract module log - inventory with two lines completed => validate the two created log entries
@@ -73,6 +74,7 @@ Feature: Modular contract log from inventory
       | log_1                     | il_1                 | warehouse                     | module_log_product          | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
       | log_1                     | il_2                 | warehouse                     | module_log_product          | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
+  @Id:S0284_200
   @Id:S0282_600
   @from:cucumber
   Scenario: Happy flow for contract module log - internal use with two lines completed => validate the two created log entries
@@ -144,6 +146,7 @@ Feature: Modular contract log from inventory
       | log_1                     | il_1                 | warehouse                     | module_log_product          | bp_moduleLogPO                  | -10 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
       | log_1                     | il_2                 | warehouse                     | module_log_product          | bp_moduleLogPO                  | -10 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
+  @Id:S0284_300
   @Id:S0282_700
   @from:cucumber
   Scenario: Happy flow for contract module log - inventory with two lines reversed
