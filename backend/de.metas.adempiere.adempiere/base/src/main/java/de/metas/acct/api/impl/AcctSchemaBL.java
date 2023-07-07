@@ -61,6 +61,12 @@ public class AcctSchemaBL implements IAcctSchemaBL
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	@Override
+	public AcctSchema getById(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return acctSchemaDAO.getById(acctSchemaId);
+	}
+
+	@Override
 	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = acctSchemaDAO.getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);

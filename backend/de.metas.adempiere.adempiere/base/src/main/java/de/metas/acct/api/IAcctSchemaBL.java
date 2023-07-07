@@ -33,6 +33,8 @@ import javax.annotation.Nullable;
 
 public interface IAcctSchemaBL extends ISingletonService
 {
+	AcctSchema getById(AcctSchemaId acctSchemaId);
+
 	AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId);
 
 	AcctSchema getPrimaryAcctSchema(@NonNull ClientId clientId);
