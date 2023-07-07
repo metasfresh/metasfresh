@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -41,7 +42,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class ModularContractSettingsDAO
@@ -51,18 +51,31 @@ public class ModularContractSettingsDAO
 	@Nullable
 	public ModularContractSettings getByFlatrateTermIdOrNull(@NonNull final FlatrateTermId contractId)
 	{
-		final Optional<I_ModCntr_Settings> settingsOptional = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, contractId)
 				.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
 				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
 				.create()
-				.firstOptional();
+				.firstOptional()
+				.map(this::getBySettings)
+				.orElse(null);
+	}
 
-		if (settingsOptional.isEmpty())
-		{
-			return null;
-		}
-		final I_ModCntr_Settings settings = settingsOptional.get();
+	@Nullable
+	public ModularContractSettings getByFlatrateConditonsIdOrNull(@NonNull final ConditionsId conditionsId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
+				.create()
+				.firstOptional()
+				.map(this::getBySettings)
+				.orElse(null);
+	}
+
+	@NonNull
+	private ModularContractSettings getBySettings(@NonNull final I_ModCntr_Settings settings)
+	{
 		final List<I_ModCntr_Module> moduleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, settings.getModCntr_Settings_ID())

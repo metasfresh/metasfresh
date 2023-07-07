@@ -227,6 +227,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.conditionsId(ConditionsId.ofRepoIdOrNull(orderLineQuickInput.getC_Flatrate_Conditions_ID()))
 				.build();
 	}
 
@@ -274,6 +275,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		{
 			to.setC_VAT_Code_ID(vatCodeId.getRepoId());
 		}
+
+		to.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(candidate.getConditionsId()));
 	}
 
 	private PlainHUPackingAware createQuickInputPackingAware(@NonNull final OrderLineCandidate candidate)
