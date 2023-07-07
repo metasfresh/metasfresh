@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -77,6 +78,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.I_M_Warehouse;
@@ -143,6 +145,7 @@ public class C_Order_StepDef
 	private final AD_Message_StepDefData messageTable;
 	private final M_SectionCode_StepDefData sectionCodeTable;
 	private final C_Country_StepDefData countryTable;
+	private final M_InOut_StepDefData inoutTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -155,7 +158,8 @@ public class C_Order_StepDef
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final AD_Message_StepDefData messageTable,
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
-			@NonNull final C_Country_StepDefData countryTable)
+			@NonNull final C_Country_StepDefData countryTable,
+			@NonNull final M_InOut_StepDefData inoutTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -168,6 +172,7 @@ public class C_Order_StepDef
 		this.messageTable = messageTable;
 		this.sectionCodeTable = sectionCodeTable;
 		this.countryTable = countryTable;
+		this.inoutTable = inoutTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -425,7 +430,19 @@ public class C_Order_StepDef
 			{
 				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
 
-				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+				final String inoutIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(inoutIdentifier))
+				{
+					final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+
+					final String expectedErrorMessage = msgBL.getTranslatableMsgText(AdMessageKey.of(errorMessage.getValue()), String.valueOf(inout.getM_InOut_ID())).translate(Env.getAD_Language());
+
+					assertThat(e.getMessage()).contains(expectedErrorMessage);
+				}
+				else
+				{
+					assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+				}
 			}
 		}
 
