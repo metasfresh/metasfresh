@@ -285,7 +285,7 @@ final class GPLRReportCreateCommand
 			{
 				final SourceInvoiceLine salesInvoiceLine = salesInvoice.getLineByOrderLineId(salesOrderLine.getId()).orElse(null);
 
-				result.add(createGPLRReportLine_DocumentLine(salesOrderLine, salesOrder));
+				result.add(createGPLRReportLine_DocumentLine(salesInvoiceLine, salesOrderLine, salesOrder));
 				result.add(createGPLRReportLine_Price(salesInvoiceLine, salesOrderLine, salesOrder, currencyInfo));
 				result.add(createGPLRReportLine_VAT(salesInvoiceLine, salesOrderLine, salesOrder, currencyInfo));
 				result.add(createGPLRReportLine_COGS(salesOrderLine, salesOrder));
@@ -300,7 +300,7 @@ final class GPLRReportCreateCommand
 
 			for (final SourceOrderLine purchaseOrderLine : purchaseOrder.getLines())
 			{
-				result.add(createGPLRReportLine_DocumentLine(purchaseOrderLine, purchaseOrder));
+				result.add(createGPLRReportLine_DocumentLine(null, purchaseOrderLine, purchaseOrder));
 				result.add(createGPLRReportLine_Price(null, purchaseOrderLine, purchaseOrder, currencyInfo));
 				result.add(createGPLRReportLine_VAT(null, purchaseOrderLine, purchaseOrder, currencyInfo));
 			}
@@ -358,14 +358,19 @@ final class GPLRReportCreateCommand
 				.build();
 	}
 
-	private static GPLRReportLineItem createGPLRReportLine_DocumentLine(final SourceOrderLine orderLine, final SourceOrder order)
+	private static GPLRReportLineItem createGPLRReportLine_DocumentLine(
+			@Nullable final SourceInvoiceLine invoiceLine,
+			@NonNull final SourceOrderLine orderLine,
+			@NonNull final SourceOrder order)
 	{
+		final Amount priceFC = invoiceLine != null ? invoiceLine.getPriceFC() : orderLine.getPriceFC();
+
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
 				.lineCode(formatOrderLineNo(orderLine.getLineNo()))
 				.description(orderLine.getProductName())
 				.qty(orderLine.getQtyEntered())
-				.priceFC(orderLine.getPriceFC())
+				.priceFC(priceFC)
 				.batchNo(orderLine.getBatchNo())
 				.amountFC(null)
 				.amountLC(null)
