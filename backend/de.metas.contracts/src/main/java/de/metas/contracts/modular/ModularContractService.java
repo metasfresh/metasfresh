@@ -67,7 +67,7 @@ public class ModularContractService
 
 	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action)
 	{
-		if(ModelAction.COMPLETED == action)
+		if (ModelAction.COMPLETED == action)
 		{
 			handler.createContractIfRequired(model);
 		}
@@ -111,6 +111,7 @@ public class ModularContractService
 		handler.validateDocAction(model, action);
 
 		createLogEntries(handler, model, action, flatrateTermId);
+
 		handleAction(handler, model, action, flatrateTermId);
 	}
 
