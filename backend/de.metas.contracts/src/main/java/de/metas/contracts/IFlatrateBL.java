@@ -32,6 +32,7 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -44,11 +45,13 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -206,4 +209,20 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
 	 */
 	boolean existsTermForOrderLine(I_C_OrderLine ol);
+
+	/**
+	 * Extend the ModCntr Settings to the new year
+	 * @param settings
+	 * @param year
+	 * @return
+	 */
+	Optional<I_ModCntr_Settings> extendModularContractSettingsToNewYear(I_ModCntr_Settings settings, I_C_Year year );
+
+	/**
+	 * Extend the C_Flatrate_Conditions to the new year
+	 * @param conditions
+	 * @param year
+	 * @return
+	 */
+	Optional<I_C_Flatrate_Conditions> extendConditionsToNewYear(I_C_Flatrate_Conditions conditions, I_C_Year year);
 }

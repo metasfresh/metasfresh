@@ -35,7 +35,6 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -61,6 +60,7 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -114,6 +114,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -130,6 +132,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -145,6 +148,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -1128,7 +1132,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 			currentTerm.setAD_PInstance_EndOfTerm_ID(PInstanceId.toRepoId(currentRequest.getAD_PInstance_ID()));
-				save(currentTerm);
+			save(currentTerm);
 			if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
 			{
 				// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
@@ -1848,7 +1852,7 @@ public class FlatrateBL implements IFlatrateBL
 			// Only consider terms with the same org.
 			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
 			// Also note that when finding a term for an invoice-candidate, that IC's org is used as a matching criterion
-			if(term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+			if (term.getAD_Org_ID() != newTerm.getAD_Org_ID())
 			{
 				continue;
 			}
@@ -2196,6 +2200,71 @@ public class FlatrateBL implements IFlatrateBL
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, ol.getC_OrderLine_ID())
 				.create()
 				.anyMatch();
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_ModCntr_Settings> extendModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	{
+		final I_ModCntr_Settings newModCntrSettings = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class, settings);
+
+		final PO from = InterfaceWrapperHelper.getPO(settings);
+		final PO to = InterfaceWrapperHelper.getPO(newModCntrSettings);
+
+		PO.copyValues(from, to, true);
+
+		newModCntrSettings.setC_Year_ID(year.getC_Year_ID());
+		newModCntrSettings.setName(newModCntrSettings.getName().concat("-" + year.getFiscalYear()));
+
+		InterfaceWrapperHelper.save(newModCntrSettings);
+
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
+		childCRS.setParentPO(to);
+		childCRS.setBase(true);
+		childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(settings));
+
+		return Optional.of(newModCntrSettings);
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_C_Flatrate_Conditions> extendConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
+	{
+		//
+		// make sure it's Modular Contracts first
+		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract.equals(conditions.getType_Conditions()))
+		{
+			return Optional.empty();
+		}
+
+		//
+		// Extend the ModCntr Settings to the new year
+		final Optional<I_ModCntr_Settings> newSettings = extendModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+
+		if (newSettings.isPresent())
+		{
+			final I_C_Flatrate_Conditions newFlatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
+
+			final PO from = InterfaceWrapperHelper.getPO(conditions);
+			final PO to = InterfaceWrapperHelper.getPO(newFlatrateConditions);
+
+			PO.copyValues(from, to, true);
+
+			newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
+			newFlatrateConditions.setModCntr_Settings(newSettings.get());
+			newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+
+			InterfaceWrapperHelper.save(newFlatrateConditions);
+
+			final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
+			childCRS.setParentPO(to);
+			childCRS.setBase(true);
+			childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(conditions));
+
+			return Optional.of(newFlatrateConditions);
+		}
+
+		return Optional.empty();
 	}
 
 }
