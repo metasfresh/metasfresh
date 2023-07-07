@@ -3,6 +3,9 @@ package de.metas.acct.api;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,8 +33,18 @@ public class FactAcctQuery
 	@Nullable Boolean isOpenItemReconciled;
 	@Nullable String openItemsKey;
 
+	@Nullable DocStatus docStatus;
 	@Nullable String documentNoLike;
 	@Nullable String descriptionLike;
 
 	@NonNull @Builder.Default InSetPredicate<BPartnerId> bpartnerIds = InSetPredicate.any();
+	@Nullable SectionCodeId sectionCodeId;
+	@Nullable OrderId salesOrderId;
+	@Nullable String userElementString1Like;
+	@Nullable String userElementString2Like;
+	@Nullable String userElementString3Like;
+	@Nullable String userElementString4Like;
+	@Nullable String userElementString5Like;
+	@Nullable String userElementString6Like;
+	@Nullable String userElementString7Like;
 }

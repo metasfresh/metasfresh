@@ -249,6 +249,10 @@ public class FactAcctDAO implements IFactAcctDAO
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKey());
 		}
 
+		if (query.getDocStatus() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
 		toSqlLikeString(query.getDocumentNoLike())
 				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_DocumentNo, pattern, true));
 		toSqlLikeString(query.getDescriptionLike())
@@ -258,6 +262,29 @@ public class FactAcctDAO implements IFactAcctDAO
 		{
 			queryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_ID, query.getBpartnerIds());
 		}
+		if (query.getSectionCodeId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_SectionCode_ID, query.getSectionCodeId());
+		}
+		if (query.getSalesOrderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_OrderSO_ID, query.getSalesOrderId());
+		}
+
+		toSqlLikeString(query.getUserElementString1Like())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString1, pattern, true));
+		toSqlLikeString(query.getUserElementString2Like())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString2, pattern, true));
+		toSqlLikeString(query.getUserElementString3Like())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString3, pattern, true));
+		toSqlLikeString(query.getUserElementString4Like())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString4, pattern, true));
+		toSqlLikeString(query.getUserElementString5Like())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString5, pattern, true));
+		toSqlLikeString(query.getUserElementString6Like())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString6, pattern, true));
+		toSqlLikeString(query.getUserElementString7Like())
+				.ifPresent(pattern -> queryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString7, pattern, true));
 
 		return queryBuilder.create();
 	}
