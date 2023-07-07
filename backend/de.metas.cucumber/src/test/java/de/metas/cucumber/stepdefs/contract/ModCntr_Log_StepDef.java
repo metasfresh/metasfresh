@@ -56,11 +56,10 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Year;
-import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -253,7 +252,6 @@ public class ModCntr_Log_StepDef
 		{
 			softly.assertThat(modCntrLogRecord.getDescription()).as(I_ModCntr_Log.COLUMNNAME_Description).isEqualTo(description);
 		}
-
 
 		softly.assertAll();
 
