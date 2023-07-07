@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -197,6 +198,13 @@ public class InventoryBL implements IInventoryBL
 
 	}
 
+	@NonNull
+	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
+	{
+		return Optional.ofNullable(inventoryDAO.getById(inventoryId))
+				.orElseThrow(() -> new AdempiereException("No record found for " + inventoryId));
+	}
+	
 	private void markInventoryLineAsCounted(final I_M_InventoryLine inventoryLine)
 	{
 		inventoryLine.setIsCounted(true);
