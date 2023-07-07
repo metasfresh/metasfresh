@@ -58,8 +58,9 @@ import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandProvider;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageHolder;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -78,6 +79,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -117,7 +119,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
 	{
 		final StockRepository stockRepository = new StockRepository();
-		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
+		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(Collections.singletonList(new ShipmentScheduleQtyOnHandProvider(stockRepository)));
 		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory(Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
 		final PickingBOMService pickingBOMService = new PickingBOMService();
 
@@ -459,7 +461,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		//
 		// Load QtyOnHand in scope for our lines
 		// i.e. iterate all lines to cache the required storage info and to subtract the quantities that can't be allocated from the storage allocation.
-		final ShipmentScheduleQtyOnHandStorage qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(lines);
+		final ShipmentScheduleQtyOnHandStorageHolder qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(lines);
 
 		//
 		// Iterate and try to allocate the QtyOnHand
@@ -473,7 +475,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private void processSingleOlAndSched(
 			final @NonNull OlAndSched olAndSched,
 			final @NonNull ShipmentSchedulesDuringUpdate shipmentSchedulesDuringUpdate,
-			final @NonNull ShipmentScheduleQtyOnHandStorage shipmentScheduleQtyOnHandStorage)
+			final @NonNull ShipmentScheduleQtyOnHandStorageHolder shipmentScheduleQtyOnHandStorage)
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
@@ -506,7 +508,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			//
 			// Get the QtyOnHand storages suitable for our order line
-			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(sched);
+			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(olAndSched);
 			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
 
 			logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
@@ -552,7 +554,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				else
 				{
 					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, ToDeliver={}, FullLine={}",
-								 qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
+							qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
 				}
 			}
 			//
@@ -588,7 +590,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 				qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
 				logger.debug("QtyOverride={} is less than QtyToDeliverOverrideFulFilled={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-							 olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+						olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
 			}
 		}
 		else if (deliveryRule.isManual())
@@ -602,7 +604,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 			qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
 			logger.debug("DeliveryRule={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-						 deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+					deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
 		}
 		return qtyRequired;
 	}

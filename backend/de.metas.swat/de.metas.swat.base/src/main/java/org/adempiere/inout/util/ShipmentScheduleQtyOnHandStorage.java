@@ -1,31 +1,12 @@
 package org.adempiere.inout.util;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.Util.ArrayKey;
-import org.eevolution.api.IPPOrderBL;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.TableRecordMDC;
 import de.metas.material.cockpit.stock.StockDataItem;
@@ -33,20 +14,38 @@ import de.metas.material.cockpit.stock.StockDataMultiQuery;
 import de.metas.material.cockpit.stock.StockDataQuery;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.event.commons.AttributesKey;
-import org.eevolution.api.PPOrderId;
-import org.eevolution.api.QtyCalculationsBOM;
-import org.eevolution.api.QtyCalculationsBOMLine;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.Util.ArrayKey;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Loads stock details which are relevant to given {@link I_M_ShipmentSchedule}s.
  * Allows to change (in memory!) the qtyOnHand.
  */
 @ToString(of = "stockDetails")
-public class ShipmentScheduleQtyOnHandStorage
+public class ShipmentScheduleQtyOnHandStorage implements IShipmentScheduleQtyOnHandStorage
 {
 	// services
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -58,9 +57,12 @@ public class ShipmentScheduleQtyOnHandStorage
 	private final Map<PPOrderId, Optional<QtyCalculationsBOM>> cachedPickingBOMs = new HashMap<>();
 
 	public ShipmentScheduleQtyOnHandStorage(
-			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
+			@NonNull final List<OlAndSched> olAndScheds,
 			@NonNull final StockRepository stockRepository)
 	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = olAndScheds.stream()
+				.map(OlAndSched::getSched)
+				.collect(ImmutableList.toImmutableList());
 		this.stockDetails = toStockDetails(shipmentSchedules, stockRepository);
 	}
 
@@ -214,14 +216,17 @@ public class ShipmentScheduleQtyOnHandStorage
 		return !stockDetails.isEmpty();
 	}
 
-	public ShipmentScheduleAvailableStock getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule sched)
+
+	@Override
+	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(final @NonNull OlAndSched olAndSched)
 	{
 		if (!hasStockDetails())
 		{
-			return ShipmentScheduleAvailableStock.of();
+			return Collections.emptyList();
 		}
 		else
 		{
+			I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final ArrayList<ShipmentScheduleAvailableStockDetail> availableStockDetails = new ArrayList<>();
 
 			//
@@ -234,7 +239,7 @@ public class ShipmentScheduleQtyOnHandStorage
 			final PPOrderId pickFromOrderId = PPOrderId.ofRepoIdOrNull(sched.getPickFrom_Order_ID());
 			availableStockDetails.addAll(createPickFromStockDetails(mainProductQuery, pickFromOrderId));
 
-			return ShipmentScheduleAvailableStock.of(availableStockDetails);
+			return availableStockDetails;
 		}
 	}
 
@@ -317,5 +322,10 @@ public class ShipmentScheduleQtyOnHandStorage
 		}
 
 		return true;
+	}
+
+	public static ShipmentScheduleQtyOnHandStorage of(@NonNull final IShipmentScheduleQtyOnHandStorage from)
+	{
+		return (ShipmentScheduleQtyOnHandStorage) from;
 	}
 }

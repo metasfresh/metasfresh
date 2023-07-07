@@ -2,8 +2,6 @@ package org.adempiere.inout.util;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.cockpit.stock.StockRepository;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -34,30 +32,22 @@ import java.util.List;
 @Service
 public class ShipmentScheduleQtyOnHandStorageFactory
 {
-	private final StockRepository stockRepository;
+	private final List<IShipmentScheduleQtyOnHandProvider> providers;
 
-	public ShipmentScheduleQtyOnHandStorageFactory(@NonNull final StockRepository stockRepository)
+	public ShipmentScheduleQtyOnHandStorageFactory(@NonNull final List<IShipmentScheduleQtyOnHandProvider> providers)
 	{
-		this.stockRepository = stockRepository;
+		this.providers = providers;
 	}
 
-	public final ShipmentScheduleQtyOnHandStorage ofShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public final ShipmentScheduleQtyOnHandStorageHolder ofOlAndScheds(@NonNull final List<OlAndSched> lines)
 	{
-		return new ShipmentScheduleQtyOnHandStorage(ImmutableList.of(shipmentSchedule), stockRepository);
-	}
-
-	public final ShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull final List<OlAndSched> lines)
-	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = lines
-				.stream()
-				.map(OlAndSched::getSched)
+		final ImmutableList<IShipmentScheduleQtyOnHandStorage> shipmentScheduleQtyOnHandStorages = providers.stream()
+				.map(provider -> provider.ofOlAndScheds(lines))
 				.collect(ImmutableList.toImmutableList());
-
-		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules, stockRepository);
+		return
+				ShipmentScheduleQtyOnHandStorageHolder.builder()
+						.storages(shipmentScheduleQtyOnHandStorages)
+						.build();
 	}
 
-	public final ShipmentScheduleQtyOnHandStorage ofShipmentSchedules(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
-	{
-		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules, stockRepository);
-	}
 }

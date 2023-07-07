@@ -27,6 +27,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.OrderLineId;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
@@ -42,9 +43,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
- * 
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class OlAndSched
 {
@@ -167,7 +166,7 @@ public final class OlAndSched
 	@Nullable
 	public InputDataSourceId getSalesOrderADInputDatasourceID()
 	{
-		if(!salesOrder.isPresent())
+		if (!salesOrder.isPresent())
 		{
 			return null;
 		}
@@ -175,6 +174,13 @@ public final class OlAndSched
 		final I_C_Order orderRecord = salesOrder.get();
 
 		return InputDataSourceId.ofRepoIdOrNull(orderRecord.getAD_InputDataSource_ID());
+	}
 
+	@Nullable
+	public OrderLineId getOrderLineId()
+	{
+		return salesOrderLine.map(org.compiere.model.I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.orElse(null);
 	}
 }
