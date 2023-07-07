@@ -51,7 +51,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 {
 	public static final String TYPE_CONDITIONS_SUBSCRIPTION = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription;
 
-	private final static String MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = "Extension Not Allowed";
+	private final static String MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = "@MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED@";
 	private static final String MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P = "Term_Error_Delivery_Already_Has_Shipment_Sched";
 
 	@Override
@@ -104,7 +104,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 		}
 		else if (ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(conditions.getOnFlatrateTermExtend()))
 		{
-			throw new AdempiereException("@" + MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED + "@")
+			throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED)
 					.appendParametersToMessage()
 					.setParameter("conditions", conditions);
 		}
