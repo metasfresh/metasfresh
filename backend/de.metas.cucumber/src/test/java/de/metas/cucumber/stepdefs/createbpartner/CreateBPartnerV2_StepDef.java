@@ -53,13 +53,13 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.model.I_C_Incoterms;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_M_SectionCode;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Postal;
+import org.compiere.model.I_M_SectionCode;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -323,6 +323,8 @@ public class CreateBPartnerV2_StepDef
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VATaxId");
 			final String sapPaymentMethod = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.SAP_PaymentMethod");
 			final Boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, null);
+			final String bPartnerName = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_BPartnerName);
+			final String name = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_Name);
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
@@ -349,6 +351,16 @@ public class CreateBPartnerV2_StepDef
 			if (isShipToDefault != null)
 			{
 				softly.assertThat(persistedLocation.isShipToDefault()).as(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).isEqualTo(isShipToDefault);
+			}
+
+			if (bPartnerName != null)
+			{
+				softly.assertThat(persistedLocation.getBpartnerName()).as(I_C_BPartner_Location.COLUMNNAME_BPartnerName).isEqualTo(bPartnerName);
+			}
+
+			if (name != null)
+			{
+				softly.assertThat(persistedLocation.getName()).as(I_C_BPartner_Location.COLUMNNAME_Name).isEqualTo(name);
 			}
 
 			softly.assertAll();
