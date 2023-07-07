@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * This implementation should provide details about quantities reserved for Order lines.
  * Main driver of this is because products in the service/repair should no longer count against stock.
- * But they still need to be available to be shipped back to the client.
+ * But they still need to be shipped back to the client.
  */
 @Service
 public class ShipmentScheduleQtyReservedProvider implements IShipmentScheduleQtyOnHandProvider

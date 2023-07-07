@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,6 +38,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +63,51 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 	@Override
 	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(final @NonNull OlAndSched olAndSched)
 	{
-		return null;
+		if (stockDetails.isEmpty())
+		{
+			return Collections.emptyList();
+		}
+		else
+		{
+			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+
+			//
+			// Reserved qty shall always be in VHUs, no need for picking BOM.
+			final StockDataQuery mainProductQuery = toQuery(sched);
+			return new ArrayList<>(getStockDetailsMatching(mainProductQuery));
+		}
+	}
+
+	private ImmutableList<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final StockDataQuery query)
+	{
+		return stockDetails
+				.stream()
+				.filter(stockDetail -> matching(query, stockDetail))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static boolean matching(final StockDataQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
+	{
+		//
+		// Product
+		if (!ProductId.equals(query.getProductId(), stockDetail.getProductId()))
+		{
+			return false;
+		}
+
+		//
+		// Warehouse
+		final Set<WarehouseId> queryWarehouseIds = query.getWarehouseIds();
+		if (!queryWarehouseIds.isEmpty() && !queryWarehouseIds.contains(stockDetail.getWarehouseId()))
+		{
+			return false;
+		}
+
+		//
+		// Attributes
+		final boolean queryMatchesAll = query.getStorageAttributesKey().isAll();
+		final boolean queryMatchesStockDetail = AttributesKey.equals(query.getStorageAttributesKey(), stockDetail.getStorageAttributesKey());
+		return queryMatchesAll || queryMatchesStockDetail;
 	}
 
 	@Override
