@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1784155537L;
+	private static final long serialVersionUID = -1393447161L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -94,15 +94,15 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term()
+	public I_C_Flatrate_Term getC_Flatrate_Term()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, I_C_Flatrate_Term.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Term(final de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term)
+	public void setC_Flatrate_Term(final I_C_Flatrate_Term C_Flatrate_Term)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, I_C_Flatrate_Term.class, C_Flatrate_Term);
 	}
 
 	@Override
@@ -136,21 +136,6 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public void setCollectionPoint_BPartner_ID (final int CollectionPoint_BPartner_ID)
-	{
-		if (CollectionPoint_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_CollectionPoint_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_CollectionPoint_BPartner_ID, CollectionPoint_BPartner_ID);
-	}
-
-	@Override
-	public int getCollectionPoint_BPartner_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_CollectionPoint_BPartner_ID);
-	}
-
-	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -166,6 +151,21 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public void setCollectionPoint_BPartner_ID (final int CollectionPoint_BPartner_ID)
+	{
+		if (CollectionPoint_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_CollectionPoint_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_CollectionPoint_BPartner_ID, CollectionPoint_BPartner_ID);
+	}
+
+	@Override
+	public int getCollectionPoint_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_CollectionPoint_BPartner_ID);
+	}
+
+	@Override
 	public void setDateTrx (final java.sql.Timestamp DateTrx)
 	{
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
@@ -178,13 +178,13 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (final @Nullable String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -228,6 +228,36 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
 	/** 
 	 * ModCntr_Log_DocumentType AD_Reference_ID=541770
 	 * Reference name: ModCntr_Log_DocumentType
@@ -257,14 +287,16 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_FinalSettlement = "FinalSettlement";
 	/** Definitive Final Settlement = DefinitiveFinalSettlement */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement = "DefinitiveFinalSettlement";
+	/** Inventory = Inventory */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_Inventory = "Inventory";
 	@Override
-	public void setModCntr_Log_DocumentType (final java.lang.String ModCntr_Log_DocumentType)
+	public void setModCntr_Log_DocumentType (final String ModCntr_Log_DocumentType)
 	{
 		set_Value (COLUMNNAME_ModCntr_Log_DocumentType, ModCntr_Log_DocumentType);
 	}
 
 	@Override
-	public java.lang.String getModCntr_Log_DocumentType() 
+	public String getModCntr_Log_DocumentType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ModCntr_Log_DocumentType);
 	}
@@ -285,15 +317,15 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public de.metas.contracts.model.I_ModCntr_Type getModCntr_Type()
+	public I_ModCntr_Type getModCntr_Type()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.class);
 	}
 
 	@Override
-	public void setModCntr_Type(final de.metas.contracts.model.I_ModCntr_Type ModCntr_Type)
+	public void setModCntr_Type(final I_ModCntr_Type ModCntr_Type)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class, ModCntr_Type);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.class, ModCntr_Type);
 	}
 
 	@Override
@@ -309,36 +341,6 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getModCntr_Type_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Type_ID);
-	}
-
-	@Override
-	public void setM_Product_ID (final int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
-	}
-
-	@Override
-	public int getM_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
-	}
-
-	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override

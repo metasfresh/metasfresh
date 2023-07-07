@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
+import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -55,6 +56,7 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -83,6 +85,11 @@ public class ModCntr_Log_StepDef
 	private final ModCntr_Type_StepDefData modCntrTypeTable;
 	private final C_Year_StepDefData yearTable;
 	private final C_OrderLine_StepDefData orderLineTable;
+<<<<<<< HEAD
+=======
+	private final M_InventoryLine_StepDefData inventoryLineTable;
+
+>>>>>>> 8e91cdc6e3a (Inner silence uat gh15819 (#15836))
 	private final M_InOutLine_StepDefData inOutLineTable;
 
 	public ModCntr_Log_StepDef(
@@ -95,6 +102,7 @@ public class ModCntr_Log_StepDef
 			@NonNull final ModCntr_Type_StepDefData modCntrTypeTable,
 			@NonNull final C_Year_StepDefData yearTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
 			@NonNull final M_InOutLine_StepDefData inOutLineTable)
 	{
 		this.bpartnerTable = bpartnerTable;
@@ -106,6 +114,7 @@ public class ModCntr_Log_StepDef
 		this.modCntrTypeTable = modCntrTypeTable;
 		this.yearTable = yearTable;
 		this.orderLineTable = orderLineTable;
+		this.inventoryLineTable = inventoryLineTable;
 		this.inOutLineTable = inOutLineTable;
 	}
 
@@ -134,6 +143,7 @@ public class ModCntr_Log_StepDef
 		switch (tableName)
 		{
 			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
+			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
 			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
@@ -240,6 +250,13 @@ public class ModCntr_Log_StepDef
 			final I_C_Year yearRecord = yearTable.get(yearIdentifier);
 			softly.assertThat(modCntrLogRecord.getHarvesting_Year_ID()).as(I_ModCntr_Log.COLUMNNAME_Harvesting_Year_ID).isEqualTo(yearRecord.getC_Year_ID());
 		}
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_Description);
+		if (Check.isNotBlank(description))
+		{
+			softly.assertThat(modCntrLogRecord.getDescription()).as(I_ModCntr_Log.COLUMNNAME_Description).isEqualTo(description);
+		}
+
 
 		softly.assertAll();
 

@@ -47,5 +47,10 @@ public interface IInventoryBL extends ISingletonService
 
 	void setDefaultInternalChargeId(I_M_InventoryLine inventoryLine);
 
+<<<<<<< HEAD
 	void markInventoryLinesAsCounted(@NonNull InventoryId inventoryId);
+=======
+	@NonNull
+	I_M_Inventory getById(@NonNull InventoryId inventoryId);
+>>>>>>> 8e91cdc6e3a (Inner silence uat gh15819 (#15836))
 }

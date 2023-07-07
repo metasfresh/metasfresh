@@ -210,4 +210,6 @@ public interface IFlatrateBL extends ISingletonService
 	boolean isModularContract(ConditionsId conditionsId);
 
 	I_C_Flatrate_Term createContractForOrderLine(I_C_OrderLine orderLine);
+
+	boolean isModularContract(@NonNull FlatrateTermId flatrateTermId);
 }

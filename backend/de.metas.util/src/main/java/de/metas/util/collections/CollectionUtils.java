@@ -304,6 +304,7 @@ public final class CollectionUtils
 		return collection
 				.stream()
 				.map(extractFunction)
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
