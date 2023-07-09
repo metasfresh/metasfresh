@@ -61,6 +61,7 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -118,6 +119,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -135,6 +138,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -2291,10 +2295,10 @@ public class FlatrateBL implements IFlatrateBL
 	public boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
 	{
 		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
-		
+
 		return isModularContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
 	}
-	
+
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
@@ -2344,4 +2348,68 @@ public class FlatrateBL implements IFlatrateBL
 				.build()
 				.computeOrThrowEx();
 	}
+	@Override
+	@NonNull
+	public Optional<I_ModCntr_Settings> extendModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	{
+		final I_ModCntr_Settings newModCntrSettings = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class, settings);
+
+		final PO from = InterfaceWrapperHelper.getPO(settings);
+		final PO to = InterfaceWrapperHelper.getPO(newModCntrSettings);
+
+		PO.copyValues(from, to, true);
+
+		newModCntrSettings.setC_Year_ID(year.getC_Year_ID());
+
+		InterfaceWrapperHelper.save(newModCntrSettings);
+
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
+		childCRS.setParentPO(to);
+		childCRS.setBase(true);
+		childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(settings));
+
+		return Optional.of(newModCntrSettings);
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_C_Flatrate_Conditions> extendConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
+	{
+		//
+		// make sure it's Modular Contracts first
+		if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract.equals(conditions.getType_Conditions()))
+		{
+			return Optional.empty();
+		}
+
+		//
+		// Extend the ModCntr Settings to the new year
+		final Optional<I_ModCntr_Settings> newSettings = extendModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+
+		if (newSettings.isPresent())
+		{
+			final I_C_Flatrate_Conditions newFlatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
+
+			final PO from = InterfaceWrapperHelper.getPO(conditions);
+			final PO to = InterfaceWrapperHelper.getPO(newFlatrateConditions);
+
+			PO.copyValues(from, to, true);
+
+			newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
+			newFlatrateConditions.setModCntr_Settings(newSettings.get());
+			newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+
+			InterfaceWrapperHelper.save(newFlatrateConditions);
+
+			final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
+			childCRS.setParentPO(to);
+			childCRS.setBase(true);
+			childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(conditions));
+
+			return Optional.of(newFlatrateConditions);
+		}
+
+		return Optional.empty();
+	}
+
 }
