@@ -20,8 +20,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.Ini;
 
-import java.util.Optional;
-
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 
@@ -41,17 +39,16 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 		final I_C_Year newYear = InterfaceWrapperHelper.load(YearId.ofRepoId(p_C_Year_ID), I_C_Year.class);
 		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(ConditionsId.ofRepoId(getRecord_ID()));
 
-		if (isSettingWithSameYear(conditions.getModCntr_Settings(), newYear))
+		if (isSettingsWithSameYear(conditions.getModCntr_Settings(), newYear))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
 		}
 
-		final Optional<I_C_Flatrate_Conditions> newConditions = flatrateBL.extendConditionsToNewYear(conditions, newYear);
-
-		if (newConditions.isPresent())
+		final I_C_Flatrate_Conditions newConditions = flatrateBL.extendConditionsToNewYear(conditions, newYear);
+		if (newConditions != null)
 		{
 			final int adWindowId = getProcessInfo().getAD_Window_ID();
-			final TableRecordReference ref = TableRecordReference.of(newConditions.get());
+			final TableRecordReference ref = TableRecordReference.of(newConditions);
 			if (adWindowId > 0 && !Ini.isSwingClient())
 			{
 				getResult().setRecordToOpen(ref, adWindowId, OpenTarget.SingleDocument);
@@ -61,7 +58,7 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 		return MSG_OK;
 	}
 
-	private boolean isSettingWithSameYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year newYear)
+	private boolean isSettingsWithSameYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year newYear)
 	{
 		return settings.getC_Year_ID() == newYear.getC_Year_ID();
 	}
