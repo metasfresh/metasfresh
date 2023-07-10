@@ -32,7 +32,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
@@ -47,10 +46,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -110,7 +111,6 @@ public class HUUniqueAttributesService
 
 	private void validateHUQty(@NonNull final I_M_HU_Storage huStorage, @NonNull final AttributeId attributeId)
 	{
-
 		if (!(uomDAO.isUOMEach(UomId.ofRepoId(huStorage.getC_UOM_ID()))
 				&& BigDecimal.ONE.equals(huStorage.getQty())))
 		{
@@ -128,11 +128,6 @@ public class HUUniqueAttributesService
 			return;
 		}
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-
-		if (belongsToQualityWarehouse(huRecord))
-		{
-			// don't validate unique attributes in the quality warehouse
-		}
 
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
@@ -176,11 +171,6 @@ public class HUUniqueAttributesService
 		}
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
 
-		if (belongsToQualityWarehouse(huRecord))
-		{
-			// don't validate unique attributes in the quality warehouse
-		}
-
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
 		for (final I_M_HU_Storage huStorage : huStorages)
@@ -215,6 +205,12 @@ public class HUUniqueAttributesService
 			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// don't validate HU Statuses that are not qtyOnHand here
+				continue;
+			}
+
+			if(belongsToQualityWarehouse(huRecord))
+			{
+				// don't validate HUs in quality warehouse
 				continue;
 			}
 
@@ -278,9 +274,15 @@ public class HUUniqueAttributesService
 		}
 	}
 
-	private boolean belongsToQualityWarehouse(@NonNull final I_M_HU hu)
+	public boolean belongsToQualityWarehouse(@NonNull final I_M_HU hu)
 	{
-		final I_M_Warehouse huWarehouse = IHandlingUnitsBL.extractWarehouseOrNull(hu);
-		return huWarehouse == null ? false : huWarehouse.isQualityReturnWarehouse();
+		final int locatorRepoId = hu.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			return false;
+		}
+		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(locatorRepoId);
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return warehouse.isQualityReturnWarehouse();
 	}
 }
