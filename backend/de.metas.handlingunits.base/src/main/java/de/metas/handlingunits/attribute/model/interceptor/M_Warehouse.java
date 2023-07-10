@@ -69,7 +69,6 @@ public class M_Warehouse
 				{
 					huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(HuId.ofRepoId(hus.next().getM_HU_ID()));
 				}
-
 			}
 		}
 		else
@@ -81,7 +80,6 @@ public class M_Warehouse
 				while (hus.hasNext())
 				{
 					huUniqueAttributesService.createOrUpdateHUUniqueAttribute(HuId.ofRepoId(hus.next().getM_HU_ID()));
-
 				}
 			}
 		}
