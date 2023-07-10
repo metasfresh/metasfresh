@@ -498,7 +498,6 @@ public final class Document
 	/**
 	 * Set field's initial value
 	 *
-	 * @param documentField
 	 * @param mode               initialization mode
 	 * @param fieldValueSupplier initial value supplier
 	 */
@@ -825,8 +824,6 @@ public final class Document
 
 	/**
 	 * NOTE: API method, don't call it directly
-	 *
-	 * @param documentValuesSupplier
 	 */
 	public void refreshFromSupplier(final DocumentValuesSupplier documentValuesSupplier)
 	{
@@ -929,8 +926,6 @@ public final class Document
 	 * Sets a {@link DocumentEvaluatee} which will be used as a parent evaluatee for {@link #asEvaluatee()}.
 	 * <p>
 	 * NOTE: this shadow evaluatee is not persisted and is discarded on {@link #copy(Document, CopyMode)}.
-	 *
-	 * @param shadowParentDocumentEvaluatee
 	 */
 	public void setShadowParentDocumentEvaluatee(final IDocumentEvaluatee shadowParentDocumentEvaluatee)
 	{
@@ -1725,8 +1720,6 @@ public final class Document
 	 * Set Dynamic Attribute.
 	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this this instance is not destroyed.
 	 *
-	 * @param name
-	 * @param value
 	 */
 	public Object setDynAttribute(final String name, final Object value)
 	{
@@ -1751,7 +1744,6 @@ public final class Document
 	/**
 	 * Get Dynamic Attribute
 	 *
-	 * @param name
 	 * @return attribute value or null if not found
 	 */
 	public <T> T getDynAttribute(final String name)
@@ -1763,8 +1755,6 @@ public final class Document
 	/**
 	 * Get Dynamic Attribute
 	 *
-	 * @param name
-	 * @param defaultValue
 	 * @return attribute value or <code>defaultValue</code> if not found
 	 */
 	public <T> T getDynAttribute(final String name, final T defaultValue)

@@ -26,5 +26,5 @@ public class SAPGLJournalLineCreateRequest
 	@NonNull Dimension dimension;
 	boolean determineTaxBaseSAP;
 	@Nullable FAOpenItemKey openItemKey;
-	private final boolean isFieldsReadOnlyInUI;
+	boolean isFieldsReadOnlyInUI;
 }

@@ -34,19 +34,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Window miscellaneous constants.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 // NOTE to dev: please keep this class in the root package (e.g. de.metas.ui.web.window) because at least the "logger" depends on this
 public final class WindowConstants
 {
 	/**
 	 * Root logger for "window" functionality.
-	 *
 	 * Changing the level of this logger will affect all loggers.
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
 
-	public static final WindowId WINDOWID_R_Request = WindowId.of(232); // FIXME: HARDCODED
 	public static final WindowId WINDOWID_UserProfile = WindowId.of(53100); // FIXME: HARDCODED
 
 	public static final String FIELDNAME_DocumentNo = "DocumentNo";
