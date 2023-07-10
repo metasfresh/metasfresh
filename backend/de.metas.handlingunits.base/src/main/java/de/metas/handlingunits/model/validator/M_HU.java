@@ -90,7 +90,7 @@ public class M_HU
 	public void handleHUUniqueAttributes(@NonNull final I_M_HU hu)
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
+		if (huStatusBL.isQtyOnHand(hu.getHUStatus()) && !huUniqueAttributesService.belongsToQualityWarehouse(hu))
 		{
 			huUniqueAttributesService.validateHU(huId);
 			huUniqueAttributesService.createOrUpdateHUUniqueAttribute(huId);

@@ -279,7 +279,7 @@ public class HUUniqueAttributesService
 		}
 	}
 
-	private boolean belongsToQualityWarehouse(@NonNull final I_M_HU hu)
+	public boolean belongsToQualityWarehouse(@NonNull final I_M_HU hu)
 	{
 		final I_M_Warehouse huWarehouse = IHandlingUnitsBL.extractWarehouseOrNull(hu);
 		return huWarehouse == null ? false : huWarehouse.isQualityReturnWarehouse();
