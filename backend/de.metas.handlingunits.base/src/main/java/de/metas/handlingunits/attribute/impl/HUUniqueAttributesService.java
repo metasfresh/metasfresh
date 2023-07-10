@@ -129,12 +129,6 @@ public class HUUniqueAttributesService
 		}
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
 
-		if (belongsToQualityWarehouse(huRecord))
-		{
-			// don't validate unique attributes in the quality warehouse
-			return;
-		}
-
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
 		for (final I_M_HU_Storage huStorage : huStorages)
@@ -177,12 +171,6 @@ public class HUUniqueAttributesService
 		}
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
 
-		if (belongsToQualityWarehouse(huRecord))
-		{
-			// don't validate unique attributes in the quality warehouse
-			return;
-		}
-
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
 		for (final I_M_HU_Storage huStorage : huStorages)
@@ -217,6 +205,12 @@ public class HUUniqueAttributesService
 			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// don't validate HU Statuses that are not qtyOnHand here
+				continue;
+			}
+
+			if(belongsToQualityWarehouse(huRecord))
+			{
+				// don't validate HUs in quality warehouse
 				continue;
 			}
 
