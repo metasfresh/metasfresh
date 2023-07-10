@@ -29,7 +29,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.warehouse.LocatorId;
 
 @Value
 @Builder
