@@ -234,6 +234,12 @@ public class HUUniqueAttributesService
 				// nothing to do for non-qtyOnHand statuses
 				continue;
 			}
+
+			if(belongsToQualityWarehouse(huRecord))
+			{
+				// don't validate HUs from quality warehouse
+				continue;
+			}
 			createOrUpdateHUUniqueAttribute(huAttribute);
 		}
 	}
