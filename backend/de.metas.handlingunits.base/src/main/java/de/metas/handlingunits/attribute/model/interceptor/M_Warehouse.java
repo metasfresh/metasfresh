@@ -25,15 +25,20 @@ package de.metas.handlingunits.attribute.model.interceptor;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Iterator;
+import java.util.List;
 
 @Interceptor(I_M_Warehouse.class)
 @Component
@@ -52,22 +57,33 @@ public class M_Warehouse
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse })
 	public void handleHUUniqueAttributes(@NonNull final I_M_Warehouse warehouse)
 	{
+		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+
 		if (warehouse.isQualityReturnWarehouse())
 		{
 			// delete hu unique attribute entries
-			warehouseDAO.getLocatorIds(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-					.stream()
-					.map(huDAO::retrieveTopLevelHUsForLocator)
-					.forEach(huRecord -> huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(HuId.ofRepoId(huRecord.next().getM_HU_ID())));
+			for (LocatorId locatorId : locatorIds)
+			{
+				final Iterator<I_M_HU> hus = huDAO.retrieveTopLevelHUsForLocator(locatorId);
+				while (hus.hasNext())
+				{
+					huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(HuId.ofRepoId(hus.next().getM_HU_ID()));
+				}
 
+			}
 		}
 		else
 		{
 			// create hu unique attribute entries
-			warehouseDAO.getLocatorIds(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-					.stream()
-					.map(huDAO::retrieveTopLevelHUsForLocator)
-					.forEach(huRecord -> huUniqueAttributesService.createOrUpdateHUUniqueAttribute(HuId.ofRepoId(huRecord.next().getM_HU_ID())));
+			for (LocatorId locatorId : locatorIds)
+			{
+				final Iterator<I_M_HU> hus = huDAO.retrieveTopLevelHUsForLocator(locatorId);
+				while (hus.hasNext())
+				{
+					huUniqueAttributesService.createOrUpdateHUUniqueAttribute(HuId.ofRepoId(hus.next().getM_HU_ID()));
+
+				}
+			}
 		}
 	}
 }
