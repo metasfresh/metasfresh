@@ -49,6 +49,7 @@ public class OIView_AddToJournal extends OIViewBasedProcess
 				.bpartnerId(row.getBpartnerId())
 				.dimension(row.getDimension())
 				.openItemKey(row.getOpenItemKey())
+				.isFieldsReadOnlyInUI(true)
 				.build();
 	}
 }
