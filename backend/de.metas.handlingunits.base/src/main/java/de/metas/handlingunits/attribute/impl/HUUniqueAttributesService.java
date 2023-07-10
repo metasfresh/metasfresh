@@ -110,7 +110,6 @@ public class HUUniqueAttributesService
 
 	private void validateHUQty(@NonNull final I_M_HU_Storage huStorage, @NonNull final AttributeId attributeId)
 	{
-
 		if (!(uomDAO.isUOMEach(UomId.ofRepoId(huStorage.getC_UOM_ID()))
 				&& BigDecimal.ONE.equals(huStorage.getQty())))
 		{
@@ -132,6 +131,7 @@ public class HUUniqueAttributesService
 		if (belongsToQualityWarehouse(huRecord))
 		{
 			// don't validate unique attributes in the quality warehouse
+			return;
 		}
 
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
@@ -179,6 +179,7 @@ public class HUUniqueAttributesService
 		if (belongsToQualityWarehouse(huRecord))
 		{
 			// don't validate unique attributes in the quality warehouse
+			return;
 		}
 
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
