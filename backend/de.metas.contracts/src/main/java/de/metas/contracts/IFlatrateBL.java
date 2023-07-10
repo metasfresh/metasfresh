@@ -232,6 +232,10 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	I_C_Flatrate_Conditions extendConditionsToNewYear(I_C_Flatrate_Conditions conditions, I_C_Year year);
 
-
+	/**
+	 * Check if the provided contract is extendable (Not a Modular Contract,...)
+	 * @param contract
+	 * @return
+	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
 }
