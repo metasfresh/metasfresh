@@ -6,7 +6,6 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.email.EMail;
-import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
@@ -358,13 +357,17 @@ public class NotificationSenderTemplate
 		else if (recipient.isUser())
 		{
 
-			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId());
+			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId())
+					.toBuilder()
+					.eMailCustomType(request.getEMailCustomType())
+					.build();
 
 			if (recipient.isRoleIdSet())
 			{
 				final RoleNotificationsConfig roleNotificationsConfig = notificationsService.getRoleNotificationsConfig(recipient.getRoleId());
 				notificationsConfig = notificationsConfig.deriveWithNotificationGroups(roleNotificationsConfig.getNotificationGroups());
 			}
+
 		}
 		else
 		{
@@ -466,7 +469,7 @@ public class NotificationSenderTemplate
 				notificationsConfig.getOrgId(),
 				(AdProcessId)null,  // AD_Process_ID
 				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
-				(EMailCustomType)null);  // customType
+				notificationsConfig.getEMailCustomType());  // customType
 	}
 
 	private String extractMailContent(final UserNotificationRequest request)

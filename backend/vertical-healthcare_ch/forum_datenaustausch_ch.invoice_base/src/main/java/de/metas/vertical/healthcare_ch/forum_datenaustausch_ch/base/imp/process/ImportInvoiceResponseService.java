@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.email.EMailCustomType;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
@@ -85,6 +86,7 @@ class ImportInvoiceResponseService
 				.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST)
 				.contentADMessageParam(invoiceRef)
 				.targetAction(TargetRecordAction.of(invoiceRef))
+				.eMailCustomType(EMailCustomType.InvoiceRejection)
 				.build();
 
 		notificationBL.send(userNotificationRequest);

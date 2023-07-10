@@ -1,30 +1,27 @@
 package de.metas.notification;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.email.EMailCustomType;
+import de.metas.event.EventBusConfig;
+import de.metas.event.Topic;
+import de.metas.i18n.AdMessageKey;
+import de.metas.user.UserId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.core.io.Resource;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.core.io.Resource;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.event.EventBusConfig;
-import de.metas.event.Topic;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
@@ -78,6 +75,7 @@ public class UserNotificationRequest
 	List<Object> contentADMessageParams;
 
 	TargetAction targetAction;
+	EMailCustomType eMailCustomType;
 
 	List<Resource> attachments;
 
@@ -103,11 +101,13 @@ public class UserNotificationRequest
 			//
 			@Nullable final TargetAction targetAction,
 			//
+			@Nullable final EMailCustomType eMailCustomType,
 			@Singular final List<Resource> attachments,
 			// Options:
 			final boolean noEmail)
 	{
 		this.notificationsConfig = notificationsConfig;
+		this.eMailCustomType = eMailCustomType;
 
 		if (recipient == null)
 		{

@@ -1,18 +1,9 @@
 package de.metas.notification;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import org.adempiere.service.ClientId;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-
 import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -22,6 +13,15 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -48,18 +48,19 @@ import lombok.Value;
 @Value
 public class UserNotificationsConfig
 {
-	private UserId userId;
-	private String userADLanguage; // might be null
-	private ClientId clientId;
-	private OrgId orgId;
+	UserId userId;
+	String userADLanguage; // might be null
+	ClientId clientId;
+	OrgId orgId;
 
 	@Getter(AccessLevel.NONE)
-	private final ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
-	private Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
-	private final UserNotificationsGroup defaults;
+	ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
+	Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
+	UserNotificationsGroup defaults;
 
-	private EMailAddress email;
-	private UserId userInChargeId;
+	EMailAddress email;
+	EMailCustomType eMailCustomType;
+	UserId userInChargeId;
 
 	@Builder(toBuilder = true)
 	private UserNotificationsConfig(
@@ -70,6 +71,7 @@ public class UserNotificationsConfig
 			@NonNull @Singular final Collection<UserNotificationsGroup> userNotificationGroups,
 			@NonNull final UserNotificationsGroup defaults,
 			final EMailAddress email,
+			@Nullable final EMailCustomType eMailCustomType,
 			final UserId userInChargeId)
 	{
 		this.userId = userId;
@@ -83,6 +85,7 @@ public class UserNotificationsConfig
 		this.defaults = defaults;
 
 		this.email = email;
+		this.eMailCustomType = eMailCustomType;
 		this.userInChargeId = userInChargeId;
 	}
 
@@ -125,4 +128,5 @@ public class UserNotificationsConfig
 				.userNotificationGroups(newUserNotificationGroupsByInternalName.values())
 				.build();
 	}
+
 }
