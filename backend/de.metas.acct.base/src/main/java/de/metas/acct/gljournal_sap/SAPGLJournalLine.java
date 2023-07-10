@@ -44,6 +44,8 @@ public class SAPGLJournalLine
 
 	@Nullable @Getter private final FAOpenItemKey openItemKey;
 
+	@Getter private final boolean isFieldsReadOnlyInUI;
+
 	public SAPGLJournalLineId getIdNotNull()
 	{
 		if (id == null)

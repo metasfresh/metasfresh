@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -502364971L;
+	private static final long serialVersionUID = 672725117L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -170,6 +170,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsFieldsReadOnlyInUI (final boolean IsFieldsReadOnlyInUI)
+	{
+		set_Value (COLUMNNAME_IsFieldsReadOnlyInUI, IsFieldsReadOnlyInUI);
+	}
+
+	@Override
+	public boolean isFieldsReadOnlyInUI() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFieldsReadOnlyInUI);
 	}
 
 	@Override

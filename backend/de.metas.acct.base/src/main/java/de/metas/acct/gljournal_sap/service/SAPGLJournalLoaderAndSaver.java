@@ -223,6 +223,8 @@ public class SAPGLJournalLoaderAndSaver
 				//
 				.openItemKey(FAOpenItemKey.ofNullableString(record.getOpenItemKey()))
 				//
+				.isFieldsReadOnlyInUI(record.isFieldsReadOnlyInUI())
+				//
 				.build();
 	}
 
@@ -333,6 +335,8 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setSAP_DetermineTaxBase(line.isDetermineTaxBaseSAP());
 
 		lineRecord.setOpenItemKey(line.getOpenItemKey() != null ? line.getOpenItemKey().getAsString() : null);
+
+		lineRecord.setIsFieldsReadOnlyInUI(line.isFieldsReadOnlyInUI());
 	}
 
 	private static void updateLineRecordFromDimension(final I_SAP_GLJournalLine lineRecord, final Dimension dimension)

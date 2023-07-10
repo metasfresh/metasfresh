@@ -283,6 +283,27 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Fields are Read Only for User.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFieldsReadOnlyInUI (boolean IsFieldsReadOnlyInUI);
+
+	/**
+	 * Get Fields are Read Only for User.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFieldsReadOnlyInUI();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsFieldsReadOnlyInUI = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsFieldsReadOnlyInUI", null);
+	String COLUMNNAME_IsFieldsReadOnlyInUI = "IsFieldsReadOnlyInUI";
+
+	/**
 	 * Set Open Item Managed.
 	 * This indicator shows that the account selected is an open item managed account.
 	 *
