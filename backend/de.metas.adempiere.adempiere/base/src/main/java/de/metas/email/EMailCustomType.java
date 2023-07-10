@@ -46,13 +46,13 @@ public enum EMailCustomType implements ReferenceListAwareEnum
 	private static final ImmutableMap<String, EMailCustomType> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	@Nullable
-	public EMailCustomType ofNullableCode(@Nullable final String code)
+	public static EMailCustomType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
 	@NonNull
-	public EMailCustomType ofCode(@NonNull final String code)
+	public static EMailCustomType ofCode(@NonNull final String code)
 	{
 		final EMailCustomType eMailCustomType = typesByCode.get(code);
 		if (eMailCustomType == null)
