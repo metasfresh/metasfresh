@@ -44,5 +44,4 @@ public class HUUniqueAttributeUpsertRequest
 
 	@NonNull String attributeValue;
 
-	@NonNull LocatorId locatorId;
 }
