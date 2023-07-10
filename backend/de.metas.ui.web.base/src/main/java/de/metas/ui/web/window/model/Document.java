@@ -1383,10 +1383,14 @@ public final class Document
 	private ReadOnlyInfo computeFieldsReadOnly()
 	{
 		final boolean isReadOnlyLogicTrue = computeDefaultFieldsReadOnly().booleanValue();
-
 		if (isReadOnlyLogicTrue)
 		{
-			return ReadOnlyInfo.of(BooleanWithReason.TRUE);
+			return ReadOnlyInfo.TRUE;
+		}
+
+		if(isFieldsReadOnlyInUI())
+		{
+			return ReadOnlyInfo.TRUE;
 		}
 
 		final TableRecordReference recordReference = this.getTableRecordReference().orElse(null);
@@ -1401,7 +1405,7 @@ public final class Document
 				.map(documentDecorator -> documentDecorator.isReadOnly(recordReference))
 				.filter(ReadOnlyInfo::isReadOnly)
 				.findFirst()
-				.orElse(ReadOnlyInfo.of(BooleanWithReason.FALSE));
+				.orElse(ReadOnlyInfo.FALSE);
 	}
 
 	@NonNull
@@ -1697,6 +1701,12 @@ public final class Document
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_IsActive);
 		return isActiveField == null || isActiveField.getValueAsBoolean(); // active if field not found (shall not happen)
+	}
+
+	/* package */ boolean isFieldsReadOnlyInUI()
+	{
+		final IDocumentFieldView isFieldsReadOnlyInUI = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_IsFieldsReadOnlyInUI);
+		return isFieldsReadOnlyInUI != null && isFieldsReadOnlyInUI.getValueAsBoolean();
 	}
 
 	/* package */ void setParentReadonly(@NonNull final DocumentReadonly parentReadonly)
