@@ -23,9 +23,13 @@
 package de.metas.elementvalue;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -49,11 +53,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ElementValueRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final CCache<Integer, ElementValuesMap> cache = CCache.<Integer, ElementValuesMap>builder()
+			.tableName(I_C_ElementValue.Table_Name)
+			.build();
 
 	ElementValue getById(@NonNull final ElementValueId id)
 	{
-		final I_C_ElementValue record = getRecordById(id);
-		return toElementValue(record);
+		return getMap().getById(id);
+	}
+
+	private ElementValuesMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
+
+	private ElementValuesMap retrieveMap()
+	{
+		final ImmutableList<ElementValue> list = queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.stream()
+				.map(ElementValueRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return new ElementValuesMap(list);
 	}
 
 	@NonNull
@@ -72,9 +90,8 @@ public class ElementValueRepository
 				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_C_Element_ID, chartOfAccountsId)
 				.create()
 				.firstOnlyOptional(I_C_ElementValue.class)
-				.map(ElementValueRepository::toElementValue);
+				.map(ElementValueRepository::fromRecord);
 	}
-
 
 	void save(@NonNull final I_C_ElementValue record)
 	{
@@ -91,7 +108,7 @@ public class ElementValueRepository
 	}
 
 	@NonNull
-	public static ElementValue toElementValue(@NonNull final I_C_ElementValue record)
+	public static ElementValue fromRecord(@NonNull final I_C_ElementValue record)
 	{
 		return ElementValue.builder()
 				.id(ElementValueId.ofRepoId(record.getC_ElementValue_ID()))
@@ -117,7 +134,7 @@ public class ElementValueRepository
 	{
 		//
 		// Validate
-		if(request.getParentId() != null)
+		if (request.getParentId() != null)
 		{
 			final ElementValue parent = getById(request.getParentId());
 			if (!parent.isSummary())
@@ -153,7 +170,7 @@ public class ElementValueRepository
 
 		InterfaceWrapperHelper.saveRecord(record);
 
-		return toElementValue(record);
+		return fromRecord(record);
 	}
 
 	ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
@@ -191,5 +208,25 @@ public class ElementValueRepository
 				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_C_Element_ID, chartOfAccountsId)
 				.create()
 				.list();
+	}
+
+	private static final class ElementValuesMap
+	{
+		private final ImmutableMap<ElementValueId, ElementValue> byId;
+
+		private ElementValuesMap(final List<ElementValue> list)
+		{
+			byId = Maps.uniqueIndex(list, ElementValue::getId);
+		}
+
+		public ElementValue getById(final ElementValueId id)
+		{
+			final ElementValue elementValue = byId.get(id);
+			if (elementValue == null)
+			{
+				throw new AdempiereException("No Element Value found for " + id);
+			}
+			return elementValue;
+		}
 	}
 }
