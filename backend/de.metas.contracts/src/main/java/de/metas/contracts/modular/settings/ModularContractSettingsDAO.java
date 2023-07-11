@@ -37,6 +37,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
@@ -128,6 +129,17 @@ public class ModularContractSettingsDAO
 				.addEqualsFilter(I_ModCntr_Settings.COLUMN_ModCntr_Settings_ID, modCntrSettingsId)
 				.andCollectChildren(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
+				.anyMatch();
+	}
+
+	public boolean isSettingsExists(final @NonNull ModularContractSettingsQuery query)
+	{
+		final YearAndCalendarId yearAndCalendarId = query.yearAndCalendarId();
+		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, query.productId())
 				.anyMatch();
 	}
 

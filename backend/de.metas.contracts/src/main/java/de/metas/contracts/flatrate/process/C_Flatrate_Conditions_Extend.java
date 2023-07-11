@@ -1,27 +1,29 @@
 package de.metas.contracts.flatrate.process;
 
-import de.metas.cache.CacheMgt;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_ModCntr_Settings;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.Ini;
-
-
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
@@ -32,6 +34,7 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Param(parameterName = I_ModCntr_Settings.COLUMNNAME_C_Year_ID, mandatory = true)
 	private int p_C_Year_ID;
@@ -41,8 +44,19 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 	{
 		final I_C_Year newYear = InterfaceWrapperHelper.load(YearId.ofRepoId(p_C_Year_ID), I_C_Year.class);
 		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(ConditionsId.ofRepoId(getRecord_ID()));
+		final I_ModCntr_Settings settings = conditions.getModCntr_Settings();
 
-		if (isSettingsWithSameYear(conditions.getModCntr_Settings(), newYear))
+		Check.assumeNotNull(settings, " Should never happen", conditions);
+
+		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(p_C_Year_ID, settings.getC_Calendar_ID());
+
+		final ModularContractSettingsQuery query = ModularContractSettingsQuery.builder()
+				.productId(productId)
+				.yearAndCalendarId(yearAndCalendarId)
+				.build();
+
+		if (modularContractSettingsDAO.isSettingsExists(query))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
 		}
@@ -61,16 +75,9 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 		return MSG_OK;
 	}
 
-	private boolean isSettingsWithSameYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year newYear)
-	{
-		return settings.getC_Year_ID() == newYear.getC_Year_ID();
-	}
-
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		CacheMgt.get().reset(); // reset cache to ensure that we get years for the  settings calendar whenever changed
-
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
@@ -81,7 +88,8 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 			return ProcessPreconditionsResolution.rejectWithInternalReason("The process only runs with C_Flatrate_Conditions table");
 		}
 
-		final I_C_Flatrate_Conditions currentConditions = context.getSelectedModel(I_C_Flatrate_Conditions.class);
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(context.getSingleSelectedRecordId());
+		final I_C_Flatrate_Conditions currentConditions = flatrateDAO.getConditionsById(conditionsId);
 
 		if (!TYPE_CONDITIONS_ModularContract.equals(currentConditions.getType_Conditions()))
 		{
