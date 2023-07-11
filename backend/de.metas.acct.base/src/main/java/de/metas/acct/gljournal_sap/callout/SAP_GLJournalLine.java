@@ -6,7 +6,6 @@ import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
-import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.money.Money;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
@@ -58,9 +57,7 @@ public class SAP_GLJournalLine implements ITabCallout
 	@CalloutMethod(columnNames = I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID)
 	public void onC_ValidCombination_ID(final I_SAP_GLJournalLine glJournalLine)
 	{
-		final FAOpenItemTrxInfo openItemTrxInfo = glJournalService.computeTrxInfo(glJournalLine).orElse(null);
-		glJournalLine.setIsOpenItem(openItemTrxInfo != null);
-		SAPGLJournalLoaderAndSaver.updateRecordFromOpenItemTrxInfo(glJournalLine, openItemTrxInfo);
+		glJournalService.updateTrxInfo(glJournalLine);
 	}
 
 	@CalloutMethod(columnNames = I_SAP_GLJournalLine.COLUMNNAME_Amount)

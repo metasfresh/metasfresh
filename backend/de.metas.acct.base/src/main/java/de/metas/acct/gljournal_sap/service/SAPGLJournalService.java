@@ -157,11 +157,32 @@ public class SAPGLJournalService
 		return reversal;
 	}
 
-	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final I_SAP_GLJournalLine glJournalLine)
+	public void updateTrxInfo(final I_SAP_GLJournalLine glJournalLine)
 	{
-		final AccountId accountId = AccountId.ofRepoId(glJournalLine.getC_ValidCombination_ID());
-		final SAPGLJournalLineId sapGlJournalLineId = SAPGLJournalLineId.ofRepoId(glJournalLine.getSAP_GLJournal_ID(), glJournalLine.getSAP_GLJournalLine_ID());
-		return computeTrxInfo(accountId, sapGlJournalLineId);
+		final FAOpenItemTrxInfo openItemTrxInfo;
+		final AccountId accountId = AccountId.ofRepoIdOrNull(glJournalLine.getC_ValidCombination_ID());
+		if (accountId != null)
+		{
+			final SAPGLJournalId glJournalId = SAPGLJournalId.ofRepoId(glJournalLine.getSAP_GLJournal_ID());
+			final SAPGLJournalLineId lineId;
+			if (glJournalLine.getSAP_GLJournalLine_ID() <= 0)
+			{
+				lineId = glJournalRepository.acquireLineId(glJournalId);
+				glJournalLine.setSAP_GLJournalLine_ID(lineId.getRepoId());
+			}
+			else
+			{
+				lineId = SAPGLJournalLineId.ofRepoId(glJournalId, glJournalLine.getSAP_GLJournalLine_ID());
+			}
+
+			openItemTrxInfo = computeTrxInfo(accountId, lineId).orElse(null);
+		}
+		else
+		{
+			openItemTrxInfo = null;
+		}
+
+		SAPGLJournalLoaderAndSaver.updateRecordFromOpenItemTrxInfo(glJournalLine, openItemTrxInfo);
 	}
 
 	private Optional<FAOpenItemTrxInfo> computeTrxInfo(

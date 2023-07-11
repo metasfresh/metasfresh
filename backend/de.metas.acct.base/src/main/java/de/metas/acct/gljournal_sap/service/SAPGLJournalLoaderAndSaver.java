@@ -365,6 +365,7 @@ public class SAPGLJournalLoaderAndSaver
 
 	public static void updateRecordFromOpenItemTrxInfo(@NonNull final I_SAP_GLJournalLine lineRecord, @Nullable final FAOpenItemTrxInfo from)
 	{
+		lineRecord.setIsOpenItem(from != null);
 		lineRecord.setOI_TrxType(from != null ? from.getTrxType().getCode() : null);
 		lineRecord.setOpenItemKey(from != null ? from.getKey().getAsString() : null);
 	}
