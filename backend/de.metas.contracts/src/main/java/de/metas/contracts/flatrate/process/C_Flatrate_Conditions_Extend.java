@@ -1,5 +1,6 @@
 package de.metas.contracts.flatrate.process;
 
+import de.metas.cache.CacheMgt;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateBL;
@@ -20,13 +21,15 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.Ini;
 
+
+
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 
 public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProcessPrecondition
 {
-	public final static String MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = "@MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED@";
 	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
+
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -66,6 +69,8 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
+		CacheMgt.get().reset(); // reset cache to ensure that we get years for the  settings calendar whenever changed
+
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
@@ -85,7 +90,7 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 
 		if (!ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(currentConditions.getOnFlatrateTermExtend()))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED);
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The process runs only  when  ONFLATRATETERMEXTEND = ExtensionNotAllowed");
 		}
 
 		return ProcessPreconditionsResolution.accept();
