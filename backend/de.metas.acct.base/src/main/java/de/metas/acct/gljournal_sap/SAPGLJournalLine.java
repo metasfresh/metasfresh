@@ -50,7 +50,7 @@ public class SAPGLJournalLine
 	{
 		if (id == null)
 		{
-			throw new AdempiereException("Line not saved: " + this);
+			throw new AdempiereException("Line ID not yet available: " + this);
 		}
 		return id;
 	}
@@ -61,11 +61,11 @@ public class SAPGLJournalLine
 		return id;
 	}
 
-	public void markAsSaved(@NonNull final SAPGLJournalLineId id)
+	public void assignId(@NonNull final SAPGLJournalLineId id)
 	{
 		if (this.id != null && !SAPGLJournalLineId.equals(this.id, id))
 		{
-			throw new AdempiereException("Line already saved: " + this);
+			throw new AdempiereException("Line has already assigned a different ID: " + this);
 		}
 
 		this.id = id;

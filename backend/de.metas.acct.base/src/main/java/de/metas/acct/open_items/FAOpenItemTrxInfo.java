@@ -4,6 +4,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @Value
 @Builder
 public class FAOpenItemTrxInfo
@@ -20,4 +23,6 @@ public class FAOpenItemTrxInfo
 	{
 		return builder().trxType(FAOpenItemTrxType.CLEARING).key(key).build();
 	}
+
+	public static boolean equals(@Nullable FAOpenItemTrxInfo o1, @Nullable FAOpenItemTrxInfo o2) {return Objects.equals(o1, o2);}
 }

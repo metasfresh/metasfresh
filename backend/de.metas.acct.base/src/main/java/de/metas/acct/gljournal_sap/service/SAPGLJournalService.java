@@ -1,5 +1,7 @@
 package de.metas.acct.gljournal_sap.service;
 
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
@@ -12,6 +14,8 @@ import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.document.engine.DocStatus;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.Getter;
 import lombok.NonNull;
@@ -26,6 +30,7 @@ import java.util.function.Supplier;
 @Service
 public class SAPGLJournalService
 {
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final SAPGLJournalRepository glJournalRepository;
 	@Getter
 	private final SAPGLJournalCurrencyConverter currencyConverter;
@@ -74,11 +79,10 @@ public class SAPGLJournalService
 	@NonNull
 	public SAPGLJournalLineId createLine(@NonNull final SAPGLJournalLineCreateRequest request, @NonNull final SAPGLJournalId id)
 	{
+		final SAPGLJournalLineCreateRequest requestEffective = prepareBeforeCreate(request, id);
 		final Supplier<SAPGLJournalLineId> lineIdSupplier = glJournalRepository.updateById(
 				id,
-				glJournal -> {
-					return glJournal.addLine(request, currencyConverter);
-				}
+				glJournal -> {return glJournal.addLine(requestEffective, currencyConverter);}
 		);
 
 		final SAPGLJournalLineId lineId = lineIdSupplier.get();
@@ -89,6 +93,33 @@ public class SAPGLJournalService
 		}
 
 		return lineId;
+	}
+
+	private SAPGLJournalLineCreateRequest prepareBeforeCreate(
+			final @NonNull SAPGLJournalLineCreateRequest requestParam,
+			final @NonNull SAPGLJournalId id)
+	{
+		SAPGLJournalLineCreateRequest requestEff = requestParam;
+		if (requestEff.getOpenItemTrxInfo() == null)
+		{
+			final SAPGLJournalLineId lineId;
+			if (requestEff.getAlreadyReservedId() == null)
+			{
+				lineId = glJournalRepository.acquireLineId(id);
+				requestEff = requestEff.withAlreadyReservedId(lineId);
+			}
+			else
+			{
+				lineId = requestEff.getAlreadyReservedId();
+				Check.assumeEquals(lineId.getGlJournalId(), id, "Reserved line ID and SAP_GLJournalLine_ID shall match: {}, {}", id, lineId);
+			}
+
+			final AccountId accountId = requestEff.getAccount().getAccountId();
+			final FAOpenItemTrxInfo openItemTrxInfo = computeTrxInfo(accountId, lineId).orElse(null);
+			requestEff = requestEff.withOpenItemTrxInfo(openItemTrxInfo);
+		}
+
+		return requestEff;
 	}
 
 	public void createLines(@NonNull final List<SAPGLJournalLineCreateRequest> requests, @NonNull final SAPGLJournalId id)
@@ -128,15 +159,24 @@ public class SAPGLJournalService
 
 	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final I_SAP_GLJournalLine glJournalLine)
 	{
-		final ElementValueId elementValueId = ElementValueId.ofRepoId(glJournalLine.getC_ValidCombination().getAccount_ID());
+		final AccountId accountId = AccountId.ofRepoId(glJournalLine.getC_ValidCombination_ID());
+		final SAPGLJournalLineId sapGlJournalLineId = SAPGLJournalLineId.ofRepoId(glJournalLine.getSAP_GLJournal_ID(), glJournalLine.getSAP_GLJournalLine_ID());
+		return computeTrxInfo(accountId, sapGlJournalLineId);
+	}
+
+	private Optional<FAOpenItemTrxInfo> computeTrxInfo(
+			@NonNull final AccountId accountId,
+			@NonNull final SAPGLJournalLineId sapGLJournalLineId)
+	{
+		final ElementValueId elementValueId = accountDAO.getElementValueIdByAccountId(accountId);
 		final ElementValue elementValue = elementValueService.getById(elementValueId);
 		if (elementValue.isOpenItem())
 		{
 			return faOpenItemsService.computeTrxInfo(FAOpenItemTrxInfoComputeRequest.builder()
 					.elementValueId(elementValueId)
 					.tableName(I_SAP_GLJournal.Table_Name)
-					.recordId(glJournalLine.getSAP_GLJournal_ID())
-					.lineId(glJournalLine.getSAP_GLJournalLine_ID())
+					.recordId(sapGLJournalLineId.getGlJournalId().getRepoId())
+					.lineId(sapGLJournalLineId.getRepoId())
 					.build());
 		}
 		else

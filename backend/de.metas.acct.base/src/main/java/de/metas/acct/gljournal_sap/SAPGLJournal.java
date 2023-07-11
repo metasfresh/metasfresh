@@ -148,6 +148,7 @@ public class SAPGLJournal
 		final Money amountAcct = currencyConverter.convertToAcctCurrency(amount, conversionCtx);
 
 		return SAPGLJournalLine.builder()
+				.id(request.getAlreadyReservedId())
 				.line(getNextLineNo())
 				.description(request.getDescription())
 				.account(request.getAccount())

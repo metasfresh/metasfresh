@@ -295,26 +295,27 @@ public class SAPGLJournalLoaderAndSaver
 		for (SAPGLJournalLine line : glJournal.getLines())
 		{
 			SAPGLJournalLineId lineId = line.getIdOrNull();
-			final I_SAP_GLJournalLine lineRecord;
+			I_SAP_GLJournalLine lineRecord = null;
 			if (lineId != null)
 			{
 				lineRecord = lineRecordsById.get(lineId);
-				if (lineRecord == null)
-				{
-					throw new AdempiereException("@NotFound@ " + lineId); // shall not happen
-				}
 			}
-			else
+
+			if(lineRecord == null)
 			{
 				lineRecord = InterfaceWrapperHelper.newInstance(I_SAP_GLJournalLine.class);
 				lineRecord.setSAP_GLJournal_ID(headerRecord.getSAP_GLJournal_ID());
+				if(lineId != null)
+				{
+					lineRecord.setSAP_GLJournalLine_ID(lineId.getRepoId());
+				}
 				lineRecord.setAD_Org_ID(headerRecord.getAD_Org_ID());
 			}
 
 			updateLineRecord(lineRecord, line);
 			InterfaceWrapperHelper.save(lineRecord);
 			lineId = extractId(lineRecord);
-			line.markAsSaved(lineId);
+			line.assignId(lineId);
 
 			savedLineIds.add(lineId);
 		}

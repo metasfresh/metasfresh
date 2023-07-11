@@ -6,7 +6,6 @@ import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournalLine;
-import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import lombok.NonNull;
@@ -23,16 +22,13 @@ public class SAP_GLJournalLine
 {
 	private final SAPGLJournalService glJournalService;
 	private final ElementValueService elementValueService;
-	private final FAOpenItemsService faOpenItemsService;
 
 	public SAP_GLJournalLine(
 			@NonNull final SAPGLJournalService glJournalService,
-			@NonNull final ElementValueService elementValueService,
-			@NonNull final FAOpenItemsService faOpenItemsService)
+			@NonNull final ElementValueService elementValueService)
 	{
 		this.glJournalService = glJournalService;
 		this.elementValueService = elementValueService;
-		this.faOpenItemsService = faOpenItemsService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
