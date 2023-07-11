@@ -15,11 +15,14 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Set;
 
 @Value
 @Builder
 public class FactAcctQuery
 {
+	@Nullable Set<FactAcctId> includeFactAcctIds;
+
 	@Nullable AcctSchemaId acctSchemaId;
 	@Nullable AccountConceptualName accountConceptualName;
 	@Nullable ElementValueId accountId;
