@@ -93,11 +93,13 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot_Info()
 	{
 
+ppProductPlanning.setIsLotForLot(true);
+		saveRecord(ppProductPlanning);
+
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 
 		ppProductPlanning.setIsLotForLot(false);
 		saveRecord(ppProductPlanning);
-
 		Mockito.when(mrpContext.getProductPlanning())
 				.thenReturn(ppProductPlanning);
 

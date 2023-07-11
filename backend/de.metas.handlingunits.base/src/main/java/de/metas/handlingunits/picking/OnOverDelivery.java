@@ -35,8 +35,14 @@ public enum OnOverDelivery implements ReferenceListAwareEnum
 		return index.ofNullableCode(code);
 	}
 
-	public static OnOverDelivery ofTakeWholeHUFlag(boolean isTakeWholeHU)
+	@NonNull
+	public static OnOverDelivery ofConfigs(final boolean splitHUIfOverDelivery, final boolean isAllowOverDelivery)
 	{
-		return isTakeWholeHU ? TAKE_WHOLE_HU : SPLIT_HU;
+		if (!isAllowOverDelivery && !splitHUIfOverDelivery)
+		{
+			return FAIL;
+		}
+		
+		return splitHUIfOverDelivery ? SPLIT_HU : TAKE_WHOLE_HU;
 	}
 }

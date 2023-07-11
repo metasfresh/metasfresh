@@ -31,9 +31,9 @@ import lombok.Value;
 public class PickingConfig
 {
 	@NonNull
-	private final String webuiPickingTerminalViewProfileId;
+	String webuiPickingTerminalViewProfileId;
 	
-	private final boolean allowOverDelivery;
+	boolean allowOverDelivery;
 	
-	private final boolean autoProcess;
+	boolean autoProcess;
 }

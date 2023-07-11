@@ -59,7 +59,6 @@ import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
 import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
-
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

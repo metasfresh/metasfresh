@@ -33,6 +33,9 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -46,6 +49,9 @@ public class PP_Order
 	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository;
 	private final HUUniqueAttributesService huUniqueAttributesService;
+
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
 	public PP_Order(
 			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository,
 			@NonNull final HUUniqueAttributesService huUniqueAttributesService)
@@ -93,7 +99,7 @@ public class PP_Order
 		// Don't validate the ASI in case of a repair order because the possible duplicate entry in M_HU_UniqueAttribute is for the same HU as the one from the order.
 		// Note: it would be nice to validate that the M_HU_ID is also the same as in M_HU_UniqueAttribute.
 		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
-		if(docBaseType.isRepairOrder())
+		if (docBaseType.isRepairOrder())
 		{
 			return;
 		}
@@ -101,6 +107,12 @@ public class PP_Order
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 
-		huUniqueAttributesService.validateASI(attributeSetInstanceId, productId);
+		final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID()));
+		if (!warehouse.isQualityReturnWarehouse())
+		{
+			// do not validate unique attributes if the warehouse is a quality return one
+			huUniqueAttributesService.validateASI(attributeSetInstanceId, productId);
+		}
 	}
+
 }

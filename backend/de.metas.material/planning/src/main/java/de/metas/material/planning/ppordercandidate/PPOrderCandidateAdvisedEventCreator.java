@@ -67,7 +67,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))

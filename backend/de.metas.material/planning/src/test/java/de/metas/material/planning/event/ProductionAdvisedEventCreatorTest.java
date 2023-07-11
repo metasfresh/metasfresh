@@ -36,6 +36,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
+import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
 /*
  * #%L
@@ -94,11 +96,13 @@ public class ProductionAdvisedEventCreatorTest
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLotInfo()
 	{
 
+ppProductPlanning.setIsLotForLot(true);
+		saveRecord(ppProductPlanning);
+
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 
 		ppProductPlanning.setIsLotForLot(false);
 		saveRecord(ppProductPlanning);
-
 		Mockito.when(mrpContext.getProductPlanning())
 				.thenReturn(ppProductPlanning);
 

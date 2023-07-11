@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
@@ -16,7 +18,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.HURow;
-import de.metas.ui.web.pporder.util.ProcessPickingRequest;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
@@ -29,6 +30,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -210,6 +212,8 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.pickFrom(PickFrom.ofHuId(huId))
 				.pickingSlotId(pickingSlotId)
 				.build();
+
+		pickingCandidateService.pickHU(pickRequest);
 
 		final ProcessPickingRequest.ProcessPickingRequestBuilder pickingRequestBuilder = ProcessPickingRequest.builder()
 				.huIds(ImmutableSet.of(huId))

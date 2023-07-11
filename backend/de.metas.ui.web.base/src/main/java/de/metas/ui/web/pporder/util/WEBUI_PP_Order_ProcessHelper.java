@@ -7,9 +7,6 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.logging.LogManager;
@@ -27,7 +24,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
-import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -40,8 +36,6 @@ import java.util.Objects;
 public class WEBUI_PP_Order_ProcessHelper
 {
 	private static final Logger logger = LogManager.getLogger(WEBUI_PP_Order_ProcessHelper.class);
-
-	private final static PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	//
 	public ProcessPreconditionsResolution checkIssueSourceDefaultPreconditionsApplicable(final PPOrderLineRow ppOrderLineRow)
@@ -150,26 +144,4 @@ public class WEBUI_PP_Order_ProcessHelper
 				.filter(row -> isEligibleHU(row))
 				.collect(ImmutableList.toImmutableList());
 	}
-
-	public static void pickAndProcessSingleHU(@NonNull final PickRequest pickRequest, @NonNull final ProcessPickingRequest processRequest)
-	{
-		pickHU(pickRequest);
-
-		processHUs(processRequest);
-	}
-
-	public static void pickHU(@NonNull final PickRequest request)
-	{
-		pickingCandidateService.pickHU(request);
-
-	}
-
-	public static void processHUs(@NonNull final ProcessPickingRequest request)
-	{
-		pickingCandidateService.processForHUIds(request.getHuIds(),
-												request.getShipmentScheduleId(),
-												OnOverDelivery.ofTakeWholeHUFlag(request.isTakeWholeHU()),
-												request.getPpOrderId());
-	}
-
 }

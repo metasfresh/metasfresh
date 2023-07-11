@@ -62,7 +62,7 @@ public class DDOrderAdvisedEventCreator
 	}
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMaterialPlanningContext mrpContext)
 	{
 		if(!ddOrderDemandMatcher.matches(mrpContext))

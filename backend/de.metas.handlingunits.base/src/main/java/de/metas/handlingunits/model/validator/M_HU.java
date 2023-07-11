@@ -86,11 +86,11 @@ public class M_HU
 		huStatusBL.assertStatusChangeIsAllowed(hu, oldHu.getHUStatus(), hu.getHUStatus());
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_HUStatus)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_M_HU.COLUMNNAME_HUStatus, I_M_HU.COLUMNNAME_M_Locator_ID })
 	public void handleHUUniqueAttributes(@NonNull final I_M_HU hu)
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
+		if (huStatusBL.isQtyOnHand(hu.getHUStatus()) && !huUniqueAttributesService.belongsToQualityWarehouse(hu))
 		{
 			huUniqueAttributesService.validateHU(huId);
 			huUniqueAttributesService.createOrUpdateHUUniqueAttribute(huId);
