@@ -28,3 +28,25 @@ UPDATE AD_Process_Trl trl SET Description='Allocated amount from selected lines 
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585282,542281,541395,541664,TO_TIMESTAMP('2023-07-11 11:30:36','YYYY-MM-DD HH24:MI:SS'),100,'D','N',TO_TIMESTAMP('2023-07-11 11:30:36','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
 ;
 
+
+
+-- Process: C_Order_UnallocateFromForexContract(de.metas.forex.webui.process.C_Order_UnallocateFromForexContract)
+-- 2023-07-11T09:17:47.633Z
+UPDATE AD_Process_Trl SET Description='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Help='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Name='Freigabe von FEC',Updated=TO_TIMESTAMP('2023-07-11 12:17:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585282
+;
+
+-- Process: C_Order_UnallocateFromForexContract(de.metas.forex.webui.process.C_Order_UnallocateFromForexContract)
+-- 2023-07-11T09:17:58.691Z
+UPDATE AD_Process_Trl SET Description='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Help='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Name='Freigabe von FEC',Updated=TO_TIMESTAMP('2023-07-11 12:17:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585282
+;
+
+-- Process: C_Order_UnallocateFromForexContract(de.metas.forex.webui.process.C_Order_UnallocateFromForexContract)
+-- 2023-07-11T09:18:09.400Z
+UPDATE AD_Process_Trl SET Description='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Help='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Name='Freigabe von FEC',Updated=TO_TIMESTAMP('2023-07-11 12:18:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585282
+;
+
+-- Process: C_Order_UnallocateFromForexContract(de.metas.forex.webui.process.C_Order_UnallocateFromForexContract)
+-- 2023-07-11T09:18:19.609Z
+UPDATE AD_Process_Trl SET Description='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Help='Zugewiesene Beträge aus ausgewählten Zeilen werden aus dem FEC herausgenommen.', Name='Freigabe von FEC',Updated=TO_TIMESTAMP('2023-07-11 12:18:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585282
+;
+
