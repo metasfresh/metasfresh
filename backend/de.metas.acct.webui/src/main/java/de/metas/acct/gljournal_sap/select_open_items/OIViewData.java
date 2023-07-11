@@ -1,7 +1,8 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.PostingType;
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.MutableAmount;
@@ -41,30 +42,30 @@ public class OIViewData implements IEditableRowsData<OIRow>
 
 	//
 	// parameters
+	@NonNull private final SAPGLJournalId glJournalId;
+	@NonNull private final SynchronizedMutable<SAPGLJournal> glJournalHolder;
 	@NonNull private final AcctSchema acctSchema;
-	@NonNull private final CurrencyCode acctCurrencyCode;
-	@NonNull private final PostingType postingType;
 	@Getter @Nullable private final DocumentFilter filter;
 
 	//
 	// state
-	@NonNull private final SynchronizedRowsIndexHolder<OIRow> rowsHolder;
+	@NonNull private final SynchronizedRowsIndexHolder<OIRow> rowsHolder = SynchronizedRowsIndexHolder.empty();
 	@NonNull private final SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder = SynchronizedMutable.empty();
 
 	@Builder
 	private OIViewData(
 			@NonNull final OIViewDataService viewDataService,
+			@NonNull final SAPGLJournal glJournal,
 			@NonNull final AcctSchema acctSchema,
-			@NonNull final PostingType postingType,
 			@Nullable final DocumentFilter filter)
 	{
 		this.viewDataService = viewDataService;
+		this.glJournalId = glJournal.getId();
+		this.glJournalHolder = SynchronizedMutable.of(glJournal);
 		this.acctSchema = acctSchema;
-		this.acctCurrencyCode = viewDataService.getCurrencyCode(acctSchema);
-		this.postingType = postingType;
 		this.filter = filter;
 
-		this.rowsHolder = SynchronizedRowsIndexHolder.of(viewDataService.retrieveRows(acctSchema, postingType, filter));
+		loadRows();
 	}
 
 	@Override
@@ -76,8 +77,21 @@ public class OIViewData implements IEditableRowsData<OIRow>
 	@Override
 	public void invalidateAll()
 	{
-		rowsHolder.setRows(viewDataService.retrieveRows(acctSchema, postingType, filter));
 		headerPropertiesHolder.setValue(null);
+		glJournalHolder.setValue(null);
+		loadRows();
+	}
+
+	private void loadRows()
+	{
+		final SAPGLJournal glJournal = getGLJournal();
+		final FutureClearingAmountMap futureClearingAmounts = FutureClearingAmountMap.of(glJournal, viewDataService.currencyCodeConverter());
+		rowsHolder.setRows(viewDataService.retrieveRows(acctSchema, glJournal.getPostingType(), futureClearingAmounts, filter));
+	}
+
+	private SAPGLJournal getGLJournal()
+	{
+		return glJournalHolder.computeIfNull(() -> viewDataService.getGlJournal(glJournalId));
 	}
 
 	public ViewHeaderProperties getHeaderProperties()
@@ -87,6 +101,7 @@ public class OIViewData implements IEditableRowsData<OIRow>
 
 	private ViewHeaderProperties computeHeaderProperties()
 	{
+		final CurrencyCode acctCurrencyCode = viewDataService.currencyCodeConverter().getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
 		final MutableAmount totalDebit = MutableAmount.zero(acctCurrencyCode);
 		final MutableAmount totalCredit = MutableAmount.zero(acctCurrencyCode);
 

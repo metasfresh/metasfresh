@@ -25,4 +25,6 @@ public class FAOpenItemTrxInfo
 	}
 
 	public static boolean equals(@Nullable FAOpenItemTrxInfo o1, @Nullable FAOpenItemTrxInfo o2) {return Objects.equals(o1, o2);}
+
+	public boolean isClearing() {return trxType.isClearing();}
 }

@@ -12,6 +12,7 @@ import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
@@ -57,6 +58,8 @@ public class SAPGLJournal
 	@NonNull @Getter private final Dimension dimension;
 	@NonNull @Getter private final String description;
 	@NonNull @Getter private final GLCategoryId glCategoryId;
+
+	public CurrencyId getCurrencyId() {return Money.getCommonCurrencyIdOfAll(totalAcctDR, totalAcctCR);}
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{

@@ -24,4 +24,6 @@ public enum FAOpenItemTrxType implements ReferenceListAwareEnum
 
 	@Nullable
 	public static FAOpenItemTrxType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+
+	public boolean isClearing() {return CLEARING.equals(this);}
 }

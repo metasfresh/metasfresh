@@ -20,6 +20,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
@@ -40,7 +41,7 @@ import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Objects;
 
 class OIViewDataService
 {
@@ -74,44 +75,68 @@ class OIViewDataService
 			final SAPGLJournalId glJournalId,
 			@Nullable final DocumentFilter filter)
 	{
-		final SAPGLJournal glJournal = glJournalService.getById(glJournalId);
+		final SAPGLJournal glJournal = getGlJournal(glJournalId);
 		final AcctSchema acctSchema = acctSchemaBL.getById(glJournal.getAcctSchemaId());
 
 		return OIViewData.builder()
 				.viewDataService(this)
+				.glJournal(glJournal)
 				.acctSchema(acctSchema)
-				.postingType(glJournal.getPostingType())
 				.filter(filter)
 				.build();
 	}
 
-	CurrencyCode getCurrencyCode(final AcctSchema acctSchema)
+	@NonNull
+	SAPGLJournal getGlJournal(final SAPGLJournalId glJournalId)
 	{
-		return moneyService.getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
+		return glJournalService.getById(glJournalId);
 	}
 
-	List<OIRow> retrieveRows(
+	CurrencyCodeToCurrencyIdBiConverter currencyCodeConverter()
+	{
+		return moneyService;
+	}
+
+	ImmutableList<OIRow> retrieveRows(
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final PostingType postingType,
+			@NonNull final FutureClearingAmountMap futureClearingAmounts,
 			@Nullable final DocumentFilter filter)
 	{
-		final CurrencyCode acctCurrencyCode = getCurrencyCode(acctSchema);
+		final CurrencyCode acctCurrencyCode = moneyService.getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
 
 		return factAcctBL.stream(OIViewFilterHelper.toFactAcctQuery(acctSchema.getId(), postingType, filter))
-				.map(record -> toRow(record, acctCurrencyCode))
+				.map(record -> toRow(record, acctCurrencyCode, futureClearingAmounts))
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private OIRow toRow(final I_Fact_Acct record, final CurrencyCode acctCurrencyCode)
+	@Nullable
+	private OIRow toRow(
+			@NonNull final I_Fact_Acct record,
+			@NonNull final CurrencyCode acctCurrencyCode,
+			@NonNull final FutureClearingAmountMap futureClearingAmounts)
 	{
+		final FAOpenItemKey openItemKey = FAOpenItemKey.optionalOfString(record.getOpenItemKey())
+				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
+
+		Amount openAmount = Amount.of(record.getOI_OpenAmount(), acctCurrencyCode);
+		final Amount futureClearingAmount = futureClearingAmounts.getAmount(openItemKey).orElse(null);
+		if (futureClearingAmount != null && !futureClearingAmount.isZero())
+		{
+			openAmount = openAmount.subtract(futureClearingAmount);
+		}
+		if (openAmount.isZero())
+		{
+			return null;
+		}
+
 		final ElementValue elementValue = elementValueService.getById(ElementValueId.ofRepoId(record.getAccount_ID()));
 		final Account account = factAcctBL.getAccount(record);
 		final BigDecimal amtAcctDr = record.getAmtAcctDr();
 		final BigDecimal amtAcctCr = record.getAmtAcctCr();
 		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtAcctDr, amtAcctCr);
 		final Amount amount = Amount.of(postingSign.isDebit() ? amtAcctDr : amtAcctCr, acctCurrencyCode);
-		final FAOpenItemKey openItemKey = FAOpenItemKey.optionalOfString(record.getOpenItemKey())
-				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
 
@@ -122,7 +147,7 @@ class OIViewDataService
 				.account(account)
 				.accountCaption(getAccountCaption(account.getAccountId()))
 				.amount(amount)
-				.openAmount(amount) // TODO compute open amount
+				.openAmount(openAmount)
 				.dateAcct(record.getDateAcct().toInstant())
 				.bpartnerId(bpartnerId)
 				.bpartnerCaption(getBPartnerCaption(bpartnerId))

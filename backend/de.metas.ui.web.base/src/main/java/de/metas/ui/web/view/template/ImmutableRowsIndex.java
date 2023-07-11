@@ -44,6 +44,14 @@ import java.util.stream.Stream;
 
 public final class ImmutableRowsIndex<T extends IViewRow>
 {
+	private static final ImmutableRowsIndex<IViewRow> EMPTY = new ImmutableRowsIndex<>(ImmutableList.of(), ImmutableList.of());
+
+	public static <T extends IViewRow> ImmutableRowsIndex<T> empty()
+	{
+		//noinspection unchecked
+		return (ImmutableRowsIndex<T>)EMPTY;
+	}
+
 	public static <T extends IViewRow> ImmutableRowsIndex<T> of(@NonNull final List<T> rows)
 	{
 		final ImmutableList<DocumentId> initialRowIds = rows.stream()

@@ -43,15 +43,11 @@ import java.util.stream.Stream;
  */
 public class SynchronizedRowsIndexHolder<T extends IViewRow>
 {
-	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final List<T> rows)
-	{
-		return of(ImmutableRowsIndex.of(rows));
-	}
+	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> empty() {return new SynchronizedRowsIndexHolder<>(ImmutableRowsIndex.empty());}
 
-	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final ImmutableRowsIndex<T> initialRowIndex)
-	{
-		return new SynchronizedRowsIndexHolder<>(initialRowIndex);
-	}
+	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final List<T> rows) {return new SynchronizedRowsIndexHolder<>(ImmutableRowsIndex.of(rows));}
+
+	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final ImmutableRowsIndex<T> initialRowIndex) {return new SynchronizedRowsIndexHolder<>(initialRowIndex);}
 
 	private final SynchronizedMutable<ImmutableRowsIndex<T>> holder;
 

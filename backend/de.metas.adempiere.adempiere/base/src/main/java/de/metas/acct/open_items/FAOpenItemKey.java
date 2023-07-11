@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 @EqualsAndHashCode
@@ -71,4 +72,6 @@ public final class FAOpenItemKey
 
 	@Override
 	public String toString() {return asString;}
+
+	public static boolean equals(@Nullable FAOpenItemKey o1, @Nullable FAOpenItemKey o2) {return Objects.equals(o1, o2);}
 }
