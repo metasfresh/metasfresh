@@ -24,6 +24,7 @@ package de.metas.acct.api;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -40,6 +41,8 @@ public interface IFactAcctDAO extends ISingletonService
 	String DB_FUNC_Fact_Acct_EndingBalance = DB_SCHEMA + ".Fact_Acct_EndingBalance";
 
 	I_Fact_Acct getById(int factAcctId);
+
+	void save(I_Fact_Acct factAcct);
 
 	/**
 	 * Deletes all accounting records for given document.
@@ -88,4 +91,6 @@ public interface IFactAcctDAO extends ISingletonService
 	List<I_Fact_Acct> list(@NonNull List<FactAcctQuery> queries);
 
 	List<I_Fact_Acct> list(@NonNull FactAcctQuery query);
+
+	Stream<I_Fact_Acct> stream(@NonNull FactAcctQuery query);
 }

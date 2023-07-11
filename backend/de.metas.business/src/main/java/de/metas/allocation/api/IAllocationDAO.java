@@ -108,5 +108,7 @@ public interface IAllocationDAO extends ISingletonService
 
 	@NonNull I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
 
+	@NonNull I_C_AllocationLine getLineById(@NonNull PaymentAllocationLineId lineId);
+
 	List<I_C_AllocationLine> retrieveAllPaymentAllocationLines(@NonNull PaymentId paymentId);
 }

@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaBL;
@@ -690,7 +691,7 @@ public class InOutBL implements IInOutBL
 				.stream()
 				.map(inoutAndLineId -> FactAcctQuery.builder()
 						.acctSchemaId(acctSchemaId)
-						.accountConceptualName(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct)
+						.accountConceptualName(AccountConceptualName.ofString(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct))
 						.tableName(I_M_InOut.Table_Name)
 						.recordId(inoutAndLineId.getInOutId().getRepoId())
 						.lineId(inoutAndLineId.getInOutLineId().getRepoId())

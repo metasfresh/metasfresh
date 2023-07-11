@@ -23,37 +23,45 @@
 package de.metas.acct;
 
 import de.metas.acct.api.AccountId;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Builder.Default;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
+import lombok.With;
 
-@Value
-@Builder(access = AccessLevel.PRIVATE)
-public class Account
+import javax.annotation.Nullable;
+
+@EqualsAndHashCode
+@ToString
+public final class Account
 {
+	@Getter @NonNull private final AccountId accountId;
+	@Getter @With @Nullable private final AccountConceptualName accountConceptualName;
+
+	private Account(
+			@NonNull final AccountId accountId,
+			@Nullable final AccountConceptualName accountConceptualName)
+	{
+		this.accountId = accountId;
+		this.accountConceptualName = accountConceptualName;
+	}
+
+	@NonNull
+	public static Account of(@NonNull final AccountId accountId, @NonNull final AccountConceptualName accountConceptualName)
+	{
+		return new Account(accountId, accountConceptualName);
+	}
+
 	@NonNull
 	public static Account of(@NonNull final AccountId accountId, @NonNull final String accountConceptualName)
 	{
-		return Account.builder()
-				.accountId(accountId)
-				.accountConceptualName(accountConceptualName)
-				.build();
+		return new Account(accountId, AccountConceptualName.ofString(accountConceptualName));
 	}
 
 	@NonNull
 	public static Account ofId(@NonNull final AccountId accountId)
 	{
-		return Account.builder()
-				.accountId(accountId)
-				.build();
+		return new Account(accountId, null);
 	}
 
-	@NonNull
-	AccountId accountId;
-
-	@NonNull
-	@Default
-	String accountConceptualName = "UNSET";
 }

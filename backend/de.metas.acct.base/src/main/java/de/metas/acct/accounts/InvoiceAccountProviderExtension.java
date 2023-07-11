@@ -1,5 +1,6 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
@@ -8,7 +9,6 @@ import de.metas.acct.api.impl.ElementValueId;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.acct.AccountTypeName;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
@@ -16,7 +16,6 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -64,11 +63,9 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 	@NonNull
 	private Optional<Account> getProductAccount(final @NonNull AcctSchemaId acctSchemaId, final @NonNull ProductAcctType acctType)
 	{
-		final AccountTypeName accountTypeName = AccountTypeName.ofColumnName(acctType.getColumnName());
-
-		return invoiceAccounts.getElementValueId(acctSchemaId, accountTypeName, invoiceLineId)
+		return invoiceAccounts.getElementValueId(acctSchemaId, acctType.getAccountConceptualName(), invoiceLineId)
 				.map(elementValueId -> getOrCreateAccount(elementValueId, acctSchemaId))
-				.map(id -> Account.of(id, acctType.getColumnName()));
+				.map(id -> Account.of(id, acctType.getAccountConceptualName()));
 	}
 
 	@Override

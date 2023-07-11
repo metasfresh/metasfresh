@@ -48,8 +48,10 @@ import java.util.Properties;
 
 public class AccountDAO implements IAccountDAO
 {
-	/** Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name */
-	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String> builder()
+	/**
+	 * Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name
+	 */
+	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String>builder()
 			.put(AcctSegmentType.Client, I_C_ValidCombination.COLUMNNAME_AD_Client_ID)
 			.put(AcctSegmentType.Organization, I_C_ValidCombination.COLUMNNAME_AD_Org_ID)
 			.put(AcctSegmentType.Account, I_C_ValidCombination.COLUMNNAME_Account_ID)
@@ -89,6 +91,12 @@ public class AccountDAO implements IAccountDAO
 	}
 
 	@Override
+	public ElementValueId getElementValueIdByAccountId(@NonNull final AccountId accountId)
+	{
+		return getById(Env.getCtx(), accountId).getElementValueId();
+	}
+
+	@Override
 	public MAccount retrieveAccount(final Properties ctx, final AccountDimension dimension)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -103,7 +111,7 @@ public class AccountDAO implements IAccountDAO
 
 			final Object value = dimension.getSegmentValue(segmentType);
 
-			if(value instanceof String)
+			if (value instanceof String)
 			{
 				queryBuilder.addEqualsFilter(columnName, String.valueOf(value));
 			}
@@ -177,6 +185,6 @@ public class AccountDAO implements IAccountDAO
 		InterfaceWrapperHelper.save(vc);
 
 		return AccountId.ofRepoId(vc.getC_ValidCombination_ID());
-	}	// get
+	}    // get
 
 }

@@ -12,6 +12,7 @@ import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
@@ -29,9 +30,11 @@ import org.adempiere.exceptions.AdempiereException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @ToString
@@ -55,6 +58,8 @@ public class SAPGLJournal
 	@NonNull @Getter private final Dimension dimension;
 	@NonNull @Getter private final String description;
 	@NonNull @Getter private final GLCategoryId glCategoryId;
+
+	public CurrencyId getCurrencyId() {return Money.getCommonCurrencyIdOfAll(totalAcctDR, totalAcctCR);}
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -111,14 +116,42 @@ public class SAPGLJournal
 		lines.clear();
 	}
 
+	public void addLines(
+			@NonNull final List<SAPGLJournalLineCreateRequest> requests,
+			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
+	{
+		addLines(requests.stream()
+				.map(request -> createLine(request, currencyConverter))
+				.collect(Collectors.toList()));
+	}
+
 	public Supplier<SAPGLJournalLineId> addLine(
 			@NonNull final SAPGLJournalLineCreateRequest request,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
+		final SAPGLJournalLine line = createLine(request, currencyConverter);
+		addLines(ImmutableList.of(line));
+		return line::getIdNotNull;
+	}
+
+	private void addLines(final List<SAPGLJournalLine> linesToAdd)
+	{
+		if (linesToAdd.isEmpty())
+		{
+			return;
+		}
+
+		this.lines.addAll(linesToAdd);
+		updateTotals();
+	}
+
+	private SAPGLJournalLine createLine(final @NonNull SAPGLJournalLineCreateRequest request, final @NonNull SAPGLJournalCurrencyConverter currencyConverter)
+	{
 		final Money amount = Money.of(request.getAmount(), conversionCtx.getCurrencyId());
 		final Money amountAcct = currencyConverter.convertToAcctCurrency(amount, conversionCtx);
 
-		final SAPGLJournalLine line = SAPGLJournalLine.builder()
+		return SAPGLJournalLine.builder()
+				.id(request.getAlreadyReservedId())
 				.line(getNextLineNo())
 				.description(request.getDescription())
 				.account(request.getAccount())
@@ -127,16 +160,14 @@ public class SAPGLJournal
 				.amountAcct(amountAcct)
 				.taxId(request.getTaxId())
 				.orgId(orgId)
+				.bpartnerId(request.getBpartnerId())
 				.dimension(request.getDimension().getSectionCodeId() != null
-								   ? request.getDimension()
-								   : request.getDimension().withSectionCodeId(dimension.getSectionCodeId()))
+						? request.getDimension()
+						: request.getDimension().withSectionCodeId(dimension.getSectionCodeId()))
 				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
+				.openItemTrxInfo(request.getOpenItemTrxInfo())
+				.isFieldsReadOnlyInUI(request.isFieldsReadOnlyInUI())
 				.build();
-		lines.add(line);
-
-		updateTotals();
-
-		return line::getIdNotNull;
 	}
 
 	private SeqNo getNextLineNo()
@@ -240,18 +271,18 @@ public class SAPGLJournal
 				.glCategoryId(glCategoryId)
 				//
 				.lines(getLines()
-							   .stream()
-							   .map(line -> SAPGLJournalLineCreateRequest.builder()
-									   .postingSign(line.getPostingSign())
-									   .account(line.getAccount())
-									   .postingSign(line.getPostingSign().reverse())
-									   .amount(line.getAmount().toBigDecimal())
-									   .dimension(line.getDimension())
-									   .description(line.getDescription())
-									   .taxId(line.getTaxId())
-									   .determineTaxBaseSAP(line.isDetermineTaxBaseSAP())
-									   .build())
-							   .collect(ImmutableList.toImmutableList()))
+						.stream()
+						.map(line -> SAPGLJournalLineCreateRequest.builder()
+								.postingSign(line.getPostingSign())
+								.account(line.getAccount())
+								.postingSign(line.getPostingSign().reverse())
+								.amount(line.getAmount().toBigDecimal())
+								.dimension(line.getDimension())
+								.description(line.getDescription())
+								.taxId(line.getTaxId())
+								.determineTaxBaseSAP(line.isDetermineTaxBaseSAP())
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 }

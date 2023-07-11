@@ -874,7 +874,7 @@ public class PaymentBL implements IPaymentBL
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
 		// Invoice
-		final I_C_Invoice invoice = InvoiceId.ofRepoIdOptional(payment.getC_Invoice_ID())
+		final I_C_Invoice invoice = InvoiceId.optionalOfRepoId(payment.getC_Invoice_ID())
 				.map(invoiceBL::getById)
 				.orElse(null);
 

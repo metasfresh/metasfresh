@@ -156,7 +156,7 @@ class AccountImportTestHelper
 		final ImmutableSet<TreeNode> nodesCreatedFromElementValues = elementValueRepository
 				.getAllRecordsByChartOfAccountsId(chartOfAccountsId)
 				.stream()
-				.map(ElementValueRepository::toElementValue)
+				.map(ElementValueRepository::fromRecord)
 				.map(treeNodeService::toTreeNode)
 				.collect(ImmutableSet.toImmutableSet());
 

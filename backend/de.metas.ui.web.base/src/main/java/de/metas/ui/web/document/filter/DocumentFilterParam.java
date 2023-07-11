@@ -7,6 +7,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -274,6 +275,16 @@ public final class DocumentFilterParam
 			return null;
 		}
 		return repoIdMapper.apply(idInt);
+	}
+
+	public <T extends ReferenceListAwareEnum> T getParameterValueAsRefListOrNull(@NonNull final Function<String, T> mapper)
+	{
+		final String value = StringUtils.trimBlankToNull(getValueAsString());
+		if(value == null)
+		{
+			return null;
+		}
+		return mapper.apply(value);
 	}
 
 	//

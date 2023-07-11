@@ -99,7 +99,7 @@ public class ElementValueService
 				root.setSeqNo(0);
 				elementValueRepository.save(root);
 
-				savedElementValues.add(ElementValueRepository.toElementValue(root));
+				savedElementValues.add(ElementValueRepository.fromRecord(root));
 			}
 
 			for (final ElementValueId parentId : elementValuesByParentId.keySet())
@@ -107,7 +107,7 @@ public class ElementValueService
 				final List<I_C_ElementValue> children = elementValuesByParentId.get(parentId);
 				sortByAccountNoAndSave(children);
 
-				children.forEach(child -> savedElementValues.add(ElementValueRepository.toElementValue(child)));
+				children.forEach(child -> savedElementValues.add(ElementValueRepository.fromRecord(child)));
 			}
 		}
 

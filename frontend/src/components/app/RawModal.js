@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { deleteViewRequest, advSearchRequest, patchRequest } from '../../api';
+import { advSearchRequest, deleteViewRequest, patchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
 import { unsetIncludedView } from '../../actions/ViewActions';
@@ -17,10 +17,11 @@ import {
 
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
-import { renderHeaderProperties } from '../../utils/documentListHelper';
+import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import ModalButton from './ModalButton';
+import { OIViewHeader_WINDOW_ID } from '../deliveryPlanning/OIViewHeader';
 
 /**
  * @file Class based component.
@@ -323,13 +324,23 @@ class RawModal extends Component {
   };
 
   render() {
-    const { modalTitle, children, modalDescription, rawModal, indicator } =
-      this.props;
+    const {
+      windowId,
+      modalTitle,
+      children,
+      modalDescription,
+      rawModal,
+      indicator,
+    } = this.props;
     const { scrolled } = this.state;
 
     if (!children) {
       return null;
     }
+
+    const isRenderHeaderProperties =
+      !!rawModal.headerProperties &&
+      String(windowId) !== OIViewHeader_WINDOW_ID;
 
     return (
       <div className="screen-freeze raw-modal">
@@ -351,9 +362,11 @@ class RawModal extends Component {
                   {modalDescription ? modalDescription : ''}
                 </span>
               </span>
-              {!!rawModal.headerProperties && (
+              {isRenderHeaderProperties && (
                 <div className="optional">
-                  {renderHeaderProperties(rawModal.headerProperties.groups)}
+                  {renderHeaderPropertiesGroups(
+                    rawModal.headerProperties.groups
+                  )}
                 </div>
               )}
               <div className="items-row-2">{this.renderButtons()}</div>
