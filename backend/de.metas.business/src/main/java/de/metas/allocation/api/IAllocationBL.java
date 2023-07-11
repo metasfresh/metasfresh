@@ -2,6 +2,7 @@ package de.metas.allocation.api;
 
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -51,6 +52,8 @@ public interface IAllocationBL extends ISingletonService
 	boolean isReversal(I_C_AllocationHdr allocationHdr);
 
 	Optional<InvoiceId> getInvoiceId(PaymentAllocationLineId lineId);
+
+	Optional<PaymentId> getPaymentId(PaymentAllocationLineId lineId);
 
 	@Value
 	@Builder

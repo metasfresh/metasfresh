@@ -1,6 +1,7 @@
 package de.metas.acct.open_items;
 
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -37,6 +38,11 @@ public final class FAOpenItemKey
 	public static FAOpenItemKey ofTableAndRecord(@NonNull final String tableName, final int recordId)
 	{
 		return ofString(tableName + "#" + Math.max(recordId, 0));
+	}
+
+	public static FAOpenItemKey ofTableAndRecord(@NonNull final String tableName, @Nullable final RepoIdAware recordId)
+	{
+		return ofTableAndRecord(tableName, recordId != null ? recordId.getRepoId() : -1);
 	}
 
 	public static FAOpenItemKey ofTableRecordLineAndSubLineId(

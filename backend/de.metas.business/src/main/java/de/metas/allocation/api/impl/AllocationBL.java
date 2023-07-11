@@ -301,7 +301,7 @@ public class AllocationBL implements IAllocationBL
 
 		Timestamp dateTrx;
 		Timestamp dateAcct;
-		if(request.isUseInvoiceDate())
+		if (request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
 			dateAcct = invoice.getDateAcct();
@@ -339,9 +339,17 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	@Override
-	public Optional<InvoiceId> getInvoiceId(final PaymentAllocationLineId lineId)
+	public Optional<InvoiceId> getInvoiceId(@NonNull final PaymentAllocationLineId lineId)
 	{
 		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
 		return InvoiceId.optionalOfRepoId(line.getC_Invoice_ID());
 	}
+
+	@Override
+	public Optional<PaymentId> getPaymentId(@NonNull final PaymentAllocationLineId lineId)
+	{
+		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
+		return PaymentId.optionalOfRepoId(line.getC_Payment_ID());
+	}
+
 }
