@@ -10,6 +10,7 @@ import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.forex.ForexContractId;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -397,4 +398,6 @@ public interface IInvoiceBL extends ISingletonService
 	Instant getDateAcct(InvoiceId invoiceId);
 
 	Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
+
+	boolean hasInvoiceWithForexContract(OrderId orderId, ForexContractId contractId);
 }

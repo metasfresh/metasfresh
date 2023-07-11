@@ -34,7 +34,8 @@ public class ForexContractAllocationRepository
 		return fromRecord(record);
 	}
 
-	private static ForexContractAllocation fromRecord(final I_C_ForeignExchangeContract_Alloc record)
+	@NonNull
+	public static ForexContractAllocation fromRecord(final I_C_ForeignExchangeContract_Alloc record)
 	{
 		return ForexContractAllocation.builder()
 				.id(ForexContractAllocationId.ofRepoId(record.getC_ForeignExchangeContract_Alloc_ID()))
@@ -132,5 +133,13 @@ public class ForexContractAllocationRepository
 				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.anyMatch();
+	}
+
+	public void delete(@NonNull final ForexContractAllocationId id)
+	{
+		queryBL.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
+				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_Alloc_ID, id)
+				.create()
+				.delete();
 	}
 }

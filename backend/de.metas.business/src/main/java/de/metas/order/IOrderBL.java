@@ -333,4 +333,6 @@ public interface IOrderBL extends ISingletonService
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
 	Quantity getQtyEntered(I_C_OrderLine orderLine);
+
+	boolean isCompleted(OrderId orderId);
 }

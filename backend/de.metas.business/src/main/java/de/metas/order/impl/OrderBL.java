@@ -1350,4 +1350,11 @@ public class OrderBL implements IOrderBL
 
 	@Override
 	public Quantity getQtyEntered(final org.compiere.model.I_C_OrderLine orderLine) {return orderLineBL.getQtyEntered(orderLine);}
+
+	@Override
+	public boolean isCompleted(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return DocStatus.ofCode(order.getDocStatus()).isCompleted();
+	}
 }
