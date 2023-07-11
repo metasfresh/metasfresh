@@ -20,3 +20,10 @@ UPDATE AD_Process_Para SET AD_Val_Rule_ID=540645,Updated=TO_TIMESTAMP('2023-07-1
 UPDATE AD_Process_Para SET AD_Reference_ID=18, AD_Reference_Value_ID=540133,Updated=TO_TIMESTAMP('2023-07-11 14:04:35.581','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542652
 ;
 
+-- Process: C_Flatrate_Conditions_Extend(de.metas.contracts.flatrate.process.C_Flatrate_Conditions_Extend)
+-- ParameterName: C_Year_ID
+-- 2023-07-11T14:42:58.705397807Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30, AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2023-07-11 15:42:58.704','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542652
+;
+
+
