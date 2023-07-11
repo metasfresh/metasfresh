@@ -120,12 +120,20 @@ class OIViewDataService
 		final FAOpenItemKey openItemKey = FAOpenItemKey.optionalOfString(record.getOpenItemKey())
 				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
 
-		Amount openAmount = Amount.of(record.getOI_OpenAmount(), acctCurrencyCode);
+		final Amount amtAcctDr = Amount.of(record.getAmtAcctDr(), acctCurrencyCode);
+		final Amount amtAcctCr = Amount.of(record.getAmtAcctCr(), acctCurrencyCode);
+		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtAcctDr.toBigDecimal(), amtAcctCr.toBigDecimal());
+		final Amount acctBalance = amtAcctDr.subtract(amtAcctCr);
+
+		Amount allocatedAmt = acctBalance.subtract(Amount.of(record.getOI_OpenAmount(), acctCurrencyCode));
 		final Amount futureClearingAmount = futureClearingAmounts.getAmount(openItemKey).orElse(null);
 		if (futureClearingAmount != null && !futureClearingAmount.isZero())
 		{
-			openAmount = openAmount.subtract(futureClearingAmount);
+			allocatedAmt = allocatedAmt.add(futureClearingAmount);
 		}
+
+		final Amount openAmount = acctBalance.add(allocatedAmt);
+
 		if (openAmount.isZero())
 		{
 			return null;
@@ -133,10 +141,6 @@ class OIViewDataService
 
 		final ElementValue elementValue = elementValueService.getById(ElementValueId.ofRepoId(record.getAccount_ID()));
 		final Account account = factAcctBL.getAccount(record);
-		final BigDecimal amtAcctDr = record.getAmtAcctDr();
-		final BigDecimal amtAcctCr = record.getAmtAcctCr();
-		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtAcctDr, amtAcctCr);
-		final Amount amount = Amount.of(postingSign.isDebit() ? amtAcctDr : amtAcctCr, acctCurrencyCode);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
 
@@ -146,8 +150,8 @@ class OIViewDataService
 				.postingSign(postingSign)
 				.account(account)
 				.accountCaption(getAccountCaption(account.getAccountId()))
-				.amount(amount)
-				.openAmount(openAmount)
+				.amount(acctBalance.negateIf(postingSign.isCredit()))
+				.openAmount(openAmount.negateIf(postingSign.isCredit()))
 				.dateAcct(record.getDateAcct().toInstant())
 				.bpartnerId(bpartnerId)
 				.bpartnerCaption(getBPartnerCaption(bpartnerId))
