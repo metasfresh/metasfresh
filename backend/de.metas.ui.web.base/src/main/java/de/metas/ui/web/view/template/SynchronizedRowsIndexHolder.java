@@ -68,6 +68,8 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		return getRowsIndex().getRecordIdsToRefresh(rowIds, idMapper);
 	}
 
+	public Stream<T> stream() {return getRowsIndex().stream();}
+
 	public Stream<T> stream(Predicate<T> predicate) {return getRowsIndex().stream(predicate);}
 
 	public long count(Predicate<T> predicate) {return getRowsIndex().count(predicate);}

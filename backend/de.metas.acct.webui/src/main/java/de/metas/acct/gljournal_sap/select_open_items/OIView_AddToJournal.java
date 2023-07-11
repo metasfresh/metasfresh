@@ -36,7 +36,7 @@ public class OIView_AddToJournal extends OIViewBasedProcess
 
 		sapglJournalService.createLines(createRequests, view.getSapglJournalId());
 
-		view.invalidateAll();
+		view.clearUserInputAndInvalidateAll();
 
 		return MSG_OK;
 	}

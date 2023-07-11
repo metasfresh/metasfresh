@@ -1,5 +1,6 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
@@ -26,6 +27,7 @@ import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +59,8 @@ public class OIViewData implements IEditableRowsData<OIRow>
 			@NonNull final OIViewDataService viewDataService,
 			@NonNull final SAPGLJournal glJournal,
 			@NonNull final AcctSchema acctSchema,
-			@Nullable final DocumentFilter filter)
+			@Nullable final DocumentFilter filter,
+			@Nullable final OIRowUserInputParts initialUserInput)
 	{
 		this.viewDataService = viewDataService;
 		this.glJournalId = glJournal.getId();
@@ -65,7 +68,7 @@ public class OIViewData implements IEditableRowsData<OIRow>
 		this.acctSchema = acctSchema;
 		this.filter = filter;
 
-		loadRows();
+		loadRows(initialUserInput != null ? initialUserInput : OIRowUserInputParts.EMPTY);
 	}
 
 	@Override
@@ -79,14 +82,29 @@ public class OIViewData implements IEditableRowsData<OIRow>
 	{
 		headerPropertiesHolder.setValue(null);
 		glJournalHolder.setValue(null);
-		loadRows();
+		loadRows(getUserInput());
 	}
 
-	private void loadRows()
+	private void loadRows(@NonNull final OIRowUserInputParts userInput)
 	{
 		final SAPGLJournal glJournal = getGLJournal();
-		final FutureClearingAmountMap futureClearingAmounts = FutureClearingAmountMap.of(glJournal, viewDataService.currencyCodeConverter());
-		rowsHolder.setRows(viewDataService.retrieveRows(acctSchema, glJournal.getPostingType(), futureClearingAmounts, filter));
+		final OIViewDataQuery query = OIViewDataQuery.builder()
+				.acctSchema(acctSchema)
+				.postingType(glJournal.getPostingType())
+				.futureClearingAmounts(FutureClearingAmountMap.of(glJournal, viewDataService.currencyCodeConverter()))
+				.filter(filter)
+				.includeFactAcctIds(userInput.getFactAcctIds())
+				.build();
+
+		final ImmutableList<OIRow> rows = viewDataService.streamRows(query)
+				.map(userInput::applyToRow)
+				.sorted(Comparator.<OIRow, String>comparing(row -> row.isSelected() ? "1" : "2")
+						.thenComparing(OIRow::getDateAcct)
+						.thenComparing(OIRow::getFactAcctId)
+				)
+				.collect(ImmutableList.toImmutableList());
+
+		rowsHolder.setRows(rows);
 	}
 
 	private SAPGLJournal getGLJournal()
@@ -191,4 +209,13 @@ public class OIViewData implements IEditableRowsData<OIRow>
 	{
 		return rowsHolder.anyMatch(OIRow::isSelected);
 	}
+
+	public void clearUserInput()
+	{
+		rowsHolder.changeRowsByIds(DocumentIdsSelection.ALL, OIRow::withUserInputCleared);
+		headerPropertiesHolder.setValue(null);
+	}
+
+	public OIRowUserInputParts getUserInput() {return OIRowUserInputParts.ofStream(rowsHolder.stream());}
+
 }

@@ -16,11 +16,13 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
@@ -33,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 @ViewFactory(windowId = OIViewFactory.WINDOWID_String)
 public class OIViewFactory implements IViewFactory
@@ -40,6 +43,7 @@ public class OIViewFactory implements IViewFactory
 	public static final String WINDOWID_String = "SAPGLJournalSelectOpenItems";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOWID_String);
 	private static final String VIEW_PARAM_SAP_GLJournal_ID = "SAP_GLJournal_ID";
+	private static final String VIEW_PARAM_InitialUserInput = "initialUserInput";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
@@ -70,6 +74,17 @@ public class OIViewFactory implements IViewFactory
 		return CreateViewRequest.builder(OIViewFactory.WINDOW_ID)
 				.setParameter(VIEW_PARAM_SAP_GLJournal_ID, sapglJournalId)
 				.build();
+	}
+
+	@Override
+	public IView filterView(final @NonNull IView view, final @NonNull JSONFilterViewRequest filterViewRequest, final @NonNull Supplier<IViewsRepository> viewsRepo)
+	{
+		final OIView oiView = OIView.cast(view);
+		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest)
+				.setParameter(VIEW_PARAM_SAP_GLJournal_ID, oiView.getSapglJournalId())
+				.setParameter(VIEW_PARAM_InitialUserInput, oiView.getUserInput())
+				.build();
+		return createView(createViewRequest);
 	}
 
 	@Override
@@ -121,7 +136,15 @@ public class OIViewFactory implements IViewFactory
 	{
 		final SAPGLJournalId sapglJournalId = extractSAPGLJournalId(request);
 		final DocumentFilter effectiveFilter = getEffectiveFilter(request);
-		return viewDataService.getData(sapglJournalId, effectiveFilter);
+		final OIRowUserInputParts initialUserInput = extractInitialUserInput(request);
+		return viewDataService.getData(sapglJournalId, effectiveFilter, initialUserInput);
+	}
+
+	@NonNull
+	private static OIRowUserInputParts extractInitialUserInput(final @NonNull CreateViewRequest request)
+	{
+		final OIRowUserInputParts initialUserInput = request.getParameterAs(VIEW_PARAM_InitialUserInput, OIRowUserInputParts.class);
+		return initialUserInput != null ? initialUserInput : OIRowUserInputParts.EMPTY;
 	}
 
 	@NonNull

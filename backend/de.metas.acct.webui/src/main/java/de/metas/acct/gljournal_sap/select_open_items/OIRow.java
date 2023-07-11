@@ -46,7 +46,7 @@ class OIRow implements IViewRow
 	@NonNull private final Amount openAmount;
 
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.LocalDate, captionKey = "DateAcct")
-	@NonNull private final Instant dateAcct;
+	@Getter @NonNull private final Instant dateAcct;
 
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_BPartner_ID")
 	@Nullable private final ITranslatableString bpartnerCaption;
@@ -134,6 +134,42 @@ class OIRow implements IViewRow
 	{
 		return this.selected != selected
 				? toBuilder().selected(selected).build()
+				: this;
+	}
+
+	public OIRow withUserInputCleared()
+	{
+		return this.selected || this.openAmountOverride != null
+				? toBuilder().selected(false).openAmountOverride(null).build()
+				: this;
+	}
+
+	@Nullable
+	public OIRowUserInputPart getUserInputPart()
+	{
+		if (selected)
+		{
+			final boolean isAmountOverrideNonZero = openAmountOverride != null && !openAmountOverride.isZero();
+			return OIRowUserInputPart.builder()
+					.rowId(rowId)
+					.factAcctId(factAcctId)
+					.selected(selected)
+					.amountOverride(isAmountOverrideNonZero ? openAmountOverride.toBigDecimal() : null)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public OIRow withUserInput(@Nullable final OIRowUserInputPart userInput)
+	{
+		final boolean selectedNew = userInput != null && userInput.isSelected();
+		final Amount amountOverride = userInput != null && userInput.getAmountOverride() != null ? Amount.of(userInput.getAmountOverride(), getAcctCurrencyCode()) : null;
+
+		return this.selected != selectedNew || !Amount.equals(this.openAmountOverride, amountOverride)
+				? toBuilder().selected(selectedNew).openAmountOverride(amountOverride).build()
 				: this;
 	}
 

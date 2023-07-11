@@ -2,11 +2,8 @@ package de.metas.acct.gljournal_sap.select_open_items;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
-import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.TranslatableStrings;
@@ -25,8 +22,6 @@ import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_SectionCode;
-
-import javax.annotation.Nullable;
 
 @UtilityClass
 class OIViewFilterHelper
@@ -117,43 +112,28 @@ class OIViewFilterHelper
 				.displayName(TranslatableStrings.adElementOrMessage(fieldName));
 	}
 
-	public static FactAcctQuery toFactAcctQuery(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final PostingType postingType,
-			@Nullable final DocumentFilter filter)
+	public static void appendToFactAcctQuery(
+			@NonNull final FactAcctQuery.FactAcctQueryBuilder builder,
+			@NonNull final DocumentFilter filter)
 	{
-		// TODO: subtract gl journal lines which will become fact_acct
+		final BPartnerId bpartnerId = filter.getParameterValueAsRepoIdOrNull(PARAM_C_BPartner_ID, BPartnerId::ofRepoIdOrNull);
+		final InSetPredicate<BPartnerId> bpartnerIds = bpartnerId != null ? InSetPredicate.only(bpartnerId) : InSetPredicate.any();
 
-		final FactAcctQuery.FactAcctQueryBuilder builder = FactAcctQuery.builder()
-				.acctSchemaId(acctSchemaId)
-				.postingType(postingType)
-				.isOpenItem(true)
-				.isOpenItemReconciled(false)
-				.openItemTrxType(FAOpenItemTrxType.OPEN_ITEM);
-
-		if (filter != null)
-		{
-			final BPartnerId bpartnerId = filter.getParameterValueAsRepoIdOrNull(PARAM_C_BPartner_ID, BPartnerId::ofRepoIdOrNull);
-			final InSetPredicate<BPartnerId> bpartnerIds = bpartnerId != null ? InSetPredicate.only(bpartnerId) : InSetPredicate.any();
-
-			builder.accountId(filter.getParameterValueAsRepoIdOrNull(PARAM_Account_ID, ElementValueId::ofRepoIdOrNull))
-					.bpartnerIds(bpartnerIds)
-					.sectionCodeId(filter.getParameterValueAsRepoIdOrNull(PARAM_M_SectionCode_ID, SectionCodeId::ofRepoIdOrNull))
-					.salesOrderId(filter.getParameterValueAsRepoIdOrNull(PARAM_C_OrderSO_ID, OrderId::ofRepoIdOrNull))
-					.dateAcct(filter.getParameterValueAsInstantOrNull(PARAM_DateAcct))
-					.documentNoLike(filter.getParameterValueAsString(PARAM_DocumentNo, null))
-					.descriptionLike(filter.getParameterValueAsString(PARAM_Description, null))
-					.docStatus(filter.getParameterValueAsRefListOrNull(PARAM_DocStatus, DocStatus::ofCode))
-					.userElementString1Like(filter.getParameterValueAsString(PARAM_UserElementString1, null))
-					.userElementString2Like(filter.getParameterValueAsString(PARAM_UserElementString2, null))
-					.userElementString3Like(filter.getParameterValueAsString(PARAM_UserElementString3, null))
-					.userElementString4Like(filter.getParameterValueAsString(PARAM_UserElementString4, null))
-					.userElementString5Like(filter.getParameterValueAsString(PARAM_UserElementString5, null))
-					.userElementString6Like(filter.getParameterValueAsString(PARAM_UserElementString6, null))
-					.userElementString7Like(filter.getParameterValueAsString(PARAM_UserElementString7, null))
-			;
-		}
-
-		return builder.build();
+		builder.accountId(filter.getParameterValueAsRepoIdOrNull(PARAM_Account_ID, ElementValueId::ofRepoIdOrNull))
+				.bpartnerIds(bpartnerIds)
+				.sectionCodeId(filter.getParameterValueAsRepoIdOrNull(PARAM_M_SectionCode_ID, SectionCodeId::ofRepoIdOrNull))
+				.salesOrderId(filter.getParameterValueAsRepoIdOrNull(PARAM_C_OrderSO_ID, OrderId::ofRepoIdOrNull))
+				.dateAcct(filter.getParameterValueAsInstantOrNull(PARAM_DateAcct))
+				.documentNoLike(filter.getParameterValueAsString(PARAM_DocumentNo, null))
+				.descriptionLike(filter.getParameterValueAsString(PARAM_Description, null))
+				.docStatus(filter.getParameterValueAsRefListOrNull(PARAM_DocStatus, DocStatus::ofCode))
+				.userElementString1Like(filter.getParameterValueAsString(PARAM_UserElementString1, null))
+				.userElementString2Like(filter.getParameterValueAsString(PARAM_UserElementString2, null))
+				.userElementString3Like(filter.getParameterValueAsString(PARAM_UserElementString3, null))
+				.userElementString4Like(filter.getParameterValueAsString(PARAM_UserElementString4, null))
+				.userElementString5Like(filter.getParameterValueAsString(PARAM_UserElementString5, null))
+				.userElementString6Like(filter.getParameterValueAsString(PARAM_UserElementString6, null))
+				.userElementString7Like(filter.getParameterValueAsString(PARAM_UserElementString7, null))
+		;
 	}
 }

@@ -78,14 +78,14 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		rowsById = Maps.uniqueIndex(rows, IViewRow::getId);
 	}
 
-	private Stream<T> streamAllRows()
+	private Stream<T> streamInOrder()
 	{
 		return rowIds.stream().map(rowsById::get);
 	}
 
 	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows()
 	{
-		return streamAllRows()
+		return streamInOrder()
 				.collect(GuavaCollectors.toImmutableMapByKey(IViewRow::getId));
 	}
 
@@ -275,6 +275,8 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
+
+	public Stream<T> stream() {return rowsById.values().stream();}
 
 	public Stream<T> stream(final Predicate<T> predicate) {return rowsById.values().stream().filter(predicate);}
 

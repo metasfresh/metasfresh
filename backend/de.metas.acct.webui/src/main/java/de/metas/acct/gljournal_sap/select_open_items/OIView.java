@@ -76,4 +76,13 @@ public class OIView extends AbstractCustomView<OIRow> implements IEditableView
 	{
 		return getRowsData().hasSelectedRows();
 	}
+
+	public void clearUserInputAndInvalidateAll()
+	{
+		getRowsData().clearUserInput();
+		invalidateAll();
+	}
+
+	public OIRowUserInputParts getUserInput() {return getRowsData().getUserInput();}
+
 }

@@ -1,18 +1,18 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.FactAcctId;
+import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaBL;
-import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -40,8 +40,8 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 class OIViewDataService
 {
@@ -73,7 +73,8 @@ class OIViewDataService
 
 	OIViewData getData(
 			final SAPGLJournalId glJournalId,
-			@Nullable final DocumentFilter filter)
+			@Nullable final DocumentFilter filter,
+			@Nullable OIRowUserInputParts initialUserInput)
 	{
 		final SAPGLJournal glJournal = getGlJournal(glJournalId);
 		final AcctSchema acctSchema = acctSchemaBL.getById(glJournal.getAcctSchemaId());
@@ -83,6 +84,7 @@ class OIViewDataService
 				.glJournal(glJournal)
 				.acctSchema(acctSchema)
 				.filter(filter)
+				.initialUserInput(initialUserInput)
 				.build();
 	}
 
@@ -97,18 +99,33 @@ class OIViewDataService
 		return moneyService;
 	}
 
-	ImmutableList<OIRow> retrieveRows(
-			@NonNull final AcctSchema acctSchema,
-			@NonNull final PostingType postingType,
-			@NonNull final FutureClearingAmountMap futureClearingAmounts,
-			@Nullable final DocumentFilter filter)
+	Stream<OIRow> streamRows(@NonNull final OIViewDataQuery query)
 	{
+		final AcctSchema acctSchema = query.getAcctSchema();
 		final CurrencyCode acctCurrencyCode = moneyService.getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
+		final FutureClearingAmountMap futureClearingAmounts = query.getFutureClearingAmounts();
 
-		return factAcctBL.stream(OIViewFilterHelper.toFactAcctQuery(acctSchema.getId(), postingType, filter))
+		return factAcctBL.stream(toFactAcctQuery(query))
 				.map(record -> toRow(record, acctCurrencyCode, futureClearingAmounts))
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
+				.filter(Objects::nonNull);
+	}
+
+	private FactAcctQuery toFactAcctQuery(@NonNull final OIViewDataQuery query)
+	{
+		final FactAcctQuery.FactAcctQueryBuilder factAcctQueryBuilder = FactAcctQuery.builder()
+				.includeFactAcctIds(query.getIncludeFactAcctIds())
+				.acctSchemaId(query.getAcctSchemaId())
+				.postingType(query.getPostingType())
+				.isOpenItem(true)
+				.isOpenItemReconciled(false)
+				.openItemTrxType(FAOpenItemTrxType.OPEN_ITEM);
+
+		if (query.getFilter() != null)
+		{
+			OIViewFilterHelper.appendToFactAcctQuery(factAcctQueryBuilder, query.getFilter());
+		}
+
+		return factAcctQueryBuilder.build();
 	}
 
 	@Nullable
