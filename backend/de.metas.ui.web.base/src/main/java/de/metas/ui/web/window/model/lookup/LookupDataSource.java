@@ -63,6 +63,8 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	default Optional<LookupValue> findByIdOptional(Object id) {return Optional.ofNullable(findById(id));}
 
+	default Optional<LookupValue> findByIdOptional(Object id) {return Optional.ofNullable(findById(id));}
+
 	/**
 	 * @return lookup values in the same order as the collection order
 	 */
