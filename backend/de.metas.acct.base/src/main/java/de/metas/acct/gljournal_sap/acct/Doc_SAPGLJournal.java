@@ -98,7 +98,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 					.setAccount(line.getAccount())
 					.setAmtSource(glJournalCurrencyConversionCtx.getCurrencyId(), amtSourceDr, amtSourceCr)
 					.setAmtAcct(amtAcctDr, amtAcctCr)
-					.openItemKey(line.getOpenItemKey())
+					.openItemKey(line.getOpenItemTrxInfo())
 					.buildAndAdd();
 
 			if (factLine == null)

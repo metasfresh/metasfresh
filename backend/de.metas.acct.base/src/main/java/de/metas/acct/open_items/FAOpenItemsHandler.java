@@ -10,5 +10,5 @@ public interface FAOpenItemsHandler
 {
 	@NonNull AccountConceptualName getHandledAccountConceptualName();
 
-	Optional<FAOpenItemKey> extractMatchingKey(FactLine line);
+	Optional<FAOpenItemTrxInfo> computeTrxInfo(FAOpenItemTrxInfoComputeRequest request);
 }

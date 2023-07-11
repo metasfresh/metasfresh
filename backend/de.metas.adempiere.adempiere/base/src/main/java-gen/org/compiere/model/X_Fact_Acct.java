@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 316342362L;
+	private static final long serialVersionUID = -1630899216L;
 
     /** Standard Constructor */
     public X_Fact_Acct (final Properties ctx, final int Fact_Acct_ID, @Nullable final String trxName)
@@ -968,6 +968,40 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public void setOI_OpenAmount (final @Nullable BigDecimal OI_OpenAmount)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmount, OI_OpenAmount);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * OI_TrxType AD_Reference_ID=541800
+	 * Reference name: OI_TrxType
+	 */
+	public static final int OI_TRXTYPE_AD_Reference_ID=541800;
+	/** OpenItem = O */
+	public static final String OI_TRXTYPE_OpenItem = "O";
+	/** Clearing = C */
+	public static final String OI_TRXTYPE_Clearing = "C";
+	@Override
+	public void setOI_TrxType (final @Nullable java.lang.String OI_TrxType)
+	{
+		set_Value (COLUMNNAME_OI_TrxType, OI_TrxType);
+	}
+
+	@Override
+	public java.lang.String getOI_TrxType() 
+	{
+		return get_ValueAsString(COLUMNNAME_OI_TrxType);
 	}
 
 	@Override

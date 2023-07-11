@@ -33,6 +33,32 @@ public final class FAOpenItemKey
 
 	public static Optional<FAOpenItemKey> optionalOfString(@Nullable final String string) {return Optional.ofNullable(ofNullableString(string));}
 
+	public static FAOpenItemKey ofTableAndRecord(@NonNull final String tableName, final int recordId)
+	{
+		return ofString(tableName + "#" + Math.max(recordId, 0));
+	}
+
+	public static FAOpenItemKey ofTableRecordLineAndSubLineId(
+			@NonNull final String tableName,
+			final int recordId,
+			final int lineId,
+			final int subLineId)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(tableName);
+		sb.append("#").append(Math.max(recordId, 0));
+		if (lineId > 0)
+		{
+			sb.append("#").append(lineId);
+		}
+		if (subLineId > 0)
+		{
+			sb.append("#").append(subLineId);
+		}
+
+		return ofString(sb.toString());
+	}
+
 	public static FAOpenItemKey ofString(@NonNull final String string)
 	{
 		final String stringNorm = StringUtils.trimBlankToNull(string);

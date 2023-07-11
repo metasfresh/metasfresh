@@ -395,6 +395,27 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
+	 * Set Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_TrxType (@Nullable java.lang.String OI_TrxType);
+
+	/**
+	 * Get Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_TrxType();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OI_TrxType = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_TrxType", null);
+	String COLUMNNAME_OI_TrxType = "OI_TrxType";
+
+	/**
 	 * Set Open Item Key.
 	 *
 	 * <br>Type: String

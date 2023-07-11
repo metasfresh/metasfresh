@@ -1149,6 +1149,48 @@ public interface I_Fact_Acct
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
+	 * Set OI Open Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_OpenAmount (@Nullable BigDecimal OI_OpenAmount);
+
+	/**
+	 * Get OI Open Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOI_OpenAmount();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_OpenAmount = new ModelColumn<>(I_Fact_Acct.class, "OI_OpenAmount", null);
+	String COLUMNNAME_OI_OpenAmount = "OI_OpenAmount";
+
+	/**
+	 * Set Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_TrxType (@Nullable java.lang.String OI_TrxType);
+
+	/**
+	 * Get Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_TrxType();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_TrxType = new ModelColumn<>(I_Fact_Acct.class, "OI_TrxType", null);
+	String COLUMNNAME_OI_TrxType = "OI_TrxType";
+
+	/**
 	 * Set Open Item Key.
 	 *
 	 * <br>Type: String

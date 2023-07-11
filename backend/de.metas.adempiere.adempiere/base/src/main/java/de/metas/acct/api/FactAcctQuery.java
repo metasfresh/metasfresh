@@ -2,6 +2,8 @@ package de.metas.acct.api;
 
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderId;
@@ -31,7 +33,8 @@ public class FactAcctQuery
 
 	@Nullable Boolean isOpenItem;
 	@Nullable Boolean isOpenItemReconciled;
-	@Nullable String openItemsKey;
+	@Nullable FAOpenItemKey openItemsKey;
+	@Nullable FAOpenItemTrxType openItemTrxType;
 
 	@Nullable DocStatus docStatus;
 	@Nullable String documentNoLike;

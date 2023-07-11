@@ -17,6 +17,8 @@ import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
+import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.FixedConversionRate;
 import de.metas.document.DocTypeId;
@@ -175,9 +177,9 @@ public class SAPGLJournalLoaderAndSaver
 				.acctSchemaId(AcctSchemaId.ofRepoId(headerRecord.getC_AcctSchema_ID()))
 				.postingType(PostingType.ofCode(headerRecord.getPostingType()))
 				.lines(lineRecords.stream()
-							   .map(lineRecord -> fromRecord(lineRecord, conversionCtx))
-							   .sorted(Comparator.comparing(SAPGLJournalLine::getLine).thenComparing(SAPGLJournalLine::getIdNotNull))
-							   .collect(Collectors.toCollection(ArrayList::new)))
+						.map(lineRecord -> fromRecord(lineRecord, conversionCtx))
+						.sorted(Comparator.comparing(SAPGLJournalLine::getLine).thenComparing(SAPGLJournalLine::getIdNotNull))
+						.collect(Collectors.toCollection(ArrayList::new)))
 				.totalAcctDR(Money.of(headerRecord.getTotalDr(), conversionCtx.getAcctCurrencyId()))
 				.totalAcctCR(Money.of(headerRecord.getTotalCr(), conversionCtx.getAcctCurrencyId()))
 				.docStatus(DocStatus.ofCode(headerRecord.getDocStatus()))
@@ -221,7 +223,7 @@ public class SAPGLJournalLoaderAndSaver
 				//
 				.determineTaxBaseSAP(record.isSAP_DetermineTaxBase())
 				//
-				.openItemKey(FAOpenItemKey.ofNullableString(record.getOpenItemKey()))
+				.openItemTrxInfo(extractFAOpenItemTrxInfoOrNull(record))
 				//
 				.isFieldsReadOnlyInUI(record.isFieldsReadOnlyInUI())
 				//
@@ -255,6 +257,27 @@ public class SAPGLJournalLoaderAndSaver
 	private static SAPGLJournalLineId extractId(final @NonNull I_SAP_GLJournalLine line)
 	{
 		return SAPGLJournalLineId.ofRepoId(line.getSAP_GLJournal_ID(), line.getSAP_GLJournalLine_ID());
+	}
+
+	@Nullable
+	private static FAOpenItemTrxInfo extractFAOpenItemTrxInfoOrNull(final I_SAP_GLJournalLine line)
+	{
+		final FAOpenItemTrxType trxType = FAOpenItemTrxType.ofNullableCode(line.getOI_TrxType());
+		if (trxType == null)
+		{
+			return null;
+		}
+
+		final FAOpenItemKey openItemKey = FAOpenItemKey.ofNullableString(line.getOpenItemKey());
+		if (openItemKey == null)
+		{
+			return null;
+		}
+
+		return FAOpenItemTrxInfo.builder()
+				.trxType(trxType)
+				.key(openItemKey)
+				.build();
 	}
 
 	public void save(final SAPGLJournal glJournal)
@@ -334,9 +357,15 @@ public class SAPGLJournalLoaderAndSaver
 
 		lineRecord.setSAP_DetermineTaxBase(line.isDetermineTaxBaseSAP());
 
-		lineRecord.setOpenItemKey(line.getOpenItemKey() != null ? line.getOpenItemKey().getAsString() : null);
+		updateRecordFromOpenItemTrxInfo(lineRecord, line.getOpenItemTrxInfo());
 
 		lineRecord.setIsFieldsReadOnlyInUI(line.isFieldsReadOnlyInUI());
+	}
+
+	public static void updateRecordFromOpenItemTrxInfo(@NonNull final I_SAP_GLJournalLine lineRecord, @Nullable final FAOpenItemTrxInfo from)
+	{
+		lineRecord.setOI_TrxType(from != null ? from.getTrxType().getCode() : null);
+		lineRecord.setOpenItemKey(from != null ? from.getKey().getAsString() : null);
 	}
 
 	private static void updateLineRecordFromDimension(final I_SAP_GLJournalLine lineRecord, final Dimension dimension)
@@ -433,7 +462,7 @@ public class SAPGLJournalLoaderAndSaver
 				.forEach(createLineRequest -> createdJournal.addLine(createLineRequest, currencyConverter));
 
 		save(createdJournal);
-		
+
 		return createdJournal;
 	}
 }

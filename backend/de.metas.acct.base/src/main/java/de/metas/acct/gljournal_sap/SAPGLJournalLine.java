@@ -1,7 +1,7 @@
 package de.metas.acct.gljournal_sap;
 
 import de.metas.acct.Account;
-import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
@@ -42,7 +42,7 @@ public class SAPGLJournalLine
 	@NonNull @Getter private final Dimension dimension;
 	@Getter private final boolean determineTaxBaseSAP;
 
-	@Nullable @Getter private final FAOpenItemKey openItemKey;
+	@Nullable @Getter private final FAOpenItemTrxInfo openItemTrxInfo;
 
 	@Getter private final boolean isFieldsReadOnlyInUI;
 

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 672725117L;
+	private static final long serialVersionUID = -237317313L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -248,6 +248,27 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	/** 
+	 * OI_TrxType AD_Reference_ID=541800
+	 * Reference name: OI_TrxType
+	 */
+	public static final int OI_TRXTYPE_AD_Reference_ID=541800;
+	/** OpenItem = O */
+	public static final String OI_TRXTYPE_OpenItem = "O";
+	/** Clearing = C */
+	public static final String OI_TRXTYPE_Clearing = "C";
+	@Override
+	public void setOI_TrxType (final @Nullable java.lang.String OI_TrxType)
+	{
+		set_Value (COLUMNNAME_OI_TrxType, OI_TrxType);
+	}
+
+	@Override
+	public java.lang.String getOI_TrxType() 
+	{
+		return get_ValueAsString(COLUMNNAME_OI_TrxType);
 	}
 
 	@Override

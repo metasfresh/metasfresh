@@ -2,6 +2,7 @@ package de.metas.acct.gljournal_sap.select_open_items;
 
 import de.metas.acct.gljournal_sap.service.SAPGLJournalLineCreateRequest;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import org.compiere.SpringContextHolder;
@@ -48,7 +49,7 @@ public class OIView_AddToJournal extends OIViewBasedProcess
 				.amount(row.getOpenAmountEffective().toBigDecimal())
 				.bpartnerId(row.getBpartnerId())
 				.dimension(row.getDimension())
-				.openItemKey(row.getOpenItemKey())
+				.openItemTrxInfo(FAOpenItemTrxInfo.clearing(row.getOpenItemKey()))
 				.isFieldsReadOnlyInUI(true)
 				.build();
 	}

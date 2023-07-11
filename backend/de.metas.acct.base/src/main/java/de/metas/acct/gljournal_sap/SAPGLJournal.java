@@ -161,7 +161,7 @@ public class SAPGLJournal
 						? request.getDimension()
 						: request.getDimension().withSectionCodeId(dimension.getSectionCodeId()))
 				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
-				.openItemKey(request.getOpenItemKey())
+				.openItemTrxInfo(request.getOpenItemTrxInfo())
 				.isFieldsReadOnlyInUI(request.isFieldsReadOnlyInUI())
 				.build();
 	}

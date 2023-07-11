@@ -11,7 +11,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
@@ -73,7 +73,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -446,9 +445,9 @@ public class AcctDocRequiredServicesFacade
 		return dimensionService.getFromRecord(model);
 	}
 
-	public Optional<FAOpenItemKey> getOrComputeOpenItemKey(FactLine factLine)
+	public Optional<FAOpenItemTrxInfo> computeOpenItemTrxInfo(FactLine factLine)
 	{
-		return faOpenItemsService.getOrComputeOpenItemKey(factLine);
+		return faOpenItemsService.computeTrxInfo(factLine);
 	}
 
 	public void saveNew(I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}

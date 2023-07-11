@@ -1,14 +1,13 @@
 package de.metas.acct.open_items.handlers;
 
 import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
+import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
 import de.metas.acct.open_items.FAOpenItemsHandler;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.impl.TableIdsCache;
-import org.compiere.acct.FactLine;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 
@@ -19,22 +18,16 @@ abstract class BPartnerOIHandler implements FAOpenItemsHandler
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
 	@Override
-	public Optional<FAOpenItemKey> extractMatchingKey(final FactLine line)
+	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final FAOpenItemTrxInfoComputeRequest request)
 	{
-		final FAOpenItemKey openItemKey = FAOpenItemKey.ofNullableString(line.getOpenItemKey());
-		if (openItemKey != null)
-		{
-			return Optional.of(openItemKey);
-		}
-
-		final String tableName = TableIdsCache.instance.getTableName(AdTableId.ofRepoId(line.getAD_Table_ID()));
+		final String tableName = request.getTableName();
 		if (I_C_Invoice.Table_Name.equals(tableName))
 		{
-			return Optional.of(extractMatchingKeyFromInvoice(InvoiceId.ofRepoId(line.getRecord_ID())));
+			return Optional.of(computeTrxInfoFromInvoice(InvoiceId.ofRepoId(request.getRecordId())));
 		}
 		else if (I_C_AllocationHdr.Table_Name.equals(tableName))
 		{
-			return extractMatchingKeyFromAllocation(PaymentAllocationLineId.ofRepoId(line.getRecord_ID(), line.getLine_ID()));
+			return extractMatchingKeyFromAllocation(PaymentAllocationLineId.ofRepoId(request.getRecordId(), request.getLineId()));
 		}
 		else
 		{
@@ -42,20 +35,16 @@ abstract class BPartnerOIHandler implements FAOpenItemsHandler
 		}
 	}
 
-	private FAOpenItemKey extractMatchingKeyFromInvoice(final InvoiceId invoiceId)
+	private FAOpenItemTrxInfo computeTrxInfoFromInvoice(final InvoiceId invoiceId)
 	{
-		return createOpenItemKey(invoiceId);
+		return FAOpenItemTrxInfo.openItem(FAOpenItemKey.ofTableAndRecord(I_C_Invoice.Table_Name, invoiceId.getRepoId()));
 	}
 
-	private Optional<FAOpenItemKey> extractMatchingKeyFromAllocation(final PaymentAllocationLineId paymentAllocationLineId)
+	private Optional<FAOpenItemTrxInfo> extractMatchingKeyFromAllocation(final PaymentAllocationLineId paymentAllocationLineId)
 	{
 		// TODO handle the case when we have invoice-to-invoice allocation
 		return allocationBL.getInvoiceId(paymentAllocationLineId)
-				.map(this::createOpenItemKey);
+				.map(invoiceId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.ofTableAndRecord(I_C_Invoice.Table_Name, invoiceId.getRepoId())));
 	}
 
-	private FAOpenItemKey createOpenItemKey(final InvoiceId invoiceId)
-	{
-		return FAOpenItemKey.ofString(I_C_Invoice.Table_Name + "#" + invoiceId.getRepoId());
-	}
 }

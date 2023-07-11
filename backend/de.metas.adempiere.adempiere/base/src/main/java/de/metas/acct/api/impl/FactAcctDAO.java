@@ -246,7 +246,11 @@ public class FactAcctDAO implements IFactAcctDAO
 		}
 		if (query.getOpenItemsKey() != null)
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKey());
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKey().getAsString());
+		}
+		if (query.getOpenItemTrxType() != null)
+		{
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OI_TrxType, query.getOpenItemTrxType().getCode());
 		}
 
 		if (query.getDocStatus() != null)

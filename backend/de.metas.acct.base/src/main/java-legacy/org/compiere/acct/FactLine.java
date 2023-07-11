@@ -11,9 +11,13 @@ import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.api.impl.FactAcctDAO;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
+import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
@@ -43,6 +47,7 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -1016,6 +1021,11 @@ public final class FactLine extends X_Fact_Acct
 		return m_acct;
 	}
 
+	public ElementValueId getElementValueId()
+	{
+		return ElementValueId.ofRepoId(getAccount_ID());
+	}
+
 	@Override
 	public String toString()
 	{
@@ -1766,5 +1776,40 @@ public final class FactLine extends X_Fact_Acct
 	public Optional<AccountConceptualName> getAccountConceptualNameVO()
 	{
 		return Optional.ofNullable(FactAcctDAO.extractAccountConceptualName(this));
+	}
+
+	public void updateFAOpenItemTrxInfo()
+	{
+		final FAOpenItemTrxInfo openItemTrxInfo = Optionals.firstPresentOfSuppliers(this::getOpenItemTrxInfo, () -> services.computeOpenItemTrxInfo(this))
+				.orElse(null);
+		setOpenItemTrxInfo(openItemTrxInfo);
+	}
+
+	void setOpenItemTrxInfo(@Nullable final FAOpenItemTrxInfo openItemTrxInfo)
+	{
+		setOI_TrxType(openItemTrxInfo != null ? openItemTrxInfo.getTrxType().getCode() : null);
+		setOpenItemKey(openItemTrxInfo != null ? openItemTrxInfo.getKey().getAsString() : null);
+	}
+
+	private Optional<FAOpenItemTrxInfo> getOpenItemTrxInfo()
+	{
+		final FAOpenItemTrxType trxType = FAOpenItemTrxType.ofNullableCode(getOI_TrxType());
+		if (trxType == null)
+		{
+			return Optional.empty();
+		}
+
+		final FAOpenItemKey openItemKey = FAOpenItemKey.ofNullableString(getOpenItemKey());
+		if (openItemKey == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(
+				FAOpenItemTrxInfo.builder()
+						.trxType(trxType)
+						.key(openItemKey)
+						.build()
+		);
 	}
 }    // FactLine

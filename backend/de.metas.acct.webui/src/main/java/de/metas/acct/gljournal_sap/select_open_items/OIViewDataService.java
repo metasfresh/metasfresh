@@ -7,6 +7,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
@@ -16,6 +17,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.dimension.Dimension;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
@@ -47,6 +50,7 @@ class OIViewDataService
 	private final LookupDataSource validCombinationsLookup;
 	private final LookupDataSource bpartnerLookup;
 	private final SAPGLJournalService glJournalService;
+	private final ElementValueService elementValueService;
 
 	@Builder
 	private OIViewDataService(
@@ -54,7 +58,8 @@ class OIViewDataService
 			@NonNull final IFactAcctBL factAcctBL,
 			@NonNull final IAcctSchemaBL acctSchemaBL,
 			@NonNull final MoneyService moneyService,
-			@NonNull final SAPGLJournalService glJournalService)
+			@NonNull final SAPGLJournalService glJournalService,
+			@NonNull final ElementValueService elementValueService)
 	{
 		this.factAcctBL = factAcctBL;
 		this.validCombinationsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_ValidCombination.Table_Name);
@@ -62,6 +67,7 @@ class OIViewDataService
 		this.acctSchemaBL = acctSchemaBL;
 		this.moneyService = moneyService;
 		this.glJournalService = glJournalService;
+		this.elementValueService = elementValueService;
 	}
 
 	OIViewData getData(
@@ -98,6 +104,7 @@ class OIViewDataService
 
 	private OIRow toRow(final I_Fact_Acct record, final CurrencyCode acctCurrencyCode)
 	{
+		final ElementValue elementValue = elementValueService.getById(ElementValueId.ofRepoId(record.getAccount_ID()));
 		final Account account = factAcctBL.getAccount(record);
 		final BigDecimal amtAcctDr = record.getAmtAcctDr();
 		final BigDecimal amtAcctCr = record.getAmtAcctCr();
@@ -110,6 +117,7 @@ class OIViewDataService
 
 		return OIRow.builder()
 				.factAcctId(FactAcctId.ofRepoId(record.getFact_Acct_ID()))
+				.isOpenItem(elementValue.isOpenItem())
 				.postingSign(postingSign)
 				.account(account)
 				.accountCaption(getAccountCaption(account.getAccountId()))

@@ -6,6 +6,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.TranslatableStrings;
@@ -121,13 +122,14 @@ class OIViewFilterHelper
 			@NonNull final PostingType postingType,
 			@Nullable final DocumentFilter filter)
 	{
+		// TODO: subtract gl journal lines which will become fact_acct
 
 		final FactAcctQuery.FactAcctQueryBuilder builder = FactAcctQuery.builder()
 				.acctSchemaId(acctSchemaId)
 				.postingType(postingType)
 				.isOpenItem(true)
-				//.isOpenItemReconciled(false) // TODO
-				;
+				.isOpenItemReconciled(false)
+				.openItemTrxType(FAOpenItemTrxType.OPEN_ITEM);
 
 		if (filter != null)
 		{

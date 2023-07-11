@@ -4,9 +4,13 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.open_items.handlers.Generic_OIHandler;
+import de.metas.elementvalue.ElementValueService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.acct.FactLine;
@@ -28,33 +32,44 @@ public class FAOpenItemsService
 	private static final int DEFAULT_ProcessingBatchSize = 1000;
 
 	private final ImmutableMap<AccountConceptualName, FAOpenItemsHandler> handlersByAccount;
+	private final Generic_OIHandler genericOIHandler;
 
 	public FAOpenItemsService(
+			@NonNull final ElementValueService elementValueService,
 			@NonNull Optional<List<FAOpenItemsHandler>> handlers)
 	{
 		this.handlersByAccount = handlers
 				.map(list -> Maps.uniqueIndex(list, FAOpenItemsHandler::getHandledAccountConceptualName))
 				.orElseGet(ImmutableMap::of);
-		logger.info("Handlers: {}", this.handlersByAccount);
+
+		this.genericOIHandler = new Generic_OIHandler(elementValueService);
+
+		logger.info("Handlers: {}, {}", this.handlersByAccount, genericOIHandler);
+
 	}
 
-	public Optional<FAOpenItemKey> getOrComputeOpenItemKey(final FactLine factLine)
+	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final FactLine factLine)
 	{
-		final FAOpenItemKey openItemKey = FAOpenItemKey.ofNullableString(factLine.getOpenItemKey());
-		if (openItemKey != null)
-		{
-			return Optional.of(openItemKey);
-		}
-
-		return factLine.getAccountConceptualNameVO()
-				.map(this::getHandlerOrNull)
-				.flatMap(handler -> handler.extractMatchingKey(factLine));
+		return computeTrxInfo(FAOpenItemTrxInfoComputeRequest.builder()
+				.accountConceptualName(factLine.getAccountConceptualNameVO().orElse(null))
+				.elementValueId(factLine.getElementValueId())
+				.tableName(TableIdsCache.instance.getTableName(AdTableId.ofRepoId(factLine.getAD_Table_ID())))
+				.recordId(factLine.getRecord_ID())
+				.lineId(factLine.getLine_ID())
+				.subLineId(factLine.getSubLine_ID())
+				.build());
 	}
 
-	@Nullable
-	private FAOpenItemsHandler getHandlerOrNull(final AccountConceptualName accountConceptualName)
+	public Optional<FAOpenItemTrxInfo> computeTrxInfo(@NonNull final FAOpenItemTrxInfoComputeRequest request)
 	{
-		return handlersByAccount.get(accountConceptualName);
+		final FAOpenItemsHandler handler = getHandler(request.getAccountConceptualName());
+		return handler.computeTrxInfo(request);
+	}
+
+	private FAOpenItemsHandler getHandler(@Nullable final AccountConceptualName accountConceptualName)
+	{
+		final FAOpenItemsHandler handler = accountConceptualName != null ? handlersByAccount.get(accountConceptualName) : null;
+		return handler != null ? handler : genericOIHandler;
 	}
 
 	public int processScheduled()

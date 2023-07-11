@@ -30,6 +30,9 @@ class OIRow implements IViewRow
 {
 	public static OIRow cast(IViewRow row) {return (OIRow)row;}
 
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsOpenItem")
+	@Getter private final boolean isOpenItem;
+
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign", fieldName = "postingSign")
 	@Getter @NonNull private final PostingSign postingSign;
 
@@ -74,6 +77,7 @@ class OIRow implements IViewRow
 	@Builder(toBuilder = true)
 	private OIRow(
 			@NonNull final FactAcctId factAcctId,
+			final boolean isOpenItem,
 			@NonNull final PostingSign postingSign,
 			@NonNull final Account account,
 			@NonNull final ITranslatableString accountCaption,
@@ -89,6 +93,7 @@ class OIRow implements IViewRow
 			@NonNull final FAOpenItemKey openItemKey,
 			@NonNull final Dimension dimension)
 	{
+		this.isOpenItem = isOpenItem;
 		this.postingSign = postingSign;
 		this.accountCaption = accountCaption;
 		this.amount = amount;
