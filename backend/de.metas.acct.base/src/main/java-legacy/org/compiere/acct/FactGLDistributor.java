@@ -66,7 +66,6 @@ import java.util.Properties;
 	// Services
 	private static final Logger logger = LogManager.getLogger(FactGLDistributor.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
-	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 
 	private FactGLDistributor()
 	{
@@ -87,7 +86,7 @@ import java.util.Properties;
 		// For all fact lines
 		for (final FactLine line : lines)
 		{
-			final AccountDimension lineDimension = factAcctBL.createAccountDimension(line);
+			final AccountDimension lineDimension = IFactAcctBL.extractAccountDimension(line);
 			final I_GL_Distribution distribution = findGL_Distribution(line, lineDimension);
 			if (distribution == null)
 			{
@@ -232,10 +231,10 @@ import java.util.Properties;
 		// Update accounting dimensions
 
 		factLine.updateFromDimension(AccountDimension.builder()
-											 .applyOverrides(accountDimension)
-											 .clearC_AcctSchema_ID()
-											 .clearSegmentValue(AcctSegmentType.Account)
-											 .build());
+				.applyOverrides(accountDimension)
+				.clearC_AcctSchema_ID()
+				.clearSegmentValue(AcctSegmentType.Account)
+				.build());
 
 		// Amount
 		setAmountToFactLine(glDistributionLine, factLine);

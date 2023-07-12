@@ -308,7 +308,7 @@ public final class DocumentFilter
 			return null;
 		}
 
-		return param.getParameterValueAsRefListOrNull(mapper);
+		return param.getValueAsRefListOrNull(mapper);
 	}
 
 	@Nullable

@@ -44,6 +44,7 @@ public class FactAcctQuery
 	@Nullable DocStatus docStatus;
 	@Nullable String documentNoLike;
 	@Nullable String descriptionLike;
+	@Nullable String poReferenceLike;
 
 	@NonNull @Builder.Default InSetPredicate<BPartnerId> bpartnerIds = InSetPredicate.any();
 	@Nullable SectionCodeId sectionCodeId;

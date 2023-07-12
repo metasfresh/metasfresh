@@ -17,7 +17,6 @@ import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
@@ -25,9 +24,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -160,7 +156,8 @@ class OIViewDataService
 					.dateAcct(filter.getParameterValueAsInstantOrNull(OIViewFilterHelper.PARAM_DateAcct))
 					.documentNoLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_DocumentNo, null))
 					.descriptionLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_Description, null))
-					.docStatus(filter.getParameterValueAsRefListOrNull(OIViewFilterHelper.PARAM_DocStatus, DocStatus::ofCode))
+					.poReferenceLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_POReference, null))
+					.docStatus(filter.getParameterValueAsRefListOrNull(OIViewFilterHelper.PARAM_DocStatus, DocStatus::ofNullableCodeOrUnknown))
 					.userElementString1Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString1, null))
 					.userElementString2Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString2, null))
 					.userElementString3Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString3, null))
@@ -223,7 +220,7 @@ class OIViewDataService
 				.sectionCode(sectionCodeLookup.findById(record.getM_SectionCode_ID()))
 				.userElementString1(record.getUserElementString1())
 				.openItemKey(openItemKey)
-				.dimension(extractDimension(record))
+				.dimension(IFactAcctBL.extractDimension(record))
 				.build();
 	}
 
@@ -238,29 +235,4 @@ class OIViewDataService
 		final LookupValue value = bpartnerId != null ? bpartnerLookup.findById(bpartnerId) : null;
 		return value != null ? value.getDisplayNameTrl() : null;
 	}
-
-	private static Dimension extractDimension(final I_Fact_Acct record)
-	{
-		return Dimension.builder()
-				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
-				.campaignId(record.getC_Campaign_ID())
-				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
-				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
-				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
-				.user1_ID(record.getUser1_ID())
-				.user2_ID(record.getUser2_ID())
-				.userElement1Id(record.getUserElement1_ID())
-				.userElement2Id(record.getUserElement2_ID())
-				.userElementString1(record.getUserElementString1())
-				.userElementString2(record.getUserElementString2())
-				.userElementString3(record.getUserElementString3())
-				.userElementString4(record.getUserElementString4())
-				.userElementString5(record.getUserElementString5())
-				.userElementString6(record.getUserElementString6())
-				.userElementString7(record.getUserElementString7())
-				.build();
-	}
-
 }
