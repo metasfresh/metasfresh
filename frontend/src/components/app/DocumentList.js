@@ -1,45 +1,45 @@
-import counterpart from "counterpart";
-import cx from "classnames";
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import counterpart from 'counterpart';
+import cx from 'classnames';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
-import { PROCESS_NAME } from "../../constants/Constants";
+import { PROCESS_NAME } from '../../constants/Constants';
 import {
   DLpropTypes,
   GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-} from "../../utils/documentListHelper";
-import Spinner from "./SpinnerOverlay";
-import BlankPage from "../BlankPage";
-import SelectionAttributes from "./SelectionAttributes";
-import Filters from "../filters/Filters";
-import FiltersStatic from "../filters/FiltersStatic";
-import Table from "../../containers/Table";
-import QuickActions from "./QuickActions";
-import GeoMap from "../maps/GeoMap";
+} from '../../utils/documentListHelper';
+import Spinner from './SpinnerOverlay';
+import BlankPage from '../BlankPage';
+import SelectionAttributes from './SelectionAttributes';
+import Filters from '../filters/Filters';
+import FiltersStatic from '../filters/FiltersStatic';
+import Table from '../../containers/Table';
+import QuickActions from './QuickActions';
+import GeoMap from '../maps/GeoMap';
 import {
   INVOICE_TO_ALLOCATE_WINDOW_ID,
   InvoiceToAllocateViewHeader,
-} from "../paymentAllocation/InvoiceToAllocateViewHeader";
+} from '../paymentAllocation/InvoiceToAllocateViewHeader';
 import {
   PP_ORDER_CANDIDATE_WINDOW_ID,
   PPOrderCandidateViewHeader,
-} from "../ppOrderCandidate/PPOrderCandidateViewHeader";
-import { connect } from "react-redux";
+} from '../ppOrderCandidate/PPOrderCandidateViewHeader';
+import { connect } from 'react-redux';
 import {
   getSettingFromStateAsBoolean,
   getSettingFromStateAsPositiveInt,
-} from "../../utils/settings";
+} from '../../utils/settings';
 import {
   DeliveryPlanningViewHeader,
   getDeliveryPlanningViewHeaderWindowId,
-} from "../deliveryPlanning/DeliveryPlanningViewHeader";
+} from '../deliveryPlanning/DeliveryPlanningViewHeader';
 import {
   OIViewHeader,
   OIViewHeader_WINDOW_ID,
-} from "../deliveryPlanning/OIViewHeader";
-import { DocumentListHeaderProperties } from "./DocumentListHeaderProperties";
+} from '../deliveryPlanning/OIViewHeader';
+import { DocumentListHeaderProperties } from './DocumentListHeaderProperties';
 
 /**
  * @file Class based component.

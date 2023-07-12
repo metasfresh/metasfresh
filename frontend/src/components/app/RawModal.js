@@ -263,8 +263,8 @@ class RawModal extends Component {
         description={modalDescription}
         indicator={indicator}
         renderHeaderProperties={() =>
-          rawModal.headerProperties
-            ? renderHeaderProperties(rawModal.headerProperties.groups)
+          isRenderHeaderProperties
+            ? renderHeaderPropertiesGroups(rawModal.headerProperties.groups)
             : null
         }
         renderButtons={this.renderButtons}
