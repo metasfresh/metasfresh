@@ -110,6 +110,8 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isInvoice(@NonNull I_C_Invoice invoice);
 
+	InvoiceDocBaseType getInvoiceDocBaseType(@NonNull I_C_Invoice invoice);
+
 	/**
 	 * @return true if the given invoice is a CreditMemo (APC or ARC)
 	 */
