@@ -54,43 +54,40 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public int deleteForDocument(final IDocument document)
+	public void deleteForDocument(final IDocument document)
 	{
-		final int countDeleted = retrieveQueryForDocument(document)
+		retrieveQueryForDocument(document)
 				.create()
 				.deleteDirectly();
 
 		factAcctListenersService.fireAfterUnpost(document);
 
-		return countDeleted;
 	}
 
 	@Override
-	public int deleteForDocumentModel(@NonNull final Object documentObj)
+	public void deleteForDocumentModel(@NonNull final Object documentObj)
 	{
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(documentObj);
 		final int recordId = InterfaceWrapperHelper.getId(documentObj);
-		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
+		retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
 				.create()
 				.deleteDirectly();
 
 		factAcctListenersService.fireAfterUnpost(documentObj);
 
-		return countDeleted;
 	}
 
 	@Override
-	public int deleteForRecordRef(@NonNull final TableRecordReference recordRef)
+	public void deleteForRecordRef(@NonNull final TableRecordReference recordRef)
 	{
 		final int adTableId = recordRef.getAD_Table_ID();
 		final int recordId = recordRef.getRecord_ID();
-		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
+		retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
 				.create()
 				.deleteDirectly();
 
 		factAcctListenersService.fireAfterUnpost(recordRef);
 
-		return countDeleted;
 	}
 
 	@Override
@@ -145,12 +142,12 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public int updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
+	public void updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
 	{
 		// Make sure we are updating the Fact_Acct records in a transaction
 		trxManager.assertThreadInheritedTrxExists();
 
-		return queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
+		queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId)

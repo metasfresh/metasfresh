@@ -37,12 +37,6 @@ import java.util.stream.Stream;
 
 public interface IFactAcctDAO extends ISingletonService
 {
-	String DB_SCHEMA = "de_metas_acct";
-	/**
-	 * Function used to calculate ending balance for a given {@link I_Fact_Acct} line.
-	 */
-	String DB_FUNC_Fact_Acct_EndingBalance = DB_SCHEMA + ".Fact_Acct_EndingBalance";
-
 	I_Fact_Acct getById(int factAcctId);
 
 	void save(I_Fact_Acct factAcct);
@@ -51,14 +45,12 @@ public interface IFactAcctDAO extends ISingletonService
 	 * Deletes all accounting records for given document.
 	 * <p>
 	 * NOTE: this method is NOT checking if the accounting period of given document is open!
-	 *
-	 * @return how many {@link I_Fact_Acct} were deleted
 	 */
-	int deleteForDocument(IDocument document);
+	void deleteForDocument(IDocument document);
 
-	int deleteForDocumentModel(final Object documentObj);
+	void deleteForDocumentModel(final Object documentObj);
 
-	int deleteForRecordRef(@NonNull TableRecordReference recordRef);
+	void deleteForRecordRef(@NonNull TableRecordReference recordRef);
 
 	/**
 	 * Retries all accounting records for given document.
@@ -86,9 +78,8 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @param recordId   document header's ID
 	 * @param lineId     document line's ID
 	 * @param activityId activity to set
-	 * @return how many {@link I_Fact_Acct} records were updated
 	 */
-	int updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
+	void updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
 
 	void updatePOReference(@NonNull TableRecordReference recordRef, @Nullable String poReference);
 
