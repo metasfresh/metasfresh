@@ -21,22 +21,25 @@ import org.springframework.stereotype.Component;
 public class M_ShipperTransportation
 {
 	private final DeliveryPlanningService deliveryPlanningService;
+	private final IEventBusFactory eventBusFactory;
 
 	private final IBPartnerStatisticsUpdater bpartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public M_ShipperTransportation(
-			@NonNull final DeliveryPlanningService deliveryPlanningService)
+			@NonNull final DeliveryPlanningService deliveryPlanningService,
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
+		this.eventBusFactory = eventBusFactory;
 	}
 
 	@Init
 	public void onInit()
 	{
 		// Setup event bus topics on which client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(DeliveryInstructionUserNotificationsProducer.EVENTBUS_TOPIC);
+		eventBusFactory.addAvailableUserNotificationsTopic(DeliveryInstructionUserNotificationsProducer.EVENTBUS_TOPIC);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
