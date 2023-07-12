@@ -33,6 +33,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
@@ -163,5 +165,64 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		record.setFEC_From_Currency_ID(CurrencyId.toRepoId(fromCurrencyId));
 		record.setFEC_To_Currency_ID(CurrencyId.toRepoId(toCurrencyId));
 		record.setFEC_CurrencyRate(currencyRate);
+	}
+
+	@Nullable
+	public static I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
+	{
+		if (inOutLine == null)
+		{
+			return null;
+		}
+
+		final MInOutLine sLine = LegacyAdapters.convertToPO(inOutLine);
+
+		MInvoiceLine retValue = null;
+		final String inoutLineSQL = "SELECT * FROM C_InvoiceLine WHERE M_InOutLine_ID=?";
+		final String orderLineSQL = "SELECT * FROM C_InvoiceLine WHERE C_OrderLine_ID=?";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(inoutLineSQL, sLine.get_TrxName());
+			pstmt.setInt(1, sLine.getM_InOutLine_ID());
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				retValue = new MInvoiceLine(sLine.getCtx(), rs, sLine.get_TrxName());
+				if (rs.next())
+				{
+					// metas-tsa: If there were more then one invoice line found, it's better to return null then to return randomly one of them.
+					logger.warn("More than one C_InvoiceLine of M_InOutLine_ID=" + sLine.getM_InOutLine_ID() + ". Returning null.");
+					return null;
+				}
+			}
+			else
+			{
+				pstmt = DB.prepareStatement(orderLineSQL, sLine.get_TrxName());
+				pstmt.setInt(1, sLine.getC_OrderLine_ID());
+				rs = pstmt.executeQuery();
+				if (rs.next())
+				{
+					retValue = new MInvoiceLine(sLine.getCtx(), rs, sLine.get_TrxName());
+					if (rs.next())
+					{
+						// metas-tsa: If there were more then one invoice line found, it's better to return null then to return randomly one of them.
+						logger.warn("More than one C_InvoiceLine of C_OrderLine_ID=" + sLine.getC_OrderLine() + ". Returning null.");
+						return null;
+					}
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			logger.error(inoutLineSQL, e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+
+		return InterfaceWrapperHelper.create(retValue, I_C_InvoiceLine.class);
 	}
 }

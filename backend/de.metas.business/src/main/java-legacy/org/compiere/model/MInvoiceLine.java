@@ -28,6 +28,7 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -45,6 +46,7 @@ import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -92,41 +94,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public static MInvoiceLine getOfInOutLine(MInOutLine sLine)
 	{
-		if (sLine == null)
-		{
-			return null;
-		}
-
-		MInvoiceLine retValue = null;
-		final String sql = "SELECT * FROM C_InvoiceLine WHERE M_InOutLine_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, sLine.get_TrxName());
-			pstmt.setInt(1, sLine.getM_InOutLine_ID());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				retValue = new MInvoiceLine(sLine.getCtx(), rs, sLine.get_TrxName());
-				if (rs.next())
-				{
-					// metas-tsa: If there were more then one invoice line found, it's better to return null then to return randomly one of them.
-					s_log.warn("More than one C_InvoiceLine of " + sLine + ". Returning null.");
-					return null;
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			s_log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-
-		return retValue;
+		return LegacyAdapters.convertToPO(InvoiceDAO.getOfInOutLine(sLine));
 	}    // getOfInOutLine
 
 	/**

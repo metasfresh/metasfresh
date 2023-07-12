@@ -269,6 +269,12 @@ public class C_Invoice_Candidate_StepDef
 				invoiceCandidate.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
 			}
 
+			final String invoiceRuleOverride = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceRule_Override);
+			if (Check.isNotBlank(invoiceRuleOverride))
+			{
+				invoiceCandidate.setInvoiceRule_Override(invoiceRuleOverride);
+			}
+
 			InterfaceWrapperHelper.saveRecord(invoiceCandidate);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
