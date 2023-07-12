@@ -2006,13 +2006,17 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public boolean hasInvoiceWithForexContract(@NonNull final OrderId orderId, @NonNull final ForexContractId contractId)
+	public boolean hasInvoicesWithForexContracts(
+			@NonNull final OrderId orderId,
+			@NonNull final Set<ForexContractId> contractIds)
 	{
+		Check.assumeNotEmpty(contractIds, "contractIds shall not be empty");
+
 		return getByOrderId(orderId)
 				.stream()
 				.map(InvoiceDAO::extractForeignContractRef)
 				.filter(Objects::nonNull)
 				.map(ForexContractRef::getForexContractId)
-				.anyMatch(forexContractId -> ForexContractId.equals(contractId, forexContractId));
+				.anyMatch(contractIds::contains);
 	}
 }

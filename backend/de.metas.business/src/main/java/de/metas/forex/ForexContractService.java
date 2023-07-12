@@ -1,7 +1,10 @@
 package de.metas.forex;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Maps;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.BooleanWithReason;
@@ -23,8 +26,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Service
 public class ForexContractService
@@ -60,11 +66,6 @@ public class ForexContractService
 	public ImmutableSet<ForexContractId> getContractIdsByOrderId(@NonNull final OrderId orderId)
 	{
 		return forexContractAllocationRepository.getContractIdsByOrderIds(ImmutableSet.of(orderId));
-	}
-
-	public ImmutableSet<ForexContractId> getContractIdsByOrderIds(@NonNull final Set<OrderId> orderIds)
-	{
-		return forexContractAllocationRepository.getContractIdsByOrderIds(orderIds);
 	}
 
 	public Money computeOrderAmountToAllocate(final OrderId orderId)
@@ -110,7 +111,12 @@ public class ForexContractService
 	@NonNull
 	public BooleanWithReason checkOrderEligibleToAllocate(@NonNull final OrderId orderId)
 	{
-		return checkOrderCompleted(orderId);
+		if (!orderBL.isCompleted(orderId))
+		{
+			return BooleanWithReason.falseBecause("Order shall be completed");
+		}
+
+		return BooleanWithReason.TRUE;
 	}
 
 	@NonNull
@@ -139,13 +145,66 @@ public class ForexContractService
 				this::updateAmounts);
 	}
 
-	public void unallocateLines(@NonNull final ForexContractId contractId, @NonNull final Set<ForexContractAllocation> allocations)
+	public void unallocateByAllocationIds(@NonNull final Set<ForexContractAllocationId> allocationIds)
 	{
-		for (final ForexContractAllocation allocation : allocations)
+		final List<ForexContractAllocation> allocations = forexContractAllocationRepository.getByIds(allocationIds);
+		if (allocations.isEmpty())
 		{
-			validateEligibleToUnallocate(allocation.getOrderId(), contractId);
+			return;
+		}
 
-			unallocateLine(allocation);
+		assertEligibleToUnallocate(allocations);
+
+		final ImmutableSetMultimap<ForexContractId, ForexContractAllocationId> allocationIdsByContractId = allocations.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(ForexContractAllocation::getContractId, ForexContractAllocation::getId));
+
+		for (final ForexContractId contractId : allocationIdsByContractId.keySet())
+		{
+			final ImmutableSet<ForexContractAllocationId> contractAllocationIds = allocationIdsByContractId.get(contractId);
+			forexContractRepository.updateById(
+					contractId,
+					contract -> {
+						forexContractAllocationRepository.deleteByIds(contract.getId(), contractAllocationIds);
+						updateAmountsNoSave(contract);
+					});
+		}
+	}
+
+	private void assertEligibleToUnallocate(final List<ForexContractAllocation> allocations)
+	{
+		final Set<OrderId> orderIds = allocations.stream().map(ForexContractAllocation::getOrderId).collect(Collectors.toSet());
+		final Map<OrderId, I_C_Order> ordersById = Maps.uniqueIndex(orderBL.getByIds(orderIds), order -> OrderId.ofRepoId(order.getC_Order_ID()));
+
+		//
+		// Make sure orders are completed
+		{
+			final Set<String> notCompletedOrderNos = ordersById.values()
+					.stream()
+					.filter(order -> !orderBL.isCompleted(order))
+					.map(I_C_Order::getDocumentNo)
+					.collect(Collectors.toSet());
+			if (!notCompletedOrderNos.isEmpty())
+			{
+				throw new AdempiereException("Following orders are not completed: " + Joiner.on(", ").join(notCompletedOrderNos));
+			}
+		}
+
+		//
+		// Make sure there are no invoices
+		{
+			final ImmutableSetMultimap<OrderId, ForexContractId> contractIdsByOrderId = allocations.stream()
+					.collect(ImmutableSetMultimap.toImmutableSetMultimap(ForexContractAllocation::getOrderId, ForexContractAllocation::getContractId));
+
+			for (final OrderId orderId : contractIdsByOrderId.keySet())
+			{
+				final ImmutableSet<ForexContractId> contractIds = contractIdsByOrderId.get(orderId);
+				if (invoiceBL.hasInvoicesWithForexContracts(orderId, contractIds))
+				{
+					final String orderDocumentNo = ordersById.get(orderId).getDocumentNo();
+					throw new AdempiereException("Order " + orderDocumentNo + " has invoices created with Forex contract ID!")
+							.setParameter("contractIds", contractIds);
+				}
+			}
 		}
 	}
 
@@ -184,63 +243,5 @@ public class ForexContractService
 						.onlyWithOpenAmount(true)
 						.displayNameSearchTerm(displayNameSearchTerm)
 						.build());
-	}
-
-	@NonNull
-	private BooleanWithReason orderEligibleToUnallocate(
-			@NonNull final OrderId orderId,
-			@NonNull final ForexContractId contractId)
-	{
-		final BooleanWithReason isOrderEligible = checkOrderCompleted(orderId);
-		if (isOrderEligible.isFalse())
-		{
-			return isOrderEligible;
-		}
-
-		final boolean hasAllocations = hasAllocations(orderId);
-		if (!hasAllocations)
-		{
-			return BooleanWithReason.falseBecause("Order has no FEC allocations!");
-		}
-
-		return invoiceBL.hasInvoiceWithForexContract(orderId, contractId)
-				? BooleanWithReason.trueBecause("Order has invoices created with Forex contract ID!")
-				: BooleanWithReason.FALSE;
-	}
-
-	private void validateEligibleToUnallocate(
-			@NonNull final OrderId orderId,
-			@NonNull final ForexContractId contractId)
-	{
-		final BooleanWithReason orderEligibleToUnallocate = orderEligibleToUnallocate(orderId, contractId);
-		if (orderEligibleToUnallocate.isFalse())
-		{
-			return;
-		}
-
-		throw new AdempiereException(orderEligibleToUnallocate.getReason())
-				.appendParametersToMessage()
-				.setParameter("ForexContractId", contractId.getRepoId())
-				.setParameter("OrderId", orderId.getRepoId())
-				.markAsUserValidationError();
-	}
-
-	private void unallocateLine(@NonNull final ForexContractAllocation contractAllocation)
-	{
-		forexContractRepository.updateById(
-				contractAllocation.getContractId(),
-				contract -> {
-					forexContractAllocationRepository.delete(contractAllocation.getId());
-
-					updateAmountsNoSave(contract);
-				});
-	}
-
-	@NonNull
-	private BooleanWithReason checkOrderCompleted(@NonNull final OrderId orderId)
-	{
-		return !orderBL.isCompleted(orderId)
-				? BooleanWithReason.falseBecause("Order shall be completed")
-				: BooleanWithReason.TRUE;
 	}
 }

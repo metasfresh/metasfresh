@@ -1,5 +1,6 @@
 package de.metas.forex;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
@@ -13,6 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ForeignExchangeContract_Alloc;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -34,8 +36,21 @@ public class ForexContractAllocationRepository
 		return fromRecord(record);
 	}
 
+	public List<ForexContractAllocation> getByIds(@NonNull final Set<ForexContractAllocationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_C_ForeignExchangeContract_Alloc.class)
+				.stream()
+				.map(ForexContractAllocationRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	@NonNull
-	public static ForexContractAllocation fromRecord(final I_C_ForeignExchangeContract_Alloc record)
+	private static ForexContractAllocation fromRecord(final I_C_ForeignExchangeContract_Alloc record)
 	{
 		return ForexContractAllocation.builder()
 				.id(ForexContractAllocationId.ofRepoId(record.getC_ForeignExchangeContract_Alloc_ID()))
@@ -135,11 +150,20 @@ public class ForexContractAllocationRepository
 				.anyMatch();
 	}
 
-	public void delete(@NonNull final ForexContractAllocationId id)
+	public void deleteByIds(
+			@NonNull final ForexContractId contractId,
+			@NonNull final Collection<ForexContractAllocationId> ids)
 	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
 		queryBL.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
-				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_Alloc_ID, id)
+				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_ID, contractId)
+				.addInArrayFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_Alloc_ID, ids)
 				.create()
 				.delete();
 	}
+
 }
