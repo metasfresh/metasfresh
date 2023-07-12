@@ -9,7 +9,6 @@ import {
   GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-  renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
@@ -25,6 +24,11 @@ import {
 } from '../deliveryPlanning/DeliveryPlanningViewHeader';
 import { connect } from 'react-redux';
 import { getSettingFromStateAsPositiveInt } from '../../utils/settings';
+import {
+  OIViewHeader,
+  OIViewHeader_WINDOW_ID,
+} from '../deliveryPlanning/OIViewHeader';
+import { DocumentListHeaderProperties } from './DocumentListHeaderProperties';
 
 /**
  * @file Class based component.
@@ -167,7 +171,7 @@ class DocumentList extends Component {
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
       layout && layout.supportGeoLocations && locationData;
-    const viewGroups = !isModal && headerProperties && headerProperties.groups;
+    const isRenderHeaderProperties = !isModal;
 
     return (
       <div
@@ -178,14 +182,8 @@ class DocumentList extends Component {
         })}
         style={styleObject}
       >
-        {!!(viewGroups && viewGroups.length) && (
-          <div className="panel panel-primary">
-            <div className="panel-groups-header">
-              <div className="optional">
-                {renderHeaderProperties(viewGroups)}
-              </div>
-            </div>
-          </div>
+        {isRenderHeaderProperties && (
+          <DocumentListHeaderProperties headerProperties={headerProperties} />
         )}
 
         {deliveryPlanningViewHeaderWindowId &&
@@ -199,6 +197,10 @@ class DocumentList extends Component {
               precision={defaultQtyPrecision}
             />
           )}
+
+        {String(windowId) === OIViewHeader_WINDOW_ID && viewId && (
+          <OIViewHeader headerProperties={headerProperties} />
+        )}
 
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">

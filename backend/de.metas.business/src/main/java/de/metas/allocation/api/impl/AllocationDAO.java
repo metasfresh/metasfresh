@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -95,7 +96,7 @@ public class AllocationDAO implements IAllocationDAO
 
 		return Money.of(openAmt, invoiceCurrencyId);
 	}
-	
+
 	@Override
 	public final List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Invoice invoice)
 	{
@@ -135,9 +136,9 @@ public class AllocationDAO implements IAllocationDAO
 
 	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "#retrieveAll")
 		/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
-			final int allocationHdrId,
-			final boolean retrieveAll,
-			final @CacheTrx String trxName)
+															 final int allocationHdrId,
+															 final boolean retrieveAll,
+															 final @CacheTrx String trxName)
 	{
 		final IQueryBuilder<I_C_AllocationLine> builder = queryBL
 				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
@@ -247,12 +248,12 @@ public class AllocationDAO implements IAllocationDAO
 		BigDecimal retValue = null;
 
 		StringBuilder sql = new StringBuilder("SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
-													  + "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
-													  + "FROM C_AllocationLine al"
-													  + " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
-													  + " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
-													  + "WHERE al.C_Invoice_ID=?"
-													  + " AND ah.IsActive='Y' AND al.IsActive='Y'");
+				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
+				+ "FROM C_AllocationLine al"
+				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
+				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
+				+ "WHERE al.C_Invoice_ID=?"
+				+ " AND ah.IsActive='Y' AND al.IsActive='Y'");
 		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                             // make sure that the set is not empty
 		{
 			sql.append(" AND (al.C_Payment_ID NOT IN (-1");
@@ -408,6 +409,16 @@ public class AllocationDAO implements IAllocationDAO
 	public @NonNull I_C_AllocationHdr getById(@NonNull final PaymentAllocationId allocationId)
 	{
 		return InterfaceWrapperHelper.load(allocationId, I_C_AllocationHdr.class);
+	}
+
+	@Override
+	public @NonNull I_C_AllocationLine getLineById(@NonNull final PaymentAllocationLineId lineId)
+	{
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID, lineId.getHeaderId())
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationLine_ID, lineId.getRepoId())
+				.create()
+				.firstOnlyNotNull();
 	}
 
 	@Override

@@ -33,6 +33,7 @@ import org.compiere.model.I_Fact_Acct;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface IFactAcctBL extends ISingletonService
 {
@@ -45,4 +46,6 @@ public interface IFactAcctBL extends ISingletonService
 	AccountDimension createAccountDimension(I_Fact_Acct fa);
 
 	Optional<Money> getAcctBalance(@NonNull List<FactAcctQuery> queries);
+
+	Stream<I_Fact_Acct> stream(FactAcctQuery query);
 }

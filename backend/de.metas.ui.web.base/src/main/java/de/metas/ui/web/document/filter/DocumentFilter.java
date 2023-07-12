@@ -8,6 +8,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -19,9 +20,11 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 /*
@@ -65,10 +68,10 @@ public final class DocumentFilter
 		return builder()
 				.filterId(filterId)
 				.parameter(DocumentFilterParam.builder()
-								   .setFieldName(fieldName)
-								   .setOperator(operator)
-								   .setValue(value)
-								   .build())
+						.setFieldName(fieldName)
+						.setOperator(operator)
+						.setValue(value)
+						.build())
 				.build();
 	}
 
@@ -82,10 +85,10 @@ public final class DocumentFilter
 		return builder()
 				.filterId(filterId)
 				.parameter(DocumentFilterParam.builder()
-								   .setFieldName(fieldName)
-								   .setOperator(Operator.IN_ARRAY)
-								   .setValue(ImmutableList.copyOf(values))
-								   .build())
+						.setFieldName(fieldName)
+						.setOperator(Operator.IN_ARRAY)
+						.setValue(ImmutableList.copyOf(values))
+						.build())
 				.build();
 	}
 
@@ -105,10 +108,10 @@ public final class DocumentFilter
 		return builder()
 				.filterId(filterId)
 				.parameter(DocumentFilterParam.builder()
-								   .setFieldName(fieldName)
-								   .setOperator(Operator.EQUAL)
-								   .setValue(value)
-								   .build())
+						.setFieldName(fieldName)
+						.setOperator(Operator.EQUAL)
+						.setValue(value)
+						.build())
 				.build();
 	}
 
@@ -136,12 +139,12 @@ public final class DocumentFilter
 		this.caption = caption != null ? caption : TranslatableStrings.empty();
 		this.facetFilter = facetFilter;
 
-		this.parameters = parameters != null ? ImmutableList.copyOf(parameters) : ImmutableList.of();
+		this.parameters = ImmutableList.copyOf(parameters);
 		this.parametersByName = this.parameters.stream()
 				.filter(parameter -> !parameter.isSqlFilter())
 				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterParam::getFieldName));
 
-		this.internalParameterNames = internalParameterNames != null ? ImmutableSet.copyOf(internalParameterNames) : ImmutableSet.of();
+		this.internalParameterNames = ImmutableSet.copyOf(internalParameterNames);
 	}
 
 	private DocumentFilter(@NonNull final DocumentFilter from, @NonNull final String filterId)
@@ -273,6 +276,18 @@ public final class DocumentFilter
 	}
 
 	@Nullable
+	public Instant getParameterValueAsInstantOrNull(@NonNull final String parameterName)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getValueAsInstant();
+	}
+
+	@Nullable
 	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull final IntFunction<T> repoIdMapper)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
@@ -285,6 +300,18 @@ public final class DocumentFilter
 	}
 
 	@Nullable
+	public <T extends ReferenceListAwareEnum> T getParameterValueAsRefListOrNull(@NonNull final String parameterName, @NonNull final Function<String, T> mapper)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getParameterValueAsRefListOrNull(mapper);
+	}
+
+	@Nullable
 	public <T> T getParameterValueAs(@NonNull final String parameterName)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
@@ -293,8 +320,7 @@ public final class DocumentFilter
 			return null;
 		}
 
-		@SuppressWarnings("unchecked")
-		final T value = (T)param.getValue();
+		@SuppressWarnings("unchecked") final T value = (T)param.getValue();
 		return value;
 	}
 

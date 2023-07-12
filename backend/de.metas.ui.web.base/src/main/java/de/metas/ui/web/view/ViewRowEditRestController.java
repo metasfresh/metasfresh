@@ -89,9 +89,10 @@ public class ViewRowEditRestController
 		return IEditableView.asEditableView(view);
 	}
 
-	private RowEditingContext createRowEditingContext(final DocumentId rowId)
+	private RowEditingContext createRowEditingContext(final ViewId viewId, final DocumentId rowId)
 	{
 		return RowEditingContext.builder()
+				.viewId(viewId)
 				.rowId(rowId)
 				.documentsCollection(documentsCollection)
 				.userRolePermissions(userSession.getUserRolePermissions())
@@ -111,7 +112,7 @@ public class ViewRowEditRestController
 		final DocumentId rowId = DocumentId.of(rowIdStr);
 
 		final IEditableView view = getEditableView(viewId);
-		final RowEditingContext editingCtx = createRowEditingContext(rowId);
+		final RowEditingContext editingCtx = createRowEditingContext(viewId, rowId);
 		view.patchViewRow(editingCtx, fieldChangeRequests);
 
 		final IViewRow row = view.getById(rowId);
@@ -137,7 +138,7 @@ public class ViewRowEditRestController
 		final DocumentId rowId = DocumentId.of(rowIdStr);
 
 		final IEditableView view = getEditableView(viewId);
-		final RowEditingContext editingCtx = createRowEditingContext(rowId);
+		final RowEditingContext editingCtx = createRowEditingContext(viewId, rowId);
 		return view.getFieldTypeahead(editingCtx, fieldName, query)
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
@@ -160,7 +161,7 @@ public class ViewRowEditRestController
 		final DocumentId rowId = DocumentId.of(rowIdStr);
 
 		final IEditableView view = getEditableView(viewId);
-		final RowEditingContext editingCtx = createRowEditingContext(rowId);
+		final RowEditingContext editingCtx = createRowEditingContext(viewId, rowId);
 		return view.getFieldDropdown(editingCtx, fieldName)
 				.transform(this::toJSONLookupValuesList);
 	}

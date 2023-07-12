@@ -29,6 +29,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.impl.FactAcctDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.util.Check;
@@ -45,6 +46,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 public class FactAcctBL implements IFactAcctBL
 {
@@ -57,7 +59,8 @@ public class FactAcctBL implements IFactAcctBL
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
 		final AccountDimension accountDimension = createAccountDimension(factAcct);
-		return Account.of(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()), factAcct.getAccountConceptualName());
+		return Account.ofId(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()))
+				.withAccountConceptualName(FactAcctDAO.extractAccountConceptualName(factAcct));
 	}
 
 	@Override
@@ -116,5 +119,11 @@ public class FactAcctBL implements IFactAcctBL
 				.orElse(BigDecimal.ZERO);
 
 		return Optional.of(Money.of(acctBalanceBD, acctCurrencyId));
+	}
+
+	@Override
+	public Stream<I_Fact_Acct> stream(FactAcctQuery query)
+	{
+		return factAcctDAO.stream(query);
 	}
 }

@@ -62,6 +62,7 @@ public interface IEditableView extends IView
 	@ToString(exclude = "documentsCollection")
 	class RowEditingContext
 	{
+		@NonNull private final ViewId viewId;
 		@NonNull private final DocumentId rowId;
 		@NonNull private final DocumentCollection documentsCollection;
 		@NonNull private final IUserRolePermissions userRolePermissions;

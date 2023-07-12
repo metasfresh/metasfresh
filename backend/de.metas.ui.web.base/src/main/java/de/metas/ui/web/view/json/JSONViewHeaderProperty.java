@@ -2,13 +2,11 @@ package de.metas.ui.web.view.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.ui.web.view.ViewHeaderProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 /*
  * #%L
@@ -34,29 +32,22 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-final class JSONViewHeaderProperty
+@Builder
+@Jacksonized
+class JSONViewHeaderProperty
 {
+	String fieldName;
+	String caption;
+	String value;
+
 	public static JSONViewHeaderProperty of(@NonNull final ViewHeaderProperty property, @NonNull final String adLanguage)
 	{
+		final String caption = property.getCaption().translate(adLanguage);
+
 		return JSONViewHeaderProperty.builder()
-				.caption(property.getCaption().translate(adLanguage))
+				.fieldName(property.getFieldName() != null ? property.getFieldName() : caption)
+				.caption(caption)
 				.value(property.getValue().translate(adLanguage))
 				.build();
-	}
-
-	@JsonProperty("caption")
-	private final String caption;
-
-	@JsonProperty("value")
-	private final String value;
-
-	@Builder
-	@JsonCreator
-	private JSONViewHeaderProperty(
-			@JsonProperty("caption") final String caption,
-			@JsonProperty("value") final String value)
-	{
-		this.caption = caption;
-		this.value = value;
 	}
 }
