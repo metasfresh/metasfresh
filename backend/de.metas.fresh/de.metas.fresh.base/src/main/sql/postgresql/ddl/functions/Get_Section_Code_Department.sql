@@ -34,14 +34,10 @@ $$
 SELECT m_department_id
 FROM m_department_sectioncode
 WHERE isactive = 'Y'
-    AND m_sectioncode_id = p_m_sectioncode_id
-    AND (p_date::date >= validfrom::date AND validto IS NULL)
-   OR (validto IS NOT NULL AND p_date::date BETWEEN validfrom::date AND validto::date)
-ORDER BY m_sectioncode_id, validfrom
+  AND m_sectioncode_id = p_m_sectioncode_id
+  AND ((p_date >= validfrom::date)
+    AND (validto IS NULL OR p_date < validto::date))
+ORDER BY ValidFrom DESC, m_department_sectioncode_id DESC
 LIMIT 1
 $$
-;
-
-ALTER FUNCTION get_section_code_department(IN p_m_sectioncode_id numeric, IN p_date date)
-    OWNER TO metasfresh
 ;
