@@ -22,19 +22,23 @@
 
 package de.metas.forex.webui.process;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.forex.ForexContractAllocation;
 import de.metas.forex.ForexContractAllocationRepository;
+import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ForeignExchangeContract_Alloc;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class C_Order_UnallocateFromForexContract extends JavaProcess implements IProcessPrecondition
 {
@@ -64,17 +68,25 @@ public class C_Order_UnallocateFromForexContract extends JavaProcess implements 
 	@Override
 	protected String doIt() throws Exception
 	{
-		forexContractService.unallocateLines(getSelectionToUnallocate());
+		getSelectionToUnallocate()
+				.forEach((contractId, contractAllocations) -> {
+					final Set<ForexContractAllocation> allocations = new HashSet<>(contractAllocations);
+					forexContractService.unallocateLines(contractId, allocations);
+				});
 
 		return MSG_OK;
 	}
 
 	@NonNull
-	private List<ForexContractAllocation> getSelectionToUnallocate()
+	private ImmutableMap<ForexContractId, Collection<ForexContractAllocation>> getSelectionToUnallocate()
 	{
 		return getSelectedIncludedRecords(I_C_ForeignExchangeContract_Alloc.class)
 				.stream()
-				.map(ForexContractAllocationRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
+				.map(record -> {
+					final ForexContractId forexContractId = ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID());
+					return GuavaCollectors.entry(forexContractId, ForexContractAllocationRepository.fromRecord(record));
+				})
+				.collect(GuavaCollectors.toImmutableSetMultimap())
+				.asMap();
 	}
 }

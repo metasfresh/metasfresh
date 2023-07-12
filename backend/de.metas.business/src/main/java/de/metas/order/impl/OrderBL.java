@@ -1355,6 +1355,12 @@ public class OrderBL implements IOrderBL
 	public boolean isCompleted(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = getById(orderId);
+		return isCompleted(order);
+	}
+
+	@Override
+	public boolean isCompleted(@NonNull final I_C_Order order)
+	{
 		return DocStatus.ofCode(order.getDocStatus()).isCompleted();
 	}
 }

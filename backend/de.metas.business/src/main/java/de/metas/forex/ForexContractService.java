@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -82,7 +81,7 @@ public class ForexContractService
 			@NonNull final BigDecimal amountToAllocateBD)
 	{
 		final I_C_Order order = orderBL.getById(orderId);
-		checkOrderEligibleToAllocate(orderId).assertTrue();
+		checkOrderEligibleToAllocate(order).assertTrue();
 
 		final CurrencyConversionTypeId fecConversionTypeId = moneyService.getCurrencyConversionTypeId(ConversionTypeMethod.ForeignExchangeContract);
 		order.setC_ConversionType_ID(fecConversionTypeId.getRepoId());
@@ -109,15 +108,15 @@ public class ForexContractService
 	}
 
 	@NonNull
-	public BooleanWithReason checkOrderEligibleToAllocate(final OrderId orderId)
+	public BooleanWithReason checkOrderEligibleToAllocate(@NonNull final OrderId orderId)
 	{
 		return checkOrderCompleted(orderId);
 	}
 
 	@NonNull
-	private BooleanWithReason checkOrderCompleted(@NonNull final OrderId orderId)
+	public BooleanWithReason checkOrderEligibleToAllocate(@NonNull final I_C_Order order)
 	{
-		return !orderBL.isCompleted(orderId)
+		return !orderBL.isCompleted(order)
 				? BooleanWithReason.falseBecause("Order shall be completed")
 				: BooleanWithReason.TRUE;
 	}
@@ -140,13 +139,14 @@ public class ForexContractService
 				this::updateAmounts);
 	}
 
-	public void unallocateLines(@NonNull final List<ForexContractAllocation> selectedAllocations)
+	public void unallocateLines(@NonNull final ForexContractId contractId, @NonNull final Set<ForexContractAllocation> allocations)
 	{
-		selectedAllocations.forEach(contractAllocation -> {
-			validateEligibleToUnallocate(contractAllocation.getOrderId(), contractAllocation.getContractId());
+		for (final ForexContractAllocation allocation : allocations)
+		{
+			validateEligibleToUnallocate(allocation.getOrderId(), contractId);
 
-			unallocateLine(contractAllocation);
-		});
+			unallocateLine(allocation);
+		}
 	}
 
 	private void updateAmounts(final ImmutableList<ForexContractId> contractIds)
@@ -172,7 +172,7 @@ public class ForexContractService
 			@Nullable final String displayNameSearchTerm)
 	{
 		final I_C_Order order = orderBL.getById(orderId);
-		checkOrderEligibleToAllocate(orderId).assertTrue();
+		checkOrderEligibleToAllocate(order).assertTrue();
 
 		final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
 
@@ -187,7 +187,7 @@ public class ForexContractService
 	}
 
 	@NonNull
-	private BooleanWithReason isOrderEligibleToUnallocate(
+	private BooleanWithReason orderEligibleToUnallocate(
 			@NonNull final OrderId orderId,
 			@NonNull final ForexContractId contractId)
 	{
@@ -212,13 +212,13 @@ public class ForexContractService
 			@NonNull final OrderId orderId,
 			@NonNull final ForexContractId contractId)
 	{
-		final BooleanWithReason isOrderEligibleToUnallocate = isOrderEligibleToUnallocate(orderId, contractId);
-		if (isOrderEligibleToUnallocate.isFalse())
+		final BooleanWithReason orderEligibleToUnallocate = orderEligibleToUnallocate(orderId, contractId);
+		if (orderEligibleToUnallocate.isFalse())
 		{
 			return;
 		}
 
-		throw new AdempiereException(isOrderEligibleToUnallocate.getReason())
+		throw new AdempiereException(orderEligibleToUnallocate.getReason())
 				.appendParametersToMessage()
 				.setParameter("ForexContractId", contractId.getRepoId())
 				.setParameter("OrderId", orderId.getRepoId())
@@ -234,5 +234,13 @@ public class ForexContractService
 
 					updateAmountsNoSave(contract);
 				});
+	}
+
+	@NonNull
+	private BooleanWithReason checkOrderCompleted(@NonNull final OrderId orderId)
+	{
+		return !orderBL.isCompleted(orderId)
+				? BooleanWithReason.falseBecause("Order shall be completed")
+				: BooleanWithReason.TRUE;
 	}
 }

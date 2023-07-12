@@ -335,4 +335,6 @@ public interface IOrderBL extends ISingletonService
 	Quantity getQtyEntered(I_C_OrderLine orderLine);
 
 	boolean isCompleted(OrderId orderId);
+
+	boolean isCompleted(I_C_Order order);
 }

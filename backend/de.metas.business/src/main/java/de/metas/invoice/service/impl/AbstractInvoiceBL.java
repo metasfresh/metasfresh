@@ -2013,6 +2013,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.map(InvoiceDAO::extractForeignContractRef)
 				.filter(Objects::nonNull)
 				.map(ForexContractRef::getForexContractId)
-				.anyMatch(contractId::equals);
+				.anyMatch(forexContractId -> ForexContractId.equals(contractId, forexContractId));
 	}
 }
