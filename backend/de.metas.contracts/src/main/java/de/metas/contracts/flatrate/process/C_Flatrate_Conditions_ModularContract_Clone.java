@@ -28,7 +28,7 @@ import org.compiere.util.Ini;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 
-public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProcessPrecondition
+public class C_Flatrate_Conditions_ModularContract_Clone extends JavaProcess implements IProcessPrecondition
 {
 	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
 

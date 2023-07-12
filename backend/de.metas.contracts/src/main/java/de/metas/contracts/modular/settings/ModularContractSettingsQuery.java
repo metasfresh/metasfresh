@@ -25,7 +25,7 @@ package de.metas.contracts.modular.settings;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.product.ProductId;
 import lombok.Builder;
-
+import lombok.NonNull;
 
 @Builder
 public record ModularContractSettingsQuery(@NonNull YearAndCalendarId yearAndCalendarId, @NonNull ProductId productId)
