@@ -766,51 +766,36 @@ public class OrgChangeCommand
 
 	private void createOrgSwitchRequests(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
 	{
-		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
 		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeHistoryRepo.getOrgChangeHistoryById(orgChangeHistoryId);
 
 		final OrgId orgToId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
-
-		final ZoneId orgToTimeZone = orgDAO.getTimeZone(orgToId);
-		final ZonedDateTime orgToRequestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), orgToTimeZone);
-
 		final BPartnerId orgToBPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_To_ID());
-
-		final String orgToSummary = getSummaryForOrg(orgChangeHistoryRecord, orgToRequestDate);
-
-		final RequestCandidate orgToRequestCandidate = RequestCandidate.builder()
-				.summary(orgToSummary)
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
-				.orgId(orgToId)
-				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, orgToBPartnerId))
-				.requestTypeId(requestTypeId)
-				.partnerId(orgToBPartnerId)
-				.dateDelivered(orgToRequestDate)
-				.build();
-
-		requestBL.createRequest(orgToRequestCandidate);
+		createOrgSwitchRequest(orgChangeHistoryRecord, orgToId, orgToBPartnerId);
 
 		final OrgId orgFromId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_Org_From_ID());
-
-		final ZoneId orgFromTimeZone = orgDAO.getTimeZone(orgFromId);
-		final ZonedDateTime orgFromRequestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), orgFromTimeZone);
-
 		final BPartnerId orgFromBPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_From_ID());
+		createOrgSwitchRequest(orgChangeHistoryRecord, orgFromId, orgFromBPartnerId);
+	}
 
-		final String orgFromSummary = getSummaryForOrg(orgChangeHistoryRecord, orgFromRequestDate);
+	private void createOrgSwitchRequest(@NonNull final I_AD_OrgChange_History orgChangeHistoryRecord, @NonNull final OrgId orgId, @NonNull final BPartnerId bPartnerId)
+	{
+		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
 
-		final RequestCandidate orgFromRequestCandidate = RequestCandidate.builder()
-				.summary(orgFromSummary)
+		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
+		final ZonedDateTime orgRequestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), orgTimeZone);
+		final String orgSummary = getSummaryForOrg(orgChangeHistoryRecord, orgRequestDate);
+
+		final RequestCandidate orgRequestCandidate = RequestCandidate.builder()
+				.summary(orgSummary)
 				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
-				.orgId(orgFromId)
-				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, orgFromBPartnerId))
+				.orgId(orgId)
+				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
 				.requestTypeId(requestTypeId)
-				.partnerId(orgFromBPartnerId)
-				.dateDelivered(orgFromRequestDate)
+				.partnerId(bPartnerId)
+				.dateDelivered(orgRequestDate)
 				.build();
 
-		requestBL.createRequest(orgFromRequestCandidate);
-
+		requestBL.createRequest(orgRequestCandidate);
 	}
 
 	private String getSummaryForOrg(
