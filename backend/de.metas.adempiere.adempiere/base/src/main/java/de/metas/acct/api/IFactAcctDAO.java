@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import de.metas.acct.open_items.FAOpenItemKey;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -93,4 +94,6 @@ public interface IFactAcctDAO extends ISingletonService
 	List<I_Fact_Acct> list(@NonNull FactAcctQuery query);
 
 	Stream<I_Fact_Acct> stream(@NonNull FactAcctQuery query);
+
+	void setOpenItemKey(@NonNull FAOpenItemKey openItemKey, @NonNull FactAcctQuery query);
 }

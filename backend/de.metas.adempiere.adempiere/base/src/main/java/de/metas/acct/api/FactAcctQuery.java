@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.open_items.FAOpenItemKey;
@@ -11,6 +12,7 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -24,8 +26,8 @@ public class FactAcctQuery
 	@Nullable Set<FactAcctId> includeFactAcctIds;
 
 	@Nullable AcctSchemaId acctSchemaId;
-	@Nullable AccountConceptualName accountConceptualName;
-	@Nullable ElementValueId accountId;
+	@Nullable @Singular ImmutableSet<AccountConceptualName> accountConceptualNames;
+	@Nullable @Singular ImmutableSet<ElementValueId> accountIds;
 	@Nullable PostingType postingType;
 
 	@Nullable Instant dateAcct;

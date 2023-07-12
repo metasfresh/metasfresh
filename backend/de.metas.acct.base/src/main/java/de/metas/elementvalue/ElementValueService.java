@@ -31,6 +31,7 @@ import de.metas.acct.interceptor.C_ElementValue;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_ElementValue;
@@ -188,4 +189,8 @@ public class ElementValueService
 	{
 		return elementValueRepository.getElementValueIdsBetween(accountValueFrom, accountValueTo);
 	}
+
+	public ImmutableSet<ElementValueId> getOpenItemIds() {return elementValueRepository.getOpenItemIds();}
+
+	public IValidationRule isOpenItemRule() {return elementValueRepository.isOpenItemRule();}
 }

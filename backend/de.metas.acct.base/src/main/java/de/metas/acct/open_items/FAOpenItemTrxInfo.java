@@ -14,7 +14,7 @@ public class FAOpenItemTrxInfo
 	@NonNull FAOpenItemTrxType trxType;
 	@NonNull FAOpenItemKey key;
 
-	public static FAOpenItemTrxInfo openItem(@NonNull FAOpenItemKey key)
+	public static FAOpenItemTrxInfo opening(@NonNull FAOpenItemKey key)
 	{
 		return builder().trxType(FAOpenItemTrxType.OPEN_ITEM).key(key).build();
 	}

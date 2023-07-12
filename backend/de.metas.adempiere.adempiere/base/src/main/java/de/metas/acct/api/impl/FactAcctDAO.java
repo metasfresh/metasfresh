@@ -6,6 +6,7 @@ import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
+import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -195,13 +197,17 @@ public class FactAcctDAO implements IFactAcctDAO
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
 		}
-		if (query.getAccountConceptualName() != null)
+		if (query.getAccountConceptualNames() != null && !query.getAccountConceptualNames().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, query.getAccountConceptualName().getAsString());
+			final Set<String> accountConceptualNames = query.getAccountConceptualNames()
+					.stream()
+					.map(AccountConceptualName::getAsString)
+					.collect(Collectors.toSet());
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualNames);
 		}
-		if (query.getAccountId() != null)
+		if (query.getAccountIds() != null && !query.getAccountIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, query.getAccountId());
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_Account_ID, query.getAccountIds());
 		}
 		if (query.getPostingType() != null)
 		{
@@ -339,5 +345,14 @@ public class FactAcctDAO implements IFactAcctDAO
 	public static void setAccountConceptualName(@NonNull final I_Fact_Acct record, @Nullable final AccountConceptualName accountConceptualName)
 	{
 		record.setAccountConceptualName(accountConceptualName != null ? accountConceptualName.getAsString() : ACCOUNTCONCEPTUALNAME_NULL_MARKER);
+	}
+
+	@Override
+	public void setOpenItemKey(@NonNull final FAOpenItemKey openItemKey, @NonNull final FactAcctQuery query)
+	{
+		toSqlQuery(query)
+				.updateDirectly()
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OpenItemKey, openItemKey.getAsString())
+				.execute();
 	}
 }

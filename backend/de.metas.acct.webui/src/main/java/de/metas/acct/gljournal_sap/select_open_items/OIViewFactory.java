@@ -49,6 +49,7 @@ public class OIViewFactory implements IViewFactory
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 	private final OIViewDataService viewDataService;
+	private final ElementValueService elementValueService;
 
 	private DocumentFilterDescriptor _filterDescriptor; // lazy
 
@@ -59,6 +60,7 @@ public class OIViewFactory implements IViewFactory
 			@NonNull final ElementValueService elementValueService)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
+		this.elementValueService = elementValueService;
 		this.viewDataService = OIViewDataService.builder()
 				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.factAcctBL(Services.get(IFactAcctBL.class))
@@ -168,7 +170,7 @@ public class OIViewFactory implements IViewFactory
 		{
 			final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(ClientId.METASFRESH);
 			final LookupDescriptorProviders lookupDescriptorProviders = lookupDataSourceFactory.getLookupDescriptorProviders();
-			filterDescriptor = this._filterDescriptor = OIViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders, primaryAcctSchema);
+			filterDescriptor = this._filterDescriptor = OIViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders, elementValueService, primaryAcctSchema);
 		}
 
 		return filterDescriptor;

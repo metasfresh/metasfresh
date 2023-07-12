@@ -1,8 +1,8 @@
 package de.metas.acct.open_items;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.open_items.handlers.Generic_OIHandler;
 import de.metas.elementvalue.ElementValueService;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class FAOpenItemsService
@@ -38,14 +39,37 @@ public class FAOpenItemsService
 			@NonNull final ElementValueService elementValueService,
 			@NonNull Optional<List<FAOpenItemsHandler>> handlers)
 	{
-		this.handlersByAccount = handlers
-				.map(list -> Maps.uniqueIndex(list, FAOpenItemsHandler::getHandledAccountConceptualName))
-				.orElseGet(ImmutableMap::of);
-
+		this.handlersByAccount = indexByAccount(handlers);
 		this.genericOIHandler = new Generic_OIHandler(elementValueService);
 
 		logger.info("Handlers: {}, {}", this.handlersByAccount, genericOIHandler);
+	}
 
+	private static ImmutableMap<AccountConceptualName, FAOpenItemsHandler> indexByAccount(Optional<List<FAOpenItemsHandler>> optionalHandlers)
+	{
+		final List<FAOpenItemsHandler> handlers = optionalHandlers.orElse(ImmutableList.of());
+		if (handlers.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<AccountConceptualName, FAOpenItemsHandler> result = ImmutableMap.builder();
+		for (final FAOpenItemsHandler handler : handlers)
+		{
+			final Set<AccountConceptualName> handledAccountConceptualNames = handler.getHandledAccountConceptualNames();
+			if (handledAccountConceptualNames.isEmpty())
+			{
+				logger.warn("Skip handler because it declares no handled accounts: {}", handler);
+				continue;
+			}
+
+			for (final AccountConceptualName accountConceptualName : handledAccountConceptualNames)
+			{
+				result.put(accountConceptualName, handler);
+			}
+		}
+
+		return result.build();
 	}
 
 	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final FactLine factLine)

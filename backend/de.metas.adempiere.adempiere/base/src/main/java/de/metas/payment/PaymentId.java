@@ -10,7 +10,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -38,30 +38,16 @@ import java.util.Objects;
 public class PaymentId implements RepoIdAware
 {
 	@JsonCreator
-	public static PaymentId ofRepoId(final int repoId)
-	{
-		return new PaymentId(repoId);
-	}
+	public static PaymentId ofRepoId(final int repoId) {return new PaymentId(repoId);}
 
 	@Nullable
-	public static PaymentId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new PaymentId(repoId) : null;
-	}
+	public static PaymentId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? new PaymentId(repoId) : null;}
+
+	public static Optional<PaymentId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	public static int toRepoId(final PaymentId id)
 	{
 		return id != null ? id.getRepoId() : -1;
-	}
-
-	public static ImmutableSet<PaymentId> fromIntSet(@NonNull final Collection<Integer> repoIds)
-	{
-		if (repoIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return repoIds.stream().map(PaymentId::ofRepoIdOrNull).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<PaymentId> ids)

@@ -193,6 +193,7 @@ public class AllocationDAO implements IAllocationDAO
 
 	private BigDecimal retrieveAllocatedAmt(final int invoiceId, final String trxName)
 	{
+		// TODO use DB function
 		BigDecimal retValue = null;
 		final String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
 				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
@@ -245,6 +246,7 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
 	{
+		// TODO use DB function
 		BigDecimal retValue = null;
 
 		StringBuilder sql = new StringBuilder("SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"

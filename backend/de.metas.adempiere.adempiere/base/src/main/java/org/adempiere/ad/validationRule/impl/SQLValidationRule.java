@@ -2,12 +2,14 @@ package org.adempiere.ad.validationRule.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -18,7 +20,7 @@ import java.util.Set;
  * @author tsa
  */
 @Value
-		/* package */ class SQLValidationRule implements IValidationRule
+public class SQLValidationRule implements IValidationRule
 {
 	String name;
 	@NonNull IStringExpression prefilterWhereClause;
@@ -38,18 +40,30 @@ import java.util.Set;
 
 	public static IValidationRule ofNullableSqlWhereClause(@Nullable final String sqlWhereClause)
 	{
-		if (sqlWhereClause == null || Check.isBlank(sqlWhereClause))
+		final String sqlWhereClauseNorm = StringUtils.trimBlankToNull(sqlWhereClause);
+		if (sqlWhereClauseNorm == null)
 		{
 			return NullValidationRule.instance;
 		}
 
-		final IStringExpression whereClauseExpression = IStringExpression.compileOrDefault(sqlWhereClause, IStringExpression.NULL);
-		if (whereClauseExpression == null || whereClauseExpression.isNullExpression())
+		return ofSqlWhereClause(sqlWhereClauseNorm);
+	}
+
+	public static IValidationRule ofSqlWhereClause(@NonNull final String sqlWhereClause)
+	{
+		final String sqlWhereClauseNorm = StringUtils.trimBlankToNull(sqlWhereClause);
+		if (sqlWhereClauseNorm == null)
+		{
+			throw new AdempiereException("sqlWhereClause cannot be blank");
+		}
+
+		final IStringExpression sqlWhereClauseExpr = IStringExpression.compileOrDefault(sqlWhereClauseNorm, IStringExpression.NULL);
+		if (sqlWhereClauseExpr == null || sqlWhereClauseExpr.isNullExpression())
 		{
 			return NullValidationRule.instance;
 		}
 
-		return builder().prefilterWhereClause(whereClauseExpression).build();
+		return builder().prefilterWhereClause(sqlWhereClauseExpr).build();
 	}
 
 	@Override

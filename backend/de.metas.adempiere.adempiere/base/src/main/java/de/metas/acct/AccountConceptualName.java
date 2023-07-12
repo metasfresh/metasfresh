@@ -49,4 +49,21 @@ public final class AccountConceptualName implements Comparable<AccountConceptual
 
 	public static boolean equals(@Nullable final AccountConceptualName o1, @Nullable final AccountConceptualName o2) {return Objects.equals(o1, o2);}
 
+	public boolean isAnyOf(@Nullable final AccountConceptualName... names)
+	{
+		if (names == null)
+		{
+			return false;
+		}
+
+		for (final AccountConceptualName name : names)
+		{
+			if (name != null && equals(this, name))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
