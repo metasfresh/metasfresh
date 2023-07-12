@@ -2,6 +2,8 @@ package de.metas.acct.open_items.handlers;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.FactAcctQuery;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
@@ -13,9 +15,12 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -90,25 +95,30 @@ public class BankOIHandler implements FAOpenItemsHandler
 		else if (accountConceptualName.isAnyOf(B_InTransit_Acct))
 		{
 			final I_C_Payment payment = paymentBL.getById(paymentId);
-			final int bankStatementId = payment.getC_BankStatement_ID();
-			final int bankStatementLineId = payment.getC_BankStatementLine_ID();
-			if (bankStatementLineId > 0)
-			{
-				return Optional.of(FAOpenItemTrxInfo.clearing(FAOpenItemKey.ofTableRecordLineAndSubLineId(
-						I_C_BankStatement.Table_Name,
-						bankStatementId,
-						bankStatementLineId,
-						payment.getC_BankStatementLine_Ref_ID()
-				)));
-			}
-			else
-			{
-				return Optional.of(FAOpenItemTrxInfo.clearing(FAOpenItemKey.ofTableAndRecord(I_C_Payment.Table_Name, paymentId)));
-			}
+			return Optional.of(FAOpenItemTrxInfo.clearing(computeOpenItemKey_B_InTransit(payment)));
 		}
 		else
 		{
 			return Optional.empty();
+		}
+	}
+
+	private static FAOpenItemKey computeOpenItemKey_B_InTransit(final I_C_Payment payment)
+	{
+		final int bankStatementId = payment.getC_BankStatement_ID();
+		final int bankStatementLineId = payment.getC_BankStatementLine_ID();
+		if (bankStatementLineId > 0)
+		{
+			return FAOpenItemKey.ofTableRecordLineAndSubLineId(
+					I_C_BankStatement.Table_Name,
+					bankStatementId,
+					bankStatementLineId,
+					payment.getC_BankStatementLine_Ref_ID()
+			);
+		}
+		else
+		{
+			return FAOpenItemKey.ofTableAndRecord(I_C_Payment.Table_Name, payment.getC_Payment_ID());
 		}
 	}
 
@@ -135,4 +145,36 @@ public class BankOIHandler implements FAOpenItemsHandler
 		}
 	}
 
+	//
+	//
+	//
+
+	@Component
+	@Interceptor(I_C_Payment.class)
+	public static class C_Payment_Interceptor
+	{
+		private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+
+		public C_Payment_Interceptor()
+		{
+			System.out.println("AAAA");
+		}
+
+		@ModelChange(
+				timings = ModelValidator.TYPE_AFTER_CHANGE,
+				ifColumnsChanged = {
+						I_C_Payment.COLUMNNAME_C_BankStatement_ID,
+						I_C_Payment.COLUMNNAME_C_BankStatementLine_ID,
+						I_C_Payment.COLUMNNAME_C_BankStatementLine_Ref_ID
+				})
+		void afterSave(final I_C_Payment payment)
+		{
+			final FAOpenItemKey openItemKey = computeOpenItemKey_B_InTransit(payment);
+			factAcctDAO.setOpenItemKey(openItemKey, FactAcctQuery.builder()
+					.tableName(I_C_Payment.Table_Name)
+					.recordId(payment.getC_Payment_ID())
+					.accountConceptualName(B_InTransit_Acct)
+					.build());
+		}
+	}
 }

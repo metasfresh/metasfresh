@@ -11,6 +11,7 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -24,7 +25,7 @@ public class FactAcctQuery
 	@Nullable Set<FactAcctId> includeFactAcctIds;
 
 	@Nullable AcctSchemaId acctSchemaId;
-	@Nullable AccountConceptualName accountConceptualName;
+	@Nullable @Singular Set<AccountConceptualName> accountConceptualNames;
 	@Nullable ElementValueId accountId;
 	@Nullable PostingType postingType;
 
