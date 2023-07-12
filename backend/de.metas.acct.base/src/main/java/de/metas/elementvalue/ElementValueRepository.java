@@ -38,9 +38,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.impl.SQLValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -61,6 +64,8 @@ public class ElementValueRepository
 	{
 		return getMap().getById(id);
 	}
+
+	ImmutableSet<ElementValueId> getOpenItemIds() {return getMap().getOpenItemIds();}
 
 	private ElementValuesMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
 
@@ -184,6 +189,7 @@ public class ElementValueRepository
 				.orderBy(I_C_ElementValue.COLUMNNAME_Value)
 				.create()
 				.first();
+		final String fromValue = from != null ? from.getValue() : null;
 
 		final I_C_ElementValue to = queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
@@ -192,10 +198,11 @@ public class ElementValueRepository
 				.orderByDescending(I_C_ElementValue.COLUMNNAME_Value)
 				.create()
 				.first();
+		final String toValue = to != null ? to.getValue() : null;
 
 		return queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
-				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from.getValue(), to.getValue(), rpad)
+				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, fromValue, toValue, rpad)
 				.create()
 				.listIds(ElementValueId::ofRepoId);
 	}
@@ -210,9 +217,21 @@ public class ElementValueRepository
 				.list();
 	}
 
+	public IValidationRule isOpenItemRule()
+	{
+		return SQLValidationRule.ofSqlWhereClause(I_C_ElementValue.COLUMNNAME_IsOpenItem + "=" + DB.TO_BOOLEAN(true));
+	}
+
+	//
+	//
+	//
+	//
+	//
+
 	private static final class ElementValuesMap
 	{
 		private final ImmutableMap<ElementValueId, ElementValue> byId;
+		private ImmutableSet<ElementValueId> _openItemIds;
 
 		private ElementValuesMap(final List<ElementValue> list)
 		{
@@ -227,6 +246,20 @@ public class ElementValueRepository
 				throw new AdempiereException("No Element Value found for " + id);
 			}
 			return elementValue;
+		}
+
+		public ImmutableSet<ElementValueId> getOpenItemIds()
+		{
+			ImmutableSet<ElementValueId> openItemIds = this._openItemIds;
+			if (openItemIds == null)
+			{
+				openItemIds = this._openItemIds = byId.values()
+						.stream()
+						.filter(ElementValue::isOpenItem)
+						.map(ElementValue::getId)
+						.collect(ImmutableSet.toImmutableSet());
+			}
+			return openItemIds;
 		}
 	}
 }
