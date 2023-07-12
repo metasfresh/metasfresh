@@ -66,6 +66,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -119,10 +120,9 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
@@ -154,7 +154,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
@@ -2374,10 +2373,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		InterfaceWrapperHelper.save(newModCntrSettings);
 
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
-		childCRS.setParentPO(to);
-		childCRS.setBase(true);
-		childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(settings));
+		CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name)
+				.copyChildren(
+						LegacyAdapters.convertToPO(to),
+						LegacyAdapters.convertToPO(from));
 
 		return newModCntrSettings;
 	}
@@ -2406,10 +2405,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		InterfaceWrapperHelper.save(newFlatrateConditions);
 
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
-		childCRS.setParentPO(to);
-		childCRS.setBase(true);
-		childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(conditions));
+		CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name)
+				.copyChildren(
+						LegacyAdapters.convertToPO(to),
+						LegacyAdapters.convertToPO(from));
 
 		return newFlatrateConditions;
 
