@@ -222,7 +222,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * @param year
 	 * @return
 	 */
-	I_ModCntr_Settings extendModularContractSettingsToNewYear(I_ModCntr_Settings settings, I_C_Year year );
+	I_ModCntr_Settings cloneModularContractSettingsToNewYear(I_ModCntr_Settings settings, I_C_Year year );
 
 	/**
 	 * Extend the C_Flatrate_Conditions to the new year
@@ -230,7 +230,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * @param year
 	 * @return
 	 */
-	I_C_Flatrate_Conditions extendConditionsToNewYear(I_C_Flatrate_Conditions conditions, I_C_Year year);
+	I_C_Flatrate_Conditions cloneConditionsToNewYear(I_C_Flatrate_Conditions conditions, I_C_Year year);
 
 	/**
 	 * Check if the provided contract is extendable (Not a Modular Contract,...)

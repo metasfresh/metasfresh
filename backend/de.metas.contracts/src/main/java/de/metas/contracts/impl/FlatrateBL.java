@@ -2381,7 +2381,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public I_C_Flatrate_Conditions extendConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
+	public I_C_Flatrate_Conditions cloneConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
 	{
 		//
 		// make sure it's Modular Contracts first
@@ -2398,7 +2398,7 @@ public class FlatrateBL implements IFlatrateBL
 		PO.copyValues(from, to, true);
 
 		newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
-		final I_ModCntr_Settings modCntrSettings = extendModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
 		newFlatrateConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
 		newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
 

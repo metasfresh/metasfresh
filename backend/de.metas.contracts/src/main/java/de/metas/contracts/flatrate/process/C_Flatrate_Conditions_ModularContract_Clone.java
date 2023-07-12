@@ -61,7 +61,7 @@ public class C_Flatrate_Conditions_ModularContract_Clone extends JavaProcess imp
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
 		}
 
-		final I_C_Flatrate_Conditions newConditions = flatrateBL.extendConditionsToNewYear(conditions, newYear);
+		final I_C_Flatrate_Conditions newConditions = flatrateBL.cloneConditionsToNewYear(conditions, newYear);
 		if (newConditions != null)
 		{
 			final int adWindowId = getProcessInfo().getAD_Window_ID();
