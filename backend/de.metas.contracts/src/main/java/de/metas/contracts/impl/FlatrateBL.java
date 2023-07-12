@@ -2398,7 +2398,8 @@ public class FlatrateBL implements IFlatrateBL
 		PO.copyValues(from, to, true);
 
 		newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
-		newFlatrateConditions.setModCntr_Settings(extendModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear));
+		final I_ModCntr_Settings modCntrSettings = extendModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+		newFlatrateConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
 		newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
 
 		InterfaceWrapperHelper.save(newFlatrateConditions);
