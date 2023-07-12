@@ -29,6 +29,7 @@ class OIViewFilterHelper
 	static String PARAM_Description = I_Fact_Acct.COLUMNNAME_Description;
 	static String PARAM_M_SectionCode_ID = I_Fact_Acct.COLUMNNAME_M_SectionCode_ID;
 	static String PARAM_DocStatus = I_Fact_Acct.COLUMNNAME_DocStatus;
+	static String PARAM_POReference = I_Fact_Acct.COLUMNNAME_POReference;
 	static String PARAM_UserElementString1 = I_Fact_Acct.COLUMNNAME_UserElementString1;
 	static String PARAM_UserElementString2 = I_Fact_Acct.COLUMNNAME_UserElementString2;
 	static String PARAM_UserElementString3 = I_Fact_Acct.COLUMNNAME_UserElementString3;
@@ -66,7 +67,10 @@ class OIViewFilterHelper
 						.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name).provideForFilter()))
 				.addParameter(newParamDescriptor(PARAM_DocStatus)
 						.widgetType(DocumentFieldWidgetType.List)
-						.lookupDescriptor(lookupDescriptorProviders.listByAD_Reference_Value_ID(DocStatus.AD_REFERENCE_ID).provideForFilter()));
+						.lookupDescriptor(lookupDescriptorProviders.listByAD_Reference_Value_ID(DocStatus.AD_REFERENCE_ID).provideForFilter()))
+				.addParameter(newParamDescriptor(PARAM_POReference)
+						.widgetType(DocumentFieldWidgetType.Text))
+				;
 
 		if (acctSchema.isElementEnabled(AcctSchemaElementType.UserElementString1))
 		{
