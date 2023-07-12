@@ -28,6 +28,6 @@ import lombok.Builder;
 
 
 @Builder
-public record ModularContractSettingsQuery(YearAndCalendarId yearAndCalendarId, ProductId productId)
+public record ModularContractSettingsQuery(@NonNull YearAndCalendarId yearAndCalendarId, @NonNull ProductId productId)
 {
 }
