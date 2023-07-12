@@ -167,7 +167,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 						I_C_Payment.COLUMNNAME_C_BankStatementLine_ID,
 						I_C_Payment.COLUMNNAME_C_BankStatementLine_Ref_ID
 				})
-		void afterSave(final I_C_Payment payment)
+		void updateOpenItemKey(final I_C_Payment payment)
 		{
 			final FAOpenItemKey openItemKey = computeOpenItemKey_B_InTransit(payment);
 			factAcctDAO.setOpenItemKey(openItemKey, FactAcctQuery.builder()
