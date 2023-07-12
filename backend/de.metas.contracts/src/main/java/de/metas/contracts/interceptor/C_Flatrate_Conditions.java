@@ -22,6 +22,7 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+import de.metas.cache.CacheMgt;
 import de.metas.contracts.FlatrateTransitionId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -43,6 +44,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.ModelValidator;
 
 import java.util.List;
@@ -170,5 +172,12 @@ public class C_Flatrate_Conditions
 		}
 
 		conditions.setC_Flatrate_Transition_ID(flatrateTransitionId.getRepoId());
+	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },  ifColumnsChanged =I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID )
+	void test(@NonNull final I_C_Flatrate_Conditions conditions)
+	{
+		CacheMgt.get().reset(I_C_Year.Table_Name);
 	}
 }
