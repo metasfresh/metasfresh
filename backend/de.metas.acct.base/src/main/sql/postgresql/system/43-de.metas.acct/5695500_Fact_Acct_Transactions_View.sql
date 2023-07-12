@@ -71,12 +71,10 @@ SELECT fact.fact_acct_id,
        fact.m_costelement_id,
        fact.c_bpartner2_id,
        fact.c_bpartner_location_id,
-       fact.userElementDate1,
-       fact.userElementDate2,
-       fact.c_bpartner_location_id,
        fact.openitemkey,
        fact.oi_trxtype,
        fact.isopenitemsreconciled,
        fact.oi_openamount
 FROM fact_acct fact
 ;
+

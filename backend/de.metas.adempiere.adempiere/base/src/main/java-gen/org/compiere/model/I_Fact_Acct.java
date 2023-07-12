@@ -1212,6 +1212,29 @@ public interface I_Fact_Acct
 	String COLUMNNAME_OpenItemKey = "OpenItemKey";
 
 	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_POReference = new ModelColumn<>(I_Fact_Acct.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
+
+	/**
 	 * Set Posting Type.
 	 *
 	 * <br>Type: List
