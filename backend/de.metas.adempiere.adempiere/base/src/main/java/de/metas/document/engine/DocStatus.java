@@ -2,6 +2,7 @@ package de.metas.document.engine;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -53,7 +54,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 	WaitingConfirmation(IDocument.STATUS_WaitingConfirmation) //
 	;
 
-	public static final int AD_REFERENCE_ID = X_C_Order.DOCSTATUS_AD_Reference_ID; // 131
+	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_C_Order.DOCSTATUS_AD_Reference_ID); // 131
 
 	private static final ImmutableSet<DocStatus> COMPLETED_OR_CLOSED_STATUSES = ImmutableSet.of(Completed, Closed);
 
@@ -74,7 +75,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 	@Nullable
 	public static DocStatus ofNullableCode(@Nullable final String code)
 	{
-		return Check.isNotBlank(code) ? ofCode(code) : null;
+		return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
 	}
 
 	@NonNull

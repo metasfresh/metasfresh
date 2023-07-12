@@ -235,6 +235,8 @@ public interface IQuery<T>
 	@Nullable
 	<ET extends T> ET firstOnly(Class<ET> clazz) throws DBException;
 
+	T firstOnlyNotNull() throws DBException;
+
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there is no record found an exception will be thrown too.
 	 */

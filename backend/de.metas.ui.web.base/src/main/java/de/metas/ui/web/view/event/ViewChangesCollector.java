@@ -5,10 +5,10 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
-import de.metas.websocket.sender.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -200,6 +200,15 @@ public class ViewChangesCollector implements IAutoCloseable
 		autoflushIfEnabled();
 	}
 
+	public void collectRowsAndHeaderPropertiesChanged(@NonNull final IView view, final DocumentIdsSelection rowIds)
+	{
+		final ViewChanges viewChanges = viewChanges(view);
+		viewChanges.addChangedRowIds(rowIds);
+		viewChanges.setHeaderPropertiesChanged();
+
+		autoflushIfEnabled();
+	}
+
 	public void collectRowsChanged(@NonNull final IView view, @NonNull final Collection<DocumentId> rowIds)
 	{
 		if (rowIds.isEmpty())
@@ -222,6 +231,13 @@ public class ViewChangesCollector implements IAutoCloseable
 	public void collectHeaderPropertiesChanged(@NonNull final IView view)
 	{
 		viewChanges(view).setHeaderPropertiesChanged();
+
+		autoflushIfEnabled();
+	}
+
+	public void collectHeaderPropertiesChanged(@NonNull final ViewId viewId)
+	{
+		viewChanges(viewId).setHeaderPropertiesChanged();
 
 		autoflushIfEnabled();
 	}

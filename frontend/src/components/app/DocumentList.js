@@ -1,41 +1,45 @@
-import counterpart from 'counterpart';
-import cx from 'classnames';
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import counterpart from "counterpart";
+import cx from "classnames";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 
-import { PROCESS_NAME } from '../../constants/Constants';
+import { PROCESS_NAME } from "../../constants/Constants";
 import {
   DLpropTypes,
   GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-  renderHeaderProperties,
-} from '../../utils/documentListHelper';
-import Spinner from './SpinnerOverlay';
-import BlankPage from '../BlankPage';
-import SelectionAttributes from './SelectionAttributes';
-import Filters from '../filters/Filters';
-import FiltersStatic from '../filters/FiltersStatic';
-import Table from '../../containers/Table';
-import QuickActions from './QuickActions';
-import GeoMap from '../maps/GeoMap';
+} from "../../utils/documentListHelper";
+import Spinner from "./SpinnerOverlay";
+import BlankPage from "../BlankPage";
+import SelectionAttributes from "./SelectionAttributes";
+import Filters from "../filters/Filters";
+import FiltersStatic from "../filters/FiltersStatic";
+import Table from "../../containers/Table";
+import QuickActions from "./QuickActions";
+import GeoMap from "../maps/GeoMap";
 import {
   INVOICE_TO_ALLOCATE_WINDOW_ID,
   InvoiceToAllocateViewHeader,
-} from '../paymentAllocation/InvoiceToAllocateViewHeader';
+} from "../paymentAllocation/InvoiceToAllocateViewHeader";
 import {
   PP_ORDER_CANDIDATE_WINDOW_ID,
   PPOrderCandidateViewHeader,
-} from '../ppOrderCandidate/PPOrderCandidateViewHeader';
-import { connect } from 'react-redux';
+} from "../ppOrderCandidate/PPOrderCandidateViewHeader";
+import { connect } from "react-redux";
 import {
   getSettingFromStateAsBoolean,
   getSettingFromStateAsPositiveInt,
-} from '../../utils/settings';
+} from "../../utils/settings";
 import {
   DeliveryPlanningViewHeader,
   getDeliveryPlanningViewHeaderWindowId,
-} from '../deliveryPlanning/DeliveryPlanningViewHeader';
+} from "../deliveryPlanning/DeliveryPlanningViewHeader";
+import {
+  OIViewHeader,
+  OIViewHeader_WINDOW_ID,
+} from "../deliveryPlanning/OIViewHeader";
+import { DocumentListHeaderProperties } from "./DocumentListHeaderProperties";
 
 /**
  * @file Class based component.
@@ -179,7 +183,7 @@ class DocumentList extends Component {
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
       layout && layout.supportGeoLocations && locationData;
-    const viewGroups = !isModal && headerProperties && headerProperties.groups;
+    const isRenderHeaderProperties = !isModal;
 
     return (
       <div
@@ -190,14 +194,8 @@ class DocumentList extends Component {
         })}
         style={styleObject}
       >
-        {!!(viewGroups && viewGroups.length) && (
-          <div className="panel panel-primary">
-            <div className="panel-groups-header">
-              <div className="optional">
-                {renderHeaderProperties(viewGroups)}
-              </div>
-            </div>
-          </div>
+        {isRenderHeaderProperties && (
+          <DocumentListHeaderProperties headerProperties={headerProperties} />
         )}
 
         {isPPOrderCandidateViewHeaderEnabled &&
@@ -222,6 +220,10 @@ class DocumentList extends Component {
               precision={defaultQtyPrecision}
             />
           )}
+
+        {String(windowId) === OIViewHeader_WINDOW_ID && viewId && (
+          <OIViewHeader headerProperties={headerProperties} />
+        )}
 
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">

@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.MAccount;
@@ -49,6 +50,8 @@ public interface IAccountDAO extends ISingletonService
 	{
 		return getById(Env.getCtx(), accountId);
 	}
+
+	ElementValueId getElementValueIdByAccountId(@NonNull AccountId accountId);
 
 	@Nullable
 	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);

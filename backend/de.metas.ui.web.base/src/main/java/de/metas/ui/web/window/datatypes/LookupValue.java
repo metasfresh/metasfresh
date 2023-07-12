@@ -108,7 +108,7 @@ public abstract class LookupValue
 
 	public static ImmutableList<Object> normalizeIds(@NonNull final Collection<?> idObjs, final boolean numericKey)
 	{
-		if(idObjs.isEmpty())
+		if (idObjs.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -118,7 +118,6 @@ public abstract class LookupValue
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
-
 
 	@Nullable
 	public static LookupValue fromObject(@Nullable final Object id, final String displayName)
@@ -242,6 +241,8 @@ public abstract class LookupValue
 	{
 		return (LookupValue)valueObj;
 	}
+
+	public static ITranslatableString unknownCaption(final Object id) {return TranslatableStrings.constant("<" + id + ">");}
 
 	protected final Object id;
 	protected final ITranslatableString displayName;
@@ -394,8 +395,7 @@ public abstract class LookupValue
 		{
 			return null;
 		}
-		@SuppressWarnings("unchecked")
-		final T value = (T)additionalAttributes.get(name);
+		@SuppressWarnings("unchecked") final T value = (T)additionalAttributes.get(name);
 		return value;
 	}
 
@@ -433,8 +433,7 @@ public abstract class LookupValue
 		}
 		else if (valueObj instanceof Collection)
 		{
-			@SuppressWarnings("unchecked")
-			final Collection<Integer> coll = (Collection<Integer>)valueObj;
+			@SuppressWarnings("unchecked") final Collection<Integer> coll = (Collection<Integer>)valueObj;
 			return ImmutableSet.copyOf(coll);
 		}
 		else
@@ -505,7 +504,7 @@ public abstract class LookupValue
 		{
 			return new StringLookupValue(
 					value,
-					TranslatableStrings.constant("<" + value + ">"),
+					unknownCaption(value),
 					null/* description */,
 					null/* attributes */,
 					false/* not active */,
@@ -617,7 +616,7 @@ public abstract class LookupValue
 		{
 			return new IntegerLookupValue(
 					id,
-					TranslatableStrings.constant("<" + id + ">"),
+					unknownCaption(id),
 					null/* description */,
 					null/* attributes */,
 					false/* not active */);

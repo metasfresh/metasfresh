@@ -445,6 +445,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		services.fireBeforePostEvent(getPO());
 
 		//
+		// Update Open Items Matching
+		for (final Fact fact : facts)
+		{
+			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
+		}
+
+		//
 		// Save facts
 		for (final Fact fact : facts)
 		{

@@ -272,4 +272,6 @@ public class Amount implements Comparable<Amount>
 	{
 		return Money.of(value, currencyIdMapper.apply(currencyCode));
 	}
+
+	public static boolean equals(@Nullable final Amount a1, @Nullable final Amount a2) {return Objects.equals(a1, a2);}
 }

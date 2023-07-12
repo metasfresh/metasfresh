@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for Fact_Acct
  *  @author metasfresh (generated) 
@@ -42,6 +41,27 @@ public interface I_Fact_Acct
 	String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
 	/**
+	 * Set Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAccountConceptualName (java.lang.String AccountConceptualName);
+
+	/**
+	 * Get Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAccountConceptualName();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
+	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
+
+	/**
 	 * Set Account.
 	 * Account used
 	 *
@@ -62,27 +82,6 @@ public interface I_Fact_Acct
 	int getAccount_ID();
 
 	String COLUMNNAME_Account_ID = "Account_ID";
-
-	/**
-	 * Set Account conceptual name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAccountConceptualName (java.lang.String AccountConceptualName);
-
-	/**
-	 * Get Account conceptual name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getAccountConceptualName();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
-	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
 
 	/**
 	 * Get Client.
@@ -296,6 +295,26 @@ public interface I_Fact_Acct
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -334,26 +353,6 @@ public interface I_Fact_Acct
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
-	 * Set Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner2_ID (int C_BPartner2_ID);
-
-	/**
-	 * Get Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner2_ID();
-
-	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
 
 	/**
 	 * Set Campaign.
@@ -506,6 +505,31 @@ public interface I_Fact_Acct
 	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
+	 * Set Counterpart Accounting Fact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID);
+
+	/**
+	 * Get Counterpart Accounting Fact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCounterpart_Fact_Acct_ID();
+
+	@Nullable org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct();
+
+	void setCounterpart_Fact_Acct(@Nullable org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct);
+
+	ModelColumn<I_Fact_Acct, org.compiere.model.I_Fact_Acct> COLUMN_Counterpart_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
+	String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
+
+	/**
 	 * Set Period.
 	 * Period of the Calendar
 	 *
@@ -609,6 +633,31 @@ public interface I_Fact_Acct
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new ModelColumn<>(I_Fact_Acct.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Sales Region.
 	 * Sales coverage region
 	 *
@@ -705,56 +754,6 @@ public interface I_Fact_Acct
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Counterpart Accounting Fact.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID);
-
-	/**
-	 * Get Counterpart Accounting Fact.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getCounterpart_Fact_Acct_ID();
-
-	@Nullable org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct();
-
-	void setCounterpart_Fact_Acct(@Nullable org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_Fact_Acct> COLUMN_Counterpart_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
-	String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new ModelColumn<>(I_Fact_Acct.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Currency Rate.
@@ -1010,6 +1009,27 @@ public interface I_Fact_Acct
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Open Item Reconciled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItemsReconciled (boolean IsOpenItemsReconciled);
+
+	/**
+	 * Get Open Item Reconciled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItemsReconciled();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_IsOpenItemsReconciled = new ModelColumn<>(I_Fact_Acct.class, "IsOpenItemsReconciled", null);
+	String COLUMNNAME_IsOpenItemsReconciled = "IsOpenItemsReconciled";
+
+	/**
 	 * Set Line ID.
 	 * Transaction line ID (internal)
 	 *
@@ -1127,6 +1147,69 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_Fact_Acct.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
+	 * Set OI Open Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_OpenAmount (@Nullable BigDecimal OI_OpenAmount);
+
+	/**
+	 * Get OI Open Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOI_OpenAmount();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_OpenAmount = new ModelColumn<>(I_Fact_Acct.class, "OI_OpenAmount", null);
+	String COLUMNNAME_OI_OpenAmount = "OI_OpenAmount";
+
+	/**
+	 * Set Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_TrxType (@Nullable java.lang.String OI_TrxType);
+
+	/**
+	 * Get Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_TrxType();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_TrxType = new ModelColumn<>(I_Fact_Acct.class, "OI_TrxType", null);
+	String COLUMNNAME_OI_TrxType = "OI_TrxType";
+
+	/**
+	 * Set Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenItemKey (@Nullable java.lang.String OpenItemKey);
+
+	/**
+	 * Get Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOpenItemKey();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OpenItemKey = new ModelColumn<>(I_Fact_Acct.class, "OpenItemKey", null);
+	String COLUMNNAME_OpenItemKey = "OpenItemKey";
 
 	/**
 	 * Set Posting Type.
@@ -1332,7 +1415,7 @@ public interface I_Fact_Acct
 	String COLUMNNAME_UserElement2_ID = "UserElement2_ID";
 
 	/**
-	 * Set UserElementString1.
+	 * Set Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1341,7 +1424,7 @@ public interface I_Fact_Acct
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get UserElementString1.
+	 * Get Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1353,7 +1436,7 @@ public interface I_Fact_Acct
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set UserElementString2.
+	 * Set Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1362,7 +1445,7 @@ public interface I_Fact_Acct
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get UserElementString2.
+	 * Get Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1374,7 +1457,7 @@ public interface I_Fact_Acct
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set UserElementString3.
+	 * Set Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1383,7 +1466,7 @@ public interface I_Fact_Acct
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get UserElementString3.
+	 * Get Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
