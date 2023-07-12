@@ -2359,7 +2359,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	@Override
 	@NonNull
-	public I_ModCntr_Settings extendModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
 		final I_ModCntr_Settings newModCntrSettings = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class, settings);
 
