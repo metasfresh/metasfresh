@@ -57,7 +57,7 @@ SELECT fa.fact_acct_id                                                    AS Ope
 FROM fact_acct fa
          INNER JOIN c_elementvalue acc ON fa.account_id = acc.c_elementvalue_id
          INNER JOIN C_AcctSchema schema ON fa.c_acctschema_id = schema.c_acctschema_id
-where fa.OpenItemKey is not null
-  and fa.OI_TrxType='O' -- Just open items (exclude Clearing transactions)
-  and fa.IsOpenItemsReconciled='N'
+WHERE fa.OpenItemKey IS NOT NULL
+  AND fa.OI_TrxType = 'O' -- Just open items (exclude Clearing transactions)
+  AND fa.IsOpenItemsReconciled = 'N'
 ;
