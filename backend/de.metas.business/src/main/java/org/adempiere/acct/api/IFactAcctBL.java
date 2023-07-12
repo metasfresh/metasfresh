@@ -38,6 +38,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.TimeUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,6 +82,8 @@ public interface IFactAcctBL extends ISingletonService
 				.setUserElementString5(fa.getUserElementString5())
 				.setUserElementString6(fa.getUserElementString6())
 				.setUserElementString7(fa.getUserElementString7())
+				.setUserElementDate1(TimeUtil.asInstant(fa.getUserElementDate1()))
+				.setUserElementDate2(TimeUtil.asInstant(fa.getUserElementDate2()))
 				.build();
 	}
 
@@ -105,6 +108,8 @@ public interface IFactAcctBL extends ISingletonService
 				.userElementString5(record.getUserElementString5())
 				.userElementString6(record.getUserElementString6())
 				.userElementString7(record.getUserElementString7())
+				.userElementDate1(TimeUtil.asInstant(record.getUserElementDate1()))
+				.userElementDate2(TimeUtil.asInstant(record.getUserElementDate2()))
 				.build();
 	}
 
