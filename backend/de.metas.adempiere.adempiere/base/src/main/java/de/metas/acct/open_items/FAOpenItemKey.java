@@ -1,10 +1,18 @@
 package de.metas.acct.open_items;
 
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -34,9 +42,26 @@ public final class FAOpenItemKey
 
 	public static Optional<FAOpenItemKey> optionalOfString(@Nullable final String string) {return Optional.ofNullable(ofNullableString(string));}
 
-	public static FAOpenItemKey ofTableAndRecord(@NonNull final String tableName, final int recordId)
+	public static FAOpenItemKey payment(@NonNull final PaymentId paymentId)
 	{
-		return ofString(tableName + "#" + Math.max(recordId, 0));
+		return ofTableRecordLineAndSubLineId(I_C_Payment.Table_Name, paymentId.getRepoId(), -1, -1);
+	}
+
+	public static FAOpenItemKey invoice(@NonNull final InvoiceId invoiceId)
+	{
+		return ofTableRecordLineAndSubLineId(I_C_Invoice.Table_Name, invoiceId.getRepoId(), -1, -1);
+	}
+
+	public static FAOpenItemKey bankStatementLine(
+			@NonNull final BankStatementId bankStatementId,
+			@NonNull final BankStatementLineId bankStatementLineId,
+			@Nullable final BankStatementLineRefId bankStatementLineRefId)
+	{
+		return ofTableRecordLineAndSubLineId(
+				I_C_BankStatement.Table_Name,
+				bankStatementId.getRepoId(),
+				bankStatementLineId.getRepoId(),
+				BankStatementLineRefId.toRepoId(bankStatementLineRefId));
 	}
 
 	public static FAOpenItemKey ofTableRecordLineAndSubLineId(

@@ -1,5 +1,6 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -17,6 +18,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.dimension.Dimension;
+import de.metas.document.engine.DocStatus;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.i18n.ITranslatableString;
@@ -31,6 +33,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
@@ -38,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_SectionCode;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -50,6 +54,7 @@ class OIViewDataService
 	private final MoneyService moneyService;
 	private final LookupDataSource validCombinationsLookup;
 	private final LookupDataSource bpartnerLookup;
+	private final LookupDataSource sectionCodeLookup;
 	private final SAPGLJournalService glJournalService;
 	private final ElementValueService elementValueService;
 
@@ -65,6 +70,7 @@ class OIViewDataService
 		this.factAcctBL = factAcctBL;
 		this.validCombinationsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_ValidCombination.Table_Name);
 		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.sectionCodeLookup = lookupDataSourceFactory.searchInTableLookup(I_M_SectionCode.Table_Name);
 		this.acctSchemaBL = acctSchemaBL;
 		this.moneyService = moneyService;
 		this.glJournalService = glJournalService;
@@ -120,9 +126,49 @@ class OIViewDataService
 				.isOpenItemReconciled(false)
 				.openItemTrxType(FAOpenItemTrxType.OPEN_ITEM);
 
-		if (query.getFilter() != null)
+		//
+		// Open Item Account(s)
+		final DocumentFilter filter = query.getFilter();
+		if (filter != null)
 		{
-			OIViewFilterHelper.appendToFactAcctQuery(factAcctQueryBuilder, query.getFilter());
+			final ImmutableSet<ElementValueId> openItemAccountIds = elementValueService.getOpenItemIds();
+			final ElementValueId accountId = filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_Account_ID, ElementValueId::ofRepoIdOrNull);
+			if (accountId != null)
+			{
+				if (!openItemAccountIds.contains(accountId))
+				{
+					return null;
+				}
+				factAcctQueryBuilder.accountId(accountId);
+			}
+			else
+			{
+				factAcctQueryBuilder.accountIds(openItemAccountIds);
+			}
+		}
+
+		//
+		// Other user filters
+		if (filter != null)
+		{
+			final BPartnerId bpartnerId = filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_C_BPartner_ID, BPartnerId::ofRepoIdOrNull);
+			final InSetPredicate<BPartnerId> bpartnerIds = bpartnerId != null ? InSetPredicate.only(bpartnerId) : InSetPredicate.any();
+
+			factAcctQueryBuilder.bpartnerIds(bpartnerIds)
+					.sectionCodeId(filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_M_SectionCode_ID, SectionCodeId::ofRepoIdOrNull))
+					.salesOrderId(filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_C_OrderSO_ID, OrderId::ofRepoIdOrNull))
+					.dateAcct(filter.getParameterValueAsInstantOrNull(OIViewFilterHelper.PARAM_DateAcct))
+					.documentNoLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_DocumentNo, null))
+					.descriptionLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_Description, null))
+					.docStatus(filter.getParameterValueAsRefListOrNull(OIViewFilterHelper.PARAM_DocStatus, DocStatus::ofCode))
+					.userElementString1Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString1, null))
+					.userElementString2Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString2, null))
+					.userElementString3Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString3, null))
+					.userElementString4Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString4, null))
+					.userElementString5Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString5, null))
+					.userElementString6Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString6, null))
+					.userElementString7Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString7, null))
+			;
 		}
 
 		return factAcctQueryBuilder.build();
@@ -174,6 +220,8 @@ class OIViewDataService
 				.bpartnerCaption(getBPartnerCaption(bpartnerId))
 				.documentNo(record.getDocumentNo())
 				.description(record.getDescription())
+				.sectionCode(sectionCodeLookup.findById(record.getM_SectionCode_ID()))
+				.userElementString1(record.getUserElementString1())
 				.openItemKey(openItemKey)
 				.dimension(extractDimension(record))
 				.build();

@@ -1,5 +1,6 @@
 package de.metas.acct.open_items.handlers;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
@@ -8,8 +9,11 @@ import de.metas.acct.open_items.FAOpenItemsHandler;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import lombok.NonNull;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_M_MatchInv;
 
 import java.util.Optional;
+import java.util.Set;
 
 //@Component // IMPORTANT: don't make it a spring component
 public class Generic_OIHandler implements FAOpenItemsHandler
@@ -22,9 +26,10 @@ public class Generic_OIHandler implements FAOpenItemsHandler
 	}
 
 	@Override
-	public @NonNull AccountConceptualName getHandledAccountConceptualName()
+	public @NonNull Set<AccountConceptualName> getHandledAccountConceptualNames()
 	{
-		throw new IllegalStateException("Do not call this method");
+		// shall not be called
+		return ImmutableSet.of();
 	}
 
 	@Override
@@ -34,17 +39,27 @@ public class Generic_OIHandler implements FAOpenItemsHandler
 		if (elementValue.isOpenItem())
 		{
 
-			return Optional.of(
-					FAOpenItemTrxInfo.openItem(FAOpenItemKey.ofTableRecordLineAndSubLineId(
-							request.getTableName(),
-							request.getRecordId(),
-							request.getLineId(),
-							request.getSubLineId()))
-			);
+			final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
+					request.getTableName(),
+					request.getRecordId(),
+					request.getLineId(),
+					request.getSubLineId());
+
+			final FAOpenItemTrxInfo trxInfo = isClearing(request.getTableName())
+					? FAOpenItemTrxInfo.clearing(key)
+					: FAOpenItemTrxInfo.opening(key);
+
+			return Optional.of(trxInfo);
 		}
 		else
 		{
 			return Optional.empty();
 		}
+	}
+
+	private static boolean isClearing(final String tableName)
+	{
+		return I_C_AllocationHdr.Table_Name.equals(tableName)
+				|| I_M_MatchInv.Table_Name.equals(tableName);
 	}
 }
