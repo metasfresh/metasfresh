@@ -2443,17 +2443,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			iciol.setQtyDeliveredInUOM_Nominal(inOutLine.getQtyEntered());
 		}
 
-		final I_C_InvoiceLine invoiceLine = InvoiceDAO.getOfInOutLine(inOutLine);
-		if (invoiceLine != null)
-		{
-			final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceLine.getC_Invoice_ID(), I_C_Invoice.class);
-			matchInvoiceServiceHolder.get()
-					.newMatchInvBuilder(MatchInvType.Material)
-					.invoiceLine(invoiceLine)
-					.inoutLine(inOutLine)
-					.dateTrx(invoice.getDateInvoiced())
-					.build();
-		}
+		createMatchInvForInOutLine(inOutLine);
 
 		saveRecord(iciol);
 	}
@@ -2727,5 +2717,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
 
+	}
+
+	private void createMatchInvForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
+	{
+		final I_C_InvoiceLine invoiceLine = InvoiceDAO.getOfInOutLine(inOutLine);
+		if (invoiceLine != null)
+		{
+			final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceLine.getC_Invoice_ID(), I_C_Invoice.class);
+			matchInvoiceServiceHolder.get()
+					.newMatchInvBuilder(MatchInvType.Material)
+					.invoiceLine(invoiceLine)
+					.inoutLine(inOutLine)
+					.dateTrx(invoice.getDateInvoiced())
+					.build();
+		}
 	}
 }
