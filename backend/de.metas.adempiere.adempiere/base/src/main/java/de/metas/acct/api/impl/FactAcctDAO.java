@@ -279,6 +279,8 @@ public class FactAcctDAO implements IFactAcctDAO
 				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_DocumentNo, pattern, true));
 		toSqlLikeString(query.getDescriptionLike())
 				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_Description, pattern, true));
+		toSqlLikeString(query.getPoReferenceLike())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_POReference, pattern, true));
 
 		if (!query.getBpartnerIds().isAny())
 		{
