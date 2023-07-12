@@ -10,6 +10,9 @@ import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
 import de.metas.acct.open_items.FAOpenItemsHandler;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.PaymentAllocationLineId;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -71,7 +74,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 			final PaymentAllocationLineId paymentAllocationLineId = PaymentAllocationLineId.ofRepoId(request.getRecordId(), request.getLineId());
 
 			return allocationBL.getPaymentId(paymentAllocationLineId)
-					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.ofTableAndRecord(I_C_Payment.Table_Name, paymentId)));
+					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.payment(paymentId)));
 		}
 		else
 		{
@@ -90,7 +93,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 		}
 		else if (accountConceptualName.isAnyOf(B_PaymentSelect_Acct, B_UnallocatedCash_Acct))
 		{
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.ofTableAndRecord(I_C_Payment.Table_Name, paymentId)));
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.payment(paymentId)));
 		}
 		else if (accountConceptualName.isAnyOf(B_InTransit_Acct))
 		{
@@ -105,20 +108,16 @@ public class BankOIHandler implements FAOpenItemsHandler
 
 	private static FAOpenItemKey computeOpenItemKey_B_InTransit(final I_C_Payment payment)
 	{
-		final int bankStatementId = payment.getC_BankStatement_ID();
-		final int bankStatementLineId = payment.getC_BankStatementLine_ID();
-		if (bankStatementLineId > 0)
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoIdOrNull(payment.getC_BankStatementLine_ID());
+		if (bankStatementLineId != null)
 		{
-			return FAOpenItemKey.ofTableRecordLineAndSubLineId(
-					I_C_BankStatement.Table_Name,
-					bankStatementId,
-					bankStatementLineId,
-					payment.getC_BankStatementLine_Ref_ID()
-			);
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
+			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
+			return FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId);
 		}
 		else
 		{
-			return FAOpenItemKey.ofTableAndRecord(I_C_Payment.Table_Name, payment.getC_Payment_ID());
+			return FAOpenItemKey.payment(PaymentId.ofRepoId(payment.getC_Payment_ID()));
 		}
 	}
 
@@ -132,12 +131,10 @@ public class BankOIHandler implements FAOpenItemsHandler
 		}
 		else if (accountConceptualName.isAnyOf(B_InTransit_Acct))
 		{
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.ofTableRecordLineAndSubLineId(
-					I_C_BankStatement.Table_Name,
-					request.getRecordId(),
-					request.getLineId(),
-					request.getSubLineId()
-			)));
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(request.getRecordId());
+			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(request.getLineId());
+			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(request.getSubLineId());
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId)));
 		}
 		else
 		{

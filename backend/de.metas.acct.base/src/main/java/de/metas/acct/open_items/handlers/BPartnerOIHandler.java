@@ -61,7 +61,7 @@ class BPartnerOIHandler implements FAOpenItemsHandler
 				|| AccountConceptualName.equals(accountConceptualName, C_Receivable))
 		{
 			final InvoiceId invoiceId = InvoiceId.ofRepoId(request.getRecordId());
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.ofTableAndRecord(I_C_Invoice.Table_Name, invoiceId)));
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.invoice(invoiceId)));
 		}
 		else
 		{
@@ -82,13 +82,13 @@ class BPartnerOIHandler implements FAOpenItemsHandler
 		{
 			// TODO handle the case when we have invoice-to-invoice allocation
 			return allocationBL.getInvoiceId(paymentAllocationLineId)
-					.map(invoiceId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.ofTableAndRecord(I_C_Invoice.Table_Name, invoiceId)));
+					.map(invoiceId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.invoice(invoiceId)));
 		}
 		else if (accountConceptualName.isAnyOf(V_Prepayment, C_Prepayment))
 		{
 			// TODO handle the case when we have payment-to-payment allocation
 			return allocationBL.getPaymentId(paymentAllocationLineId)
-					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.ofTableAndRecord(I_C_Payment.Table_Name, paymentId)));
+					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.payment(paymentId)));
 		}
 		else
 		{
@@ -107,7 +107,7 @@ class BPartnerOIHandler implements FAOpenItemsHandler
 		}
 		else if (accountConceptualName.isAnyOf(V_Prepayment, C_Prepayment))
 		{
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.ofTableAndRecord(I_C_Payment.Table_Name, paymentId)));
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.payment(paymentId)));
 		}
 		else
 		{
