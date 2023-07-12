@@ -41,6 +41,7 @@ import org.compiere.model.I_M_SectionCode;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 class OIViewDataService
@@ -107,11 +108,18 @@ class OIViewDataService
 		final CurrencyCode acctCurrencyCode = moneyService.getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
 		final FutureClearingAmountMap futureClearingAmounts = query.getFutureClearingAmounts();
 
-		return factAcctBL.stream(toFactAcctQuery(query))
+		final FactAcctQuery factAcctQuery = toFactAcctQuery(query);
+		if (factAcctQuery == null)
+		{
+			return Stream.of();
+		}
+
+		return factAcctBL.stream(factAcctQuery)
 				.map(record -> toRow(record, acctCurrencyCode, futureClearingAmounts))
 				.filter(Objects::nonNull);
 	}
 
+	@Nullable
 	private FactAcctQuery toFactAcctQuery(@NonNull final OIViewDataQuery query)
 	{
 		final FactAcctQuery.FactAcctQueryBuilder factAcctQueryBuilder = FactAcctQuery.builder()
@@ -125,23 +133,12 @@ class OIViewDataService
 		//
 		// Open Item Account(s)
 		final DocumentFilter filter = query.getFilter();
-		if (filter != null)
+		final Set<ElementValueId> openItemAccountIds = getOpenItemElementValueIds(filter);
+		if (openItemAccountIds.isEmpty())
 		{
-			final ImmutableSet<ElementValueId> openItemAccountIds = elementValueService.getOpenItemIds();
-			final ElementValueId accountId = filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_Account_ID, ElementValueId::ofRepoIdOrNull);
-			if (accountId != null)
-			{
-				if (!openItemAccountIds.contains(accountId))
-				{
-					return null;
-				}
-				factAcctQueryBuilder.accountId(accountId);
-			}
-			else
-			{
-				factAcctQueryBuilder.accountIds(openItemAccountIds);
-			}
+			return null;
 		}
+		factAcctQueryBuilder.accountIds(openItemAccountIds);
 
 		//
 		// Other user filters
@@ -169,6 +166,30 @@ class OIViewDataService
 		}
 
 		return factAcctQueryBuilder.build();
+	}
+
+	private Set<ElementValueId> getOpenItemElementValueIds(@Nullable final DocumentFilter filter)
+	{
+		final ImmutableSet<ElementValueId> openItemAccountIds = elementValueService.getOpenItemIds();
+		if (filter != null)
+		{
+			final ElementValueId accountId = filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_Account_ID, ElementValueId::ofRepoIdOrNull);
+			if (accountId != null)
+			{
+				return openItemAccountIds.contains(accountId)
+						? ImmutableSet.of(accountId)
+						: ImmutableSet.of();
+			}
+			else
+			{
+				return openItemAccountIds;
+			}
+		}
+		else
+		{
+			return openItemAccountIds;
+		}
+
 	}
 
 	@Nullable
