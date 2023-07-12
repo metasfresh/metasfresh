@@ -46,7 +46,7 @@ public class C_Flatrate_Conditions_Extend extends JavaProcess implements IProces
 		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(ConditionsId.ofRepoId(getRecord_ID()));
 		final I_ModCntr_Settings settings = conditions.getModCntr_Settings();
 
-		Check.assumeNotNull(settings, " Should never happen", conditions);
+		Check.assumeNotNull(settings, " Should never happen because settings are mandatory for modular contract conditions", conditions);
 
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(p_C_Year_ID, settings.getC_Calendar_ID());
