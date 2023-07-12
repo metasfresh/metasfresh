@@ -84,7 +84,7 @@ public class FactAcctBL implements IFactAcctBL
 	}
 
 	@Override
-	public Stream<I_Fact_Acct> stream(FactAcctQuery query)
+	public Stream<I_Fact_Acct> stream(@NonNull final FactAcctQuery query)
 	{
 		return factAcctDAO.stream(query);
 	}
