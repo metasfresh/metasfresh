@@ -197,7 +197,7 @@ public class OrgChangeCommand
 
 		final OrgChangeHistoryId orgChangeHistoryId = orgChangeHistoryRepo.createOrgChangeHistory(request, orgMappingId, destinationBPartnerComposite);
 
-		createOrgSwitchRequest(orgChangeHistoryId);
+		createOrgSwitchRequests(orgChangeHistoryId);
 	}
 
 	private BPartnerId getOrCreateCounterpartBPartner(@NonNull final OrgChangeRequest orgChangeRequest, @NonNull final OrgMappingId orgMappingId)
@@ -764,36 +764,63 @@ public class OrgChangeCommand
 		bpCompositeRepo.save(bPartnerComposite, false);
 	}
 
-	private void createOrgSwitchRequest(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
+	private void createOrgSwitchRequests(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
 	{
 		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
 		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeHistoryRepo.getOrgChangeHistoryById(orgChangeHistoryId);
 
-		final OrgId orgId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
+		final OrgId orgToId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
 
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		final ZonedDateTime requestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), timeZone);
+		final ZoneId orgToTimeZone = orgDAO.getTimeZone(orgToId);
+		final ZonedDateTime orgToRequestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), orgToTimeZone);
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_To_ID());
+		final BPartnerId orgToBPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_To_ID());
 
-		final String summary = msgBL.getMsg(Env.getCtx(), MSG_OrgChangeSummary, new Object[] {
-				orgDAO.getById(orgChangeHistoryRecord.getAD_Org_From_ID()).getName(),
-				orgDAO.getById(orgChangeHistoryRecord.getAD_OrgTo_ID()).getName(),
-				TimeUtil.asDate(requestDate) });
+		final String orgToSummary = getSummaryForOrg(orgChangeHistoryRecord, orgToRequestDate);
 
-		final RequestCandidate requestCandidate = RequestCandidate.builder()
-				.summary(summary)
+		final RequestCandidate orgToRequestCandidate = RequestCandidate.builder()
+				.summary(orgToSummary)
 				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
-				.orgId(orgId)
-				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
+				.orgId(orgToId)
+				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, orgToBPartnerId))
 				.requestTypeId(requestTypeId)
-				.partnerId(bPartnerId)
-				.dateDelivered(requestDate)
-
+				.partnerId(orgToBPartnerId)
+				.dateDelivered(orgToRequestDate)
 				.build();
 
-		requestBL.createRequest(requestCandidate);
+		requestBL.createRequest(orgToRequestCandidate);
 
+		final OrgId orgFromId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_Org_From_ID());
+
+		final ZoneId orgFromTimeZone = orgDAO.getTimeZone(orgFromId);
+		final ZonedDateTime orgFromRequestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), orgFromTimeZone);
+
+		final BPartnerId orgFromBPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_From_ID());
+
+		final String orgFromSummary = getSummaryForOrg(orgChangeHistoryRecord, orgFromRequestDate);
+
+		final RequestCandidate orgFromRequestCandidate = RequestCandidate.builder()
+				.summary(orgFromSummary)
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
+				.orgId(orgFromId)
+				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, orgFromBPartnerId))
+				.requestTypeId(requestTypeId)
+				.partnerId(orgFromBPartnerId)
+				.dateDelivered(orgToRequestDate)
+				.build();
+
+		requestBL.createRequest(orgFromRequestCandidate);
+
+	}
+
+	private String getSummaryForOrg(
+			@NonNull final I_AD_OrgChange_History orgChangeHistoryRecord,
+			@NonNull final ZonedDateTime zonedDateTime)
+	{
+		return msgBL.getMsg(Env.getCtx(), MSG_OrgChangeSummary, new Object[] {
+				orgDAO.getById(orgChangeHistoryRecord.getAD_Org_From_ID()).getName(),
+				orgDAO.getById(orgChangeHistoryRecord.getAD_OrgTo_ID()).getName(),
+				TimeUtil.asDate(zonedDateTime) });
 	}
 
 	private void unmarkBillToDefaultContacts(final List<BPartnerContact> contacts)
