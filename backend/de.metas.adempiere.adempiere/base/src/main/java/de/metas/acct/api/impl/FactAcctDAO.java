@@ -162,6 +162,19 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
+	public void updatePOReference(@NonNull final TableRecordReference recordRef, @Nullable final String poReference)
+	{
+		queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_POReference, poReference)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_POReference, poReference)
+				.execute();
+	}
+
+	@Override
 	public List<I_Fact_Acct> list(@NonNull final List<FactAcctQuery> queries)
 	{
 		final IQuery<I_Fact_Acct> query = queries.stream()
