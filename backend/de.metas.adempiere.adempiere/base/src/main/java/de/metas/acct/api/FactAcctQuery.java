@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.open_items.FAOpenItemKey;
@@ -25,8 +26,8 @@ public class FactAcctQuery
 	@Nullable Set<FactAcctId> includeFactAcctIds;
 
 	@Nullable AcctSchemaId acctSchemaId;
-	@Nullable @Singular Set<AccountConceptualName> accountConceptualNames;
-	@Nullable ElementValueId accountId;
+	@Nullable @Singular ImmutableSet<AccountConceptualName> accountConceptualNames;
+	@Nullable @Singular ImmutableSet<ElementValueId> accountIds;
 	@Nullable PostingType postingType;
 
 	@Nullable Instant dateAcct;

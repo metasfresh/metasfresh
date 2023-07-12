@@ -205,9 +205,9 @@ public class FactAcctDAO implements IFactAcctDAO
 					.collect(Collectors.toSet());
 			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualNames);
 		}
-		if (query.getAccountId() != null)
+		if (query.getAccountIds() != null && !query.getAccountIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, query.getAccountId());
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_Account_ID, query.getAccountIds());
 		}
 		if (query.getPostingType() != null)
 		{
