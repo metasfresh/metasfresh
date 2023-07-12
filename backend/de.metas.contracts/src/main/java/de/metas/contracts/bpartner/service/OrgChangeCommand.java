@@ -806,7 +806,7 @@ public class OrgChangeCommand
 				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, orgFromBPartnerId))
 				.requestTypeId(requestTypeId)
 				.partnerId(orgFromBPartnerId)
-				.dateDelivered(orgToRequestDate)
+				.dateDelivered(orgFromRequestDate)
 				.build();
 
 		requestBL.createRequest(orgFromRequestCandidate);
