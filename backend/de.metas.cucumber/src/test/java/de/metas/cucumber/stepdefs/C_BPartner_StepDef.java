@@ -29,6 +29,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -37,6 +38,9 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.order.DeliveryRule;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -45,6 +49,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -59,10 +64,15 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_AD_ORG_TARGET_ID;
+import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_DATE_ORG_CHANGE;
+import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
@@ -103,6 +113,7 @@ public class C_BPartner_StepDef
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
@@ -545,5 +556,80 @@ public class C_BPartner_StepDef
 		}
 
 		softly.assertAll();
+	}
+
+	@And("^after not more than (.*)s, C_BPartner are found:$")
+	public void validate_created_c_bPartners(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> tableRow : dataTable)
+		{
+			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final IQueryBuilder<I_C_BPartner> query = queryBL.createQueryBuilder(I_C_BPartner.class);
+
+			final String bPartnerName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Name);
+			if(!Check.isEmpty(bPartnerName))
+			{
+				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, bPartnerName);
+			}
+
+			final String bPartnerValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Value);
+			if(!Check.isEmpty(bPartnerValue))
+			{
+				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, bPartnerValue);
+			}
+
+			final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER))
+					.map(orgTable::get)
+					.map(I_AD_Org::getAD_Org_ID)
+					.orElse(StepDefConstants.ORG_ID.getRepoId());
+			query.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId);
+
+			final Supplier<Boolean> QueryExecutor = () -> {
+				final I_C_BPartner bPartnerRecord = query.create().firstOnly(I_C_BPartner.class);
+
+				if (bPartnerRecord == null)
+				{
+					return false;
+				}
+
+				bPartnerTable.putOrReplace(bPartnerIdentifier, bPartnerRecord);
+				return true;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 500, QueryExecutor);
+		}
+	}
+
+
+	@Given("C_BPartner_MoveToAnotherOrg is invoked with parameters:")
+	public void C_BPartner_MoveToAnotherOrg(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
+
+			final String orgIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_Org orgRecord = orgTable.get(orgIdentifier);
+
+			final Timestamp changeDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, PARAM_DATE_ORG_CHANGE);
+
+			final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg.class);
+
+			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
+			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
+			processInfoBuilder.setRecord(I_C_BPartner.Table_Name, bPartnerRecord.getC_BPartner_ID());
+			processInfoBuilder.addParameter(PARAM_AD_ORG_TARGET_ID, orgRecord.getAD_Org_ID());
+			processInfoBuilder.addParameter(PARAM_DATE_ORG_CHANGE, changeDate);
+			processInfoBuilder.addParameter(PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, false);
+
+			processInfoBuilder
+					.buildAndPrepareExecution()
+					.executeSync()
+					.getResult();
+		}
+
 	}
 }
