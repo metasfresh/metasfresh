@@ -223,6 +223,10 @@ public class FactAcctDAO implements IFactAcctDAO
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, query.getPostingType());
 		}
+		if (query.getCurrencyId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
+		}
 
 		if (query.getDateAcct() != null)
 		{
@@ -271,9 +275,9 @@ public class FactAcctDAO implements IFactAcctDAO
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OI_TrxType, query.getOpenItemTrxType().getCode());
 		}
 
-		if (query.getDocStatus() != null)
+		if (query.getDocStatuses() != null && !query.getDocStatuses().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DocStatus, query.getDocStatus());
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_DocStatus, query.getDocStatuses());
 		}
 		toSqlLikeString(query.getDocumentNoLike())
 				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_DocumentNo, pattern, true));

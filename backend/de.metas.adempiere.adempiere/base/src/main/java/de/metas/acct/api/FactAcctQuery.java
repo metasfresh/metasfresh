@@ -7,6 +7,7 @@ import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.InSetPredicate;
@@ -29,6 +30,7 @@ public class FactAcctQuery
 	@Nullable @Singular ImmutableSet<AccountConceptualName> accountConceptualNames;
 	@Nullable @Singular ImmutableSet<ElementValueId> accountIds;
 	@Nullable PostingType postingType;
+	@Nullable CurrencyId currencyId;
 
 	@Nullable Instant dateAcct;
 
@@ -41,7 +43,7 @@ public class FactAcctQuery
 	@Nullable FAOpenItemKey openItemsKey;
 	@Nullable FAOpenItemTrxType openItemTrxType;
 
-	@Nullable DocStatus docStatus;
+	@Nullable @Singular Set<DocStatus> docStatuses;
 	@Nullable String documentNoLike;
 	@Nullable String descriptionLike;
 	@Nullable String poReferenceLike;
