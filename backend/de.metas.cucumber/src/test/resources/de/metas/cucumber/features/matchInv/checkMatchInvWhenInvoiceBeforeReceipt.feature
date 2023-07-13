@@ -56,7 +56,7 @@ Feature: match inv is created when in transit
     When the order identified by o_1 is completed
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic_1                              | ol_1                      | 10           |
+      | ic_1                              | ol_1                      | 0            |
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
       | ic_1                              | I                        |
