@@ -34,34 +34,39 @@ BEGIN
     END IF;
 
     v_factAcctUpdatedCount := 0;
-    FOR v_group IN (WITH sel AS (SELECT DISTINCT openitemkey, c_acctschema_id, postingtype, account_id
+    FOR v_group IN (WITH sel AS (SELECT DISTINCT openitemkey, c_acctschema_id, postingtype
                                  FROM "de_metas_acct".fact_acct_openItems_to_update
                                  WHERE selection_id = v_selectionId)
                     SELECT fa.openitemkey,
                            fa.c_acctschema_id,
                            fa.postingtype,
-                           fa.account_id,
-                           SUM(fa.amtacctdr - fa.amtacctcr)                                               AS balance,
-                           MIN(CASE WHEN fa.oi_trxtype = 'O' THEN fa.fact_acct_id END)                    AS openitem_fact_acct_id,
-                           SUM(CASE WHEN fa.oi_trxtype = 'C' THEN fa.amtacctdr - fa.amtacctcr ELSE 0 END) AS oi_cleared_amount,
-                           ARRAY_AGG(fa.fact_acct_id)                                                     AS fact_acct_ids
+                           SUM(fa.amtacctdr - fa.amtacctcr)                                                   AS balance,
+                           MIN(CASE WHEN fa.oi_trxtype = 'O' THEN fa.fact_acct_id END)                        AS openitem_fact_acct_id,
+                           SUM(CASE WHEN fa.oi_trxtype = 'C' THEN fa.amtacctdr - fa.amtacctcr ELSE 0 END)     AS oi_cleared_amountAcct,
+                           SUM(CASE WHEN fa.oi_trxtype = 'C' THEN fa.amtsourcedr - fa.amtsourcecr ELSE 0 END) AS oi_cleared_amountSource,
+                           COUNT(DISTINCT fa.c_currency_id)                                                   AS count_currencies,
+                           ARRAY_AGG(fa.fact_acct_id)                                                         AS fact_acct_ids
                     FROM sel
                              INNER JOIN fact_acct fa ON (fa.openitemkey = sel.openitemkey
                         AND fa.c_acctschema_id = sel.c_acctschema_id
-                        AND fa.postingtype = sel.postingtype
-                        AND fa.account_id = sel.account_id)
-                    GROUP BY fa.openitemkey, fa.c_acctschema_id, fa.postingtype, fa.account_id
+                        AND fa.postingtype = sel.postingtype)
+                    GROUP BY fa.openitemkey, fa.c_acctschema_id, fa.postingtype
+                             -- , fa.account_id -- we shall not group by account, think about conversion gain/loss case where we clear the open item using the gain/loss account too
                     HAVING COUNT(1) > 0)
         LOOP
             v_isOpenItemsReconciled := (CASE WHEN v_group.balance = 0 THEN 'Y' ELSE 'N' END);
             -- RAISE NOTICE 'group=%, v_isOpenItemsReconciled=%', v_group, v_isOpenItemsReconciled;
 
             UPDATE fact_acct fa
-            SET isOpenItemsReconciled=v_isOpenItemsReconciled,
-                oi_openamount=(CASE
-                                   WHEN fa.fact_acct_id = v_group.openitem_fact_acct_id AND v_isOpenItemsReconciled = 'Y' THEN 0
-                                   WHEN fa.fact_acct_id = v_group.openitem_fact_acct_id AND v_isOpenItemsReconciled = 'N' THEN (fa.amtacctdr - fa.amtacctcr) - v_group.oi_cleared_amount
-                               END)
+            SET IsOpenItemsReconciled=v_isOpenItemsReconciled,
+                OI_OpenAmount=(CASE
+                    -- WHEN fa.fact_acct_id = v_group.openitem_fact_acct_id AND v_isOpenItemsReconciled = 'Y' THEN 0
+                                   WHEN fa.fact_acct_id = v_group.openitem_fact_acct_id /*AND v_isOpenItemsReconciled = 'N'*/ THEN (fa.amtacctdr - fa.amtacctcr) + v_group.oi_cleared_amountAcct
+                               END),
+                OI_OpenAmountSource=(CASE
+                                         WHEN v_group.count_currencies != 1                   THEN NULL -- shall not happen
+                                         WHEN fa.fact_acct_id = v_group.openitem_fact_acct_id THEN (fa.amtsourcedr - fa.amtsourcecr) + v_group.oi_cleared_amountSource
+                                     END)
             WHERE fa.fact_acct_id = ANY (v_group.fact_acct_ids);
             GET DIAGNOSTICS v_count = ROW_COUNT;
             v_factAcctUpdatedCount := v_factAcctUpdatedCount + v_count;
