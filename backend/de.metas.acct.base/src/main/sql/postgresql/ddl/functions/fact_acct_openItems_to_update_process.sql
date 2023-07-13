@@ -40,7 +40,7 @@ BEGIN
                     SELECT fa.openitemkey,
                            fa.c_acctschema_id,
                            fa.postingtype,
-                           SUM(fa.amtacctdr - fa.amtacctcr)                                                   AS balance,
+                           SUM(fa.amtsourcedr - fa.amtsourcecr)                                               AS balance_source,
                            MIN(CASE WHEN fa.oi_trxtype = 'O' THEN fa.fact_acct_id END)                        AS openitem_fact_acct_id,
                            SUM(CASE WHEN fa.oi_trxtype = 'C' THEN fa.amtacctdr - fa.amtacctcr ELSE 0 END)     AS oi_cleared_amountAcct,
                            SUM(CASE WHEN fa.oi_trxtype = 'C' THEN fa.amtsourcedr - fa.amtsourcecr ELSE 0 END) AS oi_cleared_amountSource,
@@ -50,11 +50,12 @@ BEGIN
                              INNER JOIN fact_acct fa ON (fa.openitemkey = sel.openitemkey
                         AND fa.c_acctschema_id = sel.c_acctschema_id
                         AND fa.postingtype = sel.postingtype)
+                    WHERE fa.docstatus IN ('CO', 'CL')
                     GROUP BY fa.openitemkey, fa.c_acctschema_id, fa.postingtype
                              -- , fa.account_id -- we shall not group by account, think about conversion gain/loss case where we clear the open item using the gain/loss account too
                     HAVING COUNT(1) > 0)
         LOOP
-            v_isOpenItemsReconciled := (CASE WHEN v_group.balance = 0 THEN 'Y' ELSE 'N' END);
+            v_isOpenItemsReconciled := (CASE WHEN v_group.balance_source = 0 THEN 'Y' ELSE 'N' END);
             -- RAISE NOTICE 'group=%, v_isOpenItemsReconciled=%', v_group, v_isOpenItemsReconciled;
 
             UPDATE fact_acct fa
