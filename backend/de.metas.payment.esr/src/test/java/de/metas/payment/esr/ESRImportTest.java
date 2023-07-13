@@ -51,6 +51,7 @@ import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
@@ -1562,7 +1563,11 @@ public class ESRImportTest extends ESRTestBase
 		save(inv);
 
 		// allocation for invoice
+		final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
 		final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);
+		allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
 		allocAmt.setAmount(new BigDecimal(25));
 		allocAmt.setC_Invoice_ID(inv.getC_Invoice_ID());
 		save(allocAmt);

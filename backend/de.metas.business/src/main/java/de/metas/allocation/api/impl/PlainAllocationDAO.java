@@ -37,6 +37,7 @@ import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AllocationHdr;
@@ -76,6 +77,10 @@ public class PlainAllocationDAO extends AllocationDAO
 			}
 
 			final I_C_AllocationHdr ah = line.getC_AllocationHdr();
+			if (ah == null)
+			{
+				throw new AdempiereException("No C_AllocationHdr_ID is set for " + line);
+			}
 			final CurrencyId allocationCurrencyId = CurrencyId.ofRepoId(ah.getC_Currency_ID());
 			Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId)
 					.negateIf(docBaseType.isAP());
