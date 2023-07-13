@@ -1,13 +1,11 @@
 package de.metas.acct.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -18,15 +16,13 @@ import org.compiere.model.POInfo;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Component
-public class POReference
+public class POReference extends AbstractModelInterceptor
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(POReference.class);
-	private final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final AcctDocRegistry acctDocRegistry;
 
@@ -34,59 +30,34 @@ public class POReference
 
 	public POReference(final AcctDocRegistry acctDocRegistry) {this.acctDocRegistry = acctDocRegistry;}
 
-	@PostConstruct
-	public void postConstruct()
+	@Override
+	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		final LinkedHashSet<String> registeredOnTableNames = new LinkedHashSet<>();
-		for (final String tableName : acctDocRegistry.getDocTableNames())
-		{
-			if (POInfo.getPOInfoNotNull(tableName).hasColumnName(COLUMNNAME_POReference))
-			{
-				modelInterceptorRegistry.addModelInterceptor(new POReferenceInterceptor(factAcctDAO, tableName));
-				registeredOnTableNames.add(tableName);
-			}
-		}
-
-		logger.info("Watching POReference changes on {}", registeredOnTableNames);
+		final Set<String> tableNamesToWatch = getTableNamesToWatch();
+		tableNamesToWatch.forEach(tableName -> engine.addModelChange(tableName, this));
+		logger.info("Watching POReference changes on {}", tableNamesToWatch);
 	}
 
-	//
-	//
-	//
-
-	@ToString(of = "tableName")
-	private static class POReferenceInterceptor extends AbstractModelInterceptor
+	private Set<String> getTableNamesToWatch()
 	{
-		private final IFactAcctDAO factAcctDAO;
-		private final String tableName;
+		return acctDocRegistry.getDocTableNames()
+				.stream()
+				.filter(tableName -> POInfo.getPOInfoNotNull(tableName).hasColumnName(COLUMNNAME_POReference))
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
-		private POReferenceInterceptor(
-				@NonNull final IFactAcctDAO factAcctDAO,
-				@NonNull final String tableName)
+	@Override
+	public void onModelChange(final Object model, final ModelChangeType changeType)
+	{
+		if (changeType.isAfter() && changeType.isChange()
+				&& InterfaceWrapperHelper.isValueChanged(model, COLUMNNAME_POReference))
 		{
-			this.factAcctDAO = factAcctDAO;
-			this.tableName = tableName;
-		}
+			final TableRecordReference recordRef = TableRecordReference.of(model);
+			final String poReference = InterfaceWrapperHelper.getValueOptional(model, COLUMNNAME_POReference)
+					.map(Object::toString)
+					.orElse(null);
 
-		@Override
-		protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
-		{
-			engine.addModelChange(tableName, this);
-		}
-
-		@Override
-		public void onModelChange(final Object model, final ModelChangeType changeType)
-		{
-			if (changeType.isAfter() && changeType.isChange()
-					&& InterfaceWrapperHelper.isValueChanged(model, COLUMNNAME_POReference))
-			{
-				final TableRecordReference recordRef = TableRecordReference.of(model);
-				final String poReference = InterfaceWrapperHelper.getValueOptional(model, COLUMNNAME_POReference)
-						.map(Object::toString)
-						.orElse(null);
-
-				factAcctDAO.updatePOReference(recordRef, poReference);
-			}
+			factAcctDAO.updatePOReference(recordRef, poReference);
 		}
 	}
 }
