@@ -1,5 +1,6 @@
 package de.metas.acct.open_items.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
@@ -23,7 +24,8 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
-class BPartnerOIHandler implements FAOpenItemsHandler
+@VisibleForTesting
+public class BPartnerOIHandler implements FAOpenItemsHandler
 {
 	private static final @NonNull AccountConceptualName V_Liability = BPartnerVendorAccountType.V_Liability.getAccountConceptualName();
 	private static final @NonNull AccountConceptualName V_Prepayment = BPartnerVendorAccountType.V_Prepayment.getAccountConceptualName();

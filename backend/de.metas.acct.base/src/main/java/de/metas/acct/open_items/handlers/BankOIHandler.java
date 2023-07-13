@@ -1,5 +1,6 @@
 package de.metas.acct.open_items.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.FactAcctQuery;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
+@VisibleForTesting
 public class BankOIHandler implements FAOpenItemsHandler
 {
 	private static final AccountConceptualName B_PaymentSelect_Acct = BankAccountAcctType.B_PaymentSelect_Acct.getAccountConceptualName();

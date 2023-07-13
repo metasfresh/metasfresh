@@ -1,5 +1,6 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
@@ -22,6 +23,7 @@ import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
+import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.sectionCode.SectionCodeId;
@@ -54,6 +56,8 @@ class OIViewDataService
 	private final LookupDataSource sectionCodeLookup;
 	private final SAPGLJournalService glJournalService;
 	private final ElementValueService elementValueService;
+
+	private static final ImmutableSet<DocStatus> ELIGIBLE_DOCSTATUSES = ImmutableSet.of(DocStatus.Completed, DocStatus.Closed);
 
 	@Builder
 	private OIViewDataService(
@@ -104,8 +108,6 @@ class OIViewDataService
 
 	Stream<OIRow> streamRows(@NonNull final OIViewDataQuery query)
 	{
-		final AcctSchema acctSchema = query.getAcctSchema();
-		final CurrencyCode acctCurrencyCode = moneyService.getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
 		final FutureClearingAmountMap futureClearingAmounts = query.getFutureClearingAmounts();
 
 		final FactAcctQuery factAcctQuery = toFactAcctQuery(query);
@@ -115,30 +117,45 @@ class OIViewDataService
 		}
 
 		return factAcctBL.stream(factAcctQuery)
-				.map(record -> toRow(record, acctCurrencyCode, futureClearingAmounts))
+				.map(record -> toRow(record, futureClearingAmounts))
 				.filter(Objects::nonNull);
 	}
 
 	@Nullable
 	private FactAcctQuery toFactAcctQuery(@NonNull final OIViewDataQuery query)
 	{
+		final DocumentFilter filter = query.getFilter();
+
 		final FactAcctQuery.FactAcctQueryBuilder factAcctQueryBuilder = FactAcctQuery.builder()
 				.includeFactAcctIds(query.getIncludeFactAcctIds())
 				.acctSchemaId(query.getAcctSchemaId())
 				.postingType(query.getPostingType())
+				.currencyId(query.getCurrencyId())
 				.isOpenItem(true)
 				.isOpenItemReconciled(false)
 				.openItemTrxType(FAOpenItemTrxType.OPEN_ITEM);
 
 		//
 		// Open Item Account(s)
-		final DocumentFilter filter = query.getFilter();
-		final Set<ElementValueId> openItemAccountIds = getOpenItemElementValueIds(filter);
-		if (openItemAccountIds.isEmpty())
 		{
-			return null;
+			final Set<ElementValueId> openItemAccountIds = getOpenItemElementValueIds(filter);
+			if (openItemAccountIds.isEmpty())
+			{
+				return null;
+			}
+			factAcctQueryBuilder.accountIds(openItemAccountIds);
 		}
-		factAcctQueryBuilder.accountIds(openItemAccountIds);
+
+		//
+		// DocStatus
+		{
+			final Set<DocStatus> docStatuses = getEligibleDocStatuses(filter);
+			if (docStatuses.isEmpty())
+			{
+				return null;
+			}
+			factAcctQueryBuilder.docStatuses(docStatuses);
+		}
 
 		//
 		// Other user filters
@@ -154,7 +171,6 @@ class OIViewDataService
 					.documentNoLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_DocumentNo, null))
 					.descriptionLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_Description, null))
 					.poReferenceLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_POReference, null))
-					.docStatus(filter.getParameterValueAsRefListOrNull(OIViewFilterHelper.PARAM_DocStatus, DocStatus::ofNullableCodeOrUnknown))
 					.userElementString1Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString1, null))
 					.userElementString2Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString2, null))
 					.userElementString3Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString3, null))
@@ -166,6 +182,26 @@ class OIViewDataService
 		}
 
 		return factAcctQueryBuilder.build();
+	}
+
+	private static Set<DocStatus> getEligibleDocStatuses(@Nullable final DocumentFilter filter)
+	{
+		final DocStatus docStatus = filter != null
+				? filter.getParameterValueAsRefListOrNull(OIViewFilterHelper.PARAM_DocStatus, DocStatus::ofNullableCode)
+				: null;
+
+		if (docStatus == null)
+		{
+			return ELIGIBLE_DOCSTATUSES;
+		}
+		else if (ELIGIBLE_DOCSTATUSES.contains(docStatus))
+		{
+			return ImmutableSet.of(docStatus);
+		}
+		else
+		{
+			return ImmutableSet.of();
+		}
 	}
 
 	private Set<ElementValueId> getOpenItemElementValueIds(@Nullable final DocumentFilter filter)
@@ -193,29 +229,27 @@ class OIViewDataService
 	}
 
 	@Nullable
-	private OIRow toRow(
+	@VisibleForTesting
+	OIRow toRow(
 			@NonNull final I_Fact_Acct record,
-			@NonNull final CurrencyCode acctCurrencyCode,
 			@NonNull final FutureClearingAmountMap futureClearingAmounts)
 	{
 		final FAOpenItemKey openItemKey = FAOpenItemKey.optionalOfString(record.getOpenItemKey())
 				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
 
-		final Amount amtAcctDr = Amount.of(record.getAmtAcctDr(), acctCurrencyCode);
-		final Amount amtAcctCr = Amount.of(record.getAmtAcctCr(), acctCurrencyCode);
-		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtAcctDr.toBigDecimal(), amtAcctCr.toBigDecimal());
-		final Amount acctBalance = amtAcctDr.subtract(amtAcctCr);
+		final CurrencyCode sourceCurrency = moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()));
+		final Amount amtSourceDr = Amount.of(record.getAmtSourceDr(), sourceCurrency);
+		final Amount amtSourceCr = Amount.of(record.getAmtSourceCr(), sourceCurrency);
+		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtSourceDr.toBigDecimal(), amtSourceCr.toBigDecimal());
+		final Amount balanceSrc = amtSourceDr.subtract(amtSourceCr);
 
-		Amount allocatedAmt = acctBalance.subtract(Amount.of(record.getOI_OpenAmount(), acctCurrencyCode));
-		final Amount futureClearingAmount = futureClearingAmounts.getAmount(openItemKey).orElse(null);
+		Amount openAmtSrc = Amount.of(record.getOI_OpenAmountSource(), sourceCurrency);
+		final Amount futureClearingAmount = futureClearingAmounts.getAmountSrc(openItemKey).orElse(null);
 		if (futureClearingAmount != null && !futureClearingAmount.isZero())
 		{
-			allocatedAmt = allocatedAmt.add(futureClearingAmount);
+			openAmtSrc = openAmtSrc.add(futureClearingAmount);
 		}
-
-		final Amount openAmount = acctBalance.add(allocatedAmt);
-
-		if (openAmount.isZero())
+		if (openAmtSrc.isZero())
 		{
 			return null;
 		}
@@ -231,8 +265,8 @@ class OIViewDataService
 				.postingSign(postingSign)
 				.account(account)
 				.accountCaption(getAccountCaption(account.getAccountId()))
-				.amount(acctBalance.negateIf(postingSign.isCredit()))
-				.openAmount(openAmount.negateIf(postingSign.isCredit()))
+				.amount(balanceSrc.negateIf(postingSign.isCredit()))
+				.openAmount(openAmtSrc.negateIf(postingSign.isCredit()))
 				.dateAcct(record.getDateAcct().toInstant())
 				.bpartnerId(bpartnerId)
 				.bpartnerCaption(getBPartnerCaption(bpartnerId))
