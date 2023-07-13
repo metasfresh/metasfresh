@@ -539,11 +539,10 @@ public final class FactLine extends X_Fact_Acct
 
 		// Document infos
 		setDocumentNo(m_doc.getDocumentNo());
+		setPOReference(m_doc.getPOReference());
 		setC_DocType_ID(m_doc.getC_DocType_ID());
 		setDocBaseType(m_doc.getDocBaseType().getCode());
-
-		final DocStatus docStatus = m_doc.getDocStatus();
-		setDocStatus(docStatus != null ? docStatus.getCode() : null);
+		setDocStatus(DocStatus.toCodeOrNull(m_doc.getDocStatus()));
 
 		// Description
 		final StringBuilder description = new StringBuilder(m_doc.getDocumentNo());
