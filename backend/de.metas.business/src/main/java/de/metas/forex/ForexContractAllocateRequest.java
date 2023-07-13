@@ -3,6 +3,7 @@ package de.metas.forex;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -14,6 +15,7 @@ public class ForexContractAllocateRequest
 	@NonNull ForexContractId forexContractId;
 	@NonNull OrgId orgId;
 	@NonNull OrderId orderId;
+	@NonNull SectionCodeId contractSectionCodeId;
 
 	@NonNull Money orderGrandTotal;
 	@NonNull Money amountToAllocate;
@@ -23,6 +25,7 @@ public class ForexContractAllocateRequest
 			@NonNull final ForexContractId forexContractId,
 			@NonNull final OrgId orgId,
 			@NonNull final OrderId orderId,
+			@NonNull final SectionCodeId contractSectionCodeId,
 			@NonNull final Money orderGrandTotal,
 			@NonNull final Money amountToAllocate)
 	{
@@ -36,6 +39,7 @@ public class ForexContractAllocateRequest
 		this.forexContractId = forexContractId;
 		this.orgId = orgId;
 		this.orderId = orderId;
+		this.contractSectionCodeId = contractSectionCodeId;
 		this.orderGrandTotal = orderGrandTotal;
 		this.amountToAllocate = amountToAllocate;
 	}

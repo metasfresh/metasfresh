@@ -12,6 +12,7 @@ import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -29,9 +30,12 @@ public class ForexContractService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final ForexContractRepository forexContractRepository;
-	@NonNull private final ForexContractAllocationRepository forexContractAllocationRepository;
-	@NonNull private final MoneyService moneyService;
+	@NonNull
+	private final ForexContractRepository forexContractRepository;
+	@NonNull
+	private final ForexContractAllocationRepository forexContractAllocationRepository;
+	@NonNull
+	private final MoneyService moneyService;
 
 	public ForexContractService(
 			final @NonNull ForexContractRepository forexContractRepository,
@@ -90,15 +94,16 @@ public class ForexContractService
 		forexContractRepository.updateById(
 				forexContractId,
 				contract -> {
-					contract.assertCanAllocate(amountToAllocate);
+					contract.assertCanAllocate(amountToAllocate, SectionCodeId.ofRepoIdOrNull(order.getM_SectionCode_ID()));
 
 					forexContractAllocationRepository.create(ForexContractAllocateRequest.builder()
-							.forexContractId(contract.getId())
-							.orgId(contract.getOrgId())
-							.orderId(orderId)
-							.orderGrandTotal(orderGrandTotal)
-							.amountToAllocate(amountToAllocate)
-							.build());
+																	 .forexContractId(contract.getId())
+																	 .orgId(contract.getOrgId())
+																	 .orderId(orderId)
+																	 .orderGrandTotal(orderGrandTotal)
+																	 .amountToAllocate(amountToAllocate)
+																	 .contractSectionCodeId(contract.getSectionCodeId())
+																	 .build());
 
 					updateAmountsNoSave(contract);
 				});
@@ -172,6 +177,7 @@ public class ForexContractService
 						.currencyToId(baseCurrencyId)
 						.onlyWithOpenAmount(true)
 						.displayNameSearchTerm(displayNameSearchTerm)
+						.sectionCodeId(SectionCodeId.ofRepoIdOrNull(order.getM_SectionCode_ID()))
 						.build());
 	}
 }

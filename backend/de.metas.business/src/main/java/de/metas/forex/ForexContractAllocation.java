@@ -1,8 +1,8 @@
 package de.metas.forex;
 
-import de.metas.currency.Amount;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,4 +15,5 @@ public class ForexContractAllocation
 	@NonNull ForexContractId contractId;
 	@NonNull OrderId orderId;
 	@NonNull Money amount;
+	@NonNull SectionCodeId contractSectionCodeId;
 }

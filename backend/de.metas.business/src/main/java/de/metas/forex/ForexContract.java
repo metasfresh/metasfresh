@@ -5,6 +5,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -13,6 +14,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -21,6 +23,7 @@ import java.time.Instant;
 public class ForexContract
 {
 	@Getter @NonNull private final ForexContractId id;
+	@Getter @NonNull private final SectionCodeId sectionCodeId;
 	@Getter @NonNull private final String documentNo;
 	@Getter @NonNull private final Instant created;
 	@Getter @NonNull private final UserId createdBy;
@@ -42,6 +45,7 @@ public class ForexContract
 	@Builder
 	private ForexContract(
 			final @NonNull ForexContractId id,
+			final @NonNull SectionCodeId sectionCodeId,
 			final @NonNull String documentNo,
 			final @NonNull Instant created,
 			final @NonNull UserId createdBy,
@@ -78,6 +82,7 @@ public class ForexContract
 		}
 
 		this.id = id;
+		this.sectionCodeId = sectionCodeId;
 		this.documentNo = documentNo;
 		this.created = created;
 		this.createdBy = createdBy;
@@ -109,12 +114,14 @@ public class ForexContract
 		this.openAmount = this.amount.subtract(this.allocatedAmount).toZeroIfNegative();
 	}
 
-	public void assertCanAllocate(@NonNull final Money amountToAllocate)
+	public void assertCanAllocate(@NonNull final Money amountToAllocate, @Nullable final SectionCodeId documentSectionCodeId)
 	{
 		if (!docStatus.isCompleted())
 		{
 			throw new AdempiereException("Cannot allocate to a contract which is not completed");
 		}
+
+		validateSectionCode(documentSectionCodeId);
 
 		if (amountToAllocate.signum() <= 0)
 		{
@@ -171,4 +178,18 @@ public class ForexContract
 		}
 	}
 
+	public void validateSectionCode(@Nullable final SectionCodeId documentSectionCodeId)
+	{
+		if (documentSectionCodeId == null)
+		{
+			return;
+		}
+
+		if (!this.sectionCodeId.equals(documentSectionCodeId))
+		{
+			throw new AdempiereException("ForexContract.SectionCode ({0}) shall match the Document.SectionCode ({1})",
+										 sectionCodeId,
+										 documentSectionCodeId);
+		}
+	}
 }

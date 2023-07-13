@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -29,6 +30,7 @@ public class ForexContractAllocationRepository
 		record.setC_Currency_ID(request.getAmountToAllocate().getCurrencyId().getRepoId());
 		record.setAllocatedAmt(request.getAmountToAllocate().toBigDecimal());
 		record.setGrandTotal(request.getOrderGrandTotal().toBigDecimal());
+		record.setM_SectionCode_ID(request.getContractSectionCodeId().getRepoId());
 		InterfaceWrapperHelper.save(record);
 
 		return fromRecord(record);
@@ -41,6 +43,7 @@ public class ForexContractAllocationRepository
 				.contractId(ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.amount(extractAllocatedAmt(record))
+				.contractSectionCodeId(SectionCodeId.ofRepoId(record.getM_SectionCode_ID()))
 				.build();
 	}
 
