@@ -177,22 +177,9 @@ public class OIViewData implements IEditableRowsData<OIRow>
 		{
 			event.assertReplaceOperation();
 
-			switch (event.getPath())
+			if (OIRow.FIELD_Selected.equals(event.getPath()))
 			{
-				case OIRow.FIELD_Selected:
-				{
-					changedRowBuilder.selected(event.getValueAsBoolean(false));
-					break;
-				}
-				case OIRow.FIELD_OpenAmountOverrde:
-				{
-					final Amount openAmountOverride = event.getValueAsBigDecimalOptional()
-							.filter(value -> value.signum() != 0)
-							.map(value -> Amount.of(value, row.getAcctCurrencyCode()))
-							.orElse(null);
-					changedRowBuilder.openAmountOverride(openAmountOverride);
-					break;
-				}
+				changedRowBuilder.selected(event.getValueAsBoolean(false));
 			}
 		}
 

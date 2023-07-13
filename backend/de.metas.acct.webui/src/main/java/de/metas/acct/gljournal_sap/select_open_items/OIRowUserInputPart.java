@@ -6,9 +6,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @Value
 @Builder
 class OIRowUserInputPart
@@ -16,5 +13,4 @@ class OIRowUserInputPart
 	@NonNull DocumentId rowId;
 	@NonNull FactAcctId factAcctId;
 	boolean selected;
-	@Nullable BigDecimal amountOverride;
 }
