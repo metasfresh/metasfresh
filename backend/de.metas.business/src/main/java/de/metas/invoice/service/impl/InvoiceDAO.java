@@ -55,7 +55,7 @@ import java.util.List;
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
 	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public I_C_Invoice createInvoice(String trxName)
 	{
@@ -170,9 +170,14 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		record.setFEC_CurrencyRate(currencyRate);
 	}
 
+	/**
+	 * Get Invoice Line referencing InOut Line
+	 *
+	 * @param inOutLine inout line
+	 * @return (first) invoice line
+	 */
 	@Nullable
-	@Override
-	public I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
+	public static I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
 	{
 		if (inOutLine == null)
 		{

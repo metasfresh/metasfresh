@@ -142,11 +142,4 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 	{
 		throw new UnsupportedOperationException();
 	}
-
-	@Nullable
-	@Override
-	public I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
-	{
-		throw new UnsupportedOperationException();
-	}
 }
