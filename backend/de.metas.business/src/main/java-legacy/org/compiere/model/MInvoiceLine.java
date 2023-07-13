@@ -28,7 +28,6 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -46,7 +45,6 @@ import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -85,17 +83,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 *
 	 */
 	private static final long serialVersionUID = 4264055057724565805L;
-
-	/**
-	 * Get Invoice Line referencing InOut Line
-	 *
-	 * @param sLine shipment line
-	 * @return (first) invoice line
-	 */
-	public static MInvoiceLine getOfInOutLine(MInOutLine sLine)
-	{
-		return LegacyAdapters.convertToPO(InvoiceDAO.getOfInOutLine(sLine));
-	}    // getOfInOutLine
 
 	/**
 	 * Static Logger

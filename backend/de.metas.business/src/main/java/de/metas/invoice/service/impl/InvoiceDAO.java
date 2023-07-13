@@ -22,19 +22,21 @@ package de.metas.invoice.service.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
@@ -53,6 +55,7 @@ import java.util.List;
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
 	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public I_C_Invoice createInvoice(String trxName)
 	{
@@ -168,61 +171,27 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 	}
 
 	@Nullable
-	public static I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
+	public I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
 	{
 		if (inOutLine == null)
 		{
 			return null;
 		}
 
-		final MInOutLine sLine = LegacyAdapters.convertToPO(inOutLine);
+		final ImmutableList<I_C_InvoiceLine> invoiceLineList = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLine.getM_InOutLine_ID())
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, inOutLine.getC_OrderLine_ID())
+				.setJoinOr()
+				.create()
+				.listImmutable(I_C_InvoiceLine.class);
 
-		MInvoiceLine retValue = null;
-		final String inoutLineSQL = "SELECT * FROM C_InvoiceLine WHERE M_InOutLine_ID=?";
-		final String orderLineSQL = "SELECT * FROM C_InvoiceLine WHERE C_OrderLine_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		if (invoiceLineList.size() > 1)
 		{
-			pstmt = DB.prepareStatement(inoutLineSQL, sLine.get_TrxName());
-			pstmt.setInt(1, sLine.getM_InOutLine_ID());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				retValue = new MInvoiceLine(sLine.getCtx(), rs, sLine.get_TrxName());
-				if (rs.next())
-				{
-					// metas-tsa: If there were more then one invoice line found, it's better to return null then to return randomly one of them.
-					logger.warn("More than one C_InvoiceLine of M_InOutLine_ID=" + sLine.getM_InOutLine_ID() + ". Returning null.");
-					return null;
-				}
-			}
-			else
-			{
-				pstmt = DB.prepareStatement(orderLineSQL, sLine.get_TrxName());
-				pstmt.setInt(1, sLine.getC_OrderLine_ID());
-				rs = pstmt.executeQuery();
-				if (rs.next())
-				{
-					retValue = new MInvoiceLine(sLine.getCtx(), rs, sLine.get_TrxName());
-					if (rs.next())
-					{
-						// metas-tsa: If there were more then one invoice line found, it's better to return null then to return randomly one of them.
-						logger.warn("More than one C_InvoiceLine of C_OrderLine_ID=" + sLine.getC_OrderLine() + ". Returning null.");
-						return null;
-					}
-				}
-			}
-		}
-		catch (final Exception e)
-		{
-			logger.error(inoutLineSQL, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
+			logger.warn("More than one C_InvoiceLine of M_InOutLine_ID=" + inOutLine.getM_InOutLine_ID() +
+								" or of C_OrderLine_ID=" + inOutLine.getC_OrderLine_ID() + ". Returning null.");
+			return null;
 		}
 
-		return InterfaceWrapperHelper.create(retValue, I_C_InvoiceLine.class);
+		return invoiceLineList.get(0);
 	}
 }

@@ -288,6 +288,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -2721,16 +2722,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private void createMatchInvForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
-		final I_C_InvoiceLine invoiceLine = InvoiceDAO.getOfInOutLine(inOutLine);
-		if (invoiceLine != null)
+		final I_C_InvoiceLine invoiceLine = invoiceDAO.getOfInOutLine(inOutLine);
+
+		if (invoiceLine == null)
 		{
-			final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceLine.getC_Invoice_ID(), I_C_Invoice.class);
-			matchInvoiceServiceHolder.get()
-					.newMatchInvBuilder(MatchInvType.Material)
-					.invoiceLine(invoiceLine)
-					.inoutLine(inOutLine)
-					.dateTrx(invoice.getDateInvoiced())
-					.build();
+			return;
 		}
+
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+		matchInvoiceServiceHolder.get()
+				.newMatchInvBuilder(MatchInvType.Material)
+				.invoiceLine(invoiceLine)
+				.inoutLine(inOutLine)
+				.dateTrx(invoice.getDateInvoiced())
+				.build();
 	}
 }
