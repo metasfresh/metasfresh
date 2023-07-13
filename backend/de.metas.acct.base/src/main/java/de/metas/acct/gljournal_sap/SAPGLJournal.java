@@ -147,7 +147,13 @@ public class SAPGLJournal
 
 	private SAPGLJournalLine createLine(final @NonNull SAPGLJournalLineCreateRequest request, final @NonNull SAPGLJournalCurrencyConverter currencyConverter)
 	{
-		final Money amount = Money.of(request.getAmount(), conversionCtx.getCurrencyId());
+		final CurrencyId currencyId = conversionCtx.getCurrencyId();
+		if (request.getExpectedCurrencyId() != null && !CurrencyId.equals(request.getExpectedCurrencyId(), currencyId))
+		{
+			throw new AdempiereException("Expected GL Journal to have currency " + request.getExpectedCurrencyId() + " but it has " + currencyId);
+		}
+
+		final Money amount = Money.of(request.getAmount(), currencyId);
 		final Money amountAcct = currencyConverter.convertToAcctCurrency(amount, conversionCtx);
 
 		return SAPGLJournalLine.builder()

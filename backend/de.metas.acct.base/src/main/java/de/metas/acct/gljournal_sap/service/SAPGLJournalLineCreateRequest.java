@@ -6,6 +6,7 @@ import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
+import de.metas.money.CurrencyId;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -22,6 +23,7 @@ public class SAPGLJournalLineCreateRequest
 	@NonNull PostingSign postingSign;
 	@NonNull Account account;
 	@NonNull BigDecimal amount;
+	@Nullable CurrencyId expectedCurrencyId;
 	@Nullable TaxId taxId;
 	@Nullable String description;
 	@Nullable BPartnerId bpartnerId;
