@@ -5,9 +5,7 @@ import de.metas.acct.api.FactAcctId;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.document.dimension.Dimension;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.IViewRow;
@@ -69,10 +67,6 @@ class OIRow implements IViewRow
 	@ViewColumn(seqNo = 120, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsSelected", fieldName = FIELD_Selected, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter private final boolean selected;
 
-	static final String FIELD_OpenAmountOverrde = "openAmountOverride";
-	@ViewColumn(seqNo = 130, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmtOverride", fieldName = FIELD_OpenAmountOverrde, editor = ViewEditorRenderMode.ALWAYS)
-	@Nullable private final Amount openAmountOverride;
-
 	private final ViewRowFieldNameAndJsonValuesHolder<OIRow> values;
 
 	@NonNull private final DocumentId rowId;
@@ -98,7 +92,6 @@ class OIRow implements IViewRow
 			@Nullable final String documentNo,
 			@Nullable final String description,
 			@Nullable final String userElementString1, final boolean selected,
-			@Nullable final Amount openAmountOverride,
 			@NonNull final FAOpenItemKey openItemKey,
 			@NonNull final Dimension dimension)
 	{
@@ -115,7 +108,6 @@ class OIRow implements IViewRow
 		this.description = description;
 		this.userElementString1 = userElementString1;
 		this.selected = selected;
-		this.openAmountOverride = openAmountOverride;
 
 		this.values = ViewRowFieldNameAndJsonValuesHolder.newInstance(OIRow.class);
 		this.rowId = DocumentId.of(factAcctId);
@@ -150,8 +142,8 @@ class OIRow implements IViewRow
 
 	public OIRow withUserInputCleared()
 	{
-		return this.selected || this.openAmountOverride != null
-				? toBuilder().selected(false).openAmountOverride(null).build()
+		return this.selected
+				? toBuilder().selected(false).build()
 				: this;
 	}
 
@@ -160,12 +152,10 @@ class OIRow implements IViewRow
 	{
 		if (selected)
 		{
-			final boolean isAmountOverrideNonZero = openAmountOverride != null && !openAmountOverride.isZero();
 			return OIRowUserInputPart.builder()
 					.rowId(rowId)
 					.factAcctId(factAcctId)
 					.selected(selected)
-					.amountOverride(isAmountOverrideNonZero ? openAmountOverride.toBigDecimal() : null)
 					.build();
 		}
 		else
@@ -177,14 +167,11 @@ class OIRow implements IViewRow
 	public OIRow withUserInput(@Nullable final OIRowUserInputPart userInput)
 	{
 		final boolean selectedNew = userInput != null && userInput.isSelected();
-		final Amount amountOverride = userInput != null && userInput.getAmountOverride() != null ? Amount.of(userInput.getAmountOverride(), getAcctCurrencyCode()) : null;
 
-		return this.selected != selectedNew || !Amount.equals(this.openAmountOverride, amountOverride)
-				? toBuilder().selected(selectedNew).openAmountOverride(amountOverride).build()
+		return this.selected != selectedNew
+				? toBuilder().selected(selectedNew).build()
 				: this;
 	}
 
-	public CurrencyCode getAcctCurrencyCode() {return amount.getCurrencyCode();}
-
-	public Amount getOpenAmountEffective() {return CoalesceUtil.coalesceNotNull(openAmountOverride, openAmount);}
+	public Amount getOpenAmountEffective() {return openAmount;}
 }
