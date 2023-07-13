@@ -40,6 +40,7 @@ public class Generic_OIHandler implements FAOpenItemsHandler
 		{
 
 			final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
+					request.getAccountConceptualName(),
 					request.getTableName(),
 					request.getRecordId(),
 					request.getLineId(),

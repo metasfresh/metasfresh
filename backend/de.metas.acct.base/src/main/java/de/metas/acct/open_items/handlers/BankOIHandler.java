@@ -74,7 +74,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 			final PaymentAllocationLineId paymentAllocationLineId = PaymentAllocationLineId.ofRepoId(request.getRecordId(), request.getLineId());
 
 			return allocationBL.getPaymentId(paymentAllocationLineId)
-					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.payment(paymentId)));
+					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.payment(paymentId, accountConceptualName)));
 		}
 		else
 		{
@@ -93,7 +93,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 		}
 		else if (accountConceptualName.isAnyOf(B_PaymentSelect_Acct, B_UnallocatedCash_Acct))
 		{
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.payment(paymentId)));
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.payment(paymentId, accountConceptualName)));
 		}
 		else if (accountConceptualName.isAnyOf(B_InTransit_Acct))
 		{
@@ -113,11 +113,11 @@ public class BankOIHandler implements FAOpenItemsHandler
 		{
 			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
 			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
-			return FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+			return FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId, B_InTransit_Acct);
 		}
 		else
 		{
-			return FAOpenItemKey.payment(PaymentId.ofRepoId(payment.getC_Payment_ID()));
+			return FAOpenItemKey.payment(PaymentId.ofRepoId(payment.getC_Payment_ID()), B_InTransit_Acct);
 		}
 	}
 
@@ -134,7 +134,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 			final BankStatementId bankStatementId = BankStatementId.ofRepoId(request.getRecordId());
 			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(request.getLineId());
 			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(request.getSubLineId());
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId)));
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId, accountConceptualName)));
 		}
 		else
 		{
