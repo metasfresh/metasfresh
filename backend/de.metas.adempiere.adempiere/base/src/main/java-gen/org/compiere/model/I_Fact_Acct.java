@@ -1150,6 +1150,7 @@ public interface I_Fact_Acct
 
 	/**
 	 * Set OI Open Amount.
+	 * OI Open amount in accounting currency
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -1159,6 +1160,7 @@ public interface I_Fact_Acct
 
 	/**
 	 * Get OI Open Amount.
+	 * OI Open amount in accounting currency
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -1168,6 +1170,29 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_OpenAmount = new ModelColumn<>(I_Fact_Acct.class, "OI_OpenAmount", null);
 	String COLUMNNAME_OI_OpenAmount = "OI_OpenAmount";
+
+	/**
+	 * Set OI Open Amount (source).
+	 * OI Open amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_OpenAmountSource (@Nullable BigDecimal OI_OpenAmountSource);
+
+	/**
+	 * Get OI Open Amount (source).
+	 * OI Open amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOI_OpenAmountSource();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_OpenAmountSource = new ModelColumn<>(I_Fact_Acct.class, "OI_OpenAmountSource", null);
+	String COLUMNNAME_OI_OpenAmountSource = "OI_OpenAmountSource";
 
 	/**
 	 * Set Open Item Transaction Type.

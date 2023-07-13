@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -890710614L;
+	private static final long serialVersionUID = 1202609548L;
 
     /** Standard Constructor */
     public X_Fact_Acct (final Properties ctx, final int Fact_Acct_ID, @Nullable final String trxName)
@@ -980,6 +980,19 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public BigDecimal getOI_OpenAmount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setOI_OpenAmountSource (final @Nullable BigDecimal OI_OpenAmountSource)
+	{
+		set_Value (COLUMNNAME_OI_OpenAmountSource, OI_OpenAmountSource);
+	}
+
+	@Override
+	public BigDecimal getOI_OpenAmountSource() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OI_OpenAmountSource);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
