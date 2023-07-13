@@ -6,7 +6,6 @@ import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.document.dimension.Dimension;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.IViewRow;
@@ -173,8 +172,6 @@ class OIRow implements IViewRow
 				? toBuilder().selected(selectedNew).build()
 				: this;
 	}
-
-	public CurrencyCode getAcctCurrencyCode() {return amount.getCurrencyCode();}
 
 	public Amount getOpenAmountEffective() {return openAmount;}
 }
