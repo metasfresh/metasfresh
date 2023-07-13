@@ -171,6 +171,7 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 	}
 
 	@Nullable
+	@Override
 	public I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
 	{
 		if (inOutLine == null)
