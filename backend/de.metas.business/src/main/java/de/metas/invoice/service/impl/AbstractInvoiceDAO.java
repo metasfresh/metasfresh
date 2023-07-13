@@ -25,6 +25,7 @@ import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -52,6 +53,7 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -81,7 +83,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
-
+	public static final Logger logger = LogManager.getLogger(AbstractInvoiceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
@@ -660,5 +662,36 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.stream()
 				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	public I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
+	{
+		if (inOutLine == null)
+		{
+			return null;
+		}
+
+		final ImmutableList<I_C_InvoiceLine> invoiceLineList = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLine.getM_InOutLine_ID())
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, inOutLine.getC_OrderLine_ID())
+				.setJoinOr()
+				.create()
+				.listImmutable(I_C_InvoiceLine.class);
+
+		if (invoiceLineList.size() > 1)
+		{
+			logger.warn("More than one C_InvoiceLine of M_InOutLine_ID=" + inOutLine.getM_InOutLine_ID() +
+								" or of C_OrderLine_ID=" + inOutLine.getC_OrderLine_ID() + ". Returning null.");
+			return null;
+		}
+
+		if (invoiceLineList.isEmpty())
+		{
+			logger.warn("None C_InvoiceLine found. Returning null.");
+			return null;
+		}
+
+		return invoiceLineList.get(0);
 	}
 }

@@ -2722,7 +2722,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private void createMatchInvForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
-		final I_C_InvoiceLine invoiceLine = InvoiceDAO.getOfInOutLine(inOutLine);
+		final I_C_InvoiceLine invoiceLine = invoiceDAO.getOfInOutLine(inOutLine);
 
 		if (invoiceLine == null)
 		{

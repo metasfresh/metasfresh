@@ -22,21 +22,17 @@ package de.metas.invoice.service.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
@@ -55,8 +51,6 @@ import java.util.List;
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
 	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
-	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	public I_C_Invoice createInvoice(String trxName)
 	{
 		return InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, trxName);
@@ -168,36 +162,5 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		record.setFEC_From_Currency_ID(CurrencyId.toRepoId(fromCurrencyId));
 		record.setFEC_To_Currency_ID(CurrencyId.toRepoId(toCurrencyId));
 		record.setFEC_CurrencyRate(currencyRate);
-	}
-
-	/**
-	 * Get Invoice Line referencing InOut Line
-	 *
-	 * @param inOutLine inout line
-	 * @return (first) invoice line
-	 */
-	@Nullable
-	public static I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
-	{
-		if (inOutLine == null)
-		{
-			return null;
-		}
-
-		final ImmutableList<I_C_InvoiceLine> invoiceLineList = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLine.getM_InOutLine_ID())
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, inOutLine.getC_OrderLine_ID())
-				.setJoinOr()
-				.create()
-				.listImmutable(I_C_InvoiceLine.class);
-
-		if (invoiceLineList.size() > 1)
-		{
-			logger.warn("More than one C_InvoiceLine of M_InOutLine_ID=" + inOutLine.getM_InOutLine_ID() +
-								" or of C_OrderLine_ID=" + inOutLine.getC_OrderLine_ID() + ". Returning null.");
-			return null;
-		}
-
-		return invoiceLineList.get(0);
 	}
 }

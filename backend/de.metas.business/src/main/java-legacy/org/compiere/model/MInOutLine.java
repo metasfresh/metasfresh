@@ -23,6 +23,7 @@ import java.util.Properties;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -57,6 +58,7 @@ public class MInOutLine extends X_M_InOutLine
 	 *
 	 */
 	private static final long serialVersionUID = 8630611882798722864L;
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	public MInOutLine(Properties ctx, int M_InOutLine_ID, String trxName)
 	{
@@ -711,7 +713,7 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		if (MLandedCost.LANDEDCOSTDISTRIBUTION_Costs.equals(CostDistribution))
 		{
-			I_C_InvoiceLine m_il = InvoiceDAO.getOfInOutLine(this);
+			I_C_InvoiceLine m_il = invoiceDAO.getOfInOutLine(this);
 			if (m_il == null)
 			{
 				log.error("No Invoice Line for: " + this.toString());

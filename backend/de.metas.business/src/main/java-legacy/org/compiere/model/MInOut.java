@@ -115,6 +115,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	private static final long serialVersionUID = 132321718005732306L;
 
 	private static final Logger logger = LogManager.getLogger(MInOut.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * Create new Shipment by copying
@@ -1578,7 +1579,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			//
 			// Matching
 
-			I_C_InvoiceLine iLine = InvoiceDAO.getOfInOutLine(sLine);
+			I_C_InvoiceLine iLine = invoiceDAO.getOfInOutLine(sLine);
 			final BigDecimal qtyMoved = sLine.getMovementQty();
 
 			if (sLine.getM_Product_ID() > 0
@@ -1635,7 +1636,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				// However, we only do it "if (sLine.getM_Product_ID() != 0 && !isReversal())" as before.
 				// I don't really understand what the "!isReversal()" part about, so i'll leave it too
 				// 07742: Load line again in case it was changed by the MMatchPO
-				iLine = InvoiceDAO.getOfInOutLine(sLine);
+				iLine = invoiceDAO.getOfInOutLine(sLine);
 				if (iLine != null && iLine.getM_Product_ID() > 0)
 				{
 					final boolean matchInvCreated = matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
