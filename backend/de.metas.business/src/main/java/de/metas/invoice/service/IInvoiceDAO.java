@@ -197,5 +197,5 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @param inOutLine inout line
 	 * @return (first) invoice line
 	 */
-	I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
+	@Nullable I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 }
