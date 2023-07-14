@@ -6,6 +6,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -61,6 +62,7 @@ public class ForexContractRepository
 			final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 			return ForexContract.builder()
 					.id(extractId(record))
+					.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 					.documentNo(record.getDocumentNo())
 					.created(record.getCreated().toInstant())
 					.createdBy(UserId.ofRepoId(record.getCreatedBy()))
@@ -90,7 +92,7 @@ public class ForexContractRepository
 		return ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID());
 	}
 
-	public ImmutableList<ForexContract> query(@NonNull ForexContractQuery query)
+	public ImmutableList<ForexContract> query(@NonNull final ForexContractQuery query)
 	{
 		return toSqlQuery(query)
 				.stream()
@@ -98,7 +100,7 @@ public class ForexContractRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableSet<ForexContractId> queryIds(@NonNull ForexContractQuery query)
+	public ImmutableSet<ForexContractId> queryIds(@NonNull final ForexContractQuery query)
 	{
 		return toSqlQuery(query).listIds(ForexContractId::ofRepoId);
 	}
@@ -129,6 +131,11 @@ public class ForexContractRepository
 		if (Check.isNotBlank(query.getDisplayNameSearchTerm()))
 		{
 			queryBuilder.addFilter(DisplayNameQueryFilter.of(I_C_ForeignExchangeContract.class, query.getDisplayNameSearchTerm()));
+		}
+
+		if (query.getSectionCodeId() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_ForeignExchangeContract.COLUMNNAME_M_SectionCode_ID, query.getSectionCodeId(), null);
 		}
 
 		return queryBuilder.create();
