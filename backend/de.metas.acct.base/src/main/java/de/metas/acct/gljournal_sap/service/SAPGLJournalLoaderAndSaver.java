@@ -205,6 +205,7 @@ public class SAPGLJournalLoaderAndSaver
 	{
 		return SAPGLJournalLine.builder()
 				.id(extractId(record))
+				.processed(record.isProcessed())
 				.parentId(SAPGLJournalLineId.ofRepoIdOrNull(record.getSAP_GLJournal_ID(), record.getParent_ID()))
 				//
 				.line(SeqNo.ofInt(record.getLine()))
@@ -343,6 +344,7 @@ public class SAPGLJournalLoaderAndSaver
 
 	private static void updateLineRecord(final I_SAP_GLJournalLine lineRecord, final SAPGLJournalLine line)
 	{
+		lineRecord.setProcessed(line.isProcessed());
 		lineRecord.setParent_ID(SAPGLJournalLineId.toRepoId(line.getParentId()));
 		lineRecord.setLine(line.getLine().toInt());
 		lineRecord.setDescription(StringUtils.trimBlankToNull(line.getDescription()));

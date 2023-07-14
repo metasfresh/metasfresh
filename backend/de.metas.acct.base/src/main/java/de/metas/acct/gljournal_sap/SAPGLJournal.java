@@ -226,6 +226,11 @@ public class SAPGLJournal
 		}
 	}
 
+	public void setProcessed(final boolean processed)
+	{
+		lines.forEach(line -> line.setProcessed(processed));
+	}
+
 	public void regenerateTaxLines(
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)

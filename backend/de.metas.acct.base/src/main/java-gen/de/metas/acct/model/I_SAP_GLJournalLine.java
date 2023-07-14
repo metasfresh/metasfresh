@@ -485,6 +485,27 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_PostingSign = "PostingSign";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_Processed = new ModelColumn<>(I_SAP_GLJournalLine.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set Determine tax base.
 	 *
 	 * <br>Type: YesNo
