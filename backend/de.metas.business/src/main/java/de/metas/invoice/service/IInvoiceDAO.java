@@ -191,11 +191,5 @@ public interface IInvoiceDAO extends ISingletonService
 
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
-	/**
-	 * Get Invoice Line referencing InOut Line
-	 *
-	 * @param inOutLine inout line
-	 * @return (first) invoice line
-	 */
 	@Nullable I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 }
