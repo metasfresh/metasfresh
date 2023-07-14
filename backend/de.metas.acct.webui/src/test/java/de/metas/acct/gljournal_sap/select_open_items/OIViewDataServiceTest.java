@@ -179,11 +179,11 @@ class OIViewDataServiceTest
 	@Nested
 	class toRow
 	{
+		final FAOpenItemKey openItemKey = FAOpenItemKey.parse("Acct#MyTable#1");
+		
 		@Test
 		void debit()
 		{
-			final FAOpenItemKey openItemKey = FAOpenItemKey.ofString("openItemKey");
-
 			final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().currencyId(EUR_ID).build();
 			final ElementValueId accountId = createElementValue("1234", true);
 
@@ -225,8 +225,6 @@ class OIViewDataServiceTest
 		@Test
 		void credit()
 		{
-			final FAOpenItemKey openItemKey = FAOpenItemKey.ofString("openItemKey");
-
 			final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().currencyId(EUR_ID).build();
 			final ElementValueId accountId = createElementValue("1234", true);
 

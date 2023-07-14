@@ -19,17 +19,22 @@ import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxType;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.FixedConversionRate;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.sectionCode.SectionCodeId;
@@ -269,7 +274,7 @@ public class SAPGLJournalLoaderAndSaver
 			return null;
 		}
 
-		final FAOpenItemKey openItemKey = FAOpenItemKey.ofNullableString(line.getOpenItemKey());
+		final FAOpenItemKey openItemKey = FAOpenItemKey.parseNullable(line.getOpenItemKey()).orElse(null);
 		if (openItemKey == null)
 		{
 			return null;
@@ -302,11 +307,11 @@ public class SAPGLJournalLoaderAndSaver
 				lineRecord = lineRecordsById.get(lineId);
 			}
 
-			if(lineRecord == null)
+			if (lineRecord == null)
 			{
 				lineRecord = InterfaceWrapperHelper.newInstance(I_SAP_GLJournalLine.class);
 				lineRecord.setSAP_GLJournal_ID(headerRecord.getSAP_GLJournal_ID());
-				if(lineId != null)
+				if (lineId != null)
 				{
 					lineRecord.setSAP_GLJournalLine_ID(lineId.getRepoId());
 				}
@@ -369,7 +374,14 @@ public class SAPGLJournalLoaderAndSaver
 	{
 		lineRecord.setIsOpenItem(from != null);
 		lineRecord.setOI_TrxType(from != null ? from.getTrxType().getCode() : null);
-		lineRecord.setOpenItemKey(from != null ? from.getKey().getAsString() : null);
+
+		final FAOpenItemKey openItemKey = from != null ? from.getKey() : null;
+		lineRecord.setOpenItemKey(openItemKey != null ? openItemKey.getAsString() : null);
+		lineRecord.setOI_Invoice_ID(openItemKey != null ? openItemKey.getInvoiceId().map(InvoiceId::getRepoId).orElse(0) : 0);
+		lineRecord.setOI_Payment_ID(openItemKey != null ? openItemKey.getPaymentId().map(PaymentId::getRepoId).orElse(0) : 0);
+		lineRecord.setOI_BankStatement_ID(openItemKey != null ? openItemKey.getBankStatementId().map(BankStatementId::getRepoId).orElse(0) : 0);
+		lineRecord.setOI_BankStatementLine_ID(openItemKey != null ? openItemKey.getBankStatementLineId().map(BankStatementLineId::getRepoId).orElse(0) : 0);
+		lineRecord.setOI_BankStatementLine_Ref_ID(openItemKey != null ? openItemKey.getBankStatementLineRefId().map(BankStatementLineRefId::getRepoId).orElse(0) : 0);
 	}
 
 	private static void updateLineRecordFromDimension(final I_SAP_GLJournalLine lineRecord, final Dimension dimension)

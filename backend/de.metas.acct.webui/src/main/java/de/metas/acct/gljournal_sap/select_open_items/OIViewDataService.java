@@ -234,7 +234,7 @@ class OIViewDataService
 			@NonNull final I_Fact_Acct record,
 			@NonNull final FutureClearingAmountMap futureClearingAmounts)
 	{
-		final FAOpenItemKey openItemKey = FAOpenItemKey.optionalOfString(record.getOpenItemKey())
+		final FAOpenItemKey openItemKey = FAOpenItemKey.parseNullable(record.getOpenItemKey())
 				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
 
 		final CurrencyCode sourceCurrency = moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()));

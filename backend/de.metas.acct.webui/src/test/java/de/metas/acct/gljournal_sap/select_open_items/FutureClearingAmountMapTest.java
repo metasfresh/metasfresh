@@ -103,10 +103,11 @@ class FutureClearingAmountMapTest
 	@Nested
 	class ofGLJournal
 	{
+		final FAOpenItemKey openItemKey = FAOpenItemKey.parse("Acct#MyTable#1");
+
 		@Test
 		void debit_line()
 		{
-			final FAOpenItemKey openItemKey = FAOpenItemKey.ofString("openItemKey");
 			final SAPGLJournal glJournal = glJournal()
 					.sign(PostingSign.DEBIT)
 					.amountSrc(Money.of("35", RON_ID))
@@ -124,7 +125,6 @@ class FutureClearingAmountMapTest
 		@Test
 		void credit_line()
 		{
-			final FAOpenItemKey openItemKey = FAOpenItemKey.ofString("openItemKey");
 			final SAPGLJournal glJournal = glJournal()
 					.sign(PostingSign.CREDIT)
 					.amountSrc(Money.of("35", RON_ID))
@@ -146,7 +146,7 @@ class FutureClearingAmountMapTest
 		@Test
 		void debit_line()
 		{
-			final FAOpenItemKey openItemKey = FAOpenItemKey.ofString("openItemKey");
+			final FAOpenItemKey openItemKey = FAOpenItemKey.parse("Acct#MyTable#1");
 			final SAPGLJournalLine line = SAPGLJournalLine.builder()
 					.line(SeqNo.ofInt(10))
 					.account(Account.ofId(AccountId.ofRepoId(1)))
@@ -165,7 +165,7 @@ class FutureClearingAmountMapTest
 		@Test
 		void credit_line()
 		{
-			final FAOpenItemKey openItemKey = FAOpenItemKey.ofString("openItemKey");
+			final FAOpenItemKey openItemKey = FAOpenItemKey.parse("Acct#MyTable#1");
 			final SAPGLJournalLine line = SAPGLJournalLine.builder()
 					.line(SeqNo.ofInt(10))
 					.account(Account.ofId(AccountId.ofRepoId(1)))

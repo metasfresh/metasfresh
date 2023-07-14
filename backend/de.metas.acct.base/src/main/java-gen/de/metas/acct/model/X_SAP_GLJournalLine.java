@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -434976949L;
+	private static final long serialVersionUID = 403464399L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -248,6 +248,93 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public void setOI_BankStatement_ID (final int OI_BankStatement_ID)
+	{
+		if (OI_BankStatement_ID < 1) 
+			set_Value (COLUMNNAME_OI_BankStatement_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_BankStatement_ID, OI_BankStatement_ID);
+	}
+
+	@Override
+	public int getOI_BankStatement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_BankStatement_ID);
+	}
+
+	@Override
+	public void setOI_BankStatementLine_ID (final int OI_BankStatementLine_ID)
+	{
+		if (OI_BankStatementLine_ID < 1) 
+			set_Value (COLUMNNAME_OI_BankStatementLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_BankStatementLine_ID, OI_BankStatementLine_ID);
+	}
+
+	@Override
+	public int getOI_BankStatementLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_BankStatementLine_ID);
+	}
+
+	@Override
+	public void setOI_BankStatementLine_Ref_ID (final int OI_BankStatementLine_Ref_ID)
+	{
+		if (OI_BankStatementLine_Ref_ID < 1) 
+			set_Value (COLUMNNAME_OI_BankStatementLine_Ref_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_BankStatementLine_Ref_ID, OI_BankStatementLine_Ref_ID);
+	}
+
+	@Override
+	public int getOI_BankStatementLine_Ref_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_BankStatementLine_Ref_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getOI_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_OI_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setOI_Invoice(final org.compiere.model.I_C_Invoice OI_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_OI_Invoice_ID, org.compiere.model.I_C_Invoice.class, OI_Invoice);
+	}
+
+	@Override
+	public void setOI_Invoice_ID (final int OI_Invoice_ID)
+	{
+		if (OI_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_OI_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_Invoice_ID, OI_Invoice_ID);
+	}
+
+	@Override
+	public int getOI_Invoice_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_Invoice_ID);
+	}
+
+	@Override
+	public void setOI_Payment_ID (final int OI_Payment_ID)
+	{
+		if (OI_Payment_ID < 1) 
+			set_Value (COLUMNNAME_OI_Payment_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_Payment_ID, OI_Payment_ID);
+	}
+
+	@Override
+	public int getOI_Payment_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_Payment_ID);
 	}
 
 	/** 

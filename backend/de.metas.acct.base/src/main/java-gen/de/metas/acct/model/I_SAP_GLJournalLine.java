@@ -395,6 +395,112 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
+	 * Set OI Clearing Bank Statement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_BankStatement_ID (int OI_BankStatement_ID);
+
+	/**
+	 * Get OI Clearing Bank Statement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_BankStatement_ID();
+
+	String COLUMNNAME_OI_BankStatement_ID = "OI_BankStatement_ID";
+
+	/**
+	 * Set OI Clearing Bank Statement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_BankStatementLine_ID (int OI_BankStatementLine_ID);
+
+	/**
+	 * Get OI Clearing Bank Statement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_BankStatementLine_ID();
+
+	String COLUMNNAME_OI_BankStatementLine_ID = "OI_BankStatementLine_ID";
+
+	/**
+	 * Set OI Clearing Bank Statement Line Reference.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_BankStatementLine_Ref_ID (int OI_BankStatementLine_Ref_ID);
+
+	/**
+	 * Get OI Clearing Bank Statement Line Reference.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_BankStatementLine_Ref_ID();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OI_BankStatementLine_Ref_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_BankStatementLine_Ref_ID", null);
+	String COLUMNNAME_OI_BankStatementLine_Ref_ID = "OI_BankStatementLine_Ref_ID";
+
+	/**
+	 * Set OI Clearing Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_Invoice_ID (int OI_Invoice_ID);
+
+	/**
+	 * Get OI Clearing Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_Invoice_ID();
+
+	@Nullable org.compiere.model.I_C_Invoice getOI_Invoice();
+
+	void setOI_Invoice(@Nullable org.compiere.model.I_C_Invoice OI_Invoice);
+
+	ModelColumn<I_SAP_GLJournalLine, org.compiere.model.I_C_Invoice> COLUMN_OI_Invoice_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_OI_Invoice_ID = "OI_Invoice_ID";
+
+	/**
+	 * Set OI Clearing Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_Payment_ID (int OI_Payment_ID);
+
+	/**
+	 * Get OI Clearing Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_Payment_ID();
+
+	String COLUMNNAME_OI_Payment_ID = "OI_Payment_ID";
+
+	/**
 	 * Set Open Item Transaction Type.
 	 *
 	 * <br>Type: List
