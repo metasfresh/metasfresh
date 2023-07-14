@@ -2,6 +2,7 @@ package de.metas.acct.open_items.handlers;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
@@ -62,5 +63,17 @@ public class Generic_OIHandler implements FAOpenItemsHandler
 	{
 		return I_C_AllocationHdr.Table_Name.equals(tableName)
 				|| I_M_MatchInv.Table_Name.equals(tableName);
+	}
+
+	@Override
+	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
+	{
+		// TODO implement
+	}
+
+	@Override
+	public void onGLJournalLineBeforeReactivate(final SAPGLJournalLine line)
+	{
+		// TODO implement
 	}
 }

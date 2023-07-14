@@ -26,6 +26,15 @@ public class SAPGLJournalRepository
 		return loader.getById(id);
 	}
 
+	@NonNull
+	public SAPGLJournal getByRecord(@NonNull final I_SAP_GLJournal record)
+	{
+		final SAPGLJournalId id = SAPGLJournalId.ofRepoId(record.getSAP_GLJournal_ID());
+		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();
+		loader.addToCacheAndAvoidSaving(record);
+		return loader.getById(id);
+	}
+
 	public SeqNo getNextSeqNo(@NonNull final SAPGLJournalId glJournalId)
 	{
 		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();

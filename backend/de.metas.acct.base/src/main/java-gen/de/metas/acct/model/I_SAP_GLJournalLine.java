@@ -395,6 +395,27 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
+	 * Set OI Clearing Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_AccountConceptualName (@Nullable java.lang.String OI_AccountConceptualName);
+
+	/**
+	 * Get OI Clearing Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_AccountConceptualName();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OI_AccountConceptualName = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_AccountConceptualName", null);
+	String COLUMNNAME_OI_AccountConceptualName = "OI_AccountConceptualName";
+
+	/**
 	 * Set OI Clearing Bank Statement.
 	 *
 	 * <br>Type: Search

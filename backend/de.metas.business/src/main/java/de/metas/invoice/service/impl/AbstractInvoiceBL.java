@@ -2,6 +2,7 @@ package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -96,6 +97,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -181,6 +183,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -488,6 +491,24 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			.lineDone()
 			.create(true);
 		// @formatter:on
+	}
+
+	@Override
+	public void scheduleUpdateIsPaid(@NonNull final InvoiceId invoiceId)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"invoiceBL.testAllocatedAfterCommit",
+				ImmutableSet.of(invoiceId),
+				this::testAllocated);
+	}
+
+	private void testAllocated(final List<InvoiceId> invoiceIds)
+	{
+		invoiceDAO.getByIdsInTrx(invoiceIds)
+				.forEach(invoice -> {
+					testAllocation(invoice, false);
+					invoiceDAO.save(invoice);
+				});
 	}
 
 	@Override

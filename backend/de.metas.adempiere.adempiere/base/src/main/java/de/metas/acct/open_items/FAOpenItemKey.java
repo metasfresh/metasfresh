@@ -12,6 +12,7 @@ import de.metas.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BankStatement;
@@ -26,7 +27,7 @@ import java.util.Optional;
 @EqualsAndHashCode(exclude = "stringRepresentation")
 public final class FAOpenItemKey
 {
-	@Nullable private final AccountConceptualName accountConceptualName;
+	@Nullable @Getter private final AccountConceptualName accountConceptualName;
 	@NonNull private final String tableName;
 	private final int recordId;
 	private final int lineId;

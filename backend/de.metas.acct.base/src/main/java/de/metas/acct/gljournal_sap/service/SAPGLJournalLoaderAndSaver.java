@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
@@ -376,7 +377,9 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setOI_TrxType(from != null ? from.getTrxType().getCode() : null);
 
 		final FAOpenItemKey openItemKey = from != null ? from.getKey() : null;
+		final AccountConceptualName accountConceptualName = openItemKey != null ? openItemKey.getAccountConceptualName() : null;
 		lineRecord.setOpenItemKey(openItemKey != null ? openItemKey.getAsString() : null);
+		lineRecord.setOI_AccountConceptualName(accountConceptualName != null ? accountConceptualName.getAsString() : null);
 		lineRecord.setOI_Invoice_ID(openItemKey != null ? openItemKey.getInvoiceId().map(InvoiceId::getRepoId).orElse(0) : 0);
 		lineRecord.setOI_Payment_ID(openItemKey != null ? openItemKey.getPaymentId().map(PaymentId::getRepoId).orElse(0) : 0);
 		lineRecord.setOI_BankStatement_ID(openItemKey != null ? openItemKey.getBankStatementId().map(BankStatementId::getRepoId).orElse(0) : 0);

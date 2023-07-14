@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
@@ -12,7 +13,9 @@ import de.metas.acct.open_items.FAOpenItemsHandler;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.payment.PaymentId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_AllocationHdr;
@@ -31,7 +34,9 @@ public class BPartnerOIHandler implements FAOpenItemsHandler
 	private static final @NonNull AccountConceptualName V_Prepayment = BPartnerVendorAccountType.V_Prepayment.getAccountConceptualName();
 	private static final @NonNull AccountConceptualName C_Receivable = BPartnerCustomerAccountType.C_Receivable.getAccountConceptualName();
 	private static final @NonNull AccountConceptualName C_Prepayment = BPartnerCustomerAccountType.C_Prepayment.getAccountConceptualName();
+
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public @NonNull Set<AccountConceptualName> getHandledAccountConceptualNames()
@@ -117,4 +122,17 @@ public class BPartnerOIHandler implements FAOpenItemsHandler
 		}
 	}
 
+	@Override
+	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
+	{
+		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
+		openItemTrxInfo.getKey().getInvoiceId().ifPresent(invoiceBL::scheduleUpdateIsPaid);
+	}
+
+	@Override
+	public void onGLJournalLineBeforeReactivate(final SAPGLJournalLine line)
+	{
+		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
+		openItemTrxInfo.getKey().getInvoiceId().ifPresent(invoiceBL::scheduleUpdateIsPaid);
+	}
 }

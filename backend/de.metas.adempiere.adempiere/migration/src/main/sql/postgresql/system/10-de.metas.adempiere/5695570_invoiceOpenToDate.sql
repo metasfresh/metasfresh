@@ -99,19 +99,21 @@ DECLARE
     v_MultiplierAP             numeric := 0;
     v_MultiplierCM             numeric := 0;
     --
-    v_Currency_ID              numeric;
-    v_Precision                numeric := 0;
-    v_Min                      numeric := 0;
+    v_Currency_ID              numeric; -- target/result currency
+    v_Precision                numeric := 0; -- currency precision
+    v_Min                      numeric := 0; -- rounding error (i.e. 0.1 ^ precision)
+    v_BP_AccountConceptualName char(255);
     --
-    v_PaidAmt                  numeric := 0;
-    v_Remaining                numeric := 0;
-    v_AllocAmtSource           numeric := 0;
-    v_AllocAmtConv             numeric := 0;
+    v_TotalAllocatedAmt        numeric := 0; -- total allocated amount, in target currency, AP corrected
+    v_Remaining                numeric := 0; -- locally used
+    v_LineAllocAmtSource       numeric := 0; -- locally used
+    v_LineAllocAmtConv         numeric := 0; -- locally used
     --
     v_result                   InvoiceOpenResult;
     --
-    allocationline             record;
-    invoiceschedule            record;
+    allocationLine             record;
+    glJournalLine              record;
+    invoiceSchedule            record;
 BEGIN
     --
     -- Validate parameters
@@ -129,23 +131,30 @@ BEGIN
              , (CASE
                     WHEN p_DateType = 'A' THEN i.DateAcct
                                           ELSE i.DateInvoiced
-                END) AS Date
+                END)                                                                               AS Date
              , i.DocBaseType
              , i.C_ConversionType_ID
              , i.AD_Client_ID
              , i.AD_Org_ID
-             , MAX(i.MultiplierAP)
-             , MAX(i.Multiplier)
+             , i.MultiplierAP
+             , i.Multiplier
              , cy.C_Currency_ID
              , cy.StdPrecision
              , 1 / 10 ^ cy.StdPrecision
+             , (CASE WHEN i.multiplierap < 0 THEN 'V_Liability_Acct' ELSE 'C_Receivable_Acct' END) AS BP_AccountConceptualName
         INTO
-            v_TotalOpenAmt
-            , v_InvoiceDate
-            , v_InvoiceDocBaseType
-            , v_InvoiceConversionType_ID, v_InvoiceClient_ID, v_InvoiceOrg_ID
-            , v_MultiplierAP, v_MultiplierCM
-            , v_InvoiceCurrency_ID, v_Precision, v_Min
+            v_TotalOpenAmt,
+            v_InvoiceDate,
+            v_InvoiceDocBaseType,
+            v_InvoiceConversionType_ID,
+            v_InvoiceClient_ID,
+            v_InvoiceOrg_ID,
+            v_MultiplierAP,
+            v_MultiplierCM,
+            v_InvoiceCurrency_ID,
+            v_Precision,
+            v_Min,
+            v_BP_AccountConceptualName
         FROM C_Invoice_v i -- corrected for CM / Split Payment
                  INNER JOIN C_Currency cy ON (cy.C_Currency_ID = i.C_Currency_ID)
         WHERE i.C_Invoice_ID = p_C_Invoice_ID
@@ -156,11 +165,16 @@ BEGIN
                                          ELSE TRUE
                END)
         GROUP BY
-               -- NOTE: we assume all invoice schedules (if any) are on same currency, DateAcct/DateInvoiced etc
-            cy.C_Currency_ID
-               , i.DateAcct, i.DateInvoiced
-               , i.DocBaseType
-               , i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID;
+            -- NOTE: we assume all invoice schedules (if any) are on same currency, DateAcct/DateInvoiced etc
+            cy.C_Currency_ID,
+            i.DateAcct,
+            i.DateInvoiced,
+            i.DocBaseType,
+            i.MultiplierAP,
+            i.Multiplier,
+            i.C_ConversionType_ID,
+            i.AD_Client_ID,
+            i.AD_Org_ID;
 
         -- Check if we found our invoice.
         -- (if not, it means the invoice does not exist or the p_Date is before our invoice's Date)
@@ -195,6 +209,7 @@ BEGIN
     END;
     RAISE DEBUG 'C_Currency_ID=%, GrandTotal(abs)=%, MultiplierAP=%, MultiplierCM=%', v_Currency_ID, v_TotalOpenAmt, v_MultiplierAP, v_MultiplierCM;
     RAISE DEBUG 'StdPrecision=%, Rounding tolerance=%', v_Precision, v_Min;
+    RAISE DEBUG 'v_BP_AccountConceptualName=%', v_BP_AccountConceptualName;
     --
 
     --
@@ -206,77 +221,125 @@ BEGIN
 
     --
     --	Calculate Allocated Amount
-    FOR allocationline IN
-        SELECT a.AD_Client_ID
-             , a.AD_Org_ID
-             , al.Amount
-             , al.DiscountAmt
-             , al.WriteOffAmt
-             , a.C_Currency_ID
-             , (CASE
-                    WHEN p_DateType = 'A' THEN a.DateAcct
-                                          ELSE a.DateTrx
-                END) AS Date
-             , al.C_AllocationLine_ID
-        FROM C_AllocationLine al
-                 INNER JOIN C_AllocationHdr a ON (al.C_AllocationHdr_ID = a.C_AllocationHdr_ID)
-        WHERE al.C_Invoice_ID = p_C_Invoice_ID
-          AND a.IsActive = 'Y'
-          AND (CASE
-                   WHEN p_Date IS NULL   THEN TRUE
-                   WHEN p_DateType = 'T' THEN a.DateTrx <= p_Date
-                   WHEN p_DateType = 'A' THEN a.DateAcct <= p_Date
-                                         ELSE TRUE
-               END)
-          AND (v_Exclude_Payment_IDs IS NULL OR al.c_payment_id IS NULL OR al.c_payment_id != ANY (v_Exclude_Payment_IDs))
-        -- for debugging: have a predictible order
-        -- ORDER BY (case when p_DateType='T' then a.DateAcct else a.DateTrx end), al.C_AllocationLine_ID
+    v_TotalAllocatedAmt := 0;
+    FOR allocationLine IN (SELECT a.AD_Client_ID
+                                , a.AD_Org_ID
+                                , al.Amount
+                                , al.DiscountAmt
+                                , al.WriteOffAmt
+                                , a.C_Currency_ID
+                                , (CASE
+                                       WHEN p_DateType = 'A' THEN a.DateAcct
+                                                             ELSE a.DateTrx
+                                   END) AS Date
+                                , al.C_AllocationLine_ID
+                           FROM C_AllocationLine al
+                                    INNER JOIN C_AllocationHdr a ON (al.C_AllocationHdr_ID = a.C_AllocationHdr_ID)
+                           WHERE al.C_Invoice_ID = p_C_Invoice_ID
+                             AND a.IsActive = 'Y'
+                             AND (CASE
+                                      WHEN p_Date IS NULL   THEN TRUE
+                                      WHEN p_DateType = 'T' THEN a.DateTrx <= p_Date
+                                      WHEN p_DateType = 'A' THEN a.DateAcct <= p_Date
+                                                            ELSE TRUE
+                                  END)
+                             AND (v_Exclude_Payment_IDs IS NULL OR al.c_payment_id IS NULL OR al.c_payment_id != ANY (v_Exclude_Payment_IDs)))
         LOOP
             v_result.HasAllocations := 'Y';
 
             -- Skip allocation lines which are for given p_Date and which are after given p_Last_AllocationLine_ID
             -- NOTE: the p_Last_AllocationLine_ID parameter is used by some queries which are checking preciselly how much was allocated until a given allocation line.
             IF (p_Last_AllocationLine_ID IS NOT NULL AND p_Date IS NOT NULL
-                AND p_Date::date = allocationline.Date::date
-                AND allocationline.C_AllocationLine_ID > p_Last_AllocationLine_ID)
+                AND p_Date::date = allocationLine.Date::date
+                AND allocationLine.C_AllocationLine_ID > p_Last_AllocationLine_ID)
             THEN
-                RAISE DEBUG '   Skip C_AllocationLine_ID=% because is after given Last_AllocationLine_ID=%', allocationline.C_AllocationLine_ID, p_Last_AllocationLine_ID;
+                RAISE DEBUG '   Skip C_AllocationLine_ID=% because is after given Last_AllocationLine_ID=%', allocationLine.C_AllocationLine_ID, p_Last_AllocationLine_ID;
                 CONTINUE;
             END IF;
 
-            v_AllocAmtSource := allocationline.Amount + allocationline.DiscountAmt + allocationline.WriteOffAmt;
-            v_AllocAmtConv := currencyConvert(v_AllocAmtSource, allocationline.C_Currency_ID, v_Currency_ID, allocationline.Date, NULL, allocationline.AD_Client_ID, allocationline.AD_Org_ID);
+            v_LineAllocAmtSource := allocationLine.Amount + allocationLine.DiscountAmt + allocationLine.WriteOffAmt;
+            v_LineAllocAmtConv := currencyConvert(v_LineAllocAmtSource, allocationLine.C_Currency_ID, v_Currency_ID, allocationLine.Date, NULL, allocationLine.AD_Client_ID, allocationLine.AD_Org_ID);
 
-            v_PaidAmt := v_PaidAmt + v_AllocAmtConv * v_MultiplierAP;
-            RAISE DEBUG '   C_AllocationLine_ID=%: Amount(source->target currency)= %->%, Date=%', allocationline.C_AllocationLine_ID, v_AllocAmtSource, v_AllocAmtConv, allocationline.Date;
-            RAISE DEBUG '   => PaidAmt(Accumulated)=%', v_PaidAmt;
+            v_TotalAllocatedAmt := v_TotalAllocatedAmt + v_LineAllocAmtConv * v_MultiplierAP;
+            RAISE DEBUG '   C_AllocationLine_ID=%: Amount(source->target currency)= %->%, Date=%', allocationLine.C_AllocationLine_ID, v_LineAllocAmtSource, v_LineAllocAmtConv, allocationLine.Date;
+            RAISE DEBUG '   => v_TotalAllocatedAmt=%', v_TotalAllocatedAmt;
         END LOOP;
+
+
+    --
+    -- GL Journal clearing lines
+    FOR glJournalLine IN (SELECT (CASE WHEN l.postingsign = 'C' THEN - l.amount ELSE l.amount END)   AS amount,
+                                 j.c_currency_id,
+                                 (CASE WHEN l.postingsign = 'C' THEN - l.amtacct ELSE l.amtacct END) AS amtacct,
+                                 j.acct_currency_id,
+                                 (CASE
+                                      WHEN p_DateType = 'A' THEN j.DateAcct
+                                                            ELSE j.DateDoc
+                                  END)                                                               AS Date,
+                                 l.ad_client_id,
+                                 l.ad_org_id,
+                                 l.sap_gljournal_id,
+                                 l.sap_gljournalline_id
+                          FROM SAP_GLJournalLine l
+                                   INNER JOIN SAP_GLJournal j ON j.sap_gljournal_id = l.sap_gljournal_id
+                          WHERE TRUE
+                            AND l.Processed = 'Y'
+                            AND j.DocStatus IN ('CO', 'CL')
+                            AND l.OI_Invoice_ID = p_C_Invoice_ID
+                            AND l.OI_AccountConceptualName = v_BP_AccountConceptualName
+                            AND (CASE
+                                     WHEN p_Date IS NULL   THEN TRUE
+                                     WHEN p_DateType = 'T' THEN j.DateDoc <= p_Date
+                                     WHEN p_DateType = 'A' THEN j.DateAcct <= p_Date
+                                                           ELSE TRUE
+                                 END))
+        LOOP
+            IF (glJournalLine.c_currency_id = v_Currency_ID) THEN
+                v_LineAllocAmtConv := glJournalLine.amount;
+            ELSIF (glJournalLine.acct_currency_id = v_Currency_ID) THEN
+                v_LineAllocAmtConv := glJournalLine.amtacct;
+            ELSE
+                v_LineAllocAmtConv := currencyConvert(
+                        glJournalLine.amount,
+                        glJournalLine.C_Currency_ID,
+                        v_Currency_ID,
+                        glJournalLine.Date,
+                        NULL,
+                        glJournalLine.AD_Client_ID,
+                        glJournalLine.AD_Org_ID);
+            END IF;
+
+            v_TotalAllocatedAmt := v_TotalAllocatedAmt + v_LineAllocAmtConv; -- no need to "* v_MultiplierAP" because it's already AP corrected
+            RAISE DEBUG '   SAP_GLJournalLine_ID=%/%: Amount=% (%)', glJournalLine.sap_gljournal_id, glJournalLine.sap_gljournalline_id, v_LineAllocAmtConv, glJournalLine;
+            RAISE DEBUG '   => v_TotalAllocatedAmt=%', v_TotalAllocatedAmt;
+        END LOOP;
+
 
     --
     --  Do we have a Payment Schedule ?
     IF (p_C_InvoicePaySchedule_ID IS NOT NULL AND p_C_InvoicePaySchedule_ID > 0) THEN --   if not valid = lists invoice amount
-        v_Remaining := v_PaidAmt;
-        FOR invoiceschedule IN
+        v_Remaining := v_TotalAllocatedAmt;
+        FOR invoiceSchedule IN
             SELECT C_InvoicePaySchedule_ID, DueAmt
             FROM C_InvoicePaySchedule
             WHERE C_Invoice_ID = p_C_Invoice_ID
               AND IsValid = 'Y'
             ORDER BY DueDate
             LOOP
-                IF (invoiceschedule.C_InvoicePaySchedule_ID = p_C_InvoicePaySchedule_ID) THEN
-                    v_TotalOpenAmt := (invoiceschedule.DueAmt * v_MultiplierCM) - v_Remaining;
-                    IF (invoiceschedule.DueAmt - v_Remaining < 0) THEN
+                IF (invoiceSchedule.C_InvoicePaySchedule_ID = p_C_InvoicePaySchedule_ID) THEN
+                    v_TotalOpenAmt := (invoiceSchedule.DueAmt * v_MultiplierCM) - v_Remaining;
+                    IF (invoiceSchedule.DueAmt - v_Remaining < 0) THEN
                         v_TotalOpenAmt := 0;
                     END IF;
                 ELSE -- calculate amount, which can be allocated to next schedule
-                    v_Remaining := v_Remaining - invoiceschedule.DueAmt;
+                    v_Remaining := v_Remaining - invoiceSchedule.DueAmt;
                     IF (v_Remaining < 0) THEN
                         v_Remaining := 0;
                     END IF;
                 END IF;
             END LOOP;
     ELSE
-        v_TotalOpenAmt := v_TotalOpenAmt - v_PaidAmt;
+        v_TotalOpenAmt := v_TotalOpenAmt - v_TotalAllocatedAmt;
     END IF;
     RAISE DEBUG 'Total Open Amt: %', v_TotalOpenAmt;
 

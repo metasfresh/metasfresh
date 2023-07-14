@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
@@ -142,6 +143,18 @@ public class BankOIHandler implements FAOpenItemsHandler
 		{
 			return Optional.empty();
 		}
+	}
+
+	@Override
+	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
+	{
+		// TODO implement
+	}
+
+	@Override
+	public void onGLJournalLineBeforeReactivate(final SAPGLJournalLine line)
+	{
+		// TODO implement
 	}
 
 	//

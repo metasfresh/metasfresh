@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 403464399L;
+	private static final long serialVersionUID = -122460229L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -248,6 +248,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public void setOI_AccountConceptualName (final @Nullable java.lang.String OI_AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_OI_AccountConceptualName, OI_AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getOI_AccountConceptualName() 
+	{
+		return get_ValueAsString(COLUMNNAME_OI_AccountConceptualName);
 	}
 
 	@Override
