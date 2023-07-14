@@ -62,7 +62,7 @@ public class ForexContractRepository
 			final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 			return ForexContract.builder()
 					.id(extractId(record))
-					.sectionCodeId(SectionCodeId.ofRepoId(record.getM_SectionCode_ID()))
+					.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 					.documentNo(record.getDocumentNo())
 					.created(record.getCreated().toInstant())
 					.createdBy(UserId.ofRepoId(record.getCreatedBy()))

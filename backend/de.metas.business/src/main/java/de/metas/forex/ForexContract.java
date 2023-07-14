@@ -23,7 +23,7 @@ import java.time.Instant;
 public class ForexContract
 {
 	@Getter @NonNull private final ForexContractId id;
-	@Getter @NonNull private final SectionCodeId sectionCodeId;
+	@Getter @Nullable private final SectionCodeId sectionCodeId;
 	@Getter @NonNull private final String documentNo;
 	@Getter @NonNull private final Instant created;
 	@Getter @NonNull private final UserId createdBy;
@@ -45,7 +45,7 @@ public class ForexContract
 	@Builder
 	private ForexContract(
 			final @NonNull ForexContractId id,
-			final @NonNull SectionCodeId sectionCodeId,
+			final @Nullable SectionCodeId sectionCodeId,
 			final @NonNull String documentNo,
 			final @NonNull Instant created,
 			final @NonNull UserId createdBy,
@@ -180,7 +180,7 @@ public class ForexContract
 
 	public void validateSectionCode(@Nullable final SectionCodeId documentSectionCodeId)
 	{
-		if (documentSectionCodeId == null)
+		if (documentSectionCodeId == null || sectionCodeId == null)
 		{
 			return;
 		}

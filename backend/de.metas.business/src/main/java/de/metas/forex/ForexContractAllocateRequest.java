@@ -9,13 +9,15 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+
 @Value
 public class ForexContractAllocateRequest
 {
 	@NonNull ForexContractId forexContractId;
 	@NonNull OrgId orgId;
 	@NonNull OrderId orderId;
-	@NonNull SectionCodeId contractSectionCodeId;
+	@Nullable SectionCodeId contractSectionCodeId;
 
 	@NonNull Money orderGrandTotal;
 	@NonNull Money amountToAllocate;
@@ -25,7 +27,7 @@ public class ForexContractAllocateRequest
 			@NonNull final ForexContractId forexContractId,
 			@NonNull final OrgId orgId,
 			@NonNull final OrderId orderId,
-			@NonNull final SectionCodeId contractSectionCodeId,
+			@Nullable final SectionCodeId contractSectionCodeId,
 			@NonNull final Money orderGrandTotal,
 			@NonNull final Money amountToAllocate)
 	{

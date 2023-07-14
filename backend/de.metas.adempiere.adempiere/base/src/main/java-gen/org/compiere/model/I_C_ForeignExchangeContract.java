@@ -363,7 +363,7 @@ public interface I_C_ForeignExchangeContract
 	 * <br>Virtual Column: false
 	 */
 	void setM_SectionCode_ID (int M_SectionCode_ID);
-v
+
 	/**
 	 * Get Section Code.
 	 *

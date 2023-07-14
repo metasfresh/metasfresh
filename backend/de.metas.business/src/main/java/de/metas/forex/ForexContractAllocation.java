@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class ForexContractAllocation
@@ -15,5 +17,5 @@ public class ForexContractAllocation
 	@NonNull ForexContractId contractId;
 	@NonNull OrderId orderId;
 	@NonNull Money amount;
-	@NonNull SectionCodeId contractSectionCodeId;
+	@Nullable SectionCodeId contractSectionCodeId;
 }

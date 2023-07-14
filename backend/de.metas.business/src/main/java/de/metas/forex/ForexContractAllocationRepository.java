@@ -30,7 +30,7 @@ public class ForexContractAllocationRepository
 		record.setC_Currency_ID(request.getAmountToAllocate().getCurrencyId().getRepoId());
 		record.setAllocatedAmt(request.getAmountToAllocate().toBigDecimal());
 		record.setGrandTotal(request.getOrderGrandTotal().toBigDecimal());
-		record.setM_SectionCode_ID(request.getContractSectionCodeId().getRepoId());
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getContractSectionCodeId()));
 		InterfaceWrapperHelper.save(record);
 
 		return fromRecord(record);
@@ -43,7 +43,7 @@ public class ForexContractAllocationRepository
 				.contractId(ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.amount(extractAllocatedAmt(record))
-				.contractSectionCodeId(SectionCodeId.ofRepoId(record.getM_SectionCode_ID()))
+				.contractSectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.build();
 	}
 
