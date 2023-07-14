@@ -135,7 +135,10 @@ public class ForexContractRepository
 
 		if (query.getSectionCodeId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_ForeignExchangeContract.COLUMNNAME_M_SectionCode_ID, query.getSectionCodeId());
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addEqualsFilter(I_C_ForeignExchangeContract.COLUMNNAME_M_SectionCode_ID, query.getSectionCodeId())
+					.addIsNull(I_C_ForeignExchangeContract.COLUMNNAME_M_SectionCode_ID);
 		}
 
 		return queryBuilder.create();
