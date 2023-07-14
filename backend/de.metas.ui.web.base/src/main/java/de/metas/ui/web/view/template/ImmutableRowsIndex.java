@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -43,6 +44,14 @@ import java.util.stream.Stream;
 
 public final class ImmutableRowsIndex<T extends IViewRow>
 {
+	private static final ImmutableRowsIndex<IViewRow> EMPTY = new ImmutableRowsIndex<>(ImmutableList.of(), ImmutableList.of());
+
+	public static <T extends IViewRow> ImmutableRowsIndex<T> empty()
+	{
+		//noinspection unchecked
+		return (ImmutableRowsIndex<T>)EMPTY;
+	}
+
 	public static <T extends IViewRow> ImmutableRowsIndex<T> of(@NonNull final List<T> rows)
 	{
 		final ImmutableList<DocumentId> initialRowIds = rows.stream()
@@ -69,14 +78,14 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		rowsById = Maps.uniqueIndex(rows, IViewRow::getId);
 	}
 
-	private Stream<T> streamAllRows()
+	private Stream<T> streamInOrder()
 	{
 		return rowIds.stream().map(rowsById::get);
 	}
 
 	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows()
 	{
-		return streamAllRows()
+		return streamInOrder()
 				.collect(GuavaCollectors.toImmutableMapByKey(IViewRow::getId));
 	}
 
@@ -266,4 +275,12 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
+
+	public Stream<T> stream() {return rowsById.values().stream();}
+
+	public Stream<T> stream(final Predicate<T> predicate) {return rowsById.values().stream().filter(predicate);}
+
+	public long count(final Predicate<T> predicate) {return rowsById.values().stream().filter(predicate).count();}
+
+	public boolean anyMatch(final Predicate<T> predicate) {return rowsById.values().stream().anyMatch(predicate);}
 }

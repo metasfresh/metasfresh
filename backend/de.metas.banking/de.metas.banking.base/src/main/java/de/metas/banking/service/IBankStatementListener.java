@@ -1,10 +1,10 @@
 package de.metas.banking.service;
 
-import java.util.List;
-
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.payment.PaymentLinkResult;
 import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
@@ -30,9 +30,6 @@ import lombok.NonNull;
 
 /**
  * Listens to bank statements events.
- * 
- * To implement a new listener, please consider extending {@link BankStatementListenerAdapter}.
- * 
  * To register a new listener, please use {@link IBankStatementListenerService}.
  * 
  * @author metas-dev <dev@metasfresh.com>

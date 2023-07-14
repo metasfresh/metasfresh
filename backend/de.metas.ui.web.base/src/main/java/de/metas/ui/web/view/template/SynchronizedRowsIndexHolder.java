@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -42,15 +43,11 @@ import java.util.function.UnaryOperator;
  */
 public class SynchronizedRowsIndexHolder<T extends IViewRow>
 {
-	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final List<T> rows)
-	{
-		return of(ImmutableRowsIndex.of(rows));
-	}
+	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> empty() {return new SynchronizedRowsIndexHolder<>(ImmutableRowsIndex.empty());}
 
-	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final ImmutableRowsIndex<T> initialRowIndex)
-	{
-		return new SynchronizedRowsIndexHolder<>(initialRowIndex);
-	}
+	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final List<T> rows) {return new SynchronizedRowsIndexHolder<>(ImmutableRowsIndex.of(rows));}
+
+	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final ImmutableRowsIndex<T> initialRowIndex) {return new SynchronizedRowsIndexHolder<>(initialRowIndex);}
 
 	private final SynchronizedMutable<ImmutableRowsIndex<T>> holder;
 
@@ -71,9 +68,27 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		return getRowsIndex().getRecordIdsToRefresh(rowIds, idMapper);
 	}
 
+	public Stream<T> stream() {return getRowsIndex().stream();}
+
+	public Stream<T> stream(Predicate<T> predicate) {return getRowsIndex().stream(predicate);}
+
+	public long count(Predicate<T> predicate) {return getRowsIndex().count(predicate);}
+
+	public boolean anyMatch(final Predicate<T> predicate) {return getRowsIndex().anyMatch(predicate);}
+
 	public void compute(@NonNull final UnaryOperator<ImmutableRowsIndex<T>> remappingFunction)
 	{
 		holder.compute(remappingFunction);
+	}
+
+	public void changeRowById(@NonNull DocumentId rowId, @NonNull final UnaryOperator<T> rowMapper)
+	{
+		compute(rows -> rows.changingRow(rowId, rowMapper));
+	}
+
+	public void changeRowsByIds(@NonNull DocumentIdsSelection rowIds, @NonNull final UnaryOperator<T> rowMapper)
+	{
+		compute(rows -> rows.changingRows(rowIds, rowMapper));
 	}
 
 	public void setRows(@NonNull final List<T> rows)

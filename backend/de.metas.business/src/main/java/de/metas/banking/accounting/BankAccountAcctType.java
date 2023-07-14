@@ -1,11 +1,10 @@
 package de.metas.banking.accounting;
 
-import lombok.AllArgsConstructor;
+import de.metas.acct.AccountConceptualName;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_BP_BankAccount_Acct;
 
-@AllArgsConstructor
 public enum BankAccountAcctType
 {
 
@@ -44,7 +43,6 @@ public enum BankAccountAcctType
 
 	Payment_WriteOff_Acct(I_C_BP_BankAccount_Acct.COLUMNNAME_Payment_WriteOff_Acct),
 
-
 	/**
 	 * Allocation - Realized Gain
 	 */
@@ -56,5 +54,10 @@ public enum BankAccountAcctType
 	RealizedLoss_Acct(I_C_BP_BankAccount_Acct.COLUMNNAME_RealizedLoss_Acct),
 	;
 
-	@Getter @NonNull private final String columnName;
+	@Getter @NonNull private final AccountConceptualName accountConceptualName;
+
+	BankAccountAcctType(final @NonNull String columnName)
+	{
+		this.accountConceptualName = AccountConceptualName.ofString(columnName);
+	}
 }

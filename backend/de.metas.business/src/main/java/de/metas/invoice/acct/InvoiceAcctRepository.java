@@ -1,6 +1,7 @@
 package de.metas.invoice.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cache.CCache;
@@ -79,7 +80,7 @@ public class InvoiceAcctRepository
 		return InvoiceAcctRuleMatcher.builder()
 				.invoiceLineId(InvoiceLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.accountTypeName(AccountTypeName.ofNullableColumnName(record.getAccountName()))
+				.accountConceptualName(AccountConceptualName.ofNullableString(record.getAccountName()))
 				.build();
 	}
 
@@ -114,6 +115,6 @@ public class InvoiceAcctRepository
 	{
 		record.setC_AcctSchema_ID(from.getAcctSchemaId().getRepoId());
 		record.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(from.getInvoiceLineId()));
-		record.setAccountName(from.getAccountTypeName() != null ? from.getAccountTypeName().getColumnName() : null);
+		record.setAccountName(from.getAccountConceptualName() != null ? from.getAccountConceptualName().getAsString() : null);
 	}
 }

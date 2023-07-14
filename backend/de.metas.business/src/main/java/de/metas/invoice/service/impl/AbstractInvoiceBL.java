@@ -39,6 +39,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
 import de.metas.forex.ForexContractService;
 import de.metas.i18n.AdMessageKey;
@@ -140,6 +141,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -2012,4 +2014,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	}
 
+	@Override
+	public boolean hasInvoicesWithForexContracts(
+			@NonNull final OrderId orderId,
+			@NonNull final Set<ForexContractId> contractIds)
+	{
+		Check.assumeNotEmpty(contractIds, "contractIds shall not be empty");
+
+		return getByOrderId(orderId)
+				.stream()
+				.map(InvoiceDAO::extractForeignContractRef)
+				.filter(Objects::nonNull)
+				.map(ForexContractRef::getForexContractId)
+				.anyMatch(contractIds::contains);
+	}
 }

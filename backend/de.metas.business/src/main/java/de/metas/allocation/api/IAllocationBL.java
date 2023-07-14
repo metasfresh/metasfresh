@@ -1,6 +1,8 @@
 package de.metas.allocation.api;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -12,6 +14,7 @@ import de.metas.util.ISingletonService;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Optional;
 
 public interface IAllocationBL extends ISingletonService
 {
@@ -37,7 +40,6 @@ public interface IAllocationBL extends ISingletonService
 	 * @param invoice the invoice to allocate against.
 	 * @param payment to allocate
 	 * @param ignoreIsAutoAllocateAvailableAmt if <code>false</code> then we only create the allocation if the payment has {@link I_C_Payment#COLUMN_IsAutoAllocateAvailableAmt} <code>='Y'</code>.
-	 * @return the created an completed allocation or <code>null</code>, if the invoice is already fully paid, or is a PO-invoice, or is a credit memo or payment and invoice are not matching
 	 * @implSpec task 07783
 	 */
 	void autoAllocateSpecificPayment(org.compiere.model.I_C_Invoice invoice,
@@ -48,6 +50,10 @@ public interface IAllocationBL extends ISingletonService
 	 * @return <code>true</code> if the given allocationHdr is the reversal of another allocationHdr.
 	 */
 	boolean isReversal(I_C_AllocationHdr allocationHdr);
+
+	Optional<InvoiceId> getInvoiceId(PaymentAllocationLineId lineId);
+
+	Optional<PaymentId> getPaymentId(PaymentAllocationLineId lineId);
 
 	@Value
 	@Builder

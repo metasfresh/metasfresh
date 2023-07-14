@@ -49,6 +49,7 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -62,6 +63,7 @@ import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
@@ -443,6 +445,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Fire event: BEFORE_POST
 		services.fireBeforePostEvent(getPO());
+
+		//
+		// Update Open Items Matching
+		for (final Fact fact : facts)
+		{
+			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
+		}
 
 		//
 		// Save facts
@@ -1726,4 +1735,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			services.postImmediateNoFail(documentRef, clientId);
 		}
 	}
+
+	@Nullable
+	public String getPOReference() {return StringUtils.trimBlankToNull(getValueAsString(I_Fact_Acct.COLUMNNAME_POReference));}
 }   // Doc

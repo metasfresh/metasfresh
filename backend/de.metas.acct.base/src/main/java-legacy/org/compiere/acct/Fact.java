@@ -36,9 +36,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
@@ -705,26 +703,26 @@ public final class Fact
 		{
 			factTrxLinesStrategy
 					.createFactTrxLines(m_lines)
-					.forEach(this::save);
+					.forEach(this::saveNew);
 		}
 		else
 		{
-			m_lines.forEach(line -> InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited));
+			m_lines.forEach(this::saveNew);
 		}
 	}
 
-	private void save(final FactTrxLines factTrxLines)
+	private void saveNew(final FactTrxLines factTrxLines)
 	{
 		//
 		// Case: 1 debit line, one or more credit lines
 		if (factTrxLines.getType() == FactTrxLinesType.Debit)
 		{
 			final FactLine drLine = factTrxLines.getDebitLine();
-			InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
+			saveNew(drLine);
 
 			factTrxLines.forEachCreditLine(crLine -> {
 				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
+				saveNew(crLine);
 			});
 
 		}
@@ -733,11 +731,11 @@ public final class Fact
 		else if (factTrxLines.getType() == FactTrxLinesType.Credit)
 		{
 			final FactLine crLine = factTrxLines.getCreditLine();
-			InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
+			saveNew(crLine);
 
 			factTrxLines.forEachDebitLine(drLine -> {
 				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
+				saveNew(drLine);
 			});
 		}
 		//
@@ -753,7 +751,12 @@ public final class Fact
 
 		//
 		// also save the zero lines, if they are here
-		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, ITrx.TRXNAME_ThreadInherited));
+		factTrxLines.forEachZeroLine(this::saveNew);
+	}
+
+	private void saveNew(@NonNull final FactLine factLine)
+	{
+		services.saveNew(factLine);
 	}
 
 	public void forEach(final Consumer<FactLine> consumer)
