@@ -218,3 +218,39 @@ Feature: sales order
       | 150        | 0          | p_31_1                  |
       | 100        | 0          | p_32                    |
     And the sales order identified by 'o_3' is not closed
+
+  @from:cucumber
+  Scenario: validate warehouse assignment
+    Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | salesProduct_07142023_1 |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_07142023_1 | pricing_system_value_07142023_1 | pricing_system_description_07142023_1 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_07142023_1 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                      | ValidFrom  |
+      | plv_1      | pl_1                      | salesOrder-PLV_07142023_1 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 0.0      | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                             | Name                             |
+      | warehouse_1               | warehouseValueOutgoing_07142023_1 | warehouseNameOutgoing_07142023_1 |
+      | warehouse_2               | warehouseValueOutgoing_07142023_2 | warehouseNameOutgoing_07142023_2 |
+    And metasfresh contains M_Product_Warehouse
+      | M_Product_Warehouse_ID.Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier |
+      | a_1                               | p_1                     | warehouse_1               |
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_07142023_1 | N            | Y              | ps_1                          |
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | warehouse_2                   |
+    Then metasfresh contains C_OrderLines expecting error:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.ErrorMessage                                                                       |
+      | ol_1       | o_1                   | p_1                     | 10         | The warehouses assigned to both the sales/purchase order and the product do not match. |
+

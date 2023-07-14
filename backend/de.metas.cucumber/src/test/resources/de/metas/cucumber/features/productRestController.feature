@@ -9,7 +9,9 @@ Feature:product get/create/update using metasfresh api
       | ALBERTA        | 345               | Product  |
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
+      | ALBERTA        | 346               | Product  |
     And no product with value 'code345' exists
+    And no product with value 'code346' exists
 
   @from:cucumber
   Scenario: create Product request, as a REST-API invoker
@@ -23,6 +25,10 @@ Feature:product get/create/update using metasfresh api
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value                   |
       | ALBERTA_345_sectionCode     | ALBERTA_345_sectionCode |
+
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                           | Name                           |
+      | warehouse                 | warehouseValueOutgoing_07122023 | warehouseNameOutgoing_07122023 |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -64,6 +70,16 @@ Feature:product get/create/update using metasfresh api
         "purchasedSet":true,
         "sapProductHierarchy": "HH",
         "sapProductHierarchySet": true,
+        "warehouseAssignments": {
+            "warehouses": [
+              "warehouseNameOutgoing_07122023"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          },
+        "warehouseAssignmentsSet": true,
         "bpartnerProductItems": [
           {
             "bpartnerIdentifier": "ext-ALBERTA-345",
@@ -278,3 +294,165 @@ Feature:product get/create/update using metasfresh api
     Then validate get products response
       | M_Product_ID.Identifier | Value     | Name           | UOMSymbol | UPC      | Description      | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason |
       | p_1                     | code345_2 | Product_Test_2 | Stk       | ean_test | test_description | bpartner_1               | test                | true                         | testForSale                       | true                             | testForPurchase                       |
+
+  @from:cucumber
+  Scenario: as a REST-API invoker
+  I want to be able to create product warehouse assignments
+
+    Given metasfresh contains M_SectionCode:
+      | M_SectionCode_ID.Identifier | Value                   |
+      | ALBERTA_346_sectionCode     | ALBERTA_346_sectionCode |
+
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                             | Name                             |
+      | warehouse_1               | warehouseValueOutgoing_07122023_1 | warehouseNameOutgoing_07122023_1 |
+      | warehouse_2               | warehouseValueOutgoing_07122023_2 | warehouseNameOutgoing_07122023_2 |
+      | warehouse_3               | warehouseValueOutgoing_07122023_3 | warehouseNameOutgoing_07122023_3 |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
+  """
+  {
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-346",
+      "externalVersion": null,
+      "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "externalSystemConfigId": 540000,
+      "isReadOnlyInMetasfresh": false,
+      "requestProduct": {
+        "code": "code346",
+        "codeSet": true,
+        "name": "Product_Test_07132023",
+        "nameSet": true,
+        "type": "ITEM",
+        "typeSet": true,
+        "uomCode": "PCE",
+        "uomCodeSet": true,
+        "ean": "ean_test",
+        "eanSet": true,
+        "gtin": "gtin_test",
+        "gtinSet": true,
+        "description": "test_description_07132023",
+        "descriptionSet": true,
+        "discontinued": null,
+        "discontinuedSet": false,
+        "active": true,
+        "activeSet": true,
+        "stocked": null,
+        "stockedSet": false,
+        "productCategoryIdentifier": null,
+        "productCategoryIdentifierSet": false,
+        "syncAdvise": null,
+        "sectionCode":"ALBERTA_346_sectionCode",
+        "sectionCodeSet": true,
+        "purchased":true,
+        "purchasedSet":true,
+        "sapProductHierarchy": "HH",
+        "sapProductHierarchySet": true,
+        "warehouseAssignments": {
+            "requestItems": [
+              {
+                "name": "warehouseNameOutgoing_07122023_1"
+              },
+              {
+                "warehouseIdentifier":"val-warehouseValueOutgoing_07122023_2"
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          },
+        "warehouseAssignmentsSet": true
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+  """
+
+    Then locate product by external identifier
+      | M_Product_ID.Identifier | externalIdentifier |
+      | p_1                     | ext-ALBERTA-346    |
+
+    And locate warehouse assignments
+      | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
+      | p_1                     | a_1,a_2                           |
+
+    And validate warehouse assignments
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier |
+      | a_1                               | warehouse_1               |
+      | a_2                               | warehouse_2               |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
+  """
+  {
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-346",
+      "externalVersion": null,
+      "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "externalSystemConfigId": 540000,
+      "isReadOnlyInMetasfresh": false,
+      "requestProduct": {
+        "code": "code346",
+        "codeSet": true,
+        "name": "Product_Test_07132023",
+        "nameSet": true,
+        "type": "ITEM",
+        "typeSet": true,
+        "uomCode": "PCE",
+        "uomCodeSet": true,
+        "ean": "ean_test",
+        "eanSet": true,
+        "gtin": "gtin_test",
+        "gtinSet": true,
+        "description": "test_description_07132023",
+        "descriptionSet": true,
+        "discontinued": null,
+        "discontinuedSet": false,
+        "active": true,
+        "activeSet": true,
+        "stocked": null,
+        "stockedSet": false,
+        "productCategoryIdentifier": null,
+        "productCategoryIdentifierSet": false,
+        "syncAdvise": null,
+        "sectionCode":"ALBERTA_346_sectionCode",
+        "sectionCodeSet": true,
+        "purchased":true,
+        "purchasedSet":true,
+        "sapProductHierarchy": "HH",
+        "sapProductHierarchySet": true,
+        "warehouseAssignments": {
+            "requestItems": [
+              {
+                "name": "warehouseNameOutgoing_07122023_3"
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          },
+        "warehouseAssignmentsSet": true
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+  """
+
+    Then locate warehouse assignments
+      | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
+      | p_1                     | a_3                               |
+
+    And validate warehouse assignments
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier |
+      | a_3                               | warehouse_3               |

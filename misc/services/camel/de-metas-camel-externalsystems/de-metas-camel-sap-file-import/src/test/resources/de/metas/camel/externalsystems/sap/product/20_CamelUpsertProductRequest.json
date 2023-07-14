@@ -37,7 +37,19 @@
           "purchased": true,
           "purchasedSet": true,
           "sapProductHierarchy": "335  81",
-          "sapProductHierarchySet": true
+          "sapProductHierarchySet": true,
+          "warehouseAssignments": {
+            "requestItems": [
+              {
+                "name": "XXXX"
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          },
+          "warehouseAssignmentsSet": true
         }
       }
     ],

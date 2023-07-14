@@ -3,10 +3,8 @@ package de.metas.order.model.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.dimension.DimensionService;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.Topic;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.impl.OrderLineDetailRepository;
 import lombok.NonNull;
@@ -21,12 +19,10 @@ import java.util.List;
  */
 public class OrderModuleInterceptor extends AbstractModuleInterceptor
 {
-	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService = SpringContextHolder.instance.getBean(BPartnerSupplierApprovalService.class);
 	private final IBPartnerBL bpartnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
-	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
@@ -38,6 +34,5 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService)); // FRESH-348
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService, dimensionService));
 	}
 }

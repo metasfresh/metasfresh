@@ -22,7 +22,9 @@
 
 package de.metas.common.product.v2.request;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import lombok.NonNull;
 
 import java.util.Collections;
 
@@ -83,6 +85,18 @@ public class JsonRequestUtil
 		return JsonRequestProductUpsertItem.builder()
 				.requestProduct(getJsonRequestProduct())
 				.productIdentifier("test")
+				.build();
+	}
+
+	@NonNull
+	public static JsonRequestProductWarehouseAssignmentCreate getJsonRequestWarehouseAssignmentUpsert()
+	{
+		return JsonRequestProductWarehouseAssignmentCreate.builder()
+				.requestItems(ImmutableList.of(JsonRequestProductWarehouseAssignmentCreateItem.builder()
+													   .warehouseIdentifier("warehouseIdentifier")
+													   .name("name")
+													   .build()))
+				.syncAdvise(SyncAdvise.REPLACE)
 				.build();
 	}
 }
