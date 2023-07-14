@@ -25,7 +25,6 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -245,11 +244,6 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.parse(message);
 		this.mdcContextMap = captureMDCContextMap();
-	}
-
-	public AdempiereException(final String message, final Object... arguments)
-	{
-		this(MessageFormat.format(message, arguments));
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message)

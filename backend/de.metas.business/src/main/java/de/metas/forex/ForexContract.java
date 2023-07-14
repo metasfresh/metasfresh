@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import static de.metas.forex.ForexContractService.FOREX_CONTRACT_SECTION_DOESNT_MATCH_DOCUMENT;
+
 @EqualsAndHashCode
 @ToString
 public class ForexContract
@@ -187,7 +189,7 @@ public class ForexContract
 
 		if (!this.sectionCodeId.equals(documentSectionCodeId))
 		{
-			throw new AdempiereException("ForexContract.SectionCode ({0}) shall match the Document.SectionCode ({1})",
+			throw new AdempiereException(FOREX_CONTRACT_SECTION_DOESNT_MATCH_DOCUMENT,
 										 sectionCodeId.getRepoId(),
 										 documentSectionCodeId.getRepoId());
 		}
