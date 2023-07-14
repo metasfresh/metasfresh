@@ -60,6 +60,8 @@ import java.util.stream.Stream;
 
 public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
+
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
 	private PickingSlotId pickingSlotId;
 
@@ -218,7 +220,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final ProcessPickingRequest.ProcessPickingRequestBuilder pickingRequestBuilder = ProcessPickingRequest.builder()
 				.huIds(ImmutableSet.of(huId))
 				.shipmentScheduleId(shipmentScheduleId)
-				.isTakeWholeHU(isTakeWholeHU);
+				.shouldSplitHUIfOverDelivery(!isTakeWholeHU);
 
 		final IView view = getView();
 		if (view instanceof PPOrderLinesView)
