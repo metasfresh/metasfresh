@@ -676,8 +676,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		}
 
 		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Processed, true);
+				.addOnlyActiveRecordsFilter();
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
@@ -695,7 +694,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		final ArrayList<I_C_InvoiceLine> matchedByInOutLine = new ArrayList<>();
 		final ArrayList<I_C_InvoiceLine> matchedByOrderLine = new ArrayList<>();
-		for (I_C_InvoiceLine invoiceLine : invoiceLines)
+		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
 			if (invoiceLine.getM_InOutLine_ID() == inoutLineId.getRepoId())
 			{
