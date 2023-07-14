@@ -94,7 +94,7 @@ public class MsgBL implements IMsgBL
 	@Override
 	public ITranslatableString translatable(final String text)
 	{
-		if (Check.isEmpty(text, true))
+		if (Check.isBlank(text))
 		{
 			return TranslatableStrings.constant(text);
 		}

@@ -15,10 +15,11 @@ import {
 } from '../../actions/WindowActions';
 
 import keymap from '../../shortcuts/keymap';
-import { renderHeaderProperties } from '../../utils/documentListHelper';
+import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import ModalButton from '../modal/ModalButton';
 import ModalComponent from '../modal/ModalComponent';
+import { OIViewHeader_WINDOW_ID } from '../deliveryPlanning/OIViewHeader';
 
 /**
  * View modal
@@ -239,12 +240,22 @@ class RawModal extends Component {
   };
 
   render() {
-    const { modalTitle, children, modalDescription, rawModal, indicator } =
-      this.props;
+    const {
+      windowId,
+      modalTitle,
+      children,
+      modalDescription,
+      rawModal,
+      indicator,
+    } = this.props;
 
     if (!children) {
       return null;
     }
+
+    const isRenderHeaderProperties =
+      !!rawModal.headerProperties &&
+      String(windowId) !== OIViewHeader_WINDOW_ID;
 
     return (
       <ModalComponent
@@ -252,8 +263,8 @@ class RawModal extends Component {
         description={modalDescription}
         indicator={indicator}
         renderHeaderProperties={() =>
-          rawModal.headerProperties
-            ? renderHeaderProperties(rawModal.headerProperties.groups)
+          isRenderHeaderProperties
+            ? renderHeaderPropertiesGroups(rawModal.headerProperties.groups)
             : null
         }
         renderButtons={this.renderButtons}

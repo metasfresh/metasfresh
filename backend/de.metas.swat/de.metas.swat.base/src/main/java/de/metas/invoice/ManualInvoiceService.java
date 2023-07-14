@@ -33,7 +33,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.invoice.acct.AccountTypeName;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.acct.InvoiceAcctRule;
 import de.metas.invoice.acct.InvoiceAcctRuleMatcher;
@@ -151,7 +150,7 @@ public class ManualInvoiceService
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
 		manualInvoiceRepository.applyAndSave(invoiceLineId,
-											 (invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
+				(invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
 	}
 
 	private void saveInvoiceCustomColumns(
@@ -159,7 +158,7 @@ public class ManualInvoiceService
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
 		manualInvoiceRepository.applyAndSave(invoiceId,
-											 (invoiceRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceRecord), valuesByColumnName));
+				(invoiceRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceRecord), valuesByColumnName));
 	}
 
 	private void handleAcctData(
@@ -170,9 +169,9 @@ public class ManualInvoiceService
 				.stream()
 				.filter(line -> line.getElementValueId() != null)
 				.map(line -> buildInvoiceAcctRule(line.getElementValueId(),
-												  invoice.getRepoIdByExternalLineId(line.getExternalLineId()),
-												  request.getAcctSchema().getId(),
-												  line.getProductAcctType()))
+						invoice.getRepoIdByExternalLineId(line.getExternalLineId()),
+						request.getAcctSchema().getId(),
+						line.getProductAcctType()))
 				.collect(ImmutableList.toImmutableList());
 
 		if (rules.isEmpty())
@@ -216,11 +215,11 @@ public class ManualInvoiceService
 		final ImmutableList<CreateManualInvoiceLineRequest> lines = request.getLines()
 				.stream()
 				.map(requestLine -> buildManualInvoiceLine(request,
-														   requestLine,
-														   priceListId,
-														   countryId,
-														   bPartnerLocationAndCaptureId,
-														   zoneId))
+						requestLine,
+						priceListId,
+						countryId,
+						bPartnerLocationAndCaptureId,
+						zoneId))
 				.collect(ImmutableList.toImmutableList());
 
 		return createManualInvoiceRequestBuilder
@@ -323,10 +322,10 @@ public class ManualInvoiceService
 			@NonNull final ZoneId zoneId)
 	{
 		final IEditablePricingContext editablePricingContext = pricingBL.createInitialContext(header.getOrgId(),
-																							  requestLine.getProductId(),
-																							  header.getBillBPartnerId(),
-																							  requestLine.getQtyToInvoice(),
-																							  header.getSoTrx())
+						requestLine.getProductId(),
+						header.getBillBPartnerId(),
+						requestLine.getQtyToInvoice(),
+						header.getSoTrx())
 				.setFailIfNotCalculated();
 
 		editablePricingContext.setPriceListId(priceListId);
@@ -387,13 +386,10 @@ public class ManualInvoiceService
 		return InvoiceAcctRule.builder()
 				.elementValueId(elementValueId)
 				.matcher(InvoiceAcctRuleMatcher.builder()
-								 .invoiceLineId(invoiceLineId)
-								 .acctSchemaId(acctSchemaId)
-								 .accountTypeName(Optional.ofNullable(productAcctType)
-														  .map(ProductAcctType::getColumnName)
-														  .map(AccountTypeName::ofColumnName)
-														  .orElse(null))
-								 .build())
+						.invoiceLineId(invoiceLineId)
+						.acctSchemaId(acctSchemaId)
+						.accountConceptualName(productAcctType != null ? productAcctType.getAccountConceptualName() : null)
+						.build())
 				.build();
 	}
 

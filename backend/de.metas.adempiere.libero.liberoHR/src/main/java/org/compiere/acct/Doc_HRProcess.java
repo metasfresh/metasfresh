@@ -15,6 +15,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -165,7 +166,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		final String sqlAccount = "SELECT " + field + " FROM HR_Concept_Acct"
 				+ " WHERE HR_Concept_ID=? AND C_AcctSchema_ID=?";
 		final AccountId accountId = AccountId.ofRepoId(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId));
-		return Account.of(accountId, field);
+		return Account.of(accountId, AccountConceptualName.ofString(field));
 	}
 
 }   // Doc_Payroll

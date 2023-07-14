@@ -1,12 +1,15 @@
 package de.metas.acct.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
+import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.document.engine.IDocument;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -19,8 +22,13 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -31,6 +39,8 @@ public class FactAcctDAO implements IFactAcctDAO
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 
+	private static final String ACCOUNTCONCEPTUALNAME_NULL_MARKER = "NOTSET";
+
 	@Override
 	public I_Fact_Acct getById(final int factAcctId)
 	{
@@ -38,43 +48,46 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public int deleteForDocument(final IDocument document)
+	public void save(@NonNull final I_Fact_Acct factAcct)
 	{
-		final int countDeleted = retrieveQueryForDocument(document)
+		InterfaceWrapperHelper.save(factAcct, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
+	public void deleteForDocument(final IDocument document)
+	{
+		retrieveQueryForDocument(document)
 				.create()
 				.deleteDirectly();
 
 		factAcctListenersService.fireAfterUnpost(document);
 
-		return countDeleted;
 	}
 
 	@Override
-	public int deleteForDocumentModel(@NonNull final Object documentObj)
+	public void deleteForDocumentModel(@NonNull final Object documentObj)
 	{
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(documentObj);
 		final int recordId = InterfaceWrapperHelper.getId(documentObj);
-		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
+		retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
 				.create()
 				.deleteDirectly();
 
 		factAcctListenersService.fireAfterUnpost(documentObj);
 
-		return countDeleted;
 	}
 
 	@Override
-	public int deleteForRecordRef(@NonNull final TableRecordReference recordRef)
+	public void deleteForRecordRef(@NonNull final TableRecordReference recordRef)
 	{
 		final int adTableId = recordRef.getAD_Table_ID();
 		final int recordId = recordRef.getRecord_ID();
-		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
+		retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
 				.create()
 				.deleteDirectly();
 
 		factAcctListenersService.fireAfterUnpost(recordRef);
 
-		return countDeleted;
 	}
 
 	@Override
@@ -129,12 +142,12 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public int updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
+	public void updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
 	{
 		// Make sure we are updating the Fact_Acct records in a transaction
 		trxManager.assertThreadInheritedTrxExists();
 
-		return queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
+		queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId)
@@ -142,6 +155,19 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
+				.execute();
+	}
+
+	@Override
+	public void updatePOReference(@NonNull final TableRecordReference recordRef, @Nullable final String poReference)
+	{
+		queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_POReference, poReference)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_POReference, poReference)
 				.execute();
 	}
 
@@ -166,32 +192,179 @@ public class FactAcctDAO implements IFactAcctDAO
 		return toSqlQuery(query).list();
 	}
 
+	@Override
+	public Stream<I_Fact_Acct> stream(@NonNull final FactAcctQuery query)
+	{
+		return toSqlQuery(query).stream();
+	}
+
 	private IQuery<I_Fact_Acct> toSqlQuery(@NonNull final FactAcctQuery query)
 	{
-		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
+		final IQueryBuilder<I_Fact_Acct> sqlQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
 				.orderBy(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID);
 
 		if (query.getAcctSchemaId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
 		}
-		if (!Check.isBlank(query.getAccountConceptualName()))
+		if (query.getAccountConceptualNames() != null && !query.getAccountConceptualNames().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, query.getAccountConceptualName());
+			final Set<String> accountConceptualNames = query.getAccountConceptualNames()
+					.stream()
+					.map(AccountConceptualName::getAsString)
+					.collect(Collectors.toSet());
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualNames);
 		}
+		if (query.getAccountIds() != null && !query.getAccountIds().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_Account_ID, query.getAccountIds());
+		}
+		if (query.getPostingType() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, query.getPostingType());
+		}
+
+		if (query.getDateAcct() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DateAcct, query.getDateAcct());
+		}
+
+		//
+		// Referenced document
 		if (query.getTableName() != null)
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableDAO.retrieveAdTableId(query.getTableName()));
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableDAO.retrieveAdTableId(query.getTableName()));
 		}
 		if (query.getRecordId() > 0)
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, query.getRecordId());
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, query.getRecordId());
 		}
 		if (query.getLineId() > 0)
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, query.getLineId());
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, query.getLineId());
 		}
 
-		return queryBuilder.create();
+		//
+		// Open Items Query
+		if (query.getIsOpenItem() != null)
+		{
+			final boolean isOpenItem = query.getIsOpenItem();
+			if (isOpenItem)
+			{
+				sqlQueryBuilder.addNotNull(I_Fact_Acct.COLUMNNAME_OpenItemKey);
+			}
+			else
+			{
+				sqlQueryBuilder.addIsNull(I_Fact_Acct.COLUMNNAME_OpenItemKey);
+			}
+		}
+		if (query.getIsOpenItemReconciled() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_IsOpenItemsReconciled, query.getIsOpenItemReconciled());
+		}
+		if (query.getOpenItemsKey() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKey().getAsString());
+		}
+		if (query.getOpenItemTrxType() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OI_TrxType, query.getOpenItemTrxType().getCode());
+		}
+
+		if (query.getDocStatus() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		toSqlLikeString(query.getDocumentNoLike())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_DocumentNo, pattern, true));
+		toSqlLikeString(query.getDescriptionLike())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_Description, pattern, true));
+		toSqlLikeString(query.getPoReferenceLike())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_POReference, pattern, true));
+
+		if (!query.getBpartnerIds().isAny())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_ID, query.getBpartnerIds());
+		}
+		if (query.getSectionCodeId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_SectionCode_ID, query.getSectionCodeId());
+		}
+		if (query.getSalesOrderId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_OrderSO_ID, query.getSalesOrderId());
+		}
+
+		toSqlLikeString(query.getUserElementString1Like())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString1, pattern, true));
+		toSqlLikeString(query.getUserElementString2Like())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString2, pattern, true));
+		toSqlLikeString(query.getUserElementString3Like())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString3, pattern, true));
+		toSqlLikeString(query.getUserElementString4Like())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString4, pattern, true));
+		toSqlLikeString(query.getUserElementString5Like())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString5, pattern, true));
+		toSqlLikeString(query.getUserElementString6Like())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString6, pattern, true));
+		toSqlLikeString(query.getUserElementString7Like())
+				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_UserElementString7, pattern, true));
+
+		final IQuery<I_Fact_Acct> sqlQuery = sqlQueryBuilder.create();
+
+		final Set<FactAcctId> includeFactAcctIds = query.getIncludeFactAcctIds();
+		if (includeFactAcctIds != null && !includeFactAcctIds.isEmpty())
+		{
+			final IQuery<I_Fact_Acct> alwaysIncludeQuery = queryBL.createQueryBuilder(I_Fact_Acct.class)
+					.addInArrayFilter(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID, includeFactAcctIds)
+					.create();
+
+			sqlQuery.addUnion(alwaysIncludeQuery, true);
+		}
+
+		return sqlQuery;
+	}
+
+	private static Optional<String> toSqlLikeString(@Nullable final String string)
+	{
+		String stringNorm = StringUtils.trimBlankToNull(string);
+		if (stringNorm == null)
+		{
+			return Optional.empty();
+		}
+		else if ("%".equals(stringNorm))
+		{
+			return Optional.empty();
+		}
+
+		if (!stringNorm.contains("%"))
+		{
+			stringNorm = "%" + stringNorm + "%";
+		}
+
+		return Optional.of(stringNorm);
+	}
+
+	@Nullable
+	public static AccountConceptualName extractAccountConceptualName(final I_Fact_Acct record)
+	{
+		final String accountConceptualName = StringUtils.trimBlankToNull(record.getAccountConceptualName());
+		return accountConceptualName != null && !ACCOUNTCONCEPTUALNAME_NULL_MARKER.equals(accountConceptualName)
+				? AccountConceptualName.ofString(accountConceptualName)
+				: null;
+	}
+
+	public static void setAccountConceptualName(@NonNull final I_Fact_Acct record, @Nullable final AccountConceptualName accountConceptualName)
+	{
+		record.setAccountConceptualName(accountConceptualName != null ? accountConceptualName.getAsString() : ACCOUNTCONCEPTUALNAME_NULL_MARKER);
+	}
+
+	@Override
+	public void setOpenItemKey(@NonNull final FAOpenItemKey openItemKey, @NonNull final FactAcctQuery query)
+	{
+		toSqlQuery(query)
+				.updateDirectly()
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OpenItemKey, openItemKey.getAsString())
+				.execute();
 	}
 }

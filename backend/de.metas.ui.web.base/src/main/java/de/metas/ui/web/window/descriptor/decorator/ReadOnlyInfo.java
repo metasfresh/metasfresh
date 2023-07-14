@@ -33,19 +33,36 @@ import lombok.Value;
 @Builder
 public class ReadOnlyInfo
 {
+	public static final ReadOnlyInfo TRUE = ReadOnlyInfo.builder()
+			.isReadOnly(BooleanWithReason.TRUE)
+			.forceReadOnlySubDocuments(false)
+			.build();
+	public static final ReadOnlyInfo FALSE = ReadOnlyInfo.builder()
+			.isReadOnly(BooleanWithReason.FALSE)
+			.forceReadOnlySubDocuments(false)
+			.build();
+
 	@NonNull
 	public static ReadOnlyInfo of(@NonNull final BooleanWithReason isReadOnly)
 	{
-		return ReadOnlyInfo.builder()
-				.isReadOnly(isReadOnly)
-				.forceReadOnlySubDocuments(false)
-				.build();
+		if (BooleanWithReason.TRUE.equals(isReadOnly))
+		{
+			return TRUE;
+		}
+		else if (BooleanWithReason.FALSE.equals(isReadOnly))
+		{
+			return FALSE;
+		}
+		else
+		{
+			return ReadOnlyInfo.builder()
+					.isReadOnly(isReadOnly)
+					.forceReadOnlySubDocuments(false)
+					.build();
+		}
 	}
 
-	@NonNull
-	@Getter(AccessLevel.NONE)
-	BooleanWithReason isReadOnly;
-
+	@Getter(AccessLevel.NONE) @NonNull BooleanWithReason isReadOnly;
 	boolean forceReadOnlySubDocuments;
 
 	public boolean isReadOnly()

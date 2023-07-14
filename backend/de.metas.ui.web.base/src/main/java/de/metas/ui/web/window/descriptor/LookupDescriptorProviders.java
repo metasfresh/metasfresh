@@ -9,6 +9,7 @@ import de.metas.util.Functions.MemoizingFunction;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -91,21 +92,30 @@ public class LookupDescriptorProviders
 				.build();
 	}
 
-	public LookupDescriptorProvider searchInTable(final String lookupTableName)
+	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName)
 	{
-		return searchInTable(lookupTableName, (AdValRuleId)null);
+		return prepareSearchInTable(lookupTableName).build();
 	}
 
 	@NonNull
-	public LookupDescriptorProvider searchInTable(final String lookupTableName, @Nullable final AdValRuleId ruleId)
+	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName, @Nullable final AdValRuleId ruleId)
+	{
+		return prepareSearchInTable(lookupTableName).setAD_Val_Rule_ID(ruleId).build();
+	}
+
+	@NonNull
+	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName, @Nullable final IValidationRule rule)
+	{
+		return prepareSearchInTable(lookupTableName).addValidationRule(rule).build();
+	}
+
+	private SqlLookupDescriptorProviderBuilder prepareSearchInTable(@NonNull final String lookupTableName)
 	{
 		return sql()
 				.setCtxTableName(null) // tableName
 				.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(lookupTableName))
 				.setDisplayType(DisplayType.Search)
-				.setReadOnlyAccess()
-				.setAD_Val_Rule_ID(ruleId)
-				.build();
+				.setReadOnlyAccess();
 	}
 
 	public LookupDescriptorProvider listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)

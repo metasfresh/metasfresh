@@ -1,6 +1,7 @@
 package de.metas.invoice.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.invoice.InvoiceId;
@@ -45,11 +46,11 @@ public final class InvoiceAcct
 	@NonNull
 	public Optional<ElementValueId> getElementValueId(
 			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final AccountTypeName accountTypeName,
+			@NonNull final AccountConceptualName accountConceptualName,
 			@Nullable final InvoiceLineId invoiceLineId)
 	{
 		return this.rulesOrdered.stream()
-				.filter(rule -> rule.matches(acctSchemaId, accountTypeName, invoiceLineId))
+				.filter(rule -> rule.matches(acctSchemaId, accountConceptualName, invoiceLineId))
 				.findFirst()
 				.map(InvoiceAcctRule::getElementValueId);
 	}

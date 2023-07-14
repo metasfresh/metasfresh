@@ -7,6 +7,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -165,7 +166,22 @@ public final class DocumentFilterParam
 	@Nullable
 	public String getValueAsString()
 	{
-		return value != null ? value.toString() : null;
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)value).getCode();
+		}
+		else if (value instanceof LookupValue)
+		{
+			return ((LookupValue)value).getIdAsString();
+		}
+		else
+		{
+			return value.toString();
+		}
 	}
 
 	public int getValueAsInt(final int defaultValue)
@@ -274,6 +290,16 @@ public final class DocumentFilterParam
 			return null;
 		}
 		return repoIdMapper.apply(idInt);
+	}
+
+	public <T extends ReferenceListAwareEnum> T getValueAsRefListOrNull(@NonNull final Function<String, T> mapper)
+	{
+		final String value = StringUtils.trimBlankToNull(getValueAsString());
+		if (value == null)
+		{
+			return null;
+		}
+		return mapper.apply(value);
 	}
 
 	//
