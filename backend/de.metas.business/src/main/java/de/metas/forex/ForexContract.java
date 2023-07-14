@@ -190,8 +190,8 @@ public class ForexContract
 		if (!this.sectionCodeId.equals(documentSectionCodeId))
 		{
 			throw new AdempiereException(FOREX_CONTRACT_SECTION_DOESNT_MATCH_DOCUMENT,
-										 sectionCodeId.getRepoId(),
-										 documentSectionCodeId.getRepoId());
+										 String.valueOf(sectionCodeId.getRepoId()),
+										 String.valueOf(documentSectionCodeId.getRepoId()));
 		}
 	}
 }
