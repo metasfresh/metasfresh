@@ -32,10 +32,7 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
-import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
+import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
@@ -96,13 +93,11 @@ public class ProductionAdvisedEventCreatorTest
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLotInfo()
 	{
 
-ppProductPlanning.setIsLotForLot(true);
-		saveRecord(ppProductPlanning);
-
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 
 		ppProductPlanning.setIsLotForLot(false);
 		saveRecord(ppProductPlanning);
+
 		Mockito.when(mrpContext.getProductPlanning())
 				.thenReturn(ppProductPlanning);
 
