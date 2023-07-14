@@ -1,8 +1,9 @@
 de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response.Invoice450ToCrossVersionModelToolTest.toCrossVersionResponse=[
   {
     "payload" : {
+    "responseTimestamp"=1537300879,
       "invoice" : {
-        "requestTimestamp" : 1535971639,
+        "requestTimestamp" : 1537300879,
         "requestDate" : 1535925600000,
         "requestId" : "KV_12345"
       },

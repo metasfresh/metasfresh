@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
+import java.math.BigInteger;
 
 /**
  * <p>Java class for payloadType complex type.
@@ -85,7 +85,7 @@ public class PayloadType {
     @XmlAttribute(name = "copy")
     protected Boolean copy;
     @XmlAttribute(name = "response_timestamp", required = true)
-    protected int responseTimestamp;
+    protected BigInteger responseTimestamp;
 
     /**
      * Gets the value of the credit property.
@@ -295,7 +295,7 @@ public class PayloadType {
      * Gets the value of the responseTimestamp property.
      * 
      */
-    public int getResponseTimestamp() {
+    public BigInteger getResponseTimestamp() {
         return responseTimestamp;
     }
 
@@ -303,7 +303,7 @@ public class PayloadType {
      * Sets the value of the responseTimestamp property.
      * 
      */
-    public void setResponseTimestamp(int value) {
+    public void setResponseTimestamp(BigInteger value) {
         this.responseTimestamp = value;
     }
 

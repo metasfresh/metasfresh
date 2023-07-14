@@ -76,7 +76,7 @@ public class Invoice450ToCrossVersionModelTool
 		final XmlPayloadBuilder payloadBuilder = XmlPayload.builder();
 
 		payloadBuilder.invoice(createXmlInvoice(payload.getInvoice()));
-
+		payloadBuilder.responseTimestamp(payload.getResponseTimestamp());
 		payloadBuilder.body(createXmlBody(payload.getBody()));
 
 		return payloadBuilder.build();
