@@ -677,6 +677,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addOnlyActiveRecordsFilter();
+				// .addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Processed, true);
+				// dev-note : this filter is not needed because, when an invoice is created using the process from WEB-UI,
+				// the invoice is not COMPLETED and so the invoice lines are not Processed
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
