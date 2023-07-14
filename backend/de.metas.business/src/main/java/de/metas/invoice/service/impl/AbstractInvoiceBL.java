@@ -41,6 +41,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
+import de.metas.forex.ForexContractService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -80,6 +81,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -178,6 +180,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+
+	private final SpringContextHolder.Lazy<ForexContractService> forexContractServiceLoader =
+			SpringContextHolder.lazyBean(ForexContractService.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -1969,6 +1974,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final ForexContractRef forexContractRef = InvoiceDAO.extractForeignContractRef(invoice);
 		if (forexContractRef != null)
 		{
+			Optional.ofNullable(forexContractRef.getForexContractId())
+					.map(id -> forexContractServiceLoader.get().getById(id))
+					.ifPresent(forexContract -> forexContract.validateSectionCode(SectionCodeId.ofRepoIdOrNull(invoice.getM_SectionCode_ID())));
+
 			conversionCtx = conversionCtx.withFixedConversionRate(forexContractRef.toFixedConversionRate());
 		}
 
