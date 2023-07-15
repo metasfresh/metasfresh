@@ -103,6 +103,8 @@ public interface IPaymentBL extends ISingletonService
 	 */
 	boolean testAllocation(I_C_Payment payment);
 
+	void scheduleUpdateIsAllocated(@NonNull PaymentId paymentId);
+
 	void testAllocation(PaymentId paymentId);
 
 	boolean isCashTrx(final I_C_Payment payment);
