@@ -31,6 +31,7 @@ import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
@@ -115,7 +116,7 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 								.internalName(descriptor.getTargetWindowInternalName())
 								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(windowId, columnInfo.getColumnName()))
 								.priority(relatedDocumentsPriority)
-								.query(query)
+								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
 								.windowCaption(descriptor.getName())
 								.filterByFieldCaption(columnInfo.getCaption())
 								.documentsCountSupplier(recordsCountSupplier)
