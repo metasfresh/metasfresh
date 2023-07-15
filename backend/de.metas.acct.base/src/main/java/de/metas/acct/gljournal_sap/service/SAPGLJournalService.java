@@ -212,9 +212,9 @@ public class SAPGLJournalService
 		faOpenItemsService.fireGLJournalCompleted(glJournal);
 	}
 
-	public void fireBeforeReactivate(final I_SAP_GLJournal record)
+	public void fireAfterReactivate(final I_SAP_GLJournal record)
 	{
 		final SAPGLJournal glJournal = glJournalRepository.getByRecord(record);
-		faOpenItemsService.fireGLJournalBeforeReactivate(glJournal);
+		faOpenItemsService.fireGLJournalReactivated(glJournal);
 	}
 }

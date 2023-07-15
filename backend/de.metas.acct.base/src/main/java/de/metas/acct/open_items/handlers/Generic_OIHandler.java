@@ -72,7 +72,7 @@ public class Generic_OIHandler implements FAOpenItemsHandler
 	}
 
 	@Override
-	public void onGLJournalLineBeforeReactivate(final SAPGLJournalLine line)
+	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
 	{
 		// TODO implement
 	}

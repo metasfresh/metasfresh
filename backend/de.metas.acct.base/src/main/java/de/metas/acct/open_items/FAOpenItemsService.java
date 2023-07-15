@@ -133,7 +133,7 @@ public class FAOpenItemsService
 		}
 	}
 
-	public void fireGLJournalBeforeReactivate(final SAPGLJournal glJournal)
+	public void fireGLJournalReactivated(final SAPGLJournal glJournal)
 	{
 		for (SAPGLJournalLine line : glJournal.getLines())
 		{
@@ -144,7 +144,7 @@ public class FAOpenItemsService
 			}
 
 			final FAOpenItemsHandler handler = getHandler(openItemTrxInfo.getAccountConceptualName());
-			handler.onGLJournalLineBeforeReactivate(line);
+			handler.onGLJournalLineReactivated(line);
 		}
 	}
 

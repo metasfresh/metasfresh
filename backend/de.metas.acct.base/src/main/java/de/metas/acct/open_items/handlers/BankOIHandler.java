@@ -18,6 +18,7 @@ import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -148,13 +149,15 @@ public class BankOIHandler implements FAOpenItemsHandler
 	@Override
 	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
 	{
-		// TODO implement
+		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
+		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
 	}
 
 	@Override
-	public void onGLJournalLineBeforeReactivate(final SAPGLJournalLine line)
+	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
 	{
-		// TODO implement
+		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
+		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
 	}
 
 	//
@@ -179,7 +182,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 						I_C_Payment.COLUMNNAME_C_BankStatementLine_ID,
 						I_C_Payment.COLUMNNAME_C_BankStatementLine_Ref_ID
 				})
-		void updateOpenItemKey(final I_C_Payment payment)
+		void copyOpenItemKeyToFactAcct(final I_C_Payment payment)
 		{
 			final FAOpenItemKey openItemKey = computeOpenItemKey_B_InTransit(payment);
 			factAcctDAO.setOpenItemKey(openItemKey, FactAcctQuery.builder()

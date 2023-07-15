@@ -15,5 +15,5 @@ public interface FAOpenItemsHandler
 
 	void onGLJournalLineCompleted(SAPGLJournalLine line);
 
-	void onGLJournalLineBeforeReactivate(SAPGLJournalLine line);
+	void onGLJournalLineReactivated(SAPGLJournalLine line);
 }

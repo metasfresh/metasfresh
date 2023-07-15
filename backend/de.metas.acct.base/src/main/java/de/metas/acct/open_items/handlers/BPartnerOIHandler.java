@@ -15,6 +15,7 @@ import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,6 +38,7 @@ public class BPartnerOIHandler implements FAOpenItemsHandler
 
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	@Override
 	public @NonNull Set<AccountConceptualName> getHandledAccountConceptualNames()
@@ -127,12 +129,14 @@ public class BPartnerOIHandler implements FAOpenItemsHandler
 	{
 		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
 		openItemTrxInfo.getKey().getInvoiceId().ifPresent(invoiceBL::scheduleUpdateIsPaid);
+		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
 	}
 
 	@Override
-	public void onGLJournalLineBeforeReactivate(final SAPGLJournalLine line)
+	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
 	{
 		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
 		openItemTrxInfo.getKey().getInvoiceId().ifPresent(invoiceBL::scheduleUpdateIsPaid);
+		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
 	}
 }

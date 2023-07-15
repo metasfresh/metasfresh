@@ -77,10 +77,10 @@ public class SAP_GLJournal
 		glJournalService.fireAfterComplete(record);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void beforeReactivate(final I_SAP_GLJournal record)
 	{
-		glJournalService.fireBeforeReactivate(record);
+		glJournalService.fireAfterReactivate(record);
 	}
 
 }
