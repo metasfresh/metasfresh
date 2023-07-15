@@ -502,7 +502,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void scheduleUpdateIsPaid(@NonNull final InvoiceId invoiceId)
 	{
 		trxManager.accumulateAndProcessAfterCommit(
-				"invoiceBL.testAllocatedAfterCommit",
+				"invoiceBL.scheduleUpdateIsPaid",
 				ImmutableSet.of(invoiceId),
 				this::testAllocated);
 	}
