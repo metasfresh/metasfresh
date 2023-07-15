@@ -119,7 +119,6 @@ public interface IPaymentBL extends ISingletonService
 
 	/**
 	 * WriteOff given payment.
-	 *
 	 * NOTE: transaction is automatically handled (thread inherited transaction will be used or a new one will be created).
 	 *
 	 * @param writeOffAmt amount to write-off

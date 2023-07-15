@@ -555,9 +555,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	/**
 	 * Gets Invoice Grand Total (absolute value).
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	public final BigDecimal getGrandTotalAbs(final org.compiere.model.I_C_Invoice invoice)
 	{
@@ -1089,7 +1086,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * every block, which are supposed to increase the clear arrangement in the Invoice window. None of these lines are attached to a M_InOutLine which means that the Virtual Column M_InOut_ID is
 	 * NULL. This causes Problems when trying to order the lines, so first we need to allocate an InOut_ID to each InvoiceLine. To do this a hash map is used.
 	 *
-	 * @param lines
 	 * @return comparator
 	 */
 	private Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
