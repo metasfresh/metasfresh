@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -38,9 +39,11 @@ public class FactAcctQuery
 	int recordId;
 	int lineId;
 
+	@Nullable TableRecordReference excludeRecordRef;
+
 	@Nullable Boolean isOpenItem;
 	@Nullable Boolean isOpenItemReconciled;
-	@Nullable FAOpenItemKey openItemsKey;
+	@Nullable @Singular Set<FAOpenItemKey> openItemsKeys;
 	@Nullable FAOpenItemTrxType openItemTrxType;
 
 	@Nullable @Singular Set<DocStatus> docStatuses;
