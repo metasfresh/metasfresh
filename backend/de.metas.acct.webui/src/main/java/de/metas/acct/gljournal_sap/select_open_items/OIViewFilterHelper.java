@@ -6,6 +6,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
@@ -57,7 +58,8 @@ class OIViewFilterHelper
 						.widgetType(DocumentFieldWidgetType.Lookup)
 						.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_C_Order.Table_Name).provideForFilter()))
 				.addParameter(newParamDescriptor(PARAM_DateAcct)
-						.widgetType(DocumentFieldWidgetType.LocalDate))
+						.widgetType(DocumentFieldWidgetType.LocalDate)
+						.operator(DocumentFilterParam.Operator.BETWEEN))
 				.addParameter(newParamDescriptor(PARAM_DocumentNo)
 						.widgetType(DocumentFieldWidgetType.Text))
 				.addParameter(newParamDescriptor(PARAM_Description)
@@ -69,8 +71,7 @@ class OIViewFilterHelper
 						.widgetType(DocumentFieldWidgetType.List)
 						.lookupDescriptor(lookupDescriptorProviders.listByAD_Reference_Value_ID(DocStatus.AD_REFERENCE_ID).provideForFilter()))
 				.addParameter(newParamDescriptor(PARAM_POReference)
-						.widgetType(DocumentFieldWidgetType.Text))
-				;
+						.widgetType(DocumentFieldWidgetType.Text));
 
 		if (acctSchema.isElementEnabled(AcctSchemaElementType.UserElementString1))
 		{

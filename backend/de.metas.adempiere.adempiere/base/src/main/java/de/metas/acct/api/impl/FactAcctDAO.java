@@ -14,6 +14,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -240,6 +241,14 @@ public class FactAcctDAO implements IFactAcctDAO
 		if (query.getDateAcct() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DateAcct, query.getDateAcct());
+		}
+		if (query.getDateAcctLessOrEqualsTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_Fact_Acct.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getDateAcctLessOrEqualsTo());
+		}
+		if (query.getDateAcctGreaterOrEqualsTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_Fact_Acct.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.GREATER_OR_EQUAL, query.getDateAcctGreaterOrEqualsTo());
 		}
 
 		//

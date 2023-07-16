@@ -34,6 +34,8 @@ public class FactAcctQuery
 	@Nullable CurrencyId currencyId;
 
 	@Nullable Instant dateAcct;
+	@Nullable Instant dateAcctLessOrEqualsTo;
+	@Nullable Instant dateAcctGreaterOrEqualsTo;
 
 	@Nullable String tableName;
 	int recordId;
