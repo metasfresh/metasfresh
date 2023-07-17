@@ -1152,27 +1152,6 @@ public interface I_AD_User
 	String COLUMNNAME_IsDunningContact = "IsDunningContact";
 
 	/**
-	 * Set Dunning contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsDunningContact (boolean IsDunningContact);
-
-	/**
-	 * Get Dunning contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isDunningContact();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
-	String COLUMNNAME_IsDunningContact = "IsDunningContact";
-
-	/**
 	 * Set Full BP Access.
 	 * The user/contact has full access to Business Partner information and resources
 	 *
