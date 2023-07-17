@@ -381,6 +381,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * Return first PO that match query criteria
 	 *
 	 * @return first PO
+	 * @throws DBException
 	 */
 	@Override
 	public <ET extends T> ET first() throws DBException
@@ -391,7 +392,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public <ET extends T> ET first(@Nullable final Class<ET> clazz) throws DBException
 	{
-		ET model;
+		ET model = null;
 
 		// metas: begin: not using ORDER BY clause can be a developer error
 		final String orderBy = getOrderBy();
@@ -399,7 +400,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			final AdempiereException ex = new AdempiereException("Using first() without an ORDER BY clause can be a developer error."
 					+ " Please specify ORDER BY clause or in case you know that only one result shall be returned then use firstOnly()."
-					+ " Query: " + this);
+					+ " Query: " + toString());
 			log.warn(ex.getLocalizedMessage(), ex);
 		}
 		// metas: end
@@ -429,9 +430,25 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		return model;
+	}
+
+	/**
+	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be throwed
+	 *
+	 * @return first PO
+	 * @see  #first()
+	 */
+	@Nullable
+	public <ET extends T> ET firstOnly() throws DBException
+	{
+		final Class<ET> clazz = null;
+		final boolean throwExIfMoreThenOneFound = true;
+		return firstOnly(clazz, throwExIfMoreThenOneFound);
 	}
 
 	/**
@@ -534,6 +551,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		//
 		return id;
@@ -698,6 +717,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 	}
 
@@ -787,6 +808,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		//
 		return result;
@@ -966,6 +989,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			if (rsPO == null)
 			{
 				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
 			}
 		}
 	}
@@ -1233,7 +1258,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return sql;
 	}
 
-	private ResultSet createResultSet(final PreparedStatement pstmt) throws SQLException
+	private final ResultSet createResultSet(final PreparedStatement pstmt) throws SQLException
 	{
 		final List<Object> parametersEffective = getParametersEffective();
 		DB.setParameters(pstmt, parametersEffective);
@@ -1301,6 +1326,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		return list;
@@ -1411,7 +1438,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// No single primary key was found.
 		// Build a nice error message and throw it.
 		final List<String> keys = poInfo.getKeyColumnNames();
-		if (keys.isEmpty())
+		if (keys == null || keys.isEmpty())
 		{
 			throw new DBException("Table " + getTableName() + " has no key columns");
 		}
@@ -1527,6 +1554,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Inserts the query result into a <code>T_Selection</code> for the given AD_PInstance_ID
 	 *
+	 * @param pinstanceId
 	 * @return number of records inserted in selection
 	 */
 	@Override
@@ -1634,7 +1662,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	}
 
-	private int updateSql(final ISqlQueryUpdater<T> sqlQueryUpdater)
+	private final int updateSql(final ISqlQueryUpdater<T> sqlQueryUpdater)
 	{
 		// In case we have LIMIT/OFFSET clauses, we shall update the records differently
 		// (i.e. by having a UPDATE FROM (sub select) ).

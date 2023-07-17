@@ -15,7 +15,7 @@ SELECT NULL::numeric                     AS ad_org_id,
        NULL::numeric                     AS c_payment_id,
        NULL::numeric                     AS c_bpartner_id,
        NULL::character varying           AS DocumentNo,
-       NULL::timestamp WITH TIME ZONE    AS paymentdate,
+       NULL::timestamp WITHOUT TIME ZONE AS paymentdate,
        NULL::timestamp WITHOUT TIME ZONE AS dateacct, -- task 09643: separate transaction date form accounting date
        NULL::numeric                     AS C_Currency_ID,
        NULL::character(3)                AS currency_code,

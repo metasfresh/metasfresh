@@ -826,4 +826,11 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		return userRepository.getDefaultDunningContact(bPartnerId);
 	}
+
+	@NonNull
+	@Override
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return userRepository.getDefaultDunningContact(bPartnerId);
+	}
 }

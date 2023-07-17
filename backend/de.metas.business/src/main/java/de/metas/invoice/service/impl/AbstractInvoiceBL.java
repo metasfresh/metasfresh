@@ -103,6 +103,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -116,6 +117,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
@@ -876,6 +878,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		if (docType == null)
+		{
+			return;
+		}
 
 		if (!docType.isCopyDescriptionToDocument())
 		{

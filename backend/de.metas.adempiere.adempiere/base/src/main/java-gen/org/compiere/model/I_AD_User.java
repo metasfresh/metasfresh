@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_User
  *  @author metasfresh (generated) 
@@ -703,6 +702,7 @@ public interface I_AD_User
 
 	/**
 	 * Set EMail User ID.
+	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
 	 * <br>Type: String
@@ -1129,6 +1129,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
 	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
+
+	/**
+	 * Set Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsDunningContact (boolean IsDunningContact);
+
+	/**
+	 * Get Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isDunningContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
+	String COLUMNNAME_IsDunningContact = "IsDunningContact";
 
 	/**
 	 * Set Dunning contact.
