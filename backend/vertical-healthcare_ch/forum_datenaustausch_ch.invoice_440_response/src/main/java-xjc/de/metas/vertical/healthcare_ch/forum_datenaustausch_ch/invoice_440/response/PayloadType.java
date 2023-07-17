@@ -86,7 +86,7 @@ public class PayloadType {
     protected Boolean creditAdvice;
     @XmlAttribute(name = "response_timestamp", required = true)
     @XmlSchemaType(name = "unsignedLong")
-    protected BigInteger responseTimestamp;
+    protected int responseTimestamp;
 
     /**
      * Gets the value of the credit property.
@@ -324,9 +324,9 @@ public class PayloadType {
      * Gets the value of the responseTimestamp property.
      *
      * @return possible object is
-     * {@link BigInteger }
+     * {@link int }
      */
-    public @NonNull BigInteger getResponseTimestamp() {
+    public @NonNull int getResponseTimestamp() {
         return responseTimestamp;
     }
 
@@ -335,10 +335,10 @@ public class PayloadType {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link int }
      *     
      */
-    public void setResponseTimestamp(BigInteger value) {
+    public void setResponseTimestamp(int value) {
         this.responseTimestamp = value;
     }
 
