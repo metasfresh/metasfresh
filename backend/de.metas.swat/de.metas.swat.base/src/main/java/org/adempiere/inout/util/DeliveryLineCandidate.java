@@ -1,7 +1,12 @@
 package org.adempiere.inout.util;
 
-import de.metas.inout.ShipmentScheduleId;
+import java.math.BigDecimal;
+
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
@@ -11,10 +16,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import java.math.BigDecimal;
 
 /*
  * #%L

@@ -4,12 +4,14 @@ import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import { toInteger } from 'lodash';
 
-import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
-import { viewState, getView } from '../reducers/viewHandler';
-import { getTable, getTableId, getSelection } from '../reducers/tables';
-import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
+import { deepUnfreeze, getItemsByProperty, nullToEmptyStrings } from './index';
+import { getView, viewState } from '../reducers/viewHandler';
+import { getSelection, getTable, getTableId } from '../reducers/tables';
+import { getCachedFilter, getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
+
+const DEFAULT_PAGE_LENGTH = 20;
 
 /**
  * @typedef {object} Props Component props
@@ -134,6 +136,7 @@ const DLmapStateToProps = (state, props) => {
     viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+    mapConfig: master.mapConfig,
     referenceId: queryReferenceId,
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
@@ -221,6 +224,8 @@ export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
 /**
  * @method mergeColumnInfosIntoViewRow
  * @summary add additional data to row's fields
+ * @param {*} columnInfosByFieldName
+ * @param {object} row
  */
 function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   // mainly guard for unit tests which are not defining fieldsByName property
@@ -245,6 +250,8 @@ function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
 
 /**
  * @summary merge field's widget data of the row with additional data
+ * @param {*} columnInfo
+ * @param {object} viewRowField
  */
 function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   if (!columnInfo) {
@@ -471,7 +478,7 @@ function formatStringWithZeroSplitBy(date, notation) {
  * @summary Format date with zeros if it's like dd.m.yyyy to dd.mm.yyyyy and similar for the case when / is the separator
  * @param {string} date
  */
-export async function formatDateWithZeros(date) {
+export function formatDateWithZeros(date) {
   if (typeof date === 'string' && date.includes('.')) {
     return formatStringWithZeroSplitBy(date, '.');
   }
@@ -548,3 +555,25 @@ export function renderHeaderProperties(groups) {
     return acc;
   }, []);
 }
+
+export function getInvalidDataItem(data) {
+  return data.find(({ validStatus = {} }) => {
+    const { valid = null } = validStatus;
+
+    if (valid !== null && !valid) {
+      return validStatus;
+    }
+  }, null);
+}
+
+export const computePageLengthEffective = (pageLengthFromLayout) => {
+  if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
+    return 9999;
+  }
+
+  if (pageLengthFromLayout && pageLengthFromLayout > 0) {
+    return pageLengthFromLayout;
+  }
+
+  return DEFAULT_PAGE_LENGTH;
+};

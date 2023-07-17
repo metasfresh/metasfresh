@@ -1,14 +1,12 @@
 package de.metas.contracts.commission;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.document.DocBaseType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 
 import java.time.Duration;
-
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
 
 /*
  * #%L
@@ -40,15 +38,17 @@ public class CommissionConstants
 
 	private static final String COMMISSION_DOC_SUBTYPE_VALUE = "CA";
 	private static final String MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE = "RD";
+	private static final String LICENSE_COMMISSION_DOC_SUBTYPE_VALUE = "LS";
 
 	@AllArgsConstructor
 	@Getter
 	public enum CommissionDocType
 	{
-		PURCHASE_COMMISSION(DOCBASETYPE_APInvoice, COMMISSION_DOC_SUBTYPE_VALUE),
-		SALES_COMMISSION(DOCBASETYPE_ARInvoice, MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE);
+		COMMISSION(DocBaseType.APInvoice, COMMISSION_DOC_SUBTYPE_VALUE),
+		MEDIATED_COMMISSION(DocBaseType.ARInvoice, MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE),
+		LICENSE_COMMISSION(DocBaseType.ARInvoice, LICENSE_COMMISSION_DOC_SUBTYPE_VALUE);
 
-		private final String docBaseType;
+		private final DocBaseType docBaseType;
 		private final String docSubType;
 	}
 }

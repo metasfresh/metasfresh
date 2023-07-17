@@ -1,11 +1,12 @@
 package de.metas.adempiere.service;
 
+import de.metas.util.ISingletonService;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -37,9 +38,6 @@ public interface IColumnBL extends ISingletonService
 	 * Note that both table and record column names must have the same prefix.
 	 * Example: PREFIX_Record_ID and either PREFIX_AD_Table_ID or PREFIX_Table_ID
 	 *
-	 * @param m_ctx
-	 * @param m_curWindowNo
-	 * @param columnName
 	 * @return the context as ID if found, 0 otherwise
 	 */
 	int getContextADTableID(Properties m_ctx, int m_curWindowNo, String columnName);
@@ -47,10 +45,31 @@ public interface IColumnBL extends ISingletonService
 	/**
 	 * Verify if the given columnName is "Record_ID" or has the form "Prefix_Record_ID"
 	 *
-	 * @param columnName
 	 * @return true if record_ID form, false otherwise
 	 */
-	boolean isRecordIdColumnName(String columnName);
+	static boolean isRecordIdColumnName(@Nullable final String columnName)
+	{
+		if (columnName == null)
+		{
+			// should not happen
+			return false;
+		}
+
+		// name must end with "Record_ID"
+		if (!columnName.endsWith(ITableRecordReference.COLUMNNAME_Record_ID))
+		{
+			return false;
+		}
+
+		// classical case
+		if (columnName.equals(ITableRecordReference.COLUMNNAME_Record_ID))
+		{
+			return true;
+		}
+
+		// Column name must end with "_Record_ID"
+		return columnName.endsWith("_" + ITableRecordReference.COLUMNNAME_Record_ID);
+	}
 
 	/**
 	 * Get the primary key column for the given <code>tableName</code>.
@@ -59,8 +78,6 @@ public interface IColumnBL extends ISingletonService
 	 * <li>that it shall throw an exception if there are more or less than one key column and finally
 	 * <li>that the key column name might not be made up of <code>tablename + "_ID"</code>, but whatever is declared to be the key or single parent column in the application dictionary.
 	 *
-	 * @param tableName
-	 * @return
 	 * @throws org.adempiere.ad.table.exception.NoSingleKeyColumnException if the given table does not have exactly one key column.
 	 */
 	String getSingleKeyColumn(String tableName);
@@ -68,10 +85,6 @@ public interface IColumnBL extends ISingletonService
 	/**
 	 * For the given <code>tableName</code> and <code>recordColumnName</code>, return the name of the column that contains the respective <code>AD_Table_ID</code>.
 	 * Do not fail if this column can't be found.
-	 *
-	 * @param tableName
-	 * @param recordColumnName
-	 * @return
 	 */
 	Optional<String> getTableIdColumnName(String tableName, String recordColumnName);
 

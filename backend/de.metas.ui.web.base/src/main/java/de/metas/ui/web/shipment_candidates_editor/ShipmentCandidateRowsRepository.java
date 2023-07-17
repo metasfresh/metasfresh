@@ -1,20 +1,21 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import java.util.Set;
+
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
-import java.util.Set;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,16 +53,17 @@ final class ShipmentCandidateRowsRepository
 
 	@Builder
 	private ShipmentCandidateRowsRepository(
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.shipmentScheduleBL = shipmentScheduleBL;
 
-		salesOrdersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_Order.Table_Name);
-		customersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
-		warehousesLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Warehouse.Table_Name);
-		productsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
-		asiLookup = LookupDataSourceFactory.instance.productAttributes();
-		catchUOMsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
+		salesOrdersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Order.Table_Name);
+		customersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		warehousesLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Warehouse.Table_Name);
+		productsLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
+		asiLookup = lookupDataSourceFactory.productAttributes();
+		catchUOMsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_UOM.Table_Name);
 	}
 
 	public ShipmentCandidateRows getByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)

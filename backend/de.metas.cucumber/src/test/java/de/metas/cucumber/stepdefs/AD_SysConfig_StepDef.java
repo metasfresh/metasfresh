@@ -22,16 +22,31 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_AD_User;
+
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class AD_SysConfig_StepDef
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final AD_User_StepDefData userTable;
+
+	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
+	{
+		this.userTable = userTable;
+	}
 
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
@@ -39,7 +54,8 @@ public class AD_SysConfig_StepDef
 		switch (sysconfigType)
 		{
 			case "String":
-				sysConfigBL.setValue(sysConfigName, sysconfigValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				final String value = DataTableUtil.nullToken2Null(sysconfigValue);
+				sysConfigBL.setValue(sysConfigName, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 				break;
 			case "boolean":
 				final boolean booleanValue = Boolean.parseBoolean(sysconfigValue);
@@ -53,6 +69,22 @@ public class AD_SysConfig_StepDef
 				throw new AdempiereException("Unhandled sysConfig type")
 						.appendParametersToMessage()
 						.setParameter("type:", sysconfigType);
+		}
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name); // also without this, we fire a CacheInvalidation event, but that event may not be processed in time
+	}
+
+	@And("update AD_SysConfig with login AD_User_ID")
+	public void set_sysConfig_login_user(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String name = DataTableUtil.extractStringForColumnName(row, I_AD_SysConfig.COLUMNNAME_Name);
+
+			final String userIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User.COLUMNNAME_AD_User_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_User user = userTable.get(userIdentifier);
+			assertThat(user).isNotNull();
+
+			setSysConfigIntValue(name, user.getAD_User_ID());
 		}
 	}
 

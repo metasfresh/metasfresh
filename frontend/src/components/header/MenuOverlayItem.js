@@ -14,8 +14,11 @@ class MenuOverlayItem extends Component {
     }
   }
 
-  clickedItem = (e, elementId, nodeId, type) => {
+  clickedItem = (e) => {
     const {
+      elementId,
+      nodeId,
+      type,
       handleClickOnFolder,
       handleNewRedirect,
       openModal,
@@ -30,16 +33,18 @@ class MenuOverlayItem extends Component {
 
     if (type === 'newRecord') {
       handleNewRedirect(elementId);
-    } else if (type === 'window' || type === 'board') {
+    } else if (type === 'window' || type === 'board' || type === 'calendar') {
       if (breadcrumb[1] && breadcrumb[1].nodeId === nodeId) {
         history.go(0);
       } else {
         this.handleClick(elementId, type);
       }
     } else if (type === 'group') {
-      handleClickOnFolder(e, nodeId);
+      handleClickOnFolder && handleClickOnFolder(e, nodeId);
     } else if (type === 'report' || type === 'process') {
       openModal(elementId + '', 'process', caption);
+    } else {
+      console.warn(`Do nothing because type "${type}" is not handled`);
     }
   };
 
@@ -70,12 +75,10 @@ class MenuOverlayItem extends Component {
       case 'Backspace':
         e.preventDefault();
         back(e);
-        overlay.focus();
+        overlay && overlay.focus();
         break;
       case 'Enter':
-        e.preventDefault();
-        document.activeElement.childNodes[0].click();
-        overlay && overlay.focus();
+        this.clickedItem(e);
         break;
       case 'Escape':
         e.preventDefault();
@@ -114,7 +117,7 @@ class MenuOverlayItem extends Component {
     } else {
       if (parentElem.nextSibling) {
         const listChildren = parentElem.nextSibling.childNodes;
-        if (listChildren.length == 1) {
+        if (listChildren.length === 1) {
           listChildren[0].focus();
         } else {
           if (listChildren[1].classList.contains('js-menu-item')) {
@@ -152,16 +155,33 @@ class MenuOverlayItem extends Component {
     dispatch(getElementBreadcrumb(entity, elementId));
   };
 
+  iconByType = (type) => {
+    switch (type) {
+      case 'window':
+        return <i className="meta-icon-vertragsverwaltung m-icon-space" />;
+      case 'newRecord':
+        return <i className="meta-icon-file m-icon-space" />;
+      case 'process':
+        return <i className="meta-icon-issue m-icon-space" />;
+      case 'report':
+        return <i className="meta-icon-beschaffung m-icon-space" />;
+      case 'group':
+        return <i className="meta-icon-report m-icon-space" />;
+      case 'board':
+        return <i className="meta-icon-calendar m-icon-space" />;
+      case 'calendar':
+        return <i className="meta-icon-calendar m-icon-space" />;
+      default:
+        return '';
+    }
+  };
+
   render() {
     const {
       nodeId,
       type,
-      elementId,
       caption,
-      children,
-      handleClickOnFolder,
       query,
-      printChildren,
       favorite,
       onUpdateData,
       transparentBookmarks,
@@ -171,23 +191,22 @@ class MenuOverlayItem extends Component {
       <span
         tabIndex={0}
         onKeyDown={this.handleKeyDown}
-        className={
-          'menu-overlay-expanded-link js-menu-item ' +
-          (!printChildren ? 'menu-overlay-expanded-link-spaced ' : '')
-        }
+        className="menu-overlay-expanded-link js-menu-item menu-overlay-expanded-link-spaced "
       >
         {!query && (
           <BookmarkButton
             isBookmark={favorite}
-            {...{ onUpdateData, nodeId, transparentBookmarks }}
+            {...{
+              type,
+              onUpdateData,
+              nodeId,
+              transparentBookmarks,
+            }}
           >
+            {this.iconByType(type)}
             <span
-              className={children ? 'menu-overlay-expand' : 'menu-overlay-link'}
-              onClick={(e) => {
-                children
-                  ? handleClickOnFolder(e, nodeId)
-                  : this.clickedItem(e, elementId, nodeId, type);
-              }}
+              className="menu-overlay-link"
+              onClick={(e) => this.clickedItem(e)}
             >
               {caption}
             </span>
@@ -195,47 +214,18 @@ class MenuOverlayItem extends Component {
         )}
 
         {query && (
-          <span
-            className={
-              children
-                ? ''
-                : type === 'group'
-                ? 'query-clickable-group'
-                : 'query-clickable-link'
-            }
-            onClick={
-              children
-                ? ''
-                : (e) => this.clickedItem(e, elementId, nodeId, type)
-            }
-          >
-            {children
-              ? children.map((item, id) => (
-                  <span key={id} className="query-results">
-                    <span className="query-caption">
-                      {id === 0 ? caption + ' / ' : '/'}
-                    </span>
-                    <span
-                      title={item.caption}
-                      className={
-                        type === 'group'
-                          ? 'query-clickable-group'
-                          : 'query-clickable-link'
-                      }
-                      onClick={(e) =>
-                        this.clickedItem(
-                          e,
-                          item.elementId,
-                          item.nodeId,
-                          item.type
-                        )
-                      }
-                    >
-                      {item.caption}
-                    </span>
-                  </span>
-                ))
-              : caption}
+          <span>
+            {this.iconByType(type)}
+            <span
+              className={
+                type === 'group'
+                  ? 'query-clickable-group'
+                  : 'query-clickable-link'
+              }
+              onClick={(e) => this.clickedItem(e)}
+            >
+              <span className="query-menu-item">{caption}</span>
+            </span>
           </span>
         )}
       </span>
@@ -261,11 +251,9 @@ MenuOverlayItem.propTypes = {
   type: PropTypes.string,
   elementId: PropTypes.string,
   caption: PropTypes.string,
-  printChildren: PropTypes.any,
   favorite: PropTypes.bool,
   onUpdateData: PropTypes.func,
   transparentBookmarks: PropTypes.bool,
-  children: PropTypes.node,
   breadcrumb: PropTypes.array,
 };
 

@@ -7,20 +7,17 @@ import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
-import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
-import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +50,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	
+
 	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
@@ -68,93 +65,117 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 	@Override
 	public void handleEvent(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
+		if (!ppOrderChangedEvent.getNewDocStatus().isCompleted() && !ppOrderChangedEvent.isJustReactivated())
+		{
+			return;
+		}
+
 		updateMainData(ppOrderChangedEvent);
-
-		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
-
-		final OrgId orgId = ppOrderChangedEvent.getEventDescriptor().getOrgId();
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		
-		final List<UpdateMainDataRequest> requests = new ArrayList<>();
-		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
-		{
-			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
-					.productDescriptor(newPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate(), timeZone))
-					.build();
-
-			final BigDecimal qtyRequiredForProduction = //
-					newPPOrderLine.getQtyRequired()
-							.subtract(newPPOrderLine.getQtyDelivered());
-
-			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
-					.identifier(identifier)
-					.qtyDemandPPOrder(qtyRequiredForProduction)
-					.build();
-			requests.add(request);
-		}
-
-		final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines = ppOrderChangedEvent.getDeletedPPOrderLines();
-		for (final DeletedPPOrderLineDescriptor deletedPPOrderLine : deletedPPOrderLines)
-		{
-			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
-					.productDescriptor(deletedPPOrderLine.getProductDescriptor())
-					.date(deletedPPOrderLine.getIssueOrReceiveDate().truncatedTo(ChronoUnit.DAYS))
-					.build();
-
-			final BigDecimal qtyRequiredForProduction = //
-					deletedPPOrderLine.getQtyRequired()
-							.subtract(deletedPPOrderLine.getQtyDelivered())
-							.negate();
-
-			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
-					.identifier(identifier)
-					.qtyDemandPPOrder(qtyRequiredForProduction)
-					.build();
-			requests.add(request);
-		}
-
-		for (final ChangedPPOrderLineDescriptor changedPPOrderLine : ppOrderChangedEvent.getPpOrderLineChanges())
-		{
-			final BigDecimal qtyDelta = changedPPOrderLine.computeOpenQtyDelta();
-			if (qtyDelta.signum() == 0)
-			{
-				continue;
-			}
-
-			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
-					.productDescriptor(changedPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate(), timeZone))
-					.build();
-
-			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
-					.identifier(identifier)
-					.qtyDemandPPOrder(qtyDelta)
-					.build();
-			requests.add(request);
-		}
-
-		requests.forEach(dataUpdateRequestHandler::handleDataUpdateRequest);
 	}
 
 	private void updateMainData(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
 		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getEventDescriptor().getOrgId());
 
-		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
-				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getProductDescriptor())
-				.date(TimeUtil.getDay(ppOrderChangedEvent.getPpOrderAfterChanges().getDatePromised(), orgZoneId))
-				.warehouseId(ppOrderChangedEvent.getPpOrderAfterChanges().getWarehouseId())
-				.build();
+		updateMainDataForPPOrder(ppOrderChangedEvent, orgZoneId);
+		updateMainDataForPPOrderLines(ppOrderChangedEvent, orgZoneId);
+	}
 
-		final BigDecimal newQtyOpen = ppOrderChangedEvent.getPpOrderAfterChanges().getQtyOpen();
-		final BigDecimal oldQtyOpen = ppOrderChangedEvent.getOldQtyRequired().subtract(ppOrderChangedEvent.getOldQtyDelivered());
+	private void updateMainDataForPPOrder(
+			@NonNull final PPOrderChangedEvent ppOrderChangedEvent,
+			@NonNull final ZoneId orgZoneId)
+	{
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
+				.warehouseId(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getWarehouseId())
+				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getProductDescriptor())
+				.date(TimeUtil.getDay(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getDatePromised(), orgZoneId))
+				.build();
+		
+		final BigDecimal qtySupplyPPOrder;
+		if (ppOrderChangedEvent.isJustCompleted())
+		{
+			qtySupplyPPOrder = ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getQtyOpen();
+		}
+		else if (ppOrderChangedEvent.isJustReactivated())
+		{
+			qtySupplyPPOrder = ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getQtyOpen().negate();
+		}
+		else if (ppOrderChangedEvent.getNewDocStatus().isCompleted())
+		{
+			//dev-note: this is about receiving goods (qtyDelivered changes)
+			final BigDecimal newQtyOpen = ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getQtyOpen();
+			final BigDecimal oldQtyOpen = ppOrderChangedEvent.getOldQtyRequired().subtract(ppOrderChangedEvent.getOldQtyDelivered());
+			qtySupplyPPOrder = newQtyOpen.subtract(oldQtyOpen);
+		}
+		else
+		{
+			throw new AdempiereException("Invalid PPOrder.DocStatus!")
+					.appendParametersToMessage()
+					.setParameter("NewDocStatus", ppOrderChangedEvent.getNewDocStatus())
+					.setParameter("OldDocStatus", ppOrderChangedEvent.getOldDocStatus());
+		}
 
 		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
 				.identifier(mainDataRecordIdentifier)
-				.qtySupplyPPOrder(newQtyOpen.subtract(oldQtyOpen))
+				.qtySupplyPPOrder(qtySupplyPPOrder)
 				.build();
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
+	}
+
+	private void updateMainDataForPPOrderLines(
+			@NonNull final PPOrderChangedEvent ppOrderChangedEvent,
+			@NonNull final ZoneId orgZoneId)
+	{
+		final List<UpdateMainDataRequest> requests = new ArrayList<>();
+		for (final PPOrderLine ppOrderLine : ppOrderChangedEvent.getPpOrderAfterChanges().getLines())
+		{
+			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
+					.productDescriptor(ppOrderLine.getPpOrderLineData().getProductDescriptor())
+					.date(TimeUtil.getDay(ppOrderLine.getPpOrderLineData().getIssueOrReceiveDate(), orgZoneId))
+					.warehouseId(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getWarehouseId())
+					.build();
+
+			final BigDecimal qtyRequiredForProduction = getActualQtyRequiredForProduction(ppOrderChangedEvent, ppOrderLine);
+
+			requests.add(UpdateMainDataRequest.builder()
+								 .identifier(identifier)
+								 .qtyDemandPPOrder(qtyRequiredForProduction)
+								 .build());
+		}
+
+		requests.forEach(dataUpdateRequestHandler::handleDataUpdateRequest);
+	}
+
+	@NonNull
+	private BigDecimal getActualQtyRequiredForProduction(
+			@NonNull final PPOrderChangedEvent ppOrderChangedEvent,
+			@NonNull final PPOrderLine ppOrderLine)
+	{
+		final BigDecimal actualQtyRequired;
+		if (ppOrderChangedEvent.isJustCompleted())
+		{
+			actualQtyRequired = ppOrderLine.getPpOrderLineData().getQtyOpen();
+		}
+		else if (ppOrderChangedEvent.isJustReactivated())
+		{
+			actualQtyRequired = ppOrderLine.getPpOrderLineData().getQtyOpen().negate();
+		}
+		else if (ppOrderChangedEvent.getNewDocStatus().isCompleted())
+		{
+			//dev-note: this is about qty issued
+			actualQtyRequired = ppOrderChangedEvent.getChangedDescriptorForPPOrderLineId(ppOrderLine.getPpOrderLineId())
+					.map(PPOrderChangedEvent.ChangedPPOrderLineDescriptor::computeOpenQtyDelta)
+					.orElse(BigDecimal.ZERO);
+		}
+		else
+		{
+			throw new AdempiereException("Invalid PPOrder.DocStatus!")
+					.appendParametersToMessage()
+					.setParameter("NewDocStatus", ppOrderChangedEvent.getNewDocStatus())
+					.setParameter("OldDocStatus", ppOrderChangedEvent.getOldDocStatus());
+		}
+		
+		return actualQtyRequired;
 	}
 }

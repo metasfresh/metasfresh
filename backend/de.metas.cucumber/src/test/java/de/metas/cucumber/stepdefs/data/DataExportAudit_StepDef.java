@@ -36,9 +36,18 @@ import de.metas.cucumber.stepdefs.C_Location_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.externalreference.S_ExternalReference_StepDefData;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pinstance.AD_PInstance_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.project.budget.C_Project_Resource_Budget_StepDefData;
+import de.metas.cucumber.stepdefs.project.workOrder.C_Project_WO_ObjectUnderTest_StepDefData;
+import de.metas.cucumber.stepdefs.project.workOrder.C_Project_WO_Resource_StepDefData;
+import de.metas.cucumber.stepdefs.project.workOrder.C_Project_WO_Step_StepDefData;
+import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -53,10 +62,16 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_Project_Resource_Budget;
+import org.compiere.model.I_C_Project_WO_ObjectUnderTest;
+import org.compiere.model.I_C_Project_WO_Resource;
+import org.compiere.model.I_C_Project_WO_Step;
 import org.compiere.model.I_Data_Export_Audit;
 import org.compiere.model.I_Data_Export_Audit_Log;
 import org.compiere.util.DB;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +86,14 @@ public class DataExportAudit_StepDef
 	private final Data_Export_Audit_StepDefData dataExportAuditTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	private final AD_PInstance_StepDefData pinstanceTable;
+	private final M_HU_StepDefData huTable;
+	private final C_Project_StepDefData projectTable;
+	private final C_Project_Resource_Budget_StepDefData projectResourceBudgetTable;
+	private final C_Project_WO_Step_StepDefData woStepTable;
+	private final C_Project_WO_Resource_StepDefData woResourceTable;
+	private final C_Project_WO_ObjectUnderTest_StepDefData woObjectUnderTestTable;
+
+	private final S_ExternalReference_StepDefData externalReferenceTable;
 
 	private final TestContext testContext;
 
@@ -83,6 +106,13 @@ public class DataExportAudit_StepDef
 			@NonNull final Data_Export_Audit_StepDefData dataExportAuditTable,
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final AD_PInstance_StepDefData pinstanceTable,
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_Project_Resource_Budget_StepDefData projectResourceBudgetTable,
+			@NonNull final C_Project_WO_Step_StepDefData woStepTable,
+			@NonNull final C_Project_WO_Resource_StepDefData woResourceTable,
+			@NonNull final C_Project_WO_ObjectUnderTest_StepDefData woObjectUnderTestTable,
+			@NonNull final S_ExternalReference_StepDefData externalReferenceTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;
@@ -91,6 +121,13 @@ public class DataExportAudit_StepDef
 		this.dataExportAuditTable = dataExportAuditTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.pinstanceTable = pinstanceTable;
+		this.projectTable = projectTable;
+		this.projectResourceBudgetTable = projectResourceBudgetTable;
+		this.woStepTable = woStepTable;
+		this.woResourceTable = woResourceTable;
+		this.woObjectUnderTestTable = woObjectUnderTestTable;
+		this.externalReferenceTable = externalReferenceTable;
+		this.huTable = huTable;
 		this.testContext = testContext;
 	}
 
@@ -198,6 +235,34 @@ public class DataExportAudit_StepDef
 			case I_C_Location.Table_Name:
 				final I_C_Location location = locationTable.get(recordIdentifier);
 				tableRecordReference = TableRecordReference.of(location);
+				break;
+			case I_M_HU.Table_Name:
+				final I_M_HU hu = huTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(hu);
+				break;
+			case I_S_ExternalReference.Table_Name:
+				final I_S_ExternalReference externalReference = externalReferenceTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(externalReference);
+				break;
+			case I_C_Project.Table_Name:
+				final I_C_Project project = projectTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(project);
+				break;
+			case I_C_Project_Resource_Budget.Table_Name:
+				final I_C_Project_Resource_Budget projectResourceBudget = projectResourceBudgetTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(projectResourceBudget);
+				break;
+			case I_C_Project_WO_Step.Table_Name:
+				final I_C_Project_WO_Step woStep = woStepTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(woStep);
+				break;
+			case I_C_Project_WO_Resource.Table_Name:
+				final I_C_Project_WO_Resource woResource = woResourceTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(woResource);
+				break;
+			case I_C_Project_WO_ObjectUnderTest.Table_Name:
+				final I_C_Project_WO_ObjectUnderTest woObjectUnderTest = woObjectUnderTestTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(woObjectUnderTest);
 				break;
 			default:
 				throw new AdempiereException("Table not supported! TableName:" + tableName);
@@ -311,7 +376,7 @@ public class DataExportAudit_StepDef
 
 		final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
 
-		bPartnerLocation.setGLN("not-relevant");
+		bPartnerLocation.setAddress("not-relevant" + Instant.now().toEpochMilli());
 
 		InterfaceWrapperHelper.save(bPartnerLocation);
 	}

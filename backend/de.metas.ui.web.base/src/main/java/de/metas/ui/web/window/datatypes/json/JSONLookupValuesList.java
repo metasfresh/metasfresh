@@ -10,10 +10,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -52,29 +53,39 @@ import java.util.stream.Stream;
  * #L%
  */
 
-@ApiModel(value = "lookup-values-list", description = "[ { field : value} ]")
+@Schema(name = "lookup-values-list", description = "[ { field : value} ]")
 @EqualsAndHashCode
 public class JSONLookupValuesList
 {
+	public static JSONLookupValuesList empty() {return new JSONLookupValuesList();}
+
 	public static JSONLookupValuesList ofLookupValuesList(
 			@Nullable final LookupValuesList lookupValues,
 			@NonNull final String adLanguage)
 	{
+		return ofLookupValuesList(lookupValues, adLanguage, false);
+	}
+
+	public static JSONLookupValuesList ofLookupValuesList(
+			@Nullable final LookupValuesList lookupValues,
+			@NonNull final String adLanguage,
+			final boolean appendDescriptionToName)
+	{
 		if (lookupValues == null || lookupValues.isEmpty())
 		{
-			return EMPTY;
+			return empty();
 		}
 
-		final ImmutableList<JSONLookupValue> jsonValuesList = toListOfJSONLookupValues(lookupValues, adLanguage);
+		final ImmutableList<JSONLookupValue> jsonValuesList = toListOfJSONLookupValues(lookupValues, adLanguage, appendDescriptionToName);
 		final DebugProperties otherProperties = lookupValues.getDebugProperties();
 		return new JSONLookupValuesList(jsonValuesList, otherProperties);
 	}
 
-	static ImmutableList<JSONLookupValue> toListOfJSONLookupValues(@NonNull final LookupValuesList lookupValues, @NonNull final String adLanguage)
+	static ImmutableList<JSONLookupValue> toListOfJSONLookupValues(@NonNull final LookupValuesList lookupValues, @NonNull final String adLanguage, final boolean appendDescriptionToName)
 	{
 		Stream<JSONLookupValue> jsonValues = lookupValues.getValues()
 				.stream()
-				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage));
+				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage, appendDescriptionToName));
 
 		if (!lookupValues.isOrdered())
 		{
@@ -89,7 +100,7 @@ public class JSONLookupValuesList
 	{
 		if (jsonLookupValues == null || jsonLookupValues.isEmpty())
 		{
-			return EMPTY;
+			return empty();
 		}
 
 		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues), DebugProperties.EMPTY);
@@ -109,8 +120,7 @@ public class JSONLookupValuesList
 
 	public static LookupValuesList lookupValuesListFromJsonMap(final Map<String, Object> map)
 	{
-		@SuppressWarnings("unchecked")
-		final List<Object> values = (List<Object>)map.get("values");
+		@SuppressWarnings("unchecked") final List<Object> values = (List<Object>)map.get("values");
 
 		//
 		// Corner case: the `map` it's just a single lookup value
@@ -128,22 +138,27 @@ public class JSONLookupValuesList
 
 		return values.stream()
 				.map(valueObj -> {
-					@SuppressWarnings("unchecked")
-					final Map<String, Object> valueAsMap = (Map<String, Object>)valueObj;
+					@SuppressWarnings("unchecked") final Map<String, Object> valueAsMap = (Map<String, Object>)valueObj;
 					return JSONLookupValue.stringLookupValueFromJsonMap(valueAsMap);
 				})
 				.collect(LookupValuesList.collect());
 	}
 
-	@VisibleForTesting
-	static final JSONLookupValuesList EMPTY = new JSONLookupValuesList();
+	public static JSONLookupValuesList error(@NonNull JsonErrorItem error)
+	{
+		return new JSONLookupValuesList(error);
+	}
 
 	@JsonProperty("values")
 	private final List<JSONLookupValue> values;
 
 	@JsonProperty("defaultValue")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	private String defaultValue;
+	private String defaultId;
+
+	@JsonProperty("error")
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	@Nullable private final JsonErrorItem error;
 
 	private LinkedHashMap<String, Object> otherProperties;
 
@@ -151,15 +166,24 @@ public class JSONLookupValuesList
 	JSONLookupValuesList(final ImmutableList<JSONLookupValue> values, final DebugProperties otherProperties)
 	{
 		this.values = values;
+		this.error = null;
 		if (otherProperties != null && !otherProperties.isEmpty())
 		{
 			this.otherProperties = new LinkedHashMap<>(otherProperties.toMap());
 		}
+
 	}
 
 	private JSONLookupValuesList()
 	{
-		values = ImmutableList.of();
+		this.values = ImmutableList.of();
+		this.error = null;
+	}
+
+	private JSONLookupValuesList(@NonNull JsonErrorItem error)
+	{
+		this.values = ImmutableList.of();
+		this.error = error;
 	}
 
 	@Override
@@ -168,6 +192,7 @@ public class JSONLookupValuesList
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("values", values)
+				.add("error", error)
 				.add("properties", otherProperties == null || otherProperties.isEmpty() ? null : otherProperties)
 				.toString();
 	}
@@ -194,14 +219,20 @@ public class JSONLookupValuesList
 	}
 
 	@JsonSetter
-	public JSONLookupValuesList setDefaultValue(final String defaultValue)
+	public JSONLookupValuesList setDefaultId(final String defaultId)
 	{
-		this.defaultValue = defaultValue;
+		this.defaultId = defaultId;
 		return this;
 	}
 
-	public String getDefaultValue()
+	public String getDefaultId()
 	{
-		return defaultValue;
+		return defaultId;
+	}
+
+	@Nullable
+	public JsonErrorItem getError()
+	{
+		return error;
 	}
 }

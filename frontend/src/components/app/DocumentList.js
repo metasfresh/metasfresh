@@ -23,13 +23,26 @@ import {
   INVOICE_TO_ALLOCATE_WINDOW_ID,
   InvoiceToAllocateViewHeader,
 } from '../paymentAllocation/InvoiceToAllocateViewHeader';
+import {
+  PP_ORDER_CANDIDATE_WINDOW_ID,
+  PPOrderCandidateViewHeader,
+} from '../ppOrderCandidate/PPOrderCandidateViewHeader';
+import { connect } from 'react-redux';
+import {
+  getSettingFromStateAsBoolean,
+  getSettingFromStateAsPositiveInt,
+} from '../../utils/settings';
+import {
+  DeliveryPlanningViewHeader,
+  getDeliveryPlanningViewHeaderWindowId,
+} from '../deliveryPlanning/DeliveryPlanningViewHeader';
 
 /**
  * @file Class based component.
  * @module DocumentList
  * @extends Component
  */
-export default class DocumentList extends Component {
+class DocumentList extends Component {
   constructor(props) {
     super(props);
 
@@ -125,6 +138,9 @@ export default class DocumentList extends Component {
       parentSelected,
       filterId,
       featureType,
+      isPPOrderCandidateViewHeaderEnabled,
+      deliveryPlanningViewHeaderWindowId,
+      defaultQtyPrecision,
     } = this.props;
     const {
       staticFilters,
@@ -183,6 +199,29 @@ export default class DocumentList extends Component {
             </div>
           </div>
         )}
+
+        {isPPOrderCandidateViewHeaderEnabled &&
+          String(windowId) === PP_ORDER_CANDIDATE_WINDOW_ID &&
+          viewId && (
+            <PPOrderCandidateViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+            />
+          )}
+
+        {deliveryPlanningViewHeaderWindowId &&
+          String(windowId) === deliveryPlanningViewHeaderWindowId &&
+          viewId && (
+            <DeliveryPlanningViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+              precision={defaultQtyPrecision}
+            />
+          )}
 
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
@@ -404,3 +443,22 @@ DocumentList.propTypes = {
   onUpdateQuickActions: PropTypes.func,
   setQuickActionsComponentRef: PropTypes.func,
 };
+
+const mapStateToProps = (state) => {
+  return {
+    isPPOrderCandidateViewHeaderEnabled: getSettingFromStateAsBoolean(
+      state,
+      'PPOrderCandidateViewHeader.enabled',
+      true
+    ),
+    defaultQtyPrecision: getSettingFromStateAsPositiveInt(
+      state,
+      'widget.Quantity.defaultPrecision',
+      2
+    ),
+    deliveryPlanningViewHeaderWindowId:
+      getDeliveryPlanningViewHeaderWindowId(state),
+  };
+};
+
+export default connect(mapStateToProps, null)(DocumentList);

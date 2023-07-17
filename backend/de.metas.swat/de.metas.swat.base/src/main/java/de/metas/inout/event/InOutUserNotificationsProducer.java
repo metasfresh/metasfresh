@@ -61,7 +61,7 @@ public final class InOutUserNotificationsProducer
 	 */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.inout.UserNotifications")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	// services
@@ -175,9 +175,12 @@ public final class InOutUserNotificationsProducer
 		}
 	}
 
-	public InOutUserNotificationsProducer notifyShipmentError(final String sourceInfo, final String errorMessage)
+	public InOutUserNotificationsProducer notifyShipmentError(
+			@NonNull final String sourceInfo, 
+			@NonNull final String errorMessage)
 	{
-		postNotification(newUserNotificationRequest()
+		// don't send after commit, because the trx will very probably be rolled back if an error happened
+		notificationBL.send(newUserNotificationRequest()
 				.recipientUserId(Env.getLoggedUserId())
 				.contentADMessage(MSG_Event_ShipmentError)
 				.contentADMessageParam(sourceInfo)
@@ -187,13 +190,8 @@ public final class InOutUserNotificationsProducer
 		return this;
 	}
 
-	private void postNotification(final UserNotificationRequest notification)
-	{
-		notificationBL.sendAfterCommit(notification);
-	}
-
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		Services.get(INotificationBL.class).sendAfterCommit(notifications);
+		notificationBL.sendAfterCommit(notifications);
 	}
 }

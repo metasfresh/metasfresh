@@ -22,10 +22,6 @@
 
 package de.metas.edi.esb.remadvimport.ecosio;
 
-import com.google.common.collect.ImmutableSet;
-
-import java.util.Set;
-
 public interface EcosioRemadvConstants
 {
 	String REMADV_XML_TO_JSON_PROCESSOR = "remadv-xml-to-json-processor-id";

@@ -10,6 +10,7 @@ import org.compiere.model.I_M_Locator;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -115,6 +116,12 @@ public class LocatorId implements RepoIdAware
 		return locatorIds.stream().map(LocatorId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static boolean equals(@Nullable final LocatorId id1, @Nullable final LocatorId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean equalsByRepoId(final int repoId1, final int repoId2)
 	{
 		final int repoId1Norm = repoId1 > 0 ? repoId1 : -1;

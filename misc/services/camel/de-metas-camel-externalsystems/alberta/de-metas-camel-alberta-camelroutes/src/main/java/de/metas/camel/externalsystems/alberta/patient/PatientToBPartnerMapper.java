@@ -37,7 +37,6 @@ import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaPatient;
 import de.metas.common.bpartner.v2.request.alberta.JsonBPartnerRole;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
 import de.metas.common.util.EmptyUtil;
-import de.metas.common.util.StringUtils;
 import io.swagger.client.model.CareGiver;
 import io.swagger.client.model.Patient;
 import io.swagger.client.model.PatientBillingAddress;
@@ -45,6 +44,7 @@ import io.swagger.client.model.PatientDeliveryAddress;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
@@ -172,6 +172,7 @@ public class PatientToBPartnerMapper
 	private static JsonRequestLocationUpsertItem getBillingAddress(@NonNull final String patientId, @NonNull final PatientBillingAddress patientBillingAddress)
 	{
 		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setName(patientBillingAddress.getAddress());
 		location.setAddress1(patientBillingAddress.getAddress());
 		location.setPostal(patientBillingAddress.getPostalCode());
 		location.setCity(patientBillingAddress.getCity());
@@ -190,6 +191,7 @@ public class PatientToBPartnerMapper
 	private static JsonRequestLocationUpsertItem getShippingAddress(@NonNull final String patientId, @NonNull final PatientDeliveryAddress patientDeliveryAddress)
 	{
 		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setName(patientDeliveryAddress.getAddress());
 		location.setAddress1(patientDeliveryAddress.getAddress());
 		location.setPostal(patientDeliveryAddress.getPostalCode());
 		location.setCity(patientDeliveryAddress.getCity());
@@ -260,7 +262,26 @@ public class PatientToBPartnerMapper
 		albertaPatient.setIsTransferPatient(patient.isChangeInSupplier());
 		albertaPatient.setIVTherapy(patient.isIvTherapy());
 
-		albertaPatient.setDeactivationReason(patient.getDeactivationReason() != null ? patient.getDeactivationReason().toString() : null);
+		// deactivation
+		final String deactivationReason;
+		final BigDecimal reasonNumber = patient.getDeactivationReason();
+		if (reasonNumber != null)
+		{
+			final boolean reasonNumberAboveFour = new BigDecimal("4").compareTo(reasonNumber) < 0;
+			if (reasonNumberAboveFour)
+			{
+				deactivationReason = "4"; // FIXME this is a quick workaround
+			}
+			else
+			{
+				deactivationReason = reasonNumber.toString();
+			}
+		}
+		else
+		{
+			deactivationReason = null;
+		}
+		albertaPatient.setDeactivationReason(deactivationReason);
 		albertaPatient.setDeactivationComment(patient.getDeactivationComment());
 		albertaPatient.setDeactivationDate(asJavaLocalDate(patient.getDeactivationDate()));
 
@@ -269,6 +290,9 @@ public class PatientToBPartnerMapper
 
 		albertaPatient.setCreatedByIdentifier(formatExternalId(patient.getCreatedBy()));
 		albertaPatient.setUpdateByIdentifier(formatExternalId(patient.getUpdatedBy()));
+
+		albertaPatient.setClassification(patient.getClassification());
+		albertaPatient.setCareDegree(patient.getCareDegree());
 
 		if (patient.getHospital() != null && patient.getHospital().getHospitalId() != null)
 		{

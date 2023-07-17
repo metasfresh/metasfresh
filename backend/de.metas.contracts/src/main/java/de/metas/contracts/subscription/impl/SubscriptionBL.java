@@ -1,76 +1,20 @@
 package de.metas.contracts.subscription.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.common.util.time.SystemTime;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MNote;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
-import org.compiere.util.TrxRunnable2;
-import org.slf4j.Logger;
-
 import com.google.common.base.Preconditions;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -94,13 +38,17 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
@@ -139,6 +87,7 @@ import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -146,9 +95,11 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class SubscriptionBL implements ISubscriptionBL
@@ -156,6 +107,11 @@ public class SubscriptionBL implements ISubscriptionBL
 	private static final String SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS = "C_Flatrate_Term.Create_SubscriptionProgressInPastDays";
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
+	public static final int SEQNO_FIRST_VALUE = 10;
+	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
@@ -185,13 +141,20 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
 
-		newTerm.setBill_BPartner_ID(order.getBill_BPartner_ID());
-		newTerm.setBill_Location_ID(order.getBill_Location_ID());
-		newTerm.setBill_User_ID(order.getBill_User_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
 
-		newTerm.setDropShip_BPartner_ID(ol.getC_BPartner_ID());
-		newTerm.setDropShip_Location_ID(ol.getC_BPartner_Location_ID());
-		newTerm.setDropShip_User_ID(ol.getAD_User_ID());
+		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), order.getBill_User_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(billToLocationId, billToContactId);
+
+		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(ol.getC_BPartner_ID(), ol.getAD_User_ID());
+
+		final BPartnerLocationAndCaptureId dropshipLocationId = orderBL.getShipToLocationId(order);
+
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(newTerm)
+				.setFrom(dropshipLocationId, dropshipContactId);
 
 		I_C_Flatrate_Data existingData = fetchFlatrateData(ol, order);
 		if (existingData == null)
@@ -233,13 +196,14 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private I_C_Flatrate_Data fetchFlatrateData(final I_C_OrderLine ol, final I_C_Order order)
 	{
-		I_C_Flatrate_Data existingData = Services.get(IQueryBL.class)
+		final I_C_Flatrate_Data existingData = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Data.class, ol)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, order.getBill_BPartner_ID())
 				.addOnlyContextClient()
 				.create()
 				.firstOnly(I_C_Flatrate_Data.class);
+
 		return existingData;
 	}
 
@@ -254,9 +218,9 @@ public class SubscriptionBL implements ISubscriptionBL
 	@lombok.Value
 	private static class PricingSystemTaxCategoryAndIsTaxIncluded
 	{
-		private PricingSystemId pricingSystemId;
-		private TaxCategoryId taxCategoryId;
-		private boolean isTaxIncluded;
+		PricingSystemId pricingSystemId;
+		TaxCategoryId taxCategoryId;
+		boolean isTaxIncluded;
 	}
 
 	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
@@ -340,7 +304,7 @@ public class SubscriptionBL implements ISubscriptionBL
 						trxName, new TrxRunnable2()
 						{
 							@Override
-							public void run(String trxName) throws Exception
+							public void run(final String trxName) throws Exception
 							{
 								createTermForOLCand(ctx, olCand, AD_PInstance_ID, completeIt, trxName);
 								Services.get(IMonitoringBL.class).createOrGet(Contracts_Constants.ENTITY_TYPE, "SubscriptionBL.createMissingTermsForOLCands()_Done").plusOne();
@@ -374,7 +338,7 @@ public class SubscriptionBL implements ISubscriptionBL
 							}
 
 							@Override
-							public boolean doCatch(Throwable e) throws Throwable
+							public boolean doCatch(final Throwable e) throws Throwable
 							{
 								t[0] = e; // store 'e'
 								return true; // rollback transaction
@@ -454,22 +418,22 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDeliveryViaRule(olCandRecord.getDeliveryViaRule());
 
 		final I_C_BPartner bill_BPartner = olCandEffectiveValuesBL.getBill_BPartner_Effective(olCandRecord, I_C_BPartner.class);
-		final int bill_Location_ID = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord));
-		final int bill_User_ID = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord));
 
-		newTerm.setBill_BPartner_ID(bill_BPartner.getC_BPartner_ID());
-		newTerm.setBill_Location_ID(bill_Location_ID);
-		newTerm.setBill_User_ID(bill_User_ID);
+		final BPartnerLocationAndCaptureId billToLocationId = olCandEffectiveValuesBL.getBillLocationAndCaptureEffectiveId(olCandRecord);
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(billToLocationId, olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord));
 
 		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
 				.getDropShipPartnerInfo(olCandRecord)
 				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 
-		newTerm.setDropShip_BPartner_ID(BPartnerId.toRepoId(shipToPartnerInfo.getBpartnerId()));
-		newTerm.setDropShip_Location_ID(BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()));
-		newTerm.setDropShip_User_ID(BPartnerContactId.toRepoId(shipToPartnerInfo.getContactId()));
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(newTerm)
+				.setFrom(shipToPartnerInfo);
 
-		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
+		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retrieveOrCreateFlatrateData(bill_BPartner);
 
 		newTerm.setC_Flatrate_Data(existingData);
 
@@ -533,7 +497,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		Timestamp eventDate = getEventDate(term);
 
-		int seqNo = 10;
+		int seqNo = SEQNO_FIRST_VALUE;
 
 		final List<I_C_SubscriptionProgress> deliveries = new ArrayList<>();
 
@@ -572,7 +536,6 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp currentDate)
 	{
-		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
 		I_C_SubscriptionProgress currentProgressRecord = retrieveOrCreateSP(term, currentDate);
 
@@ -670,8 +633,8 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_SubscriptionProgress sp)
 	{
 		Check.errorIf(sp.getEventDate().after(currentDate),
-				"The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
-				sp.getEventDate(), currentDate, sp);
+					  "The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
+					  sp.getEventDate(), currentDate, sp);
 
 		if (isPlannedStartPause(sp))
 		{
@@ -813,7 +776,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 			if (!X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(sp.getEventType()))
 			{
-				throw new IllegalArgumentException(sp.toString() + " has event type " + sp.getEventType());
+				throw new IllegalArgumentException(sp + " has event type " + sp.getEventType());
 			}
 		}
 
@@ -830,10 +793,14 @@ public class SubscriptionBL implements ISubscriptionBL
 				SOTrx.SALES);
 
 		final IProductPA productPA = Services.get(IProductPA.class);
+		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpLocationId);
+
 		final BigDecimal newPrice = productPA.retrievePriceStd(
+				OrgId.ofRepoId(ol.getAD_Org_ID()),
 				ol.getM_Product_ID(),
 				ol.getC_BPartner_ID(),
 				plId.getRepoId(),
+				countryId,
 				qtySum,
 				true).multiply(qtySum);
 
@@ -985,7 +952,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public I_C_Flatrate_Term createTermForOLCand(final Properties ctx, final I_C_OLCand olCand, final PInstanceId AD_PInstance_ID, final boolean completeIt, String trxName)
+	public I_C_Flatrate_Term createTermForOLCand(final Properties ctx, final I_C_OLCand olCand, final PInstanceId AD_PInstance_ID, final boolean completeIt, final String trxName)
 	{
 		if (olCand.getC_Flatrate_Conditions_ID() <= 0)
 		{
@@ -1133,12 +1100,91 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.priceListIdOverride(subscriptionPLId)
-				.qtyOverride(orderLineQty)
-				.resultUOM(OrderLinePriceUpdateRequest.ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .priceListIdOverride(subscriptionPLId)
+										 .qtyOverride(orderLineQty)
+										 .resultUOM(OrderLinePriceUpdateRequest.ResultUOM.PRICE_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+										 .updateLineNetAmt(true)
+										 .build());
+	}
+
+	@Override
+	public void createPriceChange(final @NonNull I_C_Flatrate_Term term)
+	{
+		insertSubscriptionProgressEvent(term, X_C_SubscriptionProgress.EVENTTYPE_Price, null);
+	}
+
+	@Override
+	public void createQtyChange(final @NonNull I_C_Flatrate_Term term, @Nullable final BigDecimal newQty)
+	{
+		insertSubscriptionProgressEvent(term, X_C_SubscriptionProgress.EVENTTYPE_Quantity, newQty);
+	}
+
+	private void insertSubscriptionProgressEvent(@NonNull final I_C_Flatrate_Term term,
+			@NonNull final String eventType,
+			@Nullable final Object eventValue)
+	{
+		final Timestamp today = SystemTime.asDayTimestamp();
+		final List<I_C_SubscriptionProgress> subscriptionProgressList = subscriptionDAO.retrieveSubscriptionProgresses(SubscriptionProgressQuery.builder()
+																															   .term(term).build());
+		final int seqNoToUse = getSeqNoToUse(today, subscriptionProgressList);//default start seq number. Should not happen.
+		final I_C_SubscriptionProgress changeEvent = newInstance(I_C_SubscriptionProgress.class);
+
+		changeEvent.setEventType(eventType);
+		changeEvent.setC_Flatrate_Term(term);
+		changeEvent.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
+		changeEvent.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
+		changeEvent.setEventDate(today);
+		changeEvent.setSeqNo(seqNoToUse);
+		changeEvent.setDropShip_BPartner_ID(term.getDropShip_BPartner_ID());
+		changeEvent.setDropShip_Location_ID(term.getDropShip_Location_ID());
+		addEventValue(changeEvent, eventType, eventValue);
+		save(changeEvent);
+
+		subscriptionProgressList.stream()
+				.filter(sp -> today.before(sp.getEventDate()))
+				.forEach(this::incrementSeqNoAndSave);
+	}
+
+	private int getSeqNoToUse(final Timestamp today, final List<I_C_SubscriptionProgress> subscriptionProgressList)
+	{
+		return subscriptionProgressList.stream()
+				.filter(sp -> today.before(sp.getEventDate()))
+				.mapToInt(I_C_SubscriptionProgress::getSeqNo)
+				.min()//smallest seqNo after today's date
+				.orElse(subscriptionProgressList.stream()
+								.mapToInt(I_C_SubscriptionProgress::getSeqNo)
+								.map(Math::incrementExact)
+								.max()//greatest seqNo + 1 before today
+								.orElse(SEQNO_FIRST_VALUE));
+	}
+
+	private void addEventValue(final I_C_SubscriptionProgress changeEvent, final String eventType, @Nullable final Object eventValue)
+	{
+		if (Objects.equals(eventType, X_C_SubscriptionProgress.EVENTTYPE_Quantity) && eventValue != null)
+		{
+			changeEvent.setQty((BigDecimal)eventValue);
+		}
+	}
+
+	private void incrementSeqNoAndSave(final I_C_SubscriptionProgress subscriptionProgress)
+	{
+		subscriptionProgress.setSeqNo(subscriptionProgress.getSeqNo() + 1);
+		save(subscriptionProgress);
+	}
+
+	public boolean isSubscription(@NonNull final I_C_OrderLine ol)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(ol.getC_Flatrate_Conditions_ID());
+
+		if (conditionsId == null)
+		{
+			return false;
+		}
+
+		final I_C_Flatrate_Conditions typeConditions = flatrateDAO.getConditionsById(conditionsId);
+
+		return X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions.getType_Conditions());
 	}
 }

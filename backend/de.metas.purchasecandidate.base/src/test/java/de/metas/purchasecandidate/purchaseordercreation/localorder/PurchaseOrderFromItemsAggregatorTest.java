@@ -1,24 +1,38 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.greeting.GreetingRepository;
-import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.impl.NotificationRepository;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.impl.OrderLineBL;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.organization.OrgId;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.purchasecandidate.DemandGroupReference;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
+import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
+import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.quantity.Quantity;
+import de.metas.user.UserGroupRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -28,26 +42,19 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.DocStatus;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderAndLineId;
-import de.metas.order.impl.OrderLineBL;
-import de.metas.organization.OrgId;
-import de.metas.pricing.conditions.PricingConditions;
-import de.metas.product.ProductAndCategoryAndManufacturerId;
-import de.metas.purchasecandidate.DemandGroupReference;
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateTestTool;
-import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -83,13 +90,12 @@ public class PurchaseOrderFromItemsAggregatorTest
 		private int updatePricesCallCount;
 
 		@Override
-		public void updatePrices(org.compiere.model.@NonNull I_C_OrderLine orderLine)
+		public void updatePrices(@NonNull OrderLinePriceUpdateRequest request)
 		{
 			// mock IOrderLineBL.updatePrices() because
 			// setting up the required masterdata and testing the pricing engine is out of scope.
 
 			updatePricesCallCount++;
-
 		}
 	}
 
@@ -110,8 +116,10 @@ public class PurchaseOrderFromItemsAggregatorTest
 		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
 		dimensionFactories.add(new OrderLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(AttachmentEntryService.createInstanceForUnitTesting(), NullCustomizedWindowInfoMapRepository.instance));
+		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
+		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 
 		dimension = createDimension();
 
@@ -165,7 +173,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
-				.orgId(OrgId.ofRepoId(10))
+				.orgId(OrgId.ofRepoId(Env.CTXVALUE_AD_Org_ID_Any))
 				.purchaseDatePromised(SystemTime.asZonedDateTime())
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())

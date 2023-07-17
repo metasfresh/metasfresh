@@ -1,15 +1,14 @@
 package de.metas.contracts.flatrate.impexp;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /*
  * #%L
@@ -74,7 +73,6 @@ import lombok.Value;
 			iFlatrateTerm.setEndDate(endDate);
 			iFlatrateTerm.setMasterStartDate(masterStartDate);
 			iFlatrateTerm.setMasterEndDate(masterEndDate);
-
 			InterfaceWrapperHelper.save(iFlatrateTerm);
 			return iFlatrateTerm;
 		}

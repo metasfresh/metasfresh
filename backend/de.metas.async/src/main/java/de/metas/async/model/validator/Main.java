@@ -1,5 +1,30 @@
 package de.metas.async.model.validator;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.Profiles;
+import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.api.impl.AsyncBatchDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Log;
+import de.metas.async.model.I_C_Queue_WorkPackage_Param;
+import de.metas.async.processor.IQueueProcessorExecutorService;
+import de.metas.async.spi.impl.DefaultAsyncBatchListener;
+import de.metas.event.Topic;
+import de.metas.impexp.DataImportService;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
 import java.util.List;
 
 /*
@@ -24,33 +49,6 @@ import java.util.List;
  * #L%
  */
 
-import lombok.NonNull;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.Profiles;
-import de.metas.async.Async_Constants;
-import de.metas.async.api.IAsyncBatchListeners;
-import de.metas.async.api.impl.AsyncBatchDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Log;
-import de.metas.async.model.I_C_Queue_WorkPackage_Param;
-import de.metas.async.processor.IQueueProcessorExecutorService;
-import de.metas.async.spi.impl.DefaultAsyncBatchListener;
-import de.metas.event.Topic;
-import de.metas.impexp.DataImportService;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-
 /**
  * ASync module main validator. This is the entry point for all other stuff.
  *
@@ -67,6 +65,7 @@ public class Main extends AbstractModuleInterceptor
 	private static final Logger logger = LogManager.getLogger(Main.class);
 
 	public static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
+	public static final String SYSCONFIG_DEBOUNCER_DELAY_MILLIS = "de.metas.externalsystem.debouncer.delayInMillis";
 
 	private static final int THREE_MINUTES = 3 * 60 * 1000;
 
@@ -129,6 +128,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.lock.model.validator.Main());
 		engine.addModelValidator(new C_Async_Batch());
 	}
+
 
 	/**
 	 * Init the async queue processor service on user login.

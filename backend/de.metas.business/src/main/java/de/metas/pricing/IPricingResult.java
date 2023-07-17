@@ -57,7 +57,7 @@ public interface IPricingResult
 		return CurrencyId.toRepoId(getCurrencyId());
 	}
 
-	void setPriceUomId(final UomId uomId);
+	void setPriceUomId(@Nullable final UomId uomId);
 
 	UomId getPriceUomId();
 
@@ -85,6 +85,9 @@ public interface IPricingResult
 	@NonNull
 	Percent getDiscount();
 
+	/**
+	 * Sets the given discount. After this, {@link #isDiscountCalculated()} will always return {@code true}.
+	 */
 	void setDiscount(Percent discount);
 
 	boolean isDiscountCalculated();
@@ -124,7 +127,7 @@ public interface IPricingResult
 
 	void setPriceListVersionId(PriceListVersionId priceListVersionId);
 
-	void setProductCategoryId(ProductCategoryId productCategoryId);
+	void setProductCategoryId(@Nullable ProductCategoryId productCategoryId);
 
 	ProductCategoryId getProductCategoryId();
 
@@ -182,13 +185,15 @@ public interface IPricingResult
 
 	ImmutableList<String> getLoggableMessages();
 
-	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
+	/**
+	 * @return {@code true} if the current discount should not be overridden by any other pricing rule, {@code false} otherwise.
+	 */
+	boolean isDontOverrideDiscountAdvice();
 
-	BigDecimal getBaseCommissionPointsPerPriceUOM();
-
-	void setTradedCommissionPercent(Percent tradedCommissionPercent);
-
-	Percent getTradedCommissionPercent();
+	/**
+	 * Can specify if the discount in the pricing rule can be overridden by any other pricing rule.
+	 */
+	void setDontOverrideDiscountAdvice(boolean dontOverrideDiscountAdvice);
 
 	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
 

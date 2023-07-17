@@ -22,77 +22,170 @@
 
 package de.metas.elementvalue;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.interceptor.C_ElementValue;
+import de.metas.treenode.TreeNodeService;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
 
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
-/** I think the methods of this service could/should rather be a methods of {@link ElementValue}.
- * The flow would be:
- * <li>get a ElementValue-instance from the {@link ElementValueRepository}. That instance would already contain its children.
- * <li>invoke the ElementValue-instance's methods to do stuff, e.g. add another ElementValue-child, or resequence them
- * <li>call {@link ElementValueRepository#save(ElementValue)} so persist the stuff you did
- *
- */
 @Service
 public class ElementValueService
 {
-	private final ElementValueRepository evRepo;
+	private final ElementValueRepository elementValueRepository;
+	private final TreeNodeService treeNodeService;
 
-	public ElementValueService(@NonNull final ElementValueRepository evRepo)
+	public ElementValueService(
+			@NonNull final ElementValueRepository elementValueRepository,
+			@NonNull final TreeNodeService treeNodeService)
 	{
-		this.evRepo = evRepo;
+		this.elementValueRepository = elementValueRepository;
+		this.treeNodeService = treeNodeService;
 	}
 
-	public void updateElementValueAndResetSequences(@NonNull final ElementValueRequest request)
+	public ElementValue getById(@NonNull final ElementValueId id)
 	{
-		final Map<String, I_C_ElementValue> children = evRepo.retrieveChildren(request.getParentId());
-
-		final I_C_ElementValue record = updateElementValueAndDoNotSave(request);
-
-		// add newly updated
-		final Map<String, I_C_ElementValue> childrenSorted = new TreeMap<String, I_C_ElementValue>(children);
-		childrenSorted.put(record.getValue(), record);
-
-		// update sequences
-		updateSequencesAndSave(request.getParentId(), childrenSorted);
+		return elementValueRepository.getById(id);
 	}
 
-	private I_C_ElementValue updateElementValueAndDoNotSave(@NonNull final ElementValueRequest request)
+	public Optional<ElementValue> getByAccountNo(@NonNull final String accountNo, @NonNull final ChartOfAccountsId chartOfAccountsId)
 	{
-		final I_C_ElementValue record = evRepo.getElementValueRecordById(request.getElementValueId());
-		record.setParent_ID(request.getParentId().getRepoId());
-
-		return record;
+		return elementValueRepository.getByAccountNo(accountNo, chartOfAccountsId);
 	}
 
-	public void updateSequencesAndSave(@NonNull final ElementValueId parentId, @NonNull final Map<String, I_C_ElementValue> childrenSorted)
+	public ElementValue createOrUpdate(@NonNull final ElementValueCreateOrUpdateRequest request)
 	{
-		final Map<String, Integer> sequences = createSequences(childrenSorted.keySet());
+		return elementValueRepository.createOrUpdate(request);
+	}
 
-		childrenSorted.forEach((value, record) -> {
-			record.setSeqNo(sequences.get(value));
-			evRepo.save(record);
+	public void reorderByAccountNo(@NonNull final ChartOfAccountsId chartOfAccountsId)
+	{
+		final ArrayList<I_C_ElementValue> roots = new ArrayList<>();
+		final ArrayListMultimap<ElementValueId, I_C_ElementValue> elementValuesByParentId = ArrayListMultimap.create();
+
+		for (final I_C_ElementValue elementValue : elementValueRepository.getAllRecordsByChartOfAccountsId(chartOfAccountsId))
+		{
+			final ElementValueId parentId = ElementValueId.ofRepoIdOrNull(elementValue.getParent_ID());
+			if (parentId == null)
+			{
+				roots.add(elementValue);
+			}
+			else
+			{
+				elementValuesByParentId.put(parentId, elementValue);
+			}
+		}
+
+		final ArrayList<ElementValue> savedElementValues = new ArrayList<>();
+		try (final IAutoCloseable ignored = C_ElementValue.temporaryDisableUpdateTreeNode())
+		{
+			for (final I_C_ElementValue root : roots)
+			{
+				root.setSeqNo(0);
+				elementValueRepository.save(root);
+
+				savedElementValues.add(ElementValueRepository.toElementValue(root));
+			}
+
+			for (final ElementValueId parentId : elementValuesByParentId.keySet())
+			{
+				final List<I_C_ElementValue> children = elementValuesByParentId.get(parentId);
+				sortByAccountNoAndSave(children);
+
+				children.forEach(child -> savedElementValues.add(ElementValueRepository.toElementValue(child)));
+			}
+		}
+
+		if (!savedElementValues.isEmpty())
+		{
+			treeNodeService.recreateTree(savedElementValues);
+		}
+	}
+
+	public void changeParentAndReorderByAccountNo(@NonNull final ElementValueParentChangeRequest request)
+	{
+		final ElementValueId newParentId = request.getNewParentId();
+		final ElementValue newParent = elementValueRepository.getById(newParentId);
+		if (!newParent.isSummary())
+		{
+			throw new AdempiereException("Parent element value must be a summary element value: " + newParent.getValue());
+		}
+
+		final I_C_ElementValue record = elementValueRepository.getRecordById(request.getElementValueId());
+		record.setParent_ID(newParentId.getRepoId());
+		// evRepo.save(record); // no need to save, we assume it will be saved when the SeqNo change will be saved too (see below)
+
+		final HashMap<Integer, I_C_ElementValue> childrenById = elementValueRepository.getAllRecordsByParentId(newParentId)
+				.stream()
+				.collect(GuavaCollectors.toHashMapByKey(I_C_ElementValue::getC_ElementValue_ID));
+		childrenById.put(record.getC_ElementValue_ID(), record); // make sure *our* record is part of the map because our record contains the parent change
+
+		sortByAccountNoAndSave(childrenById.values());
+	}
+
+	private void sortByAccountNoAndSave(@NonNull final Collection<I_C_ElementValue> records)
+	{
+		assertSameNotNullParentId(records);
+
+		final ImmutableList<I_C_ElementValue> recordsSorted = records.stream()
+				.sorted(Comparator.comparing(I_C_ElementValue::getValue)
+						.thenComparing(I_C_ElementValue::getC_ElementValue_ID)) // just to have a predictable order
+				.collect(ImmutableList.toImmutableList());
+
+		final AtomicInteger nextSeqNo = new AtomicInteger(1);
+
+		recordsSorted.forEach(record -> {
+			final int seqNo = nextSeqNo.getAndIncrement();
+			record.setSeqNo(seqNo);
+			elementValueRepository.save(record);
 		});
 	}
 
-	private Map<String, Integer> createSequences(@NonNull final Set<String> keys)
+	private void assertSameNotNullParentId(@NonNull final Collection<I_C_ElementValue> records)
 	{
-		final Map<String, Integer> sequenceMap = new HashMap<String, Integer>();
-
-		int seqNo = 1;
-		for (String key : keys)
+		if (records.isEmpty())
 		{
-			sequenceMap.put(key, seqNo);
-			seqNo++;
+			return;
 		}
 
-		return sequenceMap;
+		ElementValueId commonParentId = null;
+		for (final I_C_ElementValue record : records)
+		{
+			final ElementValueId parentId = ElementValueId.ofRepoIdOrNull(record.getParent_ID());
+			if (parentId == null)
+			{
+				throw new AdempiereException("Element value has no parent set: " + record.getValue() + " (ID=" + record.getC_ElementValue_ID() + ")");
+			}
+
+			if (commonParentId == null)
+			{
+				commonParentId = parentId;
+			}
+			else if (!commonParentId.equals(parentId))
+			{
+				throw new AdempiereException("Element values have different parents: " + records);
+			}
+		}
+	}
+
+	// TODO: introduce ChartOfAccountsId as parameter
+	public ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
+	{
+		return elementValueRepository.getElementValueIdsBetween(accountValueFrom, accountValueTo);
 	}
 }

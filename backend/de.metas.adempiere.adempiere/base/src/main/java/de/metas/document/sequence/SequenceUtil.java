@@ -25,6 +25,11 @@ package de.metas.document.sequence;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.model.POInfoColumn;
+
+import java.util.Optional;
 
 @UtilityClass
 public class SequenceUtil
@@ -36,5 +41,32 @@ public class SequenceUtil
 		return documentNoFactory.createValueBuilderFor(modelRecord)
 				.setFailOnError(true) // backward compatiblity: initially here (in PO.java) an DBException was thrown
 				.build();
+	}
+
+	@NonNull
+	public Optional<String> computeColumnValueBasedOnSequenceIdIfProvided(
+			@NonNull final POInfoColumn poInfoColumn,
+			final int clientId)
+	{
+		final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(poInfoColumn.getAD_Sequence_ID());
+		if (sequenceId == null)
+		{
+			return Optional.empty();
+		}
+
+		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+		final String computedSeqNo = documentNoFactory.forSequenceId(sequenceId)
+				.setClientId(ClientId.ofRepoId(clientId))
+				.build();
+
+		if (computedSeqNo == null)
+		{
+			throw new AdempiereException("Failed to compute sequence!")
+					.appendParametersToMessage()
+					.setParameter("ColumnName", poInfoColumn.getColumnName())
+					.setParameter("sequenceId", sequenceId);
+		}
+
+		return Optional.of(computedSeqNo);
 	}
 }

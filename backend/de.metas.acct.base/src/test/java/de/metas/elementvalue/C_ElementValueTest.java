@@ -20,213 +20,126 @@
  * #L%
  */
 
-/**
- *
- */
 package de.metas.elementvalue;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import de.metas.acct.api.impl.ElementValueId;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_TreeNode;
-import org.compiere.model.I_C_Element;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.X_C_Element;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.interceptor.C_ElementValue;
+import de.metas.organization.OrgId;
+import de.metas.treenode.TreeNode;
 import de.metas.treenode.TreeNodeRepository;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.X_C_ElementValue;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.annotation.Nullable;
+
+@ExtendWith(AdempiereTestWatcher.class)
 public class C_ElementValueTest
 {
 	private ElementValueService elementValueService;
+	private TreeNodeService treeNodeService;
+	private TreeNodeRepository treeNodeRepo;
 
-	private I_C_ElementValue parent;
-	private I_C_ElementValue ev1;
-	private I_C_ElementValue ev2;
-	private I_C_ElementValue ev3;
-	private I_AD_TreeNode node1;
-	private I_AD_TreeNode node2;
-	private I_AD_TreeNode node3;
+	private ChartOfAccounts chartOfAccounts;
 
 	@BeforeEach
-	void init()
+	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 		AdempiereTestHelper.createClientInfo();
 
+		final ChartOfAccountsService chartOfAccountsService = new ChartOfAccountsService(new ChartOfAccountsRepository());
+		final TreeNodeRepository treeNodeRepo = new TreeNodeRepository();
+		final TreeNodeService treeNodeService = new TreeNodeService(treeNodeRepo, chartOfAccountsService);
+
 		final ElementValueRepository elementValueRepository = new ElementValueRepository();
-		final TreeNodeRepository treeNodeRepository = new TreeNodeRepository(elementValueRepository);
-
-		final TreeNodeService treeNodeService = new TreeNodeService(elementValueRepository, treeNodeRepository);
-		elementValueService = new ElementValueService(elementValueRepository);
-
-		// register services
-		SpringContextHolder.registerJUnitBean(elementValueRepository);
-		SpringContextHolder.registerJUnitBean(elementValueService);
-		SpringContextHolder.registerJUnitBean(treeNodeRepository);
-		SpringContextHolder.registerJUnitBean(treeNodeService);
+		ElementValueService elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, treeNodeService));
+		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, accountDAO, treeNodeService));
 
-		prepareData();
-	}
-
-	@Test
-	void test_PushingParentAndSeqNoToTreeNode()
-	{
-
-		final ElementValueRequest request = ElementValueRequest.builder()
-				.elementValueId(ElementValueId.ofRepoId(ev3.getC_ElementValue_ID()))
-				.parentId(ElementValueId.ofRepoId(parent.getC_ElementValue_ID()))
-				.build();
-
-		elementValueService.updateElementValueAndResetSequences(request);
-
-		InterfaceWrapperHelper.refresh(ev3);
-		InterfaceWrapperHelper.refresh(node3);
-
-		assertEquals(parent.getC_ElementValue_ID(), ev3.getParent_ID());
-		assertEquals(ev3.getParent_ID(), node3.getParent_ID());
-		assertEquals(ev3.getSeqNo(), node3.getSeqNo());
-		assertEquals(ev2.getSeqNo(), node2.getSeqNo());
-		assertEquals(ev1.getSeqNo(), node1.getSeqNo());
-	}
-
-	@Test
-	void test_ResetSeqNo()
-	{
-
-		final ElementValueRequest request = ElementValueRequest.builder()
-				.elementValueId(ElementValueId.ofRepoId(ev3.getC_ElementValue_ID()))
-				.parentId(ElementValueId.ofRepoId(parent.getC_ElementValue_ID()))
-				.build();
-
-		elementValueService.updateElementValueAndResetSequences(request);
-
-		InterfaceWrapperHelper.refresh(node1);
-		InterfaceWrapperHelper.refresh(node2);
-		InterfaceWrapperHelper.refresh(node3);
-
-		assertEquals(1, node1.getSeqNo());
-		assertEquals(3, node2.getSeqNo());
-		assertEquals(2, node3.getSeqNo());
-
-	}
-
-	private void prepareData()
-	{
-
-		final I_C_Element el = ElementBuilder()
+		this.elementValueService = elementValueService;
+		this.treeNodeService = treeNodeService;
+		this.treeNodeRepo = treeNodeRepo;
+		this.chartOfAccounts = chartOfAccountsService.createChartOfAccounts(ChartOfAccountsCreateRequest.builder()
 				.name("Test")
-				.build();
-
-		parent = ElemenValuetBuilder()
-				.name("117")
-				.C_Element_ID(el.getC_Element_ID())
-				.Parent_ID(0)
-				.seqNo(1000)
-				.build();
-
-		TreeNodeBuilder()
-				.C_ElementValue_ID(parent.getC_ElementValue_ID())
-				.Parent_ID(0)
-				.seqNo(1000)
-				.build();
-
-		ev1 = ElemenValuetBuilder()
-				.name("11710")
-				.C_Element_ID(el.getC_Element_ID())
-				.Parent_ID(parent.getC_ElementValue_ID())
-				.seqNo(10)
-				.build();
-
-		node1 = TreeNodeBuilder()
-				.C_ElementValue_ID(ev1.getC_ElementValue_ID())
-				.Parent_ID(parent.getC_ElementValue_ID())
-				.seqNo(10)
-				.build();
-
-		ev2 = ElemenValuetBuilder()
-				.name("11730")
-				.C_Element_ID(el.getC_Element_ID())
-				.Parent_ID(parent.getC_ElementValue_ID())
-				.seqNo(20)
-				.build();
-
-		node2 = TreeNodeBuilder()
-				.C_ElementValue_ID(ev2.getC_ElementValue_ID())
-				.Parent_ID(parent.getC_ElementValue_ID())
-				.seqNo(20)
-				.build();
-
-		ev3 = ElemenValuetBuilder()
-				.name("11720")
-				.C_Element_ID(el.getC_Element_ID())
-				.Parent_ID(0)
-				.seqNo(999)
-				.build();
-
-		node3 = TreeNodeBuilder()
-				.C_ElementValue_ID(ev3.getC_ElementValue_ID())
-				.Parent_ID(0)
-				.seqNo(999)
-				.build();
-
+				.clientId(Env.getClientId())
+				.build());
 	}
 
-	@Builder(builderMethodName = "ElementBuilder")
-	private I_C_Element prepareElement(@NonNull final String name)
+	@Builder(builderMethodName = "elementValue", builderClassName = "$ElementValueBuilder")
+	private ElementValueId createElementValue(
+			@NonNull final String name,
+			@Nullable final ElementValueId parentId,
+			final int seqNo,
+			final boolean summary)
 	{
-		final I_C_Element element = newInstance(I_C_Element.class);
-		element.setAD_Tree_ID(1);
-		element.setAD_Org_ID(1);
-		element.setName(name);
-		element.setElementType(X_C_Element.ELEMENTTYPE_Account);
-		InterfaceWrapperHelper.setValue(element, I_C_Element.COLUMNNAME_AD_Client_ID, 1);
-		save(element);
+		final ElementValue elementValue = elementValueService.createOrUpdate(ElementValueCreateOrUpdateRequest.builder()
+				.orgId(OrgId.ANY)
+				.chartOfAccountsId(chartOfAccounts.getId())
+				.value(name)
+				.name(name)
+				.accountSign(X_C_ElementValue.ACCOUNTSIGN_Natural)
+				.accountType(X_C_ElementValue.ACCOUNTTYPE_Asset)
+				.isSummary(summary)
+				.parentId(parentId)
+				.seqNo(seqNo)
+				.build());
 
-		return element;
+		treeNodeService.updateTreeNode(elementValue);
+
+		return elementValue.getId();
 	}
 
-	@Builder(builderMethodName = "ElemenValuetBuilder")
-	private I_C_ElementValue prepareElementValue(@NonNull final String name, final int C_Element_ID, final int Parent_ID, final int seqNo)
+	private TreeNode getTreeNode(final ElementValueId elementValueId)
 	{
-		final I_C_ElementValue ev = newInstance(I_C_ElementValue.class);
-		ev.setC_Element_ID(C_Element_ID);
-		ev.setValue(name);
-		ev.setName(name);
-		ev.setParent_ID(Parent_ID);
-		ev.setSeqNo(seqNo);
-		save(ev);
-
-		return ev;
+		return treeNodeRepo.getTreeNode(elementValueId, chartOfAccounts.getTreeId())
+				.orElseThrow(() -> new AdempiereException("TreeNode not found for " + elementValueId));
 	}
 
-	@Builder(builderMethodName = "TreeNodeBuilder")
-	private I_AD_TreeNode prepareTreeNode(final int C_ElementValue_ID, final int Parent_ID, final int seqNo)
+	@Test
+	void moveNodeToNewParent()
 	{
-		final I_AD_TreeNode tn = newInstance(I_AD_TreeNode.class);
-		tn.setAD_Tree_ID(1);
-		tn.setNode_ID(C_ElementValue_ID);
-		tn.setParent_ID(Parent_ID);
-		tn.setSeqNo(seqNo);
-		save(tn);
+		final ElementValueId parentId = elementValue().name("117").parentId(null).seqNo(1000).summary(true).build();
+		final ElementValueId ev1Id = elementValue().name("11710").parentId(parentId).seqNo(10).build();
+		final ElementValueId ev2Id = elementValue().name("11730").parentId(parentId).seqNo(20).build();
+		final ElementValueId ev3Id = elementValue().name("11720").parentId(null).seqNo(999).build();
 
-		return tn;
+		elementValueService.changeParentAndReorderByAccountNo(
+				ElementValueParentChangeRequest.builder()
+						.elementValueId(ev3Id)
+						.newParentId(parentId)
+						.build());
+
+		final ElementValue ev1 = elementValueService.getById(ev1Id);
+		final ElementValue ev2 = elementValueService.getById(ev2Id);
+		final ElementValue ev3 = elementValueService.getById(ev3Id);
+
+		final TreeNode node1 = getTreeNode(ev1Id);
+		final TreeNode node2 = getTreeNode(ev2Id);
+		final TreeNode node3 = getTreeNode(ev3Id);
+
+		Assertions.assertThat(node1.getParentId()).isEqualTo(ev1.getParentId()).isEqualTo(parentId);
+		Assertions.assertThat(node2.getParentId()).isEqualTo(ev2.getParentId()).isEqualTo(parentId);
+		Assertions.assertThat(node3.getParentId()).isEqualTo(ev3.getParentId()).isEqualTo(parentId);
+
+		Assertions.assertThat(node1.getSeqNo()).isEqualTo(ev1.getSeqNo()).isEqualTo(1);
+		Assertions.assertThat(node2.getSeqNo()).isEqualTo(ev2.getSeqNo()).isEqualTo(3);
+		Assertions.assertThat(node3.getSeqNo()).isEqualTo(ev3.getSeqNo()).isEqualTo(2);
 	}
 }

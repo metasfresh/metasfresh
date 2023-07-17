@@ -22,17 +22,19 @@
 
 package de.metas.rest_api.v2.testing;
 
+import de.metas.cache.CacheMgt;
 import de.metas.common.rest_api.common.JsonTestResponse;
-import de.metas.common.util.EmptyUtil;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +57,13 @@ public class AppTestingRestController
 
 	private final AtomicLong nextNotificationId = new AtomicLong(1);
 
+	private final IQueryStatisticsLogger statisticsLogger;
+
+	public AppTestingRestController(@NonNull final IQueryStatisticsLogger statisticsLogger)
+	{
+		this.statisticsLogger = statisticsLogger;
+	}
+
 	/* when adding additional parameters, please also update https://github.com/metasfresh/metasfresh/issues/1577#issue-229774302 */
 	@GetMapping("/ping/notifications")
 	public String pingNotifications(@RequestParam(value = "noEmail", defaultValue = "false") final String noEmail)
@@ -76,11 +85,11 @@ public class AppTestingRestController
 
 	@PutMapping(produces = "application/json")
 	public ResponseEntity<?> putMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
+			@Parameter(description = "Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
+			@Parameter(description = "Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -88,11 +97,11 @@ public class AppTestingRestController
 
 	@GetMapping(produces = "application/json")
 	public ResponseEntity<?> getMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
+			@Parameter(description = "Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
+			@Parameter(description = "Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -100,23 +109,41 @@ public class AppTestingRestController
 
 	@PostMapping(produces = "application/json")
 	public ResponseEntity<?> postMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
-			@RequestParam(name = "responseBody") final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
-			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
+			@Parameter(description = "Response body the endpoint should return")
+			@RequestParam(name = "responseBody", required = false) final String responseBody,
+			@Parameter(description = "Milliseconds to delay the response")
+			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis,
+			@Parameter(description = "Exception thrown in metas API")
+			@RequestParam(name = "throwException", required = false) final boolean throwException,
+			@Parameter(description = "Return non-json body")
+			@RequestParam(name = "nonJsonBody", required = false) final boolean nonJsonBody) throws InterruptedException
 	{
-		return executeMethod(responseCode, responseBody, delaymillis);
+		if (throwException)
+		{
+			final String errorString = "Exception thrown";
+			throw new AdempiereException(errorString);
+		}
+		else if (nonJsonBody)
+		{
+			final String nonJsonBodyString = Check.isNotBlank(responseBody) ? responseBody : "notDeserializable";
+
+			return ResponseEntity.status(responseCode).body(nonJsonBodyString);
+		}
+		else
+		{
+			return executeMethod(responseCode, responseBody, delaymillis);
+		}
 	}
 
 	@DeleteMapping(produces = "application/json")
 	public ResponseEntity<?> deleteMethod(
-			@ApiParam("Response code the endpoint should return")
+			@Parameter(description = "Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@ApiParam("Response body the endpoint should return")
+			@Parameter(description = "Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@ApiParam("Milliseconds to delay the response")
+			@Parameter(description = "Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -124,13 +151,13 @@ public class AppTestingRestController
 
 	private ResponseEntity<?> executeMethod(
 			final int responseCode,
-			@NonNull final String responseBody,
+			@Nullable final String responseBody,
 			@Nullable final Integer delaymillis) throws InterruptedException
 
 	{
 		Loggables.get().addLog("Endpoint invoked; returning httpCode: " + responseCode);
 
-		if (!EmptyUtil.isEmpty(delaymillis))
+		if (delaymillis != null && delaymillis > 0)
 		{
 			Thread.sleep(delaymillis);
 		}
@@ -141,10 +168,33 @@ public class AppTestingRestController
 			Loggables.get().addLog(errorString, new AdempiereException(errorString));
 		}
 
-		final JsonTestResponse response = JsonTestResponse.builder()
+		final JsonTestResponse response = responseBody == null
+				? null
+				: JsonTestResponse.builder()
 				.messageBody(responseBody)
 				.build();
 
 		return ResponseEntity.status(responseCode).body(response);
+	}
+
+	@GetMapping("/cacheReset")
+	public void cacheReset()
+	{
+		CacheMgt.get().reset();
+	}
+
+	@GetMapping("/recordSqlQueriesWithMicrometer")
+	public void setRecordSqlQueriesWithMicrometer(
+			@Parameter(description = "If Enabled, all SQL queries execution times are recorded with micrometer")
+			@RequestParam("enabled") final boolean enabled)
+	{
+		if (enabled)
+		{
+			statisticsLogger.enableRecordWithMicrometer();
+		}
+		else
+		{
+			statisticsLogger.disableRecordWithMicrometer();
+		}
 	}
 }

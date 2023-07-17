@@ -16,6 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -24,16 +31,6 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.process.DocumentTypeVerify;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
 
 /**
  * Year Model
@@ -50,6 +47,7 @@ public class MYear extends X_C_Year
 {
 	private static final Logger logger = LogManager.getLogger(MYear.class);
 
+	@SuppressWarnings("unused")
 	public MYear(final Properties ctx, final int C_Year_ID, final String trxName)
 	{
 		super(ctx, C_Year_ID, trxName);
@@ -61,6 +59,7 @@ public class MYear extends X_C_Year
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MYear(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -127,8 +126,7 @@ public class MYear extends X_C_Year
 	/**
 	 * Create 12 Standard Periods from the specified start date.
 	 * Creates also Period Control from DocType.
-	 * 
-	 * @see DocumentTypeVerify#createPeriodControls(Properties, int, JavaProcess, String)
+	 *
 	 * @param locale locale
 	 * @param startDate first day of the calendar year
 	 * @param dateFormat SimpleDateFormat pattern for generating the period names.

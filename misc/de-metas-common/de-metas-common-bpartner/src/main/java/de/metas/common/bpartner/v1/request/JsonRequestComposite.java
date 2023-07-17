@@ -28,12 +28,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.externalreference.v1.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -44,43 +43,42 @@ import javax.annotation.Nullable;
 import static de.metas.common.rest_api.v1.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
-@ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")
+@Schema(description = "A BPartner with `n` contacts and `n` locations.\n")
 @Value
 public class JsonRequestComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
-	@ApiModelProperty(position = 10)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	JsonRequestBPartner bpartner;
 
-	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used", //
-			position = 30)
+	@Schema(description = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("locations")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestLocationUpsert locations;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("contacts")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestContactUpsert contacts;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("bankAccounts")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestBankAccountsUpsert bankAccounts;
 
-	@ApiModelProperty(value = "The Id of the business partner from an external system.", position = 60)
+	@Schema(description = "The Id of the business partner from an external system.")
 	@JsonInclude(Include.NON_NULL)
 	JsonSingleExternalReferenceCreateReq bPartnerReferenceCreateRequest;
 
-	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
-			+ READ_ONLY_SYNC_ADVISE_DOC, position = 70)
+	@Schema(description = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
+			+ READ_ONLY_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 

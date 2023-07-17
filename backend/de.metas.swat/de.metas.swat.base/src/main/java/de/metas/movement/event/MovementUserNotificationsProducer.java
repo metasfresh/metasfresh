@@ -50,7 +50,7 @@ public class MovementUserNotificationsProducer
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.movement.UserNotifications")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	// services

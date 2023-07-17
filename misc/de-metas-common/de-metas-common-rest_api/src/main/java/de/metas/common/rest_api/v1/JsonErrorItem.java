@@ -31,10 +31,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -42,13 +41,15 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-@ApiModel(description = "Error information")
+@Schema(description = "Error information")
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonErrorItem.JsonErrorItemBuilder.class)
 public class JsonErrorItem
 {
 	String message;
+
+	boolean userFriendlyError;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String detail;
@@ -84,6 +85,7 @@ public class JsonErrorItem
 	@Builder
 	private JsonErrorItem(
 			@JsonProperty("message") @Nullable final String message,
+			@JsonProperty("userFriendlyError") final boolean userFriendlyError,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
@@ -95,6 +97,7 @@ public class JsonErrorItem
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
+		this.userFriendlyError = userFriendlyError;
 		this.detail = detail;
 		this.stackTrace = stackTrace;
 		this.parameters = CoalesceUtil.coalesce(parameters, ImmutableMap.of());

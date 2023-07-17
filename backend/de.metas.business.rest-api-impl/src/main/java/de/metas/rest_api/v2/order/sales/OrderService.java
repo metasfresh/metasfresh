@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.order.sales;
 
+import ch.qos.logback.classic.Level;
 import de.metas.RestUtils;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -29,6 +30,7 @@ import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -36,11 +38,13 @@ import de.metas.order.OrderQuery;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.payment.PaymentService;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -49,6 +53,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -57,8 +62,11 @@ import java.util.Optional;
 @Service
 public class OrderService
 {
+	private final static Logger logger = LogManager.getLogger(OrderService.class);
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	private final CurrencyService currencyService;
 	private final JsonRetrieverService jsonRetrieverService;
@@ -83,6 +91,12 @@ public class OrderService
 		{
 			throw new AdempiereException("Cannot find the orgId from either orgCode=" + request.getOrgCode() + " or the current user's context.");
 		}
+		final ExternalId paymentExternalId = ExternalId.ofOrNull(request.getExternalPaymentId());
+		if (paymentExternalId != null && paymentDAO.getByExternalId(paymentExternalId, orgId).isPresent())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Payment with AD_Ord_ID={} and ExternalId={} already exists; -> ignoring this request.",orgId.getRepoId(), paymentExternalId.getValue());
+			return; // nothing to do, external payment already registered
+		}
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
 		if (currencyId == null)
@@ -90,9 +104,9 @@ public class OrderService
 			throw new AdempiereException("Wrong currency: " + request.getCurrencyCode());
 		}
 
-		final BankAccountId targetBankAccount = paymentService.determineInboundBankAccountId(orgId, currencyId, request.getTargetIBAN())
+		final BankAccountId targetBankAccount = paymentService.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
 				.orElseThrow(() -> new AdempiereException(String.format(
-						"Cannot find Bank Account for org-id: %s, currency: %s and iban: %s", orgId, currencyId, request.getTargetIBAN())));
+						"Cannot find Bank Account for the org-bpartner of org-id: %s, currency-id: %s and iban: %s", orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
 
 		final ExternalIdentifier bPartnerExternalIdentifier = ExternalIdentifier.of(request.getBpartnerIdentifier());
 		final BPartnerId bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(bPartnerExternalIdentifier, orgId)
@@ -113,7 +127,7 @@ public class OrderService
 					.tenderType(TenderType.DirectDeposit)
 					.dateAcct(dateTrx)
 					.dateTrx(dateTrx)
-					.externalId(ExternalId.ofOrNull(request.getExternalPaymentId()));
+					.externalId(paymentExternalId);
 
 			final IdentifierString orderIdentifier = IdentifierString.of(request.getOrderIdentifier());
 

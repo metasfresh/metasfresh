@@ -1,15 +1,35 @@
 package de.metas.banking.payment.impl;
 
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import de.metas.banking.PaySelectionLineId;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.X_C_BP_BankAccount;
+import org.compiere.util.TimeUtil;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.PaySelectionId;
-import de.metas.banking.PaySelectionLineId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -24,28 +44,13 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_BP_BankAccount;
-import org.compiere.util.TimeUtil;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+
 import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringJoiner;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
@@ -158,6 +163,10 @@ public class PaySelectionBL implements IPaySelectionBL
 				psl.setC_BP_BankAccount_ID(secondaryAcct);
 			}
 		}
+		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+		{
+			psl.setReference(invoice.getPOReference());
+		}
 	}
 
 	@Override
@@ -185,19 +194,19 @@ public class PaySelectionBL implements IPaySelectionBL
 	 * <li>line is not linked to a bank statement line ref
 	 * </ul>
 	 */
-	private void createPaymentIfNeeded(final I_C_PaySelectionLine line)
+	private org.compiere.model.I_C_Payment createPaymentIfNeeded(final I_C_PaySelectionLine line)
 	{
 		// Skip if a payment was already created
 		if (line.getC_Payment_ID() > 0)
 		{
-			return;
+			return null;
 		}
 
 		// Skip if this pay selection line is already in a bank statement
 		// because in that case, the payment shall be generated there
 		if (isReconciled(line))
 		{
-			return;
+			return null;
 		}
 
 		try
@@ -206,8 +215,9 @@ public class PaySelectionBL implements IPaySelectionBL
 			line.setC_Payment_ID(payment.getC_Payment_ID());
 			paySelectionDAO.save(line);
 
+			return payment;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed creating payment from " + line, e);
 		}
@@ -220,7 +230,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	 *
 	 * @return generated payment.
 	 */
-	private I_C_Payment createPayment(final I_C_PaySelectionLine line)
+	private org.compiere.model.I_C_Payment createPayment(final I_C_PaySelectionLine line)
 	{
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
@@ -305,7 +315,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			return;
 		}
 
-		final ImmutableSet<PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
+		final ImmutableSet<de.metas.banking.PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionIds)

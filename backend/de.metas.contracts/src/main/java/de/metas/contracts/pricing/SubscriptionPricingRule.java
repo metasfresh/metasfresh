@@ -1,8 +1,15 @@
 package de.metas.contracts.pricing;
 
+import ch.qos.logback.classic.Level;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.SubscriptionDiscountLine;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.repository.ISubscriptionDiscountRepository;
+import de.metas.contracts.repository.SubscriptionDiscountQuery;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -10,53 +17,62 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * This pricing rule applies if the given {@link IPricingContext}'s referenced object references a {@link I_C_Flatrate_Conditions} record.
  * <p>
  * If that is given, then the rule creates a pricing context of it's own and calls the pricing engine with that "alternative" pricing context.
  * The rule's own pricing context contains the {@link I_C_Flatrate_Conditions}'s pricing system.
- *
- *
  */
 public class SubscriptionPricingRule implements IPricingRule
 {
+	private final @NonNull ISubscriptionDiscountRepository subscriptionDiscountRepository = Services.get(ISubscriptionDiscountRepository.class);
 
 	private static final Logger logger = LogManager.getLogger(SubscriptionPricingRule.class);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean applies(
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		if (result.isCalculated())
 		{
-			logger.debug("Not applying because already calculated");
+			loggable.addLog("Not applying because already calculated");
 			return false;
 		}
 
 		if (pricingCtx.getCountryId() == null)
 		{
-			logger.debug("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
+			loggable.addLog("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
 			return false;
 		}
 
 		final Object referencedObject = pricingCtx.getReferencedObject();
 		final I_C_Flatrate_Conditions flatrateConditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
+
 		if (flatrateConditions == null)
 		{
-			logger.debug("Not applying because referencedObject has no C_Flatrate_Conditions; referencedObject={}", referencedObject);
+			loggable.addLog("Not applying because referencedObject has no C_Flatrate_Conditions; referencedObject={}", referencedObject);
 			return false;
 		}
 
-		if (flatrateConditions.getM_PricingSystem_ID() <= 0)
+		if (!TypeConditions.SUBSCRIPTION.getCode().equals(flatrateConditions.getType_Conditions()))
 		{
-			logger.debug("Not applying because the flatrateConditions of the referencedObject has no pricing system; referencedObject={}; flatrateConditions={}", referencedObject, flatrateConditions);
+			loggable.addLog("Not applying because referenced C_Flatrate_Conditions.Type_Conditions={} (should be: {})", flatrateConditions.getType_Conditions(), TypeConditions.SUBSCRIPTION.getCode());
 			return false;
 		}
 
@@ -68,25 +84,86 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		final Object referencedObject = pricingCtx.getReferencedObject();
-
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
-		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 
-		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
+		// subscription-discount
+		final SubscriptionDiscountLine subscriptionDiscountLine;
+		if (!pricingCtx.isDisallowDiscount())
+		{
+			subscriptionDiscountLine = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+		}
+		else
+		{
+			loggable.addLog("pricingCtx does not allow discounts; -> not considering C_Subscr_Discount; pricingCtx={}", pricingCtx);
+			subscriptionDiscountLine = null;
+		}
 
-		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
+		// alternate pricing-system
+		final IPricingResult subscriptionPricingResult;
+		if (conditions.getM_PricingSystem_ID() > 0)
+		{
+			loggable.addLog("START Invoking pricing engine with M_PricingSystem_ID={}", conditions.getM_PricingSystem_ID());
+			final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
+			final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
+			subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
+			loggable.addLog("END Invoking pricing engine with M_PricingSystem_ID={}", conditions.getM_PricingSystem_ID());
+		}
+		else
+		{
+			subscriptionPricingResult = result;
+		}
 
-		copySubscriptionResultIntoResult(subscriptionPricingResult, result);
+		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(subscriptionDiscountLine, subscriptionPricingResult);
+		copySubscriptionResultIntoResult(combinedPricingResult, result);
+		copyDiscountIntoResultIfAllowedByPricingContext(combinedPricingResult, result, pricingCtx);
+	}
 
-		copyDiscountIntoResultIfAllowedByPricingContext(subscriptionPricingResult, result, pricingCtx);
+	private IPricingResult aggregateSubscriptionDiscount(
+			@Nullable final SubscriptionDiscountLine subscriptionDiscountLine,
+			@NonNull final IPricingResult subscriptionPricingResult)
+	{
+		if (subscriptionDiscountLine != null
+				&& !subscriptionPricingResult.isDisallowDiscount()
+				&& (subscriptionDiscountLine.isPrioritiseOwnDiscount() || !subscriptionPricingResult.isDiscountCalculated()))
+		{
+			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
+			if (subscriptionDiscountLine.isPrioritiseOwnDiscount())
+			{
+				subscriptionPricingResult.setDontOverrideDiscountAdvice(true);
+			}
+		}
+		return subscriptionPricingResult;
+	}
+
+	@Nullable
+	private SubscriptionDiscountLine getSubscriptionDiscountOrNull(final @NonNull IPricingContext pricingCtx, final I_C_Flatrate_Conditions conditions)
+	{
+		final Optional<SubscriptionDiscountLine> discount = subscriptionDiscountRepository.getDiscount(SubscriptionDiscountQuery.builder()
+				.productId(pricingCtx.getProductId())
+				.flatrateConditionId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()))
+				.onDate(pricingCtx.getPriceDate().atStartOfDay(orgDAO.getTimeZone(pricingCtx.getOrgId())))
+				.build());
+
+		if (discount.isPresent() && conditions.getC_Flatrate_Transition() != null)
+		{
+			final SubscriptionDiscountLine discountLine = discount.get();
+			final boolean matchIfTermEndsWithCalendarYear = discountLine.isMatchIfTermEndsWithCalendarYear();
+			if (matchIfTermEndsWithCalendarYear == conditions.getC_Flatrate_Transition().isEndsWithCalendarYear())
+			{
+				return discountLine;
+			}
+		}
+		return null;
 	}
 
 	private static I_M_PriceList retrievePriceListForConditionsAndCountry(
 			final CountryId countryId,
 			@NonNull final I_C_Flatrate_Conditions conditions)
 	{
-		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, null)
@@ -95,7 +172,6 @@ public class SubscriptionPricingRule implements IPricingRule
 				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
 				.create()
 				.first();
-		return subscriptionPriceList;
 	}
 
 	private static IEditablePricingContext copyPricingCtxButInsertPriceList(
@@ -118,9 +194,8 @@ public class SubscriptionPricingRule implements IPricingRule
 	private static IPricingResult invokePricingEngine(@NonNull final IPricingContext subscriptionPricingCtx)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IPricingResult subscriptionPricingResult = pricingBL.calculatePrice(subscriptionPricingCtx);
 
-		return subscriptionPricingResult;
+		return pricingBL.calculatePrice(subscriptionPricingCtx);
 	}
 
 	/**
@@ -130,6 +205,11 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult subscriptionPricingResult,
 			@NonNull final IPricingResult result)
 	{
+		if (Util.same(subscriptionPricingResult, result))
+		{
+			return; // no need to copy anything
+		}
+
 		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
 		result.setPriceUomId(subscriptionPricingResult.getPriceUomId());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
@@ -150,7 +230,6 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setTaxCategoryId(subscriptionPricingResult.getTaxCategoryId());
 
 		result.setPriceEditable(subscriptionPricingResult.isPriceEditable());
-		result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
 	}
 
 	private static void copyDiscountIntoResultIfAllowedByPricingContext(
@@ -160,7 +239,12 @@ public class SubscriptionPricingRule implements IPricingRule
 	{
 		if (!pricingCtx.isDisallowDiscount())
 		{
-			result.setDiscount(subscriptionPricingResult.getDiscount());
+			if (result.isDiscountEditable())
+			{
+				result.setDiscount(subscriptionPricingResult.getDiscount());
+				result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
+				result.setDontOverrideDiscountAdvice(subscriptionPricingResult.isDontOverrideDiscountAdvice());
+			}
 		}
 	}
 

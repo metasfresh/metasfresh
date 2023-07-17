@@ -136,6 +136,22 @@ export function clearTableData(id) {
 }
 
 /**
+ * @method setTableNavigation
+ * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
+ *
+ * @param {string} id - table id
+ */
+export function setTableNavigation(id, active) {
+  return {
+    type: types.SET_TABLE_NAVIGATION,
+    payload: {
+      id,
+      active,
+    },
+  };
+}
+
+/**
  * @method createTableData
  * @summary Helper function to grab raw data and format/name it accordingly to
  * the values in the store.
@@ -147,6 +163,7 @@ export function createTableData(rawData) {
     docId: rawData.id,
     tabId: rawData.tabId,
     keyProperty: rawData.keyProperty,
+    pending: rawData.pending,
     emptyText: rawData.emptyResultText,
     emptyHint: rawData.emptyResultHint,
     size: rawData.size,
@@ -253,6 +270,7 @@ export function createGridTable(tableId, tableResponse) {
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
+      ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
     });
 
     dispatch(createTable(tableId, tableData));
@@ -283,6 +301,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -310,6 +329,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -340,6 +360,25 @@ export function updateGridTable(tableId, tableResponse) {
     return Promise.resolve(true);
   };
 }
+
+const extractEmptyResultTextAndHint = ({ tableResponse, tableLayout }) => {
+  if (tableResponse?.emptyResultText) {
+    return {
+      emptyResultText: tableResponse.emptyResultText,
+      emptyResultHint: tableResponse?.emptyResultHint || '',
+    };
+  } else if (tableLayout?.emptyResultText) {
+    return {
+      emptyResultText: tableLayout.emptyResultText,
+      emptyResultHint: tableLayout?.emptyResultHint || '',
+    };
+  } else {
+    return {
+      emptyResultText: '',
+      emptyResultHint: '',
+    };
+  }
+};
 
 /*
  * @method updateGridTableData
@@ -406,15 +445,16 @@ export function createTabTable(tableId, tableResponse) {
  * @method updateTabTable
  * @summary Update table entry for the details view with layout and data rows
  */
-export function updateTabTable(tableId, tableResponse) {
+export function updateTabTable({ tableId, tableResponse, pending }) {
   return (dispatch, getState) => {
     const state = getState();
 
     if (state.tables) {
       const tableExists = state.tables[tableId];
       const tableData = createTableData({
-        ...tableResponse,
+        ...(tableResponse ? tableResponse : {}),
         keyProperty: 'rowId',
+        pending,
       });
 
       if (tableData.rows && tableData.rows.length) {

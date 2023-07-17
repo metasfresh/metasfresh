@@ -159,11 +159,9 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 			}
 		}
 
-		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
 		return ProductPrices.newQuery(plv)
 				.setProductId(productId)
 				.onlyAttributePricing()
-				.onlyValidPrices(true)
 				.retrieveDefault(I_M_ProductPrice.class);
 	}
 }

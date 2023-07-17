@@ -24,14 +24,16 @@ package de.metas.cucumber.stepdefs;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.text.MessageFormat;
 
 public interface ItemProvider<T>
 {
 	@Value
-	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	@AllArgsConstructor(access= AccessLevel.PRIVATE)
 	public class ProviderResult<T>
 	{
 		public static <T> ProviderResult<T> resultWasFound(final @Nullable T result)
@@ -42,6 +44,13 @@ public interface ItemProvider<T>
 		public static <T> ProviderResult<T> resultWasNotFound(final @Nullable String log)
 		{
 			return new ProviderResult<>(false, null, log);
+		}
+
+		public static <T> ProviderResult<T> resultWasNotFound(final @NonNull String log, final @NonNull Object ...args)
+		{
+			final String logMessage = MessageFormat.format(log, args);
+
+			return new ProviderResult<>(false, null, logMessage);
 		}
 
 		boolean resultFound;

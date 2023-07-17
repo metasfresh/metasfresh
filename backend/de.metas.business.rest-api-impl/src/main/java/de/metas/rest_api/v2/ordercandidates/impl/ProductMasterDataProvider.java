@@ -3,12 +3,11 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.security.permissions2.PermissionService;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
@@ -41,7 +40,7 @@ import org.compiere.model.I_M_Product;
  * #L%
  */
 
-final class ProductMasterDataProvider
+public final class ProductMasterDataProvider
 {
 	private final IProductBL productsBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);

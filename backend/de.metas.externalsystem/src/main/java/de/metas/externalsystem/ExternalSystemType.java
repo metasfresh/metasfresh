@@ -5,7 +5,12 @@ import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.process.InvokeAlbertaAction;
+import de.metas.externalsystem.process.InvokeAmazonAction;
+import de.metas.externalsystem.process.InvokeEbayAction;
+import de.metas.externalsystem.process.InvokeGRSSignumAction;
+import de.metas.externalsystem.process.InvokeMetasfreshAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
+import de.metas.externalsystem.process.InvokeSAPAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
 import de.metas.externalsystem.process.InvokeWooCommerceAction;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -42,9 +47,15 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 {
 	Alberta(X_ExternalSystem_Config.TYPE_Alberta, "Alberta", InvokeAlbertaAction.class.getName()),
 	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6", InvokeShopware6Action.class.getName()),
+	Ebay(X_ExternalSystem_Config.TYPE_Ebay, "Ebay", InvokeEbayAction.class.getName()),
 	RabbitMQ(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI, "RabbitMQRESTAPI", null),
 	Other(X_ExternalSystem_Config.TYPE_Other, "Other", InvokeOtherAction.class.getName()),
-	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName())
+	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName()),
+	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName()),
+	LeichUndMehl(X_ExternalSystem_Config.TYPE_LeichMehl, "LeichUndMehl", null),
+	SAP(X_ExternalSystem_Config.TYPE_SAP, "SAP", InvokeSAPAction.class.getName()),
+	Metasfresh(X_ExternalSystem_Config.TYPE_Metasfresh, "metasfresh", InvokeMetasfreshAction.class.getName()),
+	Amazon(X_ExternalSystem_Config.TYPE_Amazon, "Amazon", InvokeAmazonAction.class.getName())
 	;
 
 	@Getter

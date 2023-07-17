@@ -1,0 +1,218 @@
+{
+    "143_143-O":
+    {
+        "widgetShown": false,
+        "filtersCaptions":
+        {
+            "0":
+            [
+                "Active",
+                "Packing Status"
+            ],
+            "1":
+            [
+                "123",
+                "SerialNo"
+            ],
+            "default":
+            [
+                "Active",
+                "Packing Status"
+            ],
+            "inline-SerialNo":
+            [
+                "123",
+                "SerialNo"
+            ]
+        },
+        "notValidFields": null,
+        "filterData":
+        [
+            {
+                "caption": "Filter",
+                "includedFilters":
+                [
+                    {
+                        "filterId": "default",
+                        "caption": "Default",
+                        "inlineRenderMode": "button",
+                        "parametersLayoutType": "panel",
+                        "parameters":
+                        [
+                            {
+                                "caption": "Organisation",
+                                "parameterName": "AD_Org_ID",
+                                "widgetType": "Lookup",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            },
+                            {
+                                "caption": "Search Key",
+                                "parameterName": "Value",
+                                "widgetType": "Text",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            },
+                            {
+                                "caption": "Locator",
+                                "parameterName": "M_Locator_ID",
+                                "widgetType": "Lookup",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            },
+                            {
+                                "caption": "Packing Status",
+                                "parameterName": "HUStatus",
+                                "widgetType": "List",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            },
+                            {
+                                "caption": "Included in other HU",
+                                "parameterName": "IsChildHU",
+                                "widgetType": "YesNo",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primaryLongLabels"
+                            },
+                            {
+                                "caption": "Product Category",
+                                "parameterName": "M_Product_Category_ID",
+                                "widgetType": "Lookup",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            },
+                            {
+                                "caption": "Los-Nr.",
+                                "parameterName": "Lot",
+                                "widgetType": "Text",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            },
+                            {
+                                "caption": "Service Contract",
+                                "parameterName": "ServiceContract",
+                                "widgetType": "Text",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            },
+                            {
+                                "caption": "Product",
+                                "parameterName": "M_Product_ID",
+                                "widgetType": "Lookup",
+                                "range": false,
+                                "defaultValue": null,
+                                "defaultValueTo": null,
+                                "mandatory": false,
+                                "displayed": true,
+                                "readonly": false,
+                                "type": "primary"
+                            }
+                        ],
+                        "debugProperties":
+                        {
+                            "sortNo": 10000
+                        },
+                        "sortNo": 10000
+                    }
+                ],
+                "debugProperties":
+                {}
+            },
+            {
+                "filterId": "inline-SerialNo",
+                "caption": "SerialNo",
+                "inlineRenderMode": "inline-parameters",
+                "parametersLayoutType": "panel",
+                "parameters":
+                [
+                    {
+                        "caption": "SerialNo",
+                        "parameterName": "SerialNo",
+                        "widgetType": "Text",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                    }
+                ],
+                "debugProperties":
+                {
+                    "sortNo": 11000
+                },
+                "sortNo": 11000
+            }
+        ],
+        "filtersActive":
+        [
+            {
+                "filterId": "default",
+                "parameters":
+                [
+                    {
+                        "parameterName": "HUStatus",
+                        "value":
+                        {
+                            "key": "A",
+                            "caption": "Active"
+                        },
+                        "valueTo": null
+                    }
+                ]
+            },
+            {
+                "filterId": "inline-SerialNo",
+                "parameters":
+                [
+                    {
+                        "parameterName": "SerialNo",
+                        "value": "123",
+                        "valueTo": null
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,19 +1,6 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
-import static java.math.BigDecimal.ONE;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
 import de.metas.material.cockpit.stock.StockRepository;
@@ -24,6 +11,17 @@ import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Product;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Optional;
+
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

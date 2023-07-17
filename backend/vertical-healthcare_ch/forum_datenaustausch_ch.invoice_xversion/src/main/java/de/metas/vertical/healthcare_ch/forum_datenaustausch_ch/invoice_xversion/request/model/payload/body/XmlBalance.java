@@ -1,14 +1,12 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body;
 
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVat;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVat.VatMod;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVat;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVat.VatMod;
-
 import java.math.BigDecimal;
 
 /*
@@ -49,7 +47,7 @@ public class XmlBalance
 	BigDecimal amountReminder;
 
 	/** expecting default = 0 */
-	@NonNull
+	@Nullable
 	BigDecimal amountPrepaid;
 
 	@NonNull

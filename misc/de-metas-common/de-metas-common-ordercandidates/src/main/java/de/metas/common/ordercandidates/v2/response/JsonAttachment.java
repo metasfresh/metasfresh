@@ -5,9 +5,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,33 +37,28 @@ import javax.annotation.Nullable;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@ApiModel(description = "Describes a data attachment that exists within metasfresh")
+@Schema(description = "Describes a data attachment that exists within metasfresh")
 public class JsonAttachment
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Reference in terms of the external system. Can reference multiple records (e.g. multiple order line candidates)\n"
+	@Schema(minLength = 1,
+			description = "Reference in terms of the external system. Can reference multiple records (e.g. multiple order line candidates)\n"
 					+ "To be used in conjunktion with <code>dataSourceName</code>")
 	String externalReference;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Internal name of the <code>AD_InputDataSource</code> record that tells where this attachment came from.\n"
+	@Schema(minLength = 1,
+			description = "Internal name of the <code>AD_InputDataSource</code> record that tells where this attachment came from.\n"
 					+ "To be used in conjunktion with <code>externalReference</code>")
 	String dataSourceName;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "ID assigned to the attachment data by metasfresh")
+	@Schema(minLength = 1,
+			description = "ID assigned to the attachment data by metasfresh")
 	String attachmentId;
 
-	JsonAttachmentType type;
+	JsonAttachmentSourceType type;
 
 	String filename;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = "MIME type of the binary data; `null` if the attachment's type is `URL`")
+	@Schema(description = "MIME type of the binary data; `null` if the attachment's type is `URL`")
 	String mimeType;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -76,7 +70,7 @@ public class JsonAttachment
 			@JsonProperty("externalReference") @NonNull final String externalReference,
 			@JsonProperty("dataSourceName") @NonNull final String dataSourceName,
 			@JsonProperty("attachmentId") @NonNull final String attachmentId,
-			@JsonProperty("type") final @NonNull JsonAttachmentType type,
+			@JsonProperty("type") final @NonNull JsonAttachmentSourceType type,
 			@JsonProperty("filename") @NonNull final String filename,
 			@JsonProperty("mimeType") @Nullable final String mimeType,
 			@JsonProperty("url") final String url)

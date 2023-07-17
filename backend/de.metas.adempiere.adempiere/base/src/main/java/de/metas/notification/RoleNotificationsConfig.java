@@ -1,9 +1,6 @@
 package de.metas.notification;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.security.RoleId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,8 +32,8 @@ import lombok.Value;
 @Value
 public class RoleNotificationsConfig
 {
-	private final RoleId roleId;
-	private List<UserNotificationsGroup> notificationGroups;
+	@NonNull RoleId roleId;
+	@NonNull ImmutableList<UserNotificationsGroup> notificationGroups;
 
 	@Builder
 	public RoleNotificationsConfig(

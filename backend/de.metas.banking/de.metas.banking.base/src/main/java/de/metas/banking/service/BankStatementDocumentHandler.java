@@ -7,6 +7,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
@@ -15,6 +16,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
@@ -29,11 +32,9 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -133,10 +134,10 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
-		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
-		return TimeUtil.asLocalDate(bankStatement.getStatementDate());
+		final I_C_BankStatement record = extractBankStatement(docFields);
+		return InstantAndOrgId.ofTimestamp(record.getStatementDate(), OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@Override
@@ -171,7 +172,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
@@ -214,8 +215,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
-		MPeriod.testPeriodOpen(Env.getCtx(), minDate, X_C_DocType.DOCBASETYPE_BankStatement, 0);
-		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, X_C_DocType.DOCBASETYPE_BankStatement, 0);
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
 		return IDocument.STATUS_InProgress;
@@ -361,7 +362,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 		else
 		{
-			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 			services.deleteFactsForBankStatement(bankStatement);
 		}
 

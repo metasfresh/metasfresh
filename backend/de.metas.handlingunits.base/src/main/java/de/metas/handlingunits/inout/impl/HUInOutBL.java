@@ -22,9 +22,9 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -38,6 +38,7 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -55,21 +56,23 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -77,13 +80,11 @@ import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class HUInOutBL implements IHUInOutBL
 {
@@ -99,6 +100,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -296,7 +298,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubTypeAny()
 				.isSOTrx(true)
 				.build();
@@ -308,7 +310,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.docBaseType(DocBaseType.MaterialDelivery)
 				.isSOTrx(false)
 				.build();
 
@@ -319,7 +321,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
 				.build();
 
@@ -338,9 +340,9 @@ public class HUInOutBL implements IHUInOutBL
 	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
 	{
 		final List<I_M_Warehouse> warehouses = huWarehouseDAO.retrieveQualityReturnWarehouses();
-		final I_M_Warehouse qualityReturnWarehouse = warehouses.get(0);
+		final WarehouseId qualityReturnWarehouseId = WarehouseId.ofRepoId(warehouses.get(0).getM_Warehouse_ID());
 
-		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouse);
+		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
 	}
 
 	@Override
@@ -396,18 +398,17 @@ public class HUInOutBL implements IHUInOutBL
 						Map.Entry::getValue));
 	}
 
-	public ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
+	@Override
+	public Set<HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
 	{
 		if (inoutIds.isEmpty())
 		{
-			return ImmutableSetMultimap.of();
+			return ImmutableSet.of();
 		}
-		final Set<InOutLineId> inoutLineIds = inoutIds.stream()
-				.map(inOutDAO::retrieveLinesForInOutId)
-				.flatMap(Collection::stream)
-				.map(InOutAndLineId::getInOutLineId)
-				.collect(Collectors.toSet());
-		return getHUIdsByInOutLineIds(inoutLineIds);
+
+		final ImmutableSet<InOutLineId> inoutLineIds = inOutDAO.retrieveActiveLineIdsByInOutIds(inoutIds);
+		final ImmutableSetMultimap<InOutLineId, HuId> huIds = getHUIdsByInOutLineIds(inoutLineIds);
+		return ImmutableSet.copyOf(huIds.values());
 	}
 
 	@Override
@@ -429,18 +430,53 @@ public class HUInOutBL implements IHUInOutBL
 			return false;
 		}
 
-		final ImmutableCollection<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId)).values();
+		final Set<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId));
 		if (huIds.isEmpty())
 		{
 			return true;
 		}
 		final ImmutableSet<HuId> topLevelHUs = handlingUnitsBL.getTopLevelHUs(huIds);
-		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(HuId.toRepoIds(topLevelHUs))
+		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(topLevelHUs)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Planning)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNoAttr.getValue())
 				.createQueryBuilder()
 				.create()
 				.anyMatch();
+	}
+
+	@Override
+	public void validateMandatoryOnShipmentAttributes(@NonNull final I_M_InOut shipment)
+	{
+		final List<I_M_InOutLine> inOutLines = retrieveLines(shipment, I_M_InOutLine.class);
+
+		for (final I_M_InOutLine line : inOutLines)
+		{
+			final AttributeSetInstanceId asiID = AttributeSetInstanceId.ofRepoIdOrNull(line.getM_AttributeSetInstance_ID());
+
+			if (asiID == null)
+			{
+				continue;
+			}
+
+			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+
+			final List<I_M_HU> husForLine = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
+
+			for (final I_M_HU hu : husForLine)
+			{
+				huAttributesBL.validateMandatoryShipmentAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
+			}
+		}
+	}
+
+	public boolean isServiceRepair(@NonNull final org.compiere.model.I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(DocBaseType.MaterialReceipt).docSubType(X_C_DocType.DOCSUBTYPE_SR)
+				.isSOTrx(true)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
 }

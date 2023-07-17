@@ -1,19 +1,21 @@
 package de.metas.inoutcandidate.lock;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /*
  * #%L

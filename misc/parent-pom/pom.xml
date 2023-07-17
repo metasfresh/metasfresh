@@ -31,42 +31,46 @@
 
     <properties>
         <!-- this is our default; individual projects might need to specify their own settings -->
-        <metasfresh.java.version>1.8</metasfresh.java.version>
+        <metasfresh.java.version>17</metasfresh.java.version>
 
-        <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
-        <jackson.version>2.11.4</jackson.version>
-        <amqp-client.version>5.10.0</amqp-client.version>
-        
+        <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html
+        https://docs.spring.io/spring-boot/docs/2.7.7/reference/html/dependency-versions.html#appendix.dependency-versions -->
+        <jackson.version>2.13.4</jackson.version>
+        <amqp-client.version>5.14.2</amqp-client.version>
+
         <jasperreports.version>6.7.0</jasperreports.version>
 
         <itext.version>2.1.7.js6</itext.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
+        <spring-boot-admin.version>2.7.7</spring-boot-admin.version>
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
-        <springfox-swagger.version>2.9.2</springfox-swagger.version>
-        <!--        Compatibility with Springfox-->
-        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
-        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>1.3.0</springfox-enum-plugin.version>
-        
+        <springdoc-swagger.version>1.6.14</springdoc-swagger.version>
+
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
-        <slf4j-api.version>1.7.25</slf4j-api.version>
+        <slf4j-api.version>1.7.36</slf4j-api.version>
 
         <!-- test related versions -->
         <!--
             3.15.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
-        <assertj.version>3.19.0</assertj.version>
+        <assertj.version>3.23.1</assertj.version>
         <xmlunit.version>2.6.4</xmlunit.version>
 
-        <mockito.version>2.7.22</mockito.version>
+        <mockito.version>5.2.0</mockito.version>
+        <byte-buddy.version>1.12.20</byte-buddy.version>
+        <objenesis.version>3.3</objenesis.version>
 
-        <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.7.0</junit-jupiter.version>
+        <!-- please keep junit jupiter and platform versions synched up -->
+        <junit-jupiter.version>5.9.3</junit-jupiter.version>
+        <junit-platform.version>1.9.3</junit-platform.version>
+
+        <commons-io.version>2.11.0</commons-io.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <guava.version>30.1.1-jre</guava.version>
     </properties>
 
     <modules>
@@ -75,79 +79,22 @@
     </modules>
 
     <dependencies>
-        <!-- Using our own artifact, see
-            https://github.com/json-snapshot/json-snapshot.github.io/pull/12#issuecomment-462660733
-            and
-            https://github.com/json-snapshot/json-snapshot.github.io/issues/9#issuecomment-462880359 -->
-        <!-- This lib has
-            * two different versions (1.2.0 and 1.3.2) of junit-platform-commons
-            * two different versions (1.2.0 and 1.3.2) of junit-platform-engine
-            * two different versions (5.1.1 and 5.3.2) of junit-jupiter-api
-            * two different versions (2.23.0 and 2.23.4) of mockito-core
-            in its dependency tree. That's why we exclude them and then explicitly add them.
-            Also: mockito-core, jackson-databind, jackson-core, commons-lang3 and slf4j-api are used throughout the system, some we try our luck with the respective existing versions
-            -->
         <dependency>
-            <groupId>io.github.json-snapshot</groupId>
-            <artifactId>json-snapshot-PR</artifactId>
-            <version>1.0.22</version>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-junit5</artifactId>
+            <version>4.0.2</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-commons</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-runner</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-engine</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-engine</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-                <exclusion>
-                    <!-- exclude it here; explicitly add it further down; workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-launcher</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        
-        <!-- 
+        <dependency>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-plugin-jackson</artifactId>
+            <version>4.0.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
         dependency of org.skyscreamer:jsonassert which is a dependency of json-snapshot
-        I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively 
+        I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively
         -->
         <dependency>
             <groupId>org.skyscreamer</groupId>
@@ -161,21 +108,11 @@
             <version>0.0.20131108.vaadin1</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit-jupiter.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-params</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apiguardian</groupId>
-                    <artifactId>apiguardian-api</artifactId>
-                </exclusion>
-            </exclusions>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -183,28 +120,14 @@
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apiguardian</groupId>
-                    <artifactId>apiguardian-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit-jupiter.version}</version>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
 
-        <!-- workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.6.2</version>
-            <scope>test</scope>
-        </dependency>
-        
     </dependencies>
 
     <dependencyManagement>
@@ -213,7 +136,9 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.18</version>
+                <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
+                <!-- <version>1.18.18</version> -->
+                <version>1.18.24</version>
             </dependency>
 
             <dependency>
@@ -260,11 +185,11 @@
                 <artifactId>jsr305</artifactId>
                 <version>3.0.2</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>30.1.1-jre</version>
+                <version>${guava.version}</version>
             </dependency>
 
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
@@ -278,7 +203,7 @@
                 <artifactId>jp.osdn.ocrb</artifactId>
                 <version>0.2.1</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
@@ -291,7 +216,7 @@
     <build>
         <plugins>
             <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
-            but then when running locally against logstash, we we would need to have some special configs which we don't have in prod
+            but then when running locally against logstash, we would need to have some special configs which we don't have in prod
              -->
             <plugin>
                 <groupId>pl.project13.maven</groupId>
@@ -332,6 +257,43 @@
                     -->
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-reactor-plugin</artifactId>
+                <version>1.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
+            </plugin>
+
         </plugins>
 
         <pluginManagement>
@@ -346,7 +308,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.10.1</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
@@ -365,7 +327,15 @@
                 <plugin>
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
-                    <version>0.14.0</version>
+                    <version>0.15.2</version>
+                    <dependencies>
+                        <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
+                        <dependency>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
+                            <version>2.3.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>
@@ -417,9 +387,13 @@
                                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             </manifest>
                             <manifestEntries>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildTag>${BUILD_TAG}</ciBuildTag>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciJobName>${JOB_NAME}</ciJobName>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildUrl>${BUILD_URL}</ciBuildUrl>
                             </manifestEntries>
                         </archive>
@@ -429,13 +403,22 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.1.0</version>
+                    <dependencies>
+                        <!-- Declaring this explicitly to allow go-offline-maven-plugin to pick it up -->
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit-platform</artifactId>
+                            <version>3.1.0</version>
+                        </dependency>
+                    </dependencies>
                     <configuration>
                         <!-- Jacoco prepare-agent builds some command-line params without which jacoco will not instrument.
                              Hence it is important to add those command-line params where @{argLine} holds those params.
                              Note that the @ is not a typo.
-                             See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html and https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#argLine -->
-                        <argLine>@{argLine} -Xms256m -Xmx2048m</argLine>
+                             See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html and https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#argLine
+                             Also see https://stackoverflow.com/questions/70756414/java-lang-reflect-inaccessibleobjectexception-unable-to-make-field-private-fina -->
+                        <argLine>@{argLine} -Xms256m -Xmx2048m --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
                         <!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
                              When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0
                              or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.
@@ -453,6 +436,7 @@
                         <trimStackTrace>false</trimStackTrace>
 
                         <systemPropertyVariables>
+                            <!--suppress UnresolvedMavenProperty -->
                             <concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
                         </systemPropertyVariables>
                         <includes>
@@ -486,27 +470,26 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <!-- 3.0.0-M2 gives me "Some plugins are missing valid versions"
-                         when building downstream projects (i.e. metasfresh),
-                         although I set the version here in build/pluginManagenemt management.<id>enforcer-profile</id>
-                        Example:
-                        org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
+                        when building downstream projects (i.e. metasfresh),
+                        ...although I set the version in both pluginManagement and build/plugins
+                        Example: org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
 
-                        Note that "3.0.0" is the version that I specified in pluginManagenemt -->
+                        Note that "3.0.0" is the version that I specified in pluginManagement -->
                     <version>3.0.0-M1</version>
-                    <dependencies>
-                        <!-- needed for banDuplicateClasses -->
+                    <!--<dependencies>
+                        &lt;!&ndash; needed for banDuplicateClasses &ndash;&gt;
                         <dependency>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>extra-enforcer-rules</artifactId>
                             <version>1.0-beta-9</version>
                         </dependency>
-                    </dependencies>
+                    </dependencies>-->
                 </plugin>
 
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6</version>
+                    <version>0.8.8</version>
                 </plugin>
 
                 <!--This plugin's configuration is used to store Eclipse m2e settings
@@ -566,6 +549,15 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+				<!-- https://github.com/qaware/go-offline-maven-plugin
+					enables our docker builds to resolve dependencies in a separate layer
+					and therefore cache it. -->
+				<plugin>
+					<groupId>de.qaware.maven</groupId>
+					<artifactId>go-offline-maven-plugin</artifactId>
+					<version>1.2.8</version>
+				</plugin>
+
             </plugins>
         </pluginManagement>
     </build>
@@ -628,104 +620,104 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                                                     </excludes>
                                                                 </bannedDependencies>
                                 -->
-                                <banDuplicateClasses>
-                                    <ignoreClasses>
+                                <!--                                <banDuplicateClasses>-->
+                                <!--                                    <ignoreClasses>-->
 
-                                        <!-- https://github.com/mojohaus/extra-enforcer-rules/issues/42 -->
-                                        <ignoreClass>*.module-info</ignoreClass>
+                                <!--                                        &lt;!&ndash; https://github.com/mojohaus/extra-enforcer-rules/issues/42 &ndash;&gt;-->
+                                <!--                                        <ignoreClass>*.module-info</ignoreClass>-->
 
-                                        <!-- itext-2.1.7 has two different versions as dependences -->
-                                        <ignoreClass>org.bouncycastle.*</ignoreClass>
+                                <!--                                        &lt;!&ndash; itext-2.1.7 has two different versions as dependences &ndash;&gt;-->
+                                <!--                                        <ignoreClass>org.bouncycastle.*</ignoreClass>-->
 
-                                        <ignoreClass>javax.activation.*</ignoreClass>
-                                        <ignoreClass>javax.annotation.*</ignoreClass>
-                                        <ignoreClass>javax.ejb.*</ignoreClass>
-                                        <ignoreClass>javax.el.*</ignoreClass>
-                                        <ignoreClass>javax.management.j2ee.*</ignoreClass>
-                                        <ignoreClass>javax.transaction.*</ignoreClass>
-                                        <ignoreClass>javax.xml.*</ignoreClass>
+                                <!--                                        <ignoreClass>javax.activation.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.annotation.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.ejb.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.el.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.management.j2ee.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.transaction.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>javax.xml.*</ignoreClass>-->
 
-                                        <ignoreClass>org.apache.*</ignoreClass>
-                                        <ignoreClass>org.codehaus.*</ignoreClass>
-                                        <ignoreClass>hidden.org.codehaus.*</ignoreClass>
-                                        <ignoreClass>org.junit.*</ignoreClass>
-                                        <ignoreClass>org.w3c.*</ignoreClass>
-                                        <ignoreClass>org.xml.*</ignoreClass>
+                                <!--                                        <ignoreClass>org.apache.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.codehaus.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>hidden.org.codehaus.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.junit.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.w3c.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.xml.*</ignoreClass>-->
 
-                                        <!-- the following are camel/servicemix related dependencies -->
-                                        <!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
-                                            net.sf.opencsv:opencsv:jar:2.1:compile -->
-                                        <ignoreClass>au.com.bytecode.*</ignoreClass>
+                                <!--                                        &lt;!&ndash; the following are camel/servicemix related dependencies &ndash;&gt;-->
+                                <!--                                        &lt;!&ndash; Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile-->
+                                <!--                                            net.sf.opencsv:opencsv:jar:2.1:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>au.com.bytecode.*</ignoreClass>-->
 
-                                        <ignoreClass>com.microsoft.schemas.*</ignoreClass>
-                                        <ignoreClass>org.etsi.uri.*</ignoreClass>
-                                        <ignoreClass>org.openxmlformats.schemas.*</ignoreClass>
-                                        <ignoreClass>org.w3.x2000.*</ignoreClass>
+                                <!--                                        <ignoreClass>com.microsoft.schemas.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.etsi.uri.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.openxmlformats.schemas.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.w3.x2000.*</ignoreClass>-->
 
-                                        <!-- Found in: xmlpull:xmlpull:jar:1.1.3.1:compile xpp3:xpp3_min:jar:1.1.4c:compile -->
-                                        <ignoreClass>org.xmlpull.*</ignoreClass>
+                                <!--                                        &lt;!&ndash; Found in: xmlpull:xmlpull:jar:1.1.3.1:compile xpp3:xpp3_min:jar:1.1.4c:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>org.xmlpull.*</ignoreClass>-->
 
-                                        <!-- Found in: org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile -->
-                                        <ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>
-                                        <ignoreClass>repackage.Repackager</ignoreClass>
-                                        <ignoreClass>repackage.Repackage</ignoreClass>
-                                        <ignoreClass>repackage.EditBuildScript</ignoreClass>
+                                <!--                                        &lt;!&ndash; Found in: org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>repackage.Repackager</ignoreClass>-->
+                                <!--                                        <ignoreClass>repackage.Repackage</ignoreClass>-->
+                                <!--                                        <ignoreClass>repackage.EditBuildScript</ignoreClass>-->
 
-                                        <!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile
-                                            javax.servlet:javax.servlet-api:jar:3.1.0:provided -->
-                                        <ignoreClass>javax.servlet.*</ignoreClass>
-                                        <ignoreClass>org.milyn.*</ignoreClass>
-                                        <ignoreClass>com.sun.xml.bind.*</ignoreClass>
+                                <!--                                        &lt;!&ndash; Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile-->
+                                <!--                                            javax.servlet:javax.servlet-api:jar:3.1.0:provided &ndash;&gt;-->
+                                <!--                                        <ignoreClass>javax.servlet.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>org.milyn.*</ignoreClass>-->
+                                <!--                                        <ignoreClass>com.sun.xml.bind.*</ignoreClass>-->
 
-                                        <!--  Found in: net.jcip:jcip-annotations:jar:1.0:compile
-                                             com.google.code.findbugs:annotations:jar:3.0.1:compile -->
-                                        <ignoreClass>net.jcip.annotations.*</ignoreClass>
-                                    </ignoreClasses>
+                                <!--                                        &lt;!&ndash;  Found in: net.jcip:jcip-annotations:jar:1.0:compile-->
+                                <!--                                             com.google.code.findbugs:annotations:jar:3.0.1:compile &ndash;&gt;-->
+                                <!--                                        <ignoreClass>net.jcip.annotations.*</ignoreClass>-->
+                                <!--                                    </ignoreClasses>-->
 
-                                    <dependencies>
-                                        <!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM
-                                            ("JUnit classes in JMockit jar") for background info -->
-                                        <dependency>
-                                            <artifactId>jmockit</artifactId>
-                                            <ignoreClasses>
-                                                <ignoreClass>org.junit.runner.Runner</ignoreClass>
-                                            </ignoreClasses>
-                                        </dependency>
+                                <!--                                    <dependencies>-->
+                                <!--                                        &lt;!&ndash; See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM-->
+                                <!--                                            ("JUnit classes in JMockit jar") for background info &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <artifactId>jmockit</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>org.junit.runner.Runner</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
 
-                                        <!-- this is a dependency of spring-boot-starter-test 1.4.1 the error
-                                            message we are avoiding this was goes like this: ================= Duplicate
-                                            classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test
-                                            Duplicate classes: org/objectweb/asm/Type.class [...] ================= -->
-                                        <dependency>
-                                            <groupId>net.minidev</groupId>
-                                            <artifactId>accessors-smart</artifactId>
-                                            <ignoreClasses>
-                                                <ignoreClass>org.objectweb.asm.*</ignoreClass>
-                                            </ignoreClasses>
-                                        </dependency>
+                                <!--                                        &lt;!&ndash; this is a dependency of spring-boot-starter-test 1.4.1 the error-->
+                                <!--                                            message we are avoiding this was goes like this: ================= Duplicate-->
+                                <!--                                            classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test-->
+                                <!--                                            Duplicate classes: org/objectweb/asm/Type.class [...] ================= &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <groupId>net.minidev</groupId>-->
+                                <!--                                            <artifactId>accessors-smart</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>org.objectweb.asm.*</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
 
-                                        <!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
-                                        <dependency>
-                                            <groupId>org.elasticsearch</groupId>
-                                            <artifactId>elasticsearch</artifactId>
-                                            <ignoreClasses>
-                                                <ignoreClass>org.joda.*</ignoreClass>
-                                            </ignoreClasses>
-                                        </dependency>
+                                <!--                                        &lt;!&ndash; see also https://www.elastic.co/blog/to-shade-or-not-to-shade &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <groupId>org.elasticsearch</groupId>-->
+                                <!--                                            <artifactId>elasticsearch</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>org.joda.*</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
 
-                                        <!-- the embedded tomcat of spring-boot 1.5.3.RELEASE come with baked-in javax.persistance api classes.. -->
-                                        <dependency>
-                                            <groupId>org.apache.tomcat.embed</groupId>
-                                            <artifactId>tomcat-embed-core</artifactId>
-                                            <ignoreClasses>
-                                                <ignoreClass>javax.persistence.*</ignoreClass>
-                                            </ignoreClasses>
-                                        </dependency>
+                                <!--                                        &lt;!&ndash; the embedded tomcat of spring-boot 1.5.3.RELEASE come with baked-in javax.persistance api classes.. &ndash;&gt;-->
+                                <!--                                        <dependency>-->
+                                <!--                                            <groupId>org.apache.tomcat.embed</groupId>-->
+                                <!--                                            <artifactId>tomcat-embed-core</artifactId>-->
+                                <!--                                            <ignoreClasses>-->
+                                <!--                                                <ignoreClass>javax.persistence.*</ignoreClass>-->
+                                <!--                                            </ignoreClasses>-->
+                                <!--                                        </dependency>-->
 
-                                    </dependencies>
+                                <!--                                    </dependencies>-->
 
-                                    <findAllDuplicates>true</findAllDuplicates>
-                                </banDuplicateClasses>
+                                <!--                                    <findAllDuplicates>true</findAllDuplicates>-->
+                                <!--                                </banDuplicateClasses>-->
                             </rules>
                             <fail>true</fail>
                         </configuration>
@@ -736,7 +728,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <goals>
                                     <goal>enforce</goal>
                                 </goals>
-
                             </execution>
                         </executions>
                     </plugin>
@@ -964,7 +955,8 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
             <activation>
                 <file>
-                    <exists>src/main/jasperreports</exists>
+                    <!-- we specify this folder with a .../de so that we can also have empty placeholder jasper folders is custom projects, and not fail make-jasper-assembly if there aren't any jasper files inside -->
+                    <exists>src/main/jasperreports/de</exists>
                 </file>
             </activation>
 

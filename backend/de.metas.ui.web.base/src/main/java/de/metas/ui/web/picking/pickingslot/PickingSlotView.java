@@ -12,6 +12,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.picking.packageable.PackageableView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewFilterParameterLookupEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
@@ -27,7 +28,6 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -63,7 +63,6 @@ import java.util.stream.Stream;
  * Note that technically this is contained in the left-hand side {@link PackageableView}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PickingSlotView implements IView
 {
@@ -182,13 +181,13 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}

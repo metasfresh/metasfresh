@@ -22,6 +22,8 @@
 
 package de.metas.product.process;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -35,13 +37,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Optional;
 
 public class M_ProductPrice_ActivationBasedOnProductDiscontinuedFlag_Process extends JavaProcess implements IProcessPrecondition
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private static final String PARAM_DATE_FROM = "ValidFrom";
 	@Param(parameterName = PARAM_DATE_FROM, mandatory = true)
@@ -73,7 +79,27 @@ public class M_ProductPrice_ActivationBasedOnProductDiscontinuedFlag_Process ext
 						I_M_Product.COLUMNNAME_M_Product_ID,
 						CompareQueryFilter.Operator.EQUAL,
 						product.getM_Product_ID());
-		priceListDAO.updateProductPricesIsActive(productFilter, p_dateFrom, !product.isDiscontinued());
+
+		if (product.isDiscontinued())
+		{
+			final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(product.getAD_Org_ID()));
+			final Optional<LocalDate> discontinuedFrom = Optional.ofNullable(product.getDiscontinuedFrom())
+					.map(discontinuedFromTimestamp -> TimeUtil.asLocalDate(discontinuedFromTimestamp, zoneId));
+
+			if (!discontinuedFrom.isPresent() || discontinuedFrom.get().compareTo(p_dateFrom) <= 0)
+			{
+				priceListDAO.updateProductPricesIsActive(productFilter, p_dateFrom, false);
+			}
+			else
+			{
+				priceListDAO.updateProductPricesIsActive(productFilter, p_dateFrom, true);
+				priceListDAO.updateProductPricesIsActive(productFilter, discontinuedFrom.get(), false);
+			}
+		}
+		else
+		{
+			priceListDAO.updateProductPricesIsActive(productFilter, p_dateFrom, true);
+		}
 
 		return MSG_OK;
 	}

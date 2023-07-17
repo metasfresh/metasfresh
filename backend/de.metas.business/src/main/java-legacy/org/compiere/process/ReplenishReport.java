@@ -17,13 +17,15 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.Msg;
+import de.metas.order.DeliveryRule;
+import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -50,15 +52,12 @@ import org.compiere.util.ReplenishInterface;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.i18n.Msg;
-import de.metas.order.DeliveryRule;
-import de.metas.order.IOrderBL;
-import de.metas.organization.OrgId;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.IProductBL;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Replenishment Report
@@ -552,12 +551,12 @@ public class ReplenishReport extends JavaProcess
 				info += " - " + move.getDocumentNo();
 			}
 			//	To
-			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
 			//	From: Look-up Storage
 			final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(replenish.getM_Product_ID());
 			MStorage[] storages = MStorage.getWarehouse(getCtx(),
 					whSource.getM_Warehouse_ID(), replenish.getM_Product_ID(), 0, 0,
-					true, null,
+					true,
 					MClient.MMPOLICY_FiFo.equals(MMPolicy), get_TrxName());
 			//
 			BigDecimal target = replenish.getQtyToOrder();
@@ -683,8 +682,8 @@ public class ReplenishReport extends JavaProcess
 			}
 
 			// To
-			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
-			final LocatorId M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(whSource.getM_Warehouse_ID()));
+			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+			final LocatorId M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(whSource.getM_Warehouse_ID()));
 
 			// From: Look-up Storage
 			/*

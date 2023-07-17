@@ -23,8 +23,16 @@ package de.metas.handlingunits.picking.interceptor;
  */
 
 
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -36,6 +44,10 @@ import de.metas.util.Services;
 @Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
 public class M_ShipmentSchedule_QtyPicked
 {
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	/**
 	 * Asserts {@link I_M_ShipmentSchedule_QtyPicked#COLUMNNAME_M_LU_HU_ID} has a valid LU or null.
 	 *
@@ -92,5 +104,29 @@ public class M_ShipmentSchedule_QtyPicked
 			// logger.warn(ex.getLocalizedMessage(), ex);
 			throw ex;
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyDeliveredCatch, I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_Catch_UOM_ID })
+	public void syncInvoiceCandidateQtyPicked(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID());
+
+		if (shipmentScheduleId == null)
+		{
+			return;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
+
+		if (orderLineId == null)
+		{
+			return;
+		}
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+
+		invoiceCandidateHandlerBL.invalidateCandidatesFor(orderLine);
 	}
 }

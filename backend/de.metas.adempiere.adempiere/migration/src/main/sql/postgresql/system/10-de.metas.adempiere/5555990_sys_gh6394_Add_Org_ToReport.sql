@@ -53,8 +53,7 @@ WITH PriceListVersionsByValidFrom AS
                      AND plv.issotrx = p_IsSoTrx
                      AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
                      AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
-                   ORDER BY TRUE,
-                            plv.validfrom DESC,
+                   ORDER BY plv.validfrom DESC,
                             plv.m_pricelist_version_id DESC) t
              WHERE t.rank <= 2
          ),
@@ -119,8 +118,7 @@ SELECT --
        r.bpl_name,
        r.AD_Org_ID
 FROM result r
-ORDER BY TRUE,
-         r.bp_value,
+ORDER BY r.bp_value,
          r.value
 $$
     LANGUAGE sql STABLE

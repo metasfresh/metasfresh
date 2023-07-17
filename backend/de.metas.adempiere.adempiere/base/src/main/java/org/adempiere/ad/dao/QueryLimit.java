@@ -1,15 +1,12 @@
 package org.adempiere.ad.dao;
 
-import java.util.Collection;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 /*
  * #%L
@@ -21,12 +18,12 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -73,9 +70,16 @@ public final class QueryLimit
 		return limit != null ? ofInt(limit) : NO_LIMIT;
 	}
 
+	@NonNull
+	public static QueryLimit getQueryLimitOrNoLimit(@Nullable final QueryLimit limit)
+	{
+		return limit != null ? limit : NO_LIMIT;
+	}
+
 	public static final QueryLimit NO_LIMIT = new QueryLimit(0);
 	public static final QueryLimit ONE = new QueryLimit(1);
 	public static final QueryLimit TWO = new QueryLimit(2);
+	public static final QueryLimit TEN = new QueryLimit(10);
 	public static final QueryLimit ONE_HUNDRED = new QueryLimit(100);
 	public static final QueryLimit FIVE_HUNDRED = new QueryLimit(500);
 	public static final QueryLimit ONE_THOUSAND = new QueryLimit(1000);
@@ -111,6 +115,12 @@ public final class QueryLimit
 		return value;
 	}
 
+	public int toIntOr(final int noLimitValue)
+	{
+		return isNoLimit() ? noLimitValue : value;
+	}
+
+
 	public boolean isLimited()
 	{
 		return !isNoLimit();
@@ -144,5 +154,24 @@ public final class QueryLimit
 	public boolean isLimitHitOrExceeded(@NonNull final Collection<?> collection)
 	{
 		return isLimited() && value <= collection.size();
+	}
+
+	public QueryLimit minusSizeOf(@NonNull final Collection<?> collection)
+	{
+		if (isNoLimit() || collection.isEmpty())
+		{
+			return this;
+		}
+		else
+		{
+			final int collectionSize = collection.size();
+			final int newLimitInt = value - collectionSize;
+			if (newLimitInt <= 0)
+			{
+				throw new AdempiereException("Invalid collection size. It shall be less than " + value + " but it was " + collectionSize);
+			}
+
+			return ofInt(newLimitInt);
+		}
 	}
 }

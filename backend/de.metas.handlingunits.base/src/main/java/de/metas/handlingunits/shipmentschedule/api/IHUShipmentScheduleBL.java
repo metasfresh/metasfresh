@@ -8,8 +8,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
@@ -46,7 +46,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, StockQtyAndUOMQty qtyPicked, HuId tuOrVHUId, IHUContext huContext);
 
 	/**
-	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link IShipmentScheduleWithHU}s.
+	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link ShipmentScheduleWithHU}s.
 	 */
 	IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule();
 
@@ -73,9 +73,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	/**
 	 * Gets {@link I_M_HU_PI_Item_Product} by checking:
 	 * <ul>
-	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_Override()}
-	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product()}
-	 * <li>{@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product()}
+	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_Override_ID()}
+	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_ID()}
+	 * <li>{@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product_ID()}
 	 * </ul>
 	 * <p>
 	 * If no PI item product was found, null will be returned.
@@ -111,4 +111,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * Initialize the qtys and HU PI Item product in shipment schedule
 	 */
 	void updateHURelatedValuesFromOrderLine(I_M_ShipmentSchedule shipmentSchedule);
+
+	void deleteByTopLevelHUAndShipmentScheduleId(
+			@NonNull HuId topLevelHUId,
+			@NonNull ShipmentScheduleId shipmentScheduleId);
 }

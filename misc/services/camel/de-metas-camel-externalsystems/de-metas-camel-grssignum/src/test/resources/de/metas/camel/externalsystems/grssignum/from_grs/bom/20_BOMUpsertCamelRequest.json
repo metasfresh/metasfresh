@@ -1,0 +1,34 @@
+{
+  "orgCode": "orgCode",
+  "jsonBOMCreateRequest": {
+    "uomCode": "KGM",
+    "productIdentifier": "ext-GRSSignum-ProductId",
+    "name": "Name1 Name2",
+    "isActive": "false",
+    "validFrom": "2021-11-01T20:00:00.00Z",
+    "resourceCode": "Resource_2",
+    "bomLines": [
+      {
+        "productIdentifier": "ext-GRSSignum-ProductId1",
+        "qtyBom": {
+          "qty": 50,
+          "uomCode": "KGM"
+        },
+        "line": 1,
+        "isQtyPercentage": true,
+        "scrap": 10.5,
+        "attributeSetInstance":
+        {
+          "attributeInstances":[
+            {
+              "attributeCode": "1000001",
+              "valueStr": "countryCode"
+            }
+          ]
+        },
+        "issueMethod": null,
+        "help": "User Instructions"
+      }
+    ]
+  }
+}

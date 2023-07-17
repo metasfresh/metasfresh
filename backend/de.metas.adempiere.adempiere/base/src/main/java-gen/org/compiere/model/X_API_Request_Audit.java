@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_Request_Audit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 55268684L;
+	private static final long serialVersionUID = 1968490524L;
 
     /** Standard Constructor */
     public X_API_Request_Audit (final Properties ctx, final int API_Request_Audit_ID, @Nullable final String trxName)
@@ -32,6 +32,33 @@ public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_PInstance getAD_PInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
+	}
+
+	@Override
+	public void setAD_PInstance(final org.compiere.model.I_AD_PInstance AD_PInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
+	}
+
+	@Override
+	public void setAD_PInstance_ID (final int AD_PInstance_ID)
+	{
+		if (AD_PInstance_ID < 1) 
+			set_Value (COLUMNNAME_AD_PInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PInstance_ID, AD_PInstance_ID);
+	}
+
+	@Override
+	public int getAD_PInstance_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ID);
 	}
 
 	@Override

@@ -1,26 +1,4 @@
 /*
- * #%L
- * alberta-article-api
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-/*
  * Artikel - Warenwirtschaft (Basis)
  * Synchronisation der Artikel mit Kumavision
  *
@@ -34,11 +12,11 @@
 
 package io.swagger.client.api;
 
-import io.swagger.client.ApiException;
 import io.swagger.client.model.Article;
 import io.swagger.client.model.ArticleMapping;
 import org.junit.Ignore;
 import org.junit.Test;
+
 
 /**
  * API tests for DefaultApi
@@ -53,15 +31,14 @@ public class DefaultApiTest {
      *
      * Legt einen neuen Artikel in Alberta an
      *
-     * @throws ApiException
+     * @throws Exception
      *          if the Api call fails
      */
     @Test
-    public void addArticleTest() throws ApiException {
+    public void addArticleTest() throws Exception {
         String albertaApiKey = null;
-        String tenant = null;
         Article body = null;
-        ArticleMapping response = api.addArticle(albertaApiKey, tenant, body);
+        ArticleMapping response = api.addArticle(albertaApiKey, body);
 
         // TODO: test validations
     }
@@ -70,15 +47,14 @@ public class DefaultApiTest {
      *
      * Legt einen neuen Krankenkassenvertrag in Alberta an
      *
-     * @throws ApiException
+     * @throws Exception
      *          if the Api call fails
      */
     @Test
-    public void addInsuranceContractTest() throws ApiException {
+    public void addInsuranceContractTest() throws Exception {
         String albertaApiKey = null;
-        String tenant = null;
         Article body = null;
-        ArticleMapping response = api.addInsuranceContract(albertaApiKey, tenant, body);
+        ArticleMapping response = api.addInsuranceContract(albertaApiKey, body);
 
         // TODO: test validations
     }
@@ -87,16 +63,15 @@ public class DefaultApiTest {
      *
      * ändert einen Artikel in Alberta
      *
-     * @throws ApiException
+     * @throws Exception
      *          if the Api call fails
      */
     @Test
-    public void updateArticleTest() throws ApiException {
+    public void updateArticleTest() throws Exception {
         String albertaApiKey = null;
-        String tenant = null;
         String customerNumber = null;
         Article body = null;
-        ArticleMapping response = api.updateArticle(albertaApiKey, tenant, customerNumber, body);
+        ArticleMapping response = api.updateArticle(albertaApiKey, customerNumber, body);
 
         // TODO: test validations
     }
@@ -105,11 +80,11 @@ public class DefaultApiTest {
      *
      * ändert einen Krankenkassenvertrag in Alberta
      *
-     * @throws ApiException
+     * @throws Exception
      *          if the Api call fails
      */
     @Test
-    public void updateInsuranceContractTest() throws ApiException {
+    public void updateInsuranceContractTest() throws Exception {
         String albertaApiKey = null;
         String tenant = null;
         String id = null;

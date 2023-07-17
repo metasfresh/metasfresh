@@ -3,6 +3,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_PROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 
+import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HuId;
@@ -49,8 +50,7 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
  */
 public class WEBUI_Picking_M_Picking_Candidate_Unprocess extends PickingSlotViewBasedProcess
 {
-	@Autowired
-	private PickingCandidateService pickingCandidateService;
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -78,7 +78,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess extends PickingSlotView
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 		final HuId huId = rowToProcess.getHuId();
-		pickingCandidateService.unprocessForHUId(huId);
+		pickingCandidateService.unprocessAndRestoreSourceHUsByHUId(huId);
 
 		return MSG_OK;
 	}

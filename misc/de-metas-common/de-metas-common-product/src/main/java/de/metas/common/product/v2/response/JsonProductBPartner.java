@@ -2,10 +2,11 @@ package de.metas.common.product.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,10 +39,7 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonProductBPartner.JsonProductBPartnerBuilder.class)
 public class JsonProductBPartner
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_BPartner_ID`.")
+	@Schema(description = "This translates to `C_BPartner_ID`.")
 	@NonNull
 	@JsonProperty("bPartnerId")
 	JsonMetasfreshId bpartnerId;
@@ -72,4 +70,22 @@ public class JsonProductBPartner
 
 	@JsonProperty("leadTimeInDays")
 	int leadTimeInDays;
+
+	@JsonProperty("excludedFromSale")
+	boolean excludedFromSale;
+
+	@JsonProperty("exclusionFromSaleReason")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String exclusionFromSaleReason;
+
+	@JsonProperty("excludedFromPurchase")
+	boolean excludedFromPurchase;
+
+	@JsonProperty("exclusionFromPurchaseReason")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String exclusionFromPurchaseReason;
+
+	@JsonProperty("productId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	JsonMetasfreshId productId;
 }

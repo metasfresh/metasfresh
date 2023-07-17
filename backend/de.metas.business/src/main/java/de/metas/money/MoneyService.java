@@ -30,11 +30,13 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRate;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -43,17 +45,17 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Objects;
 
 @Service
-public class MoneyService
+public class MoneyService implements CurrencyCodeToCurrencyIdBiConverter
 {
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final CurrencyRepository currencyRepository;
@@ -63,11 +65,13 @@ public class MoneyService
 		this.currencyRepository = currencyRepository;
 	}
 
+	@Override
 	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
 		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
+	@Override
 	public CurrencyCode getCurrencyCodeByCurrencyId(@NonNull final CurrencyId currencyId)
 	{
 		return currencyRepository.getCurrencyCodeById(currencyId);
@@ -78,18 +82,28 @@ public class MoneyService
 		return currencyBL.getBaseCurrencyId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
 	}
 
+	public CurrencyCode getBaseCurrencyCode(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return currencyRepository.getCurrencyCodeById(getBaseCurrencyId(clientAndOrgId));
+	}
+
 	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyCode currencyCode)
 	{
 		return currencyRepository.getStdPrecision(currencyCode);
 	}
 
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return currencyRepository.getStdPrecision(currencyId);
+	}
+
 	@NonNull
 	public CurrencyConversionContext createConversionContext(
-			@Nullable final LocalDate convDate,
+			@NonNull final LocalDateAndOrgId convDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final ClientAndOrgId clientAndOrgId)
+			@NonNull final ClientId clientId)
 	{
-		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+		return currencyBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
 	}
 
 	/**
@@ -107,12 +121,22 @@ public class MoneyService
 		}
 
 		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
-				SystemTime.asLocalDate(),
-				ConversionTypeMethod.Spot,
+				SystemTime.asInstant(),
 				Env.getClientId(),
 				Env.getOrgId());
 
 		return convertMoneyToCurrency(money, targetCurrencyId, currencyConversionContext);
+	}
+
+	@NonNull
+	public Money convertMoneyToCurrency(
+			@NonNull final Money money,
+			@NonNull final CurrencyCode currencyCode,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+
+		return convertMoneyToCurrency(money, currencyId, context);
 	}
 
 	@NonNull
@@ -138,6 +162,35 @@ public class MoneyService
 				money.getCurrencyId(), targetCurrencyId, context, conversionResult);
 
 		return Money.of(convertedAmount, targetCurrencyId);
+	}
+
+	@NonNull
+	public Amount convertToCurrency(
+			@NonNull final Amount amount,
+			@NonNull final CurrencyCode targetCurrencyCode,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyCode fromCurrencyCode = amount.getCurrencyCode();
+		if (Objects.equals(fromCurrencyCode, targetCurrencyCode))
+		{
+			return amount;
+		}
+
+		final CurrencyId fromCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(fromCurrencyCode);
+		final CurrencyId targetCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(targetCurrencyCode);
+
+		final CurrencyConversionResult conversionResult = currencyBL.convert(
+				context,
+				amount.toBigDecimal(),
+				fromCurrencyId,
+				targetCurrencyId);
+
+		final BigDecimal convertedAmount = Check.assumeNotNull(
+				conversionResult.getAmount(),
+				"CurrencyConversion from currency={}({}) to currencyId={}({}) needs to work; currencyConversionContext={}, currencyConversionResult={}",
+				fromCurrencyCode, fromCurrencyId, targetCurrencyCode, targetCurrencyId, context, conversionResult);
+
+		return Amount.of(convertedAmount, targetCurrencyCode);
 	}
 
 	public Money percentage(@NonNull final Percent percent, @NonNull final Money input)
@@ -226,5 +279,20 @@ public class MoneyService
 		return Money.of(
 				currencyPrecision.round(netAmt),
 				money.getCurrencyId());
+	}
+
+	public CurrencyRate getCurrencyRate(
+			@NonNull final CurrencyCode fromCurrency,
+			@NonNull final CurrencyCode targetCurrency,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyId fromCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(fromCurrency);
+		final CurrencyId targetCurrencyId = currencyRepository.getCurrencyIdByCurrencyCode(targetCurrency);
+		return currencyBL.getCurrencyRate(context, fromCurrencyId, targetCurrencyId);
+	}
+
+	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
+	{
+		return currencyBL.getCurrencyConversionTypeId(type);
 	}
 }

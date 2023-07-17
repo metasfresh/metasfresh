@@ -1,16 +1,15 @@
 package de.metas.document.engine;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Properties;
-
+import de.metas.ad_reference.ReferenceId;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
-import de.metas.util.Services;
-
 import javax.annotation.Nullable;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 /**
  * Document Interface.
@@ -28,6 +27,7 @@ public interface IDocument
 		return (IDocument)documentObj;
 	}
 
+	ReferenceId ACTION_AD_Reference_ID = ReferenceId.ofRepoId(135);
 	String ACTION_Complete = "CO";
 	String ACTION_WaitComplete = "WC";
 	String ACTION_Approve = "AP";
@@ -148,7 +148,7 @@ public interface IDocument
 
 	String getDocAction();
 
-	LocalDate getDocumentDate();
+	InstantAndOrgId getDocumentDate();
 
 	Properties getCtx();
 

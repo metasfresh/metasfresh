@@ -11,8 +11,16 @@
         "firstName": "firstName",
         "lastName": "lastName",
         "customerNumber": "customerNumber",
-        "email": "someEamil@web.de"
-      },
+        "email": "orderCustomerEmail@example.com",
+        "vatIds": [
+          "vatId12"
+        ],
+        "customFields": {
+          "externalReference": "customerId",
+          "customUserId": "userId1",
+          "customSalesRepId": "mockSalesRepIdentifier"
+          }
+        },
       "currencyId": "currencyId",
       "orderNumber": "poReference",
       "orderDate": "2021-01-12T00:00:00.000+00:00",
@@ -32,7 +40,11 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de"
+        "email": "orderCustomerEmail@example.com",
+        "customFields": {
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
@@ -53,7 +65,11 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de"
+        "email": "orderCustomerEmail@example.com",
+        "customFields": {
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
@@ -74,7 +90,11 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de"
+        "email": "orderCustomerEmail@example.com",
+        "customFields": {
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",

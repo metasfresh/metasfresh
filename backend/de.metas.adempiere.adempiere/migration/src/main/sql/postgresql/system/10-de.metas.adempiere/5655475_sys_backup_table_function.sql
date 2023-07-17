@@ -1,7 +1,10 @@
-DROP FUNCTION IF EXISTS backup_table(p_tablename text);
+DROP FUNCTION IF EXISTS backup_table(p_TableName text)
+;
 
-CREATE FUNCTION backup_table(p_tablename text) RETURNS text
+CREATE OR REPLACE FUNCTION backup_table(p_TableName text)
+    RETURNS text
     LANGUAGE plpgsql
+    VOLATILE
 AS
 $$
 DECLARE
@@ -19,4 +22,3 @@ BEGIN
 END
 $$
 ;
-

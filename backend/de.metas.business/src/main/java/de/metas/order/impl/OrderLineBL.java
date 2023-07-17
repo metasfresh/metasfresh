@@ -4,11 +4,12 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -28,6 +29,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -61,6 +63,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -71,6 +74,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -125,12 +129,13 @@ public class OrderLineBL implements IOrderLineBL
 	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
-	
+
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
@@ -139,7 +144,7 @@ public class OrderLineBL implements IOrderLineBL
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private IOrderBL orderBL()
 	{
@@ -150,6 +155,12 @@ public class OrderLineBL implements IOrderLineBL
 	public List<I_C_OrderLine> getByOrderIds(@NonNull final Set<OrderId> orderIds)
 	{
 		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
+	}
+
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
 	}
 
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
@@ -236,7 +247,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineAmout, taxIncluded, taxPrecision.toInt());
 		ol.setTaxAmtInfo(taxAmtInfo);
 	}
 
@@ -319,11 +330,11 @@ public class OrderLineBL implements IOrderLineBL
 			OrderLineDocumentLocationAdapterFactory
 					.locationAdapter(ol)
 					.setFrom(DocumentLocation.builder()
-									 .bpartnerId(deliveryLocationId.getBpartnerId())
-									 .bpartnerLocationId(deliveryLocationId.getBpartnerLocationId())
-									 .locationId(deliveryLocationId.getLocationCaptureId())
-									 .contactId(contactId)
-									 .build());
+							.bpartnerId(deliveryLocationId.getBpartnerId())
+							.bpartnerLocationId(deliveryLocationId.getBpartnerLocationId())
+							.locationId(deliveryLocationId.getLocationCaptureId())
+							.contactId(contactId)
+							.build());
 		}
 
 		return ol;
@@ -459,7 +470,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyReserved = BigDecimal.ZERO.max(qtyReservedRaw); // not less than zero
 
 		logger.debug("Given orderLine {} has QtyOrdered={} and QtyDelivered={}; setting QtyReserved={}.",
-					 orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved);
+				orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved);
 		orderLine.setQtyReserved(qtyReserved);
 	}
 
@@ -556,7 +567,7 @@ public class OrderLineBL implements IOrderLineBL
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
 
 		assume(uomId != null || productId != null,
-			   "For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
+				"For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
 		if (productId == null)
 		{
 			return Quantitys.create(qtyEntered, uomId);
@@ -593,11 +604,11 @@ public class OrderLineBL implements IOrderLineBL
 		}
 		return qtyItemCapacity;
 	}
-	
+
 	private BigDecimal computeQtyOrderedUsingQtyItemCapacity(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final BigDecimal qtyItemCapacity = extractQtyItemCapacity(orderLine);
-		
+
 		return orderLine.getQtyEntered().multiply(qtyItemCapacity);
 	}
 
@@ -618,10 +629,10 @@ public class OrderLineBL implements IOrderLineBL
 		final UomId targetUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		return convertToTargetUOM(sourceQuantity, orderLine, targetUomId);
 	}
-	
+
 	private Quantity convertToTargetUOM(
-			final @NonNull Quantity sourceQuantity, 
-			final @NonNull org.compiere.model.I_C_OrderLine orderLine, 
+			final @NonNull Quantity sourceQuantity,
+			final @NonNull org.compiere.model.I_C_OrderLine orderLine,
 			final @Nullable UomId targetUomId)
 	{
 		if (targetUomId == null || targetUomId.equals(sourceQuantity.getUomId()))
@@ -665,7 +676,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		return sourceQtyInQtockUOM.divide(itemCapacityInStockUOM);
 	}
-	
+
 	@Override
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -786,7 +797,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
-		if (tax.isZeroTax())
+		if (tax.isZeroTax() || tax.isReverseCharge())
 		{
 			return ProductPrice.builder()
 					.productId(productId)
@@ -796,7 +807,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
-		final BigDecimal taxAmt = taxBL.calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
+		final BigDecimal taxAmt = taxBL.calculateTaxAmt(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return ProductPrice.builder()
 				.productId(productId)
@@ -840,7 +851,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 * task https://github.com/metasfresh/metasfresh/issues/4535
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/4535">task</a>
 	 */
 	@Override
 	public void updateProductDescriptionFromProductBOMIfConfigured(final org.compiere.model.I_C_OrderLine orderLine)
@@ -965,7 +976,7 @@ public class OrderLineBL implements IOrderLineBL
 			final I_M_PriceList result = priceListBL.getCurrentPricelistOrNull(orderPricingSystemId, bpCountryId, orderDate, soTrx);
 
 			logger.debug("C_OrderLine {} has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
-						 olRecord.getC_OrderLine_ID(), orderPricingSystemId, bPartnerLocationId, orderDate, soTrx, result);
+					olRecord.getC_OrderLine_ID(), orderPricingSystemId, bPartnerLocationId, orderDate, soTrx, result);
 			return Optional.ofNullable(result);
 		}
 
@@ -977,6 +988,40 @@ public class OrderLineBL implements IOrderLineBL
 	private CurrencyPrecision getPrecisionFromCurrency(@NonNull final org.compiere.model.I_C_OrderLine olRecord)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(olRecord.getC_Currency_ID());
-		return currencyDAO.getStdPrecision(currencyId);
+		return currencyBL.getStdPrecision(currencyId);
+	}
+
+	@Override
+	public void setBPLocation(final I_C_OrderLine orderLine)
+	{
+		final int c_bPartner_id = orderLine.getC_BPartner_ID();
+		if (c_bPartner_id <= 0)
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_BPartner bp = partnerBL.getById(BPartnerId.ofRepoId(c_bPartner_id));
+		final I_C_BPartner_Location bpLoc = partnerBL.extractShipToLocation(bp);
+		setBPartnerLocation(orderLine, bpLoc);
+	}
+
+	private void setBPartnerLocation(@NonNull final I_C_OrderLine orderLine, @Nullable final I_C_BPartner_Location bpartnerLocation)
+	{
+		final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
+	}
+
+	@Override
+	public void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine)
+	{
+		final boolean isOnConsignment = computeIsOnConsignmentFromASI(orderLine);
+		orderLine.setIsOnConsignment(isOnConsignment);
+	}
+
+	private boolean computeIsOnConsignmentFromASI(@NonNull final I_C_OrderLine orderLine)
+	{
+		final OnConsignmentAttributeService onConsignmentAttributeService = SpringContextHolder.instance.getBean(OnConsignmentAttributeService.class);
+		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
+		return onConsignmentAttributeService.isOnConsignment(productSI);
 	}
 }

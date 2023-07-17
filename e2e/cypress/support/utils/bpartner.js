@@ -135,6 +135,7 @@ export class BPartner {
         body: JSON.stringify([]),
         headers: {
           'Content-Type': 'application/json',
+          accept: 'application/json',
         },
       })
       .then((newResponse) => {
@@ -163,6 +164,7 @@ export class BPartner {
             body: JSON.stringify(basicDataObject),
             headers: {
               'Content-Type': 'application/json',
+              accept: 'application/json',
             },
           })
           .then(() => {
@@ -176,6 +178,7 @@ export class BPartner {
                   body: JSON.stringify(dataObject),
                   headers: {
                     'Content-Type': 'application/json',
+                    accept: 'application/json',
                   },
                 })
                 .then(() => bPartner);
@@ -194,6 +197,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -204,6 +208,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -214,6 +219,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -224,6 +230,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -234,6 +241,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -244,6 +252,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -254,6 +263,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -264,6 +274,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -274,6 +285,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );

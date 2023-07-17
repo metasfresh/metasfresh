@@ -26,6 +26,7 @@ import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostTypeId;
@@ -39,7 +40,7 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import org.eevolution.api.PPOrderId;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionDAO;
@@ -56,24 +57,23 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_Workflow;
 import org.eevolution.model.X_PP_Order_Workflow;
-import org.junit.jupiter.api.Disabled;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
-@Disabled
 public class PPOrderCostsTestHelper
 {
 	public final IUOMConversionDAO uomConversionDAO;
 
-	public final ClientId clientId = ClientId.ofRepoId(1);
+	public final ClientId clientId = ClientId.METASFRESH;
 
 	public final I_C_UOM uomEach;
 	public final UomId uomEachId;
@@ -109,7 +109,7 @@ public class PPOrderCostsTestHelper
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		final CostElementRepository costElementRepo = new CostElementRepository();
+		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		SpringContextHolder.registerJUnitBean(ICurrentCostsRepository.class, new CurrentCostsRepository(costElementRepo));
 		SpringContextHolder.registerJUnitBean(ICostElementRepository.class, costElementRepo);
 
@@ -167,7 +167,11 @@ public class PPOrderCostsTestHelper
 			ppOrderNode.setValue("activity1");
 			ppOrderNode.setS_Resource_ID(BusinessTestHelper.createManufacturingResource("workstation1", uomSeconds).getRepoId());
 			ppOrderNode.setC_UOM_ID(uomSeconds.getC_UOM_ID());
+			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
+			ppOrderNode.setName("Name");
 			ppOrderNode.setDocStatus(PPOrderRoutingActivityStatus.NOT_STARTED.getDocStatus());
+			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
+			ppOrderNode.setName("Name");
 			InterfaceWrapperHelper.saveRecord(ppOrderNode);
 
 			ppOrderWorkflow.setPP_Order_Node_ID((ppOrderNode.getPP_Order_Node_ID()));

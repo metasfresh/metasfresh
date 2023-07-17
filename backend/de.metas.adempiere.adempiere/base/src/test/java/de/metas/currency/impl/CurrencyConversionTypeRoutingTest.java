@@ -8,11 +8,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CurrencyConversionTypeRoutingTest
 {
@@ -24,9 +25,9 @@ class CurrencyConversionTypeRoutingTest
 		SystemTime.setFixedTimeSource(LocalDate.parse("2022-11-12").atStartOfDay(zoneId));
 	}
 
-	private LocalDate date(final String localDate)
+	private Instant instant(final String localDate)
 	{
-		return LocalDate.parse(localDate);
+		return LocalDate.parse(localDate).atStartOfDay(zoneId).toInstant();
 	}
 
 	@Nested
@@ -39,8 +40,8 @@ class CurrencyConversionTypeRoutingTest
 					.clientId(ClientId.METASFRESH)
 					.orgId(OrgId.ANY);
 
-			final CurrencyConversionTypeRouting r1970 = routingBuilder.validFrom(date("1970-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(1)).build();
-			final CurrencyConversionTypeRouting r2016 = routingBuilder.validFrom(date("2016-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(2)).build();
+			final CurrencyConversionTypeRouting r1970 = routingBuilder.validFrom(instant("1970-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(1)).build();
+			final CurrencyConversionTypeRouting r2016 = routingBuilder.validFrom(instant("2016-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(2)).build();
 
 			assertThat(r1970.isMoreSpecificThan(r2016)).isFalse();
 			assertThat(r2016.isMoreSpecificThan(r1970)).isTrue();
@@ -57,8 +58,8 @@ class CurrencyConversionTypeRoutingTest
 					.clientId(ClientId.METASFRESH)
 					.orgId(OrgId.ANY);
 
-			final CurrencyConversionTypeRouting r1970 = routingBuilder.validFrom(date("1970-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(1)).build();
-			final CurrencyConversionTypeRouting r2016 = routingBuilder.validFrom(date("2016-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(2)).build();
+			final CurrencyConversionTypeRouting r1970 = routingBuilder.validFrom(instant("1970-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(1)).build();
+			final CurrencyConversionTypeRouting r2016 = routingBuilder.validFrom(instant("2016-01-01")).conversionTypeId(CurrencyConversionTypeId.ofRepoId(2)).build();
 
 			final CurrencyConversionTypeRouting result = Stream.of(r1970, r2016)
 					.min(CurrencyConversionTypeRouting.moreSpecificFirstComparator())

@@ -130,7 +130,14 @@ public class HUPricing extends AttributePricing
 		//match packing material if we have a real packing material
 		if (packingMaterialId != null)
 		{
-			productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+			if (packingMaterialId.isRegular())
+			{
+				productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+			}
+			else
+			{
+				productPriceQuery.matching(HUPIItemProductMatcher_None);
+			}
 
 			noAttributeRelatedConditionSet = false;
 		}
@@ -191,10 +198,10 @@ public class HUPricing extends AttributePricing
 		//
 		// Get the default product price attribute, if any
 		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
-				.setProductId(pricingCtx.getProductId())
-				.onlyAttributePricing()
-				.onlyValidPrices(true)
-				.retrieveDefault(I_M_ProductPrice.class);
+						.setProductId(pricingCtx.getProductId())
+						.onlyAttributePricing()
+						.onlyValidPrices(true)
+						.retrieveDefault(I_M_ProductPrice.class);
 		if (defaultPrice == null)
 		{
 			return null;
@@ -257,9 +264,9 @@ public class HUPricing extends AttributePricing
 		return null;
 	}
 
-	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(@Nullable final HUPIItemProductId packingMaterialId)
+	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
 	{
-		if (packingMaterialId == null || !packingMaterialId.isRegular())
+		if (packingMaterialId == null)
 		{
 			return HUPIItemProductMatcher_None;
 		}

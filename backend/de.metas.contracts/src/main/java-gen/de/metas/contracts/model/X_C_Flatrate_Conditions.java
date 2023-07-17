@@ -1,6 +1,7 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -8,20 +9,20 @@ import java.util.Properties;
 /** Generated Model for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_C_Flatrate_Conditions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -683179023L;
+	private static final long serialVersionUID = -619065983L;
 
     /** Standard Constructor */
-    public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, final String trxName)
+    public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, @Nullable final String trxName)
     {
       super (ctx, C_Flatrate_Conditions_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_Flatrate_Conditions (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_Flatrate_Conditions (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -32,6 +33,21 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Customer_Trade_Margin_ID (final int C_Customer_Trade_Margin_ID)
+	{
+		if (C_Customer_Trade_Margin_ID < 1) 
+			set_Value (COLUMNNAME_C_Customer_Trade_Margin_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Customer_Trade_Margin_ID, C_Customer_Trade_Margin_ID);
+	}
+
+	@Override
+	public int getC_Customer_Trade_Margin_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Customer_Trade_Margin_ID);
 	}
 
 	@Override
@@ -50,7 +66,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setC_Flatrate_Matching_IncludedT (final java.lang.String C_Flatrate_Matching_IncludedT)
+	public void setC_Flatrate_Matching_IncludedT (final @Nullable java.lang.String C_Flatrate_Matching_IncludedT)
 	{
 		throw new IllegalArgumentException ("C_Flatrate_Matching_IncludedT is virtual column");	}
 
@@ -87,6 +103,33 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Transition_ID);
 	}
 
+	@Override
+	public org.compiere.model.I_C_Interim_Invoice_Settings getC_Interim_Invoice_Settings()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Interim_Invoice_Settings_ID, org.compiere.model.I_C_Interim_Invoice_Settings.class);
+	}
+
+	@Override
+	public void setC_Interim_Invoice_Settings(final org.compiere.model.I_C_Interim_Invoice_Settings C_Interim_Invoice_Settings)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Interim_Invoice_Settings_ID, org.compiere.model.I_C_Interim_Invoice_Settings.class, C_Interim_Invoice_Settings);
+	}
+
+	@Override
+	public void setC_Interim_Invoice_Settings_ID (final int C_Interim_Invoice_Settings_ID)
+	{
+		if (C_Interim_Invoice_Settings_ID < 1) 
+			set_Value (COLUMNNAME_C_Interim_Invoice_Settings_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Interim_Invoice_Settings_ID, C_Interim_Invoice_Settings_ID);
+	}
+
+	@Override
+	public int getC_Interim_Invoice_Settings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Interim_Invoice_Settings_ID);
+	}
+
 	/** 
 	 * ClearingAmtBaseOn AD_Reference_ID=540278
 	 * Reference name: ClearingAmtBaseOn
@@ -97,7 +140,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/** FlatrateAmount = FlatrateAmount */
 	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
 	@Override
-	public void setClearingAmtBaseOn (final java.lang.String ClearingAmtBaseOn)
+	public void setClearingAmtBaseOn (final @Nullable java.lang.String ClearingAmtBaseOn)
 	{
 		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
 	}
@@ -106,6 +149,63 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public java.lang.String getClearingAmtBaseOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
+	}
+
+	@Override
+	public void setC_LicenseFeeSettings_ID (final int C_LicenseFeeSettings_ID)
+	{
+		if (C_LicenseFeeSettings_ID < 1) 
+			set_Value (COLUMNNAME_C_LicenseFeeSettings_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_LicenseFeeSettings_ID, C_LicenseFeeSettings_ID);
+	}
+
+	@Override
+	public int getC_LicenseFeeSettings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_LicenseFeeSettings_ID);
+	}
+
+	@Override
+	public void setC_MediatedCommissionSettings_ID (final int C_MediatedCommissionSettings_ID)
+	{
+		if (C_MediatedCommissionSettings_ID < 1) 
+			set_Value (COLUMNNAME_C_MediatedCommissionSettings_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_MediatedCommissionSettings_ID, C_MediatedCommissionSettings_ID);
+	}
+
+	@Override
+	public int getC_MediatedCommissionSettings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_MediatedCommissionSettings_ID);
+	}
+
+	@Override
+	public de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_SubscrDiscount_ID, de.metas.contracts.model.I_C_SubscrDiscount.class);
+	}
+
+	@Override
+	public void setC_SubscrDiscount(final de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount)
+	{
+		set_ValueFromPO(COLUMNNAME_C_SubscrDiscount_ID, de.metas.contracts.model.I_C_SubscrDiscount.class, C_SubscrDiscount);
+	}
+
+	@Override
+	public void setC_SubscrDiscount_ID (final int C_SubscrDiscount_ID)
+	{
+		if (C_SubscrDiscount_ID < 1) 
+			set_Value (COLUMNNAME_C_SubscrDiscount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_SubscrDiscount_ID, C_SubscrDiscount_ID);
+	}
+
+	@Override
+	public int getC_SubscrDiscount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_SubscrDiscount_ID);
 	}
 
 	@Override
@@ -226,6 +326,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String INVOICERULE_Immediate = "I";
 	/** OrderCompletelyDelivered = C */
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
+	/** After Pick = P */
+	public static final String INVOICERULE_AfterPick = "P";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
@@ -349,6 +451,33 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings()
+	{
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class);
+	}
+
+	@Override
+	public void setModCntr_Settings(final de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings)
+	{
+		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class, ModCntr_Settings);
+	}
+
+	@Override
+	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
+	{
+		if (ModCntr_Settings_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_Settings_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
+	}
+
+	@Override
+	public int getModCntr_Settings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
+	}
+
+	@Override
 	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
 		if (M_PricingSystem_ID < 1) 
@@ -442,7 +571,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setPrintName (final java.lang.String PrintName)
+	public void setPrintName (final @Nullable java.lang.String PrintName)
 	{
 		set_Value (COLUMNNAME_PrintName, PrintName);
 	}
@@ -519,8 +648,18 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_Refund = "Refund";
 	/** Commission = Commission */
 	public static final String TYPE_CONDITIONS_Commission = "Commission";
+	/** MarginCommission = MarginCommission */
+	public static final String TYPE_CONDITIONS_MarginCommission = "MarginCommission";
 	/** Mediated commission = MediatedCommission */
 	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
+	/** LicenseFee = LicenseFee */
+	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
+	/** CallOrder = CallOrder */
+	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
+	/** InterimInvoice = InterimInvoice */
+	public static final String TYPE_CONDITIONS_InterimInvoice = "InterimInvoice";
+	/** ModularContract = ModularContract */
+	public static final String TYPE_CONDITIONS_ModularContract = "ModularContract";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{

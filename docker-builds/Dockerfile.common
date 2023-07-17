@@ -1,0 +1,13 @@
+FROM maven:3.8.4-eclipse-temurin-17
+
+WORKDIR /parent
+COPY misc/parent-pom .
+RUN sed -i 's/json-snapshot-PR/json-snapshot-pr/' pom.xml
+
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean install --offline -Dmaven.gitcommitid.skip=true
+
+WORKDIR /commons
+COPY misc/de-metas-common .
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean install --offline -Dmaven.gitcommitid.skip=true -DskipTests

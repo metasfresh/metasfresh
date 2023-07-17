@@ -1,12 +1,13 @@
 package de.metas.printing.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Printing_Queue
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Printing_Queue 
 {
 
@@ -151,8 +152,8 @@ public interface I_C_Printing_Queue
 	String COLUMNNAME_AD_PrinterHW_MediaTray_ID = "AD_PrinterHW_MediaTray_ID";
 
 	/**
-	 * Set Prozess.
-	 * Prozess oder Bericht
+	 * Set Process.
+	 * Process or Report
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -161,8 +162,8 @@ public interface I_C_Printing_Queue
 	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Prozess.
-	 * Prozess oder Bericht
+	 * Get Process.
+	 * Process or Report
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -287,6 +288,26 @@ public interface I_C_Printing_Queue
 	int getBill_Location_ID();
 
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_User_ID();
+
+	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
 	 * Set Async Batch.

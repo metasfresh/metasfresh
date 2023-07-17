@@ -30,8 +30,8 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentType;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -47,12 +47,13 @@ import de.metas.rest_api.v2.order.JsonSalesOrder;
 import de.metas.rest_api.v2.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v2.order.JsonSalesOrderCreateRequest;
 import de.metas.rest_api.v2.order.JsonSalesOrderLine;
+import de.metas.rest_api.v2.util.JsonConverters;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -60,7 +61,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -94,12 +94,12 @@ public class SalesOrderRestController
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	@ApiOperation("Create new order payment")
+	@Operation(summary = "Create new order payment")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created new order payment"),
-			@ApiResponse(code = 401, message = "You are not authorized to create a new order payment"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created new order payment"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create a new order payment"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PostMapping("/payment")
 	public ResponseEntity<?> createOrderPayment(@NonNull @RequestBody final JsonOrderPaymentCreateRequest request)
@@ -167,7 +167,7 @@ public class SalesOrderRestController
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+					.docBaseType(DocBaseType.SalesOrder)
 					.adClientId(Env.getAD_Client_ID())
 					.name(request.getDocTypeName())
 					.build();
@@ -229,7 +229,7 @@ public class SalesOrderRestController
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
 				.id(AttachmentEntryId.getRepoId(entry.getId()))
-				.type(JsonAttachmentType.valueOf(entry.getType().toString()))
+				.type(JsonConverters.toJsonAttachmentSourceType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)

@@ -32,8 +32,9 @@ import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.Packageable;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.picking.api.Packageable;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
@@ -57,6 +58,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -108,7 +110,9 @@ public class ProductsToPickRowsDataFactoryTest
 				.orderId(OrderId.ofRepoId(1))
 				.orderDocumentNo("1234")
 				.customer(IntegerLookupValue.of(customerAndLocationId.getBpartnerId().getRepoId(), "customer"))
+				.timeZone(ZoneId.of("Pacific/Guadalcanal"))
 				.packageable(Packageable.builder()
+						.orgId(OrgId.ofRepoId(1))
 						.shipmentScheduleId(shipmentScheduleId)
 						//
 						.qtyOrdered(Quantity.of(1000000, uomKg))

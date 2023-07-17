@@ -104,6 +104,18 @@ public class Candidate
 
 	Dimension dimension;
 
+	boolean simulated;
+
+	String lotForLot;
+
+	/**
+	 * Used in case LotForLot to not create a new Supply with fullDemandQty
+	 * in case of updated Demand
+	 */
+	boolean updated;
+
+	BigDecimal deltaQuantity;
+
 	@Builder(toBuilder = true)
 	private Candidate(
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -118,7 +130,11 @@ public class Candidate
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails,
-			Dimension dimension)
+			final Dimension dimension,
+			final boolean simulated,
+			final String lotForLot,
+			final boolean updated,
+			final BigDecimal deltaQuantity)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
@@ -147,6 +163,10 @@ public class Candidate
 		}
 
 		this.dimension = dimension;
+		this.simulated = simulated;
+		this.lotForLot = lotForLot;
+		this.updated = updated;
+		this.deltaQuantity = deltaQuantity;
 	}
 
 	public static class CandidateBuilder
@@ -159,7 +179,7 @@ public class Candidate
 	}
 
 	// TODO always validate on construction, then make this method private
-	public Candidate validateNonStockCandidate()
+	public void validateNonStockCandidate()
 	{
 		switch (type)
 		{
@@ -204,8 +224,6 @@ public class Candidate
 				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
 				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
 				businessCase, businessCaseDetail, this);
-
-		return this;
 	}
 
 	public OrgId getOrgId()

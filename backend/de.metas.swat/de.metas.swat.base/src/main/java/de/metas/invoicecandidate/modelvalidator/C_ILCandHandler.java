@@ -22,6 +22,12 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.modelvalidator.ilhandler.ILHandlerModelInterceptor;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -29,12 +35,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
-
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.util.Services;
 
 @Interceptor(I_C_ILCandHandler.class)
 public class C_ILCandHandler
@@ -66,11 +66,7 @@ public class C_ILCandHandler
 					continue;
 				}
 
-				final ILHandlerModelInterceptor modelInterceptor = ILHandlerModelInterceptor.builder()
-						.setTableName(tableName)
-						.setCreateInvoiceCandidates(handler.isCreateMissingCandidatesAutomatically())
-						.setCreateInvoiceCandidatesTiming(handler.getAutomaticallyCreateMissingCandidatesDocTiming())
-						.build();
+				final ILHandlerModelInterceptor modelInterceptor = new ILHandlerModelInterceptor(handler);
 				engine.addModelValidator(modelInterceptor);
 			}
 		}

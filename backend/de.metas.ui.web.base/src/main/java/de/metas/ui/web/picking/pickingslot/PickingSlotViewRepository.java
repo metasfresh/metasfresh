@@ -1,7 +1,6 @@
 package de.metas.ui.web.picking.pickingslot;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -19,7 +18,6 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
@@ -32,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /*
@@ -75,48 +74,49 @@ public class PickingSlotViewRepository
 	 * @param pickingHUsRepo the "backend" repo to be used by this instance.
 	 */
 	@Autowired
-	public PickingSlotViewRepository(@NonNull final PickingHURowsRepository pickingHUsRepo)
+	public PickingSlotViewRepository(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
+			@NonNull final PickingHURowsRepository pickingHUsRepo)
 	{
 		// creating those LookupDataSources requires DB access. so to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers
 		this(
 				pickingHUsRepo,
-				createWarehouseLookup(),
-				createBPartnerLookup(),
-				createBPartnerLocationLookup());
+				createWarehouseLookup(lookupDataSourceFactory),
+				createBPartnerLookup(lookupDataSourceFactory),
+				createBPartnerLocationLookup(lookupDataSourceFactory));
 	}
 
-	private static Supplier<LookupDataSource> createWarehouseLookup()
+	private static Supplier<LookupDataSource> createWarehouseLookup(final LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
-											 .setCtxTableName(null)
-											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
-											 .setDisplayType(DisplayType.Search)
-											 .setWidgetType(DocumentFieldWidgetType.Lookup)
-											 .buildForDefaultScope()));
+		return Suppliers.memoize(() -> lookupDataSourceFactory
+				.getLookupDataSource(builder -> builder.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
+						.setDisplayType(DisplayType.Search)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.buildForDefaultScope()));
 	}
 
-	private static Supplier<LookupDataSource> createBPartnerLookup()
+	private static Supplier<LookupDataSource> createBPartnerLookup(final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
-											 .setCtxTableName(null)
-											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
-											 .setDisplayType(DisplayType.Search)
-											 .setWidgetType(DocumentFieldWidgetType.Lookup)
-											 .buildForDefaultScope()));
+		return Suppliers.memoize(() -> lookupDataSourceFactory
+				.getLookupDataSource(builder -> builder
+						.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
+						.setDisplayType(DisplayType.Search)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.buildForDefaultScope()));
 	}
 
-	private static Supplier<LookupDataSource> createBPartnerLocationLookup()
+	private static Supplier<LookupDataSource> createBPartnerLocationLookup(final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
-											 .setCtxTableName(null)
-											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
-											 .setDisplayType(DisplayType.Search)
-											 .setWidgetType(DocumentFieldWidgetType.Lookup)
-											 .buildForDefaultScope()));
+		return Suppliers.memoize(() -> lookupDataSourceFactory
+				.getLookupDataSource(builder -> builder
+						.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
+						.setDisplayType(DisplayType.Search)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.buildForDefaultScope()));
 	}
 
 	@VisibleForTesting
@@ -135,22 +135,19 @@ public class PickingSlotViewRepository
 	/**
 	 * Returns "top level" source HU and picking slot rows, according to the given {@code query}.<br>
 	 * If there are HUs assigned, they are included and can be accessed via {@link PickingSlotRow#getIncludedRows()}.
-	 *
-	 * @param query
-	 * @return
 	 */
 	// when https://github.com/metasfresh/metasfresh-webui-api/issues/509 is done,
 	// we shall re-implement this method to use the view's streamByIds(DocumentIdsSelection.ALL) to avoid the DB access
-	// ..at least for checkPreconditionsApplicable()
+	// ...at least for checkPreconditionsApplicable()
 	public List<PickingSlotRow> retrieveRows(@NonNull final PickingSlotRepoQuery query)
 	{
 		// get M_HU_Source records that reference active HUs with their locator in this WH and not on the picking location
 		final List<HUEditorRow> sourceHUEditorRows = pickingHUsRepo.retrieveSourceHUs(query);
 		final List<PickingSlotRow> sourceHUPickingSlotRows = sourceHUEditorRows.stream()
-				.map(sourceHuEditorRow -> createSourceHURow(sourceHuEditorRow))
+				.map(PickingSlotViewRepository::createSourceHURow)
 				.collect(Collectors.toList());
 
-		// get the picking slot rows, including the rows the represent picked HUs
+		// get the picking slot rows, including the rows that represent picked HUs
 		final ImmutableList<PickingSlotRow> pickingSlotRows = retrievePickingSlotRows(query);
 
 		return ImmutableList.copyOf(Iterables.concat(
@@ -171,7 +168,7 @@ public class PickingSlotViewRepository
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
 		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(toPickingCandidatesQuery(query, pickingSlotIds));
 
-		return pickingSlots.stream() // get stream of I_M_PickingSlot
+		return pickingSlots.stream()
 				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -191,6 +188,7 @@ public class PickingSlotViewRepository
 				.shipmentScheduleIds(query.getShipmentScheduleIds())
 				.onlyNotClosedOrNotRackSystem(query.isOnlyNotClosedOrNotRackSystem())
 				.onlyPickingSlotIds(pickingSlotIds)
+				.pickingSlotQRCode(query.getPickingSlotQRCode())
 				.includeShippedHUs(false)
 				.build();
 	}
@@ -209,7 +207,7 @@ public class PickingSlotViewRepository
 				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
-				.barcode(repoQuery.getPickingSlotBarcode())
+				.qrCode(repoQuery.getPickingSlotQRCode())
 				.build();
 
 		final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
@@ -245,17 +243,16 @@ public class PickingSlotViewRepository
 		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 
 		// create picking slot rows for included/picked HUs
-		final List<PickingSlotRow> pickedHuRows = huEditorRowsByPickingSlotId.get(pickingSlotId)
+		return huEditorRowsByPickingSlotId.get(pickingSlotId)
 				.stream()
 				.map(pickingSlotHuEditorRow -> createPickedHURow(pickingSlotHuEditorRow, pickingSlotId))
 				.collect(ImmutableList.toImmutableList());
-		return pickedHuRows;
 	}
 
 	/**
 	 * Creates a HU related picking slot row for the given HU editor row and the given {@code pickingSlotId}.
 	 *
-	 * @param from          the hu editor row to create a picking slot row for. If it has included HU editor rows, then the method creates an included picking slot line accordingly.
+	 * @param from the hu editor row to create a picking slot row for. If it has included HU editor rows, then the method creates an included picking slot line accordingly.
 	 */
 	private static PickingSlotRow createPickedHURow(@NonNull final PickedHUEditorRow from, final PickingSlotId pickingSlotId)
 	{
@@ -275,7 +272,7 @@ public class PickingSlotViewRepository
 
 				.huEditorRowType(huEditorRow.getType())
 
-				// do *not* take the HUEditorRow's processed flag, because we don't care about that; we do care about PickingSlotHUEditorRow.isProcessed() because that's the value coming from the M_Picking_Candiate
+				// do *not* take the HUEditorRow's processed flag, because we don't care about that; we do care about PickingSlotHUEditorRow.isProcessed() because that's the value coming from the M_Picking_Candidate
 				.processed(from.isProcessed())
 
 				.huCode(huEditorRow.getValue())

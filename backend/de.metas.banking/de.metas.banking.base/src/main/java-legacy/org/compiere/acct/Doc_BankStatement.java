@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -14,10 +15,12 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -32,7 +35,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MAccount;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -63,7 +65,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 	public Doc_BankStatement(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_BankStatement);
+		super(ctx, DocBaseType.BankStatement);
 	}
 
 	@Override
@@ -182,24 +184,12 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// BankAsset DR/CR (StmtAmt)
 		return fact.createLine()
 				.setDocLine(line)
-				.setAccount(getBankAssetAccount(as))
+				.setAccount(getBankAccountAccount(BankAccountAcctType.B_Asset_Acct, as))
 				// .setAmtSourceDrOrCr(line.getStmtAmt())
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankAsset())
 				.orgIdIfValid(bankOrgId)
 				.bpartnerIdIfNotNull(bpartnerId);
-	}
-
-	private MAccount getBankAssetAccount(@NonNull final AcctSchema as)
-	{
-		final MAccount account = getAccount(AccountType.BankAsset, as);
-		if (account == null)
-		{
-			throw newPostingException()
-					.setDetailMessage("No Bank Asset account found")
-					.setAcctSchema(as);
-		}
-		return account;
 	}
 
 	/**
@@ -280,7 +270,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final FactLineBuilder bankAssetFactLineBuilder = prepareBankAssetFactLine(fact, line);
 		final FactLineBuilder bankInTransitFactLineBuilder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(AccountType.BankInTransit, as))
+				.setAccount(getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as))
 				.setAmtSourceDrOrCr(trxAmt.negate())
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
@@ -316,7 +306,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			@NonNull final AcctSchema as,
 			@NonNull final DocLine_BankStatement line)
 	{
-		final MAccount acct_BankInTransit = getAccount(AccountType.BankInTransit, as);
+		final Account acct_BankInTransit = getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 		final List<BankStatementLineReferenceAcctInfo> lineReferences = line.getReferences();
@@ -391,7 +381,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 		bankAssetFactLine.setAmtSource(null, bankFeeAmt);
 		interestFactLine.setAmtSource(bankFeeAmt, null);
-		interestFactLine.setAccount(getAccount(AccountType.PayBankFee, as));
+		interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.PayBankFee_Acct, as));
 
 		bankAssetFactLine.buildAndAdd();
 		interestFactLine.buildAndAdd();
@@ -409,7 +399,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			return ImmutableList.of();
 		}
 
-		final MAccount acct_Charge = line.getChargeAccount(as, chargeAmt);
+		final Account acct_Charge = line.getChargeAccount(as, chargeAmt);
 		if (acct_Charge == null)
 		{
 			throw newPostingException()
@@ -472,7 +462,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		{
 			bankAssetFactLine.setAmtSource(interestAmt, null);
 			interestFactLine.setAmtSource(null, interestAmt);
-			interestFactLine.setAccount(getAccount(AccountType.InterestRev, as));
+			interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.B_InterestRev_Acct, as));
 		}
 		//
 		// Expense
@@ -480,7 +470,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		{
 			bankAssetFactLine.setAmtSource(null, interestAmt);
 			interestFactLine.setAmtSource(interestAmt, null);
-			interestFactLine.setAccount(getAccount(AccountType.InterestExp, as));
+			interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.B_InterestExp_Acct, as));
 		}
 
 		bankAssetFactLine.buildAndAdd();
@@ -505,10 +495,10 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// Flag this document as multi-currency to prevent source amounts balancing.
 		// Our source amounts won't be source balanced anymore because the bank transfer is booked in allocation's currency
 		// and the currency gain/loss is booked in accounting currency.
-		setIsMultiCurrency(true);
+		setIsMultiCurrency();
 
 		final AcctSchema as = fact.getAcctSchema();
-		final MAccount account;
+		final Account account;
 		final BigDecimal amtSourceDr;
 		final BigDecimal amtSourceCr;
 		if (line.isInboundTrx())
@@ -563,8 +553,8 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			return BigDecimal.ZERO;
 		}
 
-		final MAccount bankAssetAccount = getBankAssetAccount(fact.getAcctSchema());
-		final FactLine factLine_BankAsset = fact.getSingleLineByAccountId(bankAssetAccount);
+		final Account bankAssetAccount = getBankAccountAccount(BankAccountAcctType.B_Asset_Acct, fact.getAcctSchema());
+		final FactLine factLine_BankAsset = fact.getSingleLineByAccountId(bankAssetAccount.getAccountId());
 
 		final AmountSourceAndAcct bankAssetAmt;
 		final boolean isIncomeAmount;

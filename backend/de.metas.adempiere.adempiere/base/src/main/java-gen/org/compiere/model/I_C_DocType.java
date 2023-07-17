@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
@@ -19,7 +18,6 @@ public interface I_C_DocType
 
 	/**
 	 * Set Boiler Plate.
-	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -29,7 +27,6 @@ public interface I_C_DocType
 
 	/**
 	 * Get Boiler Plate.
-	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -126,8 +123,9 @@ public interface I_C_DocType
 
 	/**
 	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -135,8 +133,9 @@ public interface I_C_DocType
 
 	/**
 	 * Get Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -332,7 +331,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
-	 * Set Nummernfolgen für Belege.
+	 * Set Document Sequence.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -342,7 +341,7 @@ public interface I_C_DocType
 	void setDocNoSequence_ID (int DocNoSequence_ID);
 
 	/**
-	 * Get Nummernfolgen für Belege.
+	 * Get Document Sequence.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -382,7 +381,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
-	 * Set Kopien.
+	 * Set Document Copies.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -392,7 +391,7 @@ public interface I_C_DocType
 	void setDocumentCopies (int DocumentCopies);
 
 	/**
-	 * Get Kopien.
+	 * Get Document Copies.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -405,8 +404,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentCopies = "DocumentCopies";
 
 	/**
-	 * Set Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Set Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -415,8 +413,7 @@ public interface I_C_DocType
 	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
 	/**
-	 * Get Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Get Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -428,9 +425,8 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentNote = "DocumentNote";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -439,9 +435,8 @@ public interface I_C_DocType
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -798,7 +793,7 @@ public interface I_C_DocType
 	String COLUMNNAME_IsPickQAConfirm = "IsPickQAConfirm";
 
 	/**
-	 * Set Bestätigung Versand/Wareneingang.
+	 * Set Ship/Receipt Confirmation.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -808,7 +803,7 @@ public interface I_C_DocType
 	void setIsShipConfirm (boolean IsShipConfirm);
 
 	/**
-	 * Get Bestätigung Versand/Wareneingang.
+	 * Get Ship/Receipt Confirmation.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -867,6 +862,31 @@ public interface I_C_DocType
 	String COLUMNNAME_IsSplitWhenDifference = "IsSplitWhenDifference";
 
 	/**
+	 * Set Lot No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
+
+	/**
+	 * Get Lot No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLotNo_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getLotNo_Sequence();
+
+	void setLotNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence LotNo_Sequence);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_AD_Sequence> COLUMN_LotNo_Sequence_ID = new ModelColumn<>(I_C_DocType.class, "LotNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_LotNo_Sequence_ID = "LotNo_Sequence_ID";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -888,8 +908,7 @@ public interface I_C_DocType
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Drucktext.
-	 * The label text to be printed on a document or correspondence.
+	 * Set Print Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -898,8 +917,7 @@ public interface I_C_DocType
 	void setPrintName (java.lang.String PrintName);
 
 	/**
-	 * Get Drucktext.
-	 * The label text to be printed on a document or correspondence.
+	 * Get Print Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

@@ -1,45 +1,23 @@
 package de.metas.inout.invoicecandidate;
 
-import java.util.ArrayList;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Iterator;
-import java.util.List;
-
+import de.metas.document.engine.IDocument;
+import de.metas.interfaces.I_C_DocType;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Service;
 
-import de.metas.document.engine.IDocument;
-import de.metas.interfaces.I_C_DocType;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * DAO to support {@link M_InOut_Handler} and {@link M_InOutLine_Handler}.
@@ -64,13 +42,8 @@ public class InOutLinesWithMissingInvoiceCandidate
 	 * Get all {@link I_M_InOutLine}s which are not linked to an {@link I_C_OrderLine} and there is no invoice candidate already generated for them.
 	 * 
 	 * NOTE: this method will be used to identify those inout lines for which {@link M_InOutLine_Handler} will generate invoice candidates.
-	 * 
-	 * @param ctx
-	 * @param limit
-	 * @param trxName
-	 * @return inout lines
 	 */
-	public Iterator<I_M_InOutLine> retrieveLinesThatNeedAnInvoiceCandidate(final int limit)
+	public Iterator<I_M_InOutLine> retrieveLinesThatNeedAnInvoiceCandidate(@NonNull final QueryLimit limit)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 

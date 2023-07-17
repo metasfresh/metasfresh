@@ -1,0 +1,22 @@
+ARG REFNAME=local
+FROM metasfresh/metas-db:$REFNAME as db
+
+# we are prepopulating the image with pgdata
+# https://cadu.dev/creating-a-docker-image-with-database-preloaded/
+# dirty but works
+
+# TODO: see how RunMigrationScriptsTest.java does it using our own java-tool. It's better for different reasons.
+
+FROM db as init
+
+RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
+RUN /usr/local/bin/docker-entrypoint.sh postgres
+
+FROM db as final
+
+# changing pgdata location to avoid existing volume so we are able to commit post cucumber data later on
+ENV PGDATA /var/lib/postgresql/customdata
+# grabed from official postgres image: this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
+RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
+
+COPY --from=init /var/lib/postgresql/data $PGDATA

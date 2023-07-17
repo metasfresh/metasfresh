@@ -23,14 +23,17 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -40,6 +43,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -62,6 +66,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -150,7 +155,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Determine if we shall process our invoice candidates in batches and commit after each batch.
 		// i.e. we shall do this only if we were not asked to update a particular set of invoice candidates.
-		final boolean processInBatches = !icTagger.isOnlyC_Invoice_Candidate_IDs();
+		final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = icTagger.getOnlyInvoiceCandidateIds();
+		final boolean processInBatches = onlyInvoiceCandidateIds == null || onlyInvoiceCandidateIds.isDatabaseSelection();
 		final int itemsPerBatch = processInBatches ? getItemsPerBatch() : Integer.MAX_VALUE;
 
 		//
@@ -166,7 +172,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Update invoice candidates in chunks
 		final ICUpdateResult result = new ICUpdateResult();
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
@@ -199,7 +205,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 								if (!icRecord.isError())
 								{
 									logger.debug("Updated invoice candidate");
-									result.addInvoiceCandidate(icRecord);
+									result.addInvoiceCandidate();
 									final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 									if (trxManager.isActive(currentTrx))
 									{
@@ -278,7 +284,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			headerKeys.asMap().forEach(this::processAsync);
 		}
 
-		private void processAsync(String headerKey, Collection<Integer> processedRecords)
+		private void processAsync(final String headerKey, final Collection<Integer> processedRecords)
 		{
 			final Collection<I_C_Invoice_Candidate> refreshedAssociatedInvoiceCandidates = invoiceCandBL.getRefreshedAssociatedInvoiceCandidates(invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(), headerKey, getTrxName()), processedRecords);
 			invoiceCandDAO.saveAll(refreshedAssociatedInvoiceCandidates);
@@ -297,6 +303,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		// update qtyOrdered. we need to be up to date for that factor
 		invoiceCandidateHandlerBL.setOrderedData(icRecord);
+
+		//update isInEffect flag
+		invoiceCandidateHandlerBL.setIsInEffect(icRecord);
 
 		// i.e. QtyOrdered's signum. Used at different places throughout this method
 		final BigDecimal factor;
@@ -331,15 +340,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			// 07814-IT2 only from now on we have the correct QtyDelivered
 			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
 			invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+			invoiceCandidateHandlerBL.setPickedData(icRecord);
 		}
 
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		//
-		// Update Price and Quantity only if this invoice candidate was NOT approved for invoicing (08610)
-		if (!icRecord.isApprovalForInvoicing())
+		// Update Price and Quantity only if...
+		final TaxId taxId = TaxId.ofRepoIdOrNull(icRecord.getC_Tax_ID());
+		final boolean noTax = taxId == null || taxId.isNoTaxId();
+		final boolean updatePriceAndTax = !icRecord.isApprovalForInvoicing() // ... this invoice candidate was NOT yet approved for invoicing (08610)
+				|| noTax; // ... or if the IC has no tax and therefore can't be invoiced either way
+		if (updatePriceAndTax)
 		{
 			try
 			{
@@ -384,6 +397,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Save it
 		invoiceCandDAO.save(icRecord);
+
+		// in unit tests there might be no handler; don't bother in those cases
+		if (icRecord.getC_ILCandHandler_ID() > 0)
+		{
+			invoiceCandidateHandlerBL.postUpdate(icRecord);
+		}
 	}
 
 	/**
@@ -395,6 +414,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	{
 		if (orderLine == null)
 		{
+			final ImmutableList<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLForInvoiceCandidate(ic);
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciols.stream()
+														 .map(I_C_InvoiceCandidate_InOutLine::getC_InvoiceCandidate_InOutLine_ID)
+														 .collect(ImmutableList.toImmutableList()), ic.getC_Invoice_Candidate_ID()));
+
+			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
+			{
+				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineByIdInTrx(inOutLineId);
+
+				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
+			}
+
 			return; // nothing to do
 		}
 
@@ -410,6 +445,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
 				iciol.setC_Invoice_Candidate(ic);
 			}
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
+
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
@@ -501,20 +541,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
-	public IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(final Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates)
+	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
 	{
 		assertNotExecuted();
-		icTagger.setOnlyC_Invoice_Candidates(invoiceCandidates);
+		icTagger.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds);
 		return this;
 	}
 
-	@Override
-	public IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(final Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates)
-	{
-		assertNotExecuted();
-		icTagger.setOnlyC_Invoice_Candidates(invoiceCandidates);
-		return this;
-	}
 
 	private int getItemsPerBatch()
 	{
@@ -531,7 +564,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		private int countOk = 0;
 		private int countErrors = 0;
 
-		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate()
 		{
 			countOk++;
 		}

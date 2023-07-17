@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_OrgChange_History
  *  @author metasfresh (generated) 
@@ -246,6 +247,27 @@ public interface I_AD_OrgChange_History
 
 	ModelColumn<I_AD_OrgChange_History, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_OrgChange_History.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Close Invoice Candidate.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCloseInvoiceCandidate (boolean IsCloseInvoiceCandidate);
+
+	/**
+	 * Get Close Invoice Candidate.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCloseInvoiceCandidate();
+
+	ModelColumn<I_AD_OrgChange_History, Object> COLUMN_IsCloseInvoiceCandidate = new ModelColumn<>(I_AD_OrgChange_History.class, "IsCloseInvoiceCandidate", null);
+	String COLUMNNAME_IsCloseInvoiceCandidate = "IsCloseInvoiceCandidate";
 
 	/**
 	 * Get Updated.

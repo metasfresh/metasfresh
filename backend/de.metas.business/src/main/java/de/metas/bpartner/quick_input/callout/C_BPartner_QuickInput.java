@@ -22,7 +22,9 @@
 
 package de.metas.bpartner.quick_input.callout;
 
+import de.metas.bpartner.quick_input.BPartnerQuickInputDefaults;
 import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
+import de.metas.common.util.WindowConstants;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
@@ -32,8 +34,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.ad.ui.spi.TabCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.model.I_C_BPartner_QuickInput_Attributes3;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
@@ -44,10 +51,13 @@ import javax.annotation.PostConstruct;
 
 @Component
 @Callout(I_C_BPartner_QuickInput.class)
-public class C_BPartner_QuickInput
+@TabCallout(I_C_BPartner_QuickInput.class)
+public class C_BPartner_QuickInput implements ITabCallout
 {
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final BPartnerQuickInputService bpartnerQuickInputService;
+
+	private static final String FIELDNAME_Attributes3 = WindowConstants.FIELDNAME_Labels_Prefix + I_C_BPartner_QuickInput_Attributes3.Table_Name;
 
 	public C_BPartner_QuickInput(
 			@NonNull final BPartnerQuickInputService bpartnerQuickInputService)
@@ -60,6 +70,22 @@ public class C_BPartner_QuickInput
 	{
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
+	}
+
+	@Override
+	public void onNew(final ICalloutRecord calloutRecord)
+	{
+		final I_C_BPartner_QuickInput record = calloutRecord.getModel(I_C_BPartner_QuickInput.class);
+
+		final BPartnerQuickInputDefaults defaults = bpartnerQuickInputService.getDefaults(Env.getLoggedUserId());
+		if (defaults.getCampaignId() != null)
+		{
+			record.setMKTG_Campaign_ID(defaults.getCampaignId().getRepoId());
+		}
+		if (!defaults.getAttributes3().isEmpty() && InterfaceWrapperHelper.hasModelColumnName(record, FIELDNAME_Attributes3))
+		{
+			InterfaceWrapperHelper.setValue(record, FIELDNAME_Attributes3, defaults.getAttributes3());
+		}
 	}
 
 	@CalloutMethod(columnNames = I_C_BPartner_QuickInput.COLUMNNAME_IsCompany)
@@ -77,7 +103,7 @@ public class C_BPartner_QuickInput
 			return;
 		}
 
-		final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(orgInChangeId, Access.WRITE);
+		final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(orgInChangeId, null, Access.WRITE);
 
 		if (userHasOrgPermissions)
 		{

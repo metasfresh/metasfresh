@@ -1,12 +1,12 @@
 package de.metas.acct.api;
 
-import java.util.Properties;
-
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 /*
  * #%L
@@ -50,11 +50,9 @@ public interface IAccountDAO extends ISingletonService
 		return getById(Env.getCtx(), accountId);
 	}
 
-	/**
-	 * @param ctx
-	 * @param dimension
-	 * @return account or null
-	 */
+	@Nullable
 	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);
 
+	@NonNull
+	AccountId getOrCreate(@NonNull AccountDimension dimension);
 }

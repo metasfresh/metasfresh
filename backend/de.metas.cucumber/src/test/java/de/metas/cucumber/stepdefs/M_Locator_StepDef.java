@@ -56,8 +56,8 @@ public class M_Locator_StepDef
 		this.locatorTable = locatorTable;
 	}
 
-	@And("metasfresh contains M_Locator:")
-	public void create_M_Locator(@NonNull final DataTable dataTable)
+	@And("load M_Locator:")
+	public void load_M_Locator(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
@@ -67,23 +67,64 @@ public class M_Locator_StepDef
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
 
-			final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
-					() -> queryBL.createQueryBuilder(I_M_Locator.class)
-							.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
-							.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
-							.create()
-							.firstOnlyOrNull(I_M_Locator.class),
-					() -> InterfaceWrapperHelper.newInstance(I_M_Locator.class));
-
-			assertThat(locatorRecord).isNotNull();
-
-			locatorRecord.setValue(value);
-			locatorRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-
-			InterfaceWrapperHelper.saveRecord(locatorRecord);
+			final I_M_Locator locatorRecord = queryBL.createQueryBuilder(I_M_Locator.class)
+					.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
+					.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
+					.orderByDescending(COLUMNNAME_M_Locator_ID)
+					.create()
+					.firstNotNull(I_M_Locator.class);
 
 			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 			locatorTable.put(locatorIdentifier, locatorRecord);
 		}
+	}
+
+	@And("metasfresh contains M_Locator:")
+	public void create_M_Locator_record(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			createLocator(row);
+		}
+	}
+
+	private void createLocator(@NonNull final Map<String, String> row)
+	{
+		final String value = DataTableUtil.extractStringForColumnName(row, I_M_Locator.COLUMNNAME_Value);
+
+		final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer warehouseID = warehouseTable.getOptional(warehouseIdentifier)
+				.map(I_M_Warehouse::getM_Warehouse_ID)
+				.orElseGet(() -> Integer.parseInt(warehouseIdentifier));
+
+		final Integer priorityNo = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_M_Locator.COLUMNNAME_PriorityNo);
+		final String x = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Locator.COLUMNNAME_X);
+		final String y = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Locator.COLUMNNAME_Y);
+		final String z = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Locator.COLUMNNAME_Z);
+		final boolean isDefault = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Locator.COLUMNNAME_IsDefault, true);
+
+		final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
+				() -> queryBL.createQueryBuilder(I_M_Locator.class)
+						.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseID)
+						.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
+						.create()
+						.firstOnlyOrNull(I_M_Locator.class),
+				() -> InterfaceWrapperHelper.newInstance(I_M_Locator.class));
+
+		assertThat(locatorRecord).isNotNull();
+
+		locatorRecord.setValue(value);
+		locatorRecord.setM_Warehouse_ID(warehouseID);
+		locatorRecord.setPriorityNo(priorityNo != null ? priorityNo : 50);
+		locatorRecord.setIsDefault(isDefault);
+		locatorRecord.setX(x != null ? x : "0");
+		locatorRecord.setY(y != null ? y : "0");
+		locatorRecord.setZ(z != null ? z : "0");
+
+		InterfaceWrapperHelper.saveRecord(locatorRecord);
+
+		final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+		locatorTable.put(locatorIdentifier, locatorRecord);
 	}
 }

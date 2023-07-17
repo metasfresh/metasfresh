@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -157,7 +156,7 @@ public class C_OLCandToOrderEnqueuer
 			return ImmutableList.of();
 		}
 
-		final IWorkPackageBlockBuilder blockBuilder = getWorkPackageBlockBuilder(request);
+		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class);
 
 		final BiFunction<OLCand, OLCand, Boolean> shouldSplitOrder = (previousCand, currentCand) ->
 				previousCand != null && OLCandProcessingHelper.isOrderSplit(currentCand, previousCand, request.getOlCandProcessorDescriptor().getAggregationInfo());
@@ -190,7 +189,7 @@ public class C_OLCandToOrderEnqueuer
 
 				if (workPackageBuilder == null)
 				{
-					workPackageBuilder = initiateWorkPackageBuilder(blockBuilder, request.getMainLock(), request.getAsyncBatchId());
+					workPackageBuilder = initiateWorkPackageBuilder(workPackageQueue, request.getMainLock(), request.getAsyncBatchId());
 				}
 
 				workPackageBuilder.addElement(candidateRecordReference);
@@ -219,28 +218,18 @@ public class C_OLCandToOrderEnqueuer
 	}
 
 	@NonNull
-	private IWorkPackageBlockBuilder getWorkPackageBlockBuilder(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
-	{
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class);
-
-		return queue.newBlock()
-				.setAD_PInstance_Creator_ID(request.getOrderLineCandSelectionId())
-				.setContext(getCtx());
-	}
-
-	@NonNull
 	private IWorkPackageBuilder initiateWorkPackageBuilder(
-			@NonNull final IWorkPackageBlockBuilder blockBuilder,
+			@NonNull final IWorkPackageQueue workPackageQueue,
 			@NonNull final ILock mainLock,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		final IWorkPackageBuilder workpackageBuilder = blockBuilder.newWorkpackage()
+		final IWorkPackageBuilder workpackageBuilder = workPackageQueue.newWorkPackage()
 				// we want the enqueuing user to be notified on problems
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.parameter(OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
 
 		Optional.ofNullable(asyncBatchId)
-				.map(asyncBatchDAO::retrieveAsyncBatchRecord)
+				.map(asyncBatchDAO::retrieveAsyncBatchRecordOutOfTrx)
 				.ifPresent(workpackageBuilder::setC_Async_Batch);
 
 		workpackageBuilder.setElementsLocker(splitLock(mainLock));

@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.shipment.PMM_Product_StepDefData;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;

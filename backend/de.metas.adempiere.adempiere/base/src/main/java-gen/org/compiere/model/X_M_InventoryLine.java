@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InventoryLine
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_InventoryLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1021761914L;
+	private static final long serialVersionUID = 1072467396L;
 
     /** Standard Constructor */
-    public X_M_InventoryLine (Properties ctx, int M_InventoryLine_ID, String trxName)
+    public X_M_InventoryLine (final Properties ctx, final int M_InventoryLine_ID, @Nullable final String trxName)
     {
       super (ctx, M_InventoryLine_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_InventoryLine (Properties ctx, ResultSet rs, String trxName)
+    public X_M_InventoryLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,13 +30,13 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setAssignedTo (java.lang.String AssignedTo)
+	public void setAssignedTo (final @Nullable java.lang.String AssignedTo)
 	{
 		set_ValueNoCheck (COLUMNNAME_AssignedTo, AssignedTo);
 	}
@@ -43,16 +44,16 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	@Override
 	public java.lang.String getAssignedTo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AssignedTo);
+		return get_ValueAsString(COLUMNNAME_AssignedTo);
 	}
 
 	@Override
-	public void setC_Charge_ID (int C_Charge_ID)
+	public void setC_Charge_ID (final int C_Charge_ID)
 	{
 		if (C_Charge_ID < 1) 
 			set_Value (COLUMNNAME_C_Charge_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+			set_Value (COLUMNNAME_C_Charge_ID, C_Charge_ID);
 	}
 
 	@Override
@@ -62,12 +63,25 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setCostPrice (final @Nullable BigDecimal CostPrice)
+	{
+		set_Value (COLUMNNAME_CostPrice, CostPrice);
+	}
+
+	@Override
+	public BigDecimal getCostPrice() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostPrice);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -77,20 +91,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setCostPrice (java.math.BigDecimal CostPrice)
-	{
-		set_Value (COLUMNNAME_CostPrice, CostPrice);
-	}
-
-	@Override
-	public java.math.BigDecimal getCostPrice() 
-	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostPrice);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -98,11 +99,11 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_ValueNoCheck (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -110,7 +111,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	@Override
 	public java.lang.String getExternalId() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	/** 
@@ -123,16 +124,15 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/** MULTIPLE_HUS = M */
 	public static final String HUAGGREGATIONTYPE_MULTIPLE_HUS = "M";
 	@Override
-	public void setHUAggregationType (java.lang.String HUAggregationType)
+	public void setHUAggregationType (final java.lang.String HUAggregationType)
 	{
-
 		set_Value (COLUMNNAME_HUAggregationType, HUAggregationType);
 	}
 
 	@Override
 	public java.lang.String getHUAggregationType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HUAggregationType);
+		return get_ValueAsString(COLUMNNAME_HUAggregationType);
 	}
 
 	/** 
@@ -145,22 +145,21 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/** ChargeAccount = C */
 	public static final String INVENTORYTYPE_ChargeAccount = "C";
 	@Override
-	public void setInventoryType (java.lang.String InventoryType)
+	public void setInventoryType (final java.lang.String InventoryType)
 	{
-
 		set_Value (COLUMNNAME_InventoryType, InventoryType);
 	}
 
 	@Override
 	public java.lang.String getInventoryType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InventoryType);
+		return get_ValueAsString(COLUMNNAME_InventoryType);
 	}
 
 	@Override
-	public void setIsCounted (boolean IsCounted)
+	public void setIsCounted (final boolean IsCounted)
 	{
-		set_Value (COLUMNNAME_IsCounted, Boolean.valueOf(IsCounted));
+		set_Value (COLUMNNAME_IsCounted, IsCounted);
 	}
 
 	@Override
@@ -170,9 +169,21 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setLine (int Line)
+	public void setIsExplicitCostPrice (final boolean IsExplicitCostPrice)
 	{
-		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
+		set_Value (COLUMNNAME_IsExplicitCostPrice, IsExplicitCostPrice);
+	}
+
+	@Override
+	public boolean isExplicitCostPrice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExplicitCostPrice);
+	}
+
+	@Override
+	public void setLine (final int Line)
+	{
+		set_Value (COLUMNNAME_Line, Line);
 	}
 
 	@Override
@@ -188,18 +199,18 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
@@ -215,18 +226,18 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
+	public void setM_InOutLine(final org.compiere.model.I_M_InOutLine M_InOutLine)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
 	}
 
 	@Override
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	public void setM_InOutLine_ID (final int M_InOutLine_ID)
 	{
 		if (M_InOutLine_ID < 1) 
 			set_Value (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+			set_Value (COLUMNNAME_M_InOutLine_ID, M_InOutLine_ID);
 	}
 
 	@Override
@@ -242,18 +253,18 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory)
+	public void setM_Inventory(final org.compiere.model.I_M_Inventory M_Inventory)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
 	}
 
 	@Override
-	public void setM_Inventory_ID (int M_Inventory_ID)
+	public void setM_Inventory_ID (final int M_Inventory_ID)
 	{
 		if (M_Inventory_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Inventory_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Inventory_ID, Integer.valueOf(M_Inventory_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Inventory_ID, M_Inventory_ID);
 	}
 
 	@Override
@@ -263,12 +274,12 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setM_InventoryLine_ID (int M_InventoryLine_ID)
+	public void setM_InventoryLine_ID (final int M_InventoryLine_ID)
 	{
 		if (M_InventoryLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_ID, Integer.valueOf(M_InventoryLine_ID));
+			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_ID, M_InventoryLine_ID);
 	}
 
 	@Override
@@ -278,12 +289,12 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
 	@Override
@@ -293,12 +304,12 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
@@ -308,9 +319,36 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setProcessed (boolean Processed)
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
 	@Override
@@ -320,54 +358,54 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setQtyBook (java.math.BigDecimal QtyBook)
+	public void setQtyBook (final BigDecimal QtyBook)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyBook, QtyBook);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyBook() 
+	public BigDecimal getQtyBook() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyBook);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyBook);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyCount (java.math.BigDecimal QtyCount)
+	public void setQtyCount (final BigDecimal QtyCount)
 	{
 		set_Value (COLUMNNAME_QtyCount, QtyCount);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyCount() 
+	public BigDecimal getQtyCount() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCount);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCount);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyCsv (java.math.BigDecimal QtyCsv)
+	public void setQtyCsv (final BigDecimal QtyCsv)
 	{
 		set_Value (COLUMNNAME_QtyCsv, QtyCsv);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyCsv() 
+	public BigDecimal getQtyCsv() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCsv);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCsv);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse)
+	public void setQtyInternalUse (final @Nullable BigDecimal QtyInternalUse)
 	{
 		set_Value (COLUMNNAME_QtyInternalUse, QtyInternalUse);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyInternalUse() 
+	public BigDecimal getQtyInternalUse() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInternalUse);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInternalUse);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -378,18 +416,18 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setReversalLine(org.compiere.model.I_M_InventoryLine ReversalLine)
+	public void setReversalLine(final org.compiere.model.I_M_InventoryLine ReversalLine)
 	{
 		set_ValueFromPO(COLUMNNAME_ReversalLine_ID, org.compiere.model.I_M_InventoryLine.class, ReversalLine);
 	}
 
 	@Override
-	public void setReversalLine_ID (int ReversalLine_ID)
+	public void setReversalLine_ID (final int ReversalLine_ID)
 	{
 		if (ReversalLine_ID < 1) 
 			set_Value (COLUMNNAME_ReversalLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_ReversalLine_ID, Integer.valueOf(ReversalLine_ID));
+			set_Value (COLUMNNAME_ReversalLine_ID, ReversalLine_ID);
 	}
 
 	@Override
@@ -399,24 +437,24 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		throw new IllegalArgumentException ("UPC is virtual column");	}
 
 	@Override
 	public java.lang.String getUPC() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return get_ValueAsString(COLUMNNAME_UPC);
 	}
 
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setValue (final @Nullable java.lang.String Value)
 	{
 		throw new IllegalArgumentException ("Value is virtual column");	}
 
 	@Override
 	public java.lang.String getValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 }

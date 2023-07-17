@@ -10,27 +10,37 @@ package de.metas.tourplanning.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandlerTest;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.resource.ResourceService;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
 
 public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest
 {
@@ -39,7 +49,21 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 	{
 		super.afterInit();
 
-		new de.metas.handlingunits.model.validator.Main(new PickingBOMService()).setupTourPlanning();
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
+				ddOrderLowLevelDAO,
+				new DDOrderMoveScheduleRepository(),
+				ADReferenceService.newMocked(),
+				huReservationService);
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
+		final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
+		new de.metas.handlingunits.model.validator.Main(
+				ddOrderMoveScheduleService,
+				ddOrderService,
+				new PickingBOMService(),
+				huUniqueAttributesService).setupTourPlanning();
 	}
 
 	@Override
@@ -58,7 +82,7 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 
 	@Override
 	protected I_M_DeliveryDay_Alloc assertDeliveryDayAlloc(final I_M_DeliveryDay deliveryDayExpected,
-			final de.metas.tourplanning.model.I_M_ShipmentSchedule shipmentSchedule)
+														   final de.metas.tourplanning.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final de.metas.tourplanning.model.I_M_DeliveryDay_Alloc alloc = super.assertDeliveryDayAlloc(
 				deliveryDayExpected,

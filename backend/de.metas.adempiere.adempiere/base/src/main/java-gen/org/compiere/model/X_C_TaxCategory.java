@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_TaxCategory
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCategory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1076080462L;
+	private static final long serialVersionUID = 1595874167L;
 
     /** Standard Constructor */
     public X_C_TaxCategory (final Properties ctx, final int C_TaxCategory_ID, @Nullable final String trxName)
@@ -86,6 +86,18 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	}
 
 	@Override
+	public void setIsManualTax (final boolean IsManualTax)
+	{
+		set_Value (COLUMNNAME_IsManualTax, IsManualTax);
+	}
+
+	@Override
+	public boolean isManualTax() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualTax);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -95,6 +107,37 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * ProductType AD_Reference_ID=270
+	 * Reference name: M_Product_ProductType
+	 */
+	public static final int PRODUCTTYPE_AD_Reference_ID=270;
+	/** Item = I */
+	public static final String PRODUCTTYPE_Item = "I";
+	/** Service = S */
+	public static final String PRODUCTTYPE_Service = "S";
+	/** Resource = R */
+	public static final String PRODUCTTYPE_Resource = "R";
+	/** ExpenseType = E */
+	public static final String PRODUCTTYPE_ExpenseType = "E";
+	/** Online = O */
+	public static final String PRODUCTTYPE_Online = "O";
+	/** FreightCost = F */
+	public static final String PRODUCTTYPE_FreightCost = "F";
+	/** Nahrung = N */
+	public static final String PRODUCTTYPE_Nahrung = "N";
+	@Override
+	public void setProductType (final @Nullable java.lang.String ProductType)
+	{
+		set_Value (COLUMNNAME_ProductType, ProductType);
+	}
+
+	@Override
+	public java.lang.String getProductType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductType);
 	}
 
 	/** 

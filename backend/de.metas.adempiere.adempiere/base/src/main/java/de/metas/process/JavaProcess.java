@@ -4,9 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -19,7 +19,7 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,9 +34,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.api.RangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
@@ -44,21 +44,17 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.IntFunction;
@@ -74,10 +70,9 @@ import java.util.function.IntFunction;
  * <li>{@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * <li>{@link Process} annotation if you add more info or constraints about how the process shall be executed
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
+ * <li>{@link NestedParams} annotation if to use a POJO which has fields annotated with {@link Param}
  * <li>{@link Profile} annotation if you want want to show/hide this process to/from Gear based on spring profiles
- * <li>{@link ClientOnlyProcess} annotation if you want to mark the process as client only
  * </ul>
- *
  *
  * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
  * @author metas-dev <dev@metasfresh.com>
@@ -99,12 +94,16 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	//
 	// Transaction management
-	/** Process Main transaction */
+	/**
+	 * Process Main transaction
+	 */
 	@Nullable private ITrx m_trx = ITrx.TRX_None;
 	private Boolean m_trxIsLocal;
 	@Nullable private ImmutableReference<String> m_trxNameThreadInheritedBackup;
 	private boolean m_dbConstraintsChanged = false;
-	/** Transaction name prefix (in case of local transaction) */
+	/**
+	 * Transaction name prefix (in case of local transaction)
+	 */
 	private static final String TRXNAME_Prefix = "JavaProcess";
 
 	// Common Return Messages
@@ -118,13 +117,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	protected static final String MSG_Error = "@Error@";
 
-	/** Internal cache for ProcessClassInfo */
-	private final transient ImmutableMap<ArrayKey, Field> _fieldsIndexedByFieldKey;
-
 	protected JavaProcess()
 	{
 		parametersCallout = this instanceof IProcessParametersCallout ? (IProcessParametersCallout)this : null;
-		_fieldsIndexedByFieldKey = ProcessClassInfo.retrieveParameterFieldsIndexedByFieldKey(getClass());
 	}
 
 	@Override
@@ -140,8 +135,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public static <T extends JavaProcess> T currentInstance()
 	{
-		@SuppressWarnings("unchecked")
-		final T currentInstances = (T)currentInstanceHolder.get();
+		@SuppressWarnings("unchecked") final T currentInstances = (T)currentInstanceHolder.get();
 		if (currentInstances == null)
 		{
 			throw new AdempiereException("No active process found in this thread");
@@ -168,7 +162,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 *
 	 * @param overrideCurrentInstance of {@code false} and there is already an instance set, then throw an exception.
 	 */
 	private static IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance, final boolean overrideCurrentInstance)
@@ -232,7 +225,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * Note: This method shall be called by the framework.
 	 *
-	 * @param pi Process Info
+	 * @param pi  Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
@@ -256,7 +249,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			{
 				//
 				// Prepare out of transaction, if needed
-				final ProcessClassInfo processClassInfo = getProcessInfo().getProcessClassInfo();
+				final ProcessClassInfo processClassInfo = getProcessClassInfo();
 				boolean prepareExecuted = false;
 				if (processClassInfo.isRunPrepareOutOfTransaction())
 				{
@@ -368,20 +361,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		// nothing at this level
 	}
 
-	private Field getAnnotatedParamField(final ProcessClassParamInfo paramInfo)
-	{
-		final ArrayKey fieldKey = paramInfo.getFieldKey();
-		return ((Map<ArrayKey, Field>)_fieldsIndexedByFieldKey).get(fieldKey);
-	}
-
 	/**
 	 * Load "@Param" annotated parameters from {@link ProcessInfo}.
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void loadParametersFromContext(final boolean failIfNotValid)
 	{
-		final ProcessInfo pi = getProcessInfo();
-		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
+		final ProcessClassInfo processClassInfo = getProcessClassInfo();
 
 		// No parameters => nothing to do
 		final Collection<ProcessClassParamInfo> parameterInfos = processClassInfo.getParameterInfos();
@@ -392,11 +378,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 		//
 		// Iterate all process class info parameters and try to update the corresponding field
-		final IRangeAwareParams source = pi.getParameterAsIParams();
-		parameterInfos.forEach(paramInfo -> {
-			final Field processField = getAnnotatedParamField(paramInfo);
-			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-		});
+		final IRangeAwareParams source = getProcessInfo().getParameterAsIParams();
+		parameterInfos.forEach(paramInfo -> paramInfo.loadParameterValue(this, source, failIfNotValid));
 	}
 
 	/**
@@ -407,16 +390,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void loadParameterValueNoFail(final String parameterName, final IRangeAwareParams source)
 	{
-		final Collection<ProcessClassParamInfo> parameterInfos = getParameterInfos(parameterName);
-
-		final boolean failIfNotValid = false;
-
-		// Iterate all process class info parameters and try to update the corresponding field
-		// No parameters => nothing to do
-		parameterInfos.forEach(paramInfo -> {
-			final Field processField = getAnnotatedParamField(paramInfo);
-			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-		});
+		getProcessClassInfo().loadParameterValueNoFail(this, parameterName, source);
 
 		//
 		// Fire parameters callout if any
@@ -431,60 +405,19 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return parametersCallout != null;
 	}
 
-	private Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
+	private ProcessClassInfo getProcessClassInfo()
 	{
-		final ProcessInfo pi = getProcessInfo();
-		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
-
-		return processClassInfo.getParameterInfos(parameterName);
+		return getProcessInfo().getProcessClassInfo();
 	}
 
 	public final IRangeAwareParams getParametersFromAnnotatedFields()
 	{
-		final HashMap<String, Object> values = new HashMap<>();
-		final HashMap<String, Object> valuesTo = new HashMap<>();
-
-		final ProcessInfo pi = getProcessInfo();
-		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
-		for (final ProcessClassParamInfo paramInfo : processClassInfo.getParameterInfos())
-		{
-			final Object fieldValue = getAnnotatedParamFieldValue(paramInfo);
-			if (paramInfo.isParameterTo())
-			{
-				valuesTo.put(paramInfo.getParameterName(), fieldValue);
-			}
-			else
-			{
-				values.put(paramInfo.getParameterName(), fieldValue);
-			}
-		}
-
-		return RangeAwareParams.ofMaps(values, valuesTo);
+		return getProcessClassInfo().extractRangeAwareParams(this);
 	}
 
-	@Nullable
-	private Object getAnnotatedParamFieldValue(final ProcessClassParamInfo paramInfo)
+	protected final String toInternalParameterName(@NonNull final String externalParameterName)
 	{
-		final Field field = getAnnotatedParamField(paramInfo);
-		if (field == null)
-		{
-			return null;
-		}
-
-		try
-		{
-			if(!field.isAccessible())
-			{
-				field.setAccessible(true);
-			}
-
-			return field.get(this);
-		}
-		catch (final Exception ex)
-		{
-			log.warn("Cannot get field's value: {}", field, ex);
-			return null;
-		}
+		return getProcessClassInfo().toInternalParameterName(externalParameterName);
 	}
 
 	/**
@@ -692,7 +625,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * <b>Important:</b> This method is also run out of transaction of only the {@link #doIt()} method is annotated like this.
 	 *
 	 * @throws ProcessCanceledException in case there is a cancel request on prepare
-	 * @throws RuntimeException in case of any failure
+	 * @throws RuntimeException         in case of any failure
 	 */
 	protected void prepare()
 	{
@@ -709,7 +642,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 *
 	 * @return Message (variables are parsed)
 	 * @throws ProcessCanceledException in case there is a cancel request on doIt
-	 * @throws Exception if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
+	 * @throws Exception                if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
 	 */
 	abstract protected String doIt() throws Exception;
 
@@ -749,7 +682,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		{
 			trxManager.commit(m_trx.getTrxName());
 		}
-	}	// commit
+	}    // commit
 
 	/**
 	 * Commit and throw exception if error
@@ -884,7 +817,21 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
 
-	/** @return selected included row IDs of current single selected document */
+	@NonNull
+	protected final TableRecordReference getRecordRef() {return getProcessInfo().getRecordRefNotNull();}
+
+	@NonNull
+	protected final <ID extends RepoIdAware> ID getRecordIdAssumingTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<ID> mapper)
+	{
+		return getProcessInfo().getRecordRefNotNull().getIdAssumingTableName(expectedTableName, mapper);
+	}
+
+
+	/**
+	 * @return selected included row IDs of current single selected document
+	 */
 	protected final <T> ImmutableSet<Integer> getSelectedIncludedRecordIds(@NonNull final Class<T> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
@@ -904,7 +851,15 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 
-	/** @return selected included rows of current single selected document */
+	protected final <T> Integer getSingleSelectedIncludedRecordIds(final Class<T> modelClass)
+	{
+		final Set<Integer> selectedIncludedRecordIds = getSelectedIncludedRecordIds(modelClass);
+		return CollectionUtils.singleElement(selectedIncludedRecordIds);
+	}
+
+	/**
+	 * @return selected included rows of current single selected document
+	 */
 	protected final <T> List<T> getSelectedIncludedRecords(final Class<T> modelClass)
 	{
 		final Set<Integer> recordIds = getSelectedIncludedRecordIds(modelClass);
@@ -987,7 +942,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final ProcessInfoParameter[] getParametersAsArray()
 	{
 		final List<ProcessInfoParameter> parameters = getProcessInfo().getParameter();
-		return parameters.toArray(new ProcessInfoParameter[parameters.size()]);
+		return parameters.toArray(new ProcessInfoParameter[0]);
 	}
 
 	/**
@@ -1038,12 +993,37 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	public final ILoggable addLog(final List<String> warningMessages, final String msg, final Object... msgParameters)
 	{
-		if (msg != null)
+		final String actualMsg;
+
+		if (msg == null && msgParameters != null && msgParameters.length == 1 && msgParameters[0] instanceof Throwable)
 		{
-			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warningMessages);
+			actualMsg = "No message provided";
 		}
+		else if (msg == null)
+		{
+			actualMsg = null;
+		}
+		else
+		{
+			actualMsg = msg;
+		}
+
+		final LoggableWithThrowableUtil.FormattedMsgWithAdIssueId msgAndIssue = LoggableWithThrowableUtil.extractMsgAndAdIssue(actualMsg, msgParameters);
+
+		ProcessInfoLogRequest request = ProcessInfoLogRequest
+				.builder()
+				.log_ID(0)
+				.pDate(SystemTime.asTimestamp())
+				.p_Number(null)
+				.p_Msg(msgAndIssue.getFormattedMessage())
+				.ad_Issue_ID(msgAndIssue.getAdIsueId().orElse(null))
+				.warningMessages(warningMessages)
+				.build();
+
+		getResult().addLog(new ProcessInfoLog(request));
+
 		return this;
-	}	// addLog
+	}    // addLog
 
 	/**
 	 * Return the main transaction of the current process.
@@ -1072,7 +1052,22 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 * Retrieves the records which where selected and attached to this process execution, i.e.
+	 * Retrieves the active records which where selected and attached to this process execution, i.e.
+	 * <ul>
+	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records
+	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used, even if it is inactive
+	 * <li>else an exception is thrown
+	 * </ul>
+	 *
+	 * @return query builder which will provide selected record(s)
+	 */
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveActiveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
+	{
+		return retrieveSelectedRecordsQueryBuilder(modelClass, true);
+	}
+
+	/**
+	 * Retrieves all records (active and inactive) which where selected and attached to this process execution, i.e.
 	 * <ul>
 	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records
 	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used
@@ -1081,39 +1076,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 *
 	 * @return query builder which will provide selected record(s)
 	 */
-	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveAllSelectedRecordsQueryBuilder(@NonNull final Class<ModelType> modelClass)
 	{
-		final ProcessInfo pi = getProcessInfo();
-		final String tableName = pi.getTableNameOrNull();
-		final int singleRecordId = pi.getRecord_ID();
-
-		final IContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(getCtx());
-		final IQueryBuilder<ModelType> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(modelClass, tableName, contextProvider);
-
-		//
-		// Try fetching the selected records from AD_PInstance's WhereClause.
-		final IQueryFilter<ModelType> selectionQueryFilter = pi.getQueryFilterOrElse(null);
-		if (selectionQueryFilter != null)
-		{
-			queryBuilder.filter(selectionQueryFilter)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient();
-		}
-		//
-		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.
-		else if (tableName != null && singleRecordId >= 0)
-		{
-			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-			queryBuilder.addEqualsFilter(keyColumnName, singleRecordId);
-			// .addOnlyActiveRecordsFilter() // NOP, return it as is
-			// .addOnlyContextClient(); // NOP, return it as is
-		}
-		else
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
-
-		return queryBuilder;
+		return retrieveSelectedRecordsQueryBuilder(modelClass, false);
 	}
 
 	/**
@@ -1149,5 +1114,61 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final UserId getLoggedUserId()
 	{
 		return Env.getLoggedUserId();
+	}
+
+	@Override
+	public ILoggable addTableRecordReferenceLog(@NonNull final ITableRecordReference recordRef, @NonNull final String type, @Nullable final String trxName)
+	{
+		final ProcessInfoLog processInfoLog = ProcessInfoLog.ofMessageAndTableReference(getMessageForRecordReferenceLog(type, trxName), recordRef, trxName);
+
+		getResult().addLog(processInfoLog);
+
+		return this;
+	}
+
+	@NonNull
+	private static String getMessageForRecordReferenceLog(@NonNull final String type, @Nullable final String trxName)
+	{
+		return "Type=" + type + ";" + "trxName=" + trxName;
+	}
+
+	@NonNull
+	private <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass, final boolean onlyActiveRecords)
+	{
+		final ProcessInfo pi = getProcessInfo();
+		final String tableName = pi.getTableNameOrNull();
+		final int singleRecordId = pi.getRecord_ID();
+
+		final IContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(getCtx());
+		final IQueryBuilder<ModelType> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(modelClass, tableName, contextProvider);
+
+		//
+		// Try fetching the selected records from AD_PInstance's WhereClause.
+		final IQueryFilter<ModelType> selectionQueryFilter = pi.getQueryFilterOrElse(null);
+		if (selectionQueryFilter != null)
+		{
+			queryBuilder.filter(selectionQueryFilter)
+					.addOnlyContextClient();
+
+			if (onlyActiveRecords)
+			{
+				queryBuilder.addOnlyActiveRecordsFilter();
+			}
+		}
+		//
+		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.
+		else if (tableName != null && singleRecordId >= 0)
+		{
+			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+			queryBuilder.addEqualsFilter(keyColumnName, singleRecordId);
+			// .addOnlyActiveRecordsFilter() // NOP, return it as is
+			// .addOnlyContextClient(); // NOP, return it as is
+		}
+		else
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
+		return queryBuilder;
 	}
 }
