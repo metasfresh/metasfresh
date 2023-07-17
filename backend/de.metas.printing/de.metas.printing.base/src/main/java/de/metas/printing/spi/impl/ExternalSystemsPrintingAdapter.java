@@ -23,28 +23,23 @@
 package de.metas.printing.spi.impl;
 
 import de.metas.audit.data.ExternalSystemParentConfigId;
-import de.metas.printing.ExternalSystemsPrintingService;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.HardwarePrinterRepository;
+import de.metas.printing.IPrintingHandler;
 import de.metas.printing.OutputType;
 import de.metas.printing.PrintRequest;
-import lombok.NonNull;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@AllArgsConstructor
 public class ExternalSystemsPrintingAdapter
 {
-	private final ExternalSystemsPrintingService printingService;
 	private final HardwarePrinterRepository hardwarePrinterRepository;
-
-
-	public ExternalSystemsPrintingAdapter(@NonNull final ExternalSystemsPrintingService printingService,
-			@NonNull final HardwarePrinterRepository hardwarePrinterRepository)
-	{
-		this.printingService = printingService;
-		this.hardwarePrinterRepository = hardwarePrinterRepository;
-	}
+	private final List<IPrintingHandler> handlerList;
 
 	public void notifyExternalSystemsIfNeeded(final HardwarePrinterId hardwarePrinterId, final String transactionId)
 	{
@@ -56,7 +51,7 @@ public class ExternalSystemsPrintingAdapter
 					.id(externalSystemParentConfigId)
 					.transactionId(transactionId)
 					.build();
-			printingService.print(request);
+			handlerList.forEach(handler -> handler.print(request));
 		}
 	}
 
