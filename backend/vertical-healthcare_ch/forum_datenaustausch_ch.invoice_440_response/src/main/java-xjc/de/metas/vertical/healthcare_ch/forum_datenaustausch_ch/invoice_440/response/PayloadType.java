@@ -8,6 +8,8 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response;
 
+import lombok.NonNull;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -84,7 +86,7 @@ public class PayloadType {
     protected Boolean creditAdvice;
     @XmlAttribute(name = "response_timestamp", required = true)
     @XmlSchemaType(name = "unsignedLong")
-    protected int responseTimestamp;
+    protected BigInteger responseTimestamp;
 
     /**
      * Gets the value of the credit property.
@@ -320,13 +322,11 @@ public class PayloadType {
 
     /**
      * Gets the value of the responseTimestamp property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link int }
-     *     
+     *
+     * @return possible object is
+     * {@link BigInteger }
      */
-    public int getResponseTimestamp() {
+    public @NonNull BigInteger getResponseTimestamp() {
         return responseTimestamp;
     }
 
@@ -335,10 +335,10 @@ public class PayloadType {
      * 
      * @param value
      *     allowed object is
-     *     {@link int }
+     *     {@link BigInteger }
      *     
      */
-    public void setResponseTimestamp(int value) {
+    public void setResponseTimestamp(BigInteger value) {
         this.responseTimestamp = value;
     }
 

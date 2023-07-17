@@ -102,7 +102,7 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 
 		final Instant invoiceCreatedTimestamp = Instant.ofEpochSecond(invoice.getRequestTimestamp().longValue());
 
-		final Instant invoiceResponseTimestamp = Instant.ofEpochSecond(payload.getResponseTimestamp());
+		final Instant invoiceResponseTimestamp = Instant.ofEpochSecond(payload.getResponseTimestamp().longValue());
 
 		final ImportedInvoiceResponseBuilder builder = ImportedInvoiceResponse
 				.builder()
