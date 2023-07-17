@@ -12,17 +12,21 @@ import org.adempiere.exceptions.AdempiereException;
 class FutureClearingAmount
 {
 	@NonNull FAOpenItemKey key;
-	@NonNull Amount amount;
+
+	/**
+	 * Amount in source(document) currency
+	 */
+	@NonNull Amount amountSrc;
 
 	public FutureClearingAmount add(FutureClearingAmount other)
 	{
 		assertSameKey(other);
 
-		if (other.amount.isZero())
+		if (other.amountSrc.isZero())
 		{
 			return this;
 		}
-		else if (this.amount.isZero())
+		else if (this.amountSrc.isZero())
 		{
 			return other;
 		}
@@ -30,7 +34,7 @@ class FutureClearingAmount
 		{
 			return FutureClearingAmount.builder()
 					.key(key)
-					.amount(this.amount.add(other.amount))
+					.amountSrc(this.amountSrc.add(other.amountSrc))
 					.build();
 		}
 	}

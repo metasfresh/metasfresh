@@ -22,6 +22,7 @@ package de.metas.acct.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.document.engine.IDocument;
 import de.metas.util.ISingletonService;
@@ -86,6 +87,8 @@ public interface IFactAcctDAO extends ISingletonService
 	List<I_Fact_Acct> list(@NonNull List<FactAcctQuery> queries);
 
 	List<I_Fact_Acct> list(@NonNull FactAcctQuery query);
+
+	ImmutableSet<FactAcctId> listIds(@NonNull FactAcctQuery query);
 
 	Stream<I_Fact_Acct> stream(@NonNull FactAcctQuery query);
 

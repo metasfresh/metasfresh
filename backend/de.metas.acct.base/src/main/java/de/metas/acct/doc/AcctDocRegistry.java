@@ -1,8 +1,12 @@
 package de.metas.acct.doc;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.logging.LogManager;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
@@ -10,13 +14,8 @@ import org.compiere.acct.PostingExecutionException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.logging.LogManager;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class AcctDocRegistry
@@ -52,22 +51,28 @@ public class AcctDocRegistry
 		return docProviders.getDocTableNames();
 	}
 
+	public boolean isAccountingTable(final String docTableName)
+	{
+		return docProviders.isAccountingTable(docTableName);
+	}
+
 	@ToString
 	private static class AggregatedAcctDocProvider implements IAcctDocProvider
 	{
 		private final ImmutableList<IAcctDocProvider> providers;
+		@Getter private final ImmutableSet<String> docTableNames;
 
 		private AggregatedAcctDocProvider(final List<IAcctDocProvider> providers)
 		{
 			this.providers = ImmutableList.copyOf(providers);
-		}
-
-		@Override
-		public Set<String> getDocTableNames()
-		{
-			return providers.stream()
+			this.docTableNames = providers.stream()
 					.flatMap(provider -> provider.getDocTableNames().stream())
 					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		public boolean isAccountingTable(final String docTableName)
+		{
+			return docTableNames.contains(docTableName);
 		}
 
 		@Override

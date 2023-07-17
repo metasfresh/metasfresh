@@ -392,7 +392,8 @@ public class ESRTestBase
 			save(allocHdr);
 
 			final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);
-			allocAmt.setAmount(new BigDecimal(50.0));
+			allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
+			allocAmt.setAmount(new BigDecimal("50.0"));
 			allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			save(allocAmt);
 		}

@@ -1,9 +1,11 @@
 package de.metas.acct.open_items.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
@@ -16,6 +18,7 @@ import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -30,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
+@VisibleForTesting
 public class BankOIHandler implements FAOpenItemsHandler
 {
 	private static final AccountConceptualName B_PaymentSelect_Acct = BankAccountAcctType.B_PaymentSelect_Acct.getAccountConceptualName();
@@ -74,7 +78,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 			final PaymentAllocationLineId paymentAllocationLineId = PaymentAllocationLineId.ofRepoId(request.getRecordId(), request.getLineId());
 
 			return allocationBL.getPaymentId(paymentAllocationLineId)
-					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.payment(paymentId)));
+					.map(paymentId -> FAOpenItemTrxInfo.clearing(FAOpenItemKey.payment(paymentId, accountConceptualName)));
 		}
 		else
 		{
@@ -93,7 +97,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 		}
 		else if (accountConceptualName.isAnyOf(B_PaymentSelect_Acct, B_UnallocatedCash_Acct))
 		{
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.payment(paymentId)));
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.payment(paymentId, accountConceptualName)));
 		}
 		else if (accountConceptualName.isAnyOf(B_InTransit_Acct))
 		{
@@ -113,11 +117,11 @@ public class BankOIHandler implements FAOpenItemsHandler
 		{
 			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
 			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
-			return FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+			return FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId, B_InTransit_Acct);
 		}
 		else
 		{
-			return FAOpenItemKey.payment(PaymentId.ofRepoId(payment.getC_Payment_ID()));
+			return FAOpenItemKey.payment(PaymentId.ofRepoId(payment.getC_Payment_ID()), B_InTransit_Acct);
 		}
 	}
 
@@ -134,12 +138,26 @@ public class BankOIHandler implements FAOpenItemsHandler
 			final BankStatementId bankStatementId = BankStatementId.ofRepoId(request.getRecordId());
 			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(request.getLineId());
 			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(request.getSubLineId());
-			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId)));
+			return Optional.of(FAOpenItemTrxInfo.opening(FAOpenItemKey.bankStatementLine(bankStatementId, bankStatementLineId, bankStatementLineRefId, accountConceptualName)));
 		}
 		else
 		{
 			return Optional.empty();
 		}
+	}
+
+	@Override
+	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
+	{
+		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
+		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
+	}
+
+	@Override
+	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
+	{
+		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
+		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
 	}
 
 	//
@@ -164,7 +182,7 @@ public class BankOIHandler implements FAOpenItemsHandler
 						I_C_Payment.COLUMNNAME_C_BankStatementLine_ID,
 						I_C_Payment.COLUMNNAME_C_BankStatementLine_Ref_ID
 				})
-		void updateOpenItemKey(final I_C_Payment payment)
+		void copyOpenItemKeyToFactAcct(final I_C_Payment payment)
 		{
 			final FAOpenItemKey openItemKey = computeOpenItemKey_B_InTransit(payment);
 			factAcctDAO.setOpenItemKey(openItemKey, FactAcctQuery.builder()

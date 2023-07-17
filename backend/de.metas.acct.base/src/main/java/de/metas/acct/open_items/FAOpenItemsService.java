@@ -4,6 +4,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.handlers.Generic_OIHandler;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.logging.LogManager;
@@ -114,6 +116,36 @@ public class FAOpenItemsService
 	{
 		final int batchSize = sysConfigBL.getIntValue(SYSCONFIG_ProcessingBatchSize, -1);
 		return batchSize > 0 ? batchSize : DEFAULT_ProcessingBatchSize;
+	}
+
+	public void fireGLJournalCompleted(final SAPGLJournal glJournal)
+	{
+		for (SAPGLJournalLine line : glJournal.getLines())
+		{
+			final FAOpenItemTrxInfo openItemTrxInfo = line.getOpenItemTrxInfo();
+			if (openItemTrxInfo == null)
+			{
+				continue;
+			}
+
+			final FAOpenItemsHandler handler = getHandler(openItemTrxInfo.getAccountConceptualName());
+			handler.onGLJournalLineCompleted(line);
+		}
+	}
+
+	public void fireGLJournalReactivated(final SAPGLJournal glJournal)
+	{
+		for (SAPGLJournalLine line : glJournal.getLines())
+		{
+			final FAOpenItemTrxInfo openItemTrxInfo = line.getOpenItemTrxInfo();
+			if (openItemTrxInfo == null)
+			{
+				continue;
+			}
+
+			final FAOpenItemsHandler handler = getHandler(openItemTrxInfo.getAccountConceptualName());
+			handler.onGLJournalLineReactivated(line);
+		}
 	}
 
 }

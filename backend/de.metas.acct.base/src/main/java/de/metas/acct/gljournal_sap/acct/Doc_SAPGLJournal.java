@@ -59,7 +59,10 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 		final SAPGLJournalCurrencyConversionCtx glJournalCurrencyConversionCtx = glJournal.getConversionCtx();
 		if (!CurrencyId.equals(as.getCurrencyId(), glJournalCurrencyConversionCtx.getAcctCurrencyId()))
 		{
-			throw new AdempiereException("The Accounting Currency is no longer the one from document");
+			throw new AdempiereException("The Accounting Currency is no longer the one from document")
+					.appendParametersToMessage()
+					.setParameter("acctSchema", as)
+					.setParameter("glJournalCurrencyConversionCtx", glJournalCurrencyConversionCtx);
 		}
 
 		final Fact fact = new Fact(this, as, glJournal.getPostingType());

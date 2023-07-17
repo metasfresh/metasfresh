@@ -31,10 +31,10 @@ import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
@@ -44,7 +44,6 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -58,8 +57,6 @@ import java.util.List;
 @Component
 public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
-	private static final Logger logger = LogManager.getLogger(GenericRelatedDocumentsProvider.class);
-
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	private final CCache<String, ImmutableList<GenericRelatedDocumentDescriptor>> descriptorsBySourceKeyColumnName = CCache.<String, ImmutableList<GenericRelatedDocumentDescriptor>>builder()
@@ -115,7 +112,7 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 								.internalName(descriptor.getTargetWindowInternalName())
 								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(windowId, columnInfo.getColumnName()))
 								.priority(relatedDocumentsPriority)
-								.query(query)
+								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
 								.windowCaption(descriptor.getName())
 								.filterByFieldCaption(columnInfo.getCaption())
 								.documentsCountSupplier(recordsCountSupplier)

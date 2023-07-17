@@ -1,5 +1,6 @@
 package de.metas.acct.open_items;
 
+import de.metas.acct.AccountConceptualName;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -27,4 +28,7 @@ public class FAOpenItemTrxInfo
 	public static boolean equals(@Nullable FAOpenItemTrxInfo o1, @Nullable FAOpenItemTrxInfo o2) {return Objects.equals(o1, o2);}
 
 	public boolean isClearing() {return trxType.isClearing();}
+
+	@Nullable
+	public AccountConceptualName getAccountConceptualName() {return key.getAccountConceptualName();}
 }

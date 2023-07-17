@@ -1,14 +1,11 @@
 package de.metas.document.engine;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ReferenceId;
-import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Order;
 
 import javax.annotation.Nullable;
@@ -69,29 +66,25 @@ public enum DocStatus implements ReferenceListAwareEnum
 	@NonNull
 	public static Optional<DocStatus> ofCodeOptional(@Nullable final String code)
 	{
-		return Optional.ofNullable(ofNullableCode(code));
+		return index.optionalOfNullableCode(code);
 	}
 
 	@Nullable
 	public static DocStatus ofNullableCode(@Nullable final String code)
 	{
-		return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
+		return index.ofNullableCode(code);
 	}
 
 	@NonNull
 	public static DocStatus ofNullableCodeOrUnknown(@Nullable final String code)
 	{
-		return code != null ? ofCode(code) : Unknown;
+		final DocStatus docStatus = ofNullableCode(code);
+		return docStatus != null ? docStatus : Unknown;
 	}
 
 	public static DocStatus ofCode(@NonNull final String code)
 	{
-		final DocStatus type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + DocStatus.class + " found for code: " + code);
-		}
-		return type;
+		return index.ofCode(code);
 	}
 
 	public static String toCodeOrNull(@Nullable final DocStatus docStatus)
@@ -99,7 +92,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 		return docStatus != null ? docStatus.getCode() : null;
 	}
 
-	private static final ImmutableMap<String, DocStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<DocStatus> index = ReferenceListAwareEnums.index(values());
 
 	public boolean isDrafted()
 	{
