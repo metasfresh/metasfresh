@@ -9,9 +9,7 @@ Feature:product get/create/update using metasfresh api
       | ALBERTA        | 345               | Product  |
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
-      | ALBERTA        | 346               | Product  |
     And no product with value 'code345' exists
-    And no product with value 'code346' exists
 
   @from:cucumber
   Scenario: create Product request, as a REST-API invoker
@@ -25,10 +23,6 @@ Feature:product get/create/update using metasfresh api
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value                   |
       | ALBERTA_345_sectionCode     | ALBERTA_345_sectionCode |
-
-    And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                           | Name                           |
-      | warehouse                 | warehouseValueOutgoing_07122023 | warehouseNameOutgoing_07122023 |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -70,16 +64,6 @@ Feature:product get/create/update using metasfresh api
         "purchasedSet":true,
         "sapProductHierarchy": "HH",
         "sapProductHierarchySet": true,
-        "warehouseAssignments": {
-            "warehouses": [
-              "warehouseNameOutgoing_07122023"
-            ],
-            "syncAdvise": {
-              "ifNotExists": "CREATE",
-              "ifExists": "REPLACE"
-            }
-          },
-        "warehouseAssignmentsSet": true,
         "bpartnerProductItems": [
           {
             "bpartnerIdentifier": "ext-ALBERTA-345",
