@@ -54,6 +54,9 @@ public class ExternalSystemsPrintingAdapter extends PrintingQueueHandlerAdapter
 						.id(ExternalSystemParentConfigId.ofRepoId(42))//ExternalSystemParentConfigId.ofRepoId(queueItem.getAD_PrinterHW().getExternalSystem_Config_ID()))
 						.transactionId(transactionId)
 				.build());
+
+		//important, otherwise printing will go on as planned, locally
+		queueItem.setIsActive(false);
 	}
 
 	@Override
