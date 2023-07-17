@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_ForeignExchangeContract
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_ForeignExchangeContract extends org.compiere.model.PO implements I_C_ForeignExchangeContract, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -135215652L;
+	private static final long serialVersionUID = -2010000274L;
 
     /** Standard Constructor */
     public X_C_ForeignExchangeContract (final Properties ctx, final int C_ForeignExchangeContract_ID, @Nullable final String trxName)
@@ -251,6 +251,33 @@ public class X_C_ForeignExchangeContract extends org.compiere.model.PO implement
 	public java.sql.Timestamp getFEC_ValidityDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_FEC_ValidityDate);
+	}
+
+	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
 
 	@Override

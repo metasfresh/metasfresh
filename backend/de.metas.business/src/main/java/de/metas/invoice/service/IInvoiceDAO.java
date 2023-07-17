@@ -48,6 +48,7 @@ import org.compiere.model.I_C_LandedCost;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
@@ -189,4 +190,6 @@ public interface IInvoiceDAO extends ISingletonService
 	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
 
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+
+	@Nullable I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 }

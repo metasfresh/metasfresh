@@ -36,6 +36,7 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
@@ -79,6 +80,8 @@ public interface IAllocationDAO extends ISingletonService
 	 */
 	BigDecimal retrieveAllocatedAmt(I_C_Invoice invoice);
 
+	InvoiceOpenResult retrieveInvoiceOpen(@NonNull InvoiceOpenRequest request);
+
 	/**
 	 * Retrieve the written off amount of an <code>invoice</code>.
 	 */
@@ -89,7 +92,7 @@ public interface IAllocationDAO extends ISingletonService
 	 *
 	 * @param paymentIDsToIgnore may be <code>null</code> or empty.
 	 */
-	BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(I_C_Invoice invoice, Set<Integer> paymentIDsToIgnore);
+	BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull I_C_Invoice invoice, @Nullable Set<PaymentId> paymentIDsToIgnore);
 
 	/**
 	 * Retrieve allocation lines for specified invoice

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
@@ -16,6 +17,7 @@ import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -35,6 +37,8 @@ import java.util.stream.Collectors;
 @Service
 public class ForexContractService
 {
+	public static final AdMessageKey FOREX_CONTRACT_SECTION_DOESNT_MATCH_DOCUMENT = AdMessageKey.of("FEC_SectionCode_Doesnt_Match_With_Document");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -94,15 +98,16 @@ public class ForexContractService
 		forexContractRepository.updateById(
 				forexContractId,
 				contract -> {
-					contract.assertCanAllocate(amountToAllocate);
+					contract.assertCanAllocate(amountToAllocate, SectionCodeId.ofRepoIdOrNull(order.getM_SectionCode_ID()));
 
 					forexContractAllocationRepository.create(ForexContractAllocateRequest.builder()
-							.forexContractId(contract.getId())
-							.orgId(contract.getOrgId())
-							.orderId(orderId)
-							.orderGrandTotal(orderGrandTotal)
-							.amountToAllocate(amountToAllocate)
-							.build());
+																	 .forexContractId(contract.getId())
+																	 .orgId(contract.getOrgId())
+																	 .orderId(orderId)
+																	 .orderGrandTotal(orderGrandTotal)
+																	 .amountToAllocate(amountToAllocate)
+																	 .contractSectionCodeId(contract.getSectionCodeId())
+																	 .build());
 
 					updateAmountsNoSave(contract);
 				});
@@ -242,6 +247,7 @@ public class ForexContractService
 						.currencyToId(baseCurrencyId)
 						.onlyWithOpenAmount(true)
 						.displayNameSearchTerm(displayNameSearchTerm)
+						.sectionCodeId(SectionCodeId.ofRepoIdOrNull(order.getM_SectionCode_ID()))
 						.build());
 	}
 }

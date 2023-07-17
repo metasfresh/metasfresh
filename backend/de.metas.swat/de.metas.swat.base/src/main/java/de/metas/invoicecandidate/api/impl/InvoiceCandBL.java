@@ -71,10 +71,12 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
+import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -112,8 +114,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
@@ -284,8 +286,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -2509,6 +2511,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			iciol.setC_UOM_ID(assumeGreaterThanZero(inOutLine.getC_UOM_ID(), "inOutLine.getC_UOM_ID()"));
 			iciol.setQtyDeliveredInUOM_Nominal(inOutLine.getQtyEntered());
 		}
+
+		createMatchInvForInOutLine(inOutLine);
+
 		saveRecord(iciol);
 	}
 
@@ -2796,5 +2801,23 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
 
+	}
+
+	private void createMatchInvForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
+	{
+		final I_C_InvoiceLine invoiceLine = invoiceDAO.getOfInOutLine(inOutLine);
+
+		if (invoiceLine == null)
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+		matchInvoiceServiceHolder.get()
+				.newMatchInvBuilder(MatchInvType.Material)
+				.invoiceLine(invoiceLine)
+				.inoutLine(inOutLine)
+				.dateTrx(invoice.getDateInvoiced())
+				.build();
 	}
 }

@@ -463,25 +463,6 @@ public class DB
 		return statementsFactory.newCCallableStatement(ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency, SQL, trxName);
 	}    // prepareCall
 
-	/**************************************************************************
-	 * Prepare Statement
-	 *
-	 * @param sql
-	 * @return Prepared Statement
-	 * @deprecated
-	 */
-	@Deprecated
-	public CPreparedStatement prepareStatement(final String sql)
-	{
-		int concurrency = ResultSet.CONCUR_READ_ONLY;
-		final String upper = sql.toUpperCase();
-		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
-		{
-			concurrency = ResultSet.CONCUR_UPDATABLE;
-		}
-		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
-	}    // prepareStatement
-
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
@@ -2065,6 +2046,26 @@ public class DB
 		return "/* "
 				+ comment.replace("/*", " ").replace("*/", " ")
 				+ " */";
+	}
+
+	public String TO_ARRAY(@Nullable final Collection<?> values)
+	{
+		if (values == null)
+		{
+			return "NULL";
+		}
+
+		final StringBuilder result = new StringBuilder();
+		for (final Object value : values)
+		{
+			if (result.length() > 0)
+			{
+				result.append(",");
+			}
+			result.append(TO_SQL(value));
+		}
+
+		return TO_STRING(result.insert(0, "{").append("}").toString());
 	}
 
 	/**

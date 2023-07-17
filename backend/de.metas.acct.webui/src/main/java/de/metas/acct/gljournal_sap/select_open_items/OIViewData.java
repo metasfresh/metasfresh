@@ -91,7 +91,8 @@ public class OIViewData implements IEditableRowsData<OIRow>
 		final OIViewDataQuery query = OIViewDataQuery.builder()
 				.acctSchema(acctSchema)
 				.postingType(glJournal.getPostingType())
-				.futureClearingAmounts(FutureClearingAmountMap.of(glJournal, viewDataService.currencyCodeConverter()))
+				.currencyId(glJournal.getCurrencyId())
+				.futureClearingAmounts(FutureClearingAmountMap.ofGLJournal(glJournal, viewDataService.currencyCodeConverter()))
 				.filter(filter)
 				.includeFactAcctIds(userInput.getFactAcctIds())
 				.build();
@@ -119,9 +120,9 @@ public class OIViewData implements IEditableRowsData<OIRow>
 
 	private ViewHeaderProperties computeHeaderProperties()
 	{
-		final CurrencyCode acctCurrencyCode = viewDataService.currencyCodeConverter().getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
-		final MutableAmount totalDebit = MutableAmount.zero(acctCurrencyCode);
-		final MutableAmount totalCredit = MutableAmount.zero(acctCurrencyCode);
+		final CurrencyCode currencyCode = viewDataService.currencyCodeConverter().getCurrencyCodeByCurrencyId(getGLJournal().getCurrencyId());
+		final MutableAmount totalDebit = MutableAmount.zero(currencyCode);
+		final MutableAmount totalCredit = MutableAmount.zero(currencyCode);
 
 		rowsHolder.stream(OIRow::isSelected)
 				.forEach(row -> {

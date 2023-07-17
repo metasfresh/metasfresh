@@ -73,9 +73,10 @@ SELECT fact.fact_acct_id,
        fact.m_costelement_id,
        fact.c_bpartner2_id,
        fact.c_bpartner_location_id,
-       fact.openitemkey,
-       fact.oi_trxtype,
-       fact.isopenitemsreconciled,
-       fact.oi_openamount
+       fact.OpenItemKey,
+       fact.OI_TrxType,
+       fact.IsOpenItemsReconciled,
+       fact.OI_OpenAmount,
+       fact.OI_OpenAmountSource
 FROM fact_acct fact
 ;

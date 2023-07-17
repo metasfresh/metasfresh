@@ -1120,10 +1120,7 @@ public class ESRImportBL implements IESRImportBL
 		// cg: if we have a payment and the open amount matches pay amount set status allocate with current invoice
 		if (importLine.getC_Invoice_ID() == invoice.getC_Invoice_ID() && importLine.getC_Payment_ID() > 0)
 		{
-			// services
-
-			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
-			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
+			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, ImmutableSet.of());
 			final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
 			final PaymentId paymentId = fetchDuplicatePaymentIfExists(importLine);
 			if (importLine.getAmount().compareTo(invoiceOpenAmt) == 0)
@@ -1229,7 +1226,7 @@ public class ESRImportBL implements IESRImportBL
 		final IAllocationDAO allocationDAOLocal = Services.get(IAllocationDAO.class);
 
 		// We start by collecting the C_Payment_IDs from our lines
-		final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
+		final Set<PaymentId> linesOwnPaymentIDs = new HashSet<>();
 		for (final I_ESR_ImportLine importLine : linesWithSameInvoice)
 		{
 			final PaymentId importLinePaymentId = PaymentId.ofRepoIdOrNull(importLine.getC_Payment_ID());
@@ -1239,7 +1236,7 @@ public class ESRImportBL implements IESRImportBL
 			// if the invoice is paid with the current line, exclude it from computing
 			if (importLinePayment != null && paymentBL.isMatchInvoice(importLinePayment, invoice))
 			{
-				linesOwnPaymentIDs.add(importLine.getC_Payment_ID());
+				linesOwnPaymentIDs.add(importLinePaymentId);
 			}
 		}
 

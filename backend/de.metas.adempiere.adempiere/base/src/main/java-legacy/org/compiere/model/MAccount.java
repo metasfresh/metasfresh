@@ -105,7 +105,9 @@ public class MAccount extends X_C_ValidCombination
 	 * @param ctx       context
 	 * @param dimension accounting dimension
 	 * @return existing account or a newly created one; never returns null
+	 * @deprecated please use de.metas.acct.api.IAccountDAO#getOrCreate(de.metas.acct.api.AccountDimension)
 	 */
+	@Deprecated
 	public static MAccount get(final Properties ctx, final AccountDimension dimension)
 	{
 		// services

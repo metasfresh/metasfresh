@@ -1,6 +1,7 @@
 package de.metas.acct.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.FactAcctQuery;
@@ -13,6 +14,8 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -193,6 +196,12 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
+	public ImmutableSet<FactAcctId> listIds(@NonNull final FactAcctQuery query)
+	{
+		return toSqlQuery(query).listIds(FactAcctId::ofRepoId);
+	}
+
+	@Override
 	public Stream<I_Fact_Acct> stream(@NonNull final FactAcctQuery query)
 	{
 		return toSqlQuery(query).stream();
@@ -201,6 +210,7 @@ public class FactAcctDAO implements IFactAcctDAO
 	private IQuery<I_Fact_Acct> toSqlQuery(@NonNull final FactAcctQuery query)
 	{
 		final IQueryBuilder<I_Fact_Acct> sqlQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addOnlyActiveRecordsFilter()
 				.orderBy(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID);
 
 		if (query.getAcctSchemaId() != null)
@@ -223,10 +233,22 @@ public class FactAcctDAO implements IFactAcctDAO
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, query.getPostingType());
 		}
+		if (query.getCurrencyId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
+		}
 
 		if (query.getDateAcct() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DateAcct, query.getDateAcct());
+		}
+		if (query.getDateAcctLessOrEqualsTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_Fact_Acct.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getDateAcctLessOrEqualsTo());
+		}
+		if (query.getDateAcctGreaterOrEqualsTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_Fact_Acct.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.GREATER_OR_EQUAL, query.getDateAcctGreaterOrEqualsTo());
 		}
 
 		//
@@ -242,6 +264,14 @@ public class FactAcctDAO implements IFactAcctDAO
 		if (query.getLineId() > 0)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, query.getLineId());
+		}
+		if (query.getExcludeRecordRef() != null)
+		{
+			sqlQueryBuilder.filter(NotQueryFilter.of(
+					queryBL.createCompositeQueryFilter(I_Fact_Acct.class)
+							.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, query.getExcludeRecordRef().getAdTableId())
+							.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, query.getExcludeRecordRef().getRecord_ID())
+			));
 		}
 
 		//
@@ -262,18 +292,21 @@ public class FactAcctDAO implements IFactAcctDAO
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_IsOpenItemsReconciled, query.getIsOpenItemReconciled());
 		}
-		if (query.getOpenItemsKey() != null)
+		if (query.getOpenItemsKeys() != null && !query.getOpenItemsKeys().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKey().getAsString());
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_OpenItemKey, query.getOpenItemsKeys()
+					.stream()
+					.map(openItemKey -> openItemKey != null ? openItemKey.getAsString() : null)
+					.collect(Collectors.toSet()));
 		}
 		if (query.getOpenItemTrxType() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_OI_TrxType, query.getOpenItemTrxType().getCode());
 		}
 
-		if (query.getDocStatus() != null)
+		if (query.getDocStatuses() != null && !query.getDocStatuses().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_DocStatus, query.getDocStatus());
+			sqlQueryBuilder.addInArrayFilter(I_Fact_Acct.COLUMNNAME_DocStatus, query.getDocStatuses());
 		}
 		toSqlLikeString(query.getDocumentNoLike())
 				.ifPresent(pattern -> sqlQueryBuilder.addStringLikeFilter(I_Fact_Acct.COLUMNNAME_DocumentNo, pattern, true));

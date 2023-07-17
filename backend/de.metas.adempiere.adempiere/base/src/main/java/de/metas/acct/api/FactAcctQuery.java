@@ -7,6 +7,7 @@ import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.InSetPredicate;
@@ -14,6 +15,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -29,19 +31,24 @@ public class FactAcctQuery
 	@Nullable @Singular ImmutableSet<AccountConceptualName> accountConceptualNames;
 	@Nullable @Singular ImmutableSet<ElementValueId> accountIds;
 	@Nullable PostingType postingType;
+	@Nullable CurrencyId currencyId;
 
 	@Nullable Instant dateAcct;
+	@Nullable Instant dateAcctLessOrEqualsTo;
+	@Nullable Instant dateAcctGreaterOrEqualsTo;
 
 	@Nullable String tableName;
 	int recordId;
 	int lineId;
 
+	@Nullable TableRecordReference excludeRecordRef;
+
 	@Nullable Boolean isOpenItem;
 	@Nullable Boolean isOpenItemReconciled;
-	@Nullable FAOpenItemKey openItemsKey;
+	@Nullable @Singular Set<FAOpenItemKey> openItemsKeys;
 	@Nullable FAOpenItemTrxType openItemTrxType;
 
-	@Nullable DocStatus docStatus;
+	@Nullable @Singular Set<DocStatus> docStatuses;
 	@Nullable String documentNoLike;
 	@Nullable String descriptionLike;
 	@Nullable String poReferenceLike;

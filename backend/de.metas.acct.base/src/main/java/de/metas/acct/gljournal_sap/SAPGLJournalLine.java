@@ -8,6 +8,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.lang.SeqNo;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,16 +25,17 @@ import javax.annotation.Nullable;
 public class SAPGLJournalLine
 {
 	@Nullable private SAPGLJournalLineId id;
+	@Getter @Setter(AccessLevel.PACKAGE) private boolean processed;
 
 	@Nullable @Getter private final SAPGLJournalLineId parentId;
 
-	@NonNull @Getter @Setter private SeqNo line;
+	@NonNull @Getter @Setter(AccessLevel.PACKAGE) private SeqNo line;
 	@Nullable @Getter private final String description;
 
 	@NonNull @Getter private final Account account;
 	@NonNull @Getter private final PostingSign postingSign;
 	@NonNull @Getter private final Money amount;
-	@NonNull @Getter @Setter private Money amountAcct;
+	@NonNull @Getter @Setter(AccessLevel.PACKAGE) private Money amountAcct;
 
 	@Nullable @Getter private final TaxId taxId;
 

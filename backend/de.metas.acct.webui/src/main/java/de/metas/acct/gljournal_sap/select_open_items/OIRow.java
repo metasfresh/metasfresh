@@ -17,6 +17,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -30,17 +31,17 @@ class OIRow implements IViewRow
 {
 	public static OIRow cast(IViewRow row) {return (OIRow)row;}
 
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsOpenItem")
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "OI/PrintName", widgetSize = WidgetSize.Small)
 	@Getter private final boolean isOpenItem;
 
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign", fieldName = "postingSign")
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign", fieldName = "postingSign", widgetSize = WidgetSize.Small)
 	@Getter @NonNull private final PostingSign postingSign;
 
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Text, captionKey = "Account_ID")
 	@NonNull private final ITranslatableString accountCaption;
 
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, captionKey = "Amount")
-	@NonNull private final Amount amount;
+	@Getter @NonNull private final Amount amount;
 
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmt", fieldName = "openAmount")
 	@NonNull private final Amount openAmount;
@@ -64,7 +65,7 @@ class OIRow implements IViewRow
 	@Nullable private final String userElementString1;
 
 	static final String FIELD_Selected = "selected";
-	@ViewColumn(seqNo = 120, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsSelected", fieldName = FIELD_Selected, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 120, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsSelected", fieldName = FIELD_Selected, editor = ViewEditorRenderMode.ALWAYS, widgetSize = WidgetSize.Small)
 	@Getter private final boolean selected;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<OIRow> values;

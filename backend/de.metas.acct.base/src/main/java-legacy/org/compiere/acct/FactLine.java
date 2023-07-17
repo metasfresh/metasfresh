@@ -1838,7 +1838,7 @@ public final class FactLine extends X_Fact_Acct
 			return Optional.empty();
 		}
 
-		final FAOpenItemKey openItemKey = FAOpenItemKey.ofNullableString(getOpenItemKey());
+		final FAOpenItemKey openItemKey = FAOpenItemKey.parseNullable(getOpenItemKey()).orElse(null);
 		if (openItemKey == null)
 		{
 			return Optional.empty();

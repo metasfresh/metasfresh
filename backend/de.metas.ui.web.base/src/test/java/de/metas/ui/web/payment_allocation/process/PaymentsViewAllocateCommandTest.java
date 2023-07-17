@@ -64,11 +64,13 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
@@ -211,9 +213,16 @@ public class PaymentsViewAllocateCommandTest
 
 		final InvoiceId invoiceId;
 		{
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(docBaseType.getCode());
+			docType.setIsSOTrx(docBaseType.isSales());
+			saveRecord(docType);
+
 			final Money invoiceGrandTotal = invoiceAmtMultiplier.fromNotAdjustedAmount(moneyService.toMoney(openAmt));
 
 			final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
+			invoiceRecord.setC_DocType_ID(docType.getC_DocType_ID());
+			invoiceRecord.setIsSOTrx(docType.isSOTrx());
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoiceRecord.setGrandTotal(invoiceGrandTotal.toBigDecimal());
 			saveRecord(invoiceRecord);

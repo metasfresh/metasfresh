@@ -36,7 +36,9 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
+import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
