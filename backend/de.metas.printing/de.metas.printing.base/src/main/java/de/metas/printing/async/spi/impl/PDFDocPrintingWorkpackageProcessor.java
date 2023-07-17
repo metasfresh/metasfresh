@@ -9,6 +9,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.MergePdfByteArrays;
 import de.metas.printing.PrintPackagePDFBuilder;
 import de.metas.printing.api.IPrintPackageBL;
@@ -19,6 +20,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.printing.spi.impl.ExternalSystemsPrintingAdapter;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -37,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.springframework.core.io.ByteArrayResource;
@@ -66,6 +69,8 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 	// services
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+
+	private final ExternalSystemsPrintingAdapter externalSystemsPrintingAdapter = SpringContextHolder.instance.getBean(ExternalSystemsPrintingAdapter.class);
 
 	private final String PDFArchiveName = "PDFDocPrintingWorkpackageProcessor_ArchiveName";
 	private final String PDFPrintJob_Done = "PDFPrintingAsyncBatchListener_PrintJob_Done_2";
@@ -172,6 +177,8 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 			// save in archive
 			createArchive(printPackage, mergedPDF, asyncBatch, currentIndex);
+			//notify external systems printers
+			externalSystemsPrintingAdapter.notifyExternalSystemsIfNeeded(HardwarePrinterId.ofRepoId(jobInstructions.getAD_PrinterHW_ID()), printPackage.getTransactionID());
 		}
 
 	}

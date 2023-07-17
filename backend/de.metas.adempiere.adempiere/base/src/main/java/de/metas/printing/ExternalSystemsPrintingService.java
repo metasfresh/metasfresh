@@ -22,6 +22,7 @@
 
 package de.metas.printing;
 
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class ExternalSystemsPrintingService
 		this.handlerList = handlerList;
 	}
 
-	public void print(PrintRequest request)
+	public void print(@NonNull PrintRequest request)
 	{
 		for (final IPrintingHandler iPrintingHandler : handlerList)
 		{

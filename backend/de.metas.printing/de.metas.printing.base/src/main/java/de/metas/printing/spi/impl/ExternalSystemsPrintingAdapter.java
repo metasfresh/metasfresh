@@ -23,53 +23,41 @@
 package de.metas.printing.spi.impl;
 
 import de.metas.audit.data.ExternalSystemParentConfigId;
-import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.printing.ExternalSystemsPrintingService;
+import de.metas.printing.HardwarePrinter;
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.HardwarePrinterRepository;
+import de.metas.printing.OutputType;
 import de.metas.printing.PrintRequest;
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.PrintingQueueHandlerAdapter;
-import de.metas.util.Services;
-import org.adempiere.archive.ArchiveId;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ExternalSystemsPrintingAdapter extends PrintingQueueHandlerAdapter
+public class ExternalSystemsPrintingAdapter
 {
 	private final ExternalSystemsPrintingService printingService;
+	private final HardwarePrinterRepository hardwarePrinterRepository;
 
-	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
-
-	public ExternalSystemsPrintingAdapter(final ExternalSystemsPrintingService printingService)
+	public ExternalSystemsPrintingAdapter(@NonNull final ExternalSystemsPrintingService printingService,
+			@NonNull final HardwarePrinterRepository hardwarePrinterRepository)
 	{
 		this.printingService = printingService;
+		this.hardwarePrinterRepository = hardwarePrinterRepository;
 	}
 
-	@Override
-	public void afterEnqueueBeforeSave(I_C_Printing_Queue queueItem, I_AD_Archive printOut)
+	public void notifyExternalSystemsIfNeeded(final HardwarePrinterId hardwarePrinterId, final String transactionId)
 	{
-		final String transactionId = printingDAO.getTransactionIdForAdArchiveId(ArchiveId.ofRepoId(printOut.getAD_Archive_ID()));
-		printingService.print(PrintRequest.builder()
-						.id(ExternalSystemParentConfigId.ofRepoId(42))//ExternalSystemParentConfigId.ofRepoId(queueItem.getAD_PrinterHW().getExternalSystem_Config_ID()))
-						.transactionId(transactionId)
-				.build());
-
-		//important, otherwise printing will go on as planned, locally
-		queueItem.setIsActive(false);
-	}
-
-	@Override
-	public boolean isApplyHandler(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
-	{
-		// return queueItem.getAD_PrinterHW().getExternalSystem_Config_ID() > 1
-		// 		&& printOut.getAD_Table_ID() == getTableIdofPrintPackage();
-		return true;
-	}
-
-	private int getTableIdofPrintPackage()
-	{
-		return 100; // TODO
+		final HardwarePrinter printer = hardwarePrinterRepository.getById(hardwarePrinterId);
+		final ExternalSystemParentConfigId externalSystemParentConfigId = printer.getExternalSystemParentConfigId();
+		if (OutputType.Attach.equals(printer.getOutputType()) && externalSystemParentConfigId != null)
+		{
+			final PrintRequest request = PrintRequest.builder()
+					.id(externalSystemParentConfigId)
+					.transactionId(transactionId)
+					.build();
+			printingService.print(request);
+		}
 	}
 
 }
