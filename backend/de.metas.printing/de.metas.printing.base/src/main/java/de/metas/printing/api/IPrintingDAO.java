@@ -47,6 +47,7 @@ import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
@@ -226,4 +227,5 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
 
+	String getTransactionIdForAdArchiveId(ArchiveId archiveId);
 }

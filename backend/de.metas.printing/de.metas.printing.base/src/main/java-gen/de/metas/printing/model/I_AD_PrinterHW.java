@@ -248,4 +248,7 @@ public interface I_AD_PrinterHW
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+
+	public int ExternalSystem_Config_ID();
 }
