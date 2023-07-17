@@ -85,7 +85,7 @@ public class PayloadType {
     @XmlAttribute(name = "copy")
     protected Boolean copy;
     @XmlAttribute(name = "response_timestamp", required = true)
-    protected BigInteger responseTimestamp;
+    protected int responseTimestamp;
 
     /**
      * Gets the value of the credit property.
@@ -295,7 +295,7 @@ public class PayloadType {
      * Gets the value of the responseTimestamp property.
      * 
      */
-    public BigInteger getResponseTimestamp() {
+    public int getResponseTimestamp() {
         return responseTimestamp;
     }
 
@@ -303,7 +303,7 @@ public class PayloadType {
      * Sets the value of the responseTimestamp property.
      * 
      */
-    public void setResponseTimestamp(BigInteger value) {
+    public void setResponseTimestamp(int value) {
         this.responseTimestamp = value;
     }
 

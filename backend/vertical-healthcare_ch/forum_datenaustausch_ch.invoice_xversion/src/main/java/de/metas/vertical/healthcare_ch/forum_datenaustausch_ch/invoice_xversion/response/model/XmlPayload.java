@@ -36,7 +36,7 @@ public class XmlPayload
 {
 
 	@NonNull
-	BigInteger responseTimestamp;
+	int responseTimestamp;
 
 	@NonNull
 	XmlInvoice invoice;
