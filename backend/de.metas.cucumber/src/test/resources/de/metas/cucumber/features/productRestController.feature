@@ -472,7 +472,7 @@ Feature:product get/create/update using metasfresh api
         "purchased":true,
         "purchasedSet":true,
         "warehouseAssignments": {
-          "warehouseIdentifiers": [ "name-warehouseName_07122023_1"],
+          "warehouseIdentifiers": [ "name-warehouseName_07122023_3"],
           "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "REPLACE"
