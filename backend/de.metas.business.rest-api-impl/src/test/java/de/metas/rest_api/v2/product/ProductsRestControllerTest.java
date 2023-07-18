@@ -52,10 +52,11 @@ import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.ProductQualityAttributeRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
@@ -71,7 +72,6 @@ import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeSer
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
-import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -166,8 +166,11 @@ public class ProductsRestControllerTest
 		final ProductRestService productRestService = new ProductRestService(productRepository,
 																			 productWarehouseAssignmentRestService,
 																			 externalReferenceRestControllerService,
+																			 new SectionCodeService(sectionCodeRepository),
+																			 Mockito.mock(ProductAllergenRestService.class),
+																			 new QualityAttributeService(new ProductQualityAttributeRepository()),
 																			 jsonServiceFactory,
-																			 new SectionCodeService(sectionCodeRepository), externalIdentifierResolver);
+																			 externalIdentifierResolver);
 		//
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}
