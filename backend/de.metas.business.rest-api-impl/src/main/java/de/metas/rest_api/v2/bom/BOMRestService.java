@@ -164,7 +164,7 @@ public class BOMRestService
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(productExternalIdentifier);
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(externalIdentifier, orgId)
+		final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(externalIdentifier, orgId)
 				.orElseThrow(() -> new InvalidIdentifierException(productExternalIdentifier));
 
 		bomService.verifyDefaultBOMFor(productId);
