@@ -438,6 +438,20 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
+	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be throwed
+	 *
+	 * @return first PO
+	 * @see  #first()
+	 */
+	@Nullable
+	public <ET extends T> ET firstOnly() throws DBException
+	{
+		final Class<ET> clazz = null;
+		final boolean throwExIfMoreThenOneFound = true;
+		return firstOnly(clazz, throwExIfMoreThenOneFound);
+	}
+
+	/**
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
 	 */
