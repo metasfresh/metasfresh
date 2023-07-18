@@ -30,28 +30,29 @@ import de.metas.printing.IPrintingHandler;
 import de.metas.printing.OutputType;
 import de.metas.printing.PrintRequest;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class ExternalSystemsPrintingAdapter
+public class ExternalSystemsPrintingNotifier
 {
 	private final HardwarePrinterRepository hardwarePrinterRepository;
 	private final List<IPrintingHandler> handlerList;
 
-	public void notifyExternalSystemsIfNeeded(final HardwarePrinterId hardwarePrinterId, final String transactionId)
+	public void notifyExternalSystemsIfNeeded(@NonNull final HardwarePrinterId hardwarePrinterId, @NonNull final String transactionId)
 	{
 		final HardwarePrinter printer = hardwarePrinterRepository.getById(hardwarePrinterId);
 		final ExternalSystemParentConfigId externalSystemParentConfigId = printer.getExternalSystemParentConfigId();
-		if (OutputType.Attach.equals(printer.getOutputType()) && externalSystemParentConfigId != null)
+		if (OutputType.Queue.equals(printer.getOutputType()) && externalSystemParentConfigId != null)
 		{
 			final PrintRequest request = PrintRequest.builder()
 					.id(externalSystemParentConfigId)
 					.transactionId(transactionId)
 					.build();
-			handlerList.forEach(handler -> handler.print(request));
+			handlerList.forEach(handler -> handler.notify(request));
 		}
 	}
 

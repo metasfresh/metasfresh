@@ -20,7 +20,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
-import de.metas.printing.spi.impl.ExternalSystemsPrintingAdapter;
+import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -70,7 +70,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
-	private final ExternalSystemsPrintingAdapter externalSystemsPrintingAdapter = SpringContextHolder.instance.getBean(ExternalSystemsPrintingAdapter.class);
+	private final ExternalSystemsPrintingNotifier externalSystemsPrintingNotifier = SpringContextHolder.instance.getBean(ExternalSystemsPrintingNotifier.class);
 
 	private final String PDFArchiveName = "PDFDocPrintingWorkpackageProcessor_ArchiveName";
 	private final String PDFPrintJob_Done = "PDFPrintingAsyncBatchListener_PrintJob_Done_2";
@@ -178,7 +178,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			// save in archive
 			createArchive(printPackage, mergedPDF, asyncBatch, currentIndex);
 			//notify external systems printers
-			externalSystemsPrintingAdapter.notifyExternalSystemsIfNeeded(HardwarePrinterId.ofRepoId(jobInstructions.getAD_PrinterHW_ID()), printPackage.getTransactionID());
+			externalSystemsPrintingNotifier.notifyExternalSystemsIfNeeded(HardwarePrinterId.ofRepoId(jobInstructions.getAD_PrinterHW_ID()), printPackage.getTransactionID());
 		}
 
 	}

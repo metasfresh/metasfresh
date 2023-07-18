@@ -27,6 +27,6 @@ package de.metas.printing;
  */
 public interface IPrintingHandler
 {
-	void print (PrintRequest request);
+	void notify(PrintRequest request);
 
 }

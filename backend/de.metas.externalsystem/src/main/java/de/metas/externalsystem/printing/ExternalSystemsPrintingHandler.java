@@ -28,7 +28,7 @@ import de.metas.printing.PrintRequest;
 public class ExternalSystemsPrintingHandler implements IPrintingHandler
 {
 	@Override
-	public void print(final PrintRequest request)
+	public void notify(final PrintRequest request)
 	{
 
 	}
