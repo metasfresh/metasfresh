@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.mapping.ExternalMappingsHolder;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -148,6 +149,7 @@ public class ProductUpsertProcessor implements Processor
 		final JsonRequestProductWarehouseAssignmentSave jsonRequestProductWarehouseAssignmentCreate = JsonRequestProductWarehouseAssignmentSave.builder()
 				.warehouseIdentifiers(Optional.ofNullable(product.getWarehouseName())
 											  .filter(Check::isNotBlank)
+											  .map(ExternalIdentifierFormat::formatName)
 											  .map(ImmutableList::of)
 											  .orElseGet(ImmutableList::of))
 				.syncAdvise(SyncAdvise.REPLACE)
