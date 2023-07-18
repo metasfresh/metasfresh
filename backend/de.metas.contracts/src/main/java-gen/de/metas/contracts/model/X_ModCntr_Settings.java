@@ -166,4 +166,16 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
+
+	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
 }
