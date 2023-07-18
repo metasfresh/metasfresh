@@ -30,7 +30,7 @@ import java.io.IOException;
 import static de.metas.common.product.v2.request.JsonRequestUtil.getJsonRequestWarehouseAssignmentUpsert;
 import static org.assertj.core.api.Assertions.*;
 
-public class JsonRequestWarehouseAssignmentUpsertTest
+public class JsonRequestProductWarehouseAssignmentSaveTest
 {
 	final ObjectMapper mapper = new ObjectMapper();
 
