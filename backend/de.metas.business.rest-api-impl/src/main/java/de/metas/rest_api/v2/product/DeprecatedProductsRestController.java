@@ -41,8 +41,9 @@ public class DeprecatedProductsRestController extends ProductsRestController
 			final @NonNull ProductsServicesFacade productsServicesFacade,
 			final @NonNull AlbertaProductService albertaProductService,
 			final @NonNull ExternalSystemService externalSystemService,
-			final @NonNull ProductRestService productRestService)
+			final @NonNull ProductRestService productRestService,
+			final @NonNull ExternalIdentifierResolver externalIdentifierResolver)
 	{
-		super(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
+		super(productsServicesFacade, albertaProductService, externalSystemService, productRestService, externalIdentifierResolver);
 	}
 }
