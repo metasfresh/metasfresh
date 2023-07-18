@@ -24,6 +24,7 @@ package de.metas.order.model.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -56,6 +57,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -78,6 +80,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -86,6 +89,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
+@Component
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
 public class C_Order
@@ -109,21 +113,25 @@ public class C_Order
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
+	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
+			@NonNull final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
+		this.productWarehouseAssignmentRepository = productWarehouseAssignmentRepository;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -738,5 +746,27 @@ public class C_Order
 
 			orderBL.save(line);
 		}
+	}
+
+	@ModelChange(
+			timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_Order.COLUMNNAME_M_Warehouse_ID)
+	public void checkProductWarehouseAssignment(@NonNull final I_C_Order orderRecord)
+	{
+		final WarehouseId orderWarehouseId = WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID());
+
+		orderBL.getLinesByOrderIds(ImmutableSet.of(OrderId.ofRepoId(orderRecord.getC_Order_ID())))
+				.forEach(line -> productWarehouseAssignmentRepository
+						.getByProductId(ProductId.ofRepoId(line.getM_Product_ID()))
+						.filter(assignments -> !assignments.isWarehouseAssigned(orderWarehouseId))
+						.ifPresent(assignments -> {
+							throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
+									.appendParametersToMessage()
+									.setParameter("C_Order_ID", orderRecord.getC_Order_ID())
+									.setParameter("C_OrderLine_ID", line.getC_OrderLine_ID())
+									.setParameter("C_Order.M_Warehouse_ID", orderRecord.getM_Warehouse_ID())
+									.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
+									.markAsUserValidationError();
+						}));
 	}
 }

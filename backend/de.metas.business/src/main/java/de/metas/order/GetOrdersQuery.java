@@ -27,12 +27,15 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 @Value
 public class GetOrdersQuery
@@ -42,19 +45,33 @@ public class GetOrdersQuery
 	DocStatus docStatus;
 	ImmutableSet<ProductId> productIds;
 	boolean descSortByDateOrdered;
+	ImmutableSet<WarehouseId> warehouseIds;
+	boolean onlyActiveRecords;
 
 	@Builder
 	public GetOrdersQuery(
-			@NonNull final BPartnerId bPartnerId,
+			@Nullable final BPartnerId bPartnerId,
 			@Nullable final DocTypeId docTypeTargetId,
 			@Nullable final DocStatus docStatus,
 			final boolean descSortByDateOrdered,
-			@Nullable @Singular final ImmutableSet<ProductId> productIds)
+			@Nullable @Singular final ImmutableSet<ProductId> productIds,
+			@Nullable @Singular final ImmutableSet<WarehouseId> warehouseIds,
+			final boolean onlyActiveRecords)
 	{
+		final boolean noCriteriaProvided = Stream.of(bPartnerId, docTypeTargetId, docStatus, productIds, warehouseIds)
+				.allMatch(Check::isEmpty);
+		
+		if (noCriteriaProvided)
+		{
+			throw new AdempiereException("No criteria provided!");
+		}
+		
 		this.bPartnerId = bPartnerId;
 		this.docTypeTargetId = docTypeTargetId;
 		this.docStatus = docStatus;
 		this.descSortByDateOrdered = descSortByDateOrdered;
 		this.productIds = productIds;
+		this.warehouseIds = warehouseIds;
+		this.onlyActiveRecords = onlyActiveRecords;
 	}
 }

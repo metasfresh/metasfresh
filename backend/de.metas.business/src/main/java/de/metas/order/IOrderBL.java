@@ -337,4 +337,9 @@ public interface IOrderBL extends ISingletonService
 	boolean isCompleted(OrderId orderId);
 
 	boolean isCompleted(I_C_Order order);
+
+	boolean isDraftedOrInProgress(@NonNull I_C_Order order);
+
+	@NonNull
+	List<I_C_Order> getOrdersByQuery(@NonNull GetOrdersQuery query);
 }

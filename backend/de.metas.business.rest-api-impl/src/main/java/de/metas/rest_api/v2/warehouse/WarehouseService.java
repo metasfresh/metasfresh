@@ -54,7 +54,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
@@ -91,7 +91,7 @@ public class WarehouseService
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@NonNull
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 	@NonNull
 	private final HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull
@@ -102,13 +102,13 @@ public class WarehouseService
 	private final JsonAttributeService jsonAttributeService;
 
 	public WarehouseService(
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
 			@NonNull final InventoryService inventoryService,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
 			@NonNull final JsonAttributeService jsonAttributeService)
 	{
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
 		this.inventoryService = inventoryService;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
@@ -121,8 +121,6 @@ public class WarehouseService
 		final IdentifierString warehouseString = IdentifierString.of(warehouseIdentifier);
 
 		final IWarehouseDAO.WarehouseQuery.WarehouseQueryBuilder builder = IWarehouseDAO.WarehouseQuery.builder().orgId(orgId);
-
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final WarehouseId result;
 		if (warehouseString.getType().equals(IdentifierString.Type.METASFRESH_ID))
@@ -175,7 +173,7 @@ public class WarehouseService
 
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(outOfStockInfoRequest.getProductIdentifier());
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, orgId)
+		final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(productIdentifier, orgId)
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceIdentifier(productIdentifier.getRawValue())
 						.resourceName("M_Product")

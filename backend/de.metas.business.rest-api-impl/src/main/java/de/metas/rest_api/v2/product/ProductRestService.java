@@ -27,8 +27,6 @@ import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
@@ -41,8 +39,6 @@ import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
-import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -56,6 +52,10 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
 import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
@@ -65,7 +65,6 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -77,7 +76,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -99,19 +97,28 @@ public class ProductRestService
 	private final SectionCodeService sectionCodeService;
 	private final ProductAllergenRestService productAllergenRestService;
 	private final QualityAttributeService qualityAttributeService;
+	private final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService;
+	private final JsonRetrieverService jsonRetrieverService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 
 	public ProductRestService(
 			@NonNull final ProductRepository productRepository,
+			@NonNull final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final ProductAllergenRestService productAllergenRestService,
-			@NonNull final QualityAttributeService qualityAttributeService)
+			@NonNull final QualityAttributeService qualityAttributeService,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.sectionCodeService = sectionCodeService;
 		this.productAllergenRestService = productAllergenRestService;
 		this.qualityAttributeService = qualityAttributeService;
+		this.productWarehouseAssignmentRestService = productWarehouseAssignmentRestService;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.externalIdentifierResolver = externalIdentifierResolver;
 	}
 
 	@NonNull
@@ -120,35 +127,6 @@ public class ProductRestService
 			@NonNull final JsonRequestProductUpsert request)
 	{
 		return trxManager.callInNewTrx(() -> upsertProductsWithinTrx(orgCode, request));
-	}
-
-	@NonNull
-	public Optional<ProductId> resolveProductExternalIdentifier(
-			@NonNull final ExternalIdentifier productIdentifier,
-			@NonNull final OrgId orgId)
-	{
-		switch (productIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return Optional.of(ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue()));
-
-			case EXTERNAL_REFERENCE:
-				return externalReferenceRestControllerService
-						.getJsonMetasfreshIdFromExternalReference(orgId, productIdentifier, ProductExternalReferenceType.PRODUCT)
-						.map(JsonMetasfreshId::getValue)
-						.map(ProductId::ofRepoId);
-
-			case VALUE:
-				final IProductDAO.ProductQuery query = IProductDAO.ProductQuery.builder()
-						.value(productIdentifier.asValue())
-						.orgId(orgId)
-						.includeAnyOrg(true)
-						.build();
-
-				return Optional.ofNullable(productDAO.retrieveProductIdBy(query));
-			default:
-				throw new InvalidIdentifierException(productIdentifier.getRawValue());
-		}
 	}
 
 	@NonNull
@@ -197,6 +175,7 @@ public class ProductRestService
 				final Product product = syncProductWithJson(jsonRequestProduct, existingProduct.get(), org);
 				productRepository.updateProduct(product);
 				createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, product.getId(), org);
+				productWarehouseAssignmentRestService.processProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
 
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
@@ -213,6 +192,7 @@ public class ProductRestService
 			productId = productRepository.createProduct(createProductRequest).getId();
 
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
+			productWarehouseAssignmentRestService.processProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
@@ -316,7 +296,7 @@ public class ProductRestService
 	}
 
 	@NonNull
-	private ProductCategoryId getProductCategoryId(@NonNull final String categoryIdentifier, @NonNull final I_AD_Org org)
+	private ProductCategoryId getProductCategoryId(@NonNull final String categoryIdentifier, @NonNull final OrgId orgId)
 	{
 
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(categoryIdentifier);
@@ -327,8 +307,8 @@ public class ProductRestService
 
 			case EXTERNAL_REFERENCE:
 				final Optional<ProductCategoryId> productCategoryId =
-						getJsonMetasfreshIdFromExternalReference(org.getValue(), externalIdentifier, ProductCategoryExternalReferenceType.PRODUCT_CATEGORY)
-								.map(JsonMetasfreshId::getValue)
+						jsonRetrieverService.resolveExternalReference(orgId, externalIdentifier, ProductCategoryExternalReferenceType.PRODUCT_CATEGORY)
+								.map(MetasfreshId::getValue)
 								.map(ProductCategoryId::ofRepoId);
 
 				if (productCategoryId.isPresent())
@@ -359,7 +339,7 @@ public class ProductRestService
 			}
 		}
 
-		return resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), OrgId.ofRepoId(org.getAD_Org_ID()));
+		return externalIdentifierResolver.resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), OrgId.ofRepoId(org.getAD_Org_ID()));
 	}
 
 	private void createOrUpdateBpartnerProducts(
@@ -374,7 +354,7 @@ public class ProductRestService
 															  createOrUpdateBpartnerProduct(jsonRequestBPartnerProductUpsert,
 																							effectiveSyncAdvise,
 																							productId,
-																							org.getValue()));
+																							OrgId.ofRepoId(org.getAD_Org_ID())));
 		}
 
 	}
@@ -383,11 +363,12 @@ public class ProductRestService
 			@NonNull final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert,
 			@NonNull final SyncAdvise effectiveSyncAdvise,
 			@NonNull final ProductId productId,
-			@NonNull final String orgCode)
+			@NonNull final OrgId orgId)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(jsonRequestBPartnerProductUpsert.getBpartnerIdentifier());
 
-		final BPartnerId bPartnerId = getBPartnerId(externalIdentifier, orgCode);
+		final BPartnerId bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(externalIdentifier, orgId)
+				.orElseThrow(() -> new AdempiereException("BPartnerIdentifier could not be found: " + externalIdentifier.getRawValue()));
 
 		final BPartnerProduct existingBPartnerProduct = productRepository.getByIdOrNull(productId, bPartnerId);
 
@@ -425,55 +406,6 @@ public class ProductRestService
 
 			productRepository.createBPartnerProduct(createBPartnerProductRequest);
 		}
-	}
-
-	@NonNull
-	private BPartnerId getBPartnerId(@NonNull final ExternalIdentifier externalIdentifier, @NonNull final String orgCode)
-	{
-		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
-		{
-			return BPartnerId.ofRepoId(Integer.parseInt(externalIdentifier.getRawValue()));
-		}
-		else if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
-		{
-
-			final Optional<JsonMetasfreshId> metasfreshId = getJsonMetasfreshIdFromExternalReference(orgCode, externalIdentifier, BPartnerExternalReferenceType.BPARTNER);
-
-			if (metasfreshId.isPresent())
-			{
-				return BPartnerId.ofRepoId(metasfreshId.get().getValue());
-			}
-		}
-		else
-		{
-			throw new AdempiereException("External identifier type is not supported: " + externalIdentifier.getType());
-		}
-
-		throw new AdempiereException("BPartnerIdentifier could not be found: " + externalIdentifier.getRawValue());
-	}
-
-	@NonNull
-	private Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalReference(
-			@NonNull final String orgCode,
-			@NonNull final ExternalIdentifier externalIdentifier,
-			@NonNull final IExternalReferenceType externalReferenceType)
-	{
-		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
-
-		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
-				.systemName(externalSystemName)
-				.item(JsonExternalReferenceLookupItem.builder()
-							  .type(externalReferenceType.getCode())
-							  .id(externalIdentifier.asExternalValueAndSystem().getValue())
-							  .build())
-				.build();
-
-		final JsonExternalReferenceLookupResponse lookupResponse = externalReferenceRestControllerService.performLookup(orgCode, lookupRequest);
-		return lookupResponse.getItems()
-				.stream()
-				.map(JsonExternalReferenceItem::getMetasfreshId)
-				.filter(Objects::nonNull)
-				.findFirst();
 	}
 
 	@NonNull
@@ -713,7 +645,7 @@ public class ProductRestService
 		// category
 		if (jsonRequestProductUpsertItem.isProductCategoryIdentifierSet())
 		{
-			final ProductCategoryId productCategoryId = getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org);
+			final ProductCategoryId productCategoryId = getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), orgId);
 			builder.productCategoryId(productCategoryId);
 		}
 		else
@@ -911,7 +843,7 @@ public class ProductRestService
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final ProductCategoryId productCategoryId = jsonRequestProductUpsertItem.isProductCategoryIdentifierSet() ?
-				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
+				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), orgId) : defaultProductCategoryId;
 
 		final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
 				.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
