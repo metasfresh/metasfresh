@@ -3,6 +3,7 @@ package de.metas.handlingunits.inventory.impl;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
@@ -127,14 +128,6 @@ public class SyncInventoryQtyToHUsCommand
 	{
 		for (final InventoryLineHU inventoryLineHU : inventoryLine.getInventoryLineHUs())
 		{
-			// Skip lines with no Qty difference because those are not relevant for the attribute transfer
-			// and those might not have an HU set neither.
-			if(inventoryLineHU.getQtyCountMinusBooked().signum() == 0)
-			{
-				continue;
-			}
-
-			final HuId huId = Check.assumeNotNull(inventoryLineHU.getHuId(), "Every inventoryLineHU instance needs to have an HuId; inventoryLineHU={}", inventoryLineHU);
 			final Quantity qtyCountMinusBooked = inventoryLineHU.getQtyCountMinusBooked();
 			final boolean noHU = inventoryLineHU.getHuId() == null;
 			final boolean isMinusQty = qtyCountMinusBooked.signum() > 0;
