@@ -12,6 +12,7 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -107,11 +108,18 @@ public class PaymentBLTest
 			order.setProcessed(true);
 			saveRecord(order);
 
+			final InvoiceDocBaseType docBaseType = InvoiceDocBaseType.CustomerInvoice;
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(docBaseType.getCode());
+			docType.setIsSOTrx(docBaseType.isSales());
+			saveRecord(docType);
+
 			invoice = newInstance(I_C_Invoice.class);
 			invoice.setAD_Org_ID(1);
 			invoice.setC_Currency_ID(currencyEUR.getRepoId());
 			invoice.setGrandTotal(new BigDecimal("50.0"));
-			invoice.setIsSOTrx(true);
+			invoice.setC_DocType_ID(docType.getC_DocType_ID());
+			invoice.setIsSOTrx(docType.isSOTrx());
 			invoice.setProcessed(true);
 			saveRecord(invoice);
 		}

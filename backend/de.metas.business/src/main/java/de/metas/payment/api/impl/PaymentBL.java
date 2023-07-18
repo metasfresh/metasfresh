@@ -531,6 +531,27 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+	public void scheduleUpdateIsAllocated(@NonNull final PaymentId paymentId)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"paymentBL.scheduleUpdateIsAllocated",
+				ImmutableSet.of(paymentId),
+				this::testAllocated);
+	}
+
+	private void testAllocated(final List<PaymentId> paymentIds)
+	{
+		paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds))
+				.forEach(payment -> {
+					final boolean updated = testAllocation(payment);
+					if (updated)
+					{
+						paymentDAO.save(payment);
+					}
+				});
+	}
+
+	@Override
 	public void testAllocation(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment payment = getById(paymentId);

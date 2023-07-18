@@ -33,6 +33,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Value
@@ -52,6 +53,8 @@ public class BankStatementId implements RepoIdAware
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
+
+	public static Optional<BankStatementId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	public static Set<Integer> toIntSet(final Collection<BankStatementId> bankStatementIds)
 	{

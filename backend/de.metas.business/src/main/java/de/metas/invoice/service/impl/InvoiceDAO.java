@@ -51,7 +51,6 @@ import java.util.List;
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
 	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
-
 	public I_C_Invoice createInvoice(String trxName)
 	{
 		return InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, trxName);

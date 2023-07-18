@@ -7,6 +7,8 @@ import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsQuerySupplier;
+import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.forex.ForexContractId;
@@ -81,7 +83,7 @@ public class ForexContractRelatedDocumentsProvider implements IRelatedDocumentsP
 								.internalName(I_C_ForeignExchangeContract.Table_Name)
 								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowId(fecWindowId))
 								.priority(Priority.HIGHEST)
-								.query(createMQuery(contractIds))
+								.querySupplier(createQuerySupplier(contractIds))
 								.windowCaption(adWindowDAO.retrieveWindowName(fecWindowId))
 								.documentsCountSupplier(permissions -> contractIds.size())
 								.build()
@@ -103,10 +105,10 @@ public class ForexContractRelatedDocumentsProvider implements IRelatedDocumentsP
 		return adWindowId;
 	}
 
-	private static MQuery createMQuery(final ImmutableSet<ForexContractId> contractIds)
+	private static RelatedDocumentsQuerySupplier createQuerySupplier(final ImmutableSet<ForexContractId> contractIds)
 	{
 		final MQuery query = new MQuery(I_C_ForeignExchangeContract.Table_Name);
 		query.addRestriction(DB.buildSqlList(I_C_ForeignExchangeContract.COLUMNNAME_C_ForeignExchangeContract_ID, contractIds, null));
-		return query;
+		return RelatedDocumentsQuerySuppliers.ofQuery(query);
 	}
 }

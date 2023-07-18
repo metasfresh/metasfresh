@@ -92,7 +92,14 @@ BEGIN
         -- Backup existing lines
         DROP TABLE IF EXISTS tmp_prev_inventoryline;
         CREATE TEMPORARY TABLE tmp_prev_inventoryline AS
-        SELECT line, m_product_id, c_uom_id, qtycount, qtybook, costprice, m_locator_id, isactive
+        SELECT line,
+               m_product_id,
+               c_uom_id,
+               qtycount,
+               qtybook,
+               costprice,
+               m_locator_id,
+               isactive
         FROM m_inventoryline invl
         WHERE invl.m_inventory_id = p_M_Inventory_ID;
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -203,7 +210,7 @@ BEGIN
                NULL                                                                                   AS m_hu_id,
                NULL                                                                                   AS assignedto,
                NULL                                                                                   AS externalid,
-               costprice                                                                                   AS costprice,
+               costprice                                                                              AS costprice,
                --
                0                                                                                      AS qtybook,
                prev_invl.qtycount                                                                     AS qtycount,

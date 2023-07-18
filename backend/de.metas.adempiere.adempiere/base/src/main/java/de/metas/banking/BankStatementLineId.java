@@ -9,6 +9,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -61,6 +62,8 @@ public class BankStatementLineId implements RepoIdAware
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
+
+	public static Optional<BankStatementLineId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	public static boolean equals(@Nullable BankStatementLineId id1, @Nullable BankStatementLineId id2)
 	{

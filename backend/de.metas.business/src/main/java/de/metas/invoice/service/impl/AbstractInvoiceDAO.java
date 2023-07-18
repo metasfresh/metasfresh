@@ -19,14 +19,17 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -52,6 +55,7 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -81,7 +85,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
-
+	public static final Logger logger = LogManager.getLogger(AbstractInvoiceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
@@ -660,5 +664,69 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.stream()
 				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	@Nullable
+	public I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
+	{
+		if (inOutLine == null)
+		{
+			return null;
+		}
+
+		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Processed, true);
+
+		final InOutLineId inoutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inoutLineId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, orderLineId);
+
+		final ImmutableList<I_C_InvoiceLine> invoiceLines = queryBuilder.list();
+		if (invoiceLines.isEmpty())
+		{
+			logger.debug("None C_InvoiceLine found. Returning null.");
+			return null;
+		}
+
+		final ArrayList<I_C_InvoiceLine> matchedByInOutLine = new ArrayList<>();
+		final ArrayList<I_C_InvoiceLine> matchedByOrderLine = new ArrayList<>();
+		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
+		{
+			if (invoiceLine.getM_InOutLine_ID() == inoutLineId.getRepoId())
+			{
+				matchedByInOutLine.add(invoiceLine);
+			}
+			if (orderLineId != null && invoiceLine.getC_OrderLine_ID() == orderLineId.getRepoId())
+			{
+				matchedByOrderLine.add(invoiceLine);
+			}
+		}
+
+		if (!matchedByInOutLine.isEmpty())
+		{
+			if (matchedByInOutLine.size() > 1)
+			{
+				logger.warn("More than one invoice line of M_InOutLine_ID={} ({}). Returning null.", inoutLineId, matchedByInOutLine);
+				return null;
+			}
+			return matchedByInOutLine.get(0);
+		}
+
+		if (!matchedByOrderLine.isEmpty())
+		{
+			if (matchedByOrderLine.size() > 1)
+			{
+				logger.warn("More than one invoice line of C_OrderLine_ID={} ({}). Returning null.", orderLineId, matchedByOrderLine);
+				return null;
+			}
+			return matchedByOrderLine.get(0);
+		}
+
+		return null;
 	}
 }

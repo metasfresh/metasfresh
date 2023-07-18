@@ -23,6 +23,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,7 +39,6 @@ import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @ToString
-@Builder
 public class SAPGLJournal
 {
 	@NonNull @Getter private final SAPGLJournalId id;
@@ -59,7 +59,38 @@ public class SAPGLJournal
 	@NonNull @Getter private final String description;
 	@NonNull @Getter private final GLCategoryId glCategoryId;
 
-	public CurrencyId getCurrencyId() {return Money.getCommonCurrencyIdOfAll(totalAcctDR, totalAcctCR);}
+	@Builder
+	private SAPGLJournal(
+			@NonNull final SAPGLJournalId id,
+			@NonNull final SAPGLJournalCurrencyConversionCtx conversionCtx,
+			@NonNull final DocTypeId docTypeId,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final PostingType postingType,
+			@NonNull final DocStatus docStatus,
+			@NonNull @Singular final List<SAPGLJournalLine> lines,
+			@NonNull final Money totalAcctDR,
+			@NonNull final Money totalAcctCR,
+			@NonNull final OrgId orgId,
+			@NonNull final Dimension dimension,
+			@NonNull final String description,
+			@NonNull final GLCategoryId glCategoryId)
+	{
+		this.id = id;
+		this.conversionCtx = conversionCtx;
+		this.docTypeId = docTypeId;
+		this.acctSchemaId = acctSchemaId;
+		this.postingType = postingType;
+		this.docStatus = docStatus;
+		this.lines = new ArrayList<>(lines);
+		this.totalAcctDR = totalAcctDR;
+		this.totalAcctCR = totalAcctCR;
+		this.orgId = orgId;
+		this.dimension = dimension;
+		this.description = description;
+		this.glCategoryId = glCategoryId;
+	}
+
+	public CurrencyId getCurrencyId() {return conversionCtx.getCurrencyId();}
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -147,7 +178,13 @@ public class SAPGLJournal
 
 	private SAPGLJournalLine createLine(final @NonNull SAPGLJournalLineCreateRequest request, final @NonNull SAPGLJournalCurrencyConverter currencyConverter)
 	{
-		final Money amount = Money.of(request.getAmount(), conversionCtx.getCurrencyId());
+		final CurrencyId currencyId = conversionCtx.getCurrencyId();
+		if (request.getExpectedCurrencyId() != null && !CurrencyId.equals(request.getExpectedCurrencyId(), currencyId))
+		{
+			throw new AdempiereException("Expected GL Journal to have currency " + request.getExpectedCurrencyId() + " but it has " + currencyId);
+		}
+
+		final Money amount = Money.of(request.getAmount(), currencyId);
 		final Money amountAcct = currencyConverter.convertToAcctCurrency(amount, conversionCtx);
 
 		return SAPGLJournalLine.builder()
@@ -187,6 +224,11 @@ public class SAPGLJournal
 		{
 			line.setLine(lineNoProvider.getAndIncrement());
 		}
+	}
+
+	public void setProcessed(final boolean processed)
+	{
+		lines.forEach(line -> line.setProcessed(processed));
 	}
 
 	public void regenerateTaxLines(

@@ -28,6 +28,11 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_Line_StepDef;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDef;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -37,6 +42,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_Product;
 
@@ -52,17 +59,23 @@ public class M_MatchInv_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final M_MatchInv_StepDefData matchInvTable;
+	private final M_InOut_StepDefData inoutTable;
+	private final M_InOutLine_StepDefData inoutLineTable;
 
 	public M_MatchInv_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
-			@NonNull final M_MatchInv_StepDefData matchInvTable)
+			@NonNull final M_MatchInv_StepDefData matchInvTable,
+			@NonNull final M_InOut_StepDefData inoutTable,
+			@NonNull final M_InOutLine_StepDefData inoutLineTable)
 	{
 		this.productTable = productTable;
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
 		this.matchInvTable = matchInvTable;
+		this.inoutTable = inoutTable;
+		this.inoutLineTable = inoutLineTable;
 	}
 
 	@And("^after not more than (.*)s, M_MatchInv are found:$")
@@ -103,10 +116,24 @@ public class M_MatchInv_StepDef
 		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_InvoiceLine invoiceLineRecord = invoiceLineTable.get(invoiceLineIdentifier);
 
+		final String inoutIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_MatchInv.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String inoutLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_MatchInv.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+
 		final IQueryBuilder<I_M_MatchInv> queryBuilder = queryBL.createQueryBuilder(I_M_MatchInv.class)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, invoiceLineRecord.getC_InvoiceLine_ID());
+
+		if (Check.isNotBlank(inoutIdentifier))
+		{
+			final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+			queryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOut_ID, inout.getM_InOut_ID());
+		}
+		if (Check.isNotBlank(inoutLineIdentifier))
+		{
+			final I_M_InOutLine inoutLine = inoutLineTable.get(inoutLineIdentifier);
+			queryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, inoutLine.getM_InOutLine_ID());
+		}
 
 		return queryBuilder.create();
 	}

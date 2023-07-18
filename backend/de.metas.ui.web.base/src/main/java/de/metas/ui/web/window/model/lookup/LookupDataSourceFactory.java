@@ -54,7 +54,7 @@ import java.util.function.Function;
  */
 
 @Component
-public final class LookupDataSourceFactory
+public class LookupDataSourceFactory
 {
 	public static LookupDataSourceFactory sharedInstance()
 	{

@@ -27,6 +27,7 @@ import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.impl.FactAcctDAO;
@@ -37,27 +38,24 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.MAccount;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Stream;
 
 public class FactAcctBL implements IFactAcctBL
 {
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	@Override
 	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
 		final AccountDimension accountDimension = IFactAcctBL.extractAccountDimension(factAcct);
-		return Account.ofId(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()))
-				.withAccountConceptualName(FactAcctDAO.extractAccountConceptualName(factAcct));
+		@NonNull final AccountId accountId = accountDAO.getOrCreate(accountDimension);
+		return Account.ofId(accountId).withAccountConceptualName(FactAcctDAO.extractAccountConceptualName(factAcct));
 	}
 
 	@Override

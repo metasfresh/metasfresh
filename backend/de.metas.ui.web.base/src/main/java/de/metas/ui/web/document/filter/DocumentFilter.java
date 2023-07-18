@@ -288,6 +288,18 @@ public final class DocumentFilter
 	}
 
 	@Nullable
+	public Instant getParameterValueToAsInstantOrNull(@NonNull final String parameterName)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getValueToAsInstant();
+	}
+
+	@Nullable
 	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull final IntFunction<T> repoIdMapper)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);

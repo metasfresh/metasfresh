@@ -61,6 +61,7 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -118,6 +119,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -135,6 +138,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -153,6 +157,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -183,6 +188,8 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
+
+	public final static AdMessageKey MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = AdMessageKey.of("MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED");
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -1119,6 +1126,11 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void extendContractAndNotifyUser(final @NonNull ContractExtendingRequest request)
 	{
+		if (!isExtendableContract(request.getContract()))
+		{
+			throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
+		}
+
 		final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
 		final I_C_Flatrate_Conditions currentConditions = request.getContract().getC_Flatrate_Conditions();
 		seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
@@ -1860,7 +1872,7 @@ public class FlatrateBL implements IFlatrateBL
 			// Only consider terms with the same org.
 			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
 			// Also note that when finding a term for an invoice-candidate, that IC's org is used as a matching criterion
-			if(term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+			if (term.getAD_Org_ID() != newTerm.getAD_Org_ID())
 			{
 				continue;
 			}
@@ -2293,10 +2305,10 @@ public class FlatrateBL implements IFlatrateBL
 	public boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
 	{
 		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
-		
+
 		return isModularContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
 	}
-	
+
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
@@ -2345,5 +2357,68 @@ public class FlatrateBL implements IFlatrateBL
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.build()
 				.computeOrThrowEx();
+	}
+
+	@Override
+	@NonNull
+	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	{
+		final I_ModCntr_Settings newModCntrSettings = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class, settings);
+
+		final PO from = InterfaceWrapperHelper.getPO(settings);
+		final PO to = InterfaceWrapperHelper.getPO(newModCntrSettings);
+
+		PO.copyValues(from, to, true);
+
+		newModCntrSettings.setC_Year_ID(year.getC_Year_ID());
+
+		InterfaceWrapperHelper.save(newModCntrSettings);
+
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
+		childCRS.setParentPO(to);
+		childCRS.setBase(true);
+		childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(settings));
+
+		return newModCntrSettings;
+	}
+
+	@Override
+	public I_C_Flatrate_Conditions cloneConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
+	{
+		//
+		// make sure it's Modular Contracts first
+		if (!isModularContract(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID())))
+		{
+			throw new AdempiereException("Not Modular Contract Term");
+		}
+
+		final I_C_Flatrate_Conditions newFlatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
+
+		final PO from = InterfaceWrapperHelper.getPO(conditions);
+		final PO to = InterfaceWrapperHelper.getPO(newFlatrateConditions);
+
+		PO.copyValues(from, to, true);
+
+		newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
+		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+		newFlatrateConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
+		newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+
+		InterfaceWrapperHelper.save(newFlatrateConditions);
+
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
+		childCRS.setParentPO(to);
+		childCRS.setBase(true);
+		childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(conditions));
+
+		return newFlatrateConditions;
+
+	}
+
+	@Override
+	public boolean isExtendableContract(@NonNull final I_C_Flatrate_Term contract)
+	{
+		return !isModularContract(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()))
+				&& !ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(contract.getC_Flatrate_Conditions().getOnFlatrateTermExtend());
 	}
 }
