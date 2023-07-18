@@ -38,11 +38,11 @@ public class JsonRequestWarehouseAssignmentUpsertTest
 	@Test
 	void serializeDeserialize() throws IOException
 	{
-		final JsonRequestProductWarehouseAssignmentCreate request = getJsonRequestWarehouseAssignmentUpsert();
+		final JsonRequestProductWarehouseAssignmentSave request = getJsonRequestWarehouseAssignmentUpsert();
 
 		final String valueAsString = mapper.writeValueAsString(request);
 
-		final JsonRequestProductWarehouseAssignmentCreate readValue = mapper.readValue(valueAsString, JsonRequestProductWarehouseAssignmentCreate.class);
+		final JsonRequestProductWarehouseAssignmentSave readValue = mapper.readValue(valueAsString, JsonRequestProductWarehouseAssignmentSave.class);
 
 		assertThat(readValue).isEqualTo(request);
 	}
@@ -53,7 +53,7 @@ public class JsonRequestWarehouseAssignmentUpsertTest
 		final String valueAsString = "{\"requestItems\":[{\"warehouseIdentifier\":null,\"name\":null}],\"syncAdvise\":{\"ifNotExists\":\"CREATE\",\"ifExists\":\"REPLACE\"}}";
 
 		assertThatExceptionOfType(ValueInstantiationException.class)
-				.isThrownBy(() -> mapper.readValue(valueAsString, JsonRequestProductWarehouseAssignmentCreate.class))
+				.isThrownBy(() -> mapper.readValue(valueAsString, JsonRequestProductWarehouseAssignmentSave.class))
 				.withMessageContaining("At least one of warehouseIdentifier or name has to be specified")
 				.withCauseInstanceOf(RuntimeException.class);
 	}

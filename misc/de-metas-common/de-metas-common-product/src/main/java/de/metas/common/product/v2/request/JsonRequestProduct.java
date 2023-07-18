@@ -143,11 +143,8 @@ public class JsonRequestProduct
 	private boolean sapProductHierarchySet;
 
 	@ApiModelProperty(position = 190)
-	private JsonRequestProductWarehouseAssignmentCreate warehouseAssignments;
-
-	@ApiModelProperty(hidden = true)
-	private boolean warehouseAssignmentsSet;
-
+	private JsonRequestProductWarehouseAssignmentSave warehouseAssignments;
+	
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -248,10 +245,9 @@ public class JsonRequestProduct
 		this.sapProductHierarchySet = true;
 	}
 
-	public void setWarehouseAssignments(final JsonRequestProductWarehouseAssignmentCreate warehouseAssignments)
+	public void setWarehouseAssignments(final JsonRequestProductWarehouseAssignmentSave warehouseAssignments)
 	{
 		this.warehouseAssignments = warehouseAssignments;
-		this.warehouseAssignmentsSet = true;
 	}
 
 	@AllArgsConstructor

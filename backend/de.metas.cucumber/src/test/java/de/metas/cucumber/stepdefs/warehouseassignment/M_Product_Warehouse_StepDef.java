@@ -23,18 +23,20 @@
 package de.metas.cucumber.stepdefs.warehouseassignment;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.product.ProductId;
-import de.metas.warehouseassignment.model.ProductWarehouseAssignment;
-import de.metas.warehouseassignment.model.ProductWarehouseAssignmentCreateRequest;
-import de.metas.warehouseassignment.repository.ProductWarehouseAssignmentRepository;
+import de.metas.util.Services;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -51,6 +53,7 @@ import static org.assertj.core.api.Assertions.*;
 public class M_Product_Warehouse_StepDef
 {
 	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository = SpringContextHolder.instance.getBean(ProductWarehouseAssignmentRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_Product_Warehouse_StepDefData productWarehouseAssignmentTable;
@@ -103,20 +106,20 @@ public class M_Product_Warehouse_StepDef
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 
 		final String warehouseIdentifierCandidate = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Warehouse.COLUMNNAME_M_Warehouse_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ImmutableList<WarehouseId> warehouseIds = StepDefUtil.extractIdentifiers(warehouseIdentifierCandidate)
+		final ImmutableSet<WarehouseId> warehouseIds = StepDefUtil.extractIdentifiers(warehouseIdentifierCandidate)
 				.stream()
 				.map(warehouseTable::get)
 				.map(I_M_Warehouse::getM_Warehouse_ID)
 				.map(WarehouseId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 
-		final ProductWarehouseAssignmentCreateRequest request = ProductWarehouseAssignmentCreateRequest.builder()
+		final ProductWarehouseAssignments productWarehouseAssignment = ProductWarehouseAssignments.builder()
 				.productId(productId)
 				.warehouseIds(warehouseIds)
 				.build();
 
-		productWarehouseAssignmentRepository.create(request);
-		final ImmutableList<ProductWarehouseAssignment> createdWarehouseAssignments = productWarehouseAssignmentRepository.getForProductId(productId);
+		productWarehouseAssignmentRepository.save(productWarehouseAssignment);
+		final ImmutableList<I_M_Product_Warehouse> createdWarehouseAssignments = getByProductId(productId);
 
 		if (createdWarehouseAssignments.size() != warehouseIds.size())
 		{
@@ -141,12 +144,12 @@ public class M_Product_Warehouse_StepDef
 	private void validate_assignment(@NonNull final Map<String, String> tableRow)
 	{
 		final String assignmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Warehouse.COLUMNNAME_M_Product_Warehouse_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ProductWarehouseAssignment warehouseAssignment = productWarehouseAssignmentTable.get(assignmentIdentifier);
+		final I_M_Product_Warehouse warehouseAssignment = productWarehouseAssignmentTable.get(assignmentIdentifier);
 
 		final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Warehouse.COLUMNNAME_M_Warehouse_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
 
-		assertThat(warehouseAssignment.getWarehouseId().getRepoId()).as(I_M_Product_Warehouse.COLUMNNAME_M_Warehouse_ID).isEqualTo(warehouseRecord.getM_Warehouse_ID());
+		assertThat(warehouseAssignment.getM_Warehouse_ID()).as(I_M_Product_Warehouse.COLUMNNAME_M_Warehouse_ID).isEqualTo(warehouseRecord.getM_Warehouse_ID());
 	}
 
 	private void locate_assignments_by_product_id(@NonNull final Map<String, String> tableRow)
@@ -162,9 +165,9 @@ public class M_Product_Warehouse_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Warehouse.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final ImmutableList<ProductWarehouseAssignment> sortedWarehouseAssignments = productWarehouseAssignmentRepository.getForProductId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+		final ImmutableList<I_M_Product_Warehouse> sortedWarehouseAssignments = getByProductId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.stream()
-				.sorted(Comparator.comparing(ProductWarehouseAssignment::getWarehouseId))
+				.sorted(Comparator.comparing(I_M_Product_Warehouse::getM_Warehouse_ID))
 				.collect(ImmutableList.toImmutableList());
 
 		if (sortedWarehouseAssignments.size() != assignmentIdentifiers.size())
@@ -180,5 +183,14 @@ public class M_Product_Warehouse_StepDef
 		{
 			productWarehouseAssignmentTable.putOrReplace(assignmentIdentifiers.get(assignmentIndex), sortedWarehouseAssignments.get(assignmentIndex));
 		}
+	}
+
+	@NonNull
+	private ImmutableList<I_M_Product_Warehouse> getByProductId(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product_Warehouse.COLUMNNAME_M_Product_ID, productId)
+				.list();
 	}
 }

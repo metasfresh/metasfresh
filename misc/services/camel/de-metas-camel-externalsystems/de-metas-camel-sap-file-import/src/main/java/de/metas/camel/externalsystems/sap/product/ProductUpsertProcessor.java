@@ -32,8 +32,7 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
-import de.metas.common.product.v2.request.JsonRequestProductWarehouseAssignmentCreate;
-import de.metas.common.product.v2.request.JsonRequestProductWarehouseAssignmentCreateItem;
+import de.metas.common.product.v2.request.JsonRequestProductWarehouseAssignmentSave;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
@@ -146,17 +145,15 @@ public class ProductUpsertProcessor implements Processor
 		jsonRequestProduct.setPurchased(true);
 		jsonRequestProduct.setSAPProductHierarchy(product.getProductHierarchy());
 
-		if (Check.isNotBlank(product.getWarehouseName()))
-		{
-			final JsonRequestProductWarehouseAssignmentCreate jsonRequestProductWarehouseAssignmentCreate = JsonRequestProductWarehouseAssignmentCreate.builder()
-					.requestItems(ImmutableList.of(JsonRequestProductWarehouseAssignmentCreateItem.builder()
-														   .name(product.getWarehouseName())
-														   .build()))
-					.syncAdvise(SyncAdvise.REPLACE)
-					.build();
+		final JsonRequestProductWarehouseAssignmentSave jsonRequestProductWarehouseAssignmentCreate = JsonRequestProductWarehouseAssignmentSave.builder()
+				.warehouseIdentifiers(Optional.ofNullable(product.getWarehouseName())
+											  .filter(Check::isNotBlank)
+											  .map(ImmutableList::of)
+											  .orElseGet(ImmutableList::of))
+				.syncAdvise(SyncAdvise.REPLACE)
+				.build();
 
-			jsonRequestProduct.setWarehouseAssignments(jsonRequestProductWarehouseAssignmentCreate);
-		}
+		jsonRequestProduct.setWarehouseAssignments(jsonRequestProductWarehouseAssignmentCreate);
 
 		return Optional.of(jsonRequestProduct);
 	}

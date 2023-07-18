@@ -22,110 +22,107 @@
 
 package de.metas.rest_api.v2.warehouseassignment;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.common.product.v2.request.JsonRequestProductWarehouseAssignmentCreate;
-import de.metas.common.product.v2.request.JsonRequestProductWarehouseAssignmentCreateItem;
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.product.v2.request.JsonRequestProductWarehouseAssignmentSave;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.v2.warehouse.WarehouseService;
-import de.metas.warehouseassignment.model.ProductWarehouseAssignmentCreateRequest;
-import de.metas.warehouseassignment.repository.ProductWarehouseAssignmentRepository;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
+import de.metas.util.web.exception.MissingResourceException;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Service
 public class ProductWarehouseAssignmentRestService
 {
-	private static final Logger logger = LogManager.getLogger(ProductWarehouseAssignmentRestService.class);
-
-	private final WarehouseService warehouseService;
 	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository;
-	private final JsonRetrieverService jsonRetrieverService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 
 	public ProductWarehouseAssignmentRestService(
-			@NonNull final WarehouseService warehouseService,
 			@NonNull final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository,
-			@NonNull final JsonServiceFactory jsonServiceFactory)
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver)
 	{
-		this.warehouseService = warehouseService;
 		this.productWarehouseAssignmentRepository = productWarehouseAssignmentRepository;
-		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.externalIdentifierResolver = externalIdentifierResolver;
 	}
 
-	public void createOrReplaceProductWarehouseAssignments(
-			@Nullable final JsonRequestProductWarehouseAssignmentCreate jsonRequestProductWarehouseAssignmentCreate,
+	public void processProductWarehouseAssignments(
+			@Nullable final JsonRequestProductWarehouseAssignmentSave request,
 			@NonNull final ProductId productId,
 			@NonNull final OrgId orgId)
 	{
-		if (jsonRequestProductWarehouseAssignmentCreate != null)
+		if (request == null)
 		{
-			final SyncAdvise effectiveSyncAdvise = jsonRequestProductWarehouseAssignmentCreate.getSyncAdvise();
+			return;
+		}
 
-			if (effectiveSyncAdvise.getIfExists().isReplace())
-			{
-				final int noOfDeletedRecord = deleteForProductId(productId);
-				logger.debug("Deleted warehouse assignment records: " + noOfDeletedRecord);
+		final SyncAdvise effectiveSyncAdvise = request.getSyncAdvise();
 
-				create(ProductWarehouseAssignmentCreateRequest.builder()
-							   .productId(productId)
-							   .warehouseIds(getWarehouseIds(orgId, jsonRequestProductWarehouseAssignmentCreate.getRequestItems()))
-							   .build());
-			}
-			else
+		final ImmutableSet<WarehouseId> warehouseIdsToAssign = getWarehouseIds(orgId, request);
+
+		if (effectiveSyncAdvise.isFailIfNotExists() && !warehouseIdsToAssign.isEmpty())
+		{
+			final ProductWarehouseAssignments warehouseAssignments = productWarehouseAssignmentRepository.getByProductId(productId)
+					.orElseThrow(() -> new AdempiereException("No assignments found for productId=" + productId.getRepoId()));
+
+			final ImmutableSet<WarehouseId> missingWarehouseIds = warehouseIdsToAssign.stream()
+					.filter(warehouseId -> !warehouseAssignments.isWarehouseAssigned(warehouseId))
+					.collect(ImmutableSet.toImmutableSet());
+
+			if (!missingWarehouseIds.isEmpty())
 			{
-				throw new AdempiereException("Warehouse assignments only support REPLACE SyncAdvise !");
+				throw MissingResourceException.builder()
+						.resourceName("M_Product_Warehouse")
+						.resourceIdentifier("Missing WarehouseIds:" + missingWarehouseIds + ", m_product_id: " + productId.getRepoId())
+						.build()
+						.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
+		}
+
+		if (effectiveSyncAdvise.getIfExists().isReplace())
+		{
+			productWarehouseAssignmentRepository.save(ProductWarehouseAssignments.builder()
+															  .productId(productId)
+															  .warehouseIds(warehouseIdsToAssign)
+															  .build());
+		}
+		else
+		{
+			final ProductWarehouseAssignments assignments = productWarehouseAssignmentRepository.getByProductId(productId)
+					.map(existingAssignments -> existingAssignments.addAssignments(warehouseIdsToAssign))
+					.orElseGet(() -> ProductWarehouseAssignments.builder()
+							.productId(productId)
+							.warehouseIds(warehouseIdsToAssign)
+							.build());
+
+			productWarehouseAssignmentRepository.save(assignments);
 		}
 	}
 
 	@NonNull
-	private ImmutableList<WarehouseId> getWarehouseIds(
+	private ImmutableSet<WarehouseId> getWarehouseIds(
 			@NonNull final OrgId orgId,
-			@NonNull final List<JsonRequestProductWarehouseAssignmentCreateItem> requestItems)
+			@NonNull final JsonRequestProductWarehouseAssignmentSave request)
 	{
-		final ImmutableList.Builder<WarehouseId> warehouseIdBuilder = ImmutableList.builder();
+		final ImmutableSet.Builder<WarehouseId> warehouseIdBuilder = ImmutableSet.builder();
 
-		for (final JsonRequestProductWarehouseAssignmentCreateItem requestItem : requestItems)
-		{
-			if (requestItem.getWarehouseIdentifier() != null)
-			{
-				final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getWarehouseIdentifier());
+		request.getWarehouseIdentifiers()
+				.stream()
+				.map(ExternalIdentifier::of)
+				.forEach(externalIdentifier -> {
+					final WarehouseId warehouseId = externalIdentifierResolver.resolveWarehouseExternalIdentifier(externalIdentifier, orgId)
+							.orElseThrow(() -> new AdempiereException("WarehouseIdentifier could not be found: " + externalIdentifier.getRawValue()));
 
-				jsonRetrieverService.resolveWarehouseExternalIdentifier(externalIdentifier, orgId)
-						.ifPresent(warehouseIdBuilder::add);
-			}
-			else if (requestItem.getName() != null)
-			{
-				warehouseService.getWarehouseByName(orgId, requestItem.getName())
-						.ifPresent(warehouseIdBuilder::add);
-			}
-			else
-			{
-				throw new AdempiereException("At least one of warehouseIdentifier or name has to be specified.");
-			}
-		}
+					warehouseIdBuilder.add(warehouseId);
+				});
 
 		return warehouseIdBuilder.build();
-	}
-
-	private int deleteForProductId(@NonNull final ProductId productId)
-	{
-		return productWarehouseAssignmentRepository.deleteForProductId(productId);
-	}
-
-	private void create(@NonNull final ProductWarehouseAssignmentCreateRequest request)
-	{
-		productWarehouseAssignmentRepository.create(request);
 	}
 }

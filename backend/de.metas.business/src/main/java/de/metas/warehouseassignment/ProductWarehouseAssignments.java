@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-product
+ * de.metas.business
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,31 +20,36 @@
  * #L%
  */
 
-package de.metas.common.product.v2.request;
+package de.metas.warehouseassignment;
 
-import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import org.adempiere.warehouse.WarehouseId;
 
-import java.util.List;
-
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import java.util.Set;
 
 @Value
-@Builder
-@Jacksonized
-@ApiModel
-public class JsonRequestProductWarehouseAssignmentCreate
+@Builder(toBuilder = true)
+public class ProductWarehouseAssignments
 {
-	@ApiModelProperty(position = 10)
-	@NonNull
-	List<JsonRequestProductWarehouseAssignmentCreateItem> requestItems;
+	@NonNull ProductId productId;
 
-	@ApiModelProperty(position = 20, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@NonNull ImmutableSet<WarehouseId> warehouseIds;
+
+	public boolean isWarehouseAssigned(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseIds.contains(warehouseId);
+	}
+
 	@NonNull
-	SyncAdvise syncAdvise;
+	public ProductWarehouseAssignments addAssignments(@NonNull final Set<WarehouseId> warehouseIdsToAdd)
+	{
+		return toBuilder()
+				.warehouseIds(Sets.union(warehouseIds, warehouseIdsToAdd).immutableCopy())
+				.build();
+	}
 }

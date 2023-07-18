@@ -23,12 +23,12 @@
 package de.metas.cucumber.stepdefs.warehouseassignment;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.warehouseassignment.model.ProductWarehouseAssignment;
+import org.compiere.model.I_M_Product_Warehouse;
 
-public class M_Product_Warehouse_StepDefData extends StepDefData<ProductWarehouseAssignment>
+public class M_Product_Warehouse_StepDefData extends StepDefData<I_M_Product_Warehouse>
 {
 	public M_Product_Warehouse_StepDefData()
 	{
-		super(ProductWarehouseAssignment.class);
+		super(I_M_Product_Warehouse.class);
 	}
 }

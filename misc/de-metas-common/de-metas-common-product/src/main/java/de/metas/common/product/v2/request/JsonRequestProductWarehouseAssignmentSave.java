@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-product
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,22 +20,32 @@
  * #L%
  */
 
-package de.metas.warehouseassignment.model;
+package de.metas.common.product.v2.request;
 
-import de.metas.product.ProductId;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentId;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
+import lombok.extern.jackson.Jacksonized;
 
-@Builder
+import java.util.List;
+
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.WAREHOUSE_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+
 @Value
-public class ProductWarehouseAssignment
+@Builder
+@Jacksonized
+@ApiModel
+public class JsonRequestProductWarehouseAssignmentSave
 {
-	@NonNull ProductWarehouseAssignmentId id;
+	@ApiModelProperty(position = 10, value = WAREHOUSE_IDENTIFIER_DOC)
+	@NonNull
+	List<String> warehouseIdentifiers;
 
-	@NonNull WarehouseId warehouseId;
-
-	@NonNull ProductId productId;
+	@ApiModelProperty(position = 20, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@NonNull
+	SyncAdvise syncAdvise;
 }

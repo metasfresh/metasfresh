@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.warehouseassignment.model;
+package de.metas.warehouseassignment;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductId;

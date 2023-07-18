@@ -95,19 +95,22 @@ public class ProductRestService
 	private final SectionCodeService sectionCodeService;
 	private final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService;
 	private final JsonRetrieverService jsonRetrieverService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 
 	public ProductRestService(
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final SectionCodeService sectionCodeService)
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.sectionCodeService = sectionCodeService;
 		this.productWarehouseAssignmentRestService = productWarehouseAssignmentRestService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.externalIdentifierResolver = externalIdentifierResolver;
 	}
 
 	@NonNull
@@ -164,7 +167,7 @@ public class ProductRestService
 				final Product product = syncProductWithJson(jsonRequestProduct, existingProduct.get(), org);
 				productRepository.updateProduct(product);
 				createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, product.getId(), org);
-				productWarehouseAssignmentRestService.createOrReplaceProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
+				productWarehouseAssignmentRestService.processProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
 
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
@@ -181,7 +184,7 @@ public class ProductRestService
 			productId = productRepository.createProduct(createProductRequest).getId();
 
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
-			productWarehouseAssignmentRestService.createOrReplaceProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
+			productWarehouseAssignmentRestService.processProductWarehouseAssignments(jsonRequestProduct.getWarehouseAssignments(), productId, OrgId.ofRepoId(org.getAD_Org_ID()));
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
@@ -313,7 +316,7 @@ public class ProductRestService
 			}
 		}
 
-		return jsonRetrieverService.resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), OrgId.ofRepoId(org.getAD_Org_ID()));
+		return externalIdentifierResolver.resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), OrgId.ofRepoId(org.getAD_Org_ID()));
 	}
 
 	private void createOrUpdateBpartnerProducts(

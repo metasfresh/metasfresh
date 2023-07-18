@@ -32,8 +32,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.warehouseassignment.model.ProductWarehouseAssignment;
-import de.metas.warehouseassignment.repository.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -88,7 +87,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
-	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
+	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -505,29 +504,24 @@ public class C_OrderLine
 		dimensionService.updateRecordUserElements(orderLine, orderDimension);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void checkProductWarehouseAssignment(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final ImmutableSet<WarehouseId> assignedWarehouseIds = productWarehouseAssignmentRepository.getForProductId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
-				.stream()
-				.map(ProductWarehouseAssignment::getWarehouseId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (assignedWarehouseIds.isEmpty())
-		{
-			return;
-		}
-
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
-		if (!assignedWarehouseIds.contains(WarehouseId.ofRepoId(order.getM_Warehouse_ID())))
-		{
-			throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE)
-					.appendParametersToMessage()
-					.setParameter("C_Order_ID", order.getC_Order_ID())
-					.setParameter("C_OrderLine_ID", orderLineRecord.getC_OrderLine_ID())
-					.setParameter("C_Order.M_Warehouse_ID", order.getM_Warehouse_ID())
-					.setParameter("M_Warehouse_IDs assigned to Product", assignedWarehouseIds)
-					.markAsUserValidationError();
-		}
+
+		productWarehouseAssignmentRepository
+				.getByProductId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
+				.filter(assignments -> !assignments.isWarehouseAssigned(WarehouseId.ofRepoId(order.getM_Warehouse_ID())))
+				.ifPresent(assignments -> {
+					throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
+							.appendParametersToMessage()
+							.setParameter("C_Order_ID", orderLineRecord.getC_Order_ID())
+							.setParameter("C_OrderLine_ID", orderLineRecord.getC_OrderLine_ID())
+							.setParameter("C_Order.M_Warehouse_ID", order.getM_Warehouse_ID())
+							.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
+							.markAsUserValidationError();
+				});
 	}
 }

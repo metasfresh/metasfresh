@@ -29,7 +29,6 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
-import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
@@ -45,25 +44,17 @@ import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.greeting.GreetingRepository;
-import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.incoterms.repository.IncotermsRepository;
-import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.job.JobRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
-import de.metas.rest_api.v2.warehouse.WarehouseService;
-import de.metas.warehouseassignment.repository.ProductWarehouseAssignmentRepository;
 import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
@@ -76,6 +67,7 @@ import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
 import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
@@ -96,7 +88,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -172,16 +163,15 @@ public class ProductsRestControllerTest
 				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new BPartnerCreditLimitRepository());
 
-		final WarehouseService warehouseService = new WarehouseService(
-				jsonServiceFactory,
-				new HuForInventoryLineFactory(),
-				new InventoryService(new InventoryRepository(), new SourceHUsService()),
-				new ShipmentScheduleRepository(new ModelCacheInvalidationService(Optional.empty())),
-				new JsonAttributeService());
+		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
-		final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService = new ProductWarehouseAssignmentRestService(warehouseService, new ProductWarehouseAssignmentRepository(), jsonServiceFactory);
+		final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService = new ProductWarehouseAssignmentRestService(new ProductWarehouseAssignmentRepository(), externalIdentifierResolver);
 		//
-		final ProductRestService productRestService = new ProductRestService(productRepository, productWarehouseAssignmentRestService, externalReferenceRestControllerService, jsonServiceFactory, new SectionCodeService(sectionCodeRepository));
+		final ProductRestService productRestService = new ProductRestService(productRepository,
+																			 productWarehouseAssignmentRestService,
+																			 externalReferenceRestControllerService,
+																			 jsonServiceFactory,
+																			 new SectionCodeService(sectionCodeRepository), externalIdentifierResolver);
 		//
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}

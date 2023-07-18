@@ -89,13 +89,10 @@ public class JsonRequestUtil
 	}
 
 	@NonNull
-	public static JsonRequestProductWarehouseAssignmentCreate getJsonRequestWarehouseAssignmentUpsert()
+	public static JsonRequestProductWarehouseAssignmentSave getJsonRequestWarehouseAssignmentUpsert()
 	{
-		return JsonRequestProductWarehouseAssignmentCreate.builder()
-				.requestItems(ImmutableList.of(JsonRequestProductWarehouseAssignmentCreateItem.builder()
-													   .warehouseIdentifier("warehouseIdentifier")
-													   .name("name")
-													   .build()))
+8		return JsonRequestProductWarehouseAssignmentSave.builder()
+				.warehouseIdentifiers(ImmutableList.of("name"))
 				.syncAdvise(SyncAdvise.REPLACE)
 				.build();
 	}
