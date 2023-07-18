@@ -24,6 +24,7 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.springframework.lang.Nullable;
 
 /**
  * Re-enqueue {@link I_C_Printing_Queue} items.
@@ -45,6 +46,8 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 	private boolean p_FilterBySelectedQueueItems = false;
 
 	public static final String PARAM_FilterByProcessedQueueItems = "FilterByProcessedQueueItems";
+
+	@Nullable
 	private Boolean p_FilterByProcessedQueueItems = null;
 
 	public static final String PARAM_AD_Table_ID = "AD_Table_ID";
