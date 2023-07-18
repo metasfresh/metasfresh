@@ -4,10 +4,13 @@ import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { formatSortingQuery } from '../utils';
 
-export function topActionsRequest(windowId, documentId, tabId) {
-  return get(`
-    ${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions
-  `);
+export function topActionsRequest(windowId, documentId, tabId = null) {
+  const url =
+    tabId == null
+      ? `${config.API_URL}/window/${windowId}/${documentId}/topActions`
+      : `${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions`;
+
+  return get(url);
 }
 
 export function deleteRequest(
