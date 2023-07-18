@@ -23,8 +23,7 @@
 package de.metas.common.product.v2.request;
 
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,14 +37,13 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADV
 @Value
 @Builder
 @Jacksonized
-@ApiModel
 public class JsonRequestProductWarehouseAssignmentSave
 {
-	@ApiModelProperty(position = 10, value = WAREHOUSE_IDENTIFIER_DOC)
+	@Schema(description = WAREHOUSE_IDENTIFIER_DOC)
 	@NonNull
 	List<String> warehouseIdentifiers;
 
-	@ApiModelProperty(position = 20, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@Schema(description = READ_ONLY_SYNC_ADVISE_DOC)
 	@NonNull
 	SyncAdvise syncAdvise;
 }
