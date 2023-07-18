@@ -139,7 +139,6 @@
                 <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
                 <!-- <version>1.18.18</version> -->
                 <version>1.18.24</version>
-                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -314,7 +313,6 @@
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
                         <target>${metasfresh.java.version}</target>
-                        <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -582,7 +580,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>320org.apache.maven.plugins</groupId>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
                         <configuration>
                             <rules>
