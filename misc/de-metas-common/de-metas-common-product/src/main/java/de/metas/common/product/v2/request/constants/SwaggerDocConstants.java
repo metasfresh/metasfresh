@@ -36,7 +36,8 @@ public class SwaggerDocConstants
 
 	public static final String WAREHOUSE_IDENTIFIER_DOC = "Identifier of the warehouse in question. Can be\n"
 			+ "* a plain `<M_Warehouse_ID>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<M_Warehouse.ExternalId>`";
+			+ "* or an external identifier like `ext-<ExternalSystemName>-<M_Warehouse.ExternalId>`"
+			+ "* or a name like `name-<M_Warehouse.Name>`";
 	
 	public static final String ORG_CODE_PARAMETER_DOC = "`AD_Org.Value` of the Product(s) identified by the productIdentifier";
 

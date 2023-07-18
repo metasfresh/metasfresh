@@ -134,6 +134,12 @@ public class ExternalIdentifier
 			return new ExternalIdentifier(Type.INTERNAL_NAME, identifier, null);
 		}
 
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(identifier);
+		if (nameMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.NAME, identifier, null);
+		}
+
 		throw new AdempiereException("Unknown externalId type!")
 				.appendParametersToMessage()
 				.setParameter("externalId", identifier);
@@ -214,14 +220,14 @@ public class ExternalIdentifier
 		Check.assume(Type.NAME.equals(type),
 					 "The type of this instance needs to be {}; this={}", Type.NAME, this);
 
-		final Matcher valueMatcher = Type.NAME.pattern.matcher(rawValue);
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(rawValue);
 
-		if (!valueMatcher.matches())
+		if (!nameMatcher.matches())
 		{
 			throw new AdempiereException("External identifier of Name parsing failed. External Identifier:" + rawValue);
 		}
 
-		return valueMatcher.group(1);
+		return nameMatcher.group(1);
 	}
 
 	@AllArgsConstructor

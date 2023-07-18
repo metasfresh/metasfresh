@@ -283,41 +283,27 @@ Feature:product get/create/update using metasfresh api
   Scenario: as a REST-API invoker
   I want to be able to create product warehouse assignments
 
-    Given metasfresh contains M_SectionCode:
-      | M_SectionCode_ID.Identifier | Value                   |
-      | ALBERTA_346_sectionCode     | ALBERTA_346_sectionCode |
-
-    And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                             | Name                             |
-      | warehouse_1               | warehouseValueOutgoing_07122023_1 | warehouseNameOutgoing_07122023_1 |
-      | warehouse_2               | warehouseValueOutgoing_07122023_2 | warehouseNameOutgoing_07122023_2 |
-      | warehouse_3               | warehouseValueOutgoing_07122023_3 | warehouseNameOutgoing_07122023_3 |
+    Given metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                     | Name                     |
+      | warehouse_1               | warehouseValue_07122023_1 | warehouseName_07122023_1 |
+      | warehouse_2               | warehouseValue_07122023_2 | warehouseName_07122023_2 |
+      | warehouse_3               | warehouseValue_07122023_3 | warehouseName_07122023_3 |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
   {
   "requestItems": [
     {
-      "productIdentifier": "ext-ALBERTA-346",
-      "externalVersion": null,
-      "externalReferenceUrl": "www.ExternalReferenceURL.com",
-      "externalSystemConfigId": 540000,
-      "isReadOnlyInMetasfresh": false,
+      "productIdentifier": "ext-ALBERTA-07122023",
       "requestProduct": {
         "code": "code346",
         "codeSet": true,
-        "name": "Product_Test_07132023",
+        "name": "Product_Test_07122023",
         "nameSet": true,
         "type": "ITEM",
         "typeSet": true,
         "uomCode": "PCE",
         "uomCodeSet": true,
-        "ean": "ean_test",
-        "eanSet": true,
-        "gtin": "gtin_test",
-        "gtinSet": true,
-        "description": "test_description_07132023",
-        "descriptionSet": true,
         "discontinued": null,
         "discontinuedSet": false,
         "active": true,
@@ -327,27 +313,15 @@ Feature:product get/create/update using metasfresh api
         "productCategoryIdentifier": null,
         "productCategoryIdentifierSet": false,
         "syncAdvise": null,
-        "sectionCode":"ALBERTA_346_sectionCode",
-        "sectionCodeSet": true,
         "purchased":true,
         "purchasedSet":true,
-        "sapProductHierarchy": "HH",
-        "sapProductHierarchySet": true,
         "warehouseAssignments": {
-            "requestItems": [
-              {
-                "name": "warehouseNameOutgoing_07122023_1"
-              },
-              {
-                "warehouseIdentifier":"val-warehouseValueOutgoing_07122023_2"
-              }
-            ],
-            "syncAdvise": {
+          "warehouseIdentifiers": [ "name-warehouseName_07122023_1", "val-warehouseValue_07122023_2" ],
+          "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "REPLACE"
             }
-          },
-        "warehouseAssignmentsSet": true
+        }
       }
     }
   ],
@@ -359,43 +333,33 @@ Feature:product get/create/update using metasfresh api
   """
 
     Then locate product by external identifier
-      | M_Product_ID.Identifier | externalIdentifier |
-      | p_1                     | ext-ALBERTA-346    |
+      | M_Product_ID.Identifier | externalIdentifier   |
+      | p_1                     | ext-ALBERTA-07122023 |
 
     And locate warehouse assignments
       | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
       | p_1                     | a_1,a_2                           |
 
     And validate warehouse assignments
-      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier |
-      | a_1                               | warehouse_1               |
-      | a_2                               | warehouse_2               |
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier | M_Product_ID.Identifier |
+      | a_1                               | warehouse_1               | p_1                     |
+      | a_2                               | warehouse_2               | p_1                     |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
   {
   "requestItems": [
     {
-      "productIdentifier": "ext-ALBERTA-346",
-      "externalVersion": null,
-      "externalReferenceUrl": "www.ExternalReferenceURL.com",
-      "externalSystemConfigId": 540000,
-      "isReadOnlyInMetasfresh": false,
+      "productIdentifier": "ext-ALBERTA-07122023",
       "requestProduct": {
         "code": "code346",
         "codeSet": true,
-        "name": "Product_Test_07132023",
+        "name": "Product_Test_07122023",
         "nameSet": true,
         "type": "ITEM",
         "typeSet": true,
         "uomCode": "PCE",
         "uomCodeSet": true,
-        "ean": "ean_test",
-        "eanSet": true,
-        "gtin": "gtin_test",
-        "gtinSet": true,
-        "description": "test_description_07132023",
-        "descriptionSet": true,
         "discontinued": null,
         "discontinuedSet": false,
         "active": true,
@@ -405,24 +369,15 @@ Feature:product get/create/update using metasfresh api
         "productCategoryIdentifier": null,
         "productCategoryIdentifierSet": false,
         "syncAdvise": null,
-        "sectionCode":"ALBERTA_346_sectionCode",
-        "sectionCodeSet": true,
         "purchased":true,
         "purchasedSet":true,
-        "sapProductHierarchy": "HH",
-        "sapProductHierarchySet": true,
         "warehouseAssignments": {
-            "requestItems": [
-              {
-                "name": "warehouseNameOutgoing_07122023_3"
-              }
-            ],
-            "syncAdvise": {
+          "warehouseIdentifiers": [ "name-warehouseName_07122023_1"],
+          "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "REPLACE"
             }
-          },
-        "warehouseAssignmentsSet": true
+        }
       }
     }
   ],
@@ -432,11 +387,10 @@ Feature:product get/create/update using metasfresh api
   }
 }
   """
-
     Then locate warehouse assignments
       | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
       | p_1                     | a_3                               |
 
     And validate warehouse assignments
-      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier |
-      | a_3                               | warehouse_3               |
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier | M_Product_ID.Identifier |
+      | a_3                               | warehouse_3               | p_1                     |

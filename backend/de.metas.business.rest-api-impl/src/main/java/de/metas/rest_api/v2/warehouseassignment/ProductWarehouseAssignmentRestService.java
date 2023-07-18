@@ -111,18 +111,17 @@ public class ProductWarehouseAssignmentRestService
 			@NonNull final OrgId orgId,
 			@NonNull final JsonRequestProductWarehouseAssignmentSave request)
 	{
-		final ImmutableSet.Builder<WarehouseId> warehouseIdBuilder = ImmutableSet.builder();
-
-		request.getWarehouseIdentifiers()
+		return request.getWarehouseIdentifiers()
 				.stream()
 				.map(ExternalIdentifier::of)
-				.forEach(externalIdentifier -> {
-					final WarehouseId warehouseId = externalIdentifierResolver.resolveWarehouseExternalIdentifier(externalIdentifier, orgId)
-							.orElseThrow(() -> new AdempiereException("WarehouseIdentifier could not be found: " + externalIdentifier.getRawValue()));
+				.map(externalIdentifier -> resolveIdentifierOrError(externalIdentifier, orgId))
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
-					warehouseIdBuilder.add(warehouseId);
-				});
-
-		return warehouseIdBuilder.build();
+	@NonNull
+	private WarehouseId resolveIdentifierOrError(@NonNull final ExternalIdentifier externalIdentifier, @NonNull final OrgId orgId)
+	{
+		return externalIdentifierResolver.resolveWarehouseExternalIdentifier(externalIdentifier, orgId)
+				.orElseThrow(() -> new AdempiereException("WarehouseIdentifier could not be found: " + externalIdentifier.getRawValue()));
 	}
 }

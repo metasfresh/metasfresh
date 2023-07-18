@@ -149,7 +149,11 @@ public class M_Product_Warehouse_StepDef
 		final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Warehouse.COLUMNNAME_M_Warehouse_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
 
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Warehouse.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(productIdentifier);
+
 		assertThat(warehouseAssignment.getM_Warehouse_ID()).as(I_M_Product_Warehouse.COLUMNNAME_M_Warehouse_ID).isEqualTo(warehouseRecord.getM_Warehouse_ID());
+		assertThat(warehouseAssignment.getM_Product_ID()).as(I_M_Product_Warehouse.COLUMNNAME_M_Product_ID).isEqualTo(product.getM_Product_ID());
 	}
 
 	private void locate_assignments_by_product_id(@NonNull final Map<String, String> tableRow)
