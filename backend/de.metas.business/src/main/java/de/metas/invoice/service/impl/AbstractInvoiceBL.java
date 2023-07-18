@@ -122,6 +122,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
@@ -186,6 +187,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final SpringContextHolder.Lazy<ForexContractService> forexContractServiceLoader =
 			SpringContextHolder.lazyBean(ForexContractService.class);
@@ -206,6 +208,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
 
 	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
 
 	@Override
 	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
@@ -884,7 +887,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final org.compiere.model.I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		if (docType == null)
+		{
+			return;
+		}
 
 		if (!docType.isCopyDescriptionToDocument())
 		{

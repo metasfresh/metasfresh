@@ -104,12 +104,13 @@ public class AsyncBatchService
 	}
 
 	/**
-	 * Invokes the given {@code supplier} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
-	 * It's mandatory for the given {@code supplier} to assign those workpackages to the given async batch.
-	 * If the supplier enqueues zero workpackages, that's OK and nothing is done.
-	 * <br/>
-	 * @return the enqueuing result as returned by the supplier.
+	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
+	 * It's mandatory for the given Supplier<> to enqueue workpackages previously assigned to the given async batch.
 	 *
+	 * @param supplier     Supplier<>
+	 * @param asyncBatchId C_Async_Batch_ID
+	 * @param <T>          model type
+	 * @return model type of supplier
 	 * @see C_Queue_WorkPackage#processBatchFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
 	 */
 	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
@@ -125,7 +126,7 @@ public class AsyncBatchService
 			{
 				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 			}
-			else 
+			else
 			{
 				Loggables.withLogger(logger, Level.INFO).addLog("*** executeBatch: C_Async_Batch_ID: {} no workpackages were enqeued; Not waiting for asyncBatchObserver!", asyncBatchId.getRepoId());
 			}

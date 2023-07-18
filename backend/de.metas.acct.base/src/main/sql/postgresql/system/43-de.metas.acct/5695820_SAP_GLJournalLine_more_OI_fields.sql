@@ -82,7 +82,7 @@ ALTER TABLE SAP_GLJournalLine ADD CONSTRAINT OIPayment_SAPGLJournalLine FOREIGN 
 
 -- Name: C_BankStatement
 -- 2023-07-14T10:52:24.205Z
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541801,TO_TIMESTAMP('2023-07-14 13:52:24','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_BankStatement',TO_TIMESTAMP('2023-07-14 13:52:24','YYYY-MM-DD HH24:MI:SS'),100,'T')
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541801,TO_TIMESTAMP('2023-07-14 13:52:24','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_BankStatement OI',TO_TIMESTAMP('2023-07-14 13:52:24','YYYY-MM-DD HH24:MI:SS'),100,'T')
 ;
 
 -- 2023-07-14T10:52:24.207Z
