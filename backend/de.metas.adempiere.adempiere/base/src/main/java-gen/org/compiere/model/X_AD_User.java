@@ -781,18 +781,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public void setIsDunningContact (final boolean IsDunningContact)
-	{
-		set_Value (COLUMNNAME_IsDunningContact, IsDunningContact);
-	}
-
-	@Override
-	public boolean isDunningContact()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
-	}
-
-	@Override
 	public void setIsFullBPAccess (final boolean IsFullBPAccess)
 	{
 		set_Value (COLUMNNAME_IsFullBPAccess, IsFullBPAccess);

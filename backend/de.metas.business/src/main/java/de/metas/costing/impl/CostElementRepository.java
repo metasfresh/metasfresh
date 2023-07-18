@@ -1,4 +1,5 @@
 package de.metas.costing.impl;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -172,8 +173,6 @@ public class CostElementRepository implements ICostElementRepository
 	public List<CostElement> getByCostingMethod(@NonNull final CostingMethod costingMethod)
 	{
 		return streamByCostingMethod(costingMethod)
-				.streamForClientId(clientId)
-				// .filter(ce -> ce.getCostingMethod() != null) // commenting out because costingMethod is not null
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -181,9 +180,6 @@ public class CostElementRepository implements ICostElementRepository
 	public List<CostElement> getByClientId(@NonNull final ClientId clientId)
 	{
 		return getIndexedCostElements()
-				.streamForClientId(clientId)
-				.filter(CostElement::isMaterial)
-				.collect(ImmutableList.toImmutableList());
 				.streamByClientId(clientId)
 				.collect(ImmutableList.toImmutableList());
 	}
