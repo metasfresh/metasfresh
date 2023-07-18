@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
-import de.pentabyte.springfox.ApiEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -89,7 +88,6 @@ public class SyncAdvise
 			"")
 	public enum IfExists
 	{
-		@ApiEnum("Insert/update data that is specified in this request entity (incl. setting properties to `null`), but leave *other* pre-existing data untouched")
 		UPDATE_MERGE(true/* updateMerge */, false/* replace */),
 
 		DONT_UPDATE(false/* updateMerge */, false/* replace */),
