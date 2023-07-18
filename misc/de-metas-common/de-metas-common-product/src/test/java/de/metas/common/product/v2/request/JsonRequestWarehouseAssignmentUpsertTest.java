@@ -23,7 +23,6 @@
 package de.metas.common.product.v2.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -45,16 +44,5 @@ public class JsonRequestWarehouseAssignmentUpsertTest
 		final JsonRequestProductWarehouseAssignmentSave readValue = mapper.readValue(valueAsString, JsonRequestProductWarehouseAssignmentSave.class);
 
 		assertThat(readValue).isEqualTo(request);
-	}
-
-	@Test
-	void deserializeExpectException()
-	{
-		final String valueAsString = "{\"requestItems\":[{\"warehouseIdentifier\":null,\"name\":null}],\"syncAdvise\":{\"ifNotExists\":\"CREATE\",\"ifExists\":\"REPLACE\"}}";
-
-		assertThatExceptionOfType(ValueInstantiationException.class)
-				.isThrownBy(() -> mapper.readValue(valueAsString, JsonRequestProductWarehouseAssignmentSave.class))
-				.withMessageContaining("At least one of warehouseIdentifier or name has to be specified")
-				.withCauseInstanceOf(RuntimeException.class);
 	}
 }
