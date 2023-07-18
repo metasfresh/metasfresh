@@ -47,7 +47,7 @@ public class OIViewData implements IEditableRowsData<OIRow>
 	@NonNull private final SAPGLJournalId glJournalId;
 	@NonNull private final SynchronizedMutable<SAPGLJournal> glJournalHolder;
 	@NonNull private final AcctSchema acctSchema;
-	@Getter @Nullable private final DocumentFilter filter;
+	@Getter @Nullable private DocumentFilter filter;
 
 	//
 	// state
@@ -83,6 +83,12 @@ public class OIViewData implements IEditableRowsData<OIRow>
 		headerPropertiesHolder.setValue(null);
 		glJournalHolder.setValue(null);
 		loadRows(getUserInput());
+	}
+
+	public void clearFilter()
+	{
+		this.filter = null;
+		invalidateAll();
 	}
 
 	private void loadRows(@NonNull final OIRowUserInputParts userInput)
