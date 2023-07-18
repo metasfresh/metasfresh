@@ -65,6 +65,9 @@ import java.util.Set;
 @Component
 public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHandler
 {
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
+			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
+			.build();
 	// services
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
@@ -72,10 +75,6 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
 	private final CostingMethodHandlerUtils utils;
-
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
-			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
-			.build();
 
 	public ManufacturingLastPOCostingMethodHandler(
 			@NonNull final CostingMethodHandlerUtils utils)
@@ -98,82 +97,136 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		// TODO FIXME
-		// final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
-		// if (!existingCostDetails.isEmpty())
-		// {
-		// 	return Optional.of(utils.toCostDetailCreateResult(existingCostDetails));
-		// }
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
+		{
+			CostDetail mainCostDetail = null;
+			CostDetail costAdjustmentDetail = null;
+			CostDetail alreadyShippedDetail = null;
+			for (final CostDetail existingCostDetail : existingCostDetails)
+			{
+				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
+				switch (amtType)
+				{
+					case MAIN -> {
+						if (mainCostDetail != null)
+						{
+							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
+						}
+						mainCostDetail = existingCostDetail;
+					}
+					case ADJUSTMENT -> {
+						if (costAdjustmentDetail != null)
+						{
+							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
+						}
+						costAdjustmentDetail = existingCostDetail;
+					}
+					case ALREADY_SHIPPED -> {
+						if (alreadyShippedDetail != null)
+						{
+							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
+						}
+						alreadyShippedDetail = existingCostDetail;
+					}
+					default -> throw new AdempiereException("Unknown type: " + amtType);
+				}
+			}
+
+			if (mainCostDetail == null)
+			{
+				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
+			}
+
+			// make sure DateAcct is up-to-date
+			utils.updateDateAcct(mainCostDetail, request.getDate());
+			if (costAdjustmentDetail != null)
+			{
+				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
+			}
+			if (alreadyShippedDetail != null)
+			{
+				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
+			}
+
+			return Optional.of(
+					utils.toCostDetailCreateResult(mainCostDetail)
+							.withAmt(CostAmountDetailed.builder()
+									.mainAmt(mainCostDetail.getAmt())
+									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
+									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
+									.build())
+			);
+		}
+
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
+		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
+
+		final PPOrderCosts orderCosts;
+		final CurrentCost currentCost;
+
+		final CostDetailCreateResult result;
+		if (costCollectorType.isMaterialReceiptOrCoProduct())
+		{
+			orderCosts = ppOrderCostsService.getByOrderId(orderId);
+			currentCost = utils.getCurrentCost(request);
+			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
+		}
+		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
+		{
+			orderCosts = ppOrderCostsService.getByOrderId(orderId);
+			currentCost = utils.getCurrentCost(request);
+			result = createComponentIssue(request, currentCost, orderCosts);
+		}
+		else if (costCollectorType.isActivityControl())
+		{
+			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if (actualResourceId.isNoResource())
+			{
+				return Optional.empty();
+			}
+
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
+
+			orderCosts = null;
+			currentCost = null;
+			result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
+		}
+		else if (costCollectorType.isUsageVariance()
+				|| costCollectorType.isMethodChangeVariance()
+				|| costCollectorType.isRateVariance())
+		{
+			// those cost collectors are specific to standard costs,
+			// so we are ignoring them
+			orderCosts = null;
+			currentCost = null;
+			result = null;
+		}
+		else
+		{
+			orderCosts = null;
+			currentCost = null;
+			result = null;
+		}
+
 		//
-		// final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
-		// final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
-		// final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
-		// final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
-		// final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
+		if (orderCosts != null)
+		{
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
+			ppOrderCostsService.save(orderCosts);
+		}
+
 		//
-		// final PPOrderCosts orderCosts;
-		// final CurrentCost currentCost;
-		//
-		// final CostDetailCreateResult result;
-		// if (costCollectorType.isMaterialReceiptOrCoProduct())
-		// {
-		// 	orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		// 	currentCost = utils.getCurrentCost(request);
-		// 	result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
-		// }
-		// else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
-		// {
-		// 	orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		// 	currentCost = utils.getCurrentCost(request);
-		// 	result = createComponentIssue(request, currentCost, orderCosts);
-		// }
-		// else if (costCollectorType.isActivityControl())
-		// {
-		// 	final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-		// 	if(actualResourceId.isNoResource())
-		// 	{
-		// 		return Optional.empty();
-		// 	}
-		//
-		// 	final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
-		// 	final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
-		//
-		// 	orderCosts = null;
-		// 	currentCost = null;
-		// 	result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
-		// }
-		// else if (costCollectorType.isUsageVariance()
-		// 		|| costCollectorType.isMethodChangeVariance()
-		// 		|| costCollectorType.isRateVariance())
-		// {
-		// 	// those cost collectors are specific to standard costs,
-		// 	// so we are ignoring them
-		// 	orderCosts = null;
-		// 	currentCost = null;
-		// 	result = null;
-		// }
-		// else
-		// {
-		// 	orderCosts = null;
-		// 	currentCost = null;
-		// 	result = null;
-		// }
-		//
-		// //
-		// if (orderCosts != null)
-		// {
-		// 	orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
-		// 	ppOrderCostsService.save(orderCosts);
-		// }
-		//
-		// //
-		// if (currentCost != null)
-		// {
-		// 	utils.saveCurrentCost(currentCost);
-		// }
-		//
-		// return Optional.ofNullable(result);
-		return null;
+		if (currentCost != null)
+		{
+			utils.saveCurrentCost(currentCost);
+		}
+
+		return Optional.ofNullable(result);
 	}
 
 	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)
