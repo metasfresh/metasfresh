@@ -172,7 +172,7 @@ public class ProductsRestControllerTest
 																			 jsonServiceFactory,
 																			 externalIdentifierResolver);
 		//
-		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
+		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService, externalIdentifierResolver);
 	}
 
 	private void createMasterData()
