@@ -77,7 +77,7 @@ import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtil
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.relation.BPRelationsService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -118,7 +118,7 @@ public class CreateInvoiceCandidatesService
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 	private final BPRelationsService bpRelationsService;
 	private final JsonRetrieverService jsonRetrieverService;
 
@@ -127,7 +127,7 @@ public class CreateInvoiceCandidatesService
 			@NonNull final CurrencyService currencyService,
 			@NonNull final ManualCandidateService manualCandidateService,
 			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository,
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final BPRelationsService bpRelationsService,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
@@ -135,7 +135,7 @@ public class CreateInvoiceCandidatesService
 		this.docTypeService = docTypeService;
 		this.manualCandidateService = manualCandidateService;
 		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.bpRelationsService = bpRelationsService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
@@ -310,7 +310,7 @@ public class CreateInvoiceCandidatesService
 			return null;
 		}
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, orgId).orElseThrow(() -> MissingResourceException.builder()
+		final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(productIdentifier, orgId).orElseThrow(() -> MissingResourceException.builder()
 				.resourceName("product")
 				.resourceIdentifier(productIdentifier.toString())
 				.parentResource(item)
