@@ -338,7 +338,10 @@ export function fetchDocument({
         const state = getState();
         const view = getView(state, windowId, isModal);
 
-        if (!websocketRefresh) {
+        // Refresh filters
+        // NOTE: do it even is a websocketRefresh because it might the filter has changed
+        // if (!websocketRefresh)
+        {
           const filterId = getEntityRelatedId({ windowId, viewId });
           const activeFiltersCaptions = populateFiltersCaptions({
             filterData: view.layout.filters,
