@@ -25,7 +25,6 @@ package de.metas.rest_api.v1.payment;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
@@ -42,6 +41,7 @@ import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -132,10 +132,12 @@ class PaymentRestEndpointTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 
 		// run the "before_complete" interceptor
+		final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository = new ProductWarehouseAssignmentRepository();
 		new C_Order(bpartnerBL, 
 					new OrderLineDetailRepository(), 
 					documentLocationBL, 
-					new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()))
+					new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+					productWarehouseAssignmentRepository)
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

@@ -717,7 +717,7 @@ public class JsonRetrieverService
 				.bPartnerProducts(productBPartners)
 				.build();
 	}
-
+	
 	/**
 	 * Visible to verify that caching actually works the way we expect it to (=> performance)
 	 */

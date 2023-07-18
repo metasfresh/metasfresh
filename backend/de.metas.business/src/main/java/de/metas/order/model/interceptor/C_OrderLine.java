@@ -32,6 +32,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -43,12 +44,14 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -78,11 +81,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
  * #L%
  */
 
+@Component
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
+	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -99,18 +104,21 @@ public class C_OrderLine
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
 
 	private final DimensionService dimensionService;
+	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final DimensionService dimensionService,
+			@NonNull final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
 		this.dimensionService = dimensionService;
+		this.productWarehouseAssignmentRepository = productWarehouseAssignmentRepository;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -496,4 +504,24 @@ public class C_OrderLine
 		dimensionService.updateRecordUserElements(orderLine, orderDimension);
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
+	public void checkProductWarehouseAssignment(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+
+		productWarehouseAssignmentRepository
+				.getByProductId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
+				.filter(assignments -> !assignments.isWarehouseAssigned(WarehouseId.ofRepoId(order.getM_Warehouse_ID())))
+				.ifPresent(assignments -> {
+					throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
+							.appendParametersToMessage()
+							.setParameter("C_Order_ID", orderLineRecord.getC_Order_ID())
+							.setParameter("C_OrderLine_ID", orderLineRecord.getC_OrderLine_ID())
+							.setParameter("C_Order.M_Warehouse_ID", order.getM_Warehouse_ID())
+							.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
+							.markAsUserValidationError();
+				});
+	}
 }

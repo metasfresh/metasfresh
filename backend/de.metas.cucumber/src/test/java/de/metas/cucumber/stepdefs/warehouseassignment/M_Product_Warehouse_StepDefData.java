@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,15 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.common;
+package de.metas.cucumber.stepdefs.warehouseassignment;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_M_Product_Warehouse;
 
-import static de.metas.camel.externalsystems.sap.SAPConstants.SAP_SYSTEM_NAME;
-
-@UtilityClass
-public class ExternalIdentifierFormat
+public class M_Product_Warehouse_StepDefData extends StepDefData<I_M_Product_Warehouse>
 {
-	private final static String EXTERNAL_ID_PREFIX = "ext";
-	private final static String NAME_PREFIX = "name";
-
-	@NonNull
-	public static String formatExternalId(@NonNull final String externalId)
+	public M_Product_Warehouse_StepDefData()
 	{
-		return EXTERNAL_ID_PREFIX + "-" + SAP_SYSTEM_NAME + "-" + externalId;
-	}
-
-	@NonNull
-	public static String formatName(@NonNull final String name)
-	{
-		return NAME_PREFIX + "-" + name;
+		super(I_M_Product_Warehouse.class);
 	}
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -12,11 +13,11 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -27,9 +28,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import static de.metas.common.util.Check.assume;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -180,23 +180,31 @@ public interface IWarehouseDAO extends ISingletonService
 		boolean includeAnyOrg;
 		boolean outOfTrx;
 
+		/**
+		 * Applied if not empty. {@code AND}ed with {@code name} if given.
+		 */
+		String name;
+
 		@Builder
 		private WarehouseQuery(
 				@Nullable final String value,
 				@Nullable final ExternalId externalId,
 				@NonNull final OrgId orgId,
 				@Nullable final Boolean includeAnyOrg,
-				@Nullable final Boolean outOfTrx)
+				@Nullable final Boolean outOfTrx,
+				@Nullable final String name)
 		{
-			final boolean valueIsSet = !isEmpty(value, true);
+			final boolean valueIsSet = Check.isNotBlank(value);
 			final boolean externalIdIsSet = externalId != null;
-			assume(valueIsSet || externalIdIsSet, "At least one of value or externalId need to be specified");
+			final boolean nameIsSet = Check.isNotBlank(name);
+			assume(valueIsSet || externalIdIsSet || nameIsSet, "At least one of value, externalId or name has to be specified");
 
 			this.value = value;
 			this.externalId = externalId;
 			this.orgId = orgId;
 			this.includeAnyOrg = coalesceNotNull(includeAnyOrg, false);
 			this.outOfTrx = coalesceNotNull(outOfTrx, false);
+			this.name = name;
 		}
 	}
 

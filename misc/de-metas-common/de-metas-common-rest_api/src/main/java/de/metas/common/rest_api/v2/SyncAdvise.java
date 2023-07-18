@@ -56,6 +56,12 @@ public class SyncAdvise
 			.ifExists(IfExists.DONT_UPDATE)
 			.build();
 
+	public static final SyncAdvise REPLACE = SyncAdvise
+			.builder()
+			.ifNotExists(IfNotExists.CREATE)
+			.ifExists(IfExists.REPLACE)
+			.build();
+
 	public enum IfNotExists
 	{
 		CREATE(false/* fail */, true/* create */),
@@ -68,7 +74,7 @@ public class SyncAdvise
 		@Getter
 		private final boolean create;
 
-		private IfNotExists(boolean fail, boolean create)
+		IfNotExists(final boolean fail, final boolean create)
 		{
 			this.fail = fail;
 			this.create = create;
@@ -78,16 +84,22 @@ public class SyncAdvise
 	public enum IfExists
 	{
 		@ApiEnum("Insert/update data that is specified in this request entity (incl. setting properties to `null`), but leave *other* pre-existing data untouched")
-		UPDATE_MERGE(true/* updateMerge */),
+		UPDATE_MERGE(true/* updateMerge */, false/* replace */),
 
-		DONT_UPDATE(false/* updateMerge */);
+		DONT_UPDATE(false/* updateMerge */, false/* replace */),
+		
+		REPLACE(false/* updateMerge */, true/* replace */);
 
 		@Getter
 		private final boolean update;
 
-		IfExists(boolean update)
+		@Getter
+		private final boolean replace;
+
+		IfExists(final boolean update, final boolean replace)
 		{
 			this.update = update;
+			this.replace = replace;
 		}
 	}
 
@@ -113,7 +125,9 @@ public class SyncAdvise
 		return IfNotExists.FAIL.equals(ifNotExists);
 	}
 
-	/** If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching. */
+	/**
+	 * If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching.
+	 */
 	@JsonIgnore
 	public boolean isLoadReadOnly()
 	{
