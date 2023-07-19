@@ -10,13 +10,13 @@ import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
 import de.metas.acct.open_items.FAOpenItemsHandler;
+import de.metas.acct.open_items.FAOpenItemsHandlerMatchingKey;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_AllocationHdr;
@@ -41,9 +41,19 @@ public class BPartnerOIHandler implements FAOpenItemsHandler
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	@Override
-	public @NonNull Set<AccountConceptualName> getHandledAccountConceptualNames()
+	public @NonNull Set<FAOpenItemsHandlerMatchingKey> getMatchers()
 	{
-		return ImmutableSet.of(V_Liability, V_Prepayment, C_Receivable, C_Prepayment);
+		return ImmutableSet.of(
+				FAOpenItemsHandlerMatchingKey.of(V_Liability, I_C_Invoice.Table_Name),
+				FAOpenItemsHandlerMatchingKey.of(V_Liability, I_C_AllocationHdr.Table_Name),
+				FAOpenItemsHandlerMatchingKey.of(V_Prepayment, I_C_AllocationHdr.Table_Name),
+				FAOpenItemsHandlerMatchingKey.of(V_Prepayment, I_C_Payment.Table_Name),
+				//
+				FAOpenItemsHandlerMatchingKey.of(C_Receivable, I_C_Invoice.Table_Name),
+				FAOpenItemsHandlerMatchingKey.of(C_Receivable, I_C_AllocationHdr.Table_Name),
+				FAOpenItemsHandlerMatchingKey.of(C_Prepayment, I_C_AllocationHdr.Table_Name),
+				FAOpenItemsHandlerMatchingKey.of(C_Prepayment, I_C_Payment.Table_Name)
+		);
 	}
 
 	@Override
@@ -125,18 +135,33 @@ public class BPartnerOIHandler implements FAOpenItemsHandler
 	}
 
 	@Override
-	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
-	{
-		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
-		openItemTrxInfo.getKey().getInvoiceId().ifPresent(invoiceBL::scheduleUpdateIsPaid);
-		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
-	}
+	public void onGLJournalLineCompleted(final SAPGLJournalLine line) {updateDocumentAllocatedAndPaidFlags(line);}
 
 	@Override
-	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
+	public void onGLJournalLineReactivated(final SAPGLJournalLine line) {updateDocumentAllocatedAndPaidFlags(line);}
+
+	private void updateDocumentAllocatedAndPaidFlags(final SAPGLJournalLine line)
 	{
-		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
-		openItemTrxInfo.getKey().getInvoiceId().ifPresent(invoiceBL::scheduleUpdateIsPaid);
-		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
+		final FAOpenItemTrxInfo openItemTrxInfo = line.getOpenItemTrxInfo();
+		if (openItemTrxInfo == null)
+		{
+			// shall not happen
+			return;
+		}
+
+		final AccountConceptualName accountConceptualName = openItemTrxInfo.getAccountConceptualName();
+		if (accountConceptualName == null)
+		{
+			return;
+		}
+
+		if (accountConceptualName.isAnyOf(V_Liability, C_Receivable))
+		{
+			openItemTrxInfo.getKey().getInvoiceId().ifPresent(invoiceBL::scheduleUpdateIsPaid);
+		}
+		else if (accountConceptualName.isAnyOf(V_Prepayment, C_Prepayment))
+		{
+			openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
+		}
 	}
 }

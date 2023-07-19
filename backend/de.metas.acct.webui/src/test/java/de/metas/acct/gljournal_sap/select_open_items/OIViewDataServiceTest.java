@@ -24,7 +24,7 @@ import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.open_items.handlers.BPartnerOIHandler;
-import de.metas.acct.open_items.handlers.BankOIHandler;
+import de.metas.acct.open_items.handlers.PaymentOIHandler;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
@@ -108,7 +108,7 @@ class OIViewDataServiceTest
 								elementValueService,
 								Optional.of(ImmutableList.of(
 										new BPartnerOIHandler(),
-										new BankOIHandler()
+										new PaymentOIHandler()
 								))))
 				)
 				.elementValueService(elementValueService)
