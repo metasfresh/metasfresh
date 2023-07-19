@@ -281,7 +281,7 @@ public class C_Invoice // 03771
 		final IInvoiceBL invoiceBL = this.invoiceBL;
 
 		final boolean ignoreProcessed = true; // need to ignoreProcessed, because right now, Processed not yet set to true by the engine.
-		invoiceBL.testAllocation(invoice, ignoreProcessed);
+		invoiceBL.testAllocated(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), ignoreProcessed);
 	}
 
 	/**

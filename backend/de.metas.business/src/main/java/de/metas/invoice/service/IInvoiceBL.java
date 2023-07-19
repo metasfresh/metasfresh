@@ -181,6 +181,10 @@ public interface IInvoiceBL extends ISingletonService
 
 	void scheduleUpdateIsPaid(@NonNull InvoiceId invoiceId);
 
+	void testAllocated(@NonNull InvoiceId invoiceId);
+
+	boolean testAllocated(@NonNull InvoiceId invoiceId, boolean ignoreProcessed);
+
 	/**
 	 * Test Allocation (and set paid flag)
 	 *

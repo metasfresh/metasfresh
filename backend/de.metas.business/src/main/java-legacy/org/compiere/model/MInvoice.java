@@ -789,7 +789,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public boolean testAllocation()
 	{
 		final boolean ignoreProcessed = false;
-		return Services.get(IInvoiceBL.class).testAllocation(this, ignoreProcessed);
+		return Services.get(IInvoiceBL.class).testAllocated(InvoiceId.ofRepoId(getC_Invoice_ID()), ignoreProcessed);
 	}    // testAllocation
 
 	@Override
