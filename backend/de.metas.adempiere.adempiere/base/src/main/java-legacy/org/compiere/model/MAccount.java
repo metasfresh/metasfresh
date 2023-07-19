@@ -20,6 +20,7 @@ import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
@@ -103,7 +104,9 @@ public class MAccount extends X_C_ValidCombination
 	 * @param ctx       context
 	 * @param dimension accounting dimension
 	 * @return existing account or a newly created one; never returns null
+	 * @deprecated please use de.metas.acct.api.IAccountDAO#getOrCreate(de.metas.acct.api.AccountDimension)
 	 */
+	@Deprecated
 	public static MAccount get(final Properties ctx, final AccountDimension dimension)
 	{
 		// services
@@ -265,4 +268,6 @@ public class MAccount extends X_C_ValidCombination
 		return (X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
 				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
 	}
+
+	public ElementValueId getElementValueId() {return ElementValueId.ofRepoId(getAccount_ID());}
 }

@@ -6,12 +6,15 @@ import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.DisplayNameQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -59,6 +62,7 @@ public class ForexContractRepository
 			final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 			return ForexContract.builder()
 					.id(extractId(record))
+					.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 					.documentNo(record.getDocumentNo())
 					.created(record.getCreated().toInstant())
 					.createdBy(UserId.ofRepoId(record.getCreatedBy()))
@@ -88,7 +92,7 @@ public class ForexContractRepository
 		return ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID());
 	}
 
-	public ImmutableList<ForexContract> query(@NonNull ForexContractQuery query)
+	public ImmutableList<ForexContract> query(@NonNull final ForexContractQuery query)
 	{
 		return toSqlQuery(query)
 				.stream()
@@ -96,12 +100,12 @@ public class ForexContractRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableSet<ForexContractId> queryIds(@NonNull ForexContractQuery query)
+	public ImmutableSet<ForexContractId> queryIds(@NonNull final ForexContractQuery query)
 	{
 		return toSqlQuery(query).listIds(ForexContractId::ofRepoId);
 	}
 
-	private IQuery<I_C_ForeignExchangeContract> toSqlQuery(@NonNull ForexContractQuery query)
+	private IQuery<I_C_ForeignExchangeContract> toSqlQuery(@NonNull final ForexContractQuery query)
 	{
 		final IQueryBuilder<I_C_ForeignExchangeContract> queryBuilder = queryBL.createQueryBuilder(I_C_ForeignExchangeContract.class)
 				.addOnlyActiveRecordsFilter()
@@ -122,6 +126,16 @@ public class ForexContractRepository
 		if (query.isOnlyWithOpenAmount())
 		{
 			queryBuilder.addCompareFilter(I_C_ForeignExchangeContract.COLUMN_FEC_Amount_Open, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		}
+
+		if (Check.isNotBlank(query.getDisplayNameSearchTerm()))
+		{
+			queryBuilder.addFilter(DisplayNameQueryFilter.of(I_C_ForeignExchangeContract.class, query.getDisplayNameSearchTerm()));
+		}
+
+		if (query.getSectionCodeId() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_ForeignExchangeContract.COLUMNNAME_M_SectionCode_ID, query.getSectionCodeId(), null);
 		}
 
 		return queryBuilder.create();

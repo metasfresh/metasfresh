@@ -25,8 +25,6 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
@@ -36,6 +34,8 @@ import org.adempiere.warehouse.groups.WarehouseGroupAssignment;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.adempiere.warehouse.groups.WarehouseGroupId;
 import org.adempiere.warehouse.groups.WarehouseGroupsIndex;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.groups.picking.WarehousePickingGroupsIndex;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
@@ -761,6 +761,11 @@ public class WarehouseDAO implements IWarehouseDAO
 		if (query.getExternalId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
+		}
+
+		if (Check.isNotBlank(query.getName()))
+		{
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_Name, query.getName().trim());
 		}
 
 		final int warehouseRepoId = queryBuilder

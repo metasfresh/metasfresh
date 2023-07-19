@@ -18,13 +18,13 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.acct.doc.AcctDocContext;
@@ -685,10 +685,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * Calculates the discount factor (percentage of discountAmt from invoice's grand total)
 	 *
 	 * @param discountAmt discount amount (absolute amount)
-	 * @param invoice
 	 * @return discount factor, percentage between 0...1, high precision
 	 */
-	private final BigDecimal calculateDiscountFactor(final BigDecimal discountAmt, final I_C_Invoice invoice)
+	private BigDecimal calculateDiscountFactor(final BigDecimal discountAmt, final I_C_Invoice invoice)
 	{
 		if (discountAmt.signum() == 0)
 		{
@@ -717,10 +716,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	}
 
 	/**
-	 * Returns early payment discount account for given tax.
-	 *
-	 * @param taxId
-	 * @return
+	 * @return early payment discount account for given tax.
 	 */
 	private static Account getTaxDiscountAccount(final TaxId taxId, final boolean isDiscountExpense, final AcctSchema as)
 	{
@@ -735,16 +731,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		final String sql;
-		final String accountConceptualName;
+		final AccountConceptualName accountConceptualName;
 		if (isDiscountExpense)
 		{
 			sql = "SELECT T_PayDiscount_Exp_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-			accountConceptualName = I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Exp_Acct;
+			accountConceptualName = AccountConceptualName.ofString(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Exp_Acct);
 		}
 		else
 		{
 			sql = "SELECT T_PayDiscount_Rev_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-			accountConceptualName = I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Rev_Acct;
+			accountConceptualName = AccountConceptualName.ofString(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Rev_Acct);
 		}
 
 		final int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, taxId, acctSchemaId);
@@ -764,7 +760,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 *
 	 * @return WriteOff amount booked
 	 */
-	private final AmountSourceAndAcct createInvoiceWriteOffFacts(final Fact fact, final DocLine_Allocation line)
+	private AmountSourceAndAcct createInvoiceWriteOffFacts(final Fact fact, final DocLine_Allocation line)
 	{
 		final BigDecimal writeOffAmt = line.getWriteOffAmt();
 		if (writeOffAmt.signum() == 0)
@@ -890,10 +886,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	/**
 	 * Creates the {@link FactLine2} to book the purchase - sales invoice compensation
-	 *
-	 * @param fact
-	 * @param line
-	 * @return
 	 */
 	private AmountSourceAndAcct createPurchaseSalesInvoiceFacts(final Fact fact, final DocLine_Allocation line)
 	{
@@ -978,10 +970,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * <p>
 	 * It is also creating a new FactLine where the currency gain/loss is booked.
 	 *
-	 * @param line
-	 * @param fact
-	 * @param invoiceFactLine             invoice related booking (on Invoice date)
-	 * @param allocationAcctOnPaymentDate
+	 * @param invoiceFactLine invoice related booking (on Invoice date)
 	 */
 	private void createRealizedGainLossFactLine(final DocLine_Allocation line, final Fact fact, final FactLine2 invoiceFactLine, final Money allocationAcctOnPaymentDate)
 	{
@@ -1010,9 +999,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		setIsMultiCurrency();
 
 		// Build up the description for the new line
-		final StringBuilder description = new StringBuilder();
-		description.append("Amt(PaymentDate)=").append(allocationAcctOnPaymentDate);
-		description.append(", Amt(InvoiceDate)=").append(allocationAcctOnInvoiceDate);
+		final String description = "Amt(PaymentDate)=" + allocationAcctOnPaymentDate
+				+ ", Amt(InvoiceDate)=" + allocationAcctOnInvoiceDate;
 
 		//
 		// Check the "invoice minus paid" amount and decide if it's a gain or loss and book it.
@@ -1057,7 +1045,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Update created gain/loss fact line (description, dimensions etc)
 		fl.setAD_Org_ID(invoiceFactLine.getOrgIdEffective());
 		fl.setBPartnerIdAndLocation(invoiceFactLine.getC_BPartner_ID(), invoiceFactLine.getC_BPartner_Location_ID());
-		fl.addDescription(description.toString());
+		fl.addDescription(description);
 
 	}
 
@@ -1177,7 +1165,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	// services
 	private static final Logger log = LogManager.getLogger(Doc_AllocationTax.class);
 	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
-	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private final Doc_AllocationHdr doc;
 	private final Account standardDiscountAccount;

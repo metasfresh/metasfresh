@@ -82,7 +82,7 @@ export function mergeReferencesToReferences(
     }),
     {}
   );
-  //console.log('referencesToAddByKey: %o', referencesToAddByKey);
+  //console.log('referencesToAddByKey', { referencesToAddByKey });
 
   // Merge referencesToAdd to existing references
   const existingReferencesMerged = existingReferences.map(
@@ -94,7 +94,7 @@ export function mergeReferencesToReferences(
       return combineReferences(existingReference, referenceToAdd);
     }
   );
-  // console.log('existingReferencesMerged: %o', existingReferencesMerged);
+  //console.log('existingReferencesMerged', { existingReferencesMerged });
 
   return [
     ...existingReferencesMerged,

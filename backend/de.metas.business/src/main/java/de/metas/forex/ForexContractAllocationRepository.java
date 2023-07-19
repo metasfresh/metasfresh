@@ -1,10 +1,12 @@
 package de.metas.forex;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -13,6 +15,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ForeignExchangeContract_Alloc;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -29,11 +32,26 @@ public class ForexContractAllocationRepository
 		record.setC_Currency_ID(request.getAmountToAllocate().getCurrencyId().getRepoId());
 		record.setAllocatedAmt(request.getAmountToAllocate().toBigDecimal());
 		record.setGrandTotal(request.getOrderGrandTotal().toBigDecimal());
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getContractSectionCodeId()));
 		InterfaceWrapperHelper.save(record);
 
 		return fromRecord(record);
 	}
 
+	public List<ForexContractAllocation> getByIds(@NonNull final Set<ForexContractAllocationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_C_ForeignExchangeContract_Alloc.class)
+				.stream()
+				.map(ForexContractAllocationRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
 	private static ForexContractAllocation fromRecord(final I_C_ForeignExchangeContract_Alloc record)
 	{
 		return ForexContractAllocation.builder()
@@ -41,6 +59,7 @@ public class ForexContractAllocationRepository
 				.contractId(ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.amount(extractAllocatedAmt(record))
+				.contractSectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.build();
 	}
 
@@ -133,4 +152,21 @@ public class ForexContractAllocationRepository
 				.create()
 				.anyMatch();
 	}
+
+	public void deleteByIds(
+			@NonNull final ForexContractId contractId,
+			@NonNull final Collection<ForexContractAllocationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
+				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_ID, contractId)
+				.addInArrayFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_Alloc_ID, ids)
+				.create()
+				.delete();
+	}
+
 }

@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BankStatementLine
  *  @author metasfresh (generated) 
@@ -755,7 +754,6 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Set Invoice manually allocated.
-	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -765,7 +763,6 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Get Invoice manually allocated.
-	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -956,6 +953,31 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_Memo = "Memo";
 
 	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_C_BankStatementLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_BankStatementLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -975,6 +997,48 @@ public interface I_C_BankStatementLine
 
 	ModelColumn<I_C_BankStatementLine, Object> COLUMN_Processed = new ModelColumn<>(I_C_BankStatementLine.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Reconciled by GL Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReconciledBy_SAP_GLJournal_ID (int ReconciledBy_SAP_GLJournal_ID);
+
+	/**
+	 * Get Reconciled by GL Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReconciledBy_SAP_GLJournal_ID();
+
+	ModelColumn<I_C_BankStatementLine, Object> COLUMN_ReconciledBy_SAP_GLJournal_ID = new ModelColumn<>(I_C_BankStatementLine.class, "ReconciledBy_SAP_GLJournal_ID", null);
+	String COLUMNNAME_ReconciledBy_SAP_GLJournal_ID = "ReconciledBy_SAP_GLJournal_ID";
+
+	/**
+	 * Set Reconciled by GL Journal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReconciledBy_SAP_GLJournalLine_ID (int ReconciledBy_SAP_GLJournalLine_ID);
+
+	/**
+	 * Get Reconciled by GL Journal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReconciledBy_SAP_GLJournalLine_ID();
+
+	ModelColumn<I_C_BankStatementLine, Object> COLUMN_ReconciledBy_SAP_GLJournalLine_ID = new ModelColumn<>(I_C_BankStatementLine.class, "ReconciledBy_SAP_GLJournalLine_ID", null);
+	String COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID = "ReconciledBy_SAP_GLJournalLine_ID";
 
 	/**
 	 * Set Reference No.

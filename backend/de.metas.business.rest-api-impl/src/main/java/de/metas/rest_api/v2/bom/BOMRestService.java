@@ -34,7 +34,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -62,15 +62,15 @@ public class BOMRestService
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final ProductBOMService bomService;
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 	private final JsonAttributeService jsonAttributeService;
 
 	public BOMRestService(
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final ProductBOMService bomService,
 			@NonNull final JsonAttributeService jsonAttributeService)
 	{
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.bomService = bomService;
 		this.jsonAttributeService = jsonAttributeService;
 	}
@@ -85,7 +85,7 @@ public class BOMRestService
 
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(request.getProductIdentifier());
 
-		final ProductId finishedProductId = productRestService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+		final ProductId finishedProductId = externalIdentifierResolver.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
 				.orElseThrow(() -> new InvalidIdentifierException(request.getProductIdentifier()));
 
 		final I_M_Product finishedProduct = productDAO.getById(finishedProductId);
@@ -124,7 +124,7 @@ public class BOMRestService
 	{
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(lineRequest.getProductIdentifier());
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+		final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
 				.orElseThrow(() -> new InvalidIdentifierException(lineRequest.getProductIdentifier()));
 
 		final X12DE355 uomCode = X12DE355.ofCode(lineRequest.getQtyBom().getUomCode());

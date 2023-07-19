@@ -120,6 +120,26 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
@@ -263,6 +283,50 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Fields are Read Only for User.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFieldsReadOnlyInUI (boolean IsFieldsReadOnlyInUI);
+
+	/**
+	 * Get Fields are Read Only for User.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFieldsReadOnlyInUI();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsFieldsReadOnlyInUI = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsFieldsReadOnlyInUI", null);
+	String COLUMNNAME_IsFieldsReadOnlyInUI = "IsFieldsReadOnlyInUI";
+
+	/**
+	 * Set Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItem (boolean IsOpenItem);
+
+	/**
+	 * Get Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItem();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsOpenItem", null);
+	String COLUMNNAME_IsOpenItem = "IsOpenItem";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -331,6 +395,175 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
+	 * Set OI Clearing Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_AccountConceptualName (@Nullable java.lang.String OI_AccountConceptualName);
+
+	/**
+	 * Get OI Clearing Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_AccountConceptualName();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OI_AccountConceptualName = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_AccountConceptualName", null);
+	String COLUMNNAME_OI_AccountConceptualName = "OI_AccountConceptualName";
+
+	/**
+	 * Set OI Clearing Bank Statement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_BankStatement_ID (int OI_BankStatement_ID);
+
+	/**
+	 * Get OI Clearing Bank Statement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_BankStatement_ID();
+
+	String COLUMNNAME_OI_BankStatement_ID = "OI_BankStatement_ID";
+
+	/**
+	 * Set OI Clearing Bank Statement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_BankStatementLine_ID (int OI_BankStatementLine_ID);
+
+	/**
+	 * Get OI Clearing Bank Statement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_BankStatementLine_ID();
+
+	String COLUMNNAME_OI_BankStatementLine_ID = "OI_BankStatementLine_ID";
+
+	/**
+	 * Set OI Clearing Bank Statement Line Reference.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_BankStatementLine_Ref_ID (int OI_BankStatementLine_Ref_ID);
+
+	/**
+	 * Get OI Clearing Bank Statement Line Reference.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_BankStatementLine_Ref_ID();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OI_BankStatementLine_Ref_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_BankStatementLine_Ref_ID", null);
+	String COLUMNNAME_OI_BankStatementLine_Ref_ID = "OI_BankStatementLine_Ref_ID";
+
+	/**
+	 * Set OI Clearing Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_Invoice_ID (int OI_Invoice_ID);
+
+	/**
+	 * Get OI Clearing Invoice.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_Invoice_ID();
+
+	@Nullable org.compiere.model.I_C_Invoice getOI_Invoice();
+
+	void setOI_Invoice(@Nullable org.compiere.model.I_C_Invoice OI_Invoice);
+
+	ModelColumn<I_SAP_GLJournalLine, org.compiere.model.I_C_Invoice> COLUMN_OI_Invoice_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_OI_Invoice_ID = "OI_Invoice_ID";
+
+	/**
+	 * Set OI Clearing Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_Payment_ID (int OI_Payment_ID);
+
+	/**
+	 * Get OI Clearing Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOI_Payment_ID();
+
+	String COLUMNNAME_OI_Payment_ID = "OI_Payment_ID";
+
+	/**
+	 * Set Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_TrxType (@Nullable java.lang.String OI_TrxType);
+
+	/**
+	 * Get Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_TrxType();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OI_TrxType = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_TrxType", null);
+	String COLUMNNAME_OI_TrxType = "OI_TrxType";
+
+	/**
+	 * Set Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenItemKey (@Nullable java.lang.String OpenItemKey);
+
+	/**
+	 * Get Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOpenItemKey();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OpenItemKey = new ModelColumn<>(I_SAP_GLJournalLine.class, "OpenItemKey", null);
+	String COLUMNNAME_OpenItemKey = "OpenItemKey";
+
+	/**
 	 * Set Parent.
 	 * Parent of Entity
 	 *
@@ -377,6 +610,27 @@ public interface I_SAP_GLJournalLine
 
 	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_PostingSign = new ModelColumn<>(I_SAP_GLJournalLine.class, "PostingSign", null);
 	String COLUMNNAME_PostingSign = "PostingSign";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_Processed = new ModelColumn<>(I_SAP_GLJournalLine.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Determine tax base.
@@ -471,7 +725,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set UserElementString1.
+	 * Set Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -480,7 +734,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get UserElementString1.
+	 * Get Assignment.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -492,7 +746,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set UserElementString2.
+	 * Set Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -501,7 +755,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get UserElementString2.
+	 * Get Ship-from.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -513,7 +767,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set UserElementString3.
+	 * Set Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -522,7 +776,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get UserElementString3.
+	 * Get Ship-to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

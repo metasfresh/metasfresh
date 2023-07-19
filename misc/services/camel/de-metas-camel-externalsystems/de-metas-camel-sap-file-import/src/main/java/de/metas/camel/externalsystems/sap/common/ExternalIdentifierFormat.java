@@ -31,10 +31,17 @@ import static de.metas.camel.externalsystems.sap.SAPConstants.SAP_SYSTEM_NAME;
 public class ExternalIdentifierFormat
 {
 	private final static String EXTERNAL_ID_PREFIX = "ext";
+	private final static String NAME_PREFIX = "name";
 
 	@NonNull
 	public static String formatExternalId(@NonNull final String externalId)
 	{
 		return EXTERNAL_ID_PREFIX + "-" + SAP_SYSTEM_NAME + "-" + externalId;
+	}
+
+	@NonNull
+	public static String formatName(@NonNull final String name)
+	{
+		return NAME_PREFIX + "-" + name;
 	}
 }

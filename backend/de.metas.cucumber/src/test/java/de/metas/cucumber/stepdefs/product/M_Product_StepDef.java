@@ -33,7 +33,7 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.tax.api.ITaxBL;
@@ -84,7 +84,7 @@ public class M_Product_StepDef
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final ProductRestService productRestService = SpringContextHolder.instance.getBean(ProductRestService.class);
+	private final ExternalIdentifierResolver externalIdentifierResolver = SpringContextHolder.instance.getBean(ExternalIdentifierResolver.class);
 	private final SectionCodeRepository sectionCodeRepository = SpringContextHolder.instance.getBean(SectionCodeRepository.class);
 
 	public M_Product_StepDef(
@@ -282,7 +282,7 @@ public class M_Product_StepDef
 	{
 		final String externalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "externalIdentifier");
 
-		final Optional<ProductId> productIdOptional = productRestService.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID);
+		final Optional<ProductId> productIdOptional = externalIdentifierResolver.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID);
 
 		assertThat(productIdOptional).isPresent();
 
@@ -335,7 +335,7 @@ public class M_Product_StepDef
 		}
 
 		final String sapProductHierarchy = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_SAP_ProductHierarchy);
-		if(Check.isNotBlank(sapProductHierarchy))
+		if (Check.isNotBlank(sapProductHierarchy))
 		{
 			assertThat(productRecord.getSAP_ProductHierarchy()).isEqualTo(sapProductHierarchy);
 		}

@@ -54,7 +54,7 @@ public class GPLR_CreateReport extends JavaProcess implements IProcessPreconditi
 	{
 		if (I_C_Invoice.Table_Name.equals(recordRef.getTableName()))
 		{
-			return InvoiceId.ofRepoIdOptional(recordRef.getRecord_ID());
+			return InvoiceId.optionalOfRepoId(recordRef.getRecord_ID());
 		}
 		else
 		{

@@ -76,7 +76,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
@@ -434,6 +434,27 @@ public class C_OrderLine_StepDef
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(olIdentifier, orderLine);
+		}
+	}
+
+	@Given("metasfresh contains C_OrderLine expecting error:")
+	public void metasfresh_contains_c_order_lines_expecting_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		if (tableRows.size() > 1)
+		{
+			throw new IllegalArgumentException("Multiple rows are not supported!");
+		}
+
+		try
+		{
+			metasfresh_contains_c_order_lines(dataTable);
+		}
+		catch (final AdempiereException exception)
+		{
+			final String errorMsg = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "OPT.ErrorMessage");
+
+			assertThat(exception.getMessage()).contains(errorMsg);
 		}
 	}
 

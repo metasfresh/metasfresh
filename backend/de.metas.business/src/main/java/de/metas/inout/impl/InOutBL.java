@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaBL;
@@ -15,6 +16,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.forex.ForexContractRef;
+import de.metas.forex.ForexContractService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -45,6 +47,7 @@ import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -57,6 +60,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -124,6 +128,9 @@ public class InOutBL implements IInOutBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final SpringContextHolder.Lazy<ForexContractService> forexContractServiceLoader =
+			SpringContextHolder.lazyBean(ForexContractService.class);
+
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -663,6 +670,10 @@ public class InOutBL implements IInOutBL
 		final ForexContractRef forexContractRef = InOutDAO.extractForeignContractRef(inout);
 		if (forexContractRef != null)
 		{
+			Optional.ofNullable(forexContractRef.getForexContractId())
+					.map(id -> forexContractServiceLoader.get().getById(id))
+					.ifPresent(forexContract -> forexContract.validateSectionCode(SectionCodeId.ofRepoIdOrNull(inout.getM_SectionCode_ID())));
+
 			conversionCtx = conversionCtx.withFixedConversionRate(forexContractRef.toFixedConversionRate());
 		}
 
@@ -690,7 +701,7 @@ public class InOutBL implements IInOutBL
 				.stream()
 				.map(inoutAndLineId -> FactAcctQuery.builder()
 						.acctSchemaId(acctSchemaId)
-						.accountConceptualName(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct)
+						.accountConceptualName(AccountConceptualName.ofString(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct))
 						.tableName(I_M_InOut.Table_Name)
 						.recordId(inoutAndLineId.getInOutId().getRepoId())
 						.lineId(inoutAndLineId.getInOutLineId().getRepoId())

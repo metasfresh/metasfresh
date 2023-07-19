@@ -59,6 +59,7 @@ import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.GetOrdersQuery;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -168,13 +169,22 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public I_C_Order getById(@NonNull final OrderId orderId) {return orderDAO.getById(orderId);}
+	public I_C_Order getById(@NonNull final OrderId orderId)
+	{
+		return orderDAO.getById(orderId);
+	}
 
 	@Override
-	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds) {return orderDAO.getByIds(orderIds);}
+	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return orderDAO.getByIds(orderIds);
+	}
 
 	@Override
-	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds) {return orderDAO.retrieveOrderLinesByOrderIds(orderIds);}
+	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
+	}
 
 	@Override
 	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds)
@@ -718,9 +728,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-				.type(Type.SHIP_TO)
-				.build());
+																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+																									.type(Type.SHIP_TO)
+																									.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -767,11 +777,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-						.bpartnerId(newBPartnerLocationId.getBpartnerId())
-						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-						.locationId(newBPartnerLocationId.getLocationCaptureId())
-						.contactId(newContactId)
-						.build());
+								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
+								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
+								 .contactId(newContactId)
+								 .build());
 
 		return true; // found it
 	}
@@ -1275,15 +1285,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull final OrderId salesOrderId)
+	public List<I_C_Order> getPurchaseOrdersBySalesOrderId(@NonNull final OrderId salesOrderId)
 	{
-		return orderDAO.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
-	}
-
-	@Override
-	public Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
-	{
-		return orderDAO.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
+		final Set<OrderId> purchaseOrderIds = orderDAO.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
+		return orderDAO.getByIds(purchaseOrderIds);
 	}
 
 	@Override
@@ -1354,5 +1359,33 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Quantity getQtyEntered(final org.compiere.model.I_C_OrderLine orderLine) {return orderLineBL.getQtyEntered(orderLine);}
+	public Quantity getQtyEntered(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		return orderLineBL.getQtyEntered(orderLine);
+	}
+
+	@Override
+	public boolean isCompleted(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isCompleted(order);
+	}
+
+	@Override
+	public boolean isCompleted(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isCompleted();
+	}
+
+	@Override
+	public boolean isDraftedOrInProgress(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isDraftedOrInProgress();
+	}
+
+	@NonNull
+	public List<I_C_Order> getOrdersByQuery(@NonNull final GetOrdersQuery query)
+	{
+		return orderDAO.getOrdersByQuery(query);	
+	}
 }

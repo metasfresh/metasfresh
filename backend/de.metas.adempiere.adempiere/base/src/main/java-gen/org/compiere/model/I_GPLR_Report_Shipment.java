@@ -212,6 +212,50 @@ public interface I_GPLR_Report_Shipment
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set B2B.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsB2B (boolean IsB2B);
+
+	/**
+	 * Get B2B.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isB2B();
+
+	ModelColumn<I_GPLR_Report_Shipment, Object> COLUMN_IsB2B = new ModelColumn<>(I_GPLR_Report_Shipment.class, "IsB2B", null);
+	String COLUMNNAME_IsB2B = "IsB2B";
+
+	/**
+	 * Set Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShip (boolean IsDropShip);
+
+	/**
+	 * Get Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShip();
+
+	ModelColumn<I_GPLR_Report_Shipment, Object> COLUMN_IsDropShip = new ModelColumn<>(I_GPLR_Report_Shipment.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
+
+	/**
 	 * Set Date.
 	 * Date a product was moved in or out of inventory
 	 *
@@ -342,6 +386,27 @@ public interface I_GPLR_Report_Shipment
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Warehouse External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWarehouseExternalId (@Nullable java.lang.String WarehouseExternalId);
+
+	/**
+	 * Get Warehouse External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWarehouseExternalId();
+
+	ModelColumn<I_GPLR_Report_Shipment, Object> COLUMN_WarehouseExternalId = new ModelColumn<>(I_GPLR_Report_Shipment.class, "WarehouseExternalId", null);
+	String COLUMNNAME_WarehouseExternalId = "WarehouseExternalId";
 
 	/**
 	 * Set Warehouse Name.

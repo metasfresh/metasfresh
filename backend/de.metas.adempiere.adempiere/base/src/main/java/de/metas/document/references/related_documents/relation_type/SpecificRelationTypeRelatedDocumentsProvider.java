@@ -34,6 +34,7 @@ import de.metas.document.references.related_documents.POZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
@@ -180,7 +181,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 												adWindowId,
 												getSource() != null ? getSource().getTableRefInfo().getKeyColumn() : null))
 								.priority(relatedDocumentsPriority)
-								.query(query)
+								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
 								.windowCaption(display)
 								.documentsCountSupplier(new RelationTypeRelatedDocumentsCountSupplier(query))
 								.build()));

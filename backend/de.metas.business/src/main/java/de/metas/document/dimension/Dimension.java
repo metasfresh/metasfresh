@@ -44,7 +44,7 @@ import java.util.Objects;
 @Builder(toBuilder = true)
 public class Dimension implements Comparable<Dimension>
 {
-	private static Dimension EMPTY = builder().build();
+	public static Dimension EMPTY = builder().build();
 
 	@With @Nullable ProjectId projectId;
 	int campaignId;

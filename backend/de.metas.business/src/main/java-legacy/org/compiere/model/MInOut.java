@@ -46,6 +46,7 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
@@ -114,6 +115,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	private static final long serialVersionUID = 132321718005732306L;
 
 	private static final Logger logger = LogManager.getLogger(MInOut.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * Create new Shipment by copying
@@ -1577,7 +1579,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			//
 			// Matching
 
-			MInvoiceLine iLine = MInvoiceLine.getOfInOutLine(sLine);
+			I_C_InvoiceLine iLine = invoiceDAO.getOfInOutLine(sLine);
 			final BigDecimal qtyMoved = sLine.getMovementQty();
 
 			if (sLine.getM_Product_ID() > 0
@@ -1634,7 +1636,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				// However, we only do it "if (sLine.getM_Product_ID() != 0 && !isReversal())" as before.
 				// I don't really understand what the "!isReversal()" part about, so i'll leave it too
 				// 07742: Load line again in case it was changed by the MMatchPO
-				iLine = MInvoiceLine.getOfInOutLine(sLine);
+				iLine = invoiceDAO.getOfInOutLine(sLine);
 				if (iLine != null && iLine.getM_Product_ID() > 0)
 				{
 					final boolean matchInvCreated = matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
@@ -1650,7 +1652,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					if (matchInvCreated && iLine.getM_AttributeSetInstance_ID() != sLine.getM_AttributeSetInstance_ID())
 					{
 						iLine.setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
-						iLine.save();
+						InterfaceWrapperHelper.saveRecord(iLine);
 					}
 				}
 			}

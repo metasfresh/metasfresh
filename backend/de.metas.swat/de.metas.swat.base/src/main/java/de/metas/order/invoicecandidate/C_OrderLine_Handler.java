@@ -27,6 +27,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax.PriceAndTaxBuilder;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -197,6 +198,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		icRecord.setC_VAT_Code_ID(orderLine.getC_VAT_Code_ID());
+
+		final CountryId orderTaxDepartureCountryId = CountryId.ofRepoIdOrNull(order.getC_Tax_Departure_Country_ID());
+		if (orderTaxDepartureCountryId != null)
+		{
+			icRecord.setC_Tax_Departure_Country_ID(orderTaxDepartureCountryId.getRepoId());
+		}
 
 		// 05265
 		icRecord.setIsSOTrx(order.isSOTrx());

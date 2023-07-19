@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import de.metas.acct.Account;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.CostAmount;
@@ -91,6 +92,8 @@ public final class FactLineBuilder
 	private CostElementId costElementId;
 
 	private String additionalDescription = null;
+
+	private FAOpenItemTrxInfo openItemTrxInfo;
 
 	FactLineBuilder(@NonNull final Fact fact)
 	{
@@ -241,6 +244,8 @@ public final class FactLineBuilder
 		{
 			line.setCostElementId(costElementId);
 		}
+
+		line.setOpenItemTrxInfo(openItemTrxInfo);
 
 		//
 		log.debug("Built: {}", line);
@@ -634,6 +639,12 @@ public final class FactLineBuilder
 	public FactLineBuilder additionalDescription(@Nullable final String additionalDescription)
 	{
 		this.additionalDescription = StringUtils.trimBlankToNull(additionalDescription);
+		return this;
+	}
+
+	public FactLineBuilder openItemKey(@Nullable FAOpenItemTrxInfo openItemTrxInfo)
+	{
+		this.openItemTrxInfo = openItemTrxInfo;
 		return this;
 	}
 }

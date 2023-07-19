@@ -9,13 +9,10 @@ import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
 import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
-import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
@@ -26,7 +23,6 @@ import java.util.List;
 
 public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 {
-	private final SAPGLJournalService glJournalService = SpringContextHolder.instance.getBean(SAPGLJournalService.class);
 	private SAPGLJournal glJournal;
 
 	public Doc_SAPGLJournal(final AcctDocContext ctx)
@@ -61,10 +57,12 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 		}
 
 		final SAPGLJournalCurrencyConversionCtx glJournalCurrencyConversionCtx = glJournal.getConversionCtx();
-		final CurrencyConversionContext currencyConversionCtx = glJournalService.getCurrencyConverter().toCurrencyConversionContext(glJournalCurrencyConversionCtx);
 		if (!CurrencyId.equals(as.getCurrencyId(), glJournalCurrencyConversionCtx.getAcctCurrencyId()))
 		{
-			throw new AdempiereException("The Accounting Currency is no longer the one from document");
+			throw new AdempiereException("The Accounting Currency is no longer the one from document")
+					.appendParametersToMessage()
+					.setParameter("acctSchema", as)
+					.setParameter("glJournalCurrencyConversionCtx", glJournalCurrencyConversionCtx);
 		}
 
 		final Fact fact = new Fact(this, as, glJournal.getPostingType());
@@ -103,6 +101,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 					.setAccount(line.getAccount())
 					.setAmtSource(glJournalCurrencyConversionCtx.getCurrencyId(), amtSourceDr, amtSourceCr)
 					.setAmtAcct(amtAcctDr, amtAcctCr)
+					.openItemKey(line.getOpenItemTrxInfo())
 					.buildAndAdd();
 
 			if (factLine == null)

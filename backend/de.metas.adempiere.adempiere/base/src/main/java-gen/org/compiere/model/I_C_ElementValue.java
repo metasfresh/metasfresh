@@ -435,6 +435,29 @@ public interface I_C_ElementValue
 	String COLUMNNAME_IsMandatoryActivity = "IsMandatoryActivity";
 
 	/**
+	 * Set Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItem (boolean IsOpenItem);
+
+	/**
+	 * Get Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItem();
+
+	ModelColumn<I_C_ElementValue, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_C_ElementValue.class, "IsOpenItem", null);
+	String COLUMNNAME_IsOpenItem = "IsOpenItem";
+
+	/**
 	 * Set Summary Level.
 	 * This is a summary entity
 	 *

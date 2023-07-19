@@ -299,9 +299,7 @@ public interface IOrderBL extends ISingletonService
 
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 
-	Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull OrderId salesOrderId);
-
-	Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull OrderId purchaseOrderId);
+	List<I_C_Order> getPurchaseOrdersBySalesOrderId(@NonNull OrderId salesOrderId);
 
 	void updateIsOnConsignmentFromLines(OrderId orderId);
 
@@ -335,4 +333,13 @@ public interface IOrderBL extends ISingletonService
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
 	Quantity getQtyEntered(I_C_OrderLine orderLine);
+
+	boolean isCompleted(OrderId orderId);
+
+	boolean isCompleted(I_C_Order order);
+
+	boolean isDraftedOrInProgress(@NonNull I_C_Order order);
+
+	@NonNull
+	List<I_C_Order> getOrdersByQuery(@NonNull GetOrdersQuery query);
 }

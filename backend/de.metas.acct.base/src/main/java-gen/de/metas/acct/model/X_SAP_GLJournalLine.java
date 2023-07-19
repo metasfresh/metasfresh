@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -816968235L;
+	private static final long serialVersionUID = -122460229L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -74,6 +74,21 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
@@ -158,6 +173,30 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+	public void setIsFieldsReadOnlyInUI (final boolean IsFieldsReadOnlyInUI)
+	{
+		set_Value (COLUMNNAME_IsFieldsReadOnlyInUI, IsFieldsReadOnlyInUI);
+	}
+
+	@Override
+	public boolean isFieldsReadOnlyInUI() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFieldsReadOnlyInUI);
+	}
+
+	@Override
+	public void setIsOpenItem (final boolean IsOpenItem)
+	{
+		set_Value (COLUMNNAME_IsOpenItem, IsOpenItem);
+	}
+
+	@Override
+	public boolean isOpenItem() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItem);
+	}
+
+	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -212,6 +251,138 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+	public void setOI_AccountConceptualName (final @Nullable java.lang.String OI_AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_OI_AccountConceptualName, OI_AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getOI_AccountConceptualName() 
+	{
+		return get_ValueAsString(COLUMNNAME_OI_AccountConceptualName);
+	}
+
+	@Override
+	public void setOI_BankStatement_ID (final int OI_BankStatement_ID)
+	{
+		if (OI_BankStatement_ID < 1) 
+			set_Value (COLUMNNAME_OI_BankStatement_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_BankStatement_ID, OI_BankStatement_ID);
+	}
+
+	@Override
+	public int getOI_BankStatement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_BankStatement_ID);
+	}
+
+	@Override
+	public void setOI_BankStatementLine_ID (final int OI_BankStatementLine_ID)
+	{
+		if (OI_BankStatementLine_ID < 1) 
+			set_Value (COLUMNNAME_OI_BankStatementLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_BankStatementLine_ID, OI_BankStatementLine_ID);
+	}
+
+	@Override
+	public int getOI_BankStatementLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_BankStatementLine_ID);
+	}
+
+	@Override
+	public void setOI_BankStatementLine_Ref_ID (final int OI_BankStatementLine_Ref_ID)
+	{
+		if (OI_BankStatementLine_Ref_ID < 1) 
+			set_Value (COLUMNNAME_OI_BankStatementLine_Ref_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_BankStatementLine_Ref_ID, OI_BankStatementLine_Ref_ID);
+	}
+
+	@Override
+	public int getOI_BankStatementLine_Ref_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_BankStatementLine_Ref_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getOI_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_OI_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setOI_Invoice(final org.compiere.model.I_C_Invoice OI_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_OI_Invoice_ID, org.compiere.model.I_C_Invoice.class, OI_Invoice);
+	}
+
+	@Override
+	public void setOI_Invoice_ID (final int OI_Invoice_ID)
+	{
+		if (OI_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_OI_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_Invoice_ID, OI_Invoice_ID);
+	}
+
+	@Override
+	public int getOI_Invoice_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_Invoice_ID);
+	}
+
+	@Override
+	public void setOI_Payment_ID (final int OI_Payment_ID)
+	{
+		if (OI_Payment_ID < 1) 
+			set_Value (COLUMNNAME_OI_Payment_ID, null);
+		else 
+			set_Value (COLUMNNAME_OI_Payment_ID, OI_Payment_ID);
+	}
+
+	@Override
+	public int getOI_Payment_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OI_Payment_ID);
+	}
+
+	/** 
+	 * OI_TrxType AD_Reference_ID=541800
+	 * Reference name: OI_TrxType
+	 */
+	public static final int OI_TRXTYPE_AD_Reference_ID=541800;
+	/** OpenItem = O */
+	public static final String OI_TRXTYPE_OpenItem = "O";
+	/** Clearing = C */
+	public static final String OI_TRXTYPE_Clearing = "C";
+	@Override
+	public void setOI_TrxType (final @Nullable java.lang.String OI_TrxType)
+	{
+		set_Value (COLUMNNAME_OI_TrxType, OI_TrxType);
+	}
+
+	@Override
+	public java.lang.String getOI_TrxType() 
+	{
+		return get_ValueAsString(COLUMNNAME_OI_TrxType);
+	}
+
+	@Override
+	public void setOpenItemKey (final @Nullable java.lang.String OpenItemKey)
+	{
+		set_Value (COLUMNNAME_OpenItemKey, OpenItemKey);
+	}
+
+	@Override
+	public java.lang.String getOpenItemKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_OpenItemKey);
+	}
+
+	@Override
 	public de.metas.acct.model.I_SAP_GLJournalLine getParent()
 	{
 		return get_ValueAsPO(COLUMNNAME_Parent_ID, de.metas.acct.model.I_SAP_GLJournalLine.class);
@@ -257,6 +428,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public java.lang.String getPostingSign() 
 	{
 		return get_ValueAsString(COLUMNNAME_PostingSign);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override

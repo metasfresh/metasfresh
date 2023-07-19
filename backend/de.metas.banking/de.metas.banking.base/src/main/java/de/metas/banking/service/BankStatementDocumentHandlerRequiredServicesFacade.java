@@ -124,7 +124,7 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 
 	public void unlinkPaymentsAndDeleteReferences(final List<I_C_BankStatementLine> lines)
 	{
-		bankStatementBL.unlinkPaymentsAndDeleteReferences(lines);
+		bankStatementBL.markAsNotReconciledAndDeleteReferences(lines);
 	}
 
 	public String getMsg(final AdMessageKey adMessage)

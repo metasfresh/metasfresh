@@ -278,3 +278,119 @@ Feature:product get/create/update using metasfresh api
     Then validate get products response
       | M_Product_ID.Identifier | Value     | Name           | UOMSymbol | UPC      | Description      | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason |
       | p_1                     | code345_2 | Product_Test_2 | Stk       | ean_test | test_description | bpartner_1               | test                | true                         | testForSale                       | true                             | testForPurchase                       |
+
+  @from:cucumber
+  Scenario: as a REST-API invoker
+  I want to be able to create product warehouse assignments
+
+    Given metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                     | Name                     |
+      | warehouse_1               | warehouseValue_07122023_1 | warehouseName_07122023_1 |
+      | warehouse_2               | warehouseValue_07122023_2 | warehouseName_07122023_2 |
+      | warehouse_3               | warehouseValue_07122023_3 | warehouseName_07122023_3 |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
+  """
+  {
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-07122023",
+      "requestProduct": {
+        "code": "code346",
+        "codeSet": true,
+        "name": "Product_Test_07122023",
+        "nameSet": true,
+        "type": "ITEM",
+        "typeSet": true,
+        "uomCode": "PCE",
+        "uomCodeSet": true,
+        "discontinued": null,
+        "discontinuedSet": false,
+        "active": true,
+        "activeSet": true,
+        "stocked": null,
+        "stockedSet": false,
+        "productCategoryIdentifier": null,
+        "productCategoryIdentifierSet": false,
+        "syncAdvise": null,
+        "purchased":true,
+        "purchasedSet":true,
+        "warehouseAssignments": {
+          "warehouseIdentifiers": [ "name-warehouseName_07122023_1", "val-warehouseValue_07122023_2" ],
+          "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+  """
+
+    Then locate product by external identifier
+      | M_Product_ID.Identifier | externalIdentifier   |
+      | p_1                     | ext-ALBERTA-07122023 |
+
+    And locate warehouse assignments
+      | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
+      | p_1                     | a_1,a_2                           |
+
+    And validate warehouse assignments
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier | M_Product_ID.Identifier |
+      | a_1                               | warehouse_1               | p_1                     |
+      | a_2                               | warehouse_2               | p_1                     |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
+  """
+  {
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-07122023",
+      "requestProduct": {
+        "code": "code346",
+        "codeSet": true,
+        "name": "Product_Test_07122023",
+        "nameSet": true,
+        "type": "ITEM",
+        "typeSet": true,
+        "uomCode": "PCE",
+        "uomCodeSet": true,
+        "discontinued": null,
+        "discontinuedSet": false,
+        "active": true,
+        "activeSet": true,
+        "stocked": null,
+        "stockedSet": false,
+        "productCategoryIdentifier": null,
+        "productCategoryIdentifierSet": false,
+        "syncAdvise": null,
+        "purchased":true,
+        "purchasedSet":true,
+        "warehouseAssignments": {
+          "warehouseIdentifiers": [ "name-warehouseName_07122023_3"],
+          "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+  """
+    Then locate warehouse assignments
+      | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
+      | p_1                     | a_3                               |
+
+    And validate warehouse assignments
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier | M_Product_ID.Identifier |
+      | a_3                               | warehouse_3               | p_1                     |
