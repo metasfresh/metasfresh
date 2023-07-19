@@ -197,6 +197,22 @@ order by vatcode, accountno
 	</title>
 	<pageHeader>
 		<band height="159" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="123" width="782" height="14" backcolor="#808080" uuid="f2433b95-be29-4019-95ed-7b754fb36886">
+					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="123" width="782" height="32" backcolor="#808080" uuid="dcf3afaf-5ea6-45eb-ae5f-684e209f209f">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField>
 				<reportElement x="-20" y="25" width="842" height="20" uuid="416555b5-426f-4e0e-8ced-78e6d5b1304f"/>
 				<textElement textAlignment="Center">
@@ -279,14 +295,6 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_org} != null ? $F{param_org} : $R{all}]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement key="line" x="0" y="120" width="782" height="1" forecolor="#000000" uuid="087288bf-43ff-4c01-8e12-eae1d040e4fa">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<graphicElement>
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</graphicElement>
-			</line>
 			<textField>
 				<reportElement x="70" y="104" width="247" height="12" uuid="97f7e099-dc9e-4430-a201-e0c526f4bc9d"/>
 				<textElement>
@@ -302,22 +310,6 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 			</textField>
-			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="123" width="782" height="13" backcolor="#808080" uuid="1dae0e00-9bdb-48b7-916b-0698a6cd627d">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<graphicElement>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</graphicElement>
-			</rectangle>
-			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="120" width="782" height="36" backcolor="#808080" uuid="19992502-9cc8-425b-b500-67763a898fa2">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<graphicElement>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</graphicElement>
-			</rectangle>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="123" width="70" height="12" forecolor="#FFFFFF" uuid="9e359aed-8e66-4e76-8086-74b4689ddbe3"/>
 				<textElement>
@@ -414,8 +406,22 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line" x="0" y="156" width="782" height="1" forecolor="#000000" uuid="c7ba2f7c-4b1e-41f7-b4c6-4c4329d4e6f6">
+				<reportElement key="line" x="0" y="120" width="782" height="1" forecolor="#000000" uuid="d2c1b124-97ea-413e-a570-1ca9bbc93733"/>
+				<graphicElement>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line" x="0" y="157" width="782" height="1" forecolor="#000000" uuid="f54a59c9-3eb7-4a4b-bd7c-13cdbef37fb8">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line" x="0" y="139" width="782" height="1" forecolor="#000000" uuid="913655ff-e902-431c-aa93-a2a7d3dae55e">
+					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
