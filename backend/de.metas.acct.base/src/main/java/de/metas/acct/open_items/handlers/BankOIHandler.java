@@ -18,6 +18,8 @@ import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -150,14 +152,58 @@ public class BankOIHandler implements FAOpenItemsHandler
 	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
 	{
 		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
-		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
+
+		final AccountConceptualName accountConceptualName = openItemTrxInfo.getAccountConceptualName();
+		if (accountConceptualName == null)
+		{
+			return;
+		}
+
+		final PaymentId paymentId = openItemTrxInfo.getKey().getPaymentId().orElse(null);
+		if (paymentId != null)
+		{
+			if (accountConceptualName.isAnyOf(B_PaymentSelect_Acct, B_UnallocatedCash_Acct))
+			{
+				paymentBL.scheduleUpdateIsAllocated(paymentId);
+			}
+			else if (accountConceptualName.isAnyOf(B_InTransit_Acct))
+			{
+				paymentBL.markReconciled(PaymentReconcileRequest.of(paymentId, PaymentReconcileReference.glJournalLine(line.getIdNotNull())));
+			}
+		}
+
+		final BankStatementId bankStatementId = openItemTrxInfo.getKey().getBankStatementId().orElse(null);
+		if(bankStatementId != null)
+		{
+			openItemTrxInfo.getKey().getBankStatementLineId().orElse(null);
+			// TODO Services.get(IBankStatementBL.class).markAsReconciledWithGLJournalLine
+		}
 	}
 
 	@Override
 	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
 	{
 		final FAOpenItemTrxInfo openItemTrxInfo = Check.assumeNotNull(line.getOpenItemTrxInfo(), "OpenItemTrxInfo shall not be null");
-		openItemTrxInfo.getKey().getPaymentId().ifPresent(paymentBL::scheduleUpdateIsAllocated);
+		final PaymentId paymentId = openItemTrxInfo.getKey().getPaymentId().orElse(null);
+		if (paymentId == null)
+		{
+			return;
+		}
+
+		final AccountConceptualName accountConceptualName = openItemTrxInfo.getAccountConceptualName();
+		if (accountConceptualName == null)
+		{
+			return;
+		}
+
+		if (accountConceptualName.isAnyOf(B_PaymentSelect_Acct, B_UnallocatedCash_Acct))
+		{
+			paymentBL.scheduleUpdateIsAllocated(paymentId);
+		}
+		else if (accountConceptualName.isAnyOf(B_InTransit_Acct))
+		{
+			paymentBL.markNotReconciled(paymentId);
+		}
 	}
 
 	//

@@ -1,6 +1,7 @@
 package de.metas.payment.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -317,7 +318,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void reveral_failIf_DocStatusIsNotReversed()
+		public void reversal_failIf_DocStatusIsNotReversed()
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 			// payment.setDocStatus(DocStatus.Reversed.getCode());
@@ -327,7 +328,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void reveral_failIf_ReversalIdDoesNotMatch()
+		public void reversal_failIf_ReversalIdDoesNotMatch()
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 			payment.setDocStatus(DocStatus.Reversed.getCode());
@@ -337,7 +338,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void reveral()
+		public void reversal()
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 
@@ -349,6 +350,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatementLine_ID()).isLessThanOrEqualTo(0);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
 			assertThat(payment.getReversal_ID()).isEqualTo(123);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -366,6 +369,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
 			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -384,6 +389,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
 			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isEqualTo(3);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -401,6 +408,24 @@ public class PaymentBLTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Payment with DocumentNo=");
 		}
+
+		@Test
+		public void glJournalLine()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.glJournalLine(SAPGLJournalLineId.ofRepoId(1, 2));
+
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
+			assertThat(payment.isReconciled()).isTrue();
+			assertThat(payment.getC_BankStatement_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isEqualTo(1);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isEqualTo(2);
+
+			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
+			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
+		}
+
 	}
 
 	@Nested
