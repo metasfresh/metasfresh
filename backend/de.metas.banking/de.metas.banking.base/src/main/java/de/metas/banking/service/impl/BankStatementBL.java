@@ -162,6 +162,7 @@ public class BankStatementBL implements IBankStatementBL
 		line.setIsMultiplePaymentOrInvoice(false);
 		line.setReconciledBy_SAP_GLJournal_ID(glJournalLineId.getGlJournalId().getRepoId());
 		line.setReconciledBy_SAP_GLJournalLine_ID(glJournalLineId.getRepoId());
+		bankStatementDAO.save(line);
 	}
 
 	@Override
