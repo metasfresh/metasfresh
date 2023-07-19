@@ -7,7 +7,7 @@ import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
-import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -393,11 +393,12 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public void setOpenItemKey(@NonNull final FAOpenItemKey openItemKey, @NonNull final FactAcctQuery query)
+	public void setOpenItemTrxInfo(@NonNull final FAOpenItemTrxInfo openItemTrxInfo, @NonNull final FactAcctQuery query)
 	{
 		toSqlQuery(query)
 				.updateDirectly()
-				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OpenItemKey, openItemKey.getAsString())
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OI_TrxType, openItemTrxInfo.getTrxType().getCode())
+				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OpenItemKey, openItemTrxInfo.getKey().getAsString())
 				.execute();
 	}
 }
