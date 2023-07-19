@@ -1,28 +1,6 @@
-/*
- * #%L
- * de.metas.printing.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- Name: Externalsystem_Config Type PrintingClient
 -- 2023-07-17T19:27:13.475Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540646,'AD_PrinterHW.ExternalSystem_Config_ID IN (SELECT externalsystem_config_id FROM externalsystem_config WHERE value = ''PC'' AND isactive = ''Y'')',TO_TIMESTAMP('2023-07-17 21:27:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','Externalsystem_Config Type PrintingClient','S',TO_TIMESTAMP('2023-07-17 21:27:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540646,'ExternalSystem_Config_ID IN (SELECT ExternalSystem_Config_ID FROM ExternalSystem_Config WHERE type = ''PC'')',TO_TIMESTAMP('2023-07-17 21:27:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','Externalsystem_Config Type PrintingClient','S',TO_TIMESTAMP('2023-07-17 21:27:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- Column: AD_PrinterHW.ExternalSystem_Config_ID
