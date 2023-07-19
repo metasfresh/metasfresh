@@ -62,10 +62,7 @@ public class BankStatementLineRefId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final BankStatementLineRefId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
+	public static int toRepoId(@Nullable final BankStatementLineRefId id) {return id != null ? id.getRepoId() : -1;}
 
 	public static Optional<BankStatementLineRefId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 }

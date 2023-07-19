@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Payment
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -254865631L;
+	private static final long serialVersionUID = 1819883599L;
 
     /** Standard Constructor */
     public X_C_Payment (final Properties ctx, final int C_Payment_ID, @Nullable final String trxName)
@@ -33,6 +33,18 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAccountNo (final @Nullable java.lang.String AccountNo)
+	{
+		set_Value (COLUMNNAME_AccountNo, AccountNo);
+	}
+
+	@Override
+	public java.lang.String getAccountNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountNo);
 	}
 
 	@Override
@@ -57,6 +69,21 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getA_Country() 
 	{
 		return get_ValueAsString(COLUMNNAME_A_Country);
+	}
+
+	@Override
+	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
+	{
+		if (AD_OrgTrx_ID < 1) 
+			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_OrgTrx_ID, AD_OrgTrx_ID);
+	}
+
+	@Override
+	public int getAD_OrgTrx_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
 	}
 
 	@Override
@@ -144,33 +171,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setAccountNo (final @Nullable java.lang.String AccountNo)
-	{
-		set_Value (COLUMNNAME_AccountNo, AccountNo);
-	}
-
-	@Override
-	public java.lang.String getAccountNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_AccountNo);
-	}
-
-	@Override
-	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
-	{
-		if (AD_OrgTrx_ID < 1) 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, AD_OrgTrx_ID);
-	}
-
-	@Override
-	public int getAD_OrgTrx_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
-	}
-
-	@Override
 	public void setC_Activity_ID (final int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
@@ -231,21 +231,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
-	}
-
-	@Override
-	public int getC_BP_BankAccount_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
-	}
-
-	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -273,6 +258,21 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public int getC_BP_BankAccount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -390,6 +390,31 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCheckNo (final @Nullable java.lang.String CheckNo)
+	{
+		set_Value (COLUMNNAME_CheckNo, CheckNo);
+	}
+
+	@Override
+	public java.lang.String getCheckNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_CheckNo);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -444,21 +469,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setC_Payment_ID (final int C_Payment_ID)
-	{
-		if (C_Payment_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, C_Payment_ID);
-	}
-
-	@Override
-	public int getC_Payment_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Payment_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_C_PaymentBatch getC_PaymentBatch()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PaymentBatch_ID, org.compiere.model.I_C_PaymentBatch.class);
@@ -486,6 +496,21 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
+	public void setC_Payment_ID (final int C_Payment_ID)
+	{
+		if (C_Payment_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, C_Payment_ID);
+	}
+
+	@Override
+	public int getC_Payment_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Payment_ID);
+	}
+
+	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -498,31 +523,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
-	}
-
-	@Override
-	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCheckNo (final @Nullable java.lang.String CheckNo)
-	{
-		set_Value (COLUMNNAME_CheckNo, CheckNo);
-	}
-
-	@Override
-	public java.lang.String getCheckNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_CheckNo);
 	}
 
 	@Override
@@ -923,6 +923,18 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
+	public void setMicr (final @Nullable java.lang.String Micr)
+	{
+		set_Value (COLUMNNAME_Micr, Micr);
+	}
+
+	@Override
+	public java.lang.String getMicr() 
+	{
+		return get_ValueAsString(COLUMNNAME_Micr);
+	}
+
+	@Override
 	public org.compiere.model.I_M_SectionCode getM_SectionCode()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
@@ -947,18 +959,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
-	}
-
-	@Override
-	public void setMicr (final @Nullable java.lang.String Micr)
-	{
-		set_Value (COLUMNNAME_Micr, Micr);
-	}
-
-	@Override
-	public java.lang.String getMicr() 
-	{
-		return get_ValueAsString(COLUMNNAME_Micr);
 	}
 
 	@Override
@@ -1145,6 +1145,66 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
+	public void setReconciledBy_SAP_GLJournal_ID (final int ReconciledBy_SAP_GLJournal_ID)
+	{
+		if (ReconciledBy_SAP_GLJournal_ID < 1) 
+			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournal_ID, null);
+		else 
+			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournal_ID, ReconciledBy_SAP_GLJournal_ID);
+	}
+
+	@Override
+	public int getReconciledBy_SAP_GLJournal_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ReconciledBy_SAP_GLJournal_ID);
+	}
+
+	@Override
+	public void setReconciledBy_SAP_GLJournalLine_ID (final int ReconciledBy_SAP_GLJournalLine_ID)
+	{
+		if (ReconciledBy_SAP_GLJournalLine_ID < 1) 
+			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID, ReconciledBy_SAP_GLJournalLine_ID);
+	}
+
+	@Override
+	public int getReconciledBy_SAP_GLJournalLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID);
+	}
+
+	@Override
+	public void setRef_Payment_ID (final int Ref_Payment_ID)
+	{
+		if (Ref_Payment_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, Ref_Payment_ID);
+	}
+
+	@Override
+	public int getRef_Payment_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Ref_Payment_ID);
+	}
+
+	@Override
+	public void setReversal_ID (final int Reversal_ID)
+	{
+		if (Reversal_ID < 1) 
+			set_Value (COLUMNNAME_Reversal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Reversal_ID, Reversal_ID);
+	}
+
+	@Override
+	public int getReversal_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
+	}
+
+	@Override
 	public void setR_Info (final @Nullable java.lang.String R_Info)
 	{
 		set_ValueNoCheck (COLUMNNAME_R_Info, R_Info);
@@ -1154,6 +1214,18 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getR_Info() 
 	{
 		return get_ValueAsString(COLUMNNAME_R_Info);
+	}
+
+	@Override
+	public void setRoutingNo (final @Nullable java.lang.String RoutingNo)
+	{
+		set_Value (COLUMNNAME_RoutingNo, RoutingNo);
+	}
+
+	@Override
+	public java.lang.String getRoutingNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_RoutingNo);
 	}
 
 	@Override
@@ -1202,48 +1274,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getR_Result() 
 	{
 		return get_ValueAsString(COLUMNNAME_R_Result);
-	}
-
-	@Override
-	public void setRef_Payment_ID (final int Ref_Payment_ID)
-	{
-		if (Ref_Payment_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, Ref_Payment_ID);
-	}
-
-	@Override
-	public int getRef_Payment_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Ref_Payment_ID);
-	}
-
-	@Override
-	public void setReversal_ID (final int Reversal_ID)
-	{
-		if (Reversal_ID < 1) 
-			set_Value (COLUMNNAME_Reversal_ID, null);
-		else 
-			set_Value (COLUMNNAME_Reversal_ID, Reversal_ID);
-	}
-
-	@Override
-	public int getReversal_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
-	}
-
-	@Override
-	public void setRoutingNo (final @Nullable java.lang.String RoutingNo)
-	{
-		set_Value (COLUMNNAME_RoutingNo, RoutingNo);
-	}
-
-	@Override
-	public java.lang.String getRoutingNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_RoutingNo);
 	}
 
 	@Override

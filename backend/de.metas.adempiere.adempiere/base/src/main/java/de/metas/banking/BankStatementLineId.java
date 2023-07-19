@@ -64,4 +64,6 @@ public class BankStatementLineId implements RepoIdAware
 
 	public static Optional<BankStatementLineId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
+	public static int toRepoId(@Nullable BankStatementLineId id) {return id != null ? id.getRepoId() : -1;}
+
 }

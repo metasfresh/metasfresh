@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Payment
  *  @author metasfresh (generated) 
@@ -17,6 +16,29 @@ public interface I_C_Payment
 //	/** AD_Table_ID=335 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+
+	/**
+	 * Set Account No.
+	 * Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAccountNo (@Nullable java.lang.String AccountNo);
+
+	/**
+	 * Get Account No.
+	 * Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAccountNo();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_AccountNo = new ModelColumn<>(I_C_Payment.class, "AccountNo", null);
+	String COLUMNNAME_AccountNo = "AccountNo";
 
 	/**
 	 * Set Account City.
@@ -63,6 +85,62 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_A_Country = new ModelColumn<>(I_C_Payment.class, "A_Country", null);
 	String COLUMNNAME_A_Country = "A_Country";
+
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Trx Organization.
+	 * Performing or initiating organization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
+
+	/**
+	 * Get Trx Organization.
+	 * Performing or initiating organization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_OrgTrx_ID();
+
+	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
 	 * Set Account EMail.
@@ -226,85 +304,6 @@ public interface I_C_Payment
 	String COLUMNNAME_A_Zip = "A_Zip";
 
 	/**
-	 * Set Account No.
-	 * Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAccountNo (@Nullable java.lang.String AccountNo);
-
-	/**
-	 * Get Account No.
-	 * Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAccountNo();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_AccountNo = new ModelColumn<>(I_C_Payment.class, "AccountNo", null);
-	String COLUMNNAME_AccountNo = "AccountNo";
-
-	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Client_ID();
-
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
-
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Trx Organization.
-	 * Performing or initiating organization
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
-
-	/**
-	 * Get Trx Organization.
-	 * Performing or initiating organization
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_OrgTrx_ID();
-
-	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
-
-	/**
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -390,28 +389,6 @@ public interface I_C_Payment
 	String COLUMNNAME_C_BankStatementLine_Ref_ID = "C_BankStatementLine_Ref_ID";
 
 	/**
-	 * Set Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
-
-	/**
-	 * Get Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_BankAccount_ID();
-
-	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
-
-	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -450,6 +427,28 @@ public interface I_C_Payment
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Campaign.
@@ -590,6 +589,52 @@ public interface I_C_Payment
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
+	 * Set Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Payment.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Check No.
+	 * Check Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCheckNo (@Nullable java.lang.String CheckNo);
+
+	/**
+	 * Get Check No.
+	 * Check Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCheckNo();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_CheckNo = new ModelColumn<>(I_C_Payment.class, "CheckNo", null);
+	String COLUMNNAME_CheckNo = "CheckNo";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -644,29 +689,6 @@ public interface I_C_Payment
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set Payment.
-	 * Payment identifier
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Payment_ID (int C_Payment_ID);
-
-	/**
-	 * Get Payment.
-	 * Payment identifier
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Payment_ID();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_C_Payment_ID = new ModelColumn<>(I_C_Payment.class, "C_Payment_ID", null);
-	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
-
-	/**
 	 * Set Payment Batch.
 	 * Payment batch for EFT
 	 *
@@ -694,6 +716,29 @@ public interface I_C_Payment
 	String COLUMNNAME_C_PaymentBatch_ID = "C_PaymentBatch_ID";
 
 	/**
+	 * Set Payment.
+	 * Payment identifier
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Payment_ID (int C_Payment_ID);
+
+	/**
+	 * Get Payment.
+	 * Payment identifier
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Payment_ID();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_C_Payment_ID = new ModelColumn<>(I_C_Payment.class, "C_Payment_ID", null);
+	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -714,52 +759,6 @@ public interface I_C_Payment
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Set Charge amount.
-	 * Charge Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
-
-	/**
-	 * Get Charge amount.
-	 * Charge Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getChargeAmt();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Payment.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
-	 * Set Check No.
-	 * Check Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCheckNo (@Nullable java.lang.String CheckNo);
-
-	/**
-	 * Get Check No.
-	 * Check Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCheckNo();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_CheckNo = new ModelColumn<>(I_C_Payment.class, "CheckNo", null);
-	String COLUMNNAME_CheckNo = "CheckNo";
 
 	/**
 	 * Get Created.
@@ -1014,7 +1013,6 @@ public interface I_C_Payment
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1024,7 +1022,6 @@ public interface I_C_Payment
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1080,7 +1077,7 @@ public interface I_C_Payment
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set External ID.
+	 * Set SAP PayT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1089,7 +1086,7 @@ public interface I_C_Payment
 	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
-	 * Get External ID.
+	 * Get SAP PayT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1396,6 +1393,29 @@ public interface I_C_Payment
 	String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
+	 * Set Micr.
+	 * Combination of routing no, account and check no
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMicr (@Nullable java.lang.String Micr);
+
+	/**
+	 * Get Micr.
+	 * Combination of routing no, account and check no
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMicr();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_Micr = new ModelColumn<>(I_C_Payment.class, "Micr", null);
+	String COLUMNNAME_Micr = "Micr";
+
+	/**
 	 * Set Section Code.
 	 *
 	 * <br>Type: Search
@@ -1419,29 +1439,6 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_Payment.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Micr.
-	 * Combination of routing no, account and check no
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMicr (@Nullable java.lang.String Micr);
-
-	/**
-	 * Get Micr.
-	 * Combination of routing no, account and check no
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMicr();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_Micr = new ModelColumn<>(I_C_Payment.class, "Micr", null);
-	String COLUMNNAME_Micr = "Micr";
 
 	/**
 	 * Set Original Transaction ID.
@@ -1736,6 +1733,90 @@ public interface I_C_Payment
 	String COLUMNNAME_R_CVV2Match = "R_CVV2Match";
 
 	/**
+	 * Set Reconciled by GL Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReconciledBy_SAP_GLJournal_ID (int ReconciledBy_SAP_GLJournal_ID);
+
+	/**
+	 * Get Reconciled by GL Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReconciledBy_SAP_GLJournal_ID();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_ReconciledBy_SAP_GLJournal_ID = new ModelColumn<>(I_C_Payment.class, "ReconciledBy_SAP_GLJournal_ID", null);
+	String COLUMNNAME_ReconciledBy_SAP_GLJournal_ID = "ReconciledBy_SAP_GLJournal_ID";
+
+	/**
+	 * Set Reconciled by GL Journal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReconciledBy_SAP_GLJournalLine_ID (int ReconciledBy_SAP_GLJournalLine_ID);
+
+	/**
+	 * Get Reconciled by GL Journal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReconciledBy_SAP_GLJournalLine_ID();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_ReconciledBy_SAP_GLJournalLine_ID = new ModelColumn<>(I_C_Payment.class, "ReconciledBy_SAP_GLJournalLine_ID", null);
+	String COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID = "ReconciledBy_SAP_GLJournalLine_ID";
+
+	/**
+	 * Set Referenced Payment.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRef_Payment_ID (int Ref_Payment_ID);
+
+	/**
+	 * Get Referenced Payment.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRef_Payment_ID();
+
+	String COLUMNNAME_Ref_Payment_ID = "Ref_Payment_ID";
+
+	/**
+	 * Set Reversal ID.
+	 * ID of document reversal
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReversal_ID (int Reversal_ID);
+
+	/**
+	 * Get Reversal ID.
+	 * ID of document reversal
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReversal_ID();
+
+	String COLUMNNAME_Reversal_ID = "Reversal_ID";
+
+	/**
 	 * Set Info.
 	 * Response info
 	 *
@@ -1757,6 +1838,29 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_R_Info = new ModelColumn<>(I_C_Payment.class, "R_Info", null);
 	String COLUMNNAME_R_Info = "R_Info";
+
+	/**
+	 * Set Routing No.
+	 * Bank Routing Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRoutingNo (@Nullable java.lang.String RoutingNo);
+
+	/**
+	 * Get Routing No.
+	 * Bank Routing Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRoutingNo();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_RoutingNo = new ModelColumn<>(I_C_Payment.class, "RoutingNo", null);
+	String COLUMNNAME_RoutingNo = "RoutingNo";
 
 	/**
 	 * Set Reference.
@@ -1851,72 +1955,7 @@ public interface I_C_Payment
 	String COLUMNNAME_R_Result = "R_Result";
 
 	/**
-	 * Set Referenced Payment.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setRef_Payment_ID (int Ref_Payment_ID);
-
-	/**
-	 * Get Referenced Payment.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getRef_Payment_ID();
-
-	String COLUMNNAME_Ref_Payment_ID = "Ref_Payment_ID";
-
-	/**
-	 * Set Reversal ID.
-	 * ID of document reversal
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setReversal_ID (int Reversal_ID);
-
-	/**
-	 * Get Reversal ID.
-	 * ID of document reversal
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getReversal_ID();
-
-	String COLUMNNAME_Reversal_ID = "Reversal_ID";
-
-	/**
-	 * Set Routing No.
-	 * Bank Routing Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setRoutingNo (@Nullable java.lang.String RoutingNo);
-
-	/**
-	 * Get Routing No.
-	 * Bank Routing Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getRoutingNo();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_RoutingNo = new ModelColumn<>(I_C_Payment.class, "RoutingNo", null);
-	String COLUMNNAME_RoutingNo = "RoutingNo";
-
-	/**
-	 * Set Source Currency.
+	 * Set Document currency.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1925,7 +1964,7 @@ public interface I_C_Payment
 	void setSource_Currency_ID (int Source_Currency_ID);
 
 	/**
-	 * Get Source Currency.
+	 * Get Document currency.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
