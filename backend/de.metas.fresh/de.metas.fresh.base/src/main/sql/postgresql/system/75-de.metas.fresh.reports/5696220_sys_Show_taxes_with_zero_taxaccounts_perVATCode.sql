@@ -49,7 +49,10 @@ FROM (
                                                                NULL,
                                                                p_DateFrom,
                                                                p_DateTo) AS t ON TRUE
+                  INNER JOIN c_tax tax ON t.c_tax_id = tax.c_tax_id
          WHERE t.taxname IS NOT NULL
+           AND tax.isactive = 'Y'
+           AND tax.rate = 0
          GROUP BY t.vatcode, t.taxname
      ) AS t
 WHERE balance <> 0
