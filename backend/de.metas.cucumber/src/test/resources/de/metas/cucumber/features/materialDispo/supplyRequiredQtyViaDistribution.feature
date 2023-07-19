@@ -6,7 +6,7 @@ Feature: Stock shortage solved via distribution
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-07-04T08:00:00+00:00
-    And there is no in transit M_WarehouseAnd metasfresh initially has no MD_Candidate data
+    And there is no in transit M_Warehouse
 
   @from:cucumber
   @Id:S0229_100
