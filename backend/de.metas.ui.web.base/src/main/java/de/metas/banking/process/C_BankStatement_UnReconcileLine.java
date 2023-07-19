@@ -5,11 +5,6 @@ import de.metas.banking.BankStatementLineId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-
-import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
@@ -84,7 +79,6 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 			throw new AdempiereException("Clearing GL Journal reconciliation is not allowed. Consider reversing the GL Journal instead");
 		}
 		bankStatementBL.markAsNotReconciledAndDeleteReferences(ImmutableList.of(bankStatementLine));
-		bankStatementBL.unreconcile(ImmutableList.of(bankStatementLine));
 		bankStatementBL.unpost(bankStatement);
 
 		return MSG_OK;

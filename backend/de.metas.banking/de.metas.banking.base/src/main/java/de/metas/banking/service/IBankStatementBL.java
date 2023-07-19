@@ -70,8 +70,6 @@ public interface IBankStatementBL extends ISingletonService
 
 	void assertBankStatementIsDraftOrInProcessOrCompleted(I_C_BankStatement bankStatement);
 
-	void unreconcile(@NonNull List<I_C_BankStatementLine> bankStatementLines);
-
 	void reconcileAsBankTransfer(@NonNull ReconcileAsBankTransferRequest request);
 
 	void markAsReconciledWithGLJournalLine(

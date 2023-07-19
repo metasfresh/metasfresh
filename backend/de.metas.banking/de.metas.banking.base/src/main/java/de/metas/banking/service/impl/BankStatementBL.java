@@ -46,7 +46,6 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -78,7 +77,6 @@ public class BankStatementBL implements IBankStatementBL
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final BankAccountService bankAccountService;
 	private final MoneyService moneyService;
@@ -162,30 +160,6 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public boolean isReconciled(@NonNull final I_C_BankStatementLine line)
-	{
-		if (line.isMultiplePaymentOrInvoice())
-		{
-			if (line.isMultiplePayment())
-			{
-				// NOTE: for performance reasons we are not checking if we have C_BankStatementLine_Ref records which have payments.
-				// If this flag is set we assume that we already have them
-				return true;
-			}
-			else
-			{
-				final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-				return paymentId != null;
-			}
-		}
-		else
-		{
-			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-			return paymentId != null;
-		}
-	}
-
-	@Override
 	public String getDocumentNo(@NonNull final BankStatementId bankStatementId)
 	{
 		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
@@ -249,8 +223,6 @@ public class BankStatementBL implements IBankStatementBL
 		}
 	}
 
-	@Override
-	public void unreconcile(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
 	public void markAsReconciledWithGLJournalLine(
 			@NonNull final BankStatementLineId lineId,
 			@NonNull final SAPGLJournalLineId glJournalLineId)
@@ -326,9 +298,10 @@ public class BankStatementBL implements IBankStatementBL
 		bankStatementLine.setLink_BankStatementLine_ID(-1);
 
 		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
-		bankStatementLine.setIsMultiplePayment(false);bankStatementLine.setC_Payment_ID(-1);
+		bankStatementLine.setIsMultiplePayment(false);
+		bankStatementLine.setC_Payment_ID(-1);
 		bankStatementLine.setReconciledBy_SAP_GLJournal_ID(-1);
-			bankStatementLine.setReconciledBy_SAP_GLJournalLine_ID(-1);
+		bankStatementLine.setReconciledBy_SAP_GLJournalLine_ID(-1);
 
 		bankStatementDAO.save(bankStatementLine);
 	}

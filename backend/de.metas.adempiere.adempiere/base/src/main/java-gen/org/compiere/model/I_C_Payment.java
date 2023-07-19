@@ -5,16 +5,16 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Payment
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Payment
+public interface I_C_Payment 
 {
 
 	String Table_Name = "C_Payment";
 
-	//	/** AD_Table_ID=335 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=335 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -432,7 +432,7 @@ public interface I_C_Payment
 	 * Set Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -442,7 +442,7 @@ public interface I_C_Payment
 	 * Get Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -948,7 +948,7 @@ public interface I_C_Payment
 	 * Set Date.
 	 * Transaction Date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -958,7 +958,7 @@ public interface I_C_Payment
 	 * Get Date.
 	 * Transaction Date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1013,6 +1013,7 @@ public interface I_C_Payment
 
 	/**
 	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1022,6 +1023,7 @@ public interface I_C_Payment
 
 	/**
 	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1077,7 +1079,7 @@ public interface I_C_Payment
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set SAP PayT ID.
+	 * Set External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1086,7 +1088,7 @@ public interface I_C_Payment
 	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
-	 * Get SAP PayT ID.
+	 * Get External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1117,6 +1119,29 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_ExternalOrderId = new ModelColumn<>(I_C_Payment.class, "ExternalOrderId", null);
 	String COLUMNNAME_ExternalOrderId = "ExternalOrderId";
+
+	/**
+	 * Set IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIBAN (@Nullable java.lang.String IBAN);
+
+	/**
+	 * Get IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIBAN();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_IBAN = new ModelColumn<>(I_C_Payment.class, "IBAN", null);
+	String COLUMNNAME_IBAN = "IBAN";
 
 	/**
 	 * Set Active.
@@ -1955,95 +1980,7 @@ public interface I_C_Payment
 	String COLUMNNAME_R_Result = "R_Result";
 
 	/**
-	 * Set Referenced Payment.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setRef_Payment_ID (int Ref_Payment_ID);
-
-	/**
-	 * Get Referenced Payment.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getRef_Payment_ID();
-
-	String COLUMNNAME_Ref_Payment_ID = "Ref_Payment_ID";
-
-	/**
-	 * Set Reversal ID.
-	 * ID of document reversal
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setReversal_ID (int Reversal_ID);
-
-	/**
-	 * Get Reversal ID.
-	 * ID of document reversal
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getReversal_ID();
-
-	String COLUMNNAME_Reversal_ID = "Reversal_ID";
-
-	/**
-	 * Set IBAN.
-	 * International Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIBAN (@Nullable java.lang.String IBAN);
-
-	/**
-	 * Get IBAN.
-	 * International Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIBAN();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_IBAN = new ModelColumn<>(I_C_Payment.class, "IBAN", null);
-	String COLUMNNAME_IBAN = "IBAN";
-
-	/**
-	 * Set BLZ.
-	 * Bank Routing Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setRoutingNo (@Nullable java.lang.String RoutingNo);
-
-	/**
-	 * Get Routing No.
-	 * Bank Routing Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getRoutingNo();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_RoutingNo = new ModelColumn<>(I_C_Payment.class, "RoutingNo", null);
-	String COLUMNNAME_RoutingNo = "RoutingNo";
-
-	/**
-	 * Set Source Currency.
+	 * Set Document currency.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
