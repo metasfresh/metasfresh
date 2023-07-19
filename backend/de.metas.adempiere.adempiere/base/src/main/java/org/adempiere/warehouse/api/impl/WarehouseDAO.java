@@ -816,6 +816,11 @@ public class WarehouseDAO implements IWarehouseDAO
 			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
 		}
 
+		if (Check.isNotBlank(query.getName()))
+		{
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_Name, query.getName().trim());
+		}
+
 		final int warehouseRepoId = queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.create()

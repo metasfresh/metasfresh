@@ -552,6 +552,17 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 						.append(sqlWhereClauseParams.placeholder(sectionCodeId)));
 	}
 
+	private void appendFilterByWarehouse(
+			@NonNull final StringBuilder sqlWhereClause,
+			@NonNull final SqlParamsCollector sqlWhereClauseParams,
+			@NonNull final LookupDataSourceContext evalCtx)
+	{
+		Optional.ofNullable(WarehouseId.ofRepoIdOrNull(param_M_Warehouse_ID.getValueAsInteger(evalCtx)))
+				.ifPresent(warehouseId -> sqlWhereClause
+						.append("\n AND (p." + I_M_Product_Lookup_V.COLUMNNAME_M_WAREHOUSE_ID + "=").append(sqlWhereClauseParams.placeholder(warehouseId))
+						.append(" OR p." + I_M_Product_Lookup_V.COLUMNNAME_M_WAREHOUSE_ID + " IS NULL)"));
+	}
+
 	private void appendFilterByPriceList(
 			@NonNull final StringBuilder sqlWhereClause,
 			@NonNull final SqlParamsCollector sqlWhereClauseParams,
@@ -705,6 +716,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterBySectionCode(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams);
+		appendFilterByWarehouse(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 
 		//
 		// SQL: SELECT ... FROM
@@ -728,6 +740,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID
+															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_M_WAREHOUSE_ID
 															+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
@@ -1045,6 +1058,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
 		String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 		String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+		String COLUMNNAME_M_WAREHOUSE_ID = "M_Warehouse_ID";
 		String COLUMNNAME_Discontinued = "Discontinued";
 		String COLUMNNAME_DiscontinuedFrom = "DiscontinuedFrom";
 

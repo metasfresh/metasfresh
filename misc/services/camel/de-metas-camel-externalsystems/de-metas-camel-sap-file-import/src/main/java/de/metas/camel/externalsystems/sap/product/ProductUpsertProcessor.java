@@ -26,12 +26,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.mapping.ExternalMappingsHolder;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.request.JsonRequestProductWarehouseAssignmentSave;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
@@ -143,6 +145,17 @@ public class ProductUpsertProcessor implements Processor
 
 		jsonRequestProduct.setPurchased(true);
 		jsonRequestProduct.setSAPProductHierarchy(product.getProductHierarchy());
+
+		final JsonRequestProductWarehouseAssignmentSave jsonRequestProductWarehouseAssignmentCreate = JsonRequestProductWarehouseAssignmentSave.builder()
+				.warehouseIdentifiers(Optional.ofNullable(product.getWarehouseName())
+											  .filter(Check::isNotBlank)
+											  .map(ExternalIdentifierFormat::formatName)
+											  .map(ImmutableList::of)
+											  .orElseGet(ImmutableList::of))
+				.syncAdvise(SyncAdvise.REPLACE)
+				.build();
+
+		jsonRequestProduct.setWarehouseAssignments(jsonRequestProductWarehouseAssignmentCreate);
 
 		return Optional.of(jsonRequestProduct);
 	}
