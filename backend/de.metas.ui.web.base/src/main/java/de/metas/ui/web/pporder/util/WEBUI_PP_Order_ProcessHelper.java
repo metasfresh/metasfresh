@@ -10,6 +10,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.logging.LogManager;
@@ -166,10 +167,7 @@ public class WEBUI_PP_Order_ProcessHelper
 
 	public static void processHUs(@NonNull final ProcessPickingRequest request)
 	{
-		pickingCandidateService.processForHUIds(request.getHuIds(),
-												request.getShipmentScheduleId(),
-												OnOverDelivery.ofTakeWholeHUFlag(request.isTakeWholeHU()),
-												request.getPpOrderId());
+		pickingCandidateService.processForHUIds(request);
 	}
 
 }

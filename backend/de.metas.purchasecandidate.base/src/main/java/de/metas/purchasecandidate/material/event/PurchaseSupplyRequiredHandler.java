@@ -13,9 +13,8 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.impl.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanningId;
-
+import de.metas.material.planning.impl.MaterialPlanningContext;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;

@@ -270,6 +270,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		huBuilder.setHUClearanceStatusInfo(CoalesceUtil.coalesce(getHUClearanceStatusInfo(), request.getClearanceStatusInfo()));
 		huBuilder.setIsExternalProperty(isExternalProperty());
+		huBuilder.setIsExternalProperty(isExternalProperty());
 
 		return huBuilder;
 	}

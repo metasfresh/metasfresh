@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -449131942L;
+	private static final long serialVersionUID = -1198646176L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (final Properties ctx, final int PP_Product_Planning_ID, @Nullable final String trxName)
@@ -280,31 +280,31 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public void setMaxManufacturedQtyPerOrder (final @Nullable BigDecimal MaxManufacturedQtyPerOrder)
+	public void setMaxManufacturedQtyPerOrderDispo (final @Nullable BigDecimal MaxManufacturedQtyPerOrderDispo)
 	{
-		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder, MaxManufacturedQtyPerOrder);
+		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo, MaxManufacturedQtyPerOrderDispo);
 	}
 
 	@Override
-	public BigDecimal getMaxManufacturedQtyPerOrder() 
+	public BigDecimal getMaxManufacturedQtyPerOrderDispo() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrder);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrderDispo);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setMaxManufacturedQtyPerOrder_UOM_ID (final int MaxManufacturedQtyPerOrder_UOM_ID)
+	public void setMaxManufacturedQtyPerOrderDispo_UOM_ID (final int MaxManufacturedQtyPerOrderDispo_UOM_ID)
 	{
-		if (MaxManufacturedQtyPerOrder_UOM_ID < 1) 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, null);
+		if (MaxManufacturedQtyPerOrderDispo_UOM_ID < 1) 
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, MaxManufacturedQtyPerOrder_UOM_ID);
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
 
 	@Override
-	public int getMaxManufacturedQtyPerOrder_UOM_ID() 
+	public int getMaxManufacturedQtyPerOrderDispo_UOM_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID);
+		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
 
 	@Override
@@ -350,34 +350,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
-	public void setMaxManufacturedQtyPerOrderDispo (final @Nullable BigDecimal MaxManufacturedQtyPerOrderDispo)
-	{
-		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo, MaxManufacturedQtyPerOrderDispo);
-	}
-
-	@Override
-	public BigDecimal getMaxManufacturedQtyPerOrderDispo() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrderDispo);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setMaxManufacturedQtyPerOrderDispo_UOM_ID (final int MaxManufacturedQtyPerOrderDispo_UOM_ID)
-	{
-		if (MaxManufacturedQtyPerOrderDispo_UOM_ID < 1) 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, MaxManufacturedQtyPerOrderDispo_UOM_ID);
-	}
-
-	@Override
-	public int getMaxManufacturedQtyPerOrderDispo_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
 
 	/** 
@@ -481,18 +453,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
 	@Override
