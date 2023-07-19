@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\hotifx.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="C_VAT_Code_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -106,30 +106,30 @@ order by vatcode, accountno
 	<group name="vatcode_group">
 		<groupExpression><![CDATA[$F{vatcode}]]></groupExpression>
 		<groupHeader>
-			<band height="27">
+			<band height="19">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="0" y="12" width="150" height="14" uuid="f9a5b4ab-ac9d-4612-9172-b6ce863e873a"/>
+					<reportElement x="0" y="3" width="150" height="14" uuid="f9a5b4ab-ac9d-4612-9172-b6ce863e873a"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{vatcode} == null ? ($R{no_vatcode}) : $F{vatcode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="680" y="12" width="100" height="14" uuid="25fae90c-d0e1-493d-a174-5bbcf9dfc162"/>
+					<reportElement x="680" y="3" width="100" height="14" uuid="25fae90c-d0e1-493d-a174-5bbcf9dfc162"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{balanceyear_vat_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="597" y="12" width="83" height="14" uuid="fb200e00-cbab-4355-8cfe-4e71cd55d9b0"/>
+					<reportElement x="597" y="3" width="83" height="14" uuid="fb200e00-cbab-4355-8cfe-4e71cd55d9b0"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{balance_vat_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="520" y="12" width="77" height="14" uuid="ae4f572d-b66d-4194-a001-188b93c0d3a1"/>
+					<reportElement x="520" y="3" width="77" height="14" uuid="ae4f572d-b66d-4194-a001-188b93c0d3a1"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
@@ -144,37 +144,37 @@ order by vatcode, accountno
 	<group name="account_group">
 		<groupExpression><![CDATA[$F{accountno}]]></groupExpression>
 		<groupHeader>
-			<band height="26">
+			<band height="19">
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="680" y="3" width="100" height="14" uuid="58ca5ce2-1c32-49c9-a66b-f57e6b1b5ca8"/>
+					<reportElement x="680" y="2" width="100" height="14" uuid="58ca5ce2-1c32-49c9-a66b-f57e6b1b5ca8"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{balanceyear_acct_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="0" y="3" width="70" height="14" uuid="28d98eec-e34e-4ec1-b4ab-6d2c7376c61a"/>
+					<reportElement x="0" y="2" width="70" height="14" uuid="28d98eec-e34e-4ec1-b4ab-6d2c7376c61a"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{accountno}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="70" y="3" width="270" height="14" uuid="4bea804d-ae57-4e6a-9149-4ed9c8bf33ba"/>
+					<reportElement x="70" y="2" width="270" height="14" uuid="4bea804d-ae57-4e6a-9149-4ed9c8bf33ba"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{accountname}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="597" y="4" width="83" height="14" uuid="a3f27b7c-379b-4539-ab3e-71b302e4fb59"/>
+					<reportElement x="597" y="3" width="83" height="14" uuid="a3f27b7c-379b-4539-ab3e-71b302e4fb59"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{balance_acct_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="520" y="3" width="77" height="14" uuid="26391098-bd8c-49a3-963d-6d4f8e1430f8"/>
+					<reportElement x="520" y="2" width="77" height="14" uuid="26391098-bd8c-49a3-963d-6d4f8e1430f8"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
@@ -196,34 +196,7 @@ order by vatcode, accountno
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="148" splitType="Stretch">
-			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="123" width="782" height="13" backcolor="#808080" uuid="71745852-395f-414b-a5e4-6b213b418317">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<graphicElement>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</graphicElement>
-			</rectangle>
-			<textField>
-				<reportElement x="0" y="124" width="70" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph leftIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{booking}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="340" y="124" width="131" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
-			</textField>
+		<band height="159" splitType="Stretch">
 			<textField>
 				<reportElement x="-20" y="25" width="842" height="20" uuid="416555b5-426f-4e0e-8ced-78e6d5b1304f"/>
 				<textElement textAlignment="Center">
@@ -314,136 +287,6 @@ order by vatcode, accountno
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="680" y="124" width="100" height="12" forecolor="#FFFFFF" uuid="bcb5892e-1c26-40e1-92b9-ab2c0735b68d">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph rightIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
-			</textField>
-			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="120" width="782" height="26" backcolor="#808080" uuid="617d545b-7b86-42ba-b74b-7a80abd9e134">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<graphicElement>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</graphicElement>
-			</rectangle>
-			<textField>
-				<reportElement x="0" y="121" width="70" height="12" forecolor="#FFFFFF" uuid="3629ff5c-377f-44e9-922b-b1d753869c67">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph leftIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{booking}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="340" y="121" width="131" height="12" forecolor="#FFFFFF" uuid="ed0aad1b-40b1-4d1b-b3ee-bd0c1c55ef81">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement key="line" x="0" y="147" width="782" height="1" forecolor="#000000" uuid="13bd2f3c-a910-4395-91bc-b6d6baedbd16">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<graphicElement>
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</graphicElement>
-			</line>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="710" y="121" width="70" height="12" forecolor="#FFFFFF" uuid="f2c318c9-9604-4cab-94eb-70f9217d4fa0">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph rightIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="70" y="134" width="59" height="12" forecolor="#FFFFFF" uuid="72b42f9f-cb76-4ec2-bd30-71d52681f418">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="129" y="134" width="120" height="12" forecolor="#FFFFFF" uuid="f150492f-a5d0-4272-821e-c52ef7431a2f">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{bpname}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="383" y="134" width="55" height="12" forecolor="#FFFFFF" uuid="300e52de-09ca-470e-a0a4-98faf146de7e">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="438" y="134" width="91" height="12" forecolor="#FFFFFF" uuid="2cd7115b-12b6-423f-bbf1-35797b9e8760">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{baseamt}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="529" y="134" width="96" height="12" forecolor="#FFFFFF" uuid="98e4dc32-7044-4a8b-8b5e-2754e4a3f55f">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="625" y="134" width="106" height="12" forecolor="#FFFFFF" uuid="a723dacc-19ef-4235-abca-31691ffb068a">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph rightIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="597" y="124" width="82" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph rightIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{balancePeriod}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="620" y="122" width="59" height="12" forecolor="#FFFFFF" uuid="e373a04e-bb55-47f0-9bb0-5ef457ace879">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph rightIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{balancePeriod}]]></textFieldExpression>
-			</textField>
 			<textField>
 				<reportElement x="70" y="104" width="247" height="12" uuid="97f7e099-dc9e-4430-a201-e0c526f4bc9d"/>
 				<textElement>
@@ -459,16 +302,125 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="515" y="124" width="82" height="12" forecolor="#FFFFFF" uuid="3d86b171-2133-4e68-a636-5bd8a9844cbb">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="123" width="782" height="13" backcolor="#808080" uuid="1dae0e00-9bdb-48b7-916b-0698a6cd627d">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="120" width="782" height="36" backcolor="#808080" uuid="19992502-9cc8-425b-b500-67763a898fa2">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="123" width="70" height="12" forecolor="#FFFFFF" uuid="9e359aed-8e66-4e76-8086-74b4689ddbe3"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{booking}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="70" y="144" width="59" height="12" forecolor="#FFFFFF" uuid="75f10c1d-b1b9-4877-b962-4afbda373bf7">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="129" y="144" width="120" height="12" forecolor="#FFFFFF" uuid="a216bedd-cf16-4645-9f7e-97feb565ddbb">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{bpname}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="280" y="123" width="158" height="12" forecolor="#FFFFFF" uuid="a624f9ca-5e0d-4442-9e21-2859fc6a4665"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="515" y="123" width="82" height="12" forecolor="#FFFFFF" uuid="b01bc4b6-4a37-467c-b0df-e2c179a189d6"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+					<paragraph rightIndent="0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="597" y="123" width="83" height="12" forecolor="#FFFFFF" uuid="5c2f000a-bead-4ace-a29a-9e6a52e758f7"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+					<paragraph rightIndent="0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{balancePeriod}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="660" y="123" width="120" height="12" forecolor="#FFFFFF" uuid="884980c2-28e7-4dc5-a716-896103b2bd7e"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="true"/>
+					<paragraph rightIndent="0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="625" y="144" width="106" height="12" forecolor="#FFFFFF" uuid="4b4100a6-c7d4-479f-82a7-a7858b403131">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="true"/>
 					<paragraph rightIndent="5"/>
 				</textElement>
+				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="529" y="144" width="96" height="12" forecolor="#FFFFFF" uuid="5c338688-31b8-4859-b96e-7bfd3fbe316f">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="438" y="144" width="91" height="12" forecolor="#FFFFFF" uuid="97d6da7a-7a5d-432f-b674-543ff4d0193b">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{baseamt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="383" y="144" width="55" height="12" forecolor="#FFFFFF" uuid="62436ff1-18ce-4e6a-a6fb-6aa44f2fee07">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line" x="0" y="156" width="782" height="1" forecolor="#000000" uuid="c7ba2f7c-4b1e-41f7-b4c6-4c4329d4e6f6">
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -519,10 +471,10 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="4" splitType="Stretch">
+		<band height="10" splitType="Stretch">
 			<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 			<subreport>
-				<reportElement x="0" y="0" width="780" height="4" isPrintWhenDetailOverflows="true" uuid="74a4be63-a872-4c91-8eb6-d32c169f6ef5">
+				<reportElement x="-20" y="0" width="841" height="10" isPrintWhenDetailOverflows="true" uuid="74a4be63-a872-4c91-8eb6-d32c169f6ef5">
 					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="DateFrom">
@@ -597,7 +549,7 @@ order by vatcode, accountno
 	<summary>
 		<band height="45" splitType="Stretch">
 			<subreport>
-				<reportElement x="-20" y="12" width="842" height="30" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
+				<reportElement x="-20" y="4" width="842" height="30" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
 				<subreportParameter name="DateFrom">
 					<subreportParameterExpression><![CDATA[$P{DateFrom}]]></subreportParameterExpression>
 				</subreportParameter>
