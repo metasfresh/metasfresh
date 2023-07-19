@@ -187,10 +187,4 @@ public class InventoryLineModularContractHandler implements IModularContractType
 			default -> throw new AdempiereException("Unsupported model action!");
 		}
 	}
-
-	@Override
-	public void cancelLinkedContractsIfAllowed(final @NonNull I_M_InventoryLine model, final @NonNull FlatrateTermId flatrateTermId)
-	{
-		return;
-	}
 }
