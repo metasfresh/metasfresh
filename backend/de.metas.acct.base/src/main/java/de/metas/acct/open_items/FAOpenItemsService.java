@@ -34,20 +34,20 @@ public class FAOpenItemsService
 	private static final String SYSCONFIG_ProcessingBatchSize = "de.metas.acct.fact_acct_openItems_to_update.processingBatchSize";
 	private static final int DEFAULT_ProcessingBatchSize = 1000;
 
-	private final ImmutableMap<AccountConceptualName, FAOpenItemsHandler> handlersByAccount;
+	private final ImmutableMap<FAOpenItemsHandlerMatchingKey, FAOpenItemsHandler> handlersByKey;
 	private final Generic_OIHandler genericOIHandler;
 
 	public FAOpenItemsService(
 			@NonNull final ElementValueService elementValueService,
 			@NonNull Optional<List<FAOpenItemsHandler>> handlers)
 	{
-		this.handlersByAccount = indexByAccount(handlers);
+		this.handlersByKey = indexByKey(handlers);
 		this.genericOIHandler = new Generic_OIHandler(elementValueService);
 
-		logger.info("Handlers: {}, {}", this.handlersByAccount, genericOIHandler);
+		logger.info("Handlers: {}, {}", this.handlersByKey, genericOIHandler);
 	}
 
-	private static ImmutableMap<AccountConceptualName, FAOpenItemsHandler> indexByAccount(Optional<List<FAOpenItemsHandler>> optionalHandlers)
+	private static ImmutableMap<FAOpenItemsHandlerMatchingKey, FAOpenItemsHandler> indexByKey(Optional<List<FAOpenItemsHandler>> optionalHandlers)
 	{
 		final List<FAOpenItemsHandler> handlers = optionalHandlers.orElse(ImmutableList.of());
 		if (handlers.isEmpty())
@@ -55,19 +55,19 @@ public class FAOpenItemsService
 			return ImmutableMap.of();
 		}
 
-		final ImmutableMap.Builder<AccountConceptualName, FAOpenItemsHandler> result = ImmutableMap.builder();
+		final ImmutableMap.Builder<FAOpenItemsHandlerMatchingKey, FAOpenItemsHandler> result = ImmutableMap.builder();
 		for (final FAOpenItemsHandler handler : handlers)
 		{
-			final Set<AccountConceptualName> handledAccountConceptualNames = handler.getHandledAccountConceptualNames();
-			if (handledAccountConceptualNames.isEmpty())
+			final Set<FAOpenItemsHandlerMatchingKey> matchingKeys = handler.getMatchers();
+			if (matchingKeys.isEmpty())
 			{
-				logger.warn("Skip handler because it declares no handled accounts: {}", handler);
+				logger.warn("Skip handler because it declares no matchers: {}", handler);
 				continue;
 			}
 
-			for (final AccountConceptualName accountConceptualName : handledAccountConceptualNames)
+			for (final FAOpenItemsHandlerMatchingKey matchingKey : matchingKeys)
 			{
-				result.put(accountConceptualName, handler);
+				result.put(matchingKey, handler);
 			}
 		}
 
@@ -88,14 +88,23 @@ public class FAOpenItemsService
 
 	public Optional<FAOpenItemTrxInfo> computeTrxInfo(@NonNull final FAOpenItemTrxInfoComputeRequest request)
 	{
-		final FAOpenItemsHandler handler = getHandler(request.getAccountConceptualName());
+		final FAOpenItemsHandler handler = getHandler(request.getAccountConceptualName(), request.getTableName());
 		return handler.computeTrxInfo(request);
 	}
 
-	private FAOpenItemsHandler getHandler(@Nullable final AccountConceptualName accountConceptualName)
+	@NonNull
+	private FAOpenItemsHandler getHandler(@Nullable final AccountConceptualName accountConceptualName, @NonNull String docTableName)
 	{
-		final FAOpenItemsHandler handler = accountConceptualName != null ? handlersByAccount.get(accountConceptualName) : null;
-		return handler != null ? handler : genericOIHandler;
+		if (accountConceptualName != null)
+		{
+			final FAOpenItemsHandler handler = handlersByKey.get(FAOpenItemsHandlerMatchingKey.of(accountConceptualName, docTableName));
+			if (handler != null)
+			{
+				return handler;
+			}
+		}
+
+		return genericOIHandler;
 	}
 
 	public int processScheduled()
@@ -128,8 +137,10 @@ public class FAOpenItemsService
 				continue;
 			}
 
-			final FAOpenItemsHandler handler = getHandler(openItemTrxInfo.getAccountConceptualName());
-			handler.onGLJournalLineCompleted(line);
+			handlersByKey.values()
+					.stream()
+					.distinct()
+					.forEach(handler -> handler.onGLJournalLineCompleted(line));
 		}
 	}
 
@@ -143,8 +154,7 @@ public class FAOpenItemsService
 				continue;
 			}
 
-			final FAOpenItemsHandler handler = getHandler(openItemTrxInfo.getAccountConceptualName());
-			handler.onGLJournalLineReactivated(line);
+			handlersByKey.values().forEach(handler -> handler.onGLJournalLineReactivated(line));
 		}
 	}
 

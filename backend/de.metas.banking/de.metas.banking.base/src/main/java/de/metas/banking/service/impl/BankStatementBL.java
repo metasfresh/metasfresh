@@ -22,10 +22,12 @@
 
 package de.metas.banking.service.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -44,6 +46,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -75,6 +78,7 @@ public class BankStatementBL implements IBankStatementBL
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final BankAccountService bankAccountService;
 	private final MoneyService moneyService;
@@ -247,6 +251,33 @@ public class BankStatementBL implements IBankStatementBL
 
 	@Override
 	public void unreconcile(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
+	public void markAsReconciledWithGLJournalLine(
+			@NonNull final BankStatementLineId lineId,
+			@NonNull final SAPGLJournalLineId glJournalLineId)
+	{
+		final I_C_BankStatementLine line = bankStatementDAO.getLineById(lineId);
+		if (line.isReconciled())
+		{
+			throw new AdempiereException("Linking GL Journal to an already reconciled bank statement line is not allowed");
+		}
+
+		line.setIsReconciled(true);
+		line.setIsMultiplePayment(false);
+		line.setIsMultiplePaymentOrInvoice(false);
+		line.setReconciledBy_SAP_GLJournal_ID(glJournalLineId.getGlJournalId().getRepoId());
+		line.setReconciledBy_SAP_GLJournalLine_ID(glJournalLineId.getRepoId());
+		bankStatementDAO.save(line);
+	}
+
+	@Override
+	public void markAsNotReconciledAndDeleteReferences(@NonNull final BankStatementLineId bankStatementLineId)
+	{
+		final I_C_BankStatementLine line = bankStatementDAO.getLineById(bankStatementLineId);
+		markAsNotReconciledAndDeleteReferences(ImmutableList.of(line));
+	}
+
+	@Override
+	public void markAsNotReconciledAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
 	{
 		if (bankStatementLines.isEmpty())
 		{
@@ -295,8 +326,9 @@ public class BankStatementBL implements IBankStatementBL
 		bankStatementLine.setLink_BankStatementLine_ID(-1);
 
 		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
-		bankStatementLine.setIsMultiplePayment(false);
-		bankStatementLine.setC_Payment_ID(-1);
+		bankStatementLine.setIsMultiplePayment(false);bankStatementLine.setC_Payment_ID(-1);
+		bankStatementLine.setReconciledBy_SAP_GLJournal_ID(-1);
+			bankStatementLine.setReconciledBy_SAP_GLJournalLine_ID(-1);
 
 		bankStatementDAO.save(bankStatementLine);
 	}

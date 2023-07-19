@@ -120,6 +120,7 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 	public void unreconcile(@NonNull final List<I_C_BankStatementLine> lines)
 	{
 		bankStatementBL.unreconcile(lines);
+		bankStatementBL.markAsNotReconciledAndDeleteReferences(lines);
 	}
 
 	public String getMsg(final AdMessageKey adMessage)

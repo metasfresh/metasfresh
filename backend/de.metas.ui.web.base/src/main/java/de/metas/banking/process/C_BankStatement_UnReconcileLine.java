@@ -10,6 +10,12 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
 import java.util.Set;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -58,6 +64,10 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("line shall be reconciled");
 		}
+		if (isReconciledByGLJournal(line))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("GL Journal reconciliation");
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -69,10 +79,20 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 		bankStatementBL.assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
 
 		final I_C_BankStatementLine bankStatementLine = getSingleSelectedBankStatementLine();
+		if (isReconciledByGLJournal(bankStatementLine))
+		{
+			throw new AdempiereException("Clearing GL Journal reconciliation is not allowed. Consider reversing the GL Journal instead");
+		}
+		bankStatementBL.markAsNotReconciledAndDeleteReferences(ImmutableList.of(bankStatementLine));
 		bankStatementBL.unreconcile(ImmutableList.of(bankStatementLine));
 		bankStatementBL.unpost(bankStatement);
 
 		return MSG_OK;
+	}
+
+	private static boolean isReconciledByGLJournal(final I_C_BankStatementLine bankStatementLine)
+	{
+		return bankStatementLine.isReconciled() && bankStatementLine.getReconciledBy_SAP_GLJournalLine_ID() > 0;
 	}
 
 }
