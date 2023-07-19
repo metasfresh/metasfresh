@@ -1,56 +1,48 @@
 package org.adempiere.invoice.event;
 
-import javax.annotation.Nullable;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.slf4j.Logger;
-
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.IDocTypeDAO;
 import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.Language;
+import de.metas.letter.BoilerPlate;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.
  *
  * @author tsa
- *
  */
 public class InvoiceUserNotificationsProducer
 {
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	public static InvoiceUserNotificationsProducer newInstance()
 	{
 		return new InvoiceUserNotificationsProducer();
@@ -105,14 +97,35 @@ public class InvoiceUserNotificationsProducer
 
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 
-		return newUserNotificationRequest()
-				.recipientUserId(recipientUserId != null ? recipientUserId : UserId.ofRepoId(invoice.getCreatedBy()))
-				.contentADMessage(MSG_Event_InvoiceGenerated)
-				.contentADMessageParam(invoiceRef)
-				.contentADMessageParam(bpValue)
-				.contentADMessageParam(bpName)
-				.targetAction(TargetRecordAction.of(invoiceRef))
-				.build();
+		final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(docTypeDAO.getById(invoice.getC_DocType_ID()).getCompletedNotification_BoilerPlate_ID());
+
+		final UserId actualRecipientUserId = recipientUserId != null ? recipientUserId : UserId.ofRepoId(invoice.getCreatedBy());
+		final UserNotificationRequest.UserNotificationRequestBuilder userNotificationRequestBuilder = newUserNotificationRequest()
+				.recipientUserId(actualRecipientUserId)
+				.targetAction(TargetRecordAction.of(invoiceRef));
+
+		if (boilerPlateId != null)
+		{
+			final Language language = Language.asLanguage(userDAO.getById(actualRecipientUserId).getAD_Language());
+			final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
+			final String orgName = orgDAO.retrieveOrgName(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+			final Evaluatee evaluationContext = Evaluatees.compose(
+					InterfaceWrapperHelper.getEvaluatee(invoice),
+					Evaluatees.mapBuilder()
+							.put("AD_Org_Name",orgName)
+							.build()
+			);
+			userNotificationRequestBuilder.subjectPlain(boilerPlate.evaluateSubject(evaluationContext))
+					.contentPlain(boilerPlate.evaluateTextSnippet(evaluationContext));
+		}
+		else
+		{
+			userNotificationRequestBuilder.contentADMessage(MSG_Event_InvoiceGenerated)
+					.contentADMessageParam(invoiceRef)
+					.contentADMessageParam(bpValue)
+					.contentADMessageParam(bpName);
+		}
+		return userNotificationRequestBuilder.build();
 	}
 
 	private UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()

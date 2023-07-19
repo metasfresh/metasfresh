@@ -471,7 +471,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.adOrgId(orgId.getRepoId())
-				.docBaseType(X_C_DocType.DOCBASETYPE_BillOfMaterialVersion)
+				.docBaseType(X_C_DocType.DOCBASETYPE_BOMFormula)
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 

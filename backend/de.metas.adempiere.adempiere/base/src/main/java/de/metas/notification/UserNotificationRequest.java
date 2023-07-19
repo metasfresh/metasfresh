@@ -61,14 +61,14 @@ public class UserNotificationRequest
 	boolean important;
 
 	/** Optional; takes precedence over {@link #subjectADMessage}, if set. */
-	String subjectPlain;
+	@Nullable String subjectPlain;
 
 	/** Optional */
 	AdMessageKey subjectADMessage;
 	List<Object> subjectADMessageParams;
 
 	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
-	String contentPlain;
+	@Nullable String contentPlain;
 
 	/** Optional */
 	AdMessageKey contentADMessage;

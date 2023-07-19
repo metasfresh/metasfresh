@@ -724,8 +724,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				get_TrxName());
 		for (final String refName : parseNeededReferences())
 		{
-			final MADBoilerPlateRef ref = new MADBoilerPlateRef(this, refName);
-			ref.saveEx();
+			// final MADBoilerPlateRef ref = new MADBoilerPlateRef(this, refName);
+			// ref.saveEx();
 		}
 		checkCycles(-1, null);
 	}
