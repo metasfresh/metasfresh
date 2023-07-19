@@ -34,46 +34,96 @@ CREATE FUNCTION de_metas_acct.taxaccountsonly_details(p_ad_org_id     numeric,
     LANGUAGE sql
 AS
 $$
-SELECT t.Balance,
-       t.BalanceYear,
-       s.taxbaseamt,
-       t.accountno,
-       t.accountname,
-       t.taxName,
-       t.C_Tax_ID,
-       t.vatcode,
-       t.C_ElementValue_ID,
-       t.param_startdate,
-       t.param_enddate,
-       (CASE
-            WHEN p_Account_ID IS NULL
-                THEN NULL
-                ELSE (SELECT value || ' - ' || name
-                      FROM C_ElementValue
-                      WHERE C_ElementValue_ID = p_Account_ID)
-        END)      AS param_konto,
-       t.param_vatcode,
-       t.param_org,
-       c.iso_code AS currency
-
+SELECT *
 FROM (
-         SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
-         FROM C_Tax_Acct ta
-                  INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
-                                                       (ta.T_Due_Acct, ta.T_Credit_Acct))
-         WHERE p_Account_ID IS NULL
-            OR vc.Account_ID = p_Account_ID
-     ) AS ev
-         INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID, ev.C_ElementValue_ID, p_C_Vat_Code_ID, p_DateFrom, p_DateTo) AS t ON TRUE
-         INNER JOIN c_acctschema aas
-                    ON aas.ad_orgonly_id = p_AD_Org_ID
-         INNER JOIN c_currency C ON C.c_currency_id = aas.c_currency_id
-         INNER JOIN de_metas_acct.tax_accounting_report_details_sum(p_DateFrom, p_DateTo, t.vatcode,
-                                                                    ev.C_ElementValue_ID,
-                                                                    t.c_tax_id,
-                                                                    p_AD_Org_ID) AS S ON TRUE
+         SELECT t.Balance,
+                t.BalanceYear,
+                s.taxbaseamt,
+                t.accountno,
+                t.accountname,
+                t.taxName,
+                t.C_Tax_ID,
+                t.vatcode,
+                t.C_ElementValue_ID,
+                t.param_startdate,
+                t.param_enddate,
+                (CASE
+                     WHEN p_Account_ID IS NULL
+                         THEN NULL
+                         ELSE (SELECT value || ' - ' || name
+                               FROM C_ElementValue
+                               WHERE C_ElementValue_ID = p_Account_ID)
+                 END)      AS param_konto,
+                t.param_vatcode,
+                t.param_org,
+                c.iso_code AS currency
 
-WHERE t.taxname IS NOT NULL
+         FROM (
+                  SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
+                  FROM C_Tax_Acct ta
+                           INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
+                                                                (ta.T_Due_Acct, ta.T_Credit_Acct))
+                  WHERE p_Account_ID IS NULL
+                     OR vc.Account_ID = p_Account_ID
+              ) AS ev
+                  INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID, ev.C_ElementValue_ID, p_C_Vat_Code_ID, p_DateFrom, p_DateTo) AS t ON TRUE
+                  INNER JOIN c_acctschema aas
+                             ON aas.ad_orgonly_id = p_AD_Org_ID
+                  INNER JOIN c_currency C ON C.c_currency_id = aas.c_currency_id
+                  INNER JOIN de_metas_acct.tax_accounting_report_details_sum(p_DateFrom, p_DateTo, t.vatcode,
+                                                                             ev.C_ElementValue_ID,
+                                                                             t.c_tax_id,
+                                                                             p_AD_Org_ID) AS S ON TRUE
+
+         WHERE t.taxname IS NOT NULL
+
+         UNION
+         DISTINCT
+
+         SELECT t.Balance,
+                t.BalanceYear,
+                s.taxbaseamt,
+                t.accountno,
+                t.accountname,
+                t.taxName,
+                t.C_Tax_ID,
+                t.vatcode,
+                t.C_ElementValue_ID,
+                t.param_startdate,
+                t.param_enddate,
+                (CASE
+                     WHEN p_Account_ID IS NULL
+                         THEN NULL
+                         ELSE (SELECT value || ' - ' || name
+                               FROM C_ElementValue
+                               WHERE C_ElementValue_ID = p_Account_ID)
+                 END)      AS param_konto,
+                t.param_vatcode,
+                t.param_org,
+                c.iso_code AS currency
+
+         FROM (
+                  SELECT ev.C_ElementValue_ID
+                  FROM C_ELEmentValue ev
+
+                  WHERE (p_account_id IS NULL
+                      OR ev.C_ElementValue_ID = p_account_id)
+                    AND ev.isactive = 'Y'
+                    AND ev.ad_org_id = p_ad_org_id
+              ) AS ev
+                  INNER JOIN de_metas_acct.taxaccounts_details(p_ad_org_id, ev.C_ElementValue_ID, p_c_vat_code_id, p_datefrom, p_dateto) AS t ON TRUE
+                  INNER JOIN c_acctschema aas
+                             ON aas.ad_orgonly_id = p_ad_org_id
+                  INNER JOIN c_currency C ON C.c_currency_id = aas.c_currency_id
+                  INNER JOIN de_metas_acct.tax_accounting_report_details_sum(p_datefrom, p_dateto, t.vatcode,
+                                                                             ev.C_ElementValue_ID,
+                                                                             t.c_tax_id,
+                                                                             p_ad_org_id) AS S ON TRUE
+                  INNER JOIN c_tax tax ON t.c_tax_id = tax.c_tax_id
+         WHERE t.taxname IS NOT NULL
+           AND tax.isactive = 'Y'
+           AND tax.rate = 0
+     ) AS t
 ORDER BY vatcode, accountno
     ;
 $$

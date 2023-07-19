@@ -16,20 +16,43 @@ CREATE OR REPLACE FUNCTION de_metas_acct.taxaccounts_perVATCode(p_AD_Org_ID nume
             )
 AS
 $BODY$
-SELECT SUM(t.balance) AS balance, SUM(t.balanceyear) AS balanceyear, t.taxname, t.vatcode
+SELECT *
 FROM (
-         SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
-         FROM C_Tax_Acct ta
-                  INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
-                                                       (ta.T_Due_Acct, ta.T_Credit_Acct))
-     ) AS ev
-         INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID,
-                                                      ev.C_ElementValue_ID,
-                                                      NULL,
-                                                      p_DateFrom,
-                                                      p_DateTo) AS t ON TRUE
-WHERE t.taxname IS NOT NULL
-GROUP BY t.vatcode, t.taxname
+         SELECT SUM(t.balance) AS balance, SUM(t.balanceyear) AS balanceyear, t.taxname, t.vatcode
+         FROM (
+                  SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
+                  FROM C_Tax_Acct ta
+                           INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
+                                                                (ta.T_Due_Acct, ta.T_Credit_Acct))
+              ) AS ev
+                  INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID,
+                                                               ev.C_ElementValue_ID,
+                                                               NULL,
+                                                               p_DateFrom,
+                                                               p_DateTo) AS t ON TRUE
+         WHERE t.taxname IS NOT NULL
+         GROUP BY t.vatcode, t.taxname
+
+         UNION
+         DISTINCT
+
+         SELECT SUM(t.balance) AS balance, SUM(t.balanceyear) AS balanceyear, t.taxname, t.vatcode
+         FROM (
+                  SELECT ev.C_ElementValue_ID
+                  FROM C_ELEmentValue ev
+
+                  WHERE ev.isactive = 'Y'
+                    AND ev.ad_org_id = p_ad_org_id
+              ) AS ev
+                  INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID,
+                                                               ev.C_ElementValue_ID,
+                                                               NULL,
+                                                               p_DateFrom,
+                                                               p_DateTo) AS t ON TRUE
+         WHERE t.taxname IS NOT NULL
+         GROUP BY t.vatcode, t.taxname
+     ) AS t
+WHERE balance <> 0
 ORDER BY vatcode
 $BODY$
     LANGUAGE sql STABLE
