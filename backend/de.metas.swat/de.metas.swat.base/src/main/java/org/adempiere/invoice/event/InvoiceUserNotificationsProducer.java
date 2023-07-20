@@ -1,6 +1,7 @@
 package org.adempiere.invoice.event;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.event.IEventBus;
 import de.metas.event.Topic;
@@ -97,33 +98,34 @@ public class InvoiceUserNotificationsProducer
 
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 
-		final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(docTypeDAO.getById(invoice.getC_DocType_ID()).getCompletedNotification_BoilerPlate_ID());
-
 		final UserId actualRecipientUserId = recipientUserId != null ? recipientUserId : UserId.ofRepoId(invoice.getCreatedBy());
 		final UserNotificationRequest.UserNotificationRequestBuilder userNotificationRequestBuilder = newUserNotificationRequest()
 				.recipientUserId(actualRecipientUserId)
-				.targetAction(TargetRecordAction.of(invoiceRef));
+				.targetAction(TargetRecordAction.of(invoiceRef))
+				.contentADMessage(MSG_Event_InvoiceGenerated)
+				.contentADMessageParam(invoiceRef)
+				.contentADMessageParam(bpValue)
+				.contentADMessageParam(bpName);
 
-		if (boilerPlateId != null)
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID());
+		if (docTypeId != null)
 		{
-			final Language language = Language.asLanguage(userDAO.getById(actualRecipientUserId).getAD_Language());
-			final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
-			final String orgName = orgDAO.retrieveOrgName(OrgId.ofRepoId(invoice.getAD_Org_ID()));
-			final Evaluatee evaluationContext = Evaluatees.compose(
-					InterfaceWrapperHelper.getEvaluatee(invoice),
-					Evaluatees.mapBuilder()
-							.put("AD_Org_Name",orgName)
-							.build()
-			);
-			userNotificationRequestBuilder.subjectPlain(boilerPlate.evaluateSubject(evaluationContext))
-					.contentPlain(boilerPlate.evaluateTextSnippet(evaluationContext));
-		}
-		else
-		{
-			userNotificationRequestBuilder.contentADMessage(MSG_Event_InvoiceGenerated)
-					.contentADMessageParam(invoiceRef)
-					.contentADMessageParam(bpValue)
-					.contentADMessageParam(bpName);
+			final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(docTypeDAO.getById(docTypeId).getCompletedNotification_BoilerPlate_ID());
+
+			if (boilerPlateId != null)
+			{
+				final Language language = Language.asLanguage(userDAO.getById(actualRecipientUserId).getAD_Language());
+				final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
+				final String orgName = orgDAO.retrieveOrgName(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+				final Evaluatee evaluationContext = Evaluatees.compose(
+						InterfaceWrapperHelper.getEvaluatee(invoice),
+						Evaluatees.mapBuilder()
+								.put("AD_Org_Name", orgName)
+								.build()
+				);
+				userNotificationRequestBuilder.subjectPlain(boilerPlate.evaluateSubject(evaluationContext))
+						.contentPlain(boilerPlate.evaluateTextSnippet(evaluationContext));
+			}
 		}
 		return userNotificationRequestBuilder.build();
 	}
