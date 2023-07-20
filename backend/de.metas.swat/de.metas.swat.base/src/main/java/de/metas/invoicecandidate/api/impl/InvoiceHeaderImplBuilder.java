@@ -1,8 +1,8 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;

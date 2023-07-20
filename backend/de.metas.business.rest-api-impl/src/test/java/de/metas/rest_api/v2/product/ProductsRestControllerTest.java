@@ -73,7 +73,6 @@ import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
 import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
-import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;

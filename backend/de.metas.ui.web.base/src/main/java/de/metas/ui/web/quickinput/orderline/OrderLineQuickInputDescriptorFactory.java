@@ -76,7 +76,7 @@ import java.util.Set;
 {
 	// FIXME: hardcoded "VAT_Code_for_SO"
 	public static final AdValRuleId AD_VAL_RULE_VAT_Code_for_SO = AdValRuleId.ofRepoId(540610);
-	
+
 	// FIXME: hardcoded "VAT_Code_for_PO"
 	public static final AdValRuleId AD_VAL_RULE_VAT_Code_for_PO = AdValRuleId.ofRepoId(540611);
 
