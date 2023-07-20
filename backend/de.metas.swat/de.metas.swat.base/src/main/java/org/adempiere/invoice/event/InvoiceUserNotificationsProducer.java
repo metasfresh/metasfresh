@@ -42,6 +42,7 @@ public class InvoiceUserNotificationsProducer
 	private final BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public static InvoiceUserNotificationsProducer newInstance()
 	{
@@ -53,7 +54,7 @@ public class InvoiceUserNotificationsProducer
 			.type(Type.REMOTE)
 			.build();
 
-	private static final transient Logger logger = LogManager.getLogger(InvoiceUserNotificationsProducer.class);
+	private static final Logger logger = LogManager.getLogger(InvoiceUserNotificationsProducer.class);
 
 	private static final AdMessageKey MSG_Event_InvoiceGenerated = AdMessageKey.of("Event_InvoiceGenerated");
 
@@ -89,7 +90,6 @@ public class InvoiceUserNotificationsProducer
 			@NonNull final I_C_Invoice invoice,
 			@Nullable final UserId recipientUserId)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 
 		final String bpValue = bpartner.getValue();

@@ -113,6 +113,13 @@ public class UserNotificationsConfig
 				.build();
 	}
 
+	public UserNotificationsConfig deriveWithEMailCustomType(final EMailCustomType eMailCustomType)
+	{
+		return toBuilder()
+				.eMailCustomType(eMailCustomType)
+				.build();
+	}
+
 	public UserNotificationsConfig deriveWithNotificationGroups(final List<UserNotificationsGroup> notificationGroups)
 	{
 		if (notificationGroups.isEmpty())

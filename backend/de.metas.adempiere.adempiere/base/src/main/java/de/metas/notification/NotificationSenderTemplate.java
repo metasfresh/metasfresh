@@ -136,7 +136,7 @@ public class NotificationSenderTemplate
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			logger.error("Failed to send notification: {}", request, ex);
 		}
@@ -356,11 +356,8 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isUser())
 		{
-
 			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId())
-					.toBuilder()
-					.eMailCustomType(request.getEMailCustomType())
-					.build();
+					.deriveWithEMailCustomType(request.getEMailCustomType());
 
 			if (recipient.isRoleIdSet())
 			{
