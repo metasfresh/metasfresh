@@ -272,7 +272,7 @@ public class RequisitionPOCreate extends JavaProcess
 		orderClause.append("(SELECT DateRequired FROM M_Requisition r WHERE M_RequisitionLine.M_Requisition_ID=r.M_Requisition_ID),");
 		orderClause.append("M_Product_ID, C_Charge_ID, M_AttributeSetInstance_ID");
 
-		POResultSet<MRequisitionLine> rs = new Query(getCtx(), MRequisitionLine.Table_Name, whereClause.toString(), get_TrxName())
+		POResultSet<MRequisitionLine> rs = new Query(getCtx(), MRequisitionLine.Table_Name, whereClause.toString(), null)
 				.setParameters(params)
 				.setOrderBy(orderClause.toString())
 				.setClient_ID()
@@ -519,7 +519,7 @@ public class RequisitionPOCreate extends JavaProcess
 		if (m_excludedVendors.contains(C_BPartner_ID))
 			return false;
 		//
-		final boolean match = new Query(getCtx(), MBPartner.Table_Name, "C_BPartner_ID=? AND C_BP_Group_ID=?", get_TrxName())
+		final boolean match = new Query(getCtx(), MBPartner.Table_Name, "C_BPartner_ID=? AND C_BP_Group_ID=?", null)
 				.setParameters(C_BPartner_ID, p_C_BP_Group_ID)
 				.anyMatch();
 		if (!match)
