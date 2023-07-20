@@ -280,6 +280,7 @@ Feature:product get/create/update using metasfresh api
       | p_1                     | code345_2 | Product_Test_2 | Stk       | ean_test | test_description | bpartner_1               | test                | true                         | testForSale                       | true                             | testForPurchase                       |
 
   @from:cucumber
+  @Id:S0295_100
   Scenario: as a REST-API invoker
   I want to be able to create product warehouse assignments
 
