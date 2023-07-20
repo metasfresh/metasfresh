@@ -10,6 +10,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_InvoiceRejection;
 import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin;
 
 /*
@@ -38,7 +39,7 @@ import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
 public enum EMailCustomType implements ReferenceListAwareEnum
 {
 	OrgCompiereUtilLogin(CUSTOMTYPE_OrgCompiereUtilLogin),
-	InvoiceRejection("TODO - Add to CustomType AD_Reference_ID=540142");
+	InvoiceRejection(CUSTOMTYPE_InvoiceRejection);
 
 	@Getter
 	private final String code;
