@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -272,5 +273,17 @@ public class X_C_Invoice_Rejection_Detail extends org.compiere.model.PO implemen
 	public java.lang.String getStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Status);
+	}
+
+	@Override
+	public void setDateReceived (final @Nullable java.sql.Timestamp DateReceived)
+	{
+		set_Value (COLUMNNAME_DateReceived, DateReceived);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateReceived()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateReceived);
 	}
 }

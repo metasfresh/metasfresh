@@ -237,6 +237,27 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeShipment_ID = "C_DocTypeShipment_ID";
 
 	/**
+	 * Set Notification text for doc status "Complete".
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompletedNotification_BoilerPlate_ID (int CompletedNotification_BoilerPlate_ID);
+
+	/**
+	 * Get Notification text for doc status "Complete".
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCompletedNotification_BoilerPlate_ID();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_CompletedNotification_BoilerPlate_ID = new ModelColumn<>(I_C_DocType.class, "CompletedNotification_BoilerPlate_ID", null);
+	String COLUMNNAME_CompletedNotification_BoilerPlate_ID = "CompletedNotification_BoilerPlate_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

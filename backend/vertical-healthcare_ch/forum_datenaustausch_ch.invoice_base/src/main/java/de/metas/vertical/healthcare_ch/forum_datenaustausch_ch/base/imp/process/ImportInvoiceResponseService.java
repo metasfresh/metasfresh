@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.email.EMailCustomType;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
@@ -14,11 +15,10 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import de.metas.user.User;
 import de.metas.user.UserId;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
 import lombok.NonNull;
@@ -58,11 +58,10 @@ class ImportInvoiceResponseService
 
 	private final IBPartnerDAO ibPartnerDAO = Services.get(IBPartnerDAO.class);
 
-	private final UserRepository userRepository;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	ImportInvoiceResponseService(final UserRepository userRepository)
+	ImportInvoiceResponseService()
 	{
-		this.userRepository = userRepository;
 	}
 
 	// package visibility
@@ -75,6 +74,7 @@ class ImportInvoiceResponseService
 		final Recipient recipient = Recipient.user(userId);
 
 		final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
+		final String orgName = orgDAO.retrieveOrgName(responseWithTags.getBillerOrg());
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()
@@ -83,8 +83,10 @@ class ImportInvoiceResponseService
 				.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
 				.subjectADMessageParam(responseWithTags.getDocumentNumber())
 				.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST)
+				.contentADMessageParam(orgName)
 				.contentADMessageParam(invoiceRef)
 				.targetAction(TargetRecordAction.of(invoiceRef))
+				.eMailCustomType(EMailCustomType.InvoiceRejection)
 				.build();
 
 		notificationBL.send(userNotificationRequest);
@@ -100,10 +102,9 @@ class ImportInvoiceResponseService
 		for (final UserId userId : userIds)
 		{
 			final Recipient recipient = Recipient.user(userId);
-			final User user = userRepository.getByIdInTrx(userId);
 
 			final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
-
+			final String orgName = orgDAO.retrieveOrgName(responseWithTags.getBillerOrg());
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 					.builder()
 					.topic(INVOICE_EVENTBUS_TOPIC)
@@ -111,7 +112,7 @@ class ImportInvoiceResponseService
 					.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
 					.subjectADMessageParam(responseWithTags.getDocumentNumber())
 					.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS)
-					.contentADMessageParam(user.getName())
+					.contentADMessageParam(orgName)
 					.contentADMessageParam(invoiceRef)
 					.targetAction(TargetRecordAction.of(invoiceRef))
 					.build();
