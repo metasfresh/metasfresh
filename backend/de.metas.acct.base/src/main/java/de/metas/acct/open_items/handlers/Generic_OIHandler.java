@@ -1,12 +1,12 @@
 package de.metas.acct.open_items.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.AccountConceptualName;
 import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemTrxInfoComputeRequest;
 import de.metas.acct.open_items.FAOpenItemsHandler;
+import de.metas.acct.open_items.FAOpenItemsHandlerMatchingKey;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import lombok.NonNull;
@@ -27,7 +27,7 @@ public class Generic_OIHandler implements FAOpenItemsHandler
 	}
 
 	@Override
-	public @NonNull Set<AccountConceptualName> getHandledAccountConceptualNames()
+	public @NonNull Set<FAOpenItemsHandlerMatchingKey> getMatchers()
 	{
 		// shall not be called
 		return ImmutableSet.of();
@@ -68,12 +68,10 @@ public class Generic_OIHandler implements FAOpenItemsHandler
 	@Override
 	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
 	{
-		// TODO implement
 	}
 
 	@Override
 	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
 	{
-		// TODO implement
 	}
 }

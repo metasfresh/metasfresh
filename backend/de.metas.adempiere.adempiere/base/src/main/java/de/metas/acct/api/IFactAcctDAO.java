@@ -23,7 +23,7 @@ package de.metas.acct.api;
  */
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.open_items.FAOpenItemKey;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.document.engine.IDocument;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -92,5 +92,5 @@ public interface IFactAcctDAO extends ISingletonService
 
 	Stream<I_Fact_Acct> stream(@NonNull FactAcctQuery query);
 
-	void setOpenItemKey(@NonNull FAOpenItemKey openItemKey, @NonNull FactAcctQuery query);
+	void setOpenItemTrxInfo(@NonNull FAOpenItemTrxInfo openItemTrxInfo, @NonNull FactAcctQuery query);
 }

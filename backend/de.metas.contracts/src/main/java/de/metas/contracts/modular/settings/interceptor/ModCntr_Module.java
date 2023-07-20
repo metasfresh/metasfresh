@@ -25,10 +25,8 @@ package de.metas.contracts.modular.settings.interceptor;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
-import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,14 +40,13 @@ public class ModCntr_Module
 {
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	public static final String MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = "@ModCntr_Settings_cannot_be_changed@";
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateSettingsNotUsedAlready(@NonNull final I_ModCntr_Module type)
 	{
 		final ModularContractSettingsId modCntrSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
 
-		if (modularContractSettingsDAO.isSettingsUsedInCompletedFlatrateTerm(modCntrSettingsId))
+		if (modularContractSettingsDAO.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId))
 		{
 			throw new AdempiereException(MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED);
 		}

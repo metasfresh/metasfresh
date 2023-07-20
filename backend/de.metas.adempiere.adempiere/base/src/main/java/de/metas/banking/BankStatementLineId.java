@@ -69,4 +69,7 @@ public class BankStatementLineId implements RepoIdAware
 	{
 		return Objects.equals(id1, id2);
 	}
+
+	public static int toRepoId(@Nullable BankStatementLineId id) {return id != null ? id.getRepoId() : -1;}
+
 }

@@ -87,4 +87,6 @@ public class BankStatementId implements RepoIdAware
 	{
 		return Objects.equals(id1, id2);
 	}
+
+	public static int toRepoId(@Nullable BankStatementId id) {return id != null ? id.getRepoId() : -1;}
 }

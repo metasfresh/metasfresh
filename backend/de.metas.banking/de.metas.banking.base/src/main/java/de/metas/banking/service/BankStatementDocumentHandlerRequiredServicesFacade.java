@@ -1,15 +1,5 @@
 package de.metas.banking.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -25,6 +15,15 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -119,7 +118,7 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 
 	public void unreconcile(@NonNull final List<I_C_BankStatementLine> lines)
 	{
-		bankStatementBL.unreconcile(lines);
+		bankStatementBL.markAsNotReconciledAndDeleteReferences(lines);
 	}
 
 	public String getMsg(final AdMessageKey adMessage)
