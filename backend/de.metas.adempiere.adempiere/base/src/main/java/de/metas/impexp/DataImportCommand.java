@@ -1,22 +1,5 @@
 package de.metas.impexp;
 
-import java.io.IOException;
-import java.net.URI;
-import java.time.Duration;
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.api.Params;
-import org.compiere.model.IQuery;
-import org.slf4j.Logger;
-import org.springframework.core.io.Resource;
-
 import de.metas.common.util.time.SystemTime;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.format.ImpFormat;
@@ -31,6 +14,21 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.Params;
+import org.compiere.model.IQuery;
+import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 
 /*
  * #%L
@@ -79,6 +77,7 @@ final class DataImportCommand
 	private final Resource data;
 	private final boolean processImportRecordsSynchronously;
 	private final boolean stopOnFirstError;
+	private final Params overrideColumnValues;
 
 	//
 	// State
@@ -109,7 +108,8 @@ final class DataImportCommand
 			@NonNull final Resource data,
 			//
 			final boolean processImportRecordsSynchronously,
-			final boolean stopOnFirstError)
+			final boolean stopOnFirstError,
+			@Nullable final Params overrideColumnValues)
 	{
 		this.dataImportService = dataImportService;
 		this.dataImportRunService = dataImportRunService;
@@ -127,6 +127,7 @@ final class DataImportCommand
 		this.data = data;
 		this.processImportRecordsSynchronously = processImportRecordsSynchronously;
 		this.stopOnFirstError = stopOnFirstError;
+		this.overrideColumnValues = overrideColumnValues;
 	}
 
 	public DataImportResult execute()
@@ -217,7 +218,7 @@ final class DataImportCommand
 
 	private InsertIntoImportTableResult readSourceAndInsertIntoImportTable()
 	{
-		final ImpDataParser sourceParser = parserFactory.createParser(importFormat);
+		final ImpDataParser sourceParser = parserFactory.createParser(importFormat, data.getFilename());
 
 		final InsertIntoImportTableRequest request = InsertIntoImportTableRequest.builder()
 				.importFormat(importFormat)
@@ -228,6 +229,7 @@ final class DataImportCommand
 				.dataImportConfigId(dataImportConfigId)
 				.insertBatchSize(getInsertBatchSize())
 				.stream(sourceParser.streamDataLines(data))
+				.overrideColumnValues(overrideColumnValues)
 				.build();
 
 		final InsertIntoImportTableResult result = insertIntoImportTableService.insertData(request)
@@ -244,7 +246,7 @@ final class DataImportCommand
 		{
 			return resource.getURI();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			return null;
 		}
@@ -270,7 +272,7 @@ final class DataImportCommand
 			_recordsToImportSelectionId = query.createSelection();
 			if (_recordsToImportSelectionId == null)
 			{
-				throw new AdempiereException("No records to import for " + query);
+				throw new AdempiereException("No records to import for " + query + " Errors on import: " + insertIntoImportTableResult.getErrors());
 			}
 		}
 

@@ -1,5 +1,8 @@
 package de.metas.handlingunits.inventory;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -30,8 +33,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,9 +41,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -71,7 +69,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class InventoryRepositoryTest
 {
 	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
@@ -83,17 +81,7 @@ class InventoryRepositoryTest
 
 	private AttributeSetInstanceId asiId;
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
@@ -211,7 +199,7 @@ class InventoryRepositoryTest
 		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);
 
 		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
-		expect(reloadedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(reloadedResult);
 
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}

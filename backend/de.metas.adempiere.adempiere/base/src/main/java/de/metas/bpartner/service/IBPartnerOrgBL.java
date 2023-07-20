@@ -22,14 +22,6 @@ package de.metas.bpartner.service;
  * #L%
  */
 
-import java.util.Optional;
-import java.util.Properties;
-
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
@@ -37,6 +29,13 @@ import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Location;
+
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IBPartnerOrgBL extends ISingletonService
 {
@@ -79,4 +78,6 @@ public interface IBPartnerOrgBL extends ISingletonService
 	 */
 	@Deprecated
 	I_AD_User retrieveUserInChargeOrNull(Properties ctx, int orgId, String trxName);
+
+	@NonNull String getOrgLanguageOrLoggedInUserLanguage(@NonNull OrgId orgId);
 }

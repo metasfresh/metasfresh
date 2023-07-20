@@ -68,6 +68,8 @@ public class AcctSchema
 	boolean postTradeDiscount;
 	boolean postServices;
 	boolean postIfSameClearingAccounts;
+	boolean isAllowMultiDebitAndCredit;
+
 	boolean isAutoSetDebtoridAndCreditorid;
 	int debtorIdPrefix;
 	int creditorIdPrefix;
@@ -83,8 +85,6 @@ public class AcctSchema
 
 	@NonNull
 	AcctSchemaElementsMap schemaElements;
-
-
 
 	public boolean isPostOnlyForSomeOrgs()
 	{
@@ -116,5 +116,10 @@ public class AcctSchema
 	public ImmutableSet<AcctSchemaElementType> getSchemaElementTypes()
 	{
 		return getSchemaElements().getElementTypes();
+	}
+
+	public ChartOfAccountsId getChartOfAccountsId()
+	{
+		return getSchemaElements().getChartOfAccountsId();
 	}
 }

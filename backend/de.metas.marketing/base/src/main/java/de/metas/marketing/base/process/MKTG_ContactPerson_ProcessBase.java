@@ -1,14 +1,5 @@
 package de.metas.marketing.base.process;
 
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.springframework.stereotype.Service;
-
 import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
@@ -17,6 +8,14 @@ import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Service;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -100,7 +99,7 @@ public class MKTG_ContactPerson_ProcessBase
 				.andCollectChildren(I_AD_User.COLUMNNAME_C_BPartner_ID, I_AD_User.class)
 				.addNotInSubQueryFilter(I_AD_User.COLUMNNAME_AD_User_ID, I_MKTG_Campaign_ContactPerson.COLUMNNAME_AD_User_ID, linkTableQuery)
 				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterateAndStream()
 				.map(userRepository::ofRecord);

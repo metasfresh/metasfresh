@@ -78,7 +78,7 @@ import de.metas.util.Services;
 	{
 		super();
 
-		threadName = "MLookupLoader-W" + lookupInfo.getWindowNo() + "-" + lookupInfo.getKeyColumnFQ();
+		threadName = "MLookupLoader-W" + lookupInfo.getWindowNo() + "-" + lookupInfo.getSqlQuery().getKeyColumn();
 		log.debug("Loading: {}", threadName);
 
 		this.validationCtx = validationCtx;
@@ -147,7 +147,7 @@ import de.metas.util.Services;
 			final int rows = values.size();
 			if (rows >= MLookup.MAX_ROWS)
 			{
-				final String errmsg = lookupInfo.getKeyColumnFQ() + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
+				final String errmsg = lookupInfo.getSqlQuery().getKeyColumn() + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
 						+ "\n Fetched Rows: " + rows
 						+ "\n Max rows allowed: " + MLookup.MAX_ROWS;
 				log.warn(errmsg);
@@ -175,15 +175,6 @@ import de.metas.util.Services;
 		}
 		
 		duration.stop();
-
-		if (log.isTraceEnabled())
-		{
-			final int size = values.size();
-			log.trace(lookupInfo.getKeyColumnFQ() + ": "
-					// + " ID=" + m_info.AD_Column_ID + " " +
-					+ " - Loader complete #" + size + " - all=" + allLoaded
-					+ " - " + duration);
-		}
 
 		return this;
 	}	// run

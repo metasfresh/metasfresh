@@ -30,7 +30,10 @@ import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.model.IQuery;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -40,26 +43,20 @@ public interface IContractsDAO extends ISingletonService
 	/**
 	 * @return the flatrate terms with missing candidates, gathered in a list.
 	 */
-	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, int limit);
+	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, @NonNull QueryLimit limit);
 
+	IQueryBuilder<I_C_Flatrate_Term> createBaseTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions, boolean ignoreDateFilter);
 
 	/**
-	 *
 	 * Check if the term given as parameter was extended (has a predecessor).
-	 * @param term
-	 * @return
 	 */
-	boolean termHasAPredecessor (I_C_Flatrate_Term term);
+	boolean termHasAPredecessor(I_C_Flatrate_Term term);
 
 	/**
 	 * Sums up the <code>Qty</code> values of all {@link I_C_SubscriptionProgress} records that reference the given
 	 * term.
-	 *
-	 * @param term
-	 * @return
 	 */
 	BigDecimal retrieveSubscriptionProgressQtyForTerm(I_C_Flatrate_Term term);
-
 
 	List<I_C_SubscriptionProgress> getSubscriptionProgress(I_C_Flatrate_Term currentTerm);
 
@@ -72,4 +69,6 @@ public interface IContractsDAO extends ISingletonService
 	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
 	<T extends I_C_Flatrate_Conditions> T getConditionsById(ConditionsId conditionsId, Class<T> modelClass);
+
+	IQuery<I_C_Flatrate_Term> createInterimInvoiceSearchCriteria(@Nullable I_C_Flatrate_Term flatrateTerm);
 }

@@ -1,0 +1,46 @@
+{
+  "FLAG": 200,
+  "ARTNR": "ProductValue",
+  "ARTNRID": "productId",
+  "TEXT": "Name1",
+  "TEXT2": "Name2",
+  "INAKTIV": 0,
+  "BI0" : 0,
+  "HALAL" : 1,
+  "KRED": [
+    {
+      "MKREDID": "vendorId",
+      "STDKRED": 1,
+      "LIEFERANTENFREIGABE": 1,
+      "INAKTIV": 1,
+      "METASFRESHID": "1",
+      "ROHKREDDATA": {
+        "ATTACHMENT": [
+          {
+            "ID": "Test",
+            "FileName": "/directory/Attachment.pdf",
+            "ValidUntil": "2022-03-01T00:00:00",
+            "DocumentType": "DocumentType",
+            "DocumentGroup": "DocumentGroup"
+          }
+        ]
+      },
+      "ALLERGENE": [
+        {
+          "ALID":2,
+          "Text":"Allergen",
+          "Vorkommen_Direkt":0,
+          "Vorkommen_Kreuzkontamination":0,
+          "Vorkommen_Kein":1
+        }
+      ]
+    },
+    {
+      "MKREDID": "vendorId2",
+      "STDKRED": 1,
+      "LIEFERANTENFREIGABE": 0,
+      "INAKTIV": 0,
+      "METASFRESHID": "2"
+    }
+  ]
+}

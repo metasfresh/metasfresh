@@ -141,12 +141,10 @@ public class DocumentReportService
 
 			advisor = getAdvisorByTableName(requestEffective.getDocumentRef().getTableName());
 		}
-
 		else
 		{
-
 			final org.compiere.model.I_AD_Archive lastArchiveRecord = archiveBL
-					.getLastArchive(requestEffective.getDocumentRef())
+					.getLastArchiveRecord(requestEffective.getDocumentRef())
 					.orElseThrow(() -> new AdempiereException("@NoDocPrintFormat@@NoArchive@"));
 
 			final ArchiveResult lastArchive = ArchiveResult.builder()
@@ -154,11 +152,9 @@ public class DocumentReportService
 					.data(archiveBL.getBinaryData(lastArchiveRecord))
 					.build();
 
-			final DocumentReportResult report = DocumentReportResult.builder()
+			return DocumentReportResult.builder()
 					.lastArchive(lastArchive)
 					.build();
-
-			return report;
 		}
 
 		//
@@ -166,6 +162,7 @@ public class DocumentReportService
 				advisor,
 				requestEffective.getDocumentRef(),
 				requestEffective.getPrintFormatIdToUse(),
+				requestEffective.getReportProcessId(),
 				requestEffective.getFlavor());
 
 		requestEffective = requestEffective
@@ -296,7 +293,7 @@ public class DocumentReportService
 		if (type != null)
 		{
 			final DocumentReportAdvisor advisor = getAdvisorByType(type);
-			final DocumentReportInfo reportInfo = getDocumentReportInfo(advisor, recordRef, null, flavor);
+			final DocumentReportInfo reportInfo = getDocumentReportInfo(advisor, recordRef, null, null, flavor);
 
 			final DocumentPrintOptionDescriptorsList printOptionDescriptors = documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportInfo.getReportProcessId());
 			final DocumentPrintOptions printOptions = reportInfo.getPrintOptions()
@@ -321,9 +318,10 @@ public class DocumentReportService
 			@NonNull final DocumentReportAdvisor advisor,
 			@NonNull final TableRecordReference recordRef,
 			@Nullable final PrintFormatId printFormatIdToUse,
+			@Nullable final AdProcessId reportProcessId,
 			@NonNull final DocumentReportFlavor flavor)
 	{
-		final DocumentReportInfo reportInfo = advisor.getDocumentReportInfo(recordRef, printFormatIdToUse);
+		final DocumentReportInfo reportInfo = advisor.getDocumentReportInfo(recordRef, printFormatIdToUse, reportProcessId);
 
 		return reportInfo.withPrintOptionsFallback(getDocTypePrintOptions(reportInfo.getDocTypeId(), flavor));
 	}

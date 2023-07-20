@@ -76,6 +76,12 @@ class InvoiceCandidateTest
 						.build())
 				.build();
 
+		final PickedData pickedData = PickedData.builder()
+				.productId(PRODUCT_ID)
+				.qtyPicked(Quantitys.create(BigDecimal.ZERO, STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.create(BigDecimal.ZERO, DELIVERY_UOM_ID))
+				.build();
+
 		final InvoicedData invoicedData = InvoicedData.builder()
 				.netAmount(Money.zero(CURRENCY_ID))
 				.qtys(StockQtyAndUOMQtys.createZero(PRODUCT_ID, DELIVERY_UOM_ID))
@@ -89,6 +95,7 @@ class InvoiceCandidateTest
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 				.orderedData(orderedData)
 				.deliveredData(deliveredData)
+				.pickedData(pickedData)
 				.invoicedData(invoicedData)
 				.invoiceRule(InvoiceRule.AfterDelivery)
 				.build();
@@ -126,6 +133,12 @@ class InvoiceCandidateTest
 						.build())
 				.build();
 
+		final PickedData pickedData = PickedData.builder()
+				.productId(PRODUCT_ID)
+				.qtyPicked(Quantitys.create(new BigDecimal("20"), STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.create(new BigDecimal("70"), DELIVERY_UOM_ID))
+				.build();
+
 		final InvoicedData invoicedData = InvoicedData.builder()
 				.netAmount(Money.zero(CURRENCY_ID))
 				.qtys(StockQtyAndUOMQtys.createZero(PRODUCT_ID, DELIVERY_UOM_ID))
@@ -139,6 +152,7 @@ class InvoiceCandidateTest
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 				.orderedData(orderedData)
 				.deliveredData(deliveredData)
+				.pickedData(pickedData)
 				.invoicedData(invoicedData)
 				.invoiceRule(InvoiceRule.AfterDelivery)
 				.build();

@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessMDC;
@@ -39,8 +41,8 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
@@ -90,7 +92,7 @@ import java.util.stream.Stream;
 /**
  * This is the rest controller used when processes are invoked from the <b>WebUI</b>.
  */
-@Api
+@Tag(name = "ProcessRestController")
 @RestController
 @RequestMapping(ProcessRestController.ENDPOINT)
 public class ProcessRestController
@@ -170,6 +172,7 @@ public class ProcessRestController
 		return pinstancesRepositoriesByHandlerType.values();
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{processId}/layout")
 	public ResponseEntity<JSONProcessLayout> getLayout(
 			@PathVariable("processId") final String adProcessIdStr,
@@ -193,6 +196,7 @@ public class ProcessRestController
 		}
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping("/{processId}")
 	public JSONProcessInstance createInstanceFromRequest(
 			@PathVariable("processId") final String processIdStr,
@@ -241,6 +245,7 @@ public class ProcessRestController
 		return getInstance(processId, pinstanceId);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{processId}/{pinstanceId}")
 	public JSONProcessInstance getInstance(
 			@PathVariable("processId") final String processIdStr,
@@ -264,6 +269,7 @@ public class ProcessRestController
 		}
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PatchMapping("/{processId}/{pinstanceId}")
 	public List<JSONDocument> processParametersChangeEvents(
 			@PathVariable("processId") final String processIdStr //
@@ -295,6 +301,7 @@ public class ProcessRestController
 		}
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping(value = "/{processId}/{pinstanceId}/start")
 	public JSONProcessInstanceResult startProcess(
 			@PathVariable("processId") final String processIdStr,
@@ -323,7 +330,8 @@ public class ProcessRestController
 		}
 	}
 
-	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Operation(summary = "Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<Resource> getReport(
 			@PathVariable("processId") final String processIdStr,
@@ -356,6 +364,7 @@ public class ProcessRestController
 		}
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getParameterTypeahead(
 			@PathVariable("processId") final String processIdStr //

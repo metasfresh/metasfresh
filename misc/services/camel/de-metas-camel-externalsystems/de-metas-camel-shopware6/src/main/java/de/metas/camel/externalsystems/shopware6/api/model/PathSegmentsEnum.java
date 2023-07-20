@@ -30,10 +30,10 @@ import lombok.Getter;
 public enum PathSegmentsEnum
 {
 	API("api"),
-	V3("v3"),
 	SEARCH("search"),
 	ORDER("order"),
 	PRODUCT("product"),
+	UNIT("unit"),
 	DELIVERIES("deliveries"),
 	ORDER_ADDRESS("order-address"),
 	OATH("oauth"),
@@ -41,10 +41,14 @@ public enum PathSegmentsEnum
 	COUNTRY("country"),
 	LINE_ITEMS("line-items"),
 	CURRENCY("currency"),
+	SALUTATION("salutation"),
 	CUSTOMER("customer"),
 	GROUP("group"),
 	TRANSACTIONS("transactions"),
-	PAYMENT_METHOD("payment-method");
+	PAYMENT_METHOD("payment-method"),
+
+	CUSTOMER_GROUP("customer-group"),
+	CUSTOMER_ADDRESS("customer-address");
 
 	private final String value;
 }

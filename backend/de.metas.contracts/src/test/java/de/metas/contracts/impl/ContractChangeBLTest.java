@@ -1,38 +1,9 @@
 package de.metas.contracts.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.acct.GLCategoryRepository;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.Test;
-
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
@@ -47,13 +18,24 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
@@ -68,9 +50,14 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 			.build();
 
 	@Override
-	public void initialize()
+	protected void afterInit()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
+				new C_Flatrate_Term(
+						new ContractOrderService(),
+						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
+						ADReferenceService.newMocked(),
+						new GLCategoryRepository()));
 		SystemTime.setTimeSource(today);
 	}
 

@@ -37,6 +37,7 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	/**
 	 * Search for the ESR bank account(s) of the given Organization's linked partner.
 	 * 
+	 * @return account(s) if exist, throw exception otherwise. If there is more than one ESR account, then the one with IsDefaultESR='Y' is returned first.
 	 * @return account(s) if exists, throw exception otherwise. If there is more than one ESR account, then the one with IsDefaultESR='Y' is returned first.
 	 */
 	List<I_C_BP_BankAccount> fetchOrgEsrAccounts(I_AD_Org org);

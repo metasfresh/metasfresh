@@ -16,21 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
+import de.metas.lang.SOTrx;
+import de.metas.util.AbstractPropertiesProxy;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -47,10 +36,20 @@ import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
 import org.compiere.util.ValueNamePair;
 
-import de.metas.lang.SOTrx;
-import de.metas.util.AbstractPropertiesProxy;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * An intelligent MutableComboBoxModel, which determines what can be cached.
@@ -163,7 +162,7 @@ public final class MLookup extends Lookup implements Serializable
 	/**
 	 * MLookup Constructor
 	 *
-	 * @param info info
+	 * @param info  info
 	 * @param TabNo tab no
 	 */
 	public MLookup(final Properties ctx, final int adColumnId, final MLookupInfo info, final int TabNo)
@@ -189,42 +188,57 @@ public final class MLookup extends Lookup implements Serializable
 				return getCtx();
 			}
 		};
-		m_evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(ctxDelegate, info.getWindowNo(), TabNo, info.getTableName()); // metas
-		log.debug(m_info.getKeyColumn());
+		m_evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(ctxDelegate, info.getWindowNo(), TabNo, info.getTableName().getAsString()); // metas
 
 		// // load into local lookup, if already cached
 		// if (MLookupCache.loadFromCache(m_info, m_lookup))
 		// return;
 
 		// Don't load Search or CreatedBy/UpdatedBy
-		if (m_info.getDisplayType() == DisplayType.Search || m_info.isCreadedUpdatedBy())
+		if (m_info.getDisplayType() == DisplayType.Search || m_info.isCreatedUpdatedBy())
 		{
 			return;
 		}
 	}
 
-	/** Inactive Marker Start */
+	/**
+	 * Inactive Marker Start
+	 */
 	public static final String INACTIVE_S = "~";
-	/** Inactive Marker End */
+	/**
+	 * Inactive Marker End
+	 */
 	public static final String INACTIVE_E = "~";
-	/** Not Found Marker Start */
+	/**
+	 * Not Found Marker Start
+	 */
 	public static final String NOTFOUND_S = "<";
-	/** Not Found Marker End */
+	/**
+	 * Not Found Marker End
+	 */
 	public static final String NOTFOUND_E = ">";
-	/** Number of max rows to load */
+	/**
+	 * Number of max rows to load
+	 */
 	public static final int MAX_ROWS = 10000;
-	/** Indicator for Null */
+	/**
+	 * Indicator for Null
+	 */
 	private static Integer MINUS_ONE = new Integer(-1);
 
 	private Properties ctx;
 	private final int adColumnId;
-	/** The Lookup Info Value Object */
+	/**
+	 * The Lookup Info Value Object
+	 */
 	private MLookupInfo m_info;
 	private final IValidationContext m_evalCtx; // metas
 
 	/* Refreshing - disable cashing */
 	private boolean m_refreshing = false;
-	/** Next Read for Parent */
+	/**
+	 * Next Read for Parent
+	 */
 	private long m_nextRead = 0;
 
 	private Properties getCtx()
@@ -240,7 +254,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	public boolean isHighVolume()
 	{
-		return m_info.getDisplayType() == DisplayType.Search || m_info.isCreadedUpdatedBy();
+		return m_info.getDisplayType() == DisplayType.Search || m_info.isCreatedUpdatedBy();
 	}
 
 	/**
@@ -249,11 +263,6 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public void dispose()
 	{
-		if (m_info != null)
-		{
-			log.debug("Disposing: {}", m_info.getKeyColumn());
-		}
-
 		interruptLoading();
 		//
 		clear();
@@ -430,7 +439,7 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public NamePair get(final IValidationContext validationCtx, final Object key)
 	{
-		if (key == null || MINUS_ONE.equals(key))	// indicator for null
+		if (key == null || MINUS_ONE.equals(key))    // indicator for null
 		{
 			return null;
 		}
@@ -442,7 +451,7 @@ public final class MLookup extends Lookup implements Serializable
 			{
 				clear();
 			}
-			m_nextRead = System.currentTimeMillis() + 5000;	// 5 sec
+			m_nextRead = System.currentTimeMillis() + 5000;    // 5 sec
 		}
 
 		final boolean checkCacheOnly = IValidationContext.CACHED == validationCtx;
@@ -482,7 +491,7 @@ public final class MLookup extends Lookup implements Serializable
 					// are defined as TableDir and no validation rules,
 					// which will imply loading a huge amount of data.
 					&& !m_info.isParent()
-					)
+			)
 			{
 				getFutureLookupData(FutureLookupDataState.NEW);
 			}
@@ -499,7 +508,7 @@ public final class MLookup extends Lookup implements Serializable
 		final boolean saveInCache = IValidationContext.DISABLED != validationCtx;
 		return getDirect(validationCtx, key, saveInCache, cacheLocal);
 		// metas end
-	}	// get
+	}    // get
 
 	/**
 	 * Get Display value (name). If not found return key embedded in inactive signs.
@@ -521,7 +530,7 @@ public final class MLookup extends Lookup implements Serializable
 			return NOTFOUND_S + key.toString() + NOTFOUND_E;
 		}
 		return display.toString();
-	}	// getDisplay
+	}    // getDisplay
 
 	@Override
 	public boolean isNotFoundDisplayValue(final String display)
@@ -567,14 +576,14 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public String toString()
 	{
-		return "MLookup[" + m_info.getKeyColumn()
+		return "MLookup[" + m_info.getSqlQuery().getKeyColumn()
 				+ ",Size=" + size()
 				// // metas: check only the flag and do not call isValidated() method because that method tries to parse the validation code
 				// // which is time consuming when we try to render the grid because java.awt.Container.mixOnShowing() tries to log it
 				// + ",Validated=" + (m_info != null && m_info.IsValidated)
 				+ "-" + m_info.getValidationRule()
 				+ "]";
-	}	// toString
+	}    // toString
 
 	/**
 	 * Indicates whether some other object is "equal to" this one.
@@ -589,11 +598,11 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return true;
 		}
-		if(obj == null)
+		if (obj == null)
 		{
 			return false;
 		}
-		if(!(obj instanceof MLookup))
+		if (!(obj instanceof MLookup))
 		{
 			return false;
 		}
@@ -610,7 +619,7 @@ public final class MLookup extends Lookup implements Serializable
 	public int size()
 	{
 		return getCurrentLookupData().size();
-	}	// size
+	}    // size
 
 	/**
 	 * Is it all loaded
@@ -620,7 +629,7 @@ public final class MLookup extends Lookup implements Serializable
 	public boolean isAllLoaded()
 	{
 		return getCurrentLookupData().isAllLoaded();
-	}	// isAllLoaded
+	}    // isAllLoaded
 
 	/**
 	 * Is the List fully Validated
@@ -686,7 +695,7 @@ public final class MLookup extends Lookup implements Serializable
 		final IValidationRule validationRule = m_info.getValidationRule();
 		final IStringExpression prefilterWhereClause = validationRule.getPrefilterWhereClause();
 		final String validation = prefilterWhereClause.evaluate(m_evalCtx, OnVariableNotFound.ReturnNoResult);
-		if(prefilterWhereClause.isNoResult(validation))
+		if (prefilterWhereClause.isNoResult(validation))
 		{
 			return "";
 		}
@@ -709,7 +718,7 @@ public final class MLookup extends Lookup implements Serializable
 	 * Return info as ArrayList containing Value/KeyNamePair
 	 *
 	 * @param onlyValidated only validated
-	 * @param loadParent get Data even for parent lookups
+	 * @param loadParent    get Data even for parent lookups
 	 * @return List
 	 */
 	private ILookupData getData(final boolean onlyValidated, final boolean loadParent)
@@ -725,15 +734,15 @@ public final class MLookup extends Lookup implements Serializable
 		}
 
 		return data;
-	}	// getData
+	}    // getData
 
 	/**
 	 * Return data as Array containing Value/KeyNamePair
 	 *
-	 * @param mandatory if not mandatory, an additional empty value is inserted
+	 * @param mandatory     if not mandatory, an additional empty value is inserted
 	 * @param onlyValidated only validated
-	 * @param onlyActive only active
-	 * @param temporary force load for temporary display
+	 * @param onlyActive    only active
+	 * @param temporary     force load for temporary display
 	 * @return list
 	 */
 	@Override
@@ -747,7 +756,7 @@ public final class MLookup extends Lookup implements Serializable
 		// Remove inactive values
 		if (onlyActive && data.hasInactiveValues())
 		{
-			for (final Iterator<Object> it = list.iterator(); it.hasNext();)
+			for (final Iterator<Object> it = list.iterator(); it.hasNext(); )
 			{
 				final Object o = it.next();
 				if (o != null)
@@ -764,32 +773,25 @@ public final class MLookup extends Lookup implements Serializable
 		// Add Optional (empty) selection
 		if (!mandatory)
 		{
-			final NamePair emptyItem;
-			if (m_info.getKeyColumnFQ() != null && isNumericKey())
-			{
-				emptyItem = KeyNamePair.EMPTY;
-			}
-			else
-			{
-				emptyItem = ValueNamePair.EMPTY;
-			}
-			list.add(0, emptyItem);
+			list.add(0, isNumericKey() ? KeyNamePair.EMPTY : ValueNamePair.EMPTY);
 		}
 
 		return list;
-	}	// getData
+	}    // getData
 
-	/** Save getDirect last return value */
+	/**
+	 * Save getDirect last return value
+	 */
 	private Map<Object, NamePair> m_lookupDirect = null;
 	private Map<Object, NamePair> m_lookupDirectContextCache = null;
 
 	/**
 	 * Get Data Direct from Table.
 	 *
-	 * @param evalCtx if {@code null} or {@link IValidationContext#NULL}, then this lookup's own {@code m_evalCtx} is used.
-	 * @param key key
+	 * @param evalCtx     if {@code null} or {@link IValidationContext#NULL}, then this lookup's own {@code m_evalCtx} is used.
+	 * @param key         key
 	 * @param saveInCache save in cache for r/w
-	 * @param cacheLocal cache locally for r/o
+	 * @param cacheLocal  cache locally for r/o
 	 * @return value
 	 */
 	@Override
@@ -813,7 +815,7 @@ public final class MLookup extends Lookup implements Serializable
 
 		//
 		// Check lookup direct cache
-		if (m_lookupDirect != null)		// Lookup cache
+		if (m_lookupDirect != null)        // Lookup cache
 		{
 			final NamePair directValue = m_lookupDirect.get(key);
 			if (directValue != null)
@@ -884,7 +886,7 @@ public final class MLookup extends Lookup implements Serializable
 		}
 
 		return directValue;
-	}	// getDirect
+	}    // getDirect
 
 	/**
 	 * Get Zoom
@@ -895,7 +897,7 @@ public final class MLookup extends Lookup implements Serializable
 	public AdWindowId getZoom()
 	{
 		return m_info.getZoomSO_Window_ID();
-	}	// getZoom
+	}    // getZoom
 
 	/**
 	 * Get Zoom
@@ -914,13 +916,13 @@ public final class MLookup extends Lookup implements Serializable
 		}
 
 		// Need to check SO/PO
-		final SOTrx soTrx = DB.retrieveRecordSOTrx(m_info.getTableName(), query.getWhereClause(false)).orElse(SOTrx.SALES);
+		final SOTrx soTrx = DB.retrieveRecordSOTrx(m_info.getTableName().getAsString(), query.getWhereClause(false)).orElse(SOTrx.SALES);
 		if (soTrx.isPurchase())
 		{
 			return m_info.getZoomPO_Window_ID();
 		}
 		return m_info.getZoomSO_Window_ID();
-	}	// getZoom
+	}    // getZoom
 
 	/**
 	 * Get Zoom Query String
@@ -935,7 +937,7 @@ public final class MLookup extends Lookup implements Serializable
 			return null;
 		}
 		return m_info.getZoomQuery();
-	}	// getZoom
+	}    // getZoom
 
 	/**
 	 * Get underlying fully qualified Table.Column Name
@@ -945,13 +947,15 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public String getColumnName()
 	{
-		return m_info.getKeyColumnFQ();
-	}	// g2etColumnName
+		final MLookupInfo.SqlQuery sqlQuery = m_info.getSqlQuery();
+		return sqlQuery.getKeyColumn().getAsString();
+	}
 
 	@Override
 	public String getColumnNameNotFQ()
 	{
-		return m_info.getKeyColumn();
+		final MLookupInfo.SqlQuery sqlQuery = m_info.getSqlQuery();
+		return sqlQuery.getKeyColumn().getColumnName().getAsString();
 	}
 
 	/**
@@ -967,7 +971,7 @@ public final class MLookup extends Lookup implements Serializable
 			return 0;
 		}
 		return refresh(true);
-	}	// refresh
+	}    // refresh
 
 	/**
 	 * Refresh & return number of items read
@@ -1013,7 +1017,7 @@ public final class MLookup extends Lookup implements Serializable
 
 		final ILookupData data = getCurrentLookupData();
 		return data.size();
-	}	// refresh
+	}    // refresh
 
 	/**
 	 * Remove All cached Elements
@@ -1025,7 +1029,7 @@ public final class MLookup extends Lookup implements Serializable
 	{
 		super.removeAllElements();
 		clear();
-	}	// removeAllElements
+	}    // removeAllElements
 
 	private void clear()
 	{
@@ -1042,7 +1046,7 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public String getInfoFactoryClass()
 	{
-		return m_info.InfoFactoryClass != null ? m_info.InfoFactoryClass : "";
+		return m_info.getInfoFactoryClass() != null ? m_info.getInfoFactoryClass() : "";
 	}
 
 	static ArrayKey createValidationKey(final IValidationContext validationCtx, final MLookupInfo lookupInfo, final Object parentValidationKey)
@@ -1071,7 +1075,7 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public String getTableName()
 	{
-		return m_info.getTableName();
+		return m_info.getTableName().getAsString();
 	}
 
 	@Override
@@ -1108,4 +1112,4 @@ public final class MLookup extends Lookup implements Serializable
 		return null;
 	}
 
-}	// MLookup
+}    // MLookup

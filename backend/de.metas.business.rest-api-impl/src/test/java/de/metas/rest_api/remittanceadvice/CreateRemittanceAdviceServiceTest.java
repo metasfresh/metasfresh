@@ -414,7 +414,7 @@ class CreateRemittanceAdviceServiceTest
 				.senderId("gln-" + SENDER_ID)
 				.recipientId("gln-" + RECIPIENT_ID)
 				.documentNumber(DOCUMENT_NB)
-				.documentDate(null)
+				.documentDate(null) // not providing a date. shall be set to the then-current time
 				.sendDate(SEND_DATE)
 				.type(RemittanceAdviceType.OUTBOUND)
 				.remittedAmountSum(BigDecimal.valueOf(REMITTED_AMOUNT))
@@ -454,7 +454,7 @@ class CreateRemittanceAdviceServiceTest
 
 		assertThat(c_remittanceAdvice.getDocumentNo()).isEqualTo(CREATED_DOCUMENT_NB);
 		assertThat(c_remittanceAdvice.getExternalDocumentNo()).isEqualTo(DOCUMENT_NB);
-		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getDateDoc())).isBefore(Instant.now());
+		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getDateDoc())).isBeforeOrEqualTo(Instant.now()); // if the test runs really fast, i can be equal
 		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getSendAt())).isEqualTo(Instant.parse(SEND_DATE));
 
 		assertThat(c_remittanceAdvice.getC_DocType_ID()).isEqualTo(docTypeRMADV.getC_DocType_ID());

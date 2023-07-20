@@ -1,45 +1,19 @@
 package de.metas.util.collections;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.apache.commons.collections4.map.LRUMap;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
-
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.apache.commons.collections4.map.LRUMap;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /**
  * An aggregator which takes items as input and group them.
@@ -240,7 +214,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @return hash/aggregation key for given <code>item</code>
 	 */
-	private Object createItemHashKey(final ItemType item)
+	private Object createItemHashKey(@NonNull final ItemType item)
 	{
 		final Function<ItemType, Object> itemAggregationKeyBuilder = getItemAggregationKeyBuilder();
 		final Object itemHashKey = itemAggregationKeyBuilder.apply(item);
@@ -254,7 +228,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @param item item to be used for creating the new group
 	 */
-	private GroupType createAndAddGroupToBuffer(final Object itemHashKey, final ItemType item)
+	private GroupType createAndAddGroupToBuffer(@NonNull final Object itemHashKey, @NonNull final ItemType item)
 	{
 		// We put a null value to map (before actually creating the group),
 		// to make sure the previous groups are closed before the new group is actually created

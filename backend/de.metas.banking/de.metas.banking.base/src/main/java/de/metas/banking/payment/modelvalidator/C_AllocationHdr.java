@@ -1,11 +1,18 @@
 package de.metas.banking.payment.modelvalidator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.invoice.InvoiceId;
+import de.metas.logging.LogManager;
+import de.metas.payment.PaymentId;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_C_AllocationHdr;
@@ -17,42 +24,11 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.invoice.InvoiceId;
-import de.metas.logging.LogManager;
-import de.metas.payment.PaymentId;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Interceptor(I_C_AllocationHdr.class)
 public class C_AllocationHdr
@@ -68,8 +44,8 @@ public class C_AllocationHdr
 	/**
 	 * After {@link I_C_AllocationHdr} was completed/reversed/voided/reactivated,
 	 * update all {@link I_C_PaySelectionLine}s which were not already processed and which are about the invoices from this allocation.
-	 * <p>
-	 * Task 08972
+	 * task 08972
+>>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 	 */
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
@@ -107,8 +83,8 @@ public class C_AllocationHdr
 			return;
 		}
 
-		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.CHANGE);
+		final ModelCacheInvalidationService cacheInvalidationService = ModelCacheInvalidationService.get();
+		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	private static Set<PaymentId> extractPaymentIds(final List<I_C_AllocationLine> lines)

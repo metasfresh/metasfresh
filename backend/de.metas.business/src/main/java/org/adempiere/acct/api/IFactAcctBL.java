@@ -10,50 +10,39 @@ package org.adempiere.acct.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.FactAcctQuery;
+import de.metas.money.Money;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.MAccount;
-import org.compiere.report.core.RColumn;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Optional;
 
 public interface IFactAcctBL extends ISingletonService
 {
-	/**
-	 * Create the {@link RColumn} for displaying the Ending Balance
-	 * 
-	 * @param ctx
-	 * @param columnName2whereClause a map of "column name" to SQL where clauses which are filtering the accounting dimensions
-	 * @return
-	 */
-	RColumn createEndingBalanceRColumn(Properties ctx, final Map<String, String> columnName2whereClause);
 
 	/**
 	 * Gets/creates the account (i.e. {@link I_C_ValidCombination}) of given fact line.
-	 * 
-	 * @param factAcct
-	 * @return
 	 */
-	MAccount getAccount(I_Fact_Acct factAcct);
-
-	void updateFactLineFromDimension(I_Fact_Acct fa, AccountDimension dim);
+	Account getAccount(I_Fact_Acct factAcct);
 
 	AccountDimension createAccountDimension(I_Fact_Acct fa);
+
+	Optional<Money> getAcctBalance(@NonNull List<FactAcctQuery> queries);
 }

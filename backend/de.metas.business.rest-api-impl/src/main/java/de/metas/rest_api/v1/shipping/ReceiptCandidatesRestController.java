@@ -26,7 +26,7 @@ import de.metas.Profiles;
 import de.metas.common.shipping.v1.JsonRequestCandidateResults;
 import de.metas.common.shipping.v1.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.MDC;
@@ -41,6 +41,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/receipts",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/receipts" })
@@ -57,7 +61,7 @@ public class ReceiptCandidatesRestController
 
 	@GetMapping("receiptCandidates")
 	public ResponseEntity<JsonResponseReceiptCandidates> getReceiptCandidates(
-			@ApiParam("Max number of items to be returned in one request.") //
+			@Parameter(description = "Max number of items to be returned in one request.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{

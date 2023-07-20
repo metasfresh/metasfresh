@@ -1,14 +1,14 @@
 package de.metas.report.rest;
 
+import de.metas.Profiles;
+import de.metas.cache.CacheMgt;
+import de.metas.logging.LogManager;
+import de.metas.report.server.ReportConstants;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import de.metas.Profiles;
-import de.metas.cache.CacheMgt;
-import de.metas.report.server.ReportConstants;
 
 /**
  * This servlet was introduced for managing the actions that the other Jasper servlets can take.
@@ -35,5 +35,11 @@ public class MgtRestController
 		{
 			throw new RuntimeException("Action not supported: " + action);
 		}
+	}
+
+	@GetMapping("/logger")
+	public void setLogLevel(@RequestParam("level") final String levelStr)
+	{
+		LogManager.setLoggerLevel("de.metas.report", LogManager.asLogbackLevel(levelStr));
 	}
 }

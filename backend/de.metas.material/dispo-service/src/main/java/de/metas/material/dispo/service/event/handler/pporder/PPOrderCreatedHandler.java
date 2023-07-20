@@ -1,36 +1,34 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.logging.LogManager;
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.pporder.AbstractPPOrderEvent;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
+import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.organization.IOrgDAO;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Optional;
 
 /*
  * #%L
@@ -57,18 +55,17 @@ import java.util.Collection;
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
 public final class PPOrderCreatedHandler
-		extends PPOrderAdvisedOrCreatedHandler<PPOrderCreatedEvent>
+		implements MaterialEventHandler<PPOrderCreatedEvent>
 {
-	private static final Logger logger = LogManager.getLogger(PPOrderCreatedHandler.class);
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final CandidateChangeService candidateChangeService;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	public PPOrderCreatedHandler(
-			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final MainDataRequestHandler mainDataRequestHandler)
+			@NonNull final CandidateChangeService candidateChangeService,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
-		super(candidateChangeHandler, candidateRepositoryRetrieval, mainDataRequestHandler);
+		this.candidateChangeService = candidateChangeService;
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
 	@Override
@@ -86,71 +83,103 @@ public final class PPOrderCreatedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderCreatedEvent event)
 	{
-		handleAbstractPPOrderEvent(event);
+		handlePPOrderCreatedEvent(event);
 	}
 
-	@Override
-	protected CandidatesQuery createPreExistingSupplyCandidateQuery(@NonNull final AbstractPPOrderEvent abstractPPOrderEvent)
+	private void handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(abstractPPOrderEvent);
+		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
 
-		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderCreatedEvent.getSupplyRequiredDescriptor();
+		final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
+		final ProductionDetail headerProductionDetail = ProductionDetail.cast(headerCandidate.getBusinessCaseDetail());
 
-		if (supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
-		{
-			return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
-		}
+		PPOrderLineCandidatesCreateCommand.builder()
+				.candidateChangeService(candidateChangeService)
+				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
+				.ppOrder(ppOrderEvent.getPpOrder())
+				.headerDemandDetail(headerDemandDetail)
+				.groupId(headerCandidate.getGroupId())
+				.headerCandidateSeqNo(headerCandidate.getSeqNo())
+				.advised(headerProductionDetail.getAdvised())
+				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there we might know the shipment schedule ID
+				.create();
+	}
 
-		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
-		if (groupId == null)
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("The given ppOrderCreatedEvent has no groupId, so it was created manually by a user and not via material-dispo. Going to create new candidate records.");
-			return CandidatesQuery.FALSE;
-		}
+	@NonNull
+	private Candidate createHeaderCandidate(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	{
+		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
-		final ProductDescriptor productDescriptor = ppOrder.getProductDescriptor();
+		final Candidate.CandidateBuilder builder = Candidate.builderForClientAndOrgId(ppOrder.getPpOrderData().getClientAndOrgId());
 
-		final CandidatesQuery query = CandidatesQuery.builder()
+		retrieveDemandDetail(ppOrder.getPpOrderData())
+				.ifPresent(builder::additionalDemandDetail);
+
+		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.groupId(groupId)
-
-				// there might also be supply candidates for co-products, so the groupId alone is not sufficient
-				.materialDescriptorQuery(PPOrderHandlerUtils.createMaterialDescriptorQuery(productDescriptor))
+				.businessCaseDetail(createProductionDetailForPPOrder(ppOrderEvent))
+				.materialDescriptor(createMaterialDescriptorForPPOrder(ppOrder))
+				// .groupId(null) // will be set after save
+				.lotForLot(ppOrderEvent.getLotForLot())
 				.build();
 
-		return query;
+		return candidateChangeService.onCandidateNewOrChange(
+				headerCandidate,
+				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(false));
 	}
 
-	@Override
-	protected Flag extractIsAdviseEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	@NonNull
+	private MaterialDescriptor createMaterialDescriptorForPPOrder(@NonNull final PPOrder ppOrder)
 	{
-		return Flag.FALSE_DONT_UPDATE;
+		return MaterialDescriptor.builder()
+				.date(ppOrder.getPpOrderData().getDatePromised())
+				.productDescriptor(ppOrder.getPpOrderData().getProductDescriptor())
+				.quantity(ppOrder.getPpOrderData().getQtyOpen())
+				.warehouseId(ppOrder.getPpOrderData().getWarehouseId())
+				.build();
 	}
 
-	@Override
-	protected Flag extractIsDirectlyPickSupply(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	@NonNull
+	private ProductionDetail createProductionDetailForPPOrder(
+			@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
-		return Flag.FALSE_DONT_UPDATE;
+		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
+
+		return ProductionDetail.builder()
+				.advised(Flag.FALSE_DONT_UPDATE)
+				.pickDirectlyIfFeasible(Flag.of(ppOrderEvent.isDirectlyPickIfFeasible()))
+				.qty(ppOrder.getPpOrderData().getQtyRequired())
+				.plantId(ppOrder.getPpOrderData().getPlantId())
+				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
+				.ppOrderId(ppOrder.getPpOrderId())
+				.ppOrderDocStatus(ppOrder.getDocStatus())
+				.build();
 	}
 
-	@Override
-	protected void updateMainData(final @NonNull AbstractPPOrderEvent ppOrderEvent)
+	@NonNull
+	private Optional<DemandDetail> retrieveDemandDetail(@NonNull final PPOrderData ppOrderData)
 	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderEvent.getEventDescriptor().getOrgId());
+		if (ppOrderData.getShipmentScheduleId() <= 0)
+		{
+			return Optional.empty();
+		}
 
-		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
-				.warehouseId(ppOrderEvent.getPpOrder().getWarehouseId())
-				.productDescriptor(ppOrderEvent.getPpOrder().getProductDescriptor())
-				.date(TimeUtil.getDay(ppOrderEvent.getPpOrder().getDatePromised(), orgZoneId))
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.
+				ofShipmentScheduleId(ppOrderData.getShipmentScheduleId());
+
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(ppOrderData.getProductDescriptor().getProductId())
+				.warehouseId(ppOrderData.getWarehouseId())
 				.build();
 
-		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
-				.identifier(mainDataRecordIdentifier)
-				.qtySupplyPPOrder(ppOrderEvent.getPpOrder().getQtyOpen())
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
+				.type(CandidateType.DEMAND)
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.demandDetailsQuery(demandDetailsQuery)
 				.build();
 
-		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
+		return candidateRepositoryRetrieval.retrieveLatestMatch(candidatesQuery)
+				.map(Candidate::getDemandDetail);
 	}
 }

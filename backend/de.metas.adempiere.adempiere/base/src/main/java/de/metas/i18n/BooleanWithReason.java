@@ -5,8 +5,10 @@ import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -131,6 +133,21 @@ public final class BooleanWithReason
 	public String getReasonAsString()
 	{
 		return reason.getDefaultValue();
+	}
+
+	public void assertTrue()
+	{
+		if (isFalse())
+		{
+			throw new AdempiereException(reason);
+		}
+	}
+
+	public BooleanWithReason and(@NonNull final Supplier<BooleanWithReason> otherSupplier)
+	{
+		return isFalse()
+				? this
+				: Check.assumeNotNull(otherSupplier.get(), "otherSupplier shall not return null");
 	}
 
 }

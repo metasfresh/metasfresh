@@ -96,7 +96,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Ansprechpartner abw..
+	 * Set User/ Contact override.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -105,7 +105,7 @@ public interface I_M_ReceiptSchedule
 	void setAD_User_Override_ID (int AD_User_Override_ID);
 
 	/**
-	 * Get Ansprechpartner abw..
+	 * Get User/ Contact override.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -114,6 +114,29 @@ public interface I_M_ReceiptSchedule
 	int getAD_User_Override_ID();
 
 	String COLUMNNAME_AD_User_Override_ID = "AD_User_Override_ID";
+
+	/**
+	 * Set Blocked Business Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setBlockedBPartner (boolean BlockedBPartner);
+
+	/**
+	 * Get Blocked Business Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isBlockedBPartner();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_BlockedBPartner = new ModelColumn<>(I_M_ReceiptSchedule.class, "BlockedBPartner", null);
+	String COLUMNNAME_BlockedBPartner = "BlockedBPartner";
 
 	/**
 	 * Set Address.
@@ -137,7 +160,8 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
-	 * Set Anschrift-Text abw..
+	 * Set User address note.
+	 * Bezeichnet die letztendlich verwendete Lieferanschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -146,7 +170,8 @@ public interface I_M_ReceiptSchedule
 	void setBPartnerAddress_Override (@Nullable java.lang.String BPartnerAddress_Override);
 
 	/**
-	 * Get Anschrift-Text abw..
+	 * Get User address note.
+	 * Bezeichnet die letztendlich verwendete Lieferanschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -180,26 +205,69 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
 	 *
-	 * <br>Type: Table
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+	void setCanBeExportedFrom (@Nullable java.sql.Timestamp CanBeExportedFrom);
 
 	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
 	 *
-	 * <br>Type: Table
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_BP_Location_Override_ID();
+	@Nullable java.sql.Timestamp getCanBeExportedFrom();
 
-	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_M_ReceiptSchedule.class, "CanBeExportedFrom", null);
+	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCatch_UOM_ID();
+
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
 
 	/**
 	 * Set Business Partner.
@@ -242,7 +310,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Geschäftspartner abw..
+	 * Set Alt. Business Partner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Table
@@ -252,7 +320,7 @@ public interface I_M_ReceiptSchedule
 	void setC_BPartner_Override_ID (int C_BPartner_Override_ID);
 
 	/**
-	 * Get Geschäftspartner abw..
+	 * Get Alt. Business Partner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Table
@@ -262,6 +330,26 @@ public interface I_M_ReceiptSchedule
 	int getC_BPartner_Override_ID();
 
 	String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
+
+	/**
+	 * Set Location override.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Location override.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Location_Override_ID();
+
+	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
 	 * Set Campaign.
@@ -311,6 +399,27 @@ public interface I_M_ReceiptSchedule
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
 	 * Set Sales order.
@@ -365,6 +474,31 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -385,73 +519,6 @@ public interface I_M_ReceiptSchedule
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCanBeExportedFrom (@Nullable java.sql.Timestamp CanBeExportedFrom);
-
-	/**
-	 * Get Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getCanBeExportedFrom();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_M_ReceiptSchedule.class, "CanBeExportedFrom", null);
-	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
-
-	/**
-	 * Set Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCatch_UOM_ID (int Catch_UOM_ID);
-
-	/**
-	 * Get Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getCatch_UOM_ID();
-
-	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
 	 * Get Created.
@@ -479,6 +546,28 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Date.
 	 * Date of Order
 	 *
@@ -502,8 +591,8 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Lieferart.
-	 * Definiert die zeitliche Steuerung von Lieferungen
+	 * Set Delivery Rule.
+	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -512,8 +601,8 @@ public interface I_M_ReceiptSchedule
 	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
-	 * Get Lieferart.
-	 * Definiert die zeitliche Steuerung von Lieferungen
+	 * Get Delivery Rule.
+	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -525,7 +614,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferart abw..
+	 * Set Alt. Deliverymethod.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -534,7 +623,7 @@ public interface I_M_ReceiptSchedule
 	void setDeliveryRule_Override (@Nullable java.lang.String DeliveryRule_Override);
 
 	/**
-	 * Get Lieferart abw..
+	 * Get Alt. Deliverymethod.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -546,8 +635,8 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_DeliveryRule_Override = "DeliveryRule_Override";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -556,8 +645,8 @@ public interface I_M_ReceiptSchedule
 	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -569,7 +658,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
 
 	/**
-	 * Set Lieferung durch abw..
+	 * Set Delivery via Rule override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -578,7 +667,7 @@ public interface I_M_ReceiptSchedule
 	void setDeliveryViaRule_Override (@Nullable java.lang.String DeliveryViaRule_Override);
 
 	/**
-	 * Get Lieferung durch abw..
+	 * Get Delivery via Rule override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -655,7 +744,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_FilteredItemsWithSameC_Order_ID = "FilteredItemsWithSameC_Order_ID";
 
 	/**
-	 * Set Kopf-Aggregationsmerkmal.
+	 * Set Header  merge characteristic.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -664,7 +753,7 @@ public interface I_M_ReceiptSchedule
 	void setHeaderAggregationKey (@Nullable java.lang.String HeaderAggregationKey);
 
 	/**
-	 * Get Kopf-Aggregationsmerkmal.
+	 * Get Header  merge characteristic.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -699,7 +788,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set abw. Anschrift.
+	 * Set Address override.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -708,7 +797,7 @@ public interface I_M_ReceiptSchedule
 	void setIsBPartnerAddress_Override (boolean IsBPartnerAddress_Override);
 
 	/**
-	 * Get abw. Anschrift.
+	 * Get Address override.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -768,7 +857,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set M_IolCandHandler.
+	 * Set Inoutline Handler.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -777,7 +866,7 @@ public interface I_M_ReceiptSchedule
 	void setM_IolCandHandler_ID (int M_IolCandHandler_ID);
 
 	/**
-	 * Get M_IolCandHandler.
+	 * Get Inoutline Handler.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -791,6 +880,29 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, de.metas.inoutcandidate.model.I_M_IolCandHandler> COLUMN_M_IolCandHandler_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "M_IolCandHandler_ID", de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
 	String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
+
+	/**
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getMovementDate();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_ReceiptSchedule.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
 	 * Set Product.
@@ -836,7 +948,32 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
 
 	/**
-	 * Set Destination warehouse locator.
+	 * Set Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
+	 * Set Destination warehouse .
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -845,7 +982,7 @@ public interface I_M_ReceiptSchedule
 	void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
-	 * Get Destination warehouse locator.
+	 * Get Destination warehouse .
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -902,7 +1039,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Lager abw..
+	 * Set Alt. Warehouse.
 	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Table
@@ -912,7 +1049,7 @@ public interface I_M_ReceiptSchedule
 	void setM_Warehouse_Override_ID (int M_Warehouse_Override_ID);
 
 	/**
-	 * Get Lager abw..
+	 * Get Alt. Warehouse.
 	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Table
@@ -924,30 +1061,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getMovementDate();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_ReceiptSchedule.class, "MovementDate", null);
-	String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
-	 * Set OnMaterialReceiptWithDestWarehouse.
+	 * Set On material rcpt with target WH.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -956,7 +1070,7 @@ public interface I_M_ReceiptSchedule
 	void setOnMaterialReceiptWithDestWarehouse (@Nullable java.lang.String OnMaterialReceiptWithDestWarehouse);
 
 	/**
-	 * Get OnMaterialReceiptWithDestWarehouse.
+	 * Get On material rcpt with target WH.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -968,7 +1082,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
 
 	/**
-	 * Set Priorität.
+	 * Set Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -978,7 +1092,7 @@ public interface I_M_ReceiptSchedule
 	void setPriorityRule (@Nullable java.lang.String PriorityRule);
 
 	/**
-	 * Get Priorität.
+	 * Get Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -991,7 +1105,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
-	 * Set Priorität Abw..
+	 * Set Priority override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1000,7 +1114,7 @@ public interface I_M_ReceiptSchedule
 	void setPriorityRule_Override (@Nullable java.lang.String PriorityRule_Override);
 
 	/**
-	 * Get Priorität Abw..
+	 * Get Priority override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1033,7 +1147,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Bewegte Menge.
+	 * Set Moved Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1042,7 +1156,7 @@ public interface I_M_ReceiptSchedule
 	void setQtyMoved (@Nullable BigDecimal QtyMoved);
 
 	/**
-	 * Get Bewegte Menge.
+	 * Get Moved Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1075,7 +1189,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_QtyMovedInCatchUOM = "QtyMovedInCatchUOM";
 
 	/**
-	 * Set Qty Moved (With Issues).
+	 * Set Moved Qty (With Issues).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1084,7 +1198,7 @@ public interface I_M_ReceiptSchedule
 	void setQtyMovedWithIssues (BigDecimal QtyMovedWithIssues);
 
 	/**
-	 * Get Qty Moved (With Issues).
+	 * Get Moved Qty (With Issues).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1140,7 +1254,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set QtyOrderedOverUnder.
+	 * Set Over-/ Under Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1149,7 +1263,7 @@ public interface I_M_ReceiptSchedule
 	void setQtyOrderedOverUnder (@Nullable BigDecimal QtyOrderedOverUnder);
 
 	/**
-	 * Get QtyOrderedOverUnder.
+	 * Get Over-/ Under Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1161,7 +1275,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
 
 	/**
-	 * Set QtyOrderedTU.
+	 * Set Qty Ordered TU.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1172,7 +1286,7 @@ public interface I_M_ReceiptSchedule
 	void setQtyOrderedTU (@Nullable BigDecimal QtyOrderedTU);
 
 	/**
-	 * Get QtyOrderedTU.
+	 * Get Qty Ordered TU.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1186,7 +1300,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_QtyOrderedTU = "QtyOrderedTU";
 
 	/**
-	 * Set Menge zu bewegen.
+	 * Set Quantity to move.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1195,7 +1309,7 @@ public interface I_M_ReceiptSchedule
 	void setQtyToMove (@Nullable BigDecimal QtyToMove);
 
 	/**
-	 * Get Menge zu bewegen.
+	 * Get Quantity to move.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1207,7 +1321,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_QtyToMove = "QtyToMove";
 
 	/**
-	 * Set Menge zu bewegen abw..
+	 * Set Movement Qty override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1216,7 +1330,7 @@ public interface I_M_ReceiptSchedule
 	void setQtyToMove_Override (@Nullable BigDecimal QtyToMove_Override);
 
 	/**
-	 * Get Menge zu bewegen abw..
+	 * Get Movement Qty override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1228,7 +1342,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_QtyToMove_Override = "QtyToMove_Override";
 
 	/**
-	 * Set Qualitätsabzug %.
+	 * Set Qualitydiscount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1237,7 +1351,7 @@ public interface I_M_ReceiptSchedule
 	void setQualityDiscountPercent (@Nullable BigDecimal QualityDiscountPercent);
 
 	/**
-	 * Get Qualitätsabzug %.
+	 * Get Qualitydiscount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1249,7 +1363,7 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_QualityDiscountPercent = "QualityDiscountPercent";
 
 	/**
-	 * Set Qualität-Notiz.
+	 * Set Qualitynote.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1258,7 +1372,7 @@ public interface I_M_ReceiptSchedule
 	void setQualityNote (@Nullable java.lang.String QualityNote);
 
 	/**
-	 * Get Qualität-Notiz.
+	 * Get Qualitynote.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1294,7 +1408,6 @@ public interface I_M_ReceiptSchedule
 
 	/**
 	 * Set Status.
-	 * Status of the currently running check
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1304,7 +1417,6 @@ public interface I_M_ReceiptSchedule
 
 	/**
 	 * Get Status.
-	 * Status of the currently running check
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

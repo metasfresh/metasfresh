@@ -22,6 +22,7 @@
 
 package de.metas.pricing.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.lang.SOTrx;
@@ -38,6 +39,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.I_M_ProductScalePrice;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -63,7 +65,11 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PricingSystem getPricingSystemById(@Nullable PricingSystemId pricingSystemId);
 
+	@NonNull
 	PricingSystemId getPricingSystemIdByValue(String value);
+
+	@Nullable
+	PricingSystemId getPricingSystemIdByValueOrNull(String value);
 
 	@Nullable
 	I_M_PriceList getById(@Nullable PriceListId priceListId);
@@ -142,6 +148,8 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
+	Optional<PriceListVersionId> retrieveNewestPriceListVersionId(PriceListId priceListId);
+
 	String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId);
 
 	String getPriceListName(final PriceListId priceListId);
@@ -157,6 +165,8 @@ public interface IPriceListDAO extends ISingletonService
 	}
 
 	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, Set<ProductId> productIdsToExclude);
+
+	ImmutableList<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, ProductId productId);
 
 	/**
 	 * Retrieves product prices records of the given price list version
@@ -206,4 +216,6 @@ public interface IPriceListDAO extends ISingletonService
 	void updateProductPricesIsActive(@NonNull final IQueryFilter<I_M_Product> productFilter, @NonNull final LocalDate date, final boolean newIsActiveValue);
 
 	CurrencyId getCurrencyId(final PriceListId priceListId);
+
+	I_M_ProductScalePrice retrieveScalePriceForExactBreak(ProductPriceId productPriceId, BigDecimal scalePriceBreak);
 }

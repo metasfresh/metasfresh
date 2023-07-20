@@ -1,0 +1,35 @@
+
+# List of branches that are not "sandbox"
+# See https://help.testspace.com/dashboard/project#configuration
+# Please keep in sync with with the branch list in .mergify.yml
+release: 
+  - adorable_badger_uat
+  - ant_pharm_uat
+  - anxious_hippos_uat
+  - arctic_north_uat
+  - big_coconut_uat
+  - blonde_monkey_uat
+  - clone_wars_uat
+  - epic_party_uat
+  - hard_encoded_uat
+  - holy_cow_uat
+  - hostile_tractor_uat
+  - koala_yawn_uat
+  - inner_silence_uat
+  - intensive_care_uat
+  - iron_plant_uat
+  - mad_orange_uat
+  - magic_oak_uat
+  - modified_carbon_uat
+  - neon_underwear_uat
+  - nerdy_frog_uat 
+  - pot_hole_uat 
+  - release
+  - scary_plum_uat
+  - science_vessel_uat
+  - secondary_opinion_uat
+  - tasty_ham_uat
+  - tenacious_d_uat
+  - week_end_uat
+  - yoyo_uat
+  - zulu_apha_uat

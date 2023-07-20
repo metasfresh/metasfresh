@@ -34,7 +34,6 @@ import de.metas.order.model.I_C_Order;
 import de.metas.util.ISingletonService;
 
 /**
- *
  * @author metas-dev <dev@metasfresh.com>
  * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
  */
@@ -52,13 +51,14 @@ public interface IC_Order_CreatePOFromSOsDAO extends ISingletonService
 			int vendor_ID,
 			String poReference,
 			Timestamp datePromised_From,
-			Timestamp datePromised_To);
+			Timestamp datePromised_To,
+			boolean IsVendorInOrderLinesRequired);
 
 	/**
 	 * Retrieve all order lines for the given (sales-)order that have QtyReserved>0 and also match the additional filters added via {@link #addAdditionalOrderLinesFilter(IQueryFilter)}.
 	 *
-	 * @param allowMultiplePOOrders if <code>false</code>, then only those sales order lines will be returned that have <code>Link_OrderLine_ID == null</code>.
-	 * @param purchaseQtySource see {@link IC_Order_CreatePOFromSOsBL#getConfigPurchaseQtySource()}.
+	 * @param allowMultiplePOOrders if <code>false</code>, then only those sales order lines will be returned that don't have a purchase order line yet.
+	 * @param purchaseQtySource     see {@link IC_Order_CreatePOFromSOsBL#getConfigPurchaseQtySource()}.
 	 */
 	List<I_C_OrderLine> retrieveOrderLines(I_C_Order order,
 			boolean allowMultiplePOOrders,

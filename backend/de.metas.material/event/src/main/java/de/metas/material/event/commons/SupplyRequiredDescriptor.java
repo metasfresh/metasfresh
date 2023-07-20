@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.BigDecimal;
+
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
@@ -58,8 +60,50 @@ public class SupplyRequiredDescriptor
 
 	int subscriptionProgressId;
 
+	boolean simulated;
+
+	/**
+	 * Used in case LotForLot to override the materialDescriptor Quantity,
+	 * which is initialized with requiredQty based on ATP
+	 */
+	BigDecimal fullDemandQty;
+
+	String isLotForLot;
+
+	/**
+	 * Used in case LotForLot to not create a new Supply with fullDemandQty
+	 * in case of updated Demand
+	 */
+	boolean updated;
+
+	/**
+	 * Used in case LotForLot to not create a new Supply with fullDemandQty
+	 * in case of updated Demand
+	 */
+	BigDecimal deltaQuantity;
+
+	/**
+	 * Used to avoid duplicated demand after Manufacturing Orders
+	 * in case of LotForLot and not LotForLot with isCreatePlan = false
+	 */
+	int ppOrderId;
+
+	/**
+	 * Used to avoid duplicated demand after Manufacturing OrderCandidates
+	 * in case of LotForLot and not LotForLot with isCreatePlan = false
+	 */
+	int ppOrderLineCandidateId;
+
+	/**
+	 * Used to avoid duplicated demand after Manufacturing Orders / OrderCandidates
+	 * in case of LotForLot and not LotForLot with isCreatePlan = false
+	 */
+	int ppOrderProductPlanningId;
+
+	MinMaxDescriptor minMaxDescriptor;
+
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	private SupplyRequiredDescriptor(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
@@ -70,7 +114,16 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("forecastLineId") final int forecastLineId,
 			@JsonProperty("orderId") final int orderId,
 			@JsonProperty("orderLineId") final int orderLineId,
-			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId)
+			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
+			@JsonProperty("simulated") final boolean simulated,
+			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty,
+			@JsonProperty("isLotForLot") final String isLotForLot,
+			@JsonProperty("updated") final boolean updated,
+			@JsonProperty("deltaQuantity") final BigDecimal deltaQuantity,
+			@JsonProperty("ppOrderId") final int ppOrderId,
+			@JsonProperty("ppOrderLineCandidateId") final int ppOrderLineCandidateId,
+			@JsonProperty("ppOrderProductPlanningId") final int ppOrderProductPlanningId,
+			@JsonProperty("minMaxDescriptor") final MinMaxDescriptor minMaxDescriptor)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -86,5 +139,17 @@ public class SupplyRequiredDescriptor
 		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
 
 		this.subscriptionProgressId = subscriptionProgressId > 0 ? subscriptionProgressId : -1;
+		this.simulated = simulated;
+		this.fullDemandQty = fullDemandQty;
+		this.isLotForLot = isLotForLot;
+
+		this.updated = updated;
+		this.deltaQuantity = deltaQuantity;
+
+		this.ppOrderId = ppOrderId > 0 ? ppOrderId : -1;
+		this.ppOrderLineCandidateId = ppOrderLineCandidateId > 0 ? ppOrderLineCandidateId : -1;
+		this.ppOrderProductPlanningId = ppOrderProductPlanningId > 0 ? ppOrderProductPlanningId : -1;
+
+		this.minMaxDescriptor = minMaxDescriptor;
 	}
 }

@@ -1,12 +1,17 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.ProductActivityProvider;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -16,6 +21,7 @@ import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
@@ -28,9 +34,13 @@ import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -94,52 +104,43 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public abstract class AbstractFlatrateTermTest
 {
-	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-
-	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
 	protected final static BigDecimal QTY_ONE = BigDecimal.ONE;
 	protected final static BigDecimal PRICE_TEN = BigDecimal.TEN;
-
+	private final static String SEQUENCE = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
+	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	public FlatrateTermTestHelper helper;
-
+	protected IContractChangeBL contractChangeBL;
 	@Getter
 	private I_C_Calendar calendar;
-
 	@Getter
 	private AcctSchemaId acctSchemaId;
-
 	@Getter
 	private CurrencyId currencyId;
-
 	@Getter
 	private I_C_Country country;
-
 	@Getter
 	private I_C_BPartner bpartner;
-
 	@Getter
 	private I_C_BPartner_Location bpLocation;
-
 	@Getter
 	private org.compiere.model.I_AD_User user;
-
 	private TaxCategoryId taxCategoryId;
 
 	@BeforeAll
-	public final static void staticInit()
+	public static void staticInit()
 	{
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
 	@BeforeEach
-	public final void init()
+	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		setupMasterData();
-		initialize();
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
@@ -148,11 +149,15 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+
+		contractChangeBL = Services.get(IContractChangeBL.class);
+
+		afterInit();
 	}
 
-	protected void initialize()
+	protected void afterInit()
 	{
 	}
 
@@ -262,19 +267,19 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		docType.setDocSubType(I_C_DocType.DocSubType_Abonnement);
-		docType.setDocBaseType(I_C_DocType.DocBaseType_CustomerContract);
+		docType.setDocBaseType(DocBaseType.CustomerContract.getCode());
 		save(docType);
 	}
 
 	private void createCountryAndCountryArea()
 	{
 		country = newInstance(I_C_Country.class);
-		country.setAD_Org(helper.getOrg());
+		country.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		country.setAD_Language("de_DE");
 		country.setCountryCode("DE");
-		country.setDisplaySequence(sequence);
-		country.setDisplaySequenceLocal(sequence);
-		country.setCaptureSequence(sequence);
+		country.setDisplaySequence(SEQUENCE);
+		country.setDisplaySequenceLocal(SEQUENCE);
+		country.setCaptureSequence(SEQUENCE);
 		save(country);
 
 		final I_C_CountryArea countryArea = newInstance(I_C_CountryArea.class, country);
@@ -356,6 +361,7 @@ public abstract class AbstractFlatrateTermTest
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.isCreateNoInvoice(false)
 				.extensionType(extensionType)
+				.uomId(UomId.ofRepoId(productAndPricingSystem.getProduct().getC_UOM_ID()))
 				.build();
 	}
 
@@ -382,12 +388,20 @@ public abstract class AbstractFlatrateTermTest
 
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpLocation.getC_BPartner_ID(),
+																											bpLocation.getC_BPartner_Location_ID(),
+																											bpLocation.getC_Location_ID());
 
-		contract.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
-		contract.setBill_User_ID(user.getAD_User_ID());
-		contract.setDropShip_BPartner_ID(getBpartner().getC_BPartner_ID());
-		contract.setDropShip_Location_ID(bpLocation.getC_BPartner_Location_ID());
-		contract.setDropShip_User_ID(user.getAD_User_ID());
+		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(user.getC_BPartner_ID(), user.getAD_User_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(contract)
+				.setFrom(bpartnerLocationId, bPartnerContactId);
+
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(contract)
+				.setFrom(bpartnerLocationId, bPartnerContactId);
+
 		contract.setPriceActual(PRICE_TEN);
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);
@@ -419,7 +433,7 @@ public abstract class AbstractFlatrateTermTest
 		return orderLineRecord;
 	}
 
-	protected I_C_Contract_Change createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
+	protected void createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
 	{
 		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
 		contractChange.setAction(X_C_Contract_Change.ACTION_Statuswechsel);
@@ -429,6 +443,5 @@ public abstract class AbstractFlatrateTermTest
 		contractChange.setDeadLine(1);
 		contractChange.setDeadLineUnit(X_C_Contract_Change.DEADLINEUNIT_MonatE);
 		save(contractChange);
-		return contractChange;
 	}
 }

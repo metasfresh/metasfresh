@@ -22,11 +22,11 @@
 
 package de.metas.handlingunits.inout.returns;
 
+import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -72,7 +72,7 @@ public class ReturnsInOutHeaderFiller
 			final boolean isSOTrx = inOutBL.getSOTrxFromMovementType(movementType);
 			// isSOTrx = 'Y' means packing material coming back from the customer -> incoming -> Receipt
 			// isSOTrx = 'N' means packing material is returned to the vendor -> outgoing -> Delivery
-			final String docBaseType = isSOTrx ? X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
+			final DocBaseType docBaseType = isSOTrx ? DocBaseType.MaterialReceipt : DocBaseType.MaterialDelivery;
 
 			returnsInOut.setMovementType(movementType);
 			returnsInOut.setIsSOTrx(isSOTrx);
@@ -144,6 +144,9 @@ public class ReturnsInOutHeaderFiller
 
 				returnsInOut.setPOReference(poReference);
 				returnsInOut.setC_Order(order);
+				returnsInOut.setC_Incoterms_ID(order.getC_Incoterms_ID());
+				returnsInOut.setIncotermLocation(order.getIncotermLocation());
+
 			}
 		}
 
@@ -168,7 +171,7 @@ public class ReturnsInOutHeaderFiller
 		return this;
 	}
 
-	private int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
+	private int getReturnsDocTypeId(final DocBaseType docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
 		return returnsDocTypeIdProvider.getReturnsDocTypeId(docBaseType, isSOTrx, adClientId, adOrgId);
 	}

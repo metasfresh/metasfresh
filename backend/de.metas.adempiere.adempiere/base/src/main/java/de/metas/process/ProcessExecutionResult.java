@@ -9,21 +9,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.report.ReportResultData;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.async.Debouncer;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
@@ -40,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -67,6 +76,9 @@ import java.util.Set;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ProcessExecutionResult
 {
+	private static final String DEBOUNCER_BUFFER_MAX_SIZE_SYSCONFIG_NAME = "de.metas.process.pinstaceLogPersister.debouncer.bufferMaxSize";
+	private static final String DEBOUNCER_DELAY_IN_MILLIS_SYSCONFIG_NAME = "de.metas.process.pinstaceLogPersister.debouncer.delayInMillis";
+
 	public static ProcessExecutionResult newInstanceForADPInstanceId(final PInstanceId pinstanceId)
 	{
 		return new ProcessExecutionResult(pinstanceId);
@@ -110,12 +122,18 @@ public class ProcessExecutionResult
 	 */
 	private boolean timeout = false;
 
-	/**
-	 * Log Info
-	 */
-	@Nullable
-	private transient List<ProcessInfoLog> logs;
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
+	@JsonIgnore
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@JsonIgnore
+	private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
+
+	private final transient Debouncer<ProcessInfoLog> logsDebouncer = Debouncer.<ProcessInfoLog>builder()
+			.name(ProcessExecutionResult.class.getName() + ".Debouncer")
+			.bufferMaxSize(sysConfigBL.getIntValue(DEBOUNCER_BUFFER_MAX_SIZE_SYSCONFIG_NAME, 100))
+			.delayInMillis(sysConfigBL.getIntValue(DEBOUNCER_DELAY_IN_MILLIS_SYSCONFIG_NAME, 1000))
+			.consumer(this::syncCollectedLogsToDB)
+			.build();
 
 	//
 	// Reporting
@@ -126,7 +144,7 @@ public class ProcessExecutionResult
 	private ReportResultData reportData;
 
 	/**
-	 * If the process fails with a Throwable, the Throwable is caught and stored here
+	 * If the process fails with an Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	@Nullable
@@ -161,6 +179,11 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private DisplayQRCode displayQRCode;
 
+	@Getter
+	@Setter
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private CalendarToOpen calendarToOpen;
+
 	/**
 	 * Webui's viewId on which this process was executed.
 	 */
@@ -180,10 +203,15 @@ public class ProcessExecutionResult
 	@Nullable
 	private String stringResultContentType = null;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Setter
+	@Nullable
+	private WebuiNewRecord webuiNewRecord;
+
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
-		this.logs = new ArrayList<>();
 	}
 
 	// note: my local ProcessExecutionResultTest failed without this constructor
@@ -234,7 +262,7 @@ public class ProcessExecutionResult
 				.add("summary", summary)
 				.add("error", error)
 				.add("printFormat", printFormat)
-				.add("logs.size", logs == null ? 0 : logs.size())
+				.add("logs.size", logsDebouncer.getCurrentBufferSize())
 				.add("AD_PInstance_ID", pinstanceId)
 				.add("recordToSelectAfterExecution", recordToSelectAfterExecution)
 				.add("recordsToOpen", recordsToOpen)
@@ -444,12 +472,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(adWindowId)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -465,12 +493,12 @@ public class ProcessExecutionResult
 					.map(recordId -> TableRecordReference.of(tableName, recordId))
 					.collect(ImmutableSet.toImmutableSet());
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(adWindowId)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -483,12 +511,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(null)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(null)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -511,12 +539,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.record(record)
-									.adWindowId(adWindowId)
-									.target(target)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -529,12 +557,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.record(record)
-									.adWindowId(adWindowId)
-									.target(target)
-									.targetTab(targetTab)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.targetTab(targetTab)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -562,10 +590,10 @@ public class ProcessExecutionResult
 	public void setReportData(@NonNull final Resource data, @Nullable final String filename, final String contentType)
 	{
 		setReportData(ReportResultData.builder()
-							  .reportData(data)
-							  .reportFilename(filename)
-							  .reportContentType(contentType)
-							  .build());
+				.reportData(data)
+				.reportFilename(filename)
+				.reportContentType(contentType)
+				.build());
 	}
 
 	public void setReportData(@NonNull final File file)
@@ -690,52 +718,52 @@ public class ProcessExecutionResult
 	}
 
 	/**
-	 * Gets current logs.
+	 * Gets current stored logs.
 	 * <p>
-	 * If needed, it will load the logs.
 	 *
 	 * @return logs inner list; never fails
 	 */
 	private List<ProcessInfoLog> getLogsInnerList()
 	{
-		if (logs == null)
+		try
 		{
-			try
-			{
-				logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getPinstanceId()));
-			}
-			catch (final Exception ex)
-			{
-				// Don't fail log lines failed loading because most of the APIs rely on this.
-				// In case we would propagate the exception we would face:
-				// * worst case would be that it will stop some important execution.
-				// * best case the exception would be lost somewhere without any notification
-				logs = new ArrayList<>();
-				logs.add(ProcessInfoLog.ofMessage("Ops, sorry we failed loading the log lines. (details in console)"));
-				logger.warn("Failed loading log lines for {}", this, ex);
-			}
+			return new ArrayList<>(pInstanceDAO.retrieveProcessInfoLogs(getPinstanceId()));
 		}
-		return logs;
-	}
+		catch (final Exception ex)
+		{
+			// Don't fail log lines failed loading because most of the APIs rely on this.
+			// In case we would propagate the exception we would face:
+			// * worst case would be that it will stop some important execution.
+			// * best case the exception would be lost somewhere without any notification
+			final ArrayList<ProcessInfoLog> tempLogs = new ArrayList<>();
+			tempLogs.add(ProcessInfoLog.ofMessage("Ops, sorry we failed loading the log lines. (details in console)"));
+			logger.warn("Failed loading log lines for {}", this, ex);
 
-	/**
-	 * Get current logs (i.e. logs which were recorded to this instance).
-	 * <p>
-	 * This method will not load the logs.
-	 *
-	 * @return current logs
-	 */
-	public List<ProcessInfoLog> getCurrentLogs()
-	{
-		// NOTE: don't load them!
-		final List<ProcessInfoLog> logs = this.logs;
-		return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
+			return tempLogs;
+		}
 	}
 
 	public void markLogsAsStale()
 	{
 		// TODO: shall we save existing ones ?!
-		logs = null;
+		logsDebouncer.purgeBuffer();
+	}
+
+	/**************************************************************************
+	 * Add to Log
+	 *
+	 * @param Log_ID Log ID
+	 * @param P_Date Process Date
+	 * @param P_Number Process Number
+	 * @param P_Msg Process Message
+	 * @param adIssueId AD_Issue reference of an issue created during process execution.
+	 */
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, final AdIssueId adIssueId)
+	{
+		final ITableRecordReference recordReference = null;
+		final String trxName = null;
+
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, recordReference, adIssueId, trxName));
 	}
 
 	/**************************************************************************
@@ -748,25 +776,57 @@ public class ProcessExecutionResult
 	 */
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(Log_ID, P_Date, P_Number, P_Msg, null);
-	}
+		final AdIssueId adIssueId = null;
+		final ITableRecordReference tableRecordReference = null;
+		final String trxName = null;
 
-	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final List<String> warningMessages)
-	{
 		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
-				.logId(Log_ID)
+				.log_ID(Log_ID)
 				.pDate(P_Date)
-				.pNumber(P_Number)
-				.pMsg(P_Msg)
-				.warningMessages(warningMessages)
+				.p_Number(P_Number)
+				.p_Msg(P_Msg)
+				.ad_Issue_ID(adIssueId)
+				.trxName(trxName)
+				.tableRecordReference(tableRecordReference)
+				.warningMessages(null)
 				.build();
 		addLog(new ProcessInfoLog(request));
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg));
+		final AdIssueId adIssueId = null;
+		final ITableRecordReference tableRecordReference = null;
+		final String trxName = null;
+
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.log_ID(Log_ID != null ? Log_ID.getRepoId() : -1)
+				.pDate(P_Date)
+				.p_Number(P_Number)
+				.p_Msg(P_Msg)
+				.ad_Issue_ID(adIssueId)
+				.trxName(trxName)
+				.tableRecordReference(tableRecordReference)
+				.warningMessages(null)
+				.build();
+
+		addLog(new ProcessInfoLog(request));
 	}    // addLog
+
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final List<String> warningMessages)
+	{
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.log_ID(Log_ID)
+				.pDate(P_Date)
+				.p_Number(P_Number)
+				.p_Msg(P_Msg)
+				.ad_Issue_ID(null)
+				.trxName(null)
+				.tableRecordReference(null)
+				.warningMessages(warningMessages)
+				.build();
+		addLog(new ProcessInfoLog(request));
+	}
 
 	/**
 	 * Add to Log.
@@ -779,7 +839,11 @@ public class ProcessExecutionResult
 	{
 		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
 
-		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg));
+		final AdIssueId adIssueId = null;
+		final ITableRecordReference tableRecordReference = null;
+		final String trxName = null;
+
+		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg, tableRecordReference, adIssueId, trxName));
 	}    // addLog
 
 	/**
@@ -794,17 +858,7 @@ public class ProcessExecutionResult
 			return;
 		}
 
-		final List<ProcessInfoLog> logs;
-		if (this.logs == null)
-		{
-			logs = this.logs = new ArrayList<>();
-		}
-		else
-		{
-			logs = this.logs;
-		}
-
-		logs.add(logEntry);
+		logsDebouncer.add(logEntry);
 	}
 
 	public void propagateErrorIfAny()
@@ -850,6 +904,21 @@ public class ProcessExecutionResult
 		recordsToOpen = otherResult.recordsToOpen;
 		webuiViewToOpen = otherResult.webuiViewToOpen;
 		displayQRCode = otherResult.displayQRCode;
+	}
+
+	public void syncLogsToDB()
+	{
+		logsDebouncer.processAndClearBufferSync();
+	}
+
+	private void syncCollectedLogsToDB(@NonNull final List<ProcessInfoLog> collectedProcessInfoLogs)
+	{
+		if (collectedProcessInfoLogs.isEmpty())
+		{
+			return;
+		}
+
+		pInstanceDAO.saveProcessInfoLogs(getPinstanceId(), collectedProcessInfoLogs);
 	}
 
 	//
@@ -987,5 +1056,46 @@ public class ProcessExecutionResult
 		{
 			this.code = code;
 		}
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class CalendarToOpen
+	{
+		@Nullable String simulationId;
+		@Nullable String calendarResourceId;
+		@Nullable String projectId;
+		@Nullable BPartnerId customerId;
+		@Nullable UserId responsibleId;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Value
+	@lombok.Builder
+	public static class WebuiNewRecord
+	{
+		/**
+		 * If this string is used as field value
+		 * then the frontend will try to open the new record modal window to populate that field.
+		 * <p>
+		 * Used mainly to trigger new BPartner.
+		 */
+		public static final String FIELD_VALUE_NEW = "NEW";
+
+		@NonNull String windowId;
+
+		/**
+		 * Field values to be set by frontend, after the NEW record is created
+		 */
+		@NonNull @Singular Map<String, String> fieldValues;
+
+		public enum TargetTab
+		{
+			SAME_TAB, NEW_TAB,
+		}
+
+		@NonNull @Builder.Default TargetTab targetTab = TargetTab.SAME_TAB;
 	}
 }

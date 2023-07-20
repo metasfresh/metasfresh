@@ -15,8 +15,22 @@ Map build(final Map scmVars,
     final misc = new Misc()
 
     final def resultsMap = [:]
-    resultsMap.buildDescription = "<h4>procurement-webui-frontend</h4>"
+    if(true)
+    {
+        resultsMap.buildDescription = """${resultsMap.buildDescription}<b>SKIPPING DUES TO BUILD ERROR - WE ARE ON IT</b>"""
+    }
 
+    if(true)
+    {
+        resultsMap.buildDescription = """${resultsMap.buildDescription}<b>SKIPPING DUES TO BUILD ERROR - WE ARE ON IT</b>"""
+        return resultsMap
+    }
+
+    if(true)
+    {
+        resultsMap.buildDescription = """${resultsMap.buildDescription}<b>SKIPPING DUES TO BUILD ERROR - WE ARE ON IT</b>"""
+        return resultsMap
+    }
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
     if (forceSkip || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
@@ -26,12 +40,18 @@ Map build(final Map scmVars,
         final Nexus nexus = new Nexus()
         resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
-        resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
+        if(resultsMap.dockerImage) {
+            resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 					No changes happened or forceSkip=true in procurement-webui-frontend; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
 
-        echo "no changes happened or forceSkip=true in procurement-webui-frontend; skip building procurement-webui-frontend";
-        return resultsMap
+            echo "no changes happened or forceSkip=true in procurement-webui-frontend; skip building procurement-webui-frontend";
+            return resultsMap
+        }
+        else
+        {
+            echo "No docker image found; need to rebuild."
+        }
     }
 
     final DockerConf dockerConf = new DockerConf(

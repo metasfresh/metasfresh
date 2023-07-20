@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.invalidation;
 
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
@@ -61,9 +60,6 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * <li>As stated, do not invalidate scheds with delivery rule force, because to get their QtyToDeliver, they don't need to care about other schedules anyways. That means that a dev might need to
 	 * call {@link #invalidateJustForLines(I_M_InOut)} in addition to this method.
 	 * <ul>
-	 *
-	 * @param shipmentLine
-	 * @see IShipmentSchedulePA#flagSegmentForRecompute(java.util.Collection)
 	 */
 	void notifySegmentChangedForShipmentLine(I_M_InOutLine shipmentLine);
 
@@ -73,6 +69,12 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	void notifySegmentChangedForShipmentSchedule(I_M_ShipmentSchedule schedule);
 
 	/**
+	 * Like {@link #notifySegmentChangedForShipmentSchedule(I_M_ShipmentSchedule)}, but always also include the given sched, even if it has delivery-rule "force"
+	 * 
+	 */
+	void notifySegmentChangedForShipmentScheduleInclSched(I_M_ShipmentSchedule schedule);
+	
+	/**
 	 * For the given <code>orderLine</code>, invalidate all shipment schedules that have the same product and warehouse and a matching ASI.
 	 * and <b>that that do not have "force" as delivery rule</b>.<br>
 	 */
@@ -80,15 +82,12 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 
 	/**
 	 * Invalidate the shipment schedule referencing the given <code>orderLine</code>.
-	 *
-	 * @param orderLine
 	 */
 	void invalidateJustForOrderLine(I_C_OrderLine orderLine);
 	
 	/**
-	 * Sets the {@link I_M_ShipmentSchedule#COLUMNNAME_IsValid} column to <code>'N'</code> for all shipment schedule entries whose order line has the given product id.
+	 * Invalidates all shipment schedule entries whose order line has the given product id.
 	 *
-	 * @param productId
 	 * @deprecated please be more selective with the invalidation, using storage segments
 	 */
 	@Deprecated
@@ -96,8 +95,6 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	
 	/**
 	 * Invalidates all shipment schedules which have one of the given <code>headerAggregationKeys</code>.
-	 *
-	 * @param headerAggregationKeys
 	 */
 	void flagHeaderAggregationKeysForRecompute(Set<String> headerAggregationKeys);
 	
@@ -105,8 +102,6 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 
 	/**
 	 * Notify the registered listeners that a a bunch of segments changed. Maybe they can gain a performance benefit from processing them all at once.
-	 * 
-	 * @param storageSegments
 	 */
 	void notifySegmentsChanged(Collection<IShipmentScheduleSegment> storageSegments);
 }

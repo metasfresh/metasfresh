@@ -1,12 +1,11 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.List;
-
+import de.metas.util.Check;
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.CtxName;
 
-import de.metas.util.Check;
+import java.util.List;
 
 public final class StringExpressionCompiler extends AbstractChunkBasedExpressionCompiler<String, IStringExpression>
 {
@@ -16,8 +15,6 @@ public final class StringExpressionCompiler extends AbstractChunkBasedExpression
 
 	/**
 	 * Escape '@' char, by replacing one @ with double @@  
-	 * @param str
-	 * @return
 	 */
 	public static String escape(final String str)
 	{

@@ -22,7 +22,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -122,6 +121,8 @@ public interface IView
 
 	boolean isQueryLimitHit();
 
+	@Nullable default EmptyReason getEmptyReason() {return null;}
+
 	/**
 	 * Invalidate ALL view rows.
 	 * <p>
@@ -161,9 +162,9 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, ViewFilterParameterLookupEvaluationCtx ctx);
 
-	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
+	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, ViewFilterParameterLookupEvaluationCtx ctx);
 
 	/**
 	 * Gets the stick filters.
@@ -208,6 +209,12 @@ public interface IView
 	}
 
 	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
+
+	@NonNull
+	default <T> Stream<T> streamModelsByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final Class<T> modelClass)
+	{
+		return retrieveModelsByIds(rowIds, modelClass).stream();
+	}
 
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.

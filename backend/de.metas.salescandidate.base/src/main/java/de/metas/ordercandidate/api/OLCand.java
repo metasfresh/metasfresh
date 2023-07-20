@@ -18,8 +18,10 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Getter;
@@ -133,10 +135,30 @@ public final class OLCand implements IProductPriceAware
 	private final BigDecimal qtyShipped;
 
 	@Getter
+	private final ProjectId projectId;
+	@Getter
+	private final AssignSalesRepRule assignSalesRepRule;
+
+	@Getter
+	private final BPartnerId salesRepInternalId;
+
+	@Getter
+	private final String bpartnerName;
+
+	@Getter
+	private final String phone;
+
+	@Getter
+	private final String email;
+
+	@Getter
 	private final AdIssueId adIssueId;
 
 	@Getter
 	private final String headerAggregationKey;
+
+	@Getter
+	private final SectionCodeId sectionCodeId;
 
 	@Builder
 	private OLCand(
@@ -157,8 +179,15 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
 			@Nullable final Quantity qtyItemCapacityEff,
+			@Nullable final ProjectId projectId,
+			@NonNull final AssignSalesRepRule assignSalesRepRule,
+			@Nullable final BPartnerId salesRepInternalId,
+			@Nullable final String bpartnerName,
+			@Nullable final String phone,
+			@Nullable final String email,
 			@Nullable final AdIssueId adIssueId,
-			@Nullable final String headerAggregationKey)
+			@Nullable final String headerAggregationKey,
+			@Nullable final SectionCodeId sectionCodeId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -197,10 +226,20 @@ public final class OLCand implements IProductPriceAware
 
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
+		this.projectId = projectId;
+
+		this.assignSalesRepRule = assignSalesRepRule;
+		this.salesRepInternalId = salesRepInternalId;
+
+		this.bpartnerName = bpartnerName;
+		this.email = email;
+		this.phone = phone;
 
 		this.adIssueId = adIssueId;
 
 		this.headerAggregationKey = headerAggregationKey;
+
+		this.sectionCodeId = sectionCodeId;
 	}
 
 	@Override
@@ -399,6 +438,18 @@ public final class OLCand implements IProductPriceAware
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
 		{
 			return getDatePromised();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_BPartnerName))
+		{
+			return getBpartnerName();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_EMail))
+		{
+			return getEmail();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Phone))
+		{
+			return getPhone();
 		}
 		else
 		{

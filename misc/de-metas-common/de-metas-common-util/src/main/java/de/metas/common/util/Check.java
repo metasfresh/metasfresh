@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-util
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  *
@@ -93,6 +94,16 @@ public final class Check
 	public static RuntimeException mkEx(final String msg)
 	{
 		return mkEx(defaultExClazz, msg);
+	}
+
+	public static RuntimeException mkEx(final String msg, @Nullable final Throwable cause)
+	{
+		final RuntimeException ex = mkEx(msg);
+		if (cause != null)
+		{
+			ex.initCause(cause);
+		}
+		return ex;
 	}
 
 	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg)
@@ -437,6 +448,17 @@ public final class Check
 			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueInt);
 		}
 		return valueInt;
+	}
+
+	public static void assumeGreaterOrEqualToZero(@NonNull final Integer... valueInt)
+	{
+		final boolean anyLessThanZero = Stream.of(valueInt)
+				.anyMatch(value -> value < 0);
+
+		if (anyLessThanZero)
+		{
+			throw new RuntimeException("At least one param was less than 0! params=" + Arrays.toString(valueInt));
+		}
 	}
 
 	public static BigDecimal assumeGreaterOrEqualToZero(final BigDecimal valueBD, final String valueName)

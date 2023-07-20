@@ -8,6 +8,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -31,6 +32,9 @@ import java.util.Objects;
  * #L%
  */
 
+/**
+ * Aka {@code M_HU_PI_Item_Product_ID}
+ */
 @Value
 public class HUPIItemProductId implements RepoIdAware
 {
@@ -61,6 +65,8 @@ public class HUPIItemProductId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : VIRTUAL_HU;
 	}
 
+	public static Optional<HUPIItemProductId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
+
 	public static int toRepoId(@Nullable final HUPIItemProductId id)
 	{
 		return id != null ? id.getRepoId() : -1;
@@ -68,7 +74,7 @@ public class HUPIItemProductId implements RepoIdAware
 
 	public static boolean isRegular(@Nullable final HUPIItemProductId id)
 	{
-		return id != null ? id.isRegular() : false;
+		return id != null && id.isRegular();
 	}
 
 	public static final HUPIItemProductId TEMPLATE_HU = new HUPIItemProductId(100);
@@ -88,7 +94,7 @@ public class HUPIItemProductId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final HUPIItemProductId id1, final HUPIItemProductId id2)
+	public static boolean equals(@Nullable final HUPIItemProductId id1, @Nullable final HUPIItemProductId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

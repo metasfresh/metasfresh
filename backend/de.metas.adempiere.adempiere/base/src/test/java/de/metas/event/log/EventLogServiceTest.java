@@ -1,24 +1,19 @@
 package de.metas.event.log;
 
-import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import de.metas.event.Topic;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
@@ -50,7 +45,7 @@ import de.metas.event.model.I_AD_EventLog_Entry;
 
 public class EventLogServiceTest
 {
-	private static final Type MOCKED_EVENT_BUS_TYPE = Type.REMOTE;
+	private static final Type MOCKED_EVENT_BUS_TYPE = Type.DISTRIBUTED;
 
 	private static final String MOCKED_EVENT_BUS_NAME = "mockedEventBusName";
 
@@ -66,15 +61,15 @@ public class EventLogServiceTest
 		eventLogService = new EventLogService(mock(EventLogsRepository.class));
 
 		eventBus = mock(IEventBus.class);
-		Mockito.doReturn(MOCKED_EVENT_BUS_NAME).when(eventBus).getTopicName();
-		Mockito.doReturn(MOCKED_EVENT_BUS_TYPE).when(eventBus).getType();
+		final Topic mockedTopic = Topic.of(MOCKED_EVENT_BUS_NAME, MOCKED_EVENT_BUS_TYPE);
+		Mockito.doReturn(mockedTopic).when(eventBus).getTopic();
 	}
 
 	@Test
 	public void saveEvent()
 	{
 		final Event event = createSimpleEvent();
-		eventLogService.saveEvent(event, eventBus);
+		eventLogService.saveEvent(event, eventBus.getTopic());
 
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
 		final List<I_AD_EventLog> eventLogRecords = pojoLookupMap.getRecords(I_AD_EventLog.class);
@@ -100,7 +95,7 @@ public class EventLogServiceTest
 	public void loadEvent()
 	{
 		final Event event = createSimpleEvent();
-		final EventLogId eventLogId = eventLogService.saveEvent(event, eventBus);
+		final EventLogId eventLogId = eventLogService.saveEvent(event, eventBus.getTopic());
 
 		final I_AD_EventLog_Entry eventLogEntryRecord1 = InterfaceWrapperHelper.newInstance(I_AD_EventLog_Entry.class);
 		eventLogEntryRecord1.setAD_EventLog_ID(eventLogId.getRepoId());

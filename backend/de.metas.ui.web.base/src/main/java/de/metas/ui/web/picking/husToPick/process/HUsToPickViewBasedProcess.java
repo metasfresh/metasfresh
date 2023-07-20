@@ -1,6 +1,15 @@
 package de.metas.ui.web.picking.husToPick.process;
 
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.ImmutableMultimap;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -27,13 +36,6 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 /* package */abstract class HUsToPickViewBasedProcess extends ViewBasedProcessTemplate
 {

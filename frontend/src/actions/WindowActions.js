@@ -3,34 +3,35 @@ import counterpart from 'counterpart';
 import currentDevice from 'current-device';
 
 import history from '../services/History';
-import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
-  ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
+  ALLOW_SHORTCUT,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
-  CLOSE_MODAL,
-  CLOSE_PROCESS_MODAL,
-  CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DISABLE_SHORTCUT,
+  CLOSE_MODAL,
+  CLOSE_RAW_MODAL,
   DISABLE_OUTSIDE_CLICK,
-  INIT_WINDOW,
+  DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  NO_CONNECTION,
+  INIT_WINDOW,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
+  RESET_PRINTING_OPTIONS,
+  SET_PRINTING_OPTIONS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
+  SET_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
+  TOGGLE_PRINTING_OPTION,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -41,49 +42,41 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
-  SET_PRINTING_OPTIONS,
-  RESET_PRINTING_OPTIONS,
-  TOGGLE_PRINTING_OPTION,
-  SET_SPINNER,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
+import { preFormatPostDATA, toggleFullScreen } from '../utils';
+import {
+  getInvalidDataItem,
+  getScope,
+  parseToDisplay,
+} from '../utils/documentListHelper';
 
 import {
-  getData,
-  patchRequest,
-  getLayout,
-  getProcessData,
-  getTabRequest,
-  startProcess,
   formatParentUrl,
+  getData,
+  getLayout,
   getTabLayoutRequest,
+  getTabRequest,
+  patchRequest,
 } from '../api';
 
 import { getTableId } from '../reducers/tables';
-import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
-  setNotificationProgress,
-  setProcessPending,
-  setProcessSaved,
   deleteNotification,
+  setNotificationProgress,
 } from './AppActions';
-import { openFile } from './GenericActions';
-import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
-  updateCommentsPanelTextInput,
   updateCommentsPanelOpenFlag,
+  updateCommentsPanelTextInput,
 } from './CommentsPanelActions';
 import {
   createTabTable,
-  updateTabTable,
-  updateTableSelection,
   updateTableRowProperty,
+  updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 
@@ -222,6 +215,7 @@ export function initLayoutSuccess(layout, scope) {
   };
 }
 
+// @VisibleForTesting
 export function initDataSuccess({
   data,
   docId,
@@ -234,16 +228,33 @@ export function initDataSuccess({
   hasComments,
 }) {
   return {
+    type: INIT_DATA_SUCCESS,
     data,
     docId,
     includedTabsInfo,
     saveStatus,
     scope,
     standardActions,
-    type: INIT_DATA_SUCCESS,
     validStatus,
     websocket,
     hasComments,
+  };
+}
+
+function initDataNotFound(windowId) {
+  return (dispose) => {
+    dispose(getWindowBreadcrumb(windowId));
+    dispose(
+      initDataSuccess({
+        data: {},
+        docId: 'notfound',
+        includedTabsInfo: {},
+        scope: 'master',
+        saveStatus: { saved: true },
+        standardActions: [],
+        validStatus: {},
+      })
+    );
   };
 }
 
@@ -312,13 +323,6 @@ export function updateDataFieldProperty(property, item, scope) {
   };
 }
 
-export function noConnection(status) {
-  return {
-    type: NO_CONNECTION,
-    status: status,
-  };
-}
-
 export function openModal({
   title = '',
   windowId,
@@ -371,12 +375,6 @@ export function openModal({
   };
 }
 
-export function closeProcessModal() {
-  return {
-    type: CLOSE_PROCESS_MODAL,
-  };
-}
-
 export function closeModal() {
   return {
     type: CLOSE_MODAL,
@@ -404,14 +402,17 @@ export function indicatorState(state) {
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab({ tabId, windowId, docId, query }) {
+export function fetchTab({ tabId, windowId, docId, orderBy }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowId, docId, query)
+    const tableId = getTableId({ windowId, tabId, docId });
+    dispatch(updateTabTable({ tableId, pending: true }));
+    return getTabRequest(tabId, windowId, docId, orderBy)
       .then((response) => {
-        const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };
 
-        dispatch(updateTabTable(tableId, tableData));
+        dispatch(
+          updateTabTable({ tableId, tableResponse: tableData, pending: false })
+        );
 
         return Promise.resolve(response);
       })
@@ -445,9 +446,7 @@ export function updateTabLayout(windowId, tabId) {
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   return (dispatch) => {
-    dispatch({
-      type: INIT_WINDOW,
-    });
+    dispatch({ type: INIT_WINDOW });
 
     if (docId === 'NEW') {
       //New master document
@@ -486,18 +485,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
           docId: docId,
           fetchAdvancedFields: isAdvanced,
         }).catch((e) => {
-          dispatch(getWindowBreadcrumb(windowType));
-          dispatch(
-            initDataSuccess({
-              data: {},
-              docId: 'notfound',
-              includedTabsInfo: {},
-              scope: 'master',
-              saveStatus: { saved: true },
-              standardActions: [],
-              validStatus: {},
-            })
-          );
+          dispatch(initDataNotFound(windowType));
 
           return { status: e.status, message: e.statusText };
         });
@@ -551,6 +539,7 @@ export function createWindow({
   isAdvanced,
   disconnected,
   title,
+  urlSearchParams,
 }) {
   let disconnectedData = null;
   let documentId = docId || 'NEW';
@@ -610,8 +599,10 @@ export function createWindow({
       }
 
       if (documentId === 'NEW' && !isModal) {
-        // redirect immedietely
-        return history.replace(`/window/${windowType}/${docId}`);
+        // redirect immediately, but preserve URL search params if any
+        return history.replace(
+          `/window/${windowType}/${docId}${urlSearchParams ?? ''}`
+        );
       }
 
       let elem = 0;
@@ -691,7 +682,13 @@ export function createWindow({
                 tabId,
                 ...tab,
               };
-              dispatch(updateTabTable(tableId, tableData));
+              dispatch(
+                updateTabTable({
+                  tableId,
+                  tableResponse: tableData,
+                  pending: false,
+                })
+              );
             });
           }
           /** post get layout action triggered for the inlineTab case */
@@ -821,6 +818,30 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
   };
 }
 
+export const patchWindow = ({
+  windowId,
+  documentId = 'NEW',
+  tabId = null,
+  rowId = null,
+  fieldName,
+  value,
+}) => {
+  return patch(
+    'window', // entity
+    windowId,
+    documentId,
+    tabId,
+    rowId,
+    fieldName,
+    value,
+    false, //isModal
+    false, // isAdvanced
+    null, // viewId
+    false, // isEdit
+    false // disconnected
+  );
+};
+
 /*
  * Wrapper for patch request of widget elements
  * when responses should merge store
@@ -865,7 +886,11 @@ export function patch(
         response.data.documents instanceof Array
           ? response.data.documents
           : response.data;
-      const dataItem = data[0];
+
+      const invalidDataItem = getInvalidDataItem(data);
+
+      const dataItem = invalidDataItem === null ? data[0] : invalidDataItem;
+
       const includedTabsInfo =
         dataItem && dataItem.includedTabsInfo
           ? dataItem.includedTabsInfo
@@ -963,19 +988,31 @@ export function fireUpdateData({
       tabId: tabId,
       rowId: rowId,
       fetchAdvancedFields: fetchAdvancedFields,
-    }).then((response) => {
-      dispatch(
-        mapDataToState({
-          data: response.data,
-          isModal,
-          rowId,
-          documentId,
-          windowId,
-          fetchAdvancedFields,
-        })
-      );
-    });
+    })
+      .then((response) => {
+        dispatch(
+          mapDataToState({
+            data: response.data,
+            isModal,
+            rowId,
+            documentId,
+            windowId,
+            fetchAdvancedFields,
+          })
+        );
+      })
+      .catch((axiosError) => {
+        if (is404(axiosError) && !tabId) {
+          dispatch(initDataNotFound(windowId));
+        }
+
+        return axiosError;
+      });
   };
+}
+
+function is404(axiosError) {
+  return axiosError?.response?.status === 404;
 }
 
 // TODO: Check if all cases are valid. Especially if `scope` is `master`, or
@@ -1171,243 +1208,6 @@ export function attachFileAction(windowType, docId, data) {
   };
 }
 
-// PROCESS ACTIONS
-
-export function createProcess({
-  ids,
-  processType,
-  rowId,
-  tabId,
-  documentType,
-  viewId,
-  selectedTab,
-  childViewId,
-  childViewSelectedIds,
-  parentViewId,
-  parentViewSelectedIds,
-}) {
-  let pid = null;
-
-  return async (dispatch, getState) => {
-    // creation of processes can be done only if there isn't any pending process
-    // https://github.com/metasfresh/metasfresh/issues/10116
-    const { processStatus } = getState().appHandler;
-    if (processStatus === 'pending') {
-      return false;
-    }
-
-    await dispatch(setProcessPending());
-
-    let response;
-
-    try {
-      response = await getProcessData({
-        ids,
-        processId: processType,
-        rowId,
-        tabId,
-        documentType,
-        viewId,
-        selectedTab,
-        childViewId,
-        childViewSelectedIds,
-        parentViewId,
-        parentViewSelectedIds,
-      });
-    } catch (error) {
-      // Close process modal in case when process start failed
-      await dispatch(closeModal());
-      await dispatch(setProcessSaved());
-
-      throw error;
-    }
-
-    if (response.data) {
-      const preparedData = parseToDisplay(response.data.fieldsByName);
-
-      pid = response.data.pinstanceId;
-
-      if (response.data.startProcessDirectly) {
-        let response;
-
-        try {
-          response = await startProcess(processType, pid);
-
-          // processes opening included views need the id of the parent view
-          const id = parentViewId ? parentViewId : viewId;
-          const parentView = id && findViewByViewId(getState(), id);
-          const parentId = parentView ? parentView.windowId : documentType;
-
-          await dispatch(
-            handleProcessResponse(response, processType, pid, parentId)
-          );
-        } catch (error) {
-          await dispatch(closeModal());
-          await dispatch(setProcessSaved());
-
-          throw error;
-        }
-      } else {
-        await dispatch(
-          initDataSuccess({
-            data: preparedData,
-            scope: 'modal',
-          })
-        );
-
-        let response;
-
-        try {
-          response = await getLayout(PROCESS_NAME, processType);
-
-          await dispatch(setProcessSaved());
-
-          const preparedLayout = {
-            ...response.data,
-            pinstanceId: pid,
-          };
-
-          await dispatch(initLayoutSuccess(preparedLayout, 'modal'));
-        } catch (error) {
-          await dispatch(setProcessSaved());
-
-          throw error;
-        }
-      }
-    }
-  };
-}
-
-export function handleProcessResponse(response, type, id, parentId) {
-  return async (dispatch) => {
-    const { error, summary, action } = response.data;
-
-    if (error) {
-      await dispatch(addNotification('Process error', summary, 5000, 'error'));
-      await dispatch(setProcessSaved());
-
-      // Close process modal in case when process has failed
-      await dispatch(closeModal());
-    } else {
-      let keepProcessModal = false;
-
-      if (action) {
-        const { windowId, viewId, documentId, targetTab } = action;
-        let urlPath;
-
-        switch (action.type) {
-          case 'displayQRCode':
-            dispatch(toggleOverlay({ type: 'qr', data: action.code }));
-            break;
-          case 'openView': {
-            await dispatch(closeModal());
-            urlPath = `/window/${windowId}/?viewId=${viewId}`;
-            if (targetTab === 'NEW_TAB') {
-              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
-              return;
-            }
-            if (targetTab === 'SAME_TAB') {
-              window.open(urlPath, '_self');
-              return;
-            }
-
-            if (targetTab === 'SAME_TAB_OVERLAY') {
-              await dispatch(
-                openRawModal({ windowId, viewId, profileId: action.profileId })
-              );
-            }
-            break;
-          }
-          case 'openReport':
-            openFile(PROCESS_NAME, type, id, 'print', action.filename);
-
-            break;
-          case 'openDocument':
-            await dispatch(closeModal());
-            urlPath = `/window/${windowId}/${documentId}`;
-
-            if (targetTab === 'NEW_TAB') {
-              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
-              return false;
-            }
-
-            if (targetTab === 'SAME_TAB') {
-              window.open(urlPath, '_self');
-              return false;
-            }
-
-            if (action.modal || targetTab === 'SAME_TAB_OVERLAY') {
-              // Do not close process modal,
-              // since it will be re-used with document view
-              keepProcessModal = true;
-
-              await dispatch(
-                openModal({
-                  windowId: action.windowId,
-                  modalType: 'window',
-                  isAdvanced: action.advanced ? action.advanced : false,
-                  dataId: action.documentId,
-                })
-              );
-            } else {
-              history.push(`/window/${action.windowId}/${action.documentId}`);
-            }
-            break;
-          case 'openIncludedView':
-            await dispatch(
-              setIncludedView({
-                windowId: action.windowId,
-                viewId: action.viewId,
-                viewProfileId: action.profileId,
-                parentId,
-              })
-            );
-
-            break;
-          case 'closeIncludedView':
-            await dispatch(
-              unsetIncludedView({
-                windowId: action.windowId,
-                viewId: action.viewId,
-              })
-            );
-
-            break;
-          case 'selectViewRows': {
-            // eslint-disable-next-line no-console
-            console.info(
-              '@TODO: `selectViewRows` - check if selection worked ok'
-            );
-            const { windowId, viewId, rowIds } = action;
-            const tableId = getTableId({ windowId, viewId });
-
-            dispatch(
-              updateTableSelection({
-                id: tableId,
-                selection: rowIds,
-                windowId,
-                viewId,
-              })
-            );
-
-            break;
-          }
-        }
-      }
-
-      if (summary) {
-        await dispatch(addNotification('Process', summary, 5000, 'primary'));
-      }
-
-      await dispatch(setProcessSaved());
-
-      if (!keepProcessModal) {
-        await dispatch(closeProcessModal());
-      }
-    }
-  };
-}
-
 /**
  * @method setPrintingOptions
  * @summary - action. It updates the store with the printing options fetched from /rest/api/window/{windowId}/{documentId}/printingOptions
@@ -1433,7 +1233,7 @@ export function resetPrintingOptions() {
 /**
  * @method togglePrintingOption
  * @summary - action. It toggles in the store the printing option truth value
- * @param {object} data
+ * @param {object} target
  */
 export function togglePrintingOption(target) {
   return {

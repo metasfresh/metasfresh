@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.requests;
 
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.inout.ShipmentScheduleId;
@@ -7,8 +9,6 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L

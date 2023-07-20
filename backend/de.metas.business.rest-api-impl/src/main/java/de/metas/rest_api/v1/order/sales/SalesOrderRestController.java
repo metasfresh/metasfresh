@@ -30,7 +30,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -40,6 +40,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.v1.order.JsonSalesOrder;
 import de.metas.rest_api.v1.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v1.order.JsonSalesOrderCreateRequest;
@@ -54,7 +55,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,6 +69,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order",
@@ -100,7 +104,7 @@ public class SalesOrderRestController
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+					.docBaseType(DocBaseType.SalesOrder)
 					.adClientId(Env.getAD_Client_ID())
 					.name(request.getDocTypeName())
 					.build();
@@ -190,7 +194,7 @@ public class SalesOrderRestController
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
 				.id(AttachmentEntryId.getRepoId(entry.getId()))
-				.type(JsonAttachmentType.valueOf(entry.getType().toString()))
+				.type(JsonConverters.toJsonAttachmentType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)

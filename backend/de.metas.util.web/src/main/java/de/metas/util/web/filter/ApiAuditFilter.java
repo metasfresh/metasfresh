@@ -27,7 +27,10 @@ import de.metas.audit.apirequest.config.ApiAuditConfig;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
+import de.metas.util.web.audit.ResponseHandler;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -35,19 +38,19 @@ import org.slf4j.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 public class ApiAuditFilter implements Filter
 {
 	private final static Logger logger = LogManager.getLogger(ApiAuditFilter.class);
-
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ApiAuditService apiAuditService;
+
+	private static final String SYSCONFIG_BypassAll = "ApiAuditFilter.bypassAll";
 
 	public ApiAuditFilter(final ApiAuditService apiAuditService)
 	{
@@ -55,53 +58,52 @@ public class ApiAuditFilter implements Filter
 	}
 
 	@Override
-	public void init(final FilterConfig filterConfig) throws ServletException
+	public void init(final FilterConfig filterConfig)
 	{
 	}
 
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException
 	{
-		final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-		final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+		final HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+		final HttpServletResponse httpServletResponse = (HttpServletResponse)response;
 
 		try
 		{
-			if (apiAuditService.bypassFilter(httpServletRequest))
+			if (isBypassAll() || apiAuditService.bypassFilter(httpServletRequest))
 			{
 				chain.doFilter(request, response);
 				return;
 			}
 
-			final Optional<ApiRequestAuditId> requestAuditIdOpt = apiAuditService.extractApiRequestAuditId(httpServletRequest);
+			final ApiRequestAuditId requestAuditId = apiAuditService.extractApiRequestAuditId(httpServletRequest).orElse(null);
 
 			// dev-note: this means the request was already filtered once
-			if (requestAuditIdOpt.isPresent())
+			if (requestAuditId != null)
 			{
-				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get(), Env.getLoggedUserId());
+				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditId, Env.getLoggedUserId());
 
-				try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
+				try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
 				{
 					chain.doFilter(request, response);
 					return;
 				}
 			}
 
-			final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest);
-
-			if (!matchingAuditConfig.isPresent())
+			final ApiAuditConfig matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest).orElse(null);
+			if (matchingAuditConfig == null || matchingAuditConfig.isBypassAudit())
 			{
 				chain.doFilter(request, response);
 				return;
 			}
 
-			apiAuditService.processHttpCall(httpServletRequest, httpServletResponse, matchingAuditConfig.get());
+			apiAuditService.processRequest(chain, httpServletRequest, httpServletResponse, matchingAuditConfig);
 		}
 		catch (final Throwable t)
 		{
 			logger.error(t.getLocalizedMessage(), t);
 
-			httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getLocalizedMessage());
+			ResponseHandler.writeErrorResponse(t, httpServletResponse, null, null);
 		}
 	}
 
@@ -109,5 +111,11 @@ public class ApiAuditFilter implements Filter
 	public void destroy()
 	{
 
+	}
+
+	private boolean isBypassAll()
+	{
+		//if(true) return true;
+		return sysConfigBL.getBooleanValue(SYSCONFIG_BypassAll, false);
 	}
 }

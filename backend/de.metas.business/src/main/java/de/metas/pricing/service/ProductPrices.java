@@ -71,7 +71,7 @@ public class ProductPrices
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
 
-	public static ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
+	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		return new ProductPriceQuery()
@@ -228,6 +228,7 @@ public class ProductPrices
 				.setParameter(I_M_Product.Table_Name, productName);
 	}
 
+	@SuppressWarnings("serial")
 	public static final class DuplicateMainProductPriceException extends AdempiereException
 	{
 		private static final AdMessageKey MSG_M_ProductPrice_DublicateMainPrice = AdMessageKey.of("M_ProductPrice_DublicateMainPrice");
@@ -276,8 +277,7 @@ public class ProductPrices
 		logger.info("Cleared all main product matchers");
 	}
 
-	@Nullable
-	public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
+	@Nullable public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
 			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper,
 			@NonNull final ZonedDateTime priceDate)

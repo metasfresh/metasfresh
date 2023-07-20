@@ -22,16 +22,15 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.util.ISingletonService;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.List;
+import java.util.Properties;
 
 /**
  * This API identifies and invokes {@link IInvoiceCandidateHandler}s for specific invoice candidates
@@ -67,15 +66,12 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 *
 	 * Each created invoice candidate has a reference to the {@link I_C_ILCandHandler} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
 	 *
-	 * @param model
 	 * @return generated invoice candidates
 	 */
 	List<I_C_Invoice_Candidate> createMissingCandidatesFor(Object model);
 
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
-	 *
-	 * @param model
 	 */
 	void scheduleCreateMissingCandidatesFor(Object model);
 
@@ -83,8 +79,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	/**
 	 * Retrieve the {@link IInvoiceCandidateHandler} of the given <code>ic</code> and calls its {@link IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate) setOrderedData()} method.
-	 *
-	 * @param ic
 	 */
 	void setOrderedData(I_C_Invoice_Candidate ic);
 
@@ -102,4 +96,10 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	void setInvoiceScheduleAndDateToInvoice(I_C_Invoice_Candidate ic);
 
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
+
+	void setPickedData(I_C_Invoice_Candidate ic);
+
+	void setIsInEffect(I_C_Invoice_Candidate ic);
+
+	void postUpdate(I_C_Invoice_Candidate ic);
 }

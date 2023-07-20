@@ -1,14 +1,16 @@
 DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_hu_update_qtycount(
     p_M_Inventory_ID  numeric,
     p_DryRun          char(1),
-    p_UpdateHUQtyBook char(1)
+    p_UpdateHUQtyBook char(1),
+    p_FailOnError     char(1)
 )
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_hu_update_qtycount(
     p_M_Inventory_ID  numeric,
     p_DryRun          char(1) = 'N',
-    p_UpdateHUQtyBook char(1) = 'N'
+    p_UpdateHUQtyBook char(1) = 'N',
+    p_FailOnError     char(1) = 'Y'
 )
     RETURNS VOID
 AS
@@ -32,11 +34,12 @@ BEGIN
                                             INNER JOIN m_product p ON p.m_product_id = invl.m_product_id
                                             LEFT OUTER JOIN c_uom uom ON uom.c_uom_id = invl.c_uom_id
                                    WHERE invl.m_inventory_id = p_M_Inventory_ID
+                                     AND invl.isactive = 'Y'
                                    ORDER BY invl.line, invl.m_inventoryline_id)
         LOOP
             v_qtyToAllocateRemaining := v_currentInventoryLine.qtybook - v_currentInventoryLine.qtycount;
 
-            RAISE NOTICE 'Checking line %: %, QtyBook=% %, QtyCount=% % => Qty to allocate=% %',
+            RAISE DEBUG 'Checking line %: %, QtyBook=% %, QtyCount=% % => Qty to allocate=% %',
                 v_currentInventoryLine.line,
                 v_currentInventoryLine.product,
                 v_currentInventoryLine.qtybook, v_currentInventoryLine.uomsymbol,
@@ -103,7 +106,7 @@ BEGIN
                     END IF;
 
                     IF (v_huQtyBook != v_currentInventoryLineHU.qtybook OR v_huUomId != v_currentInventoryLineHU.c_uom_id) THEN
-                        RAISE NOTICE 'Change QtyBook: % % (Old: % %)',
+                        RAISE DEBUG 'Change QtyBook: % % (Old: % %)',
                             v_huQtyBook, v_huUomSymbol,
                             v_currentInventoryLineHU.qtybook, v_currentInventoryLineHU.uomsymbol;
                     END IF;
@@ -128,20 +131,25 @@ BEGIN
                         WHERE invlhu.m_inventoryline_hu_id = v_currentInventoryLineHU.m_inventoryline_hu_id;
                     END IF;
 
-                    RAISE NOTICE '     alloc: m_inventoryline_id=%, m_hu_id=%: QtyBook=% %, QtyCount=% % (Old: % %) -- remaining QtyBook to allocate=% %',
+                    RAISE DEBUG '     alloc: m_inventoryline_id=%, m_hu_id=%: QtyBook=% %, QtyCount=% % (Old: % %) -- remaining QtyBook to allocate=% %',
                         v_currentInventoryLineHU.m_inventoryline_id,
                         v_currentInventoryLineHU.m_inventoryline_hu_id,
                         v_huQtyBook, v_huUomSymbol,
                         v_huQtyCount, v_huUomSymbol,
                         v_currentInventoryLineHU.qtycount, v_currentInventoryLineHU.uomsymbol,
                         v_qtyToAllocateRemaining, v_currentInventoryLine.uomsymbol;
-                END LOOP;
+                END LOOP; -- v_currentInventoryLineHU
 
-            RAISE NOTICE '     remaining Qty to allocate=% % %',
-                v_qtyToAllocateRemaining, v_currentInventoryLine.uomsymbol,
-                (CASE WHEN v_qtyToAllocateRemaining != 0 THEN '!!!' ELSE '' END);
+            IF (v_qtyToAllocateRemaining = 0) THEN
+                RAISE DEBUG '     => OK, fully allocated';
+            ELSE
+                RAISE DEBUG '     => NOK, failed to allocate % % remaining', v_qtyToAllocateRemaining, v_currentInventoryLine.uomsymbol;
+                IF (p_FailOnError = 'Y') THEN
+                    RAISE EXCEPTION 'Failed to allocate % % remaining. To see more, `set client_min_messages = DEBUG`', v_qtyToAllocateRemaining, v_currentInventoryLine.uomsymbol;
+                END IF;
+            END IF;
         END LOOP;
-END;
+END ;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE

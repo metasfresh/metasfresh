@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
@@ -24,20 +25,23 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.resource.ResourceAssignmentId;
+import de.metas.resource.ResourceService;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -46,15 +50,18 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
-import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 
@@ -100,7 +107,7 @@ public class MOrderLine extends X_C_OrderLine
 	 * @return Unreserved Qty
 	 */
 	public static BigDecimal getNotReserved(Properties ctx, int M_Warehouse_ID,
-			int M_Product_ID, int M_AttributeSetInstance_ID, int excludeC_OrderLine_ID)
+											int M_Product_ID, int M_AttributeSetInstance_ID, int excludeC_OrderLine_ID)
 	{
 		BigDecimal retValue = BigDecimal.ZERO;
 		String sql = "SELECT SUM(ol.QtyOrdered-ol.QtyDelivered-ol.QtyReserved) "
@@ -329,6 +336,7 @@ public class MOrderLine extends X_C_OrderLine
 
 		final boolean isSOTrx = getParent().isSOTrx();
 		final Timestamp taxDate = getDateOrdered();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(getC_VAT_Code_ID());
 		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
 				.fromCountryId(countryFromId)
 				.orgId(OrgId.ofRepoId(getAD_Org_ID()))
@@ -337,6 +345,7 @@ public class MOrderLine extends X_C_OrderLine
 				.dateOfInterest(taxDate)
 				.taxCategoryId(taxCategoryId)
 				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.vatCodeId(vatCodeId)
 				.build());
 
 		if (tax == null)
@@ -402,12 +411,9 @@ public class MOrderLine extends X_C_OrderLine
 
 			if (stdTax != null)
 			{
-				log.debug("stdTax rate is " + stdTax.getRate());
-				log.debug("orderTax rate is " + orderTax.getRate());
-
 				final ITaxBL taxBL = Services.get(ITaxBL.class);
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(orderTax, bd, isTaxIncluded, taxPrecision.toInt()));
-				taxStdAmt = taxStdAmt.add(taxBL.calculateTax(stdTax, bd, isTaxIncluded, taxPrecision.toInt()));
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(orderTax, bd, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxStdAmt.add(taxBL.calculateTaxAmt(stdTax, bd, isTaxIncluded, taxPrecision.toInt()));
 
 				bd = bd.subtract(taxStdAmt).add(taxThisAmt);
 
@@ -975,10 +981,12 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			return success;
 		}
-		if (getS_ResourceAssignment_ID() != 0)
+
+		final ResourceAssignmentId resourceAssignmentId = ResourceAssignmentId.ofRepoIdOrNull(getS_ResourceAssignment_ID());
+		if (resourceAssignmentId != null)
 		{
-			MResourceAssignment ra = new MResourceAssignment(getCtx(), getS_ResourceAssignment_ID(), get_TrxName());
-			ra.delete(true);
+			final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+			resourceService.deleteResourceAssignment(resourceAssignmentId);
 		}
 
 		return updateHeaderTax();
@@ -1046,56 +1054,48 @@ public class MOrderLine extends X_C_OrderLine
 		// Avoid a possible deadlock by updating the C_Order *after* the current transaction, because at this point we might already hold a lot of locks to different objects.
 		// The updates in updateHeader0 will try aggregate and obtain any number of additional shared locks.
 		// Concrete, we observed a deadlock between this code and M_ReceiptSchedule.propagateQtysToOrderLine()
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.getTrxListenerManager(get_TrxName())
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> {
-					trxManager.runInNewTrx(new TrxRunnableAdapter()
-					{
-						@Override
-						public void run(final String localTrxName) throws Exception
-						{
-							updateHeader0(getC_Order_ID());
-						}
-					});
-				});
+		final ITrxManager trxManager = get_TrxManager();
+		trxManager.accumulateAndProcessAfterCommit(
+				"ordersToUpdateHeader",
+				ImmutableSet.of(OrderId.ofRepoId(getC_Order_ID())),
+				this::updateHeaderInNewTrx
+		);
 
 		return true;
 	}    // updateHeaderTax
 
-	/**
-	 * See the comment in {@link #updateHeaderTax()}.
-	 *
-	 * @param orderId
-	 */
-	private static void updateHeader0(final int orderId)
+	private void updateHeaderInNewTrx(final Collection<OrderId> orderIds)
 	{
+		final ITrxManager trxManager = get_TrxManager();
+		trxManager.runInNewTrx(() -> updateHeaderNow(ImmutableSet.copyOf(orderIds)));
+	}
+
+	private static void updateHeaderNow(final Set<OrderId> orderIds)
+	{
+		// shall not happen
+		if (orderIds.isEmpty())
+		{
+			return;
+		}
 
 		// Update Order Header: TotalLines
 		{
-			final String sql = "UPDATE C_Order i"
+			final ArrayList<Object> sqlParams = new ArrayList<>();
+			final String sql = "UPDATE C_Order o"
 					+ " SET TotalLines="
-					+ "(SELECT COALESCE(SUM(LineNetAmt),0) FROM C_OrderLine il WHERE i.C_Order_ID=il.C_Order_ID) "
-					+ "WHERE C_Order_ID=" + orderId;
-			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
-			if (no != 1)
-			{
-				new AdempiereException("Updating TotalLines failed for C_Order_ID=" + orderId);
-			}
+					+ "(SELECT COALESCE(SUM(ol.LineNetAmt),0) FROM C_OrderLine ol WHERE ol.C_Order_ID=o.C_Order_ID) "
+					+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		}
 		// Update Order Header: GrandTotal
 		{
-			final String sql = "UPDATE C_Order i "
+			final ArrayList<Object> sqlParams = new ArrayList<>();
+			final String sql = "UPDATE C_Order o "
 					+ " SET GrandTotal=TotalLines+"
 					// SUM up C_OrderTax.TaxAmt only for those lines which does not have Tax Included
-					+ "(SELECT COALESCE(SUM(TaxAmt),0) FROM C_OrderTax it WHERE i.C_Order_ID=it.C_Order_ID AND it.IsActive='Y' AND it.IsTaxIncluded='N') "
-					+ "WHERE C_Order_ID=" + orderId;
-			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
-			if (no != 1)
-			{
-				new AdempiereException("Updating GrandTotal failed for C_Order_ID=" + orderId);
-			}
+					+ "(SELECT COALESCE(SUM(TaxAmt),0) FROM C_OrderTax ot WHERE o.C_Order_ID=ot.C_Order_ID AND ot.IsActive='Y' AND ot.IsTaxIncluded='N') "
+					+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 }    // MOrderLine

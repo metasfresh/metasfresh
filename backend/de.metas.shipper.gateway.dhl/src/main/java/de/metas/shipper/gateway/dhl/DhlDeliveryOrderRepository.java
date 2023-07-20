@@ -229,7 +229,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 						.lengthInCM(firstOrder.getDHL_LengthInCm())
 						.heightInCM(firstOrder.getDHL_HeightInCm())
 						.build())
-				.grossWeightKg(firstOrder.getDHL_WeightInKg().intValue())
+				.grossWeightKg(firstOrder.getDHL_WeightInKg())
 				.numberOfPackages(packageIds.size())
 				.packageIds(packageIds)
 				.build();
@@ -289,7 +289,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 						shipmentOrder.setDHL_LengthInCm(packageDimensions.getLengthInCM());
 						shipmentOrder.setDHL_WidthInCm(packageDimensions.getWidthInCM());
 					}
-					shipmentOrder.setDHL_WeightInKg(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
+					shipmentOrder.setDHL_WeightInKg(deliveryPosition.getGrossWeightKg());
 					// (2.2.1.10)
 					//noinspection ConstantConditions
 					shipmentOrder.setDHL_RecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);

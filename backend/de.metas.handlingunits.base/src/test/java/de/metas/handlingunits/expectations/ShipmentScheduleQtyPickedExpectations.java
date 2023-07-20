@@ -22,22 +22,23 @@ package de.metas.handlingunits.expectations;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.util.lang.IContextAware;
-import org.apache.commons.collections4.IteratorUtils;
-import org.junit.Assert;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.adempiere.util.lang.IContextAware;
+import org.apache.commons.collections4.IteratorUtils;
+import org.junit.Assert;
+
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation<Object>
 {

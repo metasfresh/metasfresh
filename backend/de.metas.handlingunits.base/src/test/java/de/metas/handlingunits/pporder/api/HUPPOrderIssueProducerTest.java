@@ -38,7 +38,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentIssueMethod;
@@ -53,6 +52,7 @@ import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.hamcrest.MatcherAssert;
@@ -67,13 +67,14 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import static de.metas.business.BusinessTestHelper.createBOMVersions;
 import static de.metas.business.BusinessTestHelper.createProduct;
 import static de.metas.business.BusinessTestHelper.createUOM;
 import static de.metas.business.BusinessTestHelper.createUOMConversion;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 /*
@@ -101,7 +102,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
-	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+	private IPPOrderDAO ppOrdersRepo;
 
 	private MRPTestDataSimple masterData;
 
@@ -115,6 +116,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	private final BigDecimal rate_Rolle_to_Millimeter = new BigDecimal(1_500_000);
 
 	private I_M_Product pSalad;
+	private I_PP_Product_BOMVersions psaladVersions;
 	private I_M_Product pFolie;
 	private ProductId pFolieId;
 
@@ -150,12 +152,14 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		ppOrdersRepo = Services.get(IPPOrderDAO.class);
 
 		uomStuck = createUOM("Stück", 0, 0);
 		uomMillimeter = createUOM("Millimeter", 2, 4);
 		uomRolle = createUOM("Rolle", 10, 10);
 
 		pSalad = createProduct("Salad", uomStuck); // AB Alicesalat 250g - the big product bom
+		psaladVersions = createBOMVersions(ProductId.ofRepoId(pSalad.getM_Product_ID())); // AB Alicesalat 250g - the big product bom
 		pFolie = createProduct("Folie", uomRolle);
 		pFolieId = ProductId.ofRepoId(pFolie.getM_Product_ID());
 
@@ -184,6 +188,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//@formatter:off
 		final I_PP_Product_BOM productBOM = helper.newProductBOM()
 				.product(pSalad)
+				.bomVersions(psaladVersions)
 				.uom(uomStuck)
 				.newBOMLine()
 					.product(pFolie).uom(uomMillimeter)
@@ -199,7 +204,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 		Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-		Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+		Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 		MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
 				// Expected: 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
@@ -253,6 +258,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//@formatter:off
 		final I_PP_Product_BOM productBOM = helper.newProductBOM()
 				.product(pSalad)
+				.bomVersions(psaladVersions)
 				.uom(uomStuck)
 				.newBOMLine()
 					.product(pFolie).uom(uomMillimeter)
@@ -271,7 +277,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 			Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-			Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+			Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 			MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 					ppOrderBOMLine_Folie.getQtyRequiered(),
 					Matchers.comparesEqualTo(new BigDecimal("28600")) // = 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
@@ -431,6 +437,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//@formatter:off
 		final I_PP_Product_BOM productBOM = helper.newProductBOM()
 				.product(pSalad)
+				.bomVersions(psaladVersions)
 				.uom(uomStuck)
 				.newBOMLine()
 					.product(pFolie).uom(uomMillimeter)
@@ -468,7 +475,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
 					final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 					Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-					Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+					Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 					MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 							ppOrderBOMLine_Folie.getQtyRequiered(),
 							Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
@@ -524,6 +531,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//@formatter:off
 		final I_PP_Product_BOM productBOM = helper.newProductBOM()
 				.product(pSalad)
+				.bomVersions(psaladVersions)
 				.uom(uomStuck)
 				.newBOMLine()
 					.product(pFolie).uom(uomMillimeter)
@@ -542,7 +550,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 		Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-		Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+		Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 		MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
 				Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
@@ -632,6 +640,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//@formatter:off
 		final I_PP_Product_BOM productBOM = helper.newProductBOM()
 				.product(pSalad)
+				.bomVersions(psaladVersions)
 				.uom(uomStuck)
 				.newBOMLine()
 					.product(pFolie).uom(uomMillimeter)

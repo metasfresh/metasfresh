@@ -22,11 +22,9 @@ package de.metas.dunning.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.dunning.DunningDocId;
+import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -35,6 +33,11 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public interface IDunningDAO extends ISingletonService
 {
@@ -147,13 +150,6 @@ public interface IDunningDAO extends ISingletonService
 	Iterator<I_C_Dunning_Candidate> retrieveNotProcessedCandidatesIteratorByLevel(IDunningContext dunningContext, final I_C_DunningLevel dunningLevel);
 
 	/**
-	 *
-	 * @param candidate
-	 * @return true if given candidate is staled
-	 */
-	boolean isStaled(I_C_Dunning_Candidate candidate);
-
-	/**
 	 * Retrieves iterator over all {@link I_C_DunningDoc_Line_Source} that require a write-off.
 	 *
 	 * Candidates suitable for write-off are:
@@ -171,4 +167,8 @@ public interface IDunningDAO extends ISingletonService
 	int deleteNotProcessedCandidates(IDunningContext context, I_C_DunningLevel dunningLevel);
 
 	List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName);
+
+	I_C_DunningDoc getByIdInTrx(@NonNull DunningDocId dunningDocId);
+
+	int deleteTargetObsoleteCandidates(RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery, I_C_DunningLevel dunningLevel);
 }

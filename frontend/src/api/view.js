@@ -1,6 +1,6 @@
-import { post, get, patch, delete as del } from 'axios';
+import axios, { delete as del, get, patch, post } from 'axios';
 
-import { getQueryString, createPatchRequestPayload } from '../utils';
+import { createPatchRequestPayload, getQueryString } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
 
 export function getData({
@@ -203,17 +203,22 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
-/*
- * @method quickActionsRequest
- * @summary Do a request for quick actions
- *
- * @param {string} viewId
- * @param {string} viewProfileId
- * @param {array} selectedIds
- * @param {object} childView
- * @param {object} parentView
- */
-export async function quickActionsRequest({
+/** Fetches all actions to be displayed in top "burger" menu */
+export const allActionsRequest = ({
+  windowId,
+  viewId,
+  selectedIds,
+  childViewId,
+  childViewSelectedIds,
+}) => {
+  return post(`${config.API_URL}/documentView/${windowId}/${viewId}/actions`, {
+    selectedIds,
+    childViewId,
+    childViewSelectedIds,
+  });
+};
+
+export function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
@@ -221,33 +226,32 @@ export async function quickActionsRequest({
   childView,
   parentView,
 }) {
-  let query = null;
-
+  let requestBody;
   if (childView && childView.viewId) {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
-    });
+    };
   } else if (parentView && parentView.viewId) {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
-    });
+    };
   } else {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
-    });
+    };
   }
 
-  return get(`
-    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
-    query ? `?${query}` : ''
-  }`);
+  return post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/quickActions`,
+    requestBody
+  );
 }
 
 /*
@@ -336,7 +340,7 @@ export function patchViewAttributesRequest(
  * @param {number} windowId
  * @param {string} viewId
  * @param {string} rowId
- * @param {attribute} - field name
+ * @param attribute
  */
 export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   return get(
@@ -368,3 +372,35 @@ export function getViewAttributeTypeahead(
     query
   )}`);
 }
+
+export const getViewFilterParameterDropdown = ({
+  windowId,
+  viewId,
+  filterId,
+  parameterName,
+  context = {},
+}) => {
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/dropdown`,
+    {
+      context,
+    }
+  );
+};
+
+export const getViewFilterParameterTypeahead = ({
+  windowId,
+  viewId,
+  filterId,
+  parameterName,
+  query,
+  context = {},
+}) => {
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/typeahead`,
+    {
+      query: query,
+      context,
+    }
+  );
+};

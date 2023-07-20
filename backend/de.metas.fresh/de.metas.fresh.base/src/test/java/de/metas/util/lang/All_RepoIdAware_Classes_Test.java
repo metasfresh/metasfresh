@@ -6,8 +6,15 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.banking.PaySelectionLineId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
+import de.metas.costrevaluation.CostRevaluationDetailId;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.invoice.InvoiceVerificationRunId;
+import de.metas.project.budget.BudgetProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.undertest.WOProjectObjectUnderTestId;
+import de.metas.requisition.RequisitionId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.util.Check;
@@ -53,14 +60,21 @@ import java.util.stream.Stream;
  * #L%
  */
 
+@SuppressWarnings("NewClassNamingConvention")
 public class All_RepoIdAware_Classes_Test
 {
 	private static final SkipRules skipRules = new SkipRules()
 			.skip(de.metas.bpartner.BPartnerLocationId.class)
 			.skip(de.metas.bpartner.BPartnerContactId.class)
 			.skip(de.metas.bpartner.BPartnerBankAccountId.class)
+			.skip(de.metas.bpartner.user.role.UserAssignedRoleId.class)
+			//
+			.skip(de.metas.contracts.commission.licensefee.model.LicenseFeeSettingsLineId.class)
+			.skip(de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId.class)
+			.skip(de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLineId.class)
 			//
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
+			.skip(de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId.class)
 			//
 			.skip(de.metas.invoice.InvoiceLineId.class)
 			//
@@ -87,12 +101,18 @@ public class All_RepoIdAware_Classes_Test
 			//
 			.skip(ExternalSystemOtherConfigId.class)
 			//
-			.skip(de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId.class)
+			.skip(MediatedCommissionSettingsLineId.class)//
+			.skip(BudgetProjectResourceId.class)
+			.skip(WOProjectResourceId.class)
+			.skip(WOProjectStepId.class)
+			.skip(WOProjectObjectUnderTestId.class)
 			//
-			.skip(MediatedCommissionSettingsLineId.class)
+			.skip(CostRevaluationLineId.class)
+			.skip(CostRevaluationDetailId.class)
 			//
 			.skip(PaySelectionLineId.class)
 			//
+			.skip(RequisitionId.class)
 			;
 
 	private static ObjectMapper jsonMapper;
@@ -162,6 +182,11 @@ public class All_RepoIdAware_Classes_Test
 
 		public boolean isSkip(@NonNull final Class<? extends RepoIdAware> repoIdClass)
 		{
+			if (repoIdClass.getAnnotation(RepoIdAwares.SkipTest.class) != null)
+			{
+				return true;
+			}
+
 			final String className = repoIdClass.getName();
 
 			return classNames.contains(className);
@@ -197,6 +222,8 @@ public class All_RepoIdAware_Classes_Test
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 																	.addUrls(ClasspathHelper.forClassLoader())
+																	//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+																	.forPackages("de")
 																	.setScanners(new SubTypesScanner()));
 
 			final Set<Class<? extends RepoIdAware>> classes = reflections.getSubTypesOf(RepoIdAware.class);

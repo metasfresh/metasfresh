@@ -1,11 +1,5 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InventoryLine;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -16,6 +10,12 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InventoryLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -41,8 +41,8 @@ import de.metas.util.Services;
 
 public class DocLine_Inventory extends DocLine<Doc_Inventory>
 {
-
-	private BigDecimal costPrice = BigDecimal.ZERO;
+	@Nullable
+	private BigDecimal explicitCostPriceBD;
 
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{
@@ -52,7 +52,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		BigDecimal qtyInternalUse = inventoryLine.getQtyInternalUse();
 		if (qtyInternalUse.signum() != 0)
 		{
-			qty = qtyInternalUse.negate();		// Internal Use entered positive
+			qty = qtyInternalUse.negate();        // Internal Use entered positive
 		}
 		else
 		{
@@ -62,15 +62,15 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		}
 
 		// calculate the cost price considering qty in inventory UOM
-		if (qty.signum() > 0)
+		if (inventoryLine.isExplicitCostPrice())
 		{
-			this.costPrice = inventoryLine.getCostPrice().multiply(qty);
+			this.explicitCostPriceBD = inventoryLine.getCostPrice();
 		}
-		else if(qty.signum() == 0)
+		else
 		{
-			this.costPrice = inventoryLine.getCostPrice();
+			explicitCostPriceBD = null;
 		}
-		
+
 		setQty(getQuantityInStockingUOM(qty, inventoryLine.getC_UOM_ID()), false);
 
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());
@@ -81,33 +81,34 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
-					.date(getDateAcct())
-					.build())
-					.getTotalAmountToPost(as);
+															  .acctSchemaId(as.getId())
+															  .reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+															  .initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
+															  .date(getDateAcctAsInstant())
+															  .build())
+					.getTotalAmountToPost(as).getMainAmt();
 		}
 		else
 		{
 			return services.createCostDetail(
-					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getId())
-							.clientId(getClientId())
-							.orgId(getOrgId())
-							.productId(getProductId())
-							.attributeSetInstanceId(getAttributeSetInstanceId())
-							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
-							.qty(getQty())
-							.amt(CostAmount.of(this.costPrice, as.getCurrencyId()))
-							.date(getDateAcct())
-							.build())
-					.getTotalAmountToPost(as);
+							CostDetailCreateRequest.builder()
+									.acctSchemaId(as.getId())
+									.clientId(getClientId())
+									.orgId(getOrgId())
+									.productId(getProductId())
+									.attributeSetInstanceId(getAttributeSetInstanceId())
+									.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+									.qty(getQty())
+									.amt(CostAmount.zero(as.getCurrencyId()))
+									.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
+									.date(getDateAcctAsInstant())
+									.build())
+					.getTotalAmountToPost(as).getMainAmt();
 		}
 	}
 
 	/**
-	 * @param qty inventory quantity
+	 * @param qty            inventory quantity
 	 * @param inventoryUOMId UOM used for the inventory process
 	 * @return inventory quantity in the unit of measurement used for stocking.
 	 */

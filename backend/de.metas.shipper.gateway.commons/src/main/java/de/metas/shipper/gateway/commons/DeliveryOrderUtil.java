@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.commons;
 
+import de.metas.common.util.StringUtils;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -7,9 +8,8 @@ import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.location.CountryCode;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.compiere.model.I_C_Location;
 
 /*

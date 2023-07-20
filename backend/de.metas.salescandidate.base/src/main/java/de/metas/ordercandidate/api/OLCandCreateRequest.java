@@ -3,6 +3,7 @@ package de.metas.ordercandidate.api;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
@@ -12,6 +13,8 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -125,6 +128,18 @@ public class OLCandCreateRequest
 
 	BigDecimal qtyItemCapacity;
 
+	ProjectId projectId;
+
+	AssignSalesRepRule assignSalesRepRule;
+
+	BPartnerId salesRepInternalId;
+
+	String bpartnerName;
+	String email;
+	String phone;
+
+	SectionCodeId sectionCodeId;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -170,7 +185,14 @@ public class OLCandCreateRequest
 			@Nullable final String importWarningMessage,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
-			@Nullable final BigDecimal qtyItemCapacity)
+			@Nullable final BigDecimal qtyItemCapacity,
+			@Nullable final ProjectId projectId,
+			@Nullable final AssignSalesRepRule assignSalesRepRule,
+			@Nullable final BPartnerId salesRepInternalId,
+			@Nullable final String bpartnerName,
+			@Nullable final String email,
+			@Nullable final String phone,
+			@Nullable final SectionCodeId sectionCodeId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -229,5 +251,15 @@ public class OLCandCreateRequest
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
 		this.qtyItemCapacity = qtyItemCapacity;
+		this.projectId = projectId;
+
+		this.assignSalesRepRule = CoalesceUtil.coalesceNotNull(assignSalesRepRule, AssignSalesRepRule.CandidateFirst);
+		this.salesRepInternalId = salesRepInternalId;
+
+		this.bpartnerName = bpartnerName;
+		this.email = email;
+		this.phone = phone;
+
+		this.sectionCodeId = sectionCodeId;
 	}
 }

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -52,6 +52,8 @@ public class JsonResponseLocation
 	public static final String REGION = "region";
 	public static final String CITY = "city";
 	public static final String COUNTRY_CODE = "countryCode";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
 	public static final String GLN = "gln";
 	public static final String ACTIVE = "active";
 
@@ -59,17 +61,31 @@ public class JsonResponseLocation
 	public static final String BILL_TO_DEFAULT = "billToDefault";
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
+	public static final String VISITORS_ADDRESS = "visitorsAddress";
 
-	@ApiModelProperty(dataType = "java.lang.Integer")
+	public static final String SETUP_PLACE_NO = "setupPlaceNo";
+	public static final String HANDOVER_LOCATION = "handoverLocation";
+	public static final String REMIT_TO = "remitTo";
+	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
+
+	public static final String VAT_ID = "vatId";
+
+	public static final String EPHEMERAL = "ephemeral";
+	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+
+	public static final String COUNTRY_NAME = "countryName";
+
+	@Schema
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean active;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
+	@Schema(description = "This translates to `C_BPartner_Location.Name`")
 	String name;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
+	@Schema(description = "This translates to `C_BPartner_Location.BPartnerName`")
 	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -99,23 +115,57 @@ public class JsonResponseLocation
 
 	String countryCode;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
+	@JsonInclude(Include.NON_EMPTY)
+	String phone;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email;
+
+	@Schema(nullable = true, description = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	String countryName;
+
+	@Schema()
 	boolean shipTo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema()
 	boolean shipToDefault;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema()
 	boolean billTo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema()
 	boolean billToDefault;
 
+	boolean ephemeral;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String setupPlaceNo;
+
+	@Schema
+	boolean remitTo;
+
+	@Schema
+	boolean visitorsAddress;
+
+	@Schema
+	boolean handoverLocation;
+
+	@Schema
+	boolean replicationLookupDefault;
+
+	@Schema
+	String vatId;
+
+	@Schema
+	String sapPaymentMethod;
+
+	@Schema
+	String sapBPartnerCode;
+
 	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(position = 20) // shall be last
+	@Schema // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)
@@ -136,12 +186,25 @@ public class JsonResponseLocation
 			@JsonProperty(CITY) final String city,
 			@JsonProperty(GLN) final String gln,
 			@JsonProperty(COUNTRY_CODE) @Nullable final String countryCode,
+			@JsonProperty(PHONE) @Nullable final String phone,
+			@JsonProperty(EMAIL) @Nullable final String email,
+			@JsonProperty(COUNTRY_NAME) @Nullable final String countryName,
 			@JsonProperty(SHIP_TO) final boolean shipTo,
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
+			@JsonProperty(EPHEMERAL)  final boolean ephemeral,
+			@JsonProperty(VISITORS_ADDRESS) final boolean visitorsAddress,
 
-			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
+			@JsonProperty(SETUP_PLACE_NO) @Nullable final String setupPlaceNo,
+			@JsonProperty(HANDOVER_LOCATION)  final boolean handoverLocation,
+			@JsonProperty(REMIT_TO)  final boolean remitTo,
+			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
+
+			@JsonProperty(VAT_ID) @Nullable final String vatId,
+			@JsonProperty(SAP_PAYMENT_METHOD) @Nullable final String sapPaymentMethod,
+			@JsonProperty(SAP_BPARTNER_CODE) @Nullable final String sapBPartnerCode,
+			@JsonProperty("changeInfo") @Nullable final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
@@ -163,11 +226,26 @@ public class JsonResponseLocation
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+		this.phone = phone;
+		this.email = email;
+		this.countryName = countryName;
 
 		this.billToDefault = billToDefault;
 		this.billTo = billTo;
 		this.shipToDefault = shipToDefault;
 		this.shipTo = shipTo;
+		this.visitorsAddress = visitorsAddress;
+
+		this.setupPlaceNo = setupPlaceNo;
+		this.remitTo = remitTo;
+		this.handoverLocation = handoverLocation;
+		this.replicationLookupDefault = replicationLookupDefault;
+
+		this.vatId = vatId;
+
+		this.ephemeral = ephemeral;
+		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapBPartnerCode = sapBPartnerCode;
 
 		this.changeInfo = changeInfo;
 	}

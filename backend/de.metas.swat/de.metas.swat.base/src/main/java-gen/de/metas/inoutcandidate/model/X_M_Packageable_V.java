@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -461325559L;
+	private static final long serialVersionUID = -181852005L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -339,6 +339,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_FrameAgrement = "FA";
 	/** Order Call = OC */
 	public static final String DOCSUBTYPE_OrderCall = "OC";
+	/** Mediated = MED */
+	public static final String DOCSUBTYPE_Mediated = "MED";
+	/** RD = RD */
+	public static final String DOCSUBTYPE_RD = "RD";
+	/** Cost Estimate = CE */
+	public static final String DOCSUBTYPE_CostEstimate = "CE";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -554,6 +560,21 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getOrderDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_OrderDocumentNo);
+	}
+
+	@Override
+	public void setPackTo_HU_PI_Item_Product_ID (final int PackTo_HU_PI_Item_Product_ID)
+	{
+		if (PackTo_HU_PI_Item_Product_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PackTo_HU_PI_Item_Product_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PackTo_HU_PI_Item_Product_ID, PackTo_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getPackTo_HU_PI_Item_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PackTo_HU_PI_Item_Product_ID);
 	}
 
 	@Override

@@ -16,11 +16,16 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimitCreateRequest;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -30,8 +35,13 @@ import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.title.TitleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -47,6 +57,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
@@ -91,18 +102,24 @@ import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 final class BPartnerCompositeSaver
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerBL bpartnerBL;
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBPartnerBL bpartnerBL;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	BPartnerCompositeSaver(
-			@NonNull final IBPartnerBL bpartnerBL)
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
-	public void save(@NonNull final BPartnerComposite bpartnerComposite)
+	/**
+	 * @param validatePermissions Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org.
+	 */
+	public void save(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
 		final ImmutableList<ITranslatableString> validateResult = bpartnerComposite.validate();
 
@@ -120,22 +137,34 @@ final class BPartnerCompositeSaver
 		}
 
 		final BPartner bpartner = bpartnerComposite.getBpartner();
+
+		final BPartnerSaveRequest request = BPartnerSaveRequest.builder()
+				.bpartner(bpartner)
+				.orgId(bpartnerComposite.getOrgId())
+				.validatePermissions(validatePermissions)
+				.build();
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
 		{
-			saveBPartner(bpartner, bpartnerComposite.getOrgId());
+			saveBPartner(request);
 		}
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
 		{
-			saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations(), bpartnerComposite.getOrgId());
+			saveBPartnerLocations(bpartnerComposite, validatePermissions);
 
-			saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts(), bpartnerComposite.getOrgId());
+			saveBPartnerContacts(bpartnerComposite, validatePermissions);
 
-			saveBPartnerBankAccounts(bpartner.getId(), bpartnerComposite.getBankAccounts(), bpartnerComposite.getOrgId());
+			saveBPartnerBankAccounts(bpartnerComposite, validatePermissions);
+
+			saveBPartnerCreditLimits(bpartnerComposite, validatePermissions);
 		}
 	}
 
-	private void saveBPartner(@NonNull final BPartner bpartner, @Nullable final OrgId orgId)
+	private void saveBPartner(@NonNull final BPartnerSaveRequest request)
 	{
+		final BPartner bpartner = request.getBpartner();
+		final OrgId orgId = request.getOrgId();
+		final boolean validatePermissions = request.isValidatePermissions();
+
 		final I_C_BPartner bpartnerRecord = loadOrNew(bpartner.getId(), I_C_BPartner.class);
 		bpartnerRecord.setIsActive(bpartner.isActive());
 
@@ -178,9 +207,14 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
-		if (bpartner.getInvoiceRule() != null)
+		if (bpartner.getCustomerInvoiceRule() != null)
 		{
-			bpartnerRecord.setInvoiceRule(bpartner.getInvoiceRule().getCode());
+			bpartnerRecord.setInvoiceRule(bpartner.getCustomerInvoiceRule().getCode());
+		}
+
+		if (bpartner.getVendorInvoiceRule() != null)
+		{
+			bpartnerRecord.setPO_InvoiceRule(bpartner.getVendorInvoiceRule().getCode());
 		}
 
 		bpartnerRecord.setVATaxID(bpartner.getVatId());
@@ -214,7 +248,45 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
-		assertCanCreateOrUpdate(bpartnerRecord);
+		if(bpartner.getPaymentRule() != null)
+		{
+			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
+		}
+		if(bpartner.getPaymentRulePO() != null)
+		{
+			bpartnerRecord.setPaymentRulePO(bpartner.getPaymentRulePO().getCode());
+		}
+		if(bpartner.getSoDocTypeTargetId() != null)
+		{
+			bpartnerRecord.setSO_DocTypeTarget_ID(DocTypeId.toRepoId(bpartner.getSoDocTypeTargetId()));
+		}
+		if(bpartner.getFirstName() != null)
+		{
+			bpartnerRecord.setFirstname(bpartner.getFirstName());
+		}
+		if (bpartner.getLastName() != null)
+		{
+			bpartnerRecord.setLastname(bpartner.getLastName());
+		}
+
+		if (validatePermissions)
+		{
+			assertCanCreateOrUpdate(bpartnerRecord);
+		}
+
+		bpartnerRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(bpartner.getSectionCodeId()));
+		bpartnerRecord.setDescription(bpartner.getDescription());
+		bpartnerRecord.setDeliveryRule(DeliveryRule.toCodeOrNull(bpartner.getDeliveryRule()));
+		bpartnerRecord.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner.getDeliveryViaRule()));
+		bpartnerRecord.setIsStorageWarehouse(bpartner.isStorageWarehouse());
+		bpartnerRecord.setC_Incoterms_Customer_ID(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId()));
+		bpartnerRecord.setC_Incoterms_Vendor_ID(IncotermsId.toRepoId(bpartner.getIncotermsVendorId()));
+		bpartnerRecord.setSection_Group_Partner_ID(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId()));
+		bpartnerRecord.setIsProspect(bpartner.isProspect());
+		bpartnerRecord.setSAP_BPartnerCode(bpartner.getSapBPartnerCode());
+		bpartnerRecord.setIsSectionGroupPartner(bpartner.isSectionGroupPartner());
+		bpartnerRecord.setIsSectionPartner(bpartner.isSectionPartner());
+
 		saveRecord(bpartnerRecord);
 
 		//
@@ -224,15 +296,24 @@ final class BPartnerCompositeSaver
 		bpartner.setCompany(bpartnerRecord.isCompany());
 	}
 
-	private void saveBPartnerLocations(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final List<BPartnerLocation> bpartnerLocations,
-			@Nullable final OrgId orgId)
+	private void saveBPartnerLocations(@NonNull final BPartnerComposite bPartnerComposite, final boolean validatePermissions)
 	{
+		final List<BPartnerLocation> bpartnerLocations = bPartnerComposite.getLocations();
+		final BPartnerId bpartnerId = bPartnerComposite.getBpartner().getId();
+
+		final OrgId orgId = bPartnerComposite.getOrgId();
+
 		final ArrayList<BPartnerLocationId> savedBPartnerLocationIds = new ArrayList<>();
 		for (final BPartnerLocation bPartnerLocation : bpartnerLocations)
 		{
-			saveBPartnerLocation(bpartnerId, bPartnerLocation, orgId);
+			final BPartnerLocationSaveRequest request = BPartnerLocationSaveRequest.builder()
+					.location(bPartnerLocation)
+					.bpartnerId(bpartnerId)
+					.orgId(orgId)
+					.validatePermissions(validatePermissions)
+					.build();
+
+			saveBPartnerLocation(request);
 			savedBPartnerLocationIds.add(bPartnerLocation.getId());
 		}
 
@@ -250,29 +331,42 @@ final class BPartnerCompositeSaver
 				.update(columnUpdater);
 	}
 
-	private void saveBPartnerLocation(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerLocation bpartnerLocation,
-			@Nullable final OrgId orgId)
+	private void saveBPartnerLocation(@NonNull final BPartnerLocationSaveRequest request)
 	{
-		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_Location.Table_Name, bpartnerLocation.getId()))
+		final BPartnerLocation partnerLocation = request.getLocation();
+		final BPartnerLocationId partnerLocationId = partnerLocation.getId();
+		final OrgId orgId = request.getOrgId();
+		final boolean validatePermissions = request.isValidatePermissions();
+
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_Location.Table_Name, partnerLocationId))
 		{
-			final I_C_BPartner_Location bpartnerLocationRecord = loadOrNew(bpartnerLocation.getId(), I_C_BPartner_Location.class);
+			final I_C_BPartner_Location bpartnerLocationRecord = loadOrNew(partnerLocationId, I_C_BPartner_Location.class);
 			if (orgId != null)
 			{
 				bpartnerLocationRecord.setAD_Org_ID(orgId.getRepoId());
 			}
 
-			bpartnerLocationRecord.setExternalId(ExternalId.toValue(bpartnerLocation.getExternalId()));
-			bpartnerLocationRecord.setGLN(GLN.toCode(bpartnerLocation.getGln()));
+			bpartnerLocationRecord.setExternalId(ExternalId.toValue(partnerLocation.getExternalId()));
+			bpartnerLocationRecord.setGLN(GLN.toCode(partnerLocation.getGln()));
 			// bpartnerLocation.getId() // id is only for lookup and won't be updated later
 
-			bpartnerLocationRecord.setIsActive(bpartnerLocation.isActive());
-			bpartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-			bpartnerLocationRecord.setName(bpartnerLocation.getName());
-			bpartnerLocationRecord.setBPartnerName(bpartnerLocation.getBpartnerName());
+			bpartnerLocationRecord.setIsActive(partnerLocation.isActive());
+			bpartnerLocationRecord.setC_BPartner_ID(request.getBpartnerId().getRepoId());
+			bpartnerLocationRecord.setName(partnerLocation.getName());
+			bpartnerLocationRecord.setBPartnerName(partnerLocation.getBpartnerName());
 
-			final BPartnerLocationType locationType = bpartnerLocation.getLocationType();
+			bpartnerLocationRecord.setPhone(partnerLocation.getPhone());
+			bpartnerLocationRecord.setPhone2(partnerLocation.getMobile());
+			bpartnerLocationRecord.setFax(partnerLocation.getFax());
+			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
+
+			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
+			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
+			bpartnerLocationRecord.setIsRemitTo(partnerLocation.isRemitTo());
+			bpartnerLocationRecord.setVisitorsAddress(partnerLocation.isVisitorsAddress());
+			bpartnerLocationRecord.setIsReplicationLookupDefault(partnerLocation.isReplicationLookupDefault());
+
+			final BPartnerLocationType locationType = partnerLocation.getLocationType();
 			if (locationType != null)
 			{
 				locationType.getBillTo().ifPresent(bpartnerLocationRecord::setIsBillTo);
@@ -281,21 +375,32 @@ final class BPartnerCompositeSaver
 				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
 			}
 
-			final BPartnerLocationAddressPart address = saveLocationRecord(bpartnerLocation);
+			final BPartnerLocationAddressPart address = saveLocationRecord(partnerLocation);
 			bpartnerLocationRecord.setC_Location_ID(address.getExistingLocationId().getRepoId());
 
 			bpartnerBL.setAddress(bpartnerLocationRecord);
 
-			assertCanCreateOrUpdate(bpartnerLocationRecord);
+			if (validatePermissions)
+			{
+				assertCanCreateOrUpdate(bpartnerLocationRecord);
+			}
 
-			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerLocation.getOrgMappingId()));
+			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(partnerLocation.getOrgMappingId()));
+
+			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
+
+			bpartnerLocationRecord.setVATaxID(partnerLocation.getVatTaxId());
+			bpartnerLocationRecord.setSAP_PaymentMethod(partnerLocation.getSapPaymentMethod());
+			bpartnerLocationRecord.setSAP_BPartnerCode(partnerLocation.getSapBPartnerCode());
+
 			saveRecord(bpartnerLocationRecord);
 
 			//
 			// Update model from saved record:
-			bpartnerLocation.setId(BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()));
-			bpartnerLocation.setLocationType(BPartnerCompositesLoader.extractBPartnerLocationType(bpartnerLocationRecord));
-			bpartnerLocation.setFromAddress(address);
+			partnerLocation.setId(BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()));
+			partnerLocation.setLocationType(BPartnerCompositesLoader.extractBPartnerLocationType(bpartnerLocationRecord));
+			partnerLocation.setFromAddress(address);
+
 		}
 	}
 
@@ -432,15 +537,24 @@ final class BPartnerCompositeSaver
 		}
 	}
 
-	private void saveBPartnerContacts(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final List<BPartnerContact> contacts,
-			@Nullable final OrgId orgId)
+	private void saveBPartnerContacts(@NonNull final BPartnerComposite bPartnerComposite, final boolean validatePermissions)
 	{
 		final ArrayList<BPartnerContactId> savedBPartnerContactIds = new ArrayList<>();
+		final List<BPartnerContact> contacts = bPartnerComposite.getContacts();
+		final BPartnerId bpartnerId = bPartnerComposite.getBpartner().getId();
+
+		final OrgId orgId = bPartnerComposite.getOrgId();
+
 		for (final BPartnerContact bpartnerContact : contacts)
 		{
-			saveBPartnerContact(bpartnerId, bpartnerContact, orgId);
+			final BPartnerContactSaveRequest bpContactSaveRequest = BPartnerContactSaveRequest.builder()
+					.contact(bpartnerContact)
+					.bpartnerId(bpartnerId)
+					.orgId(orgId)
+					.validatePermissions(validatePermissions)
+					.build();
+
+			saveBPartnerContact(bpContactSaveRequest);
 			savedBPartnerContactIds.add(bpartnerContact.getId());
 		}
 
@@ -456,14 +570,17 @@ final class BPartnerCompositeSaver
 				.update(columnUpdater);
 	}
 
-	private void saveBPartnerContact(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerContact bpartnerContact,
-			@Nullable final OrgId orgId)
+	private void saveBPartnerContact(@NonNull final BPartnerContactSaveRequest request)
 	{
-		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_AD_User.Table_Name, bpartnerContact.getId()))
+		final BPartnerContact bpartnerContact = request.getContact();
+		final BPartnerContactId bpContactId = bpartnerContact.getId();
+		final OrgId orgId = request.getOrgId();
+		final BPartnerId bpartnerId = request.getBpartnerId();
+		final boolean validatePermissions = request.isValidatePermissions();
+
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_AD_User.Table_Name, bpContactId))
 		{
-			final I_AD_User bpartnerContactRecord = loadOrNew(bpartnerContact.getId(), I_AD_User.class);
+			final I_AD_User bpartnerContactRecord = loadOrNew(bpContactId, I_AD_User.class);
 
 			if (orgId != null)
 			{
@@ -497,8 +614,10 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setDescription(bpartnerContact.getDescription());
 
 			bpartnerContactRecord.setPhone(bpartnerContact.getPhone());
+			bpartnerContactRecord.setPhone2(bpartnerContact.getPhone2());
 			bpartnerContactRecord.setFax(bpartnerContact.getFax());
 			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
+			bpartnerContactRecord.setTitle(bpartnerContact.getTitle());
 
 			String invoiceEmailEnabled = null;
 
@@ -510,13 +629,19 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
+			bpartnerContactRecord.setC_Title_ID(TitleId.toRepoIdOr(bpartnerContact.getTitleId(), 0));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
 
 			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));
 			bpartnerContactRecord.setC_BPartner_Location_ID(bpartnerContact.getBPartnerLocationId() != null ? bpartnerContact.getBPartnerLocationId().getRepoId() : -1);
+			bpartnerContactRecord.setEMail2(bpartnerContact.getEmail2());
+			bpartnerContactRecord.setEMail3(bpartnerContact.getEmail3());
 
-			assertCanCreateOrUpdate(bpartnerContactRecord);
+			if (validatePermissions)
+			{
+				assertCanCreateOrUpdate(bpartnerContactRecord);
+			}
 			saveRecord(bpartnerContactRecord);
 
 			//
@@ -526,29 +651,39 @@ final class BPartnerCompositeSaver
 		}
 	}
 
-	private void saveBPartnerBankAccounts(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final List<BPartnerBankAccount> bankAccounts,
-			@Nullable final OrgId orgId)
+	private void saveBPartnerBankAccounts(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
 		final ArrayList<BPartnerBankAccountId> savedBPBankAccountIds = new ArrayList<>();
+
+		final List<BPartnerBankAccount> bankAccounts = bpartnerComposite.getBankAccounts();
+		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
+		final OrgId orgId = bpartnerComposite.getOrgId();
+
 		for (final BPartnerBankAccount bankAccount : bankAccounts)
 		{
-			saveBPartnerBankAccount(bpartnerId, bankAccount, orgId);
+			final BPartnerBankAccountsSaveRequest request = BPartnerBankAccountsSaveRequest.builder()
+					.bpartnerId(bpartnerId)
+					.orgId(orgId)
+					.bankAccount(bankAccount)
+					.validatePermissions(validatePermissions)
+					.build();
+
+			saveBPartnerBankAccount(request);
 			savedBPBankAccountIds.add(bankAccount.getId());
 		}
 
 		bpBankAccountsDAO.deactivateIBANAccountsByBPartnerExcept(bpartnerId, savedBPBankAccountIds);
 	}
 
-	private void saveBPartnerBankAccount(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerBankAccount bankAccount,
-			@Nullable final OrgId orgId)
+	private void saveBPartnerBankAccount(@NonNull final BPartnerBankAccountsSaveRequest request)
 	{
+		final BPartnerBankAccount bankAccount = request.getBankAccount();
+		final OrgId orgId = request.getOrgId();
+		final BPartnerId bpartnerId = request.getBpartnerId();
+		final boolean validatePermissions = request.isValidatePermissions();
+
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BP_BankAccount.Table_Name, bankAccount.getId()))
 		{
-
 			final I_C_BP_BankAccount record = loadOrNew(bankAccount.getId(), I_C_BP_BankAccount.class);
 
 			if (orgId != null)
@@ -558,17 +693,63 @@ final class BPartnerCompositeSaver
 			record.setC_BPartner_ID(bpartnerId.getRepoId());
 
 			record.setIBAN(bankAccount.getIban());
+			record.setSwiftCode(bankAccount.getSwiftCode());
 			record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
 			record.setIsActive(bankAccount.isActive());
 
 			record.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bankAccount.getOrgMappingId()));
 
-			assertCanCreateOrUpdate(record);
+			if (validatePermissions)
+			{
+				assertCanCreateOrUpdate(record);
+			}
 			saveRecord(record);
 
 			final BPartnerBankAccountId id = BPartnerBankAccountId.ofRepoId(bpartnerId, record.getC_BP_BankAccount_ID());
 
 			bankAccount.setId(id);
+		}
+	}
+
+	private void saveBPartnerCreditLimits(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
+	{
+		final List<BPartnerCreditLimit> creditLimits = bpartnerComposite.getCreditLimits();
+		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
+		final OrgId orgId = bpartnerComposite.getOrgId();
+
+		final ImmutableList.Builder<BPartnerCreditLimitId> savedBPCreditLimitIds = new ImmutableList.Builder<>();
+		for (final BPartnerCreditLimit creditLimit : creditLimits)
+		{
+			final BPartnerCreditLimitCreateRequest request = BPartnerCreditLimitCreateRequest.builder()
+					.bpartnerId(bpartnerId)
+					.orgId(orgId)
+					.creditLimit(creditLimit)
+					.validatePermissions(validatePermissions ? this::assertCanCreateOrUpdate : null)
+					.build();
+
+			final BPartnerCreditLimitId storedCreditLimitId = saveBPartnerCreditLimit(request);
+
+			savedBPCreditLimitIds.add(storedCreditLimitId);
+		}
+
+		bPartnerCreditLimitRepository.deactivateCreditLimitsByBPartnerExcept(bpartnerId, savedBPCreditLimitIds.build());
+	}
+
+	@NonNull
+	private BPartnerCreditLimitId saveBPartnerCreditLimit(@NonNull final BPartnerCreditLimitCreateRequest bpartnerCreditLimitCreateRequest)
+	{
+		final BPartnerCreditLimit creditLimit = bpartnerCreditLimitCreateRequest.getCreditLimit();
+
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_CreditLimit.Table_Name, creditLimit.getId()))
+		{
+			final BPartnerCreditLimit storedCreditLimit = bPartnerCreditLimitRepository.createOrUpdate(bpartnerCreditLimitCreateRequest);
+
+			Check.assumeNotNull(storedCreditLimit.getId(), "Id cannot be null as BPartnerCreditLimit was just stored!");
+
+			//dev-note: just to please the BPartnerComposite which excepts to have all the records updated after saving
+			creditLimit.setId(storedCreditLimit.getId());
+
+			return storedCreditLimit.getId();
 		}
 	}
 
@@ -583,5 +764,4 @@ final class BPartnerCompositeSaver
 				.createPermissionService()
 				.assertCanCreateOrUpdate(record);
 	}
-
 }

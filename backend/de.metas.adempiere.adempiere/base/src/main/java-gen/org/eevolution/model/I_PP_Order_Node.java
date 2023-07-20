@@ -1,147 +1,119 @@
 package org.eevolution.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order_Node
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_PP_Order_Node 
 {
 
-    /** TableName=PP_Order_Node */
-    public static final String Table_Name = "PP_Order_Node";
+	String Table_Name = "PP_Order_Node";
 
-    /** AD_Table_ID=53022 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=53022 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Knoten.
-	 * Workflow Node (activity), step or process
+	 * Set Start Node.
+	 * Workflow Node, step or process
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID);
+	void setAD_WF_Node_ID (int AD_WF_Node_ID);
 
 	/**
-	 * Get Knoten.
-	 * Workflow Node (activity), step or process
+	 * Get Start Node.
+	 * Workflow Node, step or process
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_WF_Node_ID();
+	int getAD_WF_Node_ID();
 
-	public org.compiere.model.I_AD_WF_Node getAD_WF_Node();
-
-	public void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node);
-
-    /** Column definition for AD_WF_Node_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_WF_Node> COLUMN_AD_WF_Node_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_WF_Node>(I_PP_Order_Node.class, "AD_WF_Node_ID", org.compiere.model.I_AD_WF_Node.class);
-    /** Column name AD_WF_Node_ID */
-    public static final String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
+	String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
 
 	/**
-	 * Set Workflow Steps Template.
+	 * Set Workflow Steps Template (ID).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID);
+	void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID);
 
 	/**
-	 * Get Workflow Steps Template.
+	 * Get Workflow Steps Template (ID).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_WF_Node_Template_ID();
+	int getAD_WF_Node_Template_ID();
 
-	public org.compiere.model.I_AD_WF_Node_Template getAD_WF_Node_Template();
-
-	public void setAD_WF_Node_Template(org.compiere.model.I_AD_WF_Node_Template AD_WF_Node_Template);
-
-    /** Column definition for AD_WF_Node_Template_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_WF_Node_Template> COLUMN_AD_WF_Node_Template_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_WF_Node_Template>(I_PP_Order_Node.class, "AD_WF_Node_Template_ID", org.compiere.model.I_AD_WF_Node_Template.class);
-    /** Column name AD_WF_Node_Template_ID */
-    public static final String COLUMNNAME_AD_WF_Node_Template_ID = "AD_WF_Node_Template_ID";
+	String COLUMNNAME_AD_WF_Node_Template_ID = "AD_WF_Node_Template_ID";
 
 	/**
-	 * Set Workflow - Verantwortlicher.
+	 * Set Workflow Responsible.
 	 * Responsible for Workflow Execution
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
+	void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
 
 	/**
-	 * Get Workflow - Verantwortlicher.
+	 * Get Workflow Responsible.
 	 * Responsible for Workflow Execution
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_WF_Responsible_ID();
+	int getAD_WF_Responsible_ID();
 
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
-
-	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible);
-
-    /** Column definition for AD_WF_Responsible_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_WF_Responsible> COLUMN_AD_WF_Responsible_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_WF_Responsible>(I_PP_Order_Node.class, "AD_WF_Responsible_ID", org.compiere.model.I_AD_WF_Responsible.class);
-    /** Column name AD_WF_Responsible_ID */
-    public static final String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
+	String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
 
 	/**
 	 * Set Workflow.
@@ -151,7 +123,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Workflow_ID (int AD_Workflow_ID);
+	void setAD_Workflow_ID (int AD_Workflow_ID);
 
 	/**
 	 * Get Workflow.
@@ -161,232 +133,210 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Workflow_ID();
+	int getAD_Workflow_ID();
 
-	public org.compiere.model.I_AD_Workflow getAD_Workflow();
-
-	public void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow);
-
-    /** Column definition for AD_Workflow_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_Workflow> COLUMN_AD_Workflow_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_AD_Workflow>(I_PP_Order_Node.class, "AD_Workflow_ID", org.compiere.model.I_AD_Workflow.class);
-    /** Column name AD_Workflow_ID */
-    public static final String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
+	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Created = new ModelColumn<>(I_PP_Order_Node.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Projektabschluss.
+	 * Set Date planned finished.
 	 * Finish or (planned) completion date
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateFinish (java.sql.Timestamp DateFinish);
+	void setDateFinish (@Nullable java.sql.Timestamp DateFinish);
 
 	/**
-	 * Get Projektabschluss.
+	 * Get Date planned finished.
 	 * Finish or (planned) completion date
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateFinish();
+	@Nullable java.sql.Timestamp getDateFinish();
 
-    /** Column definition for DateFinish */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_DateFinish = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "DateFinish", null);
-    /** Column name DateFinish */
-    public static final String COLUMNNAME_DateFinish = "DateFinish";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_DateFinish = new ModelColumn<>(I_PP_Order_Node.class, "DateFinish", null);
+	String COLUMNNAME_DateFinish = "DateFinish";
 
 	/**
-	 * Set DateFinishSchedule.
+	 * Set Date Finish Schedule.
+	 * Scheduled Finish date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateFinishSchedule (java.sql.Timestamp DateFinishSchedule);
+	void setDateFinishSchedule (@Nullable java.sql.Timestamp DateFinishSchedule);
 
 	/**
-	 * Get DateFinishSchedule.
+	 * Get Date Finish Schedule.
+	 * Scheduled Finish date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateFinishSchedule();
+	@Nullable java.sql.Timestamp getDateFinishSchedule();
 
-    /** Column definition for DateFinishSchedule */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_DateFinishSchedule = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "DateFinishSchedule", null);
-    /** Column name DateFinishSchedule */
-    public static final String COLUMNNAME_DateFinishSchedule = "DateFinishSchedule";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_DateFinishSchedule = new ModelColumn<>(I_PP_Order_Node.class, "DateFinishSchedule", null);
+	String COLUMNNAME_DateFinishSchedule = "DateFinishSchedule";
 
 	/**
-	 * Set DateStart.
+	 * Set Start Date.
+	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateStart (java.sql.Timestamp DateStart);
+	void setDateStart (@Nullable java.sql.Timestamp DateStart);
 
 	/**
-	 * Get DateStart.
+	 * Get Start Date.
+	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateStart();
+	@Nullable java.sql.Timestamp getDateStart();
 
-    /** Column definition for DateStart */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_DateStart = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "DateStart", null);
-    /** Column name DateStart */
-    public static final String COLUMNNAME_DateStart = "DateStart";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_DateStart = new ModelColumn<>(I_PP_Order_Node.class, "DateStart", null);
+	String COLUMNNAME_DateStart = "DateStart";
 
 	/**
-	 * Set DateStartSchedule.
+	 * Set Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateStartSchedule (java.sql.Timestamp DateStartSchedule);
+	void setDateStartSchedule (@Nullable java.sql.Timestamp DateStartSchedule);
 
 	/**
-	 * Get DateStartSchedule.
+	 * Get Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateStartSchedule();
+	@Nullable java.sql.Timestamp getDateStartSchedule();
 
-    /** Column definition for DateStartSchedule */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_DateStartSchedule = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "DateStartSchedule", null);
-    /** Column name DateStartSchedule */
-    public static final String COLUMNNAME_DateStartSchedule = "DateStartSchedule";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_DateStartSchedule = new ModelColumn<>(I_PP_Order_Node.class, "DateStartSchedule", null);
+	String COLUMNNAME_DateStartSchedule = "DateStartSchedule";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Description = new ModelColumn<>(I_PP_Order_Node.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocStatus (java.lang.String DocStatus);
+	void setDocStatus (@Nullable java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocStatus();
+	@Nullable java.lang.String getDocStatus();
 
-    /** Column definition for DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "DocStatus", null);
-    /** Column name DocStatus */
-    public static final String COLUMNNAME_DocStatus = "DocStatus";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_DocStatus = new ModelColumn<>(I_PP_Order_Node.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Duration.
@@ -396,7 +346,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDuration (int Duration);
+	void setDuration (int Duration);
 
 	/**
 	 * Get Duration.
@@ -406,12 +356,10 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDuration();
+	int getDuration();
 
-    /** Column definition for Duration */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_Duration = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "Duration", null);
-    /** Column name Duration */
-    public static final String COLUMNNAME_Duration = "Duration";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Duration = new ModelColumn<>(I_PP_Order_Node.class, "Duration", null);
+	String COLUMNNAME_Duration = "Duration";
 
 	/**
 	 * Set Duration Real.
@@ -420,7 +368,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDurationReal (int DurationReal);
+	void setDurationReal (int DurationReal);
 
 	/**
 	 * Get Duration Real.
@@ -429,60 +377,54 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDurationReal();
+	int getDurationReal();
 
-    /** Column definition for DurationReal */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_DurationReal = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "DurationReal", null);
-    /** Column name DurationReal */
-    public static final String COLUMNNAME_DurationReal = "DurationReal";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_DurationReal = new ModelColumn<>(I_PP_Order_Node.class, "DurationReal", null);
+	String COLUMNNAME_DurationReal = "DurationReal";
 
 	/**
-	 * Set Duration Requiered.
+	 * Set Duration Required.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDurationRequiered (int DurationRequiered);
+	void setDurationRequiered (int DurationRequiered);
 
 	/**
-	 * Get Duration Requiered.
+	 * Get Duration Required.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDurationRequiered();
+	int getDurationRequiered();
 
-    /** Column definition for DurationRequiered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_DurationRequiered = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "DurationRequiered", null);
-    /** Column name DurationRequiered */
-    public static final String COLUMNNAME_DurationRequiered = "DurationRequiered";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_DurationRequiered = new ModelColumn<>(I_PP_Order_Node.class, "DurationRequiered", null);
+	String COLUMNNAME_DurationRequiered = "DurationRequiered";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_Order_Node.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Is Milestone.
@@ -491,7 +433,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMilestone (boolean IsMilestone);
+	void setIsMilestone (boolean IsMilestone);
 
 	/**
 	 * Get Is Milestone.
@@ -500,12 +442,10 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMilestone();
+	boolean isMilestone();
 
-    /** Column definition for IsMilestone */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_IsMilestone = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "IsMilestone", null);
-    /** Column name IsMilestone */
-    public static final String COLUMNNAME_IsMilestone = "IsMilestone";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_IsMilestone = new ModelColumn<>(I_PP_Order_Node.class, "IsMilestone", null);
+	String COLUMNNAME_IsMilestone = "IsMilestone";
 
 	/**
 	 * Set Is Subcontracting.
@@ -514,7 +454,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSubcontracting (boolean IsSubcontracting);
+	void setIsSubcontracting (boolean IsSubcontracting);
 
 	/**
 	 * Get Is Subcontracting.
@@ -523,12 +463,10 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSubcontracting();
+	boolean isSubcontracting();
 
-    /** Column definition for IsSubcontracting */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_IsSubcontracting = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "IsSubcontracting", null);
-    /** Column name IsSubcontracting */
-    public static final String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_IsSubcontracting = new ModelColumn<>(I_PP_Order_Node.class, "IsSubcontracting", null);
+	String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
 
 	/**
 	 * Set Moving Time.
@@ -537,7 +475,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMovingTime (int MovingTime);
+	void setMovingTime (int MovingTime);
 
 	/**
 	 * Get Moving Time.
@@ -546,12 +484,31 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getMovingTime();
+	int getMovingTime();
 
-    /** Column definition for MovingTime */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_MovingTime = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "MovingTime", null);
-    /** Column name MovingTime */
-    public static final String COLUMNNAME_MovingTime = "MovingTime";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_MovingTime = new ModelColumn<>(I_PP_Order_Node.class, "MovingTime", null);
+	String COLUMNNAME_MovingTime = "MovingTime";
+
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Name = new ModelColumn<>(I_PP_Order_Node.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Overlap Units.
@@ -561,7 +518,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOverlapUnits (int OverlapUnits);
+	void setOverlapUnits (int OverlapUnits);
 
 	/**
 	 * Get Overlap Units.
@@ -571,39 +528,79 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getOverlapUnits();
+	int getOverlapUnits();
 
-    /** Column definition for OverlapUnits */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_OverlapUnits = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "OverlapUnits", null);
-    /** Column name OverlapUnits */
-    public static final String COLUMNNAME_OverlapUnits = "OverlapUnits";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_OverlapUnits = new ModelColumn<>(I_PP_Order_Node.class, "OverlapUnits", null);
+	String COLUMNNAME_OverlapUnits = "OverlapUnits";
 
 	/**
-	 * Set Produktionsauftrag.
+	 * Set Manufacturing Activity Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Activity_Type (java.lang.String PP_Activity_Type);
+
+	/**
+	 * Get Manufacturing Activity Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getPP_Activity_Type();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_PP_Activity_Type = new ModelColumn<>(I_PP_Order_Node.class, "PP_Activity_Type", null);
+	String COLUMNNAME_PP_Activity_Type = "PP_Activity_Type";
+
+	/**
+	 * Set Always available to user.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_AlwaysAvailableToUser (@Nullable java.lang.String PP_AlwaysAvailableToUser);
+
+	/**
+	 * Get Always available to user.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_AlwaysAvailableToUser();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_PP_AlwaysAvailableToUser = new ModelColumn<>(I_PP_Order_Node.class, "PP_AlwaysAvailableToUser", null);
+	String COLUMNNAME_PP_AlwaysAvailableToUser = "PP_AlwaysAvailableToUser";
+
+	/**
+	 * Set Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_ID (int PP_Order_ID);
+	void setPP_Order_ID (int PP_Order_ID);
 
 	/**
-	 * Get Produktionsauftrag.
+	 * Get Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_ID();
+	int getPP_Order_ID();
 
-	public org.eevolution.model.I_PP_Order getPP_Order();
+	org.eevolution.model.I_PP_Order getPP_Order();
 
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
+	void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
 
-    /** Column definition for PP_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, org.eevolution.model.I_PP_Order>(I_PP_Order_Node.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_ID */
-    public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+	ModelColumn<I_PP_Order_Node, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new ModelColumn<>(I_PP_Order_Node.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
 
 	/**
 	 * Set Manufacturing Order Activity.
@@ -613,7 +610,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Node_ID (int PP_Order_Node_ID);
+	void setPP_Order_Node_ID (int PP_Order_Node_ID);
 
 	/**
 	 * Get Manufacturing Order Activity.
@@ -623,12 +620,10 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_Node_ID();
+	int getPP_Order_Node_ID();
 
-    /** Column definition for PP_Order_Node_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_PP_Order_Node_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "PP_Order_Node_ID", null);
-    /** Column name PP_Order_Node_ID */
-    public static final String COLUMNNAME_PP_Order_Node_ID = "PP_Order_Node_ID";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_PP_Order_Node_ID = new ModelColumn<>(I_PP_Order_Node.class, "PP_Order_Node_ID", null);
+	String COLUMNNAME_PP_Order_Node_ID = "PP_Order_Node_ID";
 
 	/**
 	 * Set Manufacturing Order Workflow.
@@ -637,7 +632,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Workflow_ID (int PP_Order_Workflow_ID);
+	void setPP_Order_Workflow_ID (int PP_Order_Workflow_ID);
 
 	/**
 	 * Get Manufacturing Order Workflow.
@@ -646,41 +641,56 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_Workflow_ID();
+	int getPP_Order_Workflow_ID();
 
-	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow();
+	org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow();
 
-	public void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow);
+	void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow);
 
-    /** Column definition for PP_Order_Workflow_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, org.eevolution.model.I_PP_Order_Workflow> COLUMN_PP_Order_Workflow_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, org.eevolution.model.I_PP_Order_Workflow>(I_PP_Order_Node.class, "PP_Order_Workflow_ID", org.eevolution.model.I_PP_Order_Workflow.class);
-    /** Column name PP_Order_Workflow_ID */
-    public static final String COLUMNNAME_PP_Order_Workflow_ID = "PP_Order_Workflow_ID";
+	ModelColumn<I_PP_Order_Node, org.eevolution.model.I_PP_Order_Workflow> COLUMN_PP_Order_Workflow_ID = new ModelColumn<>(I_PP_Order_Node.class, "PP_Order_Workflow_ID", org.eevolution.model.I_PP_Order_Workflow.class);
+	String COLUMNNAME_PP_Order_Workflow_ID = "PP_Order_Workflow_ID";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set User Instructions.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_UserInstructions (@Nullable java.lang.String PP_UserInstructions);
+
+	/**
+	 * Get User Instructions.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_UserInstructions();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_PP_UserInstructions = new ModelColumn<>(I_PP_Order_Node.class, "PP_UserInstructions", null);
+	String COLUMNNAME_PP_UserInstructions = "PP_UserInstructions";
+
+	/**
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
+	void setQtyDelivered (@Nullable BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDelivered();
+	BigDecimal getQtyDelivered();
 
-    /** Column definition for QtyDelivered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "QtyDelivered", null);
-    /** Column name QtyDelivered */
-    public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyDelivered = new ModelColumn<>(I_PP_Order_Node.class, "QtyDelivered", null);
+	String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
 	 * Set Qty Reject.
@@ -689,7 +699,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyReject (java.math.BigDecimal QtyReject);
+	void setQtyReject (@Nullable BigDecimal QtyReject);
 
 	/**
 	 * Get Qty Reject.
@@ -698,112 +708,120 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyReject();
+	BigDecimal getQtyReject();
 
-    /** Column definition for QtyReject */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyReject = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "QtyReject", null);
-    /** Column name QtyReject */
-    public static final String COLUMNNAME_QtyReject = "QtyReject";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyReject = new ModelColumn<>(I_PP_Order_Node.class, "QtyReject", null);
+	String COLUMNNAME_QtyReject = "QtyReject";
 
 	/**
-	 * Set Menge angefragt.
+	 * Set Qty Required.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyRequiered (java.math.BigDecimal QtyRequiered);
+	void setQtyRequiered (@Nullable BigDecimal QtyRequiered);
 
 	/**
-	 * Get Menge angefragt.
+	 * Get Qty Required.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyRequiered();
+	BigDecimal getQtyRequiered();
 
-    /** Column definition for QtyRequiered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyRequiered = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "QtyRequiered", null);
-    /** Column name QtyRequiered */
-    public static final String COLUMNNAME_QtyRequiered = "QtyRequiered";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyRequiered = new ModelColumn<>(I_PP_Order_Node.class, "QtyRequiered", null);
+	String COLUMNNAME_QtyRequiered = "QtyRequiered";
 
 	/**
-	 * Set QtyScrap.
-	 * Scrap Quantity for this componet
+	 * Set Quantity Scrap %.
+	 * Scrap % Quantity for this componet
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyScrap (java.math.BigDecimal QtyScrap);
+	void setQtyScrap (@Nullable BigDecimal QtyScrap);
 
 	/**
-	 * Get QtyScrap.
-	 * Scrap Quantity for this componet
+	 * Get Quantity Scrap %.
+	 * Scrap % Quantity for this componet
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyScrap();
+	BigDecimal getQtyScrap();
 
-    /** Column definition for QtyScrap */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyScrap = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "QtyScrap", null);
-    /** Column name QtyScrap */
-    public static final String COLUMNNAME_QtyScrap = "QtyScrap";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_QtyScrap = new ModelColumn<>(I_PP_Order_Node.class, "QtyScrap", null);
+	String COLUMNNAME_QtyScrap = "QtyScrap";
 
 	/**
 	 * Set Queuing Time.
+	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQueuingTime (int QueuingTime);
+	void setQueuingTime (int QueuingTime);
 
 	/**
 	 * Get Queuing Time.
+	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getQueuingTime();
+	int getQueuingTime();
 
-    /** Column definition for QueuingTime */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_QueuingTime = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "QueuingTime", null);
-    /** Column name QueuingTime */
-    public static final String COLUMNNAME_QueuingTime = "QueuingTime";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_QueuingTime = new ModelColumn<>(I_PP_Order_Node.class, "QueuingTime", null);
+	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
-	 * Set Ressource.
+	 * Set Resource.
 	 * Resource
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Resource_ID (int S_Resource_ID);
+	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
+	 * Get Resource.
 	 * Resource
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Resource_ID();
+	int getS_Resource_ID();
 
-	public org.compiere.model.I_S_Resource getS_Resource();
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+	/**
+	 * Set Scanned QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setScannedQRCode (@Nullable java.lang.String ScannedQRCode);
 
-    /** Column definition for S_Resource_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Node, org.compiere.model.I_S_Resource>(I_PP_Order_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+	/**
+	 * Get Scanned QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getScannedQRCode();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_ScannedQRCode = new ModelColumn<>(I_PP_Order_Node.class, "ScannedQRCode", null);
+	String COLUMNNAME_ScannedQRCode = "ScannedQRCode";
 
 	/**
 	 * Set Setup Time.
@@ -813,7 +831,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSetupTime (int SetupTime);
+	void setSetupTime (int SetupTime);
 
 	/**
 	 * Get Setup Time.
@@ -823,12 +841,10 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSetupTime();
+	int getSetupTime();
 
-    /** Column definition for SetupTime */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTime = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "SetupTime", null);
-    /** Column name SetupTime */
-    public static final String COLUMNNAME_SetupTime = "SetupTime";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTime = new ModelColumn<>(I_PP_Order_Node.class, "SetupTime", null);
+	String COLUMNNAME_SetupTime = "SetupTime";
 
 	/**
 	 * Set Setup Time Real.
@@ -837,7 +853,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSetupTimeReal (int SetupTimeReal);
+	void setSetupTimeReal (int SetupTimeReal);
 
 	/**
 	 * Get Setup Time Real.
@@ -846,88 +862,79 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSetupTimeReal();
+	int getSetupTimeReal();
 
-    /** Column definition for SetupTimeReal */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTimeReal = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "SetupTimeReal", null);
-    /** Column name SetupTimeReal */
-    public static final String COLUMNNAME_SetupTimeReal = "SetupTimeReal";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTimeReal = new ModelColumn<>(I_PP_Order_Node.class, "SetupTimeReal", null);
+	String COLUMNNAME_SetupTimeReal = "SetupTimeReal";
 
 	/**
-	 * Set Setup Time Requiered.
+	 * Set Setup Time Required.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSetupTimeRequiered (int SetupTimeRequiered);
+	void setSetupTimeRequiered (int SetupTimeRequiered);
 
 	/**
-	 * Get Setup Time Requiered.
+	 * Get Setup Time Required.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSetupTimeRequiered();
+	int getSetupTimeRequiered();
 
-    /** Column definition for SetupTimeRequiered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTimeRequiered = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "SetupTimeRequiered", null);
-    /** Column name SetupTimeRequiered */
-    public static final String COLUMNNAME_SetupTimeRequiered = "SetupTimeRequiered";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTimeRequiered = new ModelColumn<>(I_PP_Order_Node.class, "SetupTimeRequiered", null);
+	String COLUMNNAME_SetupTimeRequiered = "SetupTimeRequiered";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Updated = new ModelColumn<>(I_PP_Order_Node.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Value = new ModelColumn<>(I_PP_Order_Node.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 
 	/**
 	 * Set Waiting Time.
@@ -937,7 +944,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setWaitingTime (int WaitingTime);
+	void setWaitingTime (int WaitingTime);
 
 	/**
 	 * Get Waiting Time.
@@ -947,12 +954,10 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getWaitingTime();
+	int getWaitingTime();
 
-    /** Column definition for WaitingTime */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_WaitingTime = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "WaitingTime", null);
-    /** Column name WaitingTime */
-    public static final String COLUMNNAME_WaitingTime = "WaitingTime";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_WaitingTime = new ModelColumn<>(I_PP_Order_Node.class, "WaitingTime", null);
+	String COLUMNNAME_WaitingTime = "WaitingTime";
 
 	/**
 	 * Set Yield %.
@@ -962,7 +967,7 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setYield (int Yield);
+	void setYield (int Yield);
 
 	/**
 	 * Get Yield %.
@@ -972,10 +977,8 @@ public interface I_PP_Order_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getYield();
+	int getYield();
 
-    /** Column definition for Yield */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Node, Object> COLUMN_Yield = new org.adempiere.model.ModelColumn<I_PP_Order_Node, Object>(I_PP_Order_Node.class, "Yield", null);
-    /** Column name Yield */
-    public static final String COLUMNNAME_Yield = "Yield";
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Order_Node.class, "Yield", null);
+	String COLUMNNAME_Yield = "Yield";
 }

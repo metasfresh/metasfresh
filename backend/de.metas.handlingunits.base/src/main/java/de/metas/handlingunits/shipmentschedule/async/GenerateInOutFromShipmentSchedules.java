@@ -3,10 +3,13 @@ package de.metas.handlingunits.shipmentschedule.async;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -14,6 +17,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -28,10 +32,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,7 +48,7 @@ import java.util.List;
  * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
  * @author metas-dev <dev@metasfresh.com>
- * task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary">task</a>
  */
 public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdapter
 {
@@ -53,23 +59,49 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
+	@NonNull
+	public static CalculateShippingDateRule computeShippingDateRule(@Nullable final Boolean isShipDateToday, @Nullable LocalDate fixedDate)
+	{
+		if (isShipDateToday != null && isShipDateToday)
+		{
+			return CalculateShippingDateRule.TODAY;
+		}
+		else if (fixedDate != null)
+		{
+			return CalculateShippingDateRule.fixedDate(fixedDate);
+		}
+		else
+		{
+			return CalculateShippingDateRule.DELIVERY_DATE_OR_TODAY;
+		}
+	}
+
+	private static CalculateShippingDateRule extractShippingDateRule(@NonNull final IParams parameters)
+	{
+		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+		final LocalDate fixedShipmentDate = parameters.getParameterAsLocalDate(ShipmentScheduleWorkPackageParameters.PARAM_FixedShipmentDate);
+		return computeShippingDateRule(isShipmentDateToday, fixedShipmentDate);
+	}
+
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
 		final IParams parameters = getParameters();
-		
+
 		// Create candidates
 		final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride = extractScheduleId2QtyToDeliverOverride(parameters);
-		
+
 		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(scheduleId2QtyToDeliverOverride);
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No unprocessed candidates were found");
 		}
-		
+
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+		final ForexContractRef forexContractRef = JsonObjectMapperHolder.fromJson(parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef), ForexContractRef.class);
+		final DeliveryPlanningId deliveryPlanningId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, DeliveryPlanningId.class);
+		final InOutId b2bReceiptId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_B2B_Receipt_ID, InOutId.class);
 
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
@@ -79,18 +111,19 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean isCreatePackingLines = !onlyUsePicked;
 
-		final CalculateShippingDateRule calculateShippingDateRule = isShipmentDateToday
-				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
-				: CalculateShippingDateRule.NONE;
+		final CalculateShippingDateRule calculateShippingDateRule = extractShippingDateRule(parameters);
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
-		
+
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatePackingLines)
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
+				.setForexContractRef(forexContractRef)
+				.setDeliveryPlanningId(deliveryPlanningId)
+				.setB2BReceiptId(b2bReceiptId)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
@@ -111,7 +144,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				final String advisedDocumentNo = parameters.getParameterAsString(parameterName);
 				final String shipmentScheduleIdStr = parameterName.substring(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo.length());
 				result.put(
-						ShipmentScheduleId.ofRepoId(Integer.parseInt(shipmentScheduleIdStr)), 
+						ShipmentScheduleId.ofRepoId(Integer.parseInt(shipmentScheduleIdStr)),
 						ShipmentScheduleExternalInfo.builder().documentNo(advisedDocumentNo).build());
 			}
 		}
@@ -140,7 +173,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 * <p>
-	 * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29">task</a>
 	 */
 	@Override
 	public ILatchStragegy getLatchStrategy()
@@ -165,7 +199,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse, scheduleId2QtyToDeliverOverride);
+		final boolean onTheFlyPickToPackingInstructions = getParameters()
+				.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
+
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
+				shipmentSchedules,
+				quantityTypeToUse,
+				onTheFlyPickToPackingInstructions,
+				scheduleId2QtyToDeliverOverride);
 	}
 
 	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()

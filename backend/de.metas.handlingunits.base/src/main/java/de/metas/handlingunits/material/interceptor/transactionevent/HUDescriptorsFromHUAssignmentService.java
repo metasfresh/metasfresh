@@ -26,10 +26,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.trace.HUTraceEvent;
+import de.metas.handlingunits.trace.HUTraceEventQuery;
+import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -48,6 +53,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Creates {@link HUDescriptor}s for the HUs that are assigned to records via {@link de.metas.handlingunits.model.I_M_HU_Assignment}.
@@ -56,12 +62,32 @@ import java.util.Map;
 public class HUDescriptorsFromHUAssignmentService
 {
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final HUDescriptorService huDescriptorService;
+	private final HUTraceRepository huTraceRepository;
 
-	public HUDescriptorsFromHUAssignmentService(@NonNull final HUDescriptorService huDescriptorService)
+	public HUDescriptorsFromHUAssignmentService(
+			@NonNull final HUDescriptorService huDescriptorService,
+			@NonNull final HUTraceRepository huTraceRepository)
 	{
 		this.huDescriptorService = huDescriptorService;
+		this.huTraceRepository = huTraceRepository;
+	}
+
+	@NonNull
+	public ImmutableList<HUDescriptor> createHuDescriptorsForTrace(@NonNull final HUTraceEventQuery huTraceEventQuery)
+	{
+		return huTraceRepository.query(huTraceEventQuery)
+				.stream()
+				.map(HUTraceEvent::getVhuId)
+				.collect(ImmutableSet.toImmutableSet())
+				.stream()
+				.map(handlingUnitsDAO::getById)
+				.filter(Objects::nonNull)
+				.map(huDescriptorService::createHuDescriptors)
+				.flatMap(Collection::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(
@@ -120,8 +146,9 @@ public class HUDescriptorsFromHUAssignmentService
 			final ProductDescriptor productDescriptor = entry.getKey();
 			final Collection<HUDescriptor> huDescriptorsForCurrentProduct = entry.getValue();
 
-			final BigDecimal quantity = huDescriptorsForCurrentProduct
+			final BigDecimal qtyOnHand = huDescriptorsForCurrentProduct
 					.stream()
+					.filter(huDescriptor -> !huDescriptor.isExternalProperty())
 					.map(HUDescriptor::getQuantity)
 					.map(qty -> transaction.getMovementQty().signum() >= 0 ? qty : qty.negate()) // set signum according to transaction.movementQty
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -132,7 +159,7 @@ public class HUDescriptorsFromHUAssignmentService
 					.productDescriptor(productDescriptor)
 					.customerId(customerId)
 					.vendorId(vendorId)
-					.quantity(quantity)
+					.quantity(qtyOnHand)
 					.build();
 
 			result.put(materialDescriptor, huDescriptorsForCurrentProduct);

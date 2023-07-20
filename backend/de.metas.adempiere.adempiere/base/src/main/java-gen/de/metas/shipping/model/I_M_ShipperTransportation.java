@@ -1,26 +1,21 @@
 package de.metas.shipping.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipperTransportation
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_ShipperTransportation 
 {
 
-    /** TableName=M_ShipperTransportation */
-    public static final String Table_Name = "M_ShipperTransportation";
+	String Table_Name = "M_ShipperTransportation";
 
-    /** AD_Table_ID=540030 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540030 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
 	 * Get Client.
@@ -30,79 +25,139 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Ladeliste erstellen.
+	 * Set Assign anonymously picked HUs.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBillLadingReport (java.lang.String BillLadingReport);
+	void setAssignAnonymouslyPickedHUs (boolean AssignAnonymouslyPickedHUs);
 
 	/**
-	 * Get Ladeliste erstellen.
+	 * Get Assign anonymously picked HUs.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBillLadingReport();
+	boolean isAssignAnonymouslyPickedHUs();
 
-    /** Column definition for BillLadingReport */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_BillLadingReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "BillLadingReport", null);
-    /** Column name BillLadingReport */
-    public static final String COLUMNNAME_BillLadingReport = "BillLadingReport";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_AssignAnonymouslyPickedHUs = new ModelColumn<>(I_M_ShipperTransportation.class, "AssignAnonymouslyPickedHUs", null);
+	String COLUMNNAME_AssignAnonymouslyPickedHUs = "AssignAnonymouslyPickedHUs";
 
 	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Set Delivery Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Delivery_ID (int C_BPartner_Location_Delivery_ID);
+
+	/**
+	 * Get Delivery Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Delivery_ID();
+
+	String COLUMNNAME_C_BPartner_Location_Delivery_ID = "C_BPartner_Location_Delivery_ID";
+
+	/**
+	 * Set Loading Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Loading_ID (int C_BPartner_Location_Loading_ID);
+
+	/**
+	 * Get Loading Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Loading_ID();
+
+	String COLUMNNAME_C_BPartner_Location_Loading_ID = "C_BPartner_Location_Loading_ID";
+
+	/**
+	 * Set Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_DocType_ID (int C_DocType_ID);
+	void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Get Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_DocType_ID();
+	int getC_DocType_ID();
 
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
 	 * Set Sammelrechnung erstellen.
@@ -111,7 +166,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCollectiveBillReport (java.lang.String CollectiveBillReport);
+	void setCollectiveBillReport(java.lang.String CollectiveBillReport);
 
 	/**
 	 * Get Sammelrechnung erstellen.
@@ -120,12 +175,12 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCollectiveBillReport();
+	java.lang.String getCollectiveBillReport();
 
-    /** Column definition for CollectiveBillReport */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
-    /** Column name CollectiveBillReport */
-    public static final String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
+	/** Column definition for CollectiveBillReport */
+	org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
+	/** Column name CollectiveBillReport */
+	String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
 
 	/**
 	 * Get Created.
@@ -135,12 +190,10 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Created = new ModelColumn<>(I_M_ShipperTransportation.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -150,10 +203,9 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Packstücke erfassen.
@@ -162,7 +214,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreateShippingPackages (java.lang.String CreateShippingPackages);
+	void setCreateShippingPackages (@Nullable java.lang.String CreateShippingPackages);
 
 	/**
 	 * Get Packstücke erfassen.
@@ -171,160 +223,207 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCreateShippingPackages();
+	@Nullable java.lang.String getCreateShippingPackages();
 
-    /** Column definition for CreateShippingPackages */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CreateShippingPackages = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CreateShippingPackages", null);
-    /** Column name CreateShippingPackages */
-    public static final String COLUMNNAME_CreateShippingPackages = "CreateShippingPackages";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CreateShippingPackages = new ModelColumn<>(I_M_ShipperTransportation.class, "CreateShippingPackages", null);
+	String COLUMNNAME_CreateShippingPackages = "CreateShippingPackages";
 
 	/**
-	 * Set Belegdatum.
-	 * Datum des Belegs
+	 * Set Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateDoc (java.sql.Timestamp DateDoc);
+	void setDateDoc (java.sql.Timestamp DateDoc);
 
 	/**
-	 * Get Belegdatum.
-	 * Datum des Belegs
+	 * Get Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateDoc();
+	java.sql.Timestamp getDateDoc();
 
-    /** Column definition for DateDoc */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DateDoc = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "DateDoc", null);
-    /** Column name DateDoc */
-    public static final String COLUMNNAME_DateDoc = "DateDoc";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DateDoc = new ModelColumn<>(I_M_ShipperTransportation.class, "DateDoc", null);
+	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
-	 * Set Abholung am.
+	 * Set Date to Fetch.
 	 * Date and time to fetch
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateToBeFetched (java.sql.Timestamp DateToBeFetched);
+	void setDateToBeFetched (@Nullable java.sql.Timestamp DateToBeFetched);
 
 	/**
-	 * Get Abholung am.
+	 * Get Date to Fetch.
 	 * Date and time to fetch
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateToBeFetched();
+	@Nullable java.sql.Timestamp getDateToBeFetched();
 
-    /** Column definition for DateToBeFetched */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DateToBeFetched = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "DateToBeFetched", null);
-    /** Column name DateToBeFetched */
-    public static final String COLUMNNAME_DateToBeFetched = "DateToBeFetched";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DateToBeFetched = new ModelColumn<>(I_M_ShipperTransportation.class, "DateToBeFetched", null);
+	String COLUMNNAME_DateToBeFetched = "DateToBeFetched";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Shipmentdate.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
+
+	/**
+	 * Get Shipmentdate.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDeliveryDate();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_M_ShipperTransportation.class, "DeliveryDate", null);
+	String COLUMNNAME_DeliveryDate = "DeliveryDate";
+
+	/**
+	 * Set Delivery Time.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDeliveryTime (@Nullable java.lang.String DeliveryTime);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Delivery Time.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDeliveryTime();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DeliveryTime = new ModelColumn<>(I_M_ShipperTransportation.class, "DeliveryTime", null);
+	String COLUMNNAME_DeliveryTime = "DeliveryTime";
 
 	/**
-	 * Set Document Action.
-	 * The targeted status of the document
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Description = new ModelColumn<>(I_M_ShipperTransportation.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocAction (java.lang.String DocAction);
+	void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Document Action.
-	 * The targeted status of the document
+	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocAction();
+	java.lang.String getDocAction();
 
-    /** Column definition for DocAction */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "DocAction", null);
-    /** Column name DocAction */
-    public static final String COLUMNNAME_DocAction = "DocAction";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DocAction = new ModelColumn<>(I_M_ShipperTransportation.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocStatus (java.lang.String DocStatus);
+	void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocStatus();
+	java.lang.String getDocStatus();
 
-    /** Column definition for DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "DocStatus", null);
-    /** Column name DocStatus */
-    public static final String COLUMNNAME_DocStatus = "DocStatus";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DocStatus = new ModelColumn<>(I_M_ShipperTransportation.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentNo();
+	java.lang.String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DocumentNo = new ModelColumn<>(I_M_ShipperTransportation.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_ShipperTransportation.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
 	 * Set Active.
@@ -334,7 +433,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -344,12 +443,10 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsActive = new ModelColumn<>(I_M_ShipperTransportation.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Approved.
@@ -359,7 +456,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsApproved (boolean IsApproved);
+	void setIsApproved (boolean IsApproved);
 
 	/**
 	 * Get Approved.
@@ -369,64 +466,150 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isApproved();
+	boolean isApproved();
 
-    /** Column definition for IsApproved */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "IsApproved", null);
-    /** Column name IsApproved */
-    public static final String COLUMNNAME_IsApproved = "IsApproved";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_ShipperTransportation.class, "IsApproved", null);
+	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Set Loading Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingDate (@Nullable java.sql.Timestamp LoadingDate);
+
+	/**
+	 * Get Loading Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getLoadingDate();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingDate = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingDate", null);
+	String COLUMNNAME_LoadingDate = "LoadingDate";
+
+	/**
+	 * Set Load Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingTime (@Nullable java.lang.String LoadingTime);
+
+	/**
+	 * Get Load Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLoadingTime();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingTime", null);
+	String COLUMNNAME_LoadingTime = "LoadingTime";
+
+	/**
+	 * Set Delivery Planning.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Delivery_Planning_ID (int M_Delivery_Planning_ID);
+
+	/**
+	 * Get Delivery Planning.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Delivery_Planning_ID();
+
+	@Nullable org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning();
+
+	void setM_Delivery_Planning(@Nullable org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Delivery_Planning> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Delivery_Planning_ID", org.compiere.model.I_M_Delivery_Planning.class);
+	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
+
+	/**
+	 * Set Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_MeansOfTransportation_ID (int M_MeansOfTransportation_ID);
+
+	/**
+	 * Get Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_MeansOfTransportation_ID();
+
+	@Nullable org.compiere.model.I_M_MeansOfTransportation getM_MeansOfTransportation();
+
+	void setM_MeansOfTransportation(@Nullable org.compiere.model.I_M_MeansOfTransportation M_MeansOfTransportation);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_MeansOfTransportation> COLUMN_M_MeansOfTransportation_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_MeansOfTransportation_ID", org.compiere.model.I_M_MeansOfTransportation.class);
+	String COLUMNNAME_M_MeansOfTransportation_ID = "M_MeansOfTransportation_ID";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Shipper_ID (int M_Shipper_ID);
+	void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
-	 * Get Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Get Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Shipper_ID();
+	int getM_Shipper_ID();
 
-	public org.compiere.model.I_M_Shipper getM_Shipper();
+	org.compiere.model.I_M_Shipper getM_Shipper();
 
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+	void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
 
-    /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Shipper>(I_M_ShipperTransportation.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-    /** Column name M_Shipper_ID */
-    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Transport Auftrag.
+	 * Set Transportation Order.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
+	void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
 
 	/**
-	 * Get Transport Auftrag.
+	 * Get Transportation Order.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ShipperTransportation_ID();
+	int getM_ShipperTransportation_ID();
 
-    /** Column definition for M_ShipperTransportation_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "M_ShipperTransportation_ID", null);
-    /** Column name M_ShipperTransportation_ID */
-    public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_M_ShipperTransportation_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_ShipperTransportation_ID", null);
+	String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
 
 	/**
 	 * Set Tour.
@@ -435,7 +618,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Tour_ID (int M_Tour_ID);
+	void setM_Tour_ID (int M_Tour_ID);
 
 	/**
 	 * Get Tour.
@@ -444,12 +627,10 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Tour_ID();
+	int getM_Tour_ID();
 
-    /** Column definition for M_Tour_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_M_Tour_ID = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "M_Tour_ID", null);
-    /** Column name M_Tour_ID */
-    public static final String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_M_Tour_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Tour_ID", null);
+	String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
 
 	/**
 	 * Set Package Net Total.
@@ -458,7 +639,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPackageNetTotal (java.math.BigDecimal PackageNetTotal);
+	void setPackageNetTotal (@Nullable BigDecimal PackageNetTotal);
 
 	/**
 	 * Get Package Net Total.
@@ -467,37 +648,33 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPackageNetTotal();
+	BigDecimal getPackageNetTotal();
 
-    /** Column definition for PackageNetTotal */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PackageNetTotal = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "PackageNetTotal", null);
-    /** Column name PackageNetTotal */
-    public static final String COLUMNNAME_PackageNetTotal = "PackageNetTotal";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PackageNetTotal = new ModelColumn<>(I_M_ShipperTransportation.class, "PackageNetTotal", null);
+	String COLUMNNAME_PackageNetTotal = "PackageNetTotal";
 
 	/**
-	 * Set Package Weight.
+	 * Set Weight.
 	 * Weight of a package
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPackageWeight (java.math.BigDecimal PackageWeight);
+	void setPackageWeight (@Nullable BigDecimal PackageWeight);
 
 	/**
-	 * Get Package Weight.
+	 * Get Weight.
 	 * Weight of a package
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPackageWeight();
+	BigDecimal getPackageWeight();
 
-    /** Column definition for PackageWeight */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PackageWeight = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "PackageWeight", null);
-    /** Column name PackageWeight */
-    public static final String COLUMNNAME_PackageWeight = "PackageWeight";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PackageWeight = new ModelColumn<>(I_M_ShipperTransportation.class, "PackageWeight", null);
+	String COLUMNNAME_PackageWeight = "PackageWeight";
 
 	/**
 	 * Set Pickup Time From.
@@ -506,7 +683,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom);
+	void setPickupTimeFrom (@Nullable java.sql.Timestamp PickupTimeFrom);
 
 	/**
 	 * Get Pickup Time From.
@@ -515,60 +692,52 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPickupTimeFrom();
+	@Nullable java.sql.Timestamp getPickupTimeFrom();
 
-    /** Column definition for PickupTimeFrom */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PickupTimeFrom = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "PickupTimeFrom", null);
-    /** Column name PickupTimeFrom */
-    public static final String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PickupTimeFrom = new ModelColumn<>(I_M_ShipperTransportation.class, "PickupTimeFrom", null);
+	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
 
 	/**
-	 * Set Pickup Time To.
+	 * Set Abholung Uhrzeit bis.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
+	void setPickupTimeTo (@Nullable java.sql.Timestamp PickupTimeTo);
 
 	/**
-	 * Get Pickup Time To.
+	 * Get Abholung Uhrzeit bis.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPickupTimeTo();
+	@Nullable java.sql.Timestamp getPickupTimeTo();
 
-    /** Column definition for PickupTimeTo */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PickupTimeTo = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "PickupTimeTo", null);
-    /** Column name PickupTimeTo */
-    public static final String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_PickupTimeTo = new ModelColumn<>(I_M_ShipperTransportation.class, "PickupTimeTo", null);
+	String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Processed = new ModelColumn<>(I_M_ShipperTransportation.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -577,7 +746,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -586,33 +755,32 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Processing = new ModelColumn<>(I_M_ShipperTransportation.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Kundenbetreuer.
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSalesRep_ID (int SalesRep_ID);
+	void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Kundenbetreuer.
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSalesRep_ID();
+	int getSalesRep_ID();
 
-    /** Column name SalesRep_ID */
-    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Shipper Partner.
@@ -622,7 +790,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setShipper_BPartner_ID (int Shipper_BPartner_ID);
+	void setShipper_BPartner_ID (int Shipper_BPartner_ID);
 
 	/**
 	 * Get Shipper Partner.
@@ -632,10 +800,9 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getShipper_BPartner_ID();
+	int getShipper_BPartner_ID();
 
-    /** Column name Shipper_BPartner_ID */
-    public static final String COLUMNNAME_Shipper_BPartner_ID = "Shipper_BPartner_ID";
+	String COLUMNNAME_Shipper_BPartner_ID = "Shipper_BPartner_ID";
 
 	/**
 	 * Set Shipper Location.
@@ -645,7 +812,7 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setShipper_Location_ID (int Shipper_Location_ID);
+	void setShipper_Location_ID (int Shipper_Location_ID);
 
 	/**
 	 * Get Shipper Location.
@@ -655,10 +822,9 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getShipper_Location_ID();
+	int getShipper_Location_ID();
 
-    /** Column name Shipper_Location_ID */
-    public static final String COLUMNNAME_Shipper_Location_ID = "Shipper_Location_ID";
+	String COLUMNNAME_Shipper_Location_ID = "Shipper_Location_ID";
 
 	/**
 	 * Get Updated.
@@ -668,12 +834,10 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_Updated = new ModelColumn<>(I_M_ShipperTransportation.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -683,8 +847,154 @@ public interface I_M_ShipperTransportation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 }

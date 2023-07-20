@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.compiere.model.I_S_Resource;
 
 import java.time.Instant;
 import java.util.List;
@@ -48,7 +47,7 @@ public class DDOrder
 	OrgId orgId;
 
 	/**
-	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
+	 * The {@link de.metas.product.ResourceId} of the plant, as specified by the respective product planning record.
 	 */
 	int plantId;
 
@@ -72,6 +71,8 @@ public class DDOrder
 	 */
 	MaterialDispoGroupId materialDispoGroupId;
 
+	boolean simulated;
+
 	@JsonCreator
 	@Builder
 	private DDOrder(
@@ -83,7 +84,8 @@ public class DDOrder
 			@JsonProperty("lines") @Singular final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
+			@JsonProperty("simulated") final boolean simulated)
 	{
 		this.orgId = orgId;
 
@@ -97,5 +99,6 @@ public class DDOrder
 		this.ddOrderId = ddOrderId;
 		this.docStatus = docStatus;
 		this.materialDispoGroupId = materialDispoGroupId;
+		this.simulated = simulated;
 	}
 }

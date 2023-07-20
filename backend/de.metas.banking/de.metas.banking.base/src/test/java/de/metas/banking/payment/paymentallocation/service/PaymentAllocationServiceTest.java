@@ -22,8 +22,10 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -60,6 +62,7 @@ import de.metas.product.ProductType;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -103,9 +106,11 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class PaymentAllocationServiceTest
 {
@@ -135,7 +140,7 @@ public class PaymentAllocationServiceTest
 
 		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
 
-		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService);
+		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository());
 
 		invoiceDocTypes = new HashMap<>();
 		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();
@@ -149,10 +154,11 @@ public class PaymentAllocationServiceTest
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		serviceInvoiceDocTypeId = docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
-																   .ctx(Env.getCtx())
-																   .name("invoice processing fee vendor invoice")
-																   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-																   .build());
+				.ctx(Env.getCtx())
+				.name("invoice processing fee vendor invoice")
+				.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+				.glCategoryId(GLCategoryId.ofRepoId(123))
+				.build());
 
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		serviceFeeProductId = createServiceProduct("Service Fee", uomEach);
@@ -322,6 +328,21 @@ public class PaymentAllocationServiceTest
 
 	}
 
+	private PaymentAllocationCriteria createPaymentAllocationCriteriaWithMultipleVendorPayableAndServiceFee()
+	{
+
+		final I_C_Payment payment = payment().isReceipt(Boolean.TRUE).payAmt(new BigDecimal(78)).build();
+
+		final I_C_Invoice firstInvoice = invoice().type(VendorInvoice).open("50").currency(euroCurrencyId).build();
+		final I_C_Invoice secondInvoice = invoice().type(VendorInvoice).open("50").currency(euroCurrencyId).build();
+
+		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(40)).openAmt(new BigDecimal(40)).serviceFeeAmt(new BigDecimal(10)).invoice(firstInvoice).soTrx(SOTrx.SALES).build();
+		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(38)).openAmt(new BigDecimal(48)).serviceFeeAmt(new BigDecimal(12)).invoice(secondInvoice).soTrx(SOTrx.SALES).build();
+
+		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
+
+	}
+
 	private PaymentAllocationCriteria createPaymentAllocationCriteriaWithMultiplePayable()
 	{
 
@@ -476,12 +497,14 @@ public class PaymentAllocationServiceTest
 
 	@Builder(builderMethodName = "payment", builderClassName = "$DefaultPaymentBuilder")
 	private I_C_Payment getPayment(
-			@NonNull final BigDecimal payAmt
+			@NonNull final BigDecimal payAmt,
+			@Nullable final Boolean isReceipt
 	)
 	{
 		final I_C_Payment payment;
 		{
 			final int paymentId = nextPaymentId++;
+			final OptionalBoolean isReceiptOptional = OptionalBoolean.ofNullableBoolean(isReceipt);
 			payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);
 			payment.setC_Payment_ID(paymentId);
 			payment.setDocumentNo("PaymentDocNo" + paymentId);
@@ -490,7 +513,7 @@ public class PaymentAllocationServiceTest
 			payment.setDateTrx(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
 			payment.setAD_Org_ID(adOrgId.getRepoId());
 			payment.setPayAmt(payAmt);
-			payment.setIsReceipt(true);
+			payment.setIsReceipt(isReceiptOptional.orElseTrue());
 			InterfaceWrapperHelper.save(payment);
 		}
 		return payment;
@@ -572,5 +595,16 @@ public class PaymentAllocationServiceTest
 	{
 		assertThatThrownBy(() -> paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultiplePayable_OverAllocated()))
 				.isInstanceOf(PaymentDocumentNotAllocatedException.class);
+	}
+
+	@Test
+	public void paymentValid_MultipleVendorPayableItems_WithServiceFee_FullyAllocated()
+	{
+
+		final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultipleVendorPayableAndServiceFee());
+		assertThat(paymentAllocationResult.getCandidates().size())
+				.as("Allocation candidates found =" + paymentAllocationResult.getCandidates().size())
+				.isEqualByComparingTo(4);
+
 	}
 }

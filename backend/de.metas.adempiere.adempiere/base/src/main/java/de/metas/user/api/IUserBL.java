@@ -1,14 +1,16 @@
 package de.metas.user.api;
 
-import org.compiere.model.I_AD_User;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
 
@@ -36,7 +38,25 @@ public interface IUserBL extends ISingletonService
 
 	void changePasswordAndSave(I_AD_User user, String newPassword);
 
-	String buildContactName(@Nullable final String firstName, @Nullable final String lastName);
+	static String buildContactName(@Nullable final String firstName, @Nullable final String lastName)
+	{
+		final StringBuilder contactName = new StringBuilder();
+		if (lastName != null && !Check.isBlank(lastName))
+		{
+			contactName.append(lastName.trim());
+		}
+
+		if (firstName != null && !Check.isBlank(firstName))
+		{
+			if (contactName.length() > 0)
+			{
+				contactName.append(", ");
+			}
+			contactName.append(firstName.trim());
+		}
+
+		return contactName.toString();
+	}
 
 	/**
 	 * Is the email valid
@@ -55,8 +75,15 @@ public interface IUserBL extends ISingletonService
 
 	void assertCanSendEMail(@NonNull final UserId adUserId);
 
+	Language getUserLanguage(@NonNull UserId userId);
+
 	/** @return the user's language or fallbacks; never returns {@code null}. */
 	Language getUserLanguage(I_AD_User userRecord);
 
 	UserEMailConfig getEmailConfigById(UserId userId);
+
+	void deleteUserDependency(I_AD_User userRecord);
+
+	@NonNull
+	ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull String externalId, @NonNull OrgId orgId);
 }

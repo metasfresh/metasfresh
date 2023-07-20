@@ -1,20 +1,29 @@
 package de.metas.invoicecandidate.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.forex.ForexContractRef;
+import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -30,8 +39,11 @@ import java.util.Set;
  *
  * @author tsa
  */
+@ToString
 public class InvoiceHeaderImplBuilder
 {
+	private static int SalesRep_User_ID_UNSET_VALUE = Integer.MIN_VALUE;
+
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
 	private boolean isTakeDocTypeFromPool = false;
@@ -40,10 +52,18 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<String> POReferences = new HashSet<>();
 
+	private final Set<String> eMails = new HashSet<>();
+
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
+	private LocalDate _overrideDueDate;
 
 	private int AD_Org_ID;
+
+	@Nullable
+	private InputDataSourceId inputDataSourceId;
+
+	private boolean inputDataSourceIdset;
 
 	private final Set<Integer> C_Order_IDs = new LinkedHashSet<>();
 
@@ -51,7 +71,11 @@ public class InvoiceHeaderImplBuilder
 
 	private BPartnerInfo billTo;
 
+	private String paymentRule;
+
 	private int Sales_BPartner_ID;
+
+	private int SalesRep_User_ID = SalesRep_User_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -65,21 +89,33 @@ public class InvoiceHeaderImplBuilder
 	// 06630
 	private final Set<Integer> M_InOut_IDs = new LinkedHashSet<>();
 
-	private String externalId;
+	private ExternalId externalId = null;
 
 	private Boolean taxIncluded = null;
 
 	private int C_Async_Batch_ID;
 
-	/* package */ InvoiceHeaderImplBuilder()
-	{
-		super();
-	}
+	private int C_Incoterms_ID;
 
-	@Override
-	public String toString()
+	private String incotermLocation;
+
+	private int M_SectionCode_ID;
+
+	private int C_Project_ID;
+
+	private int C_Activity_ID;
+
+	@Nullable
+	private ForexContractRef forexContractRef;
+
+	private String invoiceAdditionalText;
+	private boolean notShowOriginCountry;
+
+	private int C_PaymentInstruction_ID;
+
+	private Dimension dimension;
+	InvoiceHeaderImplBuilder()
 	{
-		return ObjectUtils.toString(this);
 	}
 
 	public InvoiceHeaderImpl build()
@@ -96,6 +132,7 @@ public class InvoiceHeaderImplBuilder
 
 		// Pricing and currency
 		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
+		invoiceHeader.setForexContractRef(forexContractRef);
 		invoiceHeader.setM_PriceList_ID(getM_PriceList_ID());
 
 		// Tax
@@ -104,10 +141,13 @@ public class InvoiceHeaderImplBuilder
 		// Dates
 		invoiceHeader.setDateInvoiced(getDateInvoiced());
 		invoiceHeader.setDateAcct(getDateAcct());
+		invoiceHeader.setOverrideDueDate(getOverrideDueDate());
 
 		// BPartner/Location/Contact
 		invoiceHeader.setBillTo(getBillTo());
 		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoIdOrNull(getSales_BPartner_ID()));
+
+		invoiceHeader.setSalesRepId(UserId.ofRepoIdOrNull(get_SaleRep_ID()));
 
 		// Descriptions
 		invoiceHeader.setDescription(getDescription());
@@ -118,13 +158,34 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setM_InOut_ID(getM_InOut_ID());
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
+		invoiceHeader.setEMail(getEmail());
+
+		invoiceHeader.setPaymentRule(getPaymentRule());
+
+		invoiceHeader.setAD_InputDataSource_ID(getAD_InputDataSource_ID());
+
+		//incoterms
+		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
+		invoiceHeader.setIncotermLocation(getIncotermLocation());
+
+		invoiceHeader.setSectionCodeId(SectionCodeId.ofRepoIdOrNull(getM_SectionCode_ID()));
+
+		invoiceHeader.setProjectId(ProjectId.ofRepoIdOrNull(getC_Project_ID()));
+		invoiceHeader.setActivityId(ActivityId.ofRepoIdOrNull(getC_Activity_ID()));
+
+		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
+		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
+		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+
+		invoiceHeader.setDimension(this.dimension);
 
 		return invoiceHeader;
 	}
 
-	private String getExternalId()
+	@VisibleForTesting
+	String getExternalId()
 	{
-		return externalId;
+		return ExternalId.isInvalid(externalId) ? null : ExternalId.toValue(externalId);
 	}
 
 	private int getC_Async_Batch_ID()
@@ -135,6 +196,26 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Async_Batch_ID(final int asyncBatchId)
 	{
 		C_Async_Batch_ID = checkOverrideID("C_Async_Batch_ID", C_Async_Batch_ID, asyncBatchId);
+	}
+
+	private int getC_Incoterms_ID()
+	{
+		return C_Incoterms_ID;
+	}
+
+	public void setC_Incoterms_ID(final int incoterms_id)
+	{
+		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
+	}
+
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = checkOverride("IncotermLocation", this.incotermLocation, incotermLocation);
 	}
 
 	@Nullable
@@ -164,7 +245,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setDocTypeInvoiceId(final DocTypeId docTypeInvoiceId, final boolean isEnforceUnique)
 	{
-		if (this.docTypeInvoiceId != null && !DocTypeId.equals(this.docTypeInvoiceId,docTypeInvoiceId))
+		if (this.docTypeInvoiceId != null && !DocTypeId.equals(this.docTypeInvoiceId, docTypeInvoiceId))
 		{
 			if (isEnforceUnique)
 			{
@@ -196,6 +277,16 @@ public class InvoiceHeaderImplBuilder
 		normalizeAndAddIfNotNull(POReferences, poReference);
 	}
 
+	public String getEmail()
+	{
+		return CollectionUtils.singleElementOrNull(eMails);
+	}
+
+	public void setEmail(final String eMail)
+	{
+		normalizeAndAddIfNotNull(eMails, eMail);
+	}
+
 	public LocalDate getDateInvoiced()
 	{
 		Check.assumeNotNull(_dateInvoiced, "Parameter _dateInvoiced is not null");
@@ -218,9 +309,29 @@ public class InvoiceHeaderImplBuilder
 		return _dateAcct;
 	}
 
+	public LocalDate getOverrideDueDate()
+	{
+		return _overrideDueDate;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	public String getPaymentRule()
+	{
+		return paymentRule;
+	}
+
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
+	}
+
+	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
+	{
+		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
 	}
 
 	public int getAD_Org_ID()
@@ -291,9 +402,26 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
+	public int get_SaleRep_ID()
+	{
+		return SalesRep_User_ID;
+	}
+
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
+	}
+
+	public void setSalesRep_ID(final int salesRep_ID)
+	{
+		if (SalesRep_User_ID == SalesRep_User_ID_UNSET_VALUE)
+		{
+			SalesRep_User_ID = salesRep_ID;
+		}
+		else if (salesRep_ID != SalesRep_User_ID)
+		{
+			SalesRep_User_ID = -1;
+		}
 	}
 
 	public int getC_Currency_ID()
@@ -304,6 +432,25 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Currency_ID(final int currencyId)
 	{
 		C_Currency_ID = checkOverrideID("C_Currency_ID", C_Currency_ID, currencyId);
+	}
+
+	public InputDataSourceId getAD_InputDataSource_ID()
+	{
+		return inputDataSourceId;
+	}
+
+	public void setAD_InputDataSource_ID(@Nullable final InputDataSourceId inputDataSourceId)
+	{
+		if (this.inputDataSourceId == null && !inputDataSourceIdset)
+		{
+			this.inputDataSourceId = inputDataSourceId;
+			inputDataSourceIdset = true;
+		}
+		else if (!Objects.equals(this.inputDataSourceId, inputDataSourceId))
+		{
+			this.inputDataSourceId = null;
+			inputDataSourceIdset = true;
+		}
 	}
 
 	public String getDescription()
@@ -336,7 +483,6 @@ public class InvoiceHeaderImplBuilder
 	{
 		this.isSOTrx = checkOverrideBoolean("IsSOTrx", this.isSOTrx, isSOTrx);
 	}
-
 
 	public boolean isTakeDocTypeFromPool()
 	{
@@ -490,9 +636,93 @@ public class InvoiceHeaderImplBuilder
 											 + "\n New value: " + valueNew);
 	}
 
-	public void setExternalId(final String externalId)
+	public void setExternalId(@Nullable final String externalIdStr)
 	{
-		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
+		final ExternalId externalId = ExternalId.ofOrNull(externalIdStr);
+		Check.errorIf(ExternalId.isInvalid(externalId), "Given externalId may not be invalid"); // might happen later, when we modernize the method signature
+
+		if (ExternalId.isInvalid(this.externalId))
+		{
+			return;
+		}
+
+		if (this.externalId != null && !Objects.equals(this.externalId, externalId))
+		{
+			this.externalId = ExternalId.INVALID;
+			return;
+		}
+
+		this.externalId = externalId;
+	}
+
+	private int getM_SectionCode_ID()
+	{
+		return M_SectionCode_ID;
+	}
+
+	public void setM_SectionCode_ID(final int sectionCodeId)
+	{
+		M_SectionCode_ID = checkOverrideID("M_SectionCode_ID", M_SectionCode_ID, sectionCodeId);
+	}
+
+	private int getC_Project_ID()
+	{
+		return C_Project_ID;
+	}
+
+	public void setC_Project_ID(final int projectId)
+	{
+		C_Project_ID = checkOverrideID("C_Project_ID", C_Project_ID, projectId);
+	}
+
+	private int getC_Activity_ID()
+	{
+		return C_Activity_ID;
+	}
+
+	public void setC_Activity_ID(final int activityId)
+	{
+		C_Activity_ID = checkOverrideID("C_Activity_ID", C_Activity_ID, activityId);
+	}
+
+	public void setForexContractRef(@Nullable final ForexContractRef forexContractRef)
+	{
+		this.forexContractRef = forexContractRef;
+	}
+
+	public String getInvoiceAdditionalText()
+	{
+		return invoiceAdditionalText;
+	}
+
+	public boolean isNotShowOriginCountry()
+	{
+		return notShowOriginCountry;
+	}
+
+	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
+	{
+		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setDimension(@NonNull final Dimension dimension)
+	{
+		this.dimension = dimension;
+	}
+
+	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
+	{
+		this.notShowOriginCountry = notShowOriginCountry;
+	}
+
+	public int getC_PaymentInstruction_ID()
+	{
+		return C_PaymentInstruction_ID;
+	}
+
+	public void setC_PaymentInstruction_ID(final int c_PaymentInstruction_ID)
+	{
+		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
 
 }

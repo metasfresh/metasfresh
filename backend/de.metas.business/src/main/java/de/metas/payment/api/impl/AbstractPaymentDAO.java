@@ -1,30 +1,34 @@
 package de.metas.payment.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentQuery;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_Fact_Acct;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -35,40 +39,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import de.metas.banking.BankAccountId;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_Fact_Acct;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.DocStatus;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.payment.api.PaymentQuery;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
-import org.compiere.model.I_M_Product;
-
-import javax.annotation.Nullable;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
@@ -137,17 +109,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// NOTE: we are not using C_InvoicePaySchedule_ID. It shall be a column in C_Payment
 
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, creditMemoAdjusted);
-	}
-
-	@Override
-	public List<I_C_PaySelectionLine> getProcessedLines(@NonNull final I_C_PaySelection paySelection)
-	{
-		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_C_PaySelectionLine.class);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted).toBigDecimal();
 	}
 
 	@Override
@@ -171,7 +133,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Payment.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Payment.class));
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
@@ -191,7 +153,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment)
+	public List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Payment payment)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
@@ -295,5 +257,13 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.iterate(I_C_Payment.class);
 
 		return paymentsForEmployees;
+	}
+	
+	@NonNull
+	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
+	{
+		final I_C_Payment paymentRecord = getById(paymentId);
+		
+		return Optional.ofNullable(CurrencyConversionTypeId.ofRepoIdOrNull(paymentRecord.getC_ConversionType_ID()));
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.order;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.user.UserId;
@@ -27,6 +28,7 @@ public interface IOrderDAO extends ISingletonService
 	I_C_Order getById(final OrderId orderId);
 
 	Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds);
+
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
 	 *
@@ -73,7 +75,9 @@ public interface IOrderDAO extends ISingletonService
 
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(OrderId orderId, Class<T> modelClass);
 
-	/** @return all C_OrderLine_IDs for given order, including the inactive ones */
+	/**
+	 * @return all C_OrderLine_IDs for given order, including the inactive ones
+	 */
 	List<OrderAndLineId> retrieveAllOrderLineIds(OrderId orderId);
 
 	<T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(I_C_Order order, int lineNo, Class<T> clazz);
@@ -115,7 +119,13 @@ public interface IOrderDAO extends ISingletonService
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
+	List<I_C_Order> getOrdersByQuery(GetOrdersQuery query);
+
+	Optional<I_C_Order> retrieveFirstByQuery(GetOrdersQuery query);
+
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
+
+	void deleteByLineId(OrderAndLineId orderAndLineId);
 
 	void save(org.compiere.model.I_C_Order order);
 
@@ -124,4 +134,18 @@ public interface IOrderDAO extends ISingletonService
 	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
 
 	Set<OrderId> retrieveIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
+
+	Set<OrderLineId> retrieveSOLineIdsByPOLineId(OrderLineId orderLineId);
+
+	void allocatePOLineToSOLine(OrderAndLineId purchaseOrderLineId, OrderAndLineId salesOrderLineId);
+
+	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
+
+	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
+
+	Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull OrderId salesOrderId);
+
+	Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull OrderId purchaseOrderId);
+
+	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
 }

@@ -22,16 +22,10 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
-import java.math.BigDecimal;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceDocBaseType;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
-
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData;
@@ -50,8 +44,12 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
@@ -79,7 +77,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	{
 		// task 08507: ic.getQtyToInvoice() is already the "effective" qty.
 		// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
-		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
+		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore, we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
 
 		final Quantity qtyToInvoiceInUOM = Quantitys.create(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID()));
 		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoiceInUOM);
@@ -170,11 +168,13 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		{
 			ic.setDeliveryDate(null);
 			ic.setFirst_Ship_BPLocation_ID(-1);
+			ic.setC_Shipping_Location_ID(-1);
 		}
 		else
 		{
 			ic.setDeliveryDate(firstInOut.getMovementDate());
-			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
+			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID()); // C_BPartner_Location
+			ic.setC_Shipping_Location_ID(firstInOut.getC_BPartner_Location_Value_ID()); // C_Location
 		}
 	}
 
@@ -188,19 +188,13 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 				.adOrgId(icRecord.getAD_Org_ID())
 				.isSOTrx(icRecord.isSOTrx())
 				.docBaseType(icRecord.isSOTrx()
-									 ? InvoiceDocBaseType.CustomerInvoice.getCode()
-									 : InvoiceDocBaseType.VendorInvoice.getCode())
+									 ? InvoiceDocBaseType.CustomerInvoice.getDocBaseType()
+									 : InvoiceDocBaseType.VendorInvoice.getDocBaseType())
 				.build();
 		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
 		if (docTypeIdOrNull != null)
 		{
 			icRecord.setC_DocTypeInvoice_ID(docTypeIdOrNull.getRepoId());
 		}
-	}
-
-	@Override
-	public boolean isMissingInvoiceCandidate(final Object model)
-	{
-		return true;
 	}
 }

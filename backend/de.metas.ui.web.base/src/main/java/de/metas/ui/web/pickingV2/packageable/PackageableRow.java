@@ -26,9 +26,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.picking.api.Packageable;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -40,19 +42,21 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.warehouse.WarehouseTypeId;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 
 @ToString(exclude = "values")
 public final class PackageableRow implements IViewRow
@@ -119,7 +123,8 @@ public final class PackageableRow implements IViewRow
 			final LookupValue shipper,
 			final ITranslatableString lineNetAmt,
 			@NonNull @Singular final Collection<Packageable> packageables,
-			final @Nullable String poReference)
+			@NonNull final ZoneId timeZone,
+			@Nullable final String poReference)
 	{
 		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
@@ -133,7 +138,9 @@ public final class PackageableRow implements IViewRow
 		this.shipper = shipper;
 		this.deliveryDate = calculateEarliestDeliveryDate(packageables);
 		this.lineNetAmt = lineNetAmt;
-		this.preparationDate = calculateEarliestPreparationTime(packageables);
+		this.preparationDate = calculateEarliestPreparationTime(packageables)
+				.map(instant -> instant.toZonedDateTime(timeZone))
+				.orElse(null);
 		this.packageables = ImmutableList.copyOf(packageables);
 		this.shipmentScheduleIds = extractShipmentScheduleIds(packageables);
 	}
@@ -141,23 +148,22 @@ public final class PackageableRow implements IViewRow
 	@Nullable
 	private static LocalDate calculateEarliestDeliveryDate(final Collection<Packageable> packageables)
 	{
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 		return packageables.stream()
 				.map(Packageable::getDeliveryDate)
 				.filter(Objects::nonNull)
-				.map(TimeUtil::asLocalDate)
+				.map(date -> date.toZonedDateTime(orgDAO::getTimeZone).toLocalDate())
 				.filter(Objects::nonNull)
 				.min(LocalDate::compareTo)
 				.orElse(null);
 	}
 
-	@Nullable
-	private static ZonedDateTime calculateEarliestPreparationTime(final Collection<Packageable> packageables)
+	private static Optional<InstantAndOrgId> calculateEarliestPreparationTime(final Collection<Packageable> packageables)
 	{
 		return packageables.stream()
 				.map(Packageable::getPreparationDate)
 				.filter(Objects::nonNull)
-				.min(ZonedDateTime::compareTo)
-				.orElse(null);
+				.min(InstantAndOrgId::compareTo);
 	}
 
 	private static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(final Collection<Packageable> packageables)

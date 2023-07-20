@@ -25,11 +25,13 @@ package org.adempiere.model.tree.spi.impl;
  * #L%
  */
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.i18n.Language;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.security.permissions.ElementPermission;
+import de.metas.security.permissions.ElementResource;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Form;
@@ -43,13 +45,10 @@ import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import de.metas.i18n.Language;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.security.permissions.ElementPermission;
-import de.metas.security.permissions.ElementResource;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author tsa
@@ -152,13 +151,13 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		if (!useBetaFunctions)
 		{
 			// task 09088: the client doesn't "want" to use beta functions and the role doesn't override this, so we filter out features that are not marked as beta
-			windowSql.append("AND w.").append(I_AD_Window.COLUMNNAME_IsBetaFunctionality).append("=?");
+			windowSql.append("\n AND w.").append(I_AD_Window.COLUMNNAME_IsBetaFunctionality).append("=?");
 			windowSqlParams.add(false);
-			processSql.append("AND p.").append(I_AD_Process.COLUMNNAME_IsBetaFunctionality).append("=?");
+			processSql.append("\n AND p.").append(I_AD_Process.COLUMNNAME_IsBetaFunctionality).append("=?");
 			processSqlParams.add(false);
-			workflowSql.append("AND wf.").append(I_AD_Workflow.COLUMNNAME_IsBetaFunctionality).append("=?");
+			workflowSql.append("\n AND wf.").append(I_AD_Workflow.COLUMNNAME_IsBetaFunctionality).append("=?");
 			workflowSqlParams.add(false);
-			formSql.append("AND f.").append(I_AD_Form.COLUMNNAME_IsBetaFunctionality).append("=?");
+			formSql.append("\n AND f.").append(I_AD_Form.COLUMNNAME_IsBetaFunctionality).append("=?");
 			formSqlParams.add(false);
 		}
 
@@ -304,6 +303,11 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		else if (X_AD_Menu.ACTION_Board.equals(action))
 		{
 			final ElementResource resource = ElementResource.of("WEBUI_Board", WEBUI_Board_ID);
+			access = ElementPermission.ofReadWriteFlag(resource, true);
+		}
+		else if (X_AD_Menu.ACTION_Calendar.equals(action))
+		{
+			final ElementResource resource = ElementResource.of("WEBUI_Calendar", 1);
 			access = ElementPermission.ofReadWriteFlag(resource, true);
 		}
 		else

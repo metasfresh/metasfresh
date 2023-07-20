@@ -27,6 +27,8 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Duration;
 
 @Value
 public class Effort
@@ -52,6 +54,12 @@ public class Effort
 	}
 
 	@NonNull
+	public static Effort ofDuration(@NonNull final Duration duration)
+	{
+		return ofSeconds(duration.getSeconds());
+	}
+
+	@NonNull
 	public Effort addNullSafe(@Nullable final Effort effort)
 	{
 		final long secondsToAdd = effort != null
@@ -73,6 +81,14 @@ public class Effort
 	public Effort negate()
 	{
 		return new Effort(-seconds);
+	}
+
+	@NonNull
+	public BigDecimal toHours()
+	{
+		final Duration duration = Duration.ofSeconds(seconds);
+
+		return new BigDecimal(duration.toHours());
 	}
 
 	private Effort(final long seconds)

@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": "externalLineId",
+      "productId": "productId",
+      "quantity": 1,
+      "parentId": null,
+      "unitPrice": 14.8,
+      "description": "lineDescription",
+      "position": 1,
+      "createdAt": "2021-02-25T15:27:34.518+00:00",
+      "updatedAt": "2021-02-26T15:27:34.518+00:00",
+      "payload": {
+        "isBundle": false
+      }
+    },
+    {
+      "id": "externalLineId2",
+      "productId": "productId2",
+      "quantity": 10,
+      "parentId": null,
+      "unitPrice": 100,
+      "description": "lineDescription2",
+      "position": 2,
+      "createdAt": "2021-02-25T15:27:34.518+00:00",
+      "updatedAt": "2021-02-27T15:27:34.518+00:00",
+      "payload": {
+        "isBundle": false
+      }
+    }
+  ]
+}

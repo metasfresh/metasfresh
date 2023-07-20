@@ -231,12 +231,10 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 		final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
 
-		final Candidate updatedCandidate = candidateToUpdate.toBuilder()
+		return candidateToUpdate.toBuilder()
 				.businessCaseDetail(updatedProductionDetail)
 				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
 				.build();
-
-		return updatedCandidate;
 	}
 
 }

@@ -1,8 +1,5 @@
 package de.metas.security.process;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -15,6 +12,7 @@ import de.metas.security.requests.RemoveRecordPrivateAccessRequest;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -76,11 +74,6 @@ abstract class RecordPrivateAccess_Base extends JavaProcess implements IProcessP
 				.recordRef(getRecordRef())
 				.principal(getPrincipal())
 				.build());
-	}
-
-	private TableRecordReference getRecordRef()
-	{
-		return TableRecordReference.of(getTableName(), getRecord_ID());
 	}
 
 	private Principal getPrincipal()

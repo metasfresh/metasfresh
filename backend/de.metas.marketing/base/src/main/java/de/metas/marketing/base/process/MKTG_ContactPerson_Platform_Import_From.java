@@ -1,12 +1,13 @@
 package de.metas.marketing.base.process;
 
-import java.util.List;
-
-import de.metas.marketing.base.model.Campaign;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.SyncResult;
-import de.metas.marketing.base.spi.PlatformClient;
+import de.metas.marketing.base.PlatformSyncService;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.I_MKTG_Campaign;
+import de.metas.marketing.base.model.SyncDirection;
+import de.metas.process.JavaProcess;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -30,14 +31,21 @@ import lombok.NonNull;
  * #L%
  */
 
-public class MKTG_ContactPerson_Platform_Import_From extends MKTG_ContactPerson_Platform_Base
+public class MKTG_ContactPerson_Platform_Import_From extends JavaProcess
 {
+	private final PlatformSyncService syncService = SpringContextHolder.instance.getBean(PlatformSyncService.class);
+
 	@Override
-	protected List<? extends SyncResult> invokeClient(
-			@NonNull final PlatformClient platformClient,
-			@NonNull final Campaign campgain,
-			@NonNull final List<ContactPerson> contactPersons)
+	protected String doIt()
 	{
-		return platformClient.syncContactPersonsRemoteToLocal(campgain, contactPersons);
+		syncService.syncContacts(getCampaignId(), SyncDirection.REMOTE_TO_LOCAL);
+		return MSG_OK;
+	}
+
+	@NonNull
+	private CampaignId getCampaignId()
+	{
+		return TableRecordReference.of(getTableName(), getRecord_ID())
+				.getIdAssumingTableName(I_MKTG_Campaign.Table_Name, CampaignId::ofRepoId);
 	}
 }

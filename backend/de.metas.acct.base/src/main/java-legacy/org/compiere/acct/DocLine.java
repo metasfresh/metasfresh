@@ -16,55 +16,56 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.google.common.base.MoreObjects;
+import de.metas.acct.Account;
+import de.metas.acct.accounts.AccountProvider;
+import de.metas.acct.accounts.AccountProviderExtension;
+import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.doc.PostingException;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ChargeId;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.UomId;
+import de.metas.util.NumberUtils;
+import de.metas.util.Optionals;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAccount;
-import org.compiere.model.MCharge;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.doc.AcctDocRequiredServicesFacade;
-import de.metas.acct.doc.PostingException;
-import de.metas.acct.tax.TaxAcctType;
-import de.metas.bpartner.BPartnerId;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.CostingMethod;
-import de.metas.location.LocationId;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderLineId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.quantity.Quantity;
-import de.metas.tax.api.TaxId;
-import de.metas.uom.UomId;
-import de.metas.util.NumberUtils;
-import de.metas.util.Optionals;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.function.IntFunction;
 
 /**
  * Standard Document Line
@@ -74,6 +75,7 @@ import lombok.NonNull;
  * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * @version $Id: DocLine.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
@@ -125,8 +127,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private I_M_Product _product; // lazy
 	private Boolean _productIsItem = null; // lazy
 
-	private LocalDate m_DateAcct = null;
-	private LocalDate m_DateDoc = null;
+	private LocalDateAndOrgId m_DateAcct = null;
+	private LocalDateAndOrgId m_DateDoc = null;
 	private int m_C_SalesRegion_ID = -1;
 	private Optional<BPartnerId> _bpartnerId;
 	private final LocationId locationFromId = null;
@@ -138,6 +140,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private boolean _taxIncluded = false;
 
 	private int m_ReversalLine_ID = 0;
+
+	private AccountProvider _accountProvider; // lazy
 
 	public DocLine(
 			@NonNull final PO linePO,
@@ -160,13 +164,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_doc.getClientId();
 	}
 
-	private final PO getPO()
+	private PO getPO()
 	{
 		return p_po;
 	}
 
 	/**
-	 * @param modelType
 	 * @return underlying model
 	 */
 	protected final <T> T getModel(final Class<T> modelType)
@@ -354,6 +357,35 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		logger.warn("Diff={} - LineNetAmt={} -> {} - {}", diff, lineNetAmtOld, m_LineNetAmt, this);
 	}
 
+	protected final AccountProvider getAccountProvider()
+	{
+		AccountProvider accountProvider = this._accountProvider;
+		if (accountProvider == null)
+		{
+			accountProvider = this._accountProvider = createAccountProvider();
+		}
+		return accountProvider;
+	}
+
+	protected final AccountProvider createAccountProvider()
+	{
+		AccountProvider accountProvider = getDoc().getAccountProvider();
+
+		AccountProviderExtension extension = createAccountProviderExtension();
+		if (extension != null)
+		{
+			accountProvider = accountProvider.toBuilder().extension(extension).build();
+		}
+
+		return accountProvider;
+	}
+
+	@Nullable
+	protected AccountProviderExtension createAccountProviderExtension()
+	{
+		return null;
+	}
+
 	/**
 	 * Line Account from Product (or Charge).
 	 *
@@ -363,56 +395,72 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	@NonNull
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
+	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
 	{
+		final ProductId productId = getProductId();
+
 		//
 		// Charge account
-		if (getProductId() == null && getC_Charge_ID() > 0)
+		if (productId == null)
 		{
-			final MAccount acct;
+			final ChargeId chargeId = getC_Charge_ID()
+					.orElseThrow(() -> newPostingException().setAcctSchema(as).setDetailMessage("No Charge defined"));
+
 			if (!m_doc.isSOTrx())
 			{
-				acct = getChargeAccount(as, BigDecimal.ONE); // Expense (+)
+				// Expense (+)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE);
 			}
 			else
 			{
-				acct = getChargeAccount(as, BigDecimal.ONE.negate()); // Revenue (-)
+				// Revenue (-)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE.negate());
 			}
-			if (acct == null)
-			{
-				throw newPostingException().setAcctSchema(as).setDetailMessage("No Charge Account for account type: " + acctType);
-			}
-			return acct;
 		}
 		//
 		// Product Account
 		else
 		{
-			return getProductAccount(acctType, as);
+			final TaxId taxId = getTaxId().orElse(null);
+			return getAccountProvider().getProductAccount(as.getId(), productId, taxId, acctType);
 		}
 	}
 
-	public final LocalDate getDateAcct()
+	@NonNull
+	public final LocalDateAndOrgId getDateAcct()
 	{
 		if (m_DateAcct == null)
 		{
-			m_DateAcct = CoalesceUtil.coalesceSuppliers(
+			m_DateAcct = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> getValueAsLocalDateOrNull("DateAcct"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateAcct;
 	}
 
-	protected final void setDateDoc(final LocalDate dateDoc)
+	@NonNull
+	protected final Timestamp getDateAcctAsTimestamp()
+	{
+		return getDateAcct().toTimestamp(services::getTimeZone);
+	}
+
+	@NonNull
+	protected final Instant getDateAcctAsInstant()
+	{
+		return getDateAcct().toInstant(services::getTimeZone);
+	}
+
+	protected final void setDateDoc(@NonNull final LocalDateAndOrgId dateDoc)
 	{
 		m_DateDoc = dateDoc;
 	}   // setDateDoc
 
-	public final LocalDate getDateDoc()
+	@NonNull
+	public final LocalDateAndOrgId getDateDoc()
 	{
 		if (m_DateDoc == null)
 		{
-			m_DateDoc = CoalesceUtil.coalesceSuppliers(
+			m_DateDoc = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> getValueAsLocalDateOrNull("DateDoc"),
 					() -> getValueAsLocalDateOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
@@ -421,83 +469,33 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	}
 
 	@NonNull
-	private MAccount getProductAccount(final ProductAcctType acctType, final AcctSchema as)
+	protected final Timestamp getDateDocAsTimestamp()
 	{
-		//
-		// Product Revenue: check/use the override defined on tax level
-		if (acctType == ProductAcctType.Revenue)
-		{
-			final MAccount productRevenueAcct = getTaxAccount(TaxAcctType.ProductRevenue_Override, as.getId()).orElse(null);
-			if (productRevenueAcct != null)
-			{
-				return productRevenueAcct;
-			}
-		}
-
-		// No Product - get Default from Product Category
-		final ProductId productId = getProductId();
-		if (productId == null)
-		{
-			return getAccountDefault(acctType, as);
-		}
-
-		final AccountId accountId = services.getProductAcct(as.getId(), productId, acctType).orElse(null);
-		if (accountId == null)
-		{
-			final String productName = services.getProductName(productId);
-			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
-		}
-
-		return services.getAccountById(accountId);
+		return getDateDoc().toTimestamp(services::getTimeZone);
 	}
 
-	/**
-	 * Account from Default Product Category
-	 * @param as       accounting schema
-	 * @return Requested Product Account
-	 */
-	private final MAccount getAccountDefault(final ProductAcctType acctType, final AcctSchema as)
+	protected final Optional<ChargeId> getC_Charge_ID()
 	{
-		final AccountId accountId = services.getProductDefaultAcct(as.getId(), acctType).orElse(null);
-		if (accountId == null)
-		{
-			throw newPostingException().setAcctSchema(as).setDetailMessage("No Default Account for account type: " + acctType);
-		}
-
-		return services.getAccountById(accountId);
-	}
-
-	private final Optional<MAccount> getTaxAccount(@NonNull final TaxAcctType taxAcctType, final AcctSchemaId acctSchemaId)
-	{
-		final TaxId taxId = getTaxId().orElse(null);
-		return services.getTaxAccount(acctSchemaId, taxId, taxAcctType);
-	}
-
-	/**
-	 * Get Charge
-	 *
-	 * @return C_Charge_ID
-	 */
-	protected final int getC_Charge_ID()
-	{
-		return getValue("C_Charge_ID");
+		return getValueAsOptionalId("C_Charge_ID", ChargeId::ofRepoIdOrNull);
 	}
 
 	/**
 	 * Get Charge Account
 	 *
-	 * @param as     account schema
-	 * @param amount amount for expense(+)/revenue(-)
+	 * @param as        account schema
+	 * @param chargeAmt amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
 	 */
-	protected final MAccount getChargeAccount(final AcctSchema as, final BigDecimal amount)
+	@Nullable
+	protected final Account getChargeAccount(@NonNull final AcctSchema as, final BigDecimal chargeAmt)
 	{
-		final int C_Charge_ID = getC_Charge_ID();
-		if (C_Charge_ID <= 0)
+		final ChargeId chargeId = getC_Charge_ID().orElse(null);
+		if (chargeId == null)
 		{
 			return null;
 		}
-		return MCharge.getAccount(C_Charge_ID, as.getId(), amount);
+
+		return getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt);
 	}
 
 	protected final int getC_Period_ID()
@@ -528,7 +526,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
-	public final ProductId getProductId()
+	public ProductId getProductId()
 	{
 		return ProductId.ofRepoIdOrNull(getValue("M_Product_ID"));
 	}
@@ -547,7 +545,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _productIsItem;
 	}
 
-	private final boolean checkIsItem()
+	private boolean checkIsItem()
 	{
 		final I_M_Product product = getProduct();
 		if (product == null)
@@ -603,7 +601,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * @return product or null if no product
 	 */
-	private final I_M_Product getProduct()
+	private I_M_Product getProduct()
 	{
 		if (_product == null)
 		{
@@ -732,16 +730,22 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _bpartnerId.orElse(null);
 	}
 
+	@Nullable
+	public BPartnerLocationId getBPartnerLocationId()
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(getBPartnerId(), getC_BPartner_Location_ID());
+	}
+
 	protected final void setBPartnerId(final BPartnerId bpartnerId)
 	{
 		_bpartnerId = Optional.ofNullable(bpartnerId);
 	}
 
-	private final int getC_BPartner_Location_ID()
+	private int getC_BPartner_Location_ID()
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> getValue("C_BPartner_Location_ID"),
-				() -> m_doc.getC_BPartner_Location_ID());
+				m_doc::getC_BPartner_Location_ID);
 	}
 
 	public final OrgId getOrgTrxId()
@@ -775,11 +779,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				m_C_SalesRegion_ID = -2;        // don't try again
 			}
 		}
-		if (m_C_SalesRegion_ID < 0)
-		{
-			return 0;
-		}
-		return m_C_SalesRegion_ID;
+
+		return Math.max(m_C_SalesRegion_ID, 0);
 	}   // getC_SalesRegion_ID
 
 	public final int getC_Project_ID()
@@ -802,6 +803,19 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
 	}
 
+	@Nullable
+	protected OrderId getSalesOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(getValue("C_OrderSO_ID"));
+	}
+
+	public SectionCodeId getSectionCodeId()
+	{
+		return SectionCodeId.ofRepoIdOrNull(getValue("M_SectionCode_ID"));
+	}
+
+	public BPartnerId getBPartnerId2() {return BPartnerId.ofRepoIdOrNull(getValue("C_BPartner2_ID"));}
+
 	public final int getUser1_ID()
 	{
 		return getValue("User1_ID");
@@ -812,7 +826,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("User2_ID");
 	}
 
-	private final <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
+	private <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -828,11 +842,10 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return null;
 		}
 
-		final T id = idOrNullMapper.apply(valueInt);
-		return id;
+		return idOrNullMapper.apply(valueInt);
 	}
 
-	private final <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
+	private <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -872,35 +885,35 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			final Integer valueInt = (Integer)po.get_Value(index);
 			if (valueInt != null)
 			{
-				return valueInt.intValue();
+				return valueInt;
 			}
 		}
 		return 0;
 	}
 
-	@Nullable final BigDecimal getValueAsBD(final String columnName, @Nullable final BigDecimal defaultValue)
+	@Nullable
+	public LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
 	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
+		@NonNull final PO docLinePO = getPO();
+		final int index = docLinePO.get_ColumnIndex(columnName);
+		if (index < 0)
 		{
-			final Object valueObj = po.get_Value(index);
-			return NumberUtils.asBigDecimal(valueObj, defaultValue);
+			return null;
 		}
 
-		return defaultValue;
-	}
-
-	private final LocalDate getValueAsLocalDateOrNull(final String columnName)
-	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
+		final Timestamp ts = docLinePO.get_ValueAsTimestamp(index);
+		if (ts == null)
 		{
-			return TimeUtil.asLocalDate(po.get_Value(index));
+			return null;
 		}
 
-		return null;
+		OrgId orgId = OrgId.ofRepoId(docLinePO.getAD_Org_ID());
+		if (orgId.isAny())
+		{
+			orgId = getDoc().getOrgId();
+		}
+
+		return LocalDateAndOrgId.ofTimestamp(ts, orgId, services::getTimeZone);
 	}
 
 	public final String getValueAsString(final String columnName)
@@ -919,8 +932,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * Set ReversalLine_ID
 	 * store original (voided/reversed) document line
-	 *
-	 * @param ReversalLine_ID
 	 */
 	public final void setReversalLine_ID(final int ReversalLine_ID)
 	{
@@ -989,7 +1000,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @return document currency precision
 	 * @see Doc#getStdPrecision()
 	 */
-	protected final int getStdPrecision()
+	protected final CurrencyPrecision getStdPrecision()
 	{
 		return m_doc.getStdPrecision();
 	}

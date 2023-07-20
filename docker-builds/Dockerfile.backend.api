@@ -1,0 +1,20 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+
+FROM eclipse-temurin:17.0.7_7-jdk
+
+RUN apt-get -y update && apt-get -y install locales zip && rm -rf /var/lib/apt/lists/*
+RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
+
+WORKDIR /opt/metasfresh-webui-api
+
+COPY --from=backend /backend/metasfresh-webui-api/target/docker/metasfresh-webui-api.jar .
+COPY --from=backend /backend/metasfresh-webui-api/target/docker/configs/metasfresh.properties .
+
+COPY docker-builds/metadata/build-info.properties META-INF/
+COPY docker-builds/metadata/git.properties BOOT-INF/classes/
+RUN zip -g metasfresh-webui-api.jar META-INF/build-info.properties BOOT-INF/classes/git.properties
+
+CMD ["java", "-jar", "/opt/metasfresh-webui-api/metasfresh-webui-api.jar"]

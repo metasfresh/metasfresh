@@ -26,11 +26,17 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
 
 @Value
 public class ESQueryTemplate
 {
+	public static final CtxName PARAM_query = CtxNames.parse("query");
+	public static final CtxName PARAM_queryStartsWith = CtxNames.parse("queryStartsWith");
+	public static final CtxName PARAM_orgFilter = CtxNames.parse("OrgFilter");
+
 	@NonNull IStringExpression expression;
 
 	public static ESQueryTemplate ofJsonString(final String json)
@@ -43,9 +49,20 @@ public class ESQueryTemplate
 		this.expression = expression;
 	}
 
+	public boolean isOrgFilterParameterRequired()
+	{
+		return isParameterRequired(PARAM_orgFilter);
+	}
+
+	public boolean isParameterRequired(@NonNull final CtxName ctxName)
+	{
+		return expression.requiresParameter(ctxName.getName());
+	}
+
 	public String resolve(@NonNull final Evaluatee evalCtx)
 	{
 		final ToJsonEvaluatee evalCtxEffective = new ToJsonEvaluatee(evalCtx);
+		evalCtxEffective.skipConvertingToJson(PARAM_orgFilter.getName());
 		return expression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail);
 	}
 }

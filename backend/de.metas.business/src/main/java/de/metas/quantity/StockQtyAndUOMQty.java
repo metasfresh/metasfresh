@@ -1,35 +1,36 @@
 package de.metas.quantity;
 
-import static de.metas.util.Check.assumeNotNull;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.product.ProductId;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Optional;
+
+import static de.metas.util.Check.assumeNotNull;
+
 @Value
 @ToString(doNotUseGetters = true)
 public class StockQtyAndUOMQty
 {
-	ProductId productId;
+	@NonNull ProductId productId;
 
-	Quantity stockQty;
+	@NonNull Quantity stockQty;
 
-	/** Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}. */
-	Quantity uomQty;
+	/**
+	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockQty()}.
+	 */
+	@Nullable Quantity uomQty;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -110,21 +111,30 @@ public class StockQtyAndUOMQty
 
 	public StockQtyAndUOMQty negate()
 	{
-		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty
-				.builder()
-				.productId(productId)
-				.stockQty(stockQty.negate());
-
-		if (getUOMQtyOpt().isPresent())
+		if (isZero())
 		{
-			result.uomQty(uomQty.negate());
+			return this;
 		}
 
-		return result.build();
+		return toBuilder()
+				.stockQty(stockQty.negate())
+				.uomQty(uomQty != null ? uomQty.negate() : null)
+				.build();
+	}
+
+	@JsonIgnore
+	public boolean isZero()
+	{
+		return stockQty.isZero() && (uomQty == null || uomQty.isZero());
 	}
 
 	public StockQtyAndUOMQty toZero()
 	{
+		if (isZero())
+		{
+			return this;
+		}
+
 		return toBuilder()
 				.stockQty(stockQty.toZero())
 				.uomQty(uomQty != null ? uomQty.toZero() : null)
@@ -139,10 +149,10 @@ public class StockQtyAndUOMQty
 				.productId(productId)
 				.stockQty(stockQty.subtract(other.getStockQty()));
 
-		if (getUOMQtyOpt().isPresent())
+		if (uomQty != null)
 		{
-			Check.assume(other.getUOMQtyOpt().isPresent(), "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
-			result.uomQty(uomQty.subtract(other.uomQty));
+			@NonNull final Quantity other_uomQty = assumeNotNull(other.uomQty, "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
+			result.uomQty(uomQty.subtract(other_uomQty));
 		}
 
 		return result.build();
@@ -150,14 +160,15 @@ public class StockQtyAndUOMQty
 
 	public StockQtyAndUOMQty multiply(@NonNull final BigDecimal factor)
 	{
-		final StockQtyAndUOMQtyBuilder result = this
-				.toBuilder()
-				.stockQty(stockQty.multiply(factor));
-		if (uomQty != null)
+		if (factor.compareTo(BigDecimal.ONE) == 0)
 		{
-			result.uomQty(uomQty.multiply(factor));
+			return this;
 		}
-		return result.build();
+
+		return toBuilder()
+				.stockQty(stockQty.multiply(factor))
+				.uomQty(uomQty != null ? uomQty.multiply(factor) : null)
+				.build();
 	}
 
 	public StockQtyAndUOMQty setScale(
@@ -191,7 +202,7 @@ public class StockQtyAndUOMQty
 
 	/**
 	 * @return the minimum by looking at the stock quantities.
-	 *         Important: if this instance's stock quantity is equal to {@code other}'s stock quantity, then return {@code this}.
+	 * Important: if this instance's stock quantity is equal to {@code other}'s stock quantity, then return {@code this}.
 	 */
 	public StockQtyAndUOMQty min(@NonNull final StockQtyAndUOMQty other)
 	{
@@ -200,5 +211,47 @@ public class StockQtyAndUOMQty
 			return this;
 		}
 		return other;
+	}
+
+	@NonNull
+	public static StockQtyAndUOMQty toZeroIfNegative(@NonNull final StockQtyAndUOMQty stockQtyAndUOMQty)
+	{
+		return stockQtyAndUOMQty.signum() < 0
+				? stockQtyAndUOMQty.toZero()
+				: stockQtyAndUOMQty;
+	}
+
+	@NonNull
+	public static StockQtyAndUOMQty toZeroIfPositive(@NonNull final StockQtyAndUOMQty stockQtyAndUOMQty)
+	{
+		return stockQtyAndUOMQty.signum() > 0
+				? stockQtyAndUOMQty.toZero()
+				: stockQtyAndUOMQty;
+	}
+
+	public Quantity getQtyInUOM(@NonNull final UomId uomId, @NonNull final QuantityUOMConverter converter)
+	{
+		if (uomQty != null)
+		{
+			if (UomId.equals(uomQty.getUomId(), uomId))
+			{
+				return uomQty;
+			}
+			else if (UomId.equals(uomQty.getSourceUomId(), uomId))
+			{
+				return uomQty.switchToSource();
+			}
+		}
+
+		if (UomId.equals(stockQty.getUomId(), uomId))
+		{
+			return stockQty;
+		}
+		else if (UomId.equals(stockQty.getSourceUomId(), uomId))
+		{
+			return stockQty.switchToSource();
+		}
+
+		return converter.convertQuantityTo(stockQty, productId, uomId);
 	}
 }

@@ -1,5 +1,7 @@
 package de.metas.acct.aggregation.impl;
 
+import com.google.common.base.Stopwatch;
+import de.metas.acct.aggregation.FactAcctLogProcessResult;
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
 import de.metas.acct.aggregation.IFactAcctLogIterable;
@@ -15,11 +17,11 @@ import de.metas.util.collections.MapReduceAggregator;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -55,26 +57,22 @@ public class FactAcctLogBL implements IFactAcctLogBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
-	public boolean hasLogsToProcess()
+	public FactAcctLogProcessResult processAll(final Properties ctx, final QueryLimit limit)
 	{
-		return factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL);
+		return trxManager.callInNewTrx(() -> processAllInTrx(ctx, limit));
 	}
 
-	@Override
-	public void processAll(final Properties ctx, final int limit)
+	private FactAcctLogProcessResult processAllInTrx(final Properties ctx, final QueryLimit limit)
 	{
-		trxManager.runInNewTrx(() -> processAllInTrx(ctx, limit));
-	}
-
-	private void processAllInTrx(final Properties ctx, final int limit)
-	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try (final IFactAcctLogIterable logs = factAcctLogDAO.tagAndRetrieve(ctx, limit))
 		{
-			process(logs);
+			return process(logs)
+					.withDuration(stopwatch.elapsed());
 		}
 	}
 
-	public void process(final IFactAcctLogIterable logs)
+	public FactAcctLogProcessResult process(final IFactAcctLogIterable logs)
 	{
 		final ILoggable loggable = Loggables.get();
 
@@ -97,6 +95,11 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 		loggable.addLog("Processed {0} {1} records", factAcctSummaryUpdater.getItemsCount(), I_Fact_Acct_Log.Table_Name);
 		loggable.addLog("Created/Updated {0} {1} records", factAcctSummaryUpdater.getGroupsCount(), I_Fact_Acct_Summary.Table_Name);
+
+		return FactAcctLogProcessResult.builder()
+				.iterations(1)
+				.processedLogRecordsCount(factAcctSummaryUpdater.getItemsCount())
+				.build();
 	}
 
 	private static class FactAcctSummaryUpdater extends MapReduceAggregator<FactAcctGroup, I_Fact_Acct_Log>

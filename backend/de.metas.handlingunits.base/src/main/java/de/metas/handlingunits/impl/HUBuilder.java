@@ -23,6 +23,8 @@ package de.metas.handlingunits.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.pair.IPair;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
@@ -48,13 +50,13 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
@@ -68,11 +70,10 @@ import java.util.stream.Collectors;
  * Important class to build new HUs. Use {@link IHandlingUnitsDAO#createHUBuilder(IHUContext)} to get an isntance.
  * <p>
  * More or less employed and driven by the {@link IAllocationDestination}s and also {@link IAllocationStrategy}s, whenever the need to create a new {@link I_M_HU}.
- *
+ * <p>
  * This builder also creates {@link I_M_HU_Item} for the new {@link I_M_HU} it creates (see {@link HUNodeIncludedItemBuilder}), but out of itself it doesn't create any child HUs.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */final class HUBuilder extends AbstractHUIterator implements IHUBuilder
 {
@@ -81,20 +82,27 @@ import java.util.stream.Collectors;
 
 	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
-	@Nullable private I_M_HU_Item _parentItem = null;
-	@Nullable private I_M_HU_PI_Item_Product _piip = null;
+	@Nullable
+	private I_M_HU_Item _parentItem = null;
+	@Nullable
+	private I_M_HU_PI_Item_Product _piip = null;
 	private LocatorId _locatorId = null;
 
 	private boolean _huPlanningReceiptOwnerPM = false; // DB default false
 
 	/**
 	 * HU Status to be used when creating a new HU.
-	 *
+	 * <p>
 	 * Default: {@link X_M_HU#HUSTATUS_Planning}.
 	 */
 	private String _huStatus = X_M_HU.HUSTATUS_Planning;
 
-	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+	@Nullable
+	private ClearanceStatusInfo _huClearanceStatusInfo;
+
+	@Nullable
+	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+	private boolean _isExternalProperty = false;
 
 	public HUBuilder(@NonNull final IHUContext huContext)
 	{
@@ -180,6 +188,18 @@ import java.util.stream.Collectors;
 	}
 
 	@Override
+	public IHUBuilder setIsExternalProperty(final boolean isExternalProperty)
+	{
+		_isExternalProperty = isExternalProperty;
+		return this;
+	}
+
+	protected boolean isExternalProperty()
+	{
+		return _isExternalProperty;
+	}
+
+	@Override
 	public IHUBuilder setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		if (lutuConfiguration == null)
@@ -219,6 +239,18 @@ import java.util.stream.Collectors;
 	public boolean isHUPlanningReceiptOwnerPM()
 	{
 		return _huPlanningReceiptOwnerPM;
+	}
+
+	@Override
+	public IHUBuilder setHUClearanceStatusInfo(@Nullable final ClearanceStatusInfo huClearanceStatusInfo)
+	{
+		_huClearanceStatusInfo = huClearanceStatusInfo;
+		return this;
+	}
+
+	public ClearanceStatusInfo getHUClearanceStatusInfo()
+	{
+		return _huClearanceStatusInfo;
 	}
 
 	@Nullable
@@ -318,9 +350,9 @@ import java.util.stream.Collectors;
 
 	/**
 	 * Creates new {@link I_M_HU} and saves it.
-	 *
+	 * <p>
 	 * This method is creating ONLY the {@link I_M_HU} object and not it's children.
-	 *
+	 * <p>
 	 * It will use {@link #getM_HU_Item_Parent()} as it's parent.
 	 *
 	 * @see #createHUInstance(I_M_HU_PI_Version, I_M_HU_Item)
@@ -333,11 +365,11 @@ import java.util.stream.Collectors;
 
 	/**
 	 * Creates new {@link I_M_HU} and saves it.
-	 *
+	 * <p>
 	 * This method is creating ONLY the {@link I_M_HU} object and not it's children.
 	 *
 	 * @param huPIVersion set as the new HU's {@link I_M_HU_PI_Version}
-	 * @param parentItem parent HU Item to link on
+	 * @param parentItem  parent HU Item to link on
 	 * @return created {@link I_M_HU}.
 	 */
 	private I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion, @Nullable final I_M_HU_Item parentItem)
@@ -421,6 +453,9 @@ import java.util.stream.Collectors;
 		// fresh 08162: Set M_HU.HUPlanningReceiptOwnerPM
 		final boolean huPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
+		hu.setIsExternalProperty(isExternalProperty());
+
+		setClearanceStatus(hu, parentHU, getHUClearanceStatusInfo());
 
 		//
 		// Notify Storage and Attributes DAO that a new HU was created
@@ -465,11 +500,39 @@ import java.util.stream.Collectors;
 		return piip;
 	}
 
+	private static void setClearanceStatus(
+			@NonNull final I_M_HU hu,
+			@Nullable final I_M_HU parentHU,
+			@Nullable final ClearanceStatusInfo configuredStatusInfo)
+	{
+		// Copy HUClearanceStatus and HUClearanceNote from parent or use the configured one if no parent
+		if (parentHU != null)
+		{
+			hu.setClearanceStatus(parentHU.getClearanceStatus());
+			hu.setClearanceNote(parentHU.getClearanceNote());
+			hu.setClearanceDate(parentHU.getClearanceDate());
+		}
+		else if (configuredStatusInfo == null)
+		{
+			hu.setClearanceStatus(null);
+			hu.setClearanceNote(null);
+			hu.setClearanceDate(null);
+		}
+		else
+		{
+
+			hu.setClearanceStatus(configuredStatusInfo.getClearanceStatus().getCode());
+			hu.setClearanceNote(configuredStatusInfo.getClearanceNote());
+
+			final InstantAndOrgId clearanceDate = configuredStatusInfo.getClearanceDate();
+			hu.setClearanceDate(clearanceDate != null ? clearanceDate.toTimestamp() : null);
+		}
+	}
+
 	/**
 	 * Builder used to create {@link I_M_HU_Item}s for a given {@link I_M_HU}. Also see the comments within the code to figure out what it does.
 	 *
 	 * @author tsa
-	 *
 	 */
 	protected class HUNodeIncludedItemBuilder extends HUNodeIterator
 	{
@@ -570,7 +633,7 @@ import java.util.stream.Collectors;
 
 	/**
 	 * Builder that might be used <b>(but isn't!)</b> to create included {@link I_M_HU}s for given {@link I_M_HU_Item}.
-	 *
+	 * <p>
 	 * Actually is doing nothing because we are not creating included HUs recursively.
 	 */
 	protected class HUItemNodeIncludedHUBuilderNOOP extends HUItemNodeIterator

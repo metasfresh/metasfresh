@@ -16,13 +16,14 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -53,6 +54,7 @@ public class AttributePricing implements IPricingRule
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
+	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
@@ -152,7 +154,7 @@ public class AttributePricing implements IPricingRule
 		result.setTaxIncluded(false);
 		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 		result.setPriceListVersionId(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
-		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
+		result.setTaxCategoryId(productTaxCategoryService.getTaxCategoryId(productPrice));
 		result.setCalculated(true);
 		// 06942 : use product price uom all the time
 		result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
@@ -297,11 +299,11 @@ public class AttributePricing implements IPricingRule
 	 * Extracts an ASI from the given {@code pricingCtx}.
 	 *
 	 * @return <ul>
-	 * <li>ASI
-	 * <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
-	 * or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
-	 * or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
-	 * </ul>
+	 *         <li>ASI
+	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
+	 *         or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
+	 *         or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
+	 *         </ul>
 	 */
 	@Nullable
 	protected static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)

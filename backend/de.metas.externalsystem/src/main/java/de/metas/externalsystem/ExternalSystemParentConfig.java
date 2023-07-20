@@ -23,6 +23,8 @@
 package de.metas.externalsystem;
 
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,7 +42,8 @@ public class ExternalSystemParentConfig
 	ExternalSystemParentConfigId id;
 	ExternalSystemType type;
 	String name;
-	Boolean isActive;
+	boolean active;
+	OrgId orgId;
 	IExternalSystemChildConfig childConfig;
 	Boolean writeAudit;
 
@@ -52,10 +55,11 @@ public class ExternalSystemParentConfig
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType type,
 			@NonNull final String name,
-			@NonNull final Boolean isActive,
+			@NonNull final Boolean active,
+			@NonNull final OrgId orgId,
 			@NonNull final IExternalSystemChildConfig childConfig,
 			@NonNull final Boolean writeAudit,
-			@NonNull final String auditFileFolder)
+			@Nullable final String auditFileFolder)
 	{
 		if (!type.equals(childConfig.getId().getType()))
 		{
@@ -68,10 +72,14 @@ public class ExternalSystemParentConfig
 		this.id = id;
 		this.type = type;
 		this.name = name;
+		this.orgId = orgId;
 		this.childConfig = childConfig;
-		this.isActive = isActive;
+		this.active = active;
 		this.writeAudit = writeAudit;
-		this.auditFileFolder = auditFileFolder;
+
+		this.auditFileFolder = writeAudit
+				? Check.assumeNotNull(auditFileFolder, "If writeAudit==true, then auditFileFolder is set")
+				: null;
 	}
 
 	public ITableRecordReference getTableRecordReference()

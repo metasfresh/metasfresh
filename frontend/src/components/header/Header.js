@@ -2,9 +2,9 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import classnames from 'classnames';
 
+import history from '../../services/History';
 import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
@@ -31,6 +31,10 @@ import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import {
+  getDocActionElementFromState,
+  getDocSummaryDataFromState,
+} from '../../reducers/windowHandlerUtils';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -51,7 +55,7 @@ class Header extends PureComponent {
     isUDOpen: false,
     tooltipOpen: '',
     isEmailOpen: false,
-    prompt: { open: false },
+    deletePrompt: { open: false },
   };
 
   udRef = React.createRef();
@@ -130,13 +134,16 @@ class Header extends PureComponent {
   };
 
   /**
-   * @method handleInboxOpen
-   * @summary ToDo: Describe the method
-   * @param {object} state
+   * @method openInbox
+   * @summary Shows inbox
    */
-  handleInboxOpen = (state) => {
-    this.setState({ isInboxOpen: !!state });
-  };
+  openInbox = () => this.setState({ isInboxOpen: true });
+
+  /**
+   * @method closeInbox
+   * @summary Hides inbox
+   */
+  closeInbox = () => this.setState({ isInboxOpen: false });
 
   /**
    * @method handleInboxToggle
@@ -221,7 +228,7 @@ class Header extends PureComponent {
    * @summary Reset breadcrumbs after clicking the logo
    */
   handleDashboardLink = () => {
-    const { dispatch, history } = this.props;
+    const { dispatch } = this.props;
 
     dispatch(setBreadcrumb([]));
     history.push('/');
@@ -240,11 +247,6 @@ class Header extends PureComponent {
     }
   };
 
-  /**
-   * @method toggleTooltip
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   */
   toggleTooltip = (tooltip) => {
     this.setState({ tooltipOpen: tooltip });
   };
@@ -315,6 +317,7 @@ class Header extends PureComponent {
    * @param {string} tabId
    * @param {string} rowId
    * @param {string} rowId
+   * @param {*} staticModalType
    */
   openModalRow = (
     windowId,
@@ -405,16 +408,6 @@ class Header extends PureComponent {
   };
 
   /**
-   * @method handleDelete
-   * @summary ToDo: Describe the method
-   */
-  handleDelete = () => {
-    this.setState({
-      prompt: Object.assign({}, this.state.prompt, { open: true }),
-    });
-  };
-
-  /**
    * @method handleEmail
    * @summary ToDo: Describe the method
    */
@@ -446,41 +439,30 @@ class Header extends PureComponent {
     this.setState({ isLetterOpen: false });
   };
 
-  /**
-   * @method handlePromptCancelClick
-   * @summary ToDo: Describe the method
-   */
-  handlePromptCancelClick = () => {
+  handleDelete = () => {
+    this.setState({ deletePrompt: { ...this.state.deletePrompt, open: true } });
+  };
+
+  handleDeletePromptCancelClick = () => {
     this.setState({
-      prompt: Object.assign({}, this.state.prompt, { open: false }),
+      deletePrompt: { ...this.state.deletePrompt, open: false },
     });
   };
 
-  /**
-   * @method handlePromptSubmitClick
-   * @summary Hanndler for the prompt submit action
-   */
-  handlePromptSubmitClick = () => {
+  handleDeletePromptSubmitClick = () => {
     const { handleDeletedStatus, windowId, dataId } = this.props;
 
     this.setState(
-      {
-        prompt: Object.assign({}, this.state.prompt, { open: false }),
-      },
+      { deletePrompt: { ...this.state.deletePrompt, open: false } },
       () => {
         deleteRequest('window', windowId, null, null, [dataId]).then(() => {
           handleDeletedStatus(true);
-          this.redirect(`/window/${windowId}`);
+          this.redirectBackAfterDelete({ windowId });
         });
       }
     );
   };
 
-  /**
-   * @method handleDocStatusToggle
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   */
   handleDocStatusToggle = (close) => {
     const elem = document.getElementsByClassName('js-dropdown-toggler')[0];
 
@@ -513,11 +495,6 @@ class Header extends PureComponent {
     });
   };
 
-  /**
-   * @method closeOverlays
-   * @summary ToDo: Describe the method
-   * @param {object} clickedItem
-   */
   closeOverlays = (clickedItem, callback) => {
     const { isSubheaderShow } = this.state;
 
@@ -555,7 +532,21 @@ class Header extends PureComponent {
    * @param {string} where
    */
   redirect = (where) => {
-    this.props.history.push(where);
+    history.push(where);
+  };
+
+  redirectBackAfterDelete = ({ windowId }) => {
+    if (!history.length) {
+      // history length not available, be optimistic and go back
+      history.go(-1);
+    } else if (history.length > 1) {
+      history.go(-1);
+    } else if (windowId) {
+      // we are at first page => create a new view
+      history.push(`/window/${windowId}`);
+    } else {
+      history.push(`/`);
+    }
   };
 
   /**
@@ -596,7 +587,7 @@ class Header extends PureComponent {
       scrolled,
       isMenuOverlayShow,
       tooltipOpen,
-      prompt,
+      deletePrompt,
       sideListTab,
       isUDOpen,
       isEmailOpen,
@@ -605,7 +596,7 @@ class Header extends PureComponent {
 
     return (
       <div>
-        {prompt.open && (
+        {deletePrompt && deletePrompt.open && (
           <Prompt
             title={counterpart.translate('window.Delete.caption')}
             text={counterpart.translate('window.delete.message')}
@@ -613,8 +604,8 @@ class Header extends PureComponent {
               submit: counterpart.translate('window.delete.confirm'),
               cancel: counterpart.translate('window.delete.cancel'),
             }}
-            onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={this.handlePromptSubmitClick}
+            onCancelClick={this.handleDeletePromptCancelClick}
+            onSubmitClick={this.handleDeletePromptSubmitClick}
           />
         )}
 
@@ -678,6 +669,7 @@ class Header extends PureComponent {
               <div className="header-center js-not-unselect">
                 <img
                   src={logo}
+                  alt="logo"
                   className="header-logo pointer"
                   onClick={this.handleDashboardLink}
                 />
@@ -723,9 +715,7 @@ class Header extends PureComponent {
                       'header-item-open': isInboxOpen,
                     }
                   )}
-                  onClick={() =>
-                    this.closeOverlays('', () => this.handleInboxOpen(true))
-                  }
+                  onClick={() => this.closeOverlays('', this.openInbox)}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_INBOX_MENU)
                   }
@@ -751,8 +741,8 @@ class Header extends PureComponent {
                 <Inbox
                   ref={this.inboxRef}
                   open={isInboxOpen}
-                  close={this.handleInboxOpen}
-                  onFocus={() => this.handleInboxOpen(true)}
+                  close={this.closeInbox}
+                  onFocus={this.openInbox}
                   disableOnClickOutside={true}
                   inbox={inbox}
                 />
@@ -878,7 +868,13 @@ class Header extends PureComponent {
           handleUDToggle={this.handleUDToggle}
           openModal={
             dataId
-              ? () => this.openModal(windowId, 'window', 'Advanced edit', true)
+              ? () =>
+                  this.openModal(
+                    windowId,
+                    'window',
+                    counterpart.translate('window.advancedEdit.caption'),
+                    true
+                  )
               : undefined
           }
           handlePrint={
@@ -937,7 +933,6 @@ class Header extends PureComponent {
  * @prop {*} siteName
  * @prop {*} windowId
  * @prop {bool} hasComments - used to indicate comments available for the details view
- * @prop {object} history
  */
 Header.propTypes = {
   activeTab: PropTypes.any,
@@ -965,26 +960,17 @@ Header.propTypes = {
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
   hasComments: PropTypes.bool,
-  history: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const { location } = ownProps;
-  const { master } = state.windowHandler;
-  const { docActionElement, documentSummaryElement } = master.layout;
-  const docSummaryData =
-    documentSummaryElement &&
-    master.data[documentSummaryElement.fields[0].field];
-
+const mapStateToProps = (state) => {
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
-    pathname: location.pathname,
     plugins: state.pluginsHandler.files,
     indicator: state.windowHandler.indicator,
-    docStatus: docActionElement,
-    docSummaryData,
+    docStatus: getDocActionElementFromState(state),
+    docSummaryData: getDocSummaryDataFromState(state),
   };
 };
 
-export default withRouter(connect(mapStateToProps)(Header));
+export default connect(mapStateToProps)(Header);

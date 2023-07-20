@@ -22,6 +22,8 @@
 
 package de.metas.handlingunits.pporder.api;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import org.eevolution.api.PPOrderId;
 import de.metas.util.ISingletonService;
@@ -31,6 +33,7 @@ import org.eevolution.api.PPCostCollectorId;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface IHUPPOrderQtyDAO extends ISingletonService
@@ -41,7 +44,7 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 
 	I_PP_Order_Qty save(CreateReceiptCandidateRequest request);
 
-	List<I_PP_Order_Qty> saveAll(Collection<CreateReceiptCandidateRequest> requests);
+	ImmutableList<I_PP_Order_Qty> saveAll(Collection<CreateReceiptCandidateRequest> requests);
 
 	void save(final I_PP_Order_Qty ppOrderQty);
 
@@ -63,4 +66,6 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final PPCostCollectorId costCollectorId);
 
 	List<I_PP_Order_Qty> retrieveOrderQtyForFinishedGoodsReceive(PPOrderId ppOrderId);
+
+	Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(@NonNull PPOrderId ppOrderId, @NonNull HuId huId);
 }

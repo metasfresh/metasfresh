@@ -27,8 +27,8 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 
 public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU_Configuration>
 {
-    public M_HU_LUTU_Configuration_StepDefData()
-    {
-        super(I_M_HU_LUTU_Configuration.class);
-    }
+	public M_HU_LUTU_Configuration_StepDefData()
+	{
+		super(I_M_HU_LUTU_Configuration.class);
+	}
 }

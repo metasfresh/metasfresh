@@ -1,14 +1,16 @@
 package de.metas.inoutcandidate.api;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
+
 import de.metas.inout.ShipmentScheduleId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /*
  * #%L

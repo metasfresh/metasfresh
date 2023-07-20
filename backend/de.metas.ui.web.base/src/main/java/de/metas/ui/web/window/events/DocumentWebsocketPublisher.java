@@ -11,7 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.stereotype.Component;
 
-import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.websocket.sender.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;

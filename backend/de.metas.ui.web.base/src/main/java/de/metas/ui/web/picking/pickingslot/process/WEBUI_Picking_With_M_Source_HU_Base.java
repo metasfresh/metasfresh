@@ -14,12 +14,12 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
+import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -74,16 +74,6 @@ import java.util.List;
 	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-	protected final IShipmentSchedulePA getShipmentSchedulePA()
-	{
-		return this.shipmentSchedulePA;
-	}
-
-	protected final PickingCandidateService getPickingCandidateService()
-	{
-		return this.pickingCandidateService;
-	}
-
 	protected final boolean noSourceHUAvailable()
 	{
 		final List<HuId> sourceHUs = getSourceHUIds();
@@ -101,7 +91,7 @@ import java.util.List;
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 
-		return  huPickingSlotBL.retrieveAvailableSourceHUs(query)
+		return huPickingSlotBL.retrieveAvailableSourceHUs(query)
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)

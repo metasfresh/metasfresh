@@ -1,11 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.exceptions.DBException;
-
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -15,6 +9,12 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import org.adempiere.exceptions.DBException;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -63,6 +63,8 @@ public interface IViewDataRepository
 
 	<T> List<T> retrieveModelsByIds(ViewId viewId, DocumentIdsSelection rowIds, Class<T> modelClass);
 
+	<T> Stream<T> retrieveModelsByIdsAsStream(ViewId viewId, DocumentIdsSelection rowIds, Class<T> modelClass);
+	
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(
 			final ViewEvaluationCtx viewEvalCtx,
 			ViewRowIdsOrderedSelection fromSelection,
@@ -76,7 +78,10 @@ public interface IViewDataRepository
 
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, DocumentFilterList filters, boolean applySecurityRestrictions, SqlDocumentFilterConverterContext context);
 
-	ViewRowIdsOrderedSelection removeRowIdsNotMatchingFilters(ViewRowIdsOrderedSelection selection, DocumentFilterList filters, Set<DocumentId> rowIds);
+	ViewRowIdsOrderedSelection addRemoveChangedRows(
+			ViewRowIdsOrderedSelection selection,
+			DocumentFilterList filters, Set<DocumentId> rowIds,
+			AddRemoveChangedRowIdsCollector changesCollector);
 
 	List<Object> retrieveFieldValues(ViewEvaluationCtx viewEvalCtx, String selectionId, String fieldName, int limit);
 }

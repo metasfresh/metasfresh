@@ -1,24 +1,9 @@
 package de.metas.shipper.gateway.commons;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import de.metas.mpackage.PackageId;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.common.util.CoalesceUtil;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.async.AsyncBatchId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
@@ -28,10 +13,27 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Shipper;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -60,6 +62,9 @@ public class ShipperGatewayFacade
 {
 	private final ShipperGatewayServicesRegistry shipperRegistry;
 
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
+
 	public ShipperGatewayFacade(@NonNull final ShipperGatewayServicesRegistry shipperRegistry)
 	{
 		this.shipperRegistry = shipperRegistry;
@@ -71,6 +76,7 @@ public class ShipperGatewayFacade
 		final ShipperTransportationId shipperTransportationId = request.getShipperTransportationId();
 		final LocalTime timeFrom = request.getTimeFrom();
 		final LocalTime timeTo = request.getTimeTo();
+		final AsyncBatchId asyncBatchId = request.getAsyncBatchId();
 
 		retrievePackagesByIds(request.getPackageIds())
 				.stream()
@@ -79,7 +85,8 @@ public class ShipperGatewayFacade
 						shipperTransportationId,
 						pickupDate,
 						timeFrom,
-						timeTo)))
+						timeTo,
+						asyncBatchId)))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
@@ -93,12 +100,14 @@ public class ShipperGatewayFacade
 				.list(I_M_Package.class);
 	}
 
+	@NonNull
 	private static DeliveryOrderKey createDeliveryOrderKey(
 			@NonNull final I_M_Package mpackage,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final LocalDate pickupDate,
 			@NonNull final LocalTime timeFrom,
-			@NonNull final LocalTime timeTo)
+			@NonNull final LocalTime timeTo,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		return DeliveryOrderKey.builder()
 				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
@@ -109,20 +118,21 @@ public class ShipperGatewayFacade
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
+				.asyncBatchId(asyncBatchId)
 				.build();
 	}
 
 	/**
 	 * In case the weight is <= 0, return the default value.
 	 */
-	private static int computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final int defaultValue)
+	private BigDecimal computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final BigDecimal defaultValue)
 	{
-		final int weightInKg = mpackages.stream()
+		// we don't yet have a weight-UOM in M_Package, that's why we just add up the values
+		final BigDecimal weightInKgRaw = mpackages.stream()
 				.map(I_M_Package::getPackageWeight) // TODO: we assume it's in Kg
 				.filter(weight -> weight != null && weight.signum() > 0)
-				.reduce(BigDecimal.ZERO, BigDecimal::add)
-				.setScale(0, RoundingMode.UP)
-				.intValueExact();
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		final BigDecimal weightInKg = kgPrecision.round(weightInKgRaw);
 
 		return CoalesceUtil.firstGreaterThanZero(weightInKg, defaultValue);
 	}
@@ -149,7 +159,7 @@ public class ShipperGatewayFacade
 
 		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
 				.deliveryOrderKey(deliveryOrderKey)
-				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages, 1))
+				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages, BigDecimal.ONE))
 				.mpackageIds(packageIds)
 				.allPackagesContentDescription(computePackagesContentDescription(mpackages))
 				.build();
@@ -159,7 +169,7 @@ public class ShipperGatewayFacade
 		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId);
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
 	}
 
 	private String retrieveShipperGatewayId(final ShipperId shipperId)

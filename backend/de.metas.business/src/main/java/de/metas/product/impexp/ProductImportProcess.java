@@ -22,7 +22,33 @@
 
 package de.metas.product.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import com.google.common.collect.ImmutableMap;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductPlanningSchemaBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.I_M_ProductScalePrice;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_I_Product;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_I_Product;
+import org.compiere.model.X_M_ProductPrice;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -32,31 +58,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_I_Product;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.X_I_Product;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.logging.LogManager;
-import de.metas.pricing.service.ProductPrices;
-import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * Import {@link I_I_Product} to {@link I_M_Product}.
@@ -68,6 +72,9 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	private static final Logger log = LogManager.getLogger(ProductImportProcess.class);
 
 	private static final String PARAM_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Override
 	public Class<I_I_Product> getImportModelClass()
@@ -105,6 +112,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 				.ctx(getCtx())
 				.tableName(getImportTableName())
 				.valueName(I_I_Product.COLUMNNAME_Value)
+				.build()
 				.updateIProduct();
 	}
 
@@ -146,7 +154,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			{
 				product.setName(product.getValue());
 			}
-			InterfaceWrapperHelper.save(product);
+			save(product);
 			M_Product_ID = product.getM_Product_ID();
 			importRecord.setM_Product_ID(M_Product_ID);
 			log.trace("Insert Product");
@@ -181,7 +189,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			}
 			catch (final SQLException ex)
 			{
-				throw new DBException("Update Product: " + ex.toString(), ex);
+				throw new DBException("Update Product: " + ex, ex);
 			}
 			finally
 			{
@@ -197,11 +205,11 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, productRecord, IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		// #3404 Create default product planning
-		Services.get(IProductPlanningSchemaBL.class).createDefaultProductPlanningsForAllProducts();
+		productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private final void createUpdateProductPrice(final I_I_Product imp)
+	private void createUpdateProductPrice(final I_I_Product imp)
 	{
 		//
 		// Get M_PriceList_Version_ID
@@ -238,33 +246,61 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 		//
 		// Get prices
-		final BigDecimal PriceList = imp.getPriceList();
-		final BigDecimal PriceStd = imp.getPriceStd();
-		final BigDecimal PriceLimit = imp.getPriceLimit();
-		if (PriceStd.signum() == 0 && PriceLimit.signum() == 0 && PriceList.signum() == 0)
+		final BigDecimal priceList = imp.getPriceList();
+		final BigDecimal priceStd = imp.getPriceStd();
+		final BigDecimal priceLimit = imp.getPriceLimit();
+		if (priceStd.signum() == 0 && priceLimit.signum() == 0 && priceList.signum() == 0)
 		{
 			return;
 		}
 
 		//
 		// Get/Create Product Price record
-		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(getCtx(), priceListVersionId, I_M_PriceList_Version.class, ITrx.TRXNAME_ThreadInherited);
+		final I_M_PriceList_Version plv = priceListDAO.getPriceListVersionByIdInTrx(PriceListVersionId.ofRepoId(priceListVersionId));
 		final I_M_ProductPrice pp = Optional
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
-				.orElseGet(() -> InterfaceWrapperHelper.create(getCtx(), I_M_ProductPrice.class, ITrx.TRXNAME_ThreadInherited));
-		pp.setM_PriceList_Version_ID(priceListVersionId);	// FK
+				.orElseGet(() -> newInstance(I_M_ProductPrice.class));
+
+		pp.setM_PriceList_Version_ID(priceListVersionId);    // FK
 		pp.setM_Product_ID(productId.getRepoId()); // FK
-		pp.setPriceLimit(PriceLimit);
-		pp.setPriceList(PriceList);
-		pp.setPriceStd(PriceStd);
 		pp.setC_TaxCategory_ID(taxCategoryId);
 		pp.setC_UOM_ID(uomId);
-		InterfaceWrapperHelper.save(pp);
+
+		save(pp);
+
+		if (imp.isScalePrice())
+		{
+			pp.setUseScalePrice(X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict);
+
+			final BigDecimal scalePriceBreak = imp.getQty();
+
+			final I_M_ProductScalePrice productScalePrice = Optional
+					.ofNullable(priceListDAO.retrieveScalePriceForExactBreak(ProductPriceId.ofRepoId(pp.getM_ProductPrice_ID()),
+																			 scalePriceBreak))
+					.orElseGet(() -> newInstance(I_M_ProductScalePrice.class));
+
+			productScalePrice.setM_ProductPrice_ID(pp.getM_ProductPrice_ID());
+			productScalePrice.setQty(scalePriceBreak);
+			productScalePrice.setPriceLimit(priceLimit);
+			productScalePrice.setPriceList(priceList);
+			productScalePrice.setPriceStd(priceStd);
+
+			save(productScalePrice);
+		}
+
+		else
+		{
+			pp.setPriceLimit(priceLimit);
+			pp.setPriceList(priceList);
+			pp.setPriceStd(priceStd);
+		}
+
+		save(pp);
 	}
 
 	private I_M_Product createMProduct(@NonNull final I_I_Product importRecord)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setAD_Org_ID(importRecord.getAD_Org_ID());
 		//
 		product.setValue(importRecord.getValue());
@@ -290,6 +326,10 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
 		product.setWeight(importRecord.getWeight());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
+		product.setTrademark(importRecord.getTrademark());
+		product.setPZN(importRecord.getPZN());
+		product.setIsCommissioned(importRecord.isCommissioned());
+		product.setIsPurchased(importRecord.isPurchased());
 
 		return product;
 	}	// MProduct

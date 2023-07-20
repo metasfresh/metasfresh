@@ -32,12 +32,13 @@ import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatient;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatientRepository;
@@ -51,13 +52,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -79,6 +78,8 @@ class OrderAttachmentRowsLoader
 	@NonNull
 	AlbertaPatientRepository albertaPatientRepository;
 	@NonNull
+	PurchaseCandidateRepository purchaseCandidateRepository;
+	@NonNull
 	LookupDataSource patientLookup;
 	@NonNull
 	LookupDataSource payerLookup;
@@ -97,13 +98,14 @@ class OrderAttachmentRowsLoader
 	Map<TableRecordReference, I_Alberta_PrescriptionRequest> prescriptionRequestRecordRefs = ImmutableMap.of();
 	@NonFinal
 	@NonNull
-	Map<TableRecordReference, TableRecordReference> bpartnerRef2salesOrderRef = ImmutableMap.of();
+	Set<TableRecordReference> bPartnerRecordRefs = ImmutableSet.of();
 
 	@Builder
 	private OrderAttachmentRowsLoader(
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final LookupDataSource patientLookup,
 			@NonNull final LookupDataSource payerLookup,
 			@NonNull final LookupDataSource pharmacyLookup,
@@ -112,6 +114,7 @@ class OrderAttachmentRowsLoader
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.albertaPrescriptionRequestDAO = albertaPrescriptionRequestDAO;
 		this.albertaPatientRepository = albertaPatientRepository;
+		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.patientLookup = patientLookup;
 		this.payerLookup = payerLookup;
 		this.pharmacyLookup = pharmacyLookup;
@@ -126,13 +129,13 @@ class OrderAttachmentRowsLoader
 		final Set<TableRecordReference> allTargetTableRecordRefs = Stream.of(ImmutableSet.of(getPurchaseOrderRecordRef()),
 																			 salesOrderRecordRefs.keySet(),
 																			 prescriptionRequestRecordRefs.keySet(),
-																			 bpartnerRef2salesOrderRef.keySet())
+																			 bPartnerRecordRefs)
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final Map<String, AttachmentRowBuilder.PriorityRowBuilder> tableName2PriorityRowBuilder = ImmutableMap.of(
-				I_C_BPartner.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(0), this::buildRowFromSalesOrderOrCustomer),
-				I_C_Order.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(1), this::buildRowFromSalesOrderOrCustomer),
+				I_C_BPartner.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(0), this::buildRowFromCustomer),
+				I_C_Order.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(1), this::buildRowFromSalesOrder),
 				I_Alberta_PrescriptionRequest.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(2), this::buildRowFromPrescription));
 
 		final AttachmentRowBuilder attachmentRowBuilder = AttachmentRowBuilder.builder()
@@ -212,51 +215,44 @@ class OrderAttachmentRowsLoader
 				.pharmacy(extractPharmacyFromPrescriptionRequest(prescriptionRequest))
 				.filename(attachmentEntry.getFilename(recordReference))
 				.isAttachToPurchaseOrder(isAttachToPurchaseOrder)
-				.isAttachToPurchaseOrderInitial(isAttachToPurchaseOrder)
 				.selectedPurchaseOrder(purchaseOrder)
 				.attachmentEntry(attachmentEntry)
-				.salesOrderRecordRefs(salesOrderRecordRefs.keySet())
 				.build();
 	}
 
 	@NonNull
 	private OrderAttachmentRow buildRowFromPurchaseOrder(@NonNull final AttachmentEntry attachmentEntry)
 	{
+		final TableRecordReference purchaseOrderRecordRef = getPurchaseOrderRecordRef();
+
+		if (!attachmentEntry.hasLinkToRecord(purchaseOrderRecordRef))
+		{
+			throw new AdempiereException("Given attachmentEntry is not linked to purchase order!")
+					.appendParametersToMessage()
+					.setParameter("attachmentEntry", attachmentEntry)
+					.setParameter("purchaseOrderRecordRef", purchaseOrderRecordRef);
+		}
+
 		return OrderAttachmentRow.builder()
 				.rowId(buildRowId(attachmentEntry.getId(), getPurchaseOrderRecordRef()))
 				.filename(attachmentEntry.getFilename(getPurchaseOrderRecordRef()))
 				.isAttachToPurchaseOrder(true)
-				.isAttachToPurchaseOrderInitial(true)
 				.selectedPurchaseOrder(purchaseOrder)
 				.attachmentEntry(attachmentEntry)
-				.salesOrderRecordRefs(salesOrderRecordRefs.keySet())
 				.build();
 	}
 
 	@NonNull
-	private OrderAttachmentRow buildRowFromSalesOrderOrCustomer(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntry attachmentEntry)
+	private OrderAttachmentRow buildRowFromSalesOrder(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntry attachmentEntry)
 	{
 		final I_C_Order salesOrder;
 
-		final boolean isDirectlyAttachToOrder = !recordReference.getTableName().equals(I_C_BPartner.Table_Name);
-
-		if (!isDirectlyAttachToOrder)
-		{
-			salesOrder = Optional.ofNullable(bpartnerRef2salesOrderRef.get(recordReference))
-					.map(salesOrderRecordRefs::get)
-					.orElseThrow(() -> new AdempiereException("No I_C_Order present for given record reference: " + recordReference));
-		}
-		else
-		{
-			salesOrder = Optional.ofNullable(salesOrderRecordRefs.get(recordReference))
-					.orElseThrow(() -> new AdempiereException("No I_C_Order present for given record reference: " + recordReference));
-		}
+		salesOrder = Optional.ofNullable(salesOrderRecordRefs.get(recordReference))
+				.orElseThrow(() -> new AdempiereException("No I_C_Order present for given record reference: " + recordReference));
 
 		final ZoneId timeZone = orderBL.getTimeZone(salesOrder);
 
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(salesOrder.getDatePromised(), timeZone);
-
-		final boolean isAttachedToPurchaseOrder = isDirectlyAttachToOrder || attachmentEntry.hasLinkToRecord(getPurchaseOrderRecordRef());
 
 		return OrderAttachmentRow.builder()
 				.rowId(buildRowId(attachmentEntry.getId(), recordReference))
@@ -264,11 +260,30 @@ class OrderAttachmentRowsLoader
 				.payer(extractPayerFromSalesOrder(salesOrder))
 				.datePromised(datePromised)
 				.filename(attachmentEntry.getFilename(recordReference))
-				.isAttachToPurchaseOrder(isAttachedToPurchaseOrder)
-				.isAttachToPurchaseOrderInitial(isAttachedToPurchaseOrder)
+				.isAttachToPurchaseOrder(true)
 				.selectedPurchaseOrder(purchaseOrder)
 				.attachmentEntry(attachmentEntry)
-				.salesOrderRecordRefs(salesOrderRecordRefs.keySet())
+				.build();
+	}
+
+	@NonNull
+	private OrderAttachmentRow buildRowFromCustomer(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntry attachmentEntry)
+	{
+		if (!bPartnerRecordRefs.contains(recordReference))
+		{
+			throw new AdempiereException("Given recordReference is not among known ones!")
+					.appendParametersToMessage()
+					.setParameter("GivenTableRecordRef", recordReference)
+					.setParameter("KnownTableRecordRef", bPartnerRecordRefs);
+		}
+
+		return OrderAttachmentRow.builder()
+				.rowId(buildRowId(attachmentEntry.getId(), recordReference))
+				.patient(patientLookup.findById(recordReference.getRecord_ID()))
+				.filename(attachmentEntry.getFilename(recordReference))
+				.isAttachToPurchaseOrder(attachmentEntry.hasLinkToRecord(getPurchaseOrderRecordRef()))
+				.selectedPurchaseOrder(purchaseOrder)
+				.attachmentEntry(attachmentEntry)
 				.build();
 	}
 
@@ -289,7 +304,11 @@ class OrderAttachmentRowsLoader
 	{
 		purchaseOrder = orderDAO.getById(selectedPurchaseOrderId);
 
-		salesOrderRecordRefs = getSalesOrdersRecordRef().orElse(ImmutableMap.of());
+		final Optional<List<I_C_Order>> salesOrders = getSalesOrders();
+
+		salesOrderRecordRefs = salesOrders.map(this::getSalesOrdersRecordRef).orElse(ImmutableMap.of());
+
+		bPartnerRecordRefs = salesOrders.map(this::getSalesOrderPartnersRecordRef).orElse(ImmutableSet.of());
 
 		final Set<OrderId> salesOrderIds = salesOrderRecordRefs.keySet()
 				.stream()
@@ -298,59 +317,45 @@ class OrderAttachmentRowsLoader
 				.collect(ImmutableSet.toImmutableSet());
 
 		prescriptionRequestRecordRefs = getAlbertaPrescriptionsRecordRefs(salesOrderIds).orElse(ImmutableMap.of());
-
-		bpartnerRef2salesOrderRef = getBPartnerRefs2SalesOrderRef(salesOrderIds).orElse(ImmutableMap.of());
-	}
-
-	@NonNull
-	private Optional<Map<TableRecordReference, TableRecordReference>> getBPartnerRefs2SalesOrderRef(@NonNull final Set<OrderId> salesOrderIds)
-	{
-		if (salesOrderIds.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(orderDAO.getByIds(salesOrderIds)
-								   .stream()
-								   .collect(ImmutableMap.toImmutableMap(salesOrder -> TableRecordReference.of(I_C_BPartner.Table_Name, salesOrder.getC_BPartner_ID()),
-																		salesOrder -> TableRecordReference.of(I_C_Order.Table_Name, salesOrder.getC_Order_ID()))));
 	}
 
 	@NonNull
 	private Optional<List<I_C_Order>> getSalesOrders()
 	{
-		final List<I_C_OrderLine> purchaseOrderLines = orderDAO.retrieveOrderLines(selectedPurchaseOrderId, I_C_OrderLine.class);
+		final ImmutableSet.Builder<OrderId> salesOrderIds = ImmutableSet.builder();
+		salesOrderIds.addAll(orderDAO.getSalesOrderIdsByPurchaseOrderId(selectedPurchaseOrderId));
 
-		final Set<OrderLineId> salesOrderLineIds = purchaseOrderLines.stream()
-				.map(I_C_OrderLine::getLink_OrderLine_ID)
-				.map(OrderLineId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final HashSet<OrderId> salesOrderIds = new HashSet<>();
-		if (!Check.isEmpty(salesOrderLineIds))
-		{
-			orderDAO.retrieveOrderLinesByIds(salesOrderLineIds)
-					.stream()
-					.map(I_C_OrderLine::getC_Order_ID)
-					.map(OrderId::ofRepoId)
-					.forEach(salesOrderIds::add);
-		}
 		if (purchaseOrder.getLink_Order_ID() > 0) // C_OrderLine.Link_OrderLine_ID might be null, but there might be a 1:1 linked sales order
 		{
 			salesOrderIds.add(OrderId.ofRepoId(purchaseOrder.getLink_Order_ID()));
 		}
-		return Optional.of(orderDAO.getByIds(salesOrderIds));
+
+		purchaseCandidateRepository.getAllByPurchaseOrderId(selectedPurchaseOrderId)
+				.stream()
+				.map(PurchaseCandidate::getSalesOrderAndLineIdOrNull)
+				.filter(Objects::nonNull)
+				.map(OrderAndLineId::getOrderId)
+				.forEach(salesOrderIds::add);
+
+		return Optional.of(orderDAO.getByIds(salesOrderIds.build()));
 	}
 
 	@NonNull
-	private Optional<Map<TableRecordReference, I_C_Order>> getSalesOrdersRecordRef()
+	private Map<TableRecordReference, I_C_Order> getSalesOrdersRecordRef(@NonNull final List<I_C_Order> salesOrders)
 	{
-		return getSalesOrders()
-				.map(salesOrders -> salesOrders
-						.stream()
-						.collect(ImmutableMap.toImmutableMap(order -> TableRecordReference.of(I_C_Order.Table_Name, order.getC_Order_ID()),
-															 Function.identity())));
+		return salesOrders
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(order -> TableRecordReference.of(I_C_Order.Table_Name, order.getC_Order_ID()),
+													 Function.identity()));
+	}
+
+	@NonNull
+	private ImmutableSet<TableRecordReference> getSalesOrderPartnersRecordRef(@NonNull final List<I_C_Order> salesOrders)
+	{
+		return salesOrders
+				.stream()
+				.map(order -> TableRecordReference.of(I_C_BPartner.Table_Name, order.getC_BPartner_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

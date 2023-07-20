@@ -21,7 +21,7 @@ Feature: import order candidate to metasfresh
       | param_2                              | queueName      | ediImport      |
       | param_3                              | isDurableQueue | true           |
 
-    And after not more than 30s, import processor has started: impProcessor
+    And after not more than 60s, import processor has started: impProcessor
 
     And metasfresh contains M_Products:
       | Identifier | Name         |

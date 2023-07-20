@@ -22,35 +22,34 @@
 
 package de.metas.common.bpartner.v2.request.alberta;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class JsonCompositeAlbertaBPartnerTest
 {
+	private Expect expect;
 	private final ObjectMapper mapper = new ObjectMapper()
 			.findAndRegisterModules()
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 			.enable(MapperFeature.USE_ANNOTATIONS);
-
-	@BeforeClass
-	public static void beforeAll()
-	{
-		start();
-	}
 
 	@Test
 	public void serializeDeserialize() throws IOException
@@ -73,6 +72,8 @@ public class JsonCompositeAlbertaBPartnerTest
 		patient.setIVTherapy(true);
 		patient.setFieldNurseIdentifier("4444444");
 		patient.setDeactivationReason("reason");
+		patient.setClassification("classification");
+		patient.setCareDegree(BigDecimal.valueOf(2.2));
 		patient.setDeactivationDate(LocalDate.parse("2021-05-24"));
 		patient.setDeactivationComment("comment");
 		patient.setCreatedAt(Instant.parse("2019-11-22T00:00:00Z"));
@@ -101,6 +102,6 @@ public class JsonCompositeAlbertaBPartnerTest
 		final JsonCompositeAlbertaBPartner result = mapper.readValue(string, JsonCompositeAlbertaBPartner.class);
 
 		assertThat(result).isEqualTo(compositeAlbertaBPartner);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }
