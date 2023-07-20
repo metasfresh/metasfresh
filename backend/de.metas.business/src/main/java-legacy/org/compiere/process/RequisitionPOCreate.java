@@ -48,7 +48,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_M_Requisition;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
-import org.jetbrains.annotations.Nullable;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -79,19 +78,14 @@ public class RequisitionPOCreate extends JavaProcess
 	/** Warehouse */
 	private int p_M_Warehouse_ID = 0;
 	/** Doc Date From */
-	@Nullable
 	private Timestamp p_DateDoc_From;
 	/** Doc Date To */
-	@Nullable
 	private Timestamp p_DateDoc_To;
 	/** Doc Date From */
-	@Nullable
 	private Timestamp p_DateRequired_From;
 	/** Doc Date To */
-	@Nullable
 	private Timestamp p_DateRequired_To;
 	/** Priority */
-	@Nullable
 	private String p_PriorityRule = null;
 	/** User */
 	private int p_AD_User_ID = 0;
@@ -112,7 +106,7 @@ public class RequisitionPOCreate extends JavaProcess
 	/** Order Line */
 	private MOrderLine m_orderLine = null;
 	/** Orders Cache : (C_BPartner_ID, DateRequired, M_PriceList_ID) -> MOrder */
-	private final HashMap<ArrayKey, MOrder> m_cacheOrders = new HashMap<>();
+	private HashMap<ArrayKey, MOrder> m_cacheOrders = new HashMap<>();
 
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -120,40 +114,40 @@ public class RequisitionPOCreate extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParametersAsArray();
-		for (final ProcessInfoParameter processInfoParameter : para)
+		ProcessInfoParameter[] para = getParametersAsArray();
+		for (int i = 0; i < para.length; i++)
 		{
-			final String name = processInfoParameter.getParameterName();
-			if (processInfoParameter.getParameter() == null)
+			String name = para[i].getParameterName();
+			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("AD_Org_ID"))
-				p_AD_Org_ID = processInfoParameter.getParameterAsInt();
+				p_AD_Org_ID = para[i].getParameterAsInt();
 			else if (name.equals("M_Warehouse_ID"))
-				p_M_Warehouse_ID = processInfoParameter.getParameterAsInt();
+				p_M_Warehouse_ID = para[i].getParameterAsInt();
 			else if (name.equals("DateDoc"))
 			{
-				p_DateDoc_From = (Timestamp)processInfoParameter.getParameter();
-				p_DateDoc_To = (Timestamp)processInfoParameter.getParameter_To();
+				p_DateDoc_From = (Timestamp)para[i].getParameter();
+				p_DateDoc_To = (Timestamp)para[i].getParameter_To();
 			}
 			else if (name.equals("DateRequired"))
 			{
-				p_DateRequired_From = (Timestamp)processInfoParameter.getParameter();
-				p_DateRequired_To = (Timestamp)processInfoParameter.getParameter_To();
+				p_DateRequired_From = (Timestamp)para[i].getParameter();
+				p_DateRequired_To = (Timestamp)para[i].getParameter_To();
 			}
 			else if (name.equals("PriorityRule"))
-				p_PriorityRule = (String)processInfoParameter.getParameter();
+				p_PriorityRule = (String)para[i].getParameter();
 			else if (name.equals("AD_User_ID"))
-				p_AD_User_ID = processInfoParameter.getParameterAsInt();
+				p_AD_User_ID = para[i].getParameterAsInt();
 			else if (name.equals("M_Product_ID"))
-				p_M_Product_ID = processInfoParameter.getParameterAsInt();
+				p_M_Product_ID = para[i].getParameterAsInt();
 			else if (name.equals("M_Product_Category_ID"))
-				p_M_Product_Category_ID = processInfoParameter.getParameterAsInt();
+				p_M_Product_Category_ID = para[i].getParameterAsInt();
 			else if (name.equals("C_BP_Group_ID"))
-				p_C_BP_Group_ID = processInfoParameter.getParameterAsInt();
+				p_C_BP_Group_ID = para[i].getParameterAsInt();
 			else if (name.equals("M_Requisition_ID"))
-				p_M_Requisition_ID = processInfoParameter.getParameterAsInt();
+				p_M_Requisition_ID = para[i].getParameterAsInt();
 			else if (name.equals("ConsolidateDocument"))
-				p_ConsolidateDocument = "Y".equals(processInfoParameter.getParameter());
+				p_ConsolidateDocument = "Y".equals(para[i].getParameter());
 			else
 				log.error("Unknown Parameter: " + name);
 		}
@@ -166,13 +160,13 @@ public class RequisitionPOCreate extends JavaProcess
 		if (p_M_Requisition_ID != 0)
 		{
 			log.info("M_Requisition_ID=" + p_M_Requisition_ID);
-			final MRequisition req = new MRequisition(getCtx(), p_M_Requisition_ID, null);
+			MRequisition req = new MRequisition(getCtx(), p_M_Requisition_ID, get_TrxName());
 			if (!X_M_Requisition.DOCSTATUS_Completed.equals(req.getDocStatus()))
 			{
 				throw new AdempiereException("@DocStatus@ = " + req.getDocStatus());
 			}
 
-			for (final I_M_RequisitionLine line : req.getLines())
+			for (I_M_RequisitionLine line : req.getLines())
 			{
 				if (line.getC_OrderLine_ID() <= 0)
 				{
@@ -193,8 +187,8 @@ public class RequisitionPOCreate extends JavaProcess
 				+ ", M_Product_ID=" + p_M_Product_ID
 				+ ", ConsolidateDocument" + p_ConsolidateDocument);
 
-		final ArrayList<Object> params = new ArrayList<>();
-		final StringBuilder whereClause = new StringBuilder("C_OrderLine_ID IS NULL");
+		ArrayList<Object> params = new ArrayList<>();
+		StringBuffer whereClause = new StringBuffer("C_OrderLine_ID IS NULL");
 		if (p_AD_Org_ID > 0)
 		{
 			whereClause.append(" AND AD_Org_ID=?");
@@ -264,7 +258,7 @@ public class RequisitionPOCreate extends JavaProcess
 		whereClause.append(")"); // End Requisition Header
 		//
 		// ORDER BY clause
-		final StringBuilder orderClause = new StringBuilder();
+		StringBuffer orderClause = new StringBuffer();
 		if (!p_ConsolidateDocument)
 		{
 			orderClause.append("M_Requisition_ID, ");
@@ -272,7 +266,7 @@ public class RequisitionPOCreate extends JavaProcess
 		orderClause.append("(SELECT DateRequired FROM M_Requisition r WHERE M_RequisitionLine.M_Requisition_ID=r.M_Requisition_ID),");
 		orderClause.append("M_Product_ID, C_Charge_ID, M_AttributeSetInstance_ID");
 
-		POResultSet<MRequisitionLine> rs = new Query(getCtx(), MRequisitionLine.Table_Name, whereClause.toString(), null)
+		POResultSet<MRequisitionLine> rs = new Query(getCtx(), MRequisitionLine.Table_Name, whereClause.toString(), get_TrxName())
 				.setParameters(params)
 				.setOrderBy(orderClause.toString())
 				.setClient_ID()
@@ -282,7 +276,7 @@ public class RequisitionPOCreate extends JavaProcess
 			while (rs.hasNext())
 			{
 				final MRequisitionLine requisitionLine = rs.next();
-				final I_M_Requisition requisition = requisitionLine.getM_Requisition();
+				I_M_Requisition requisition = requisitionLine.getM_Requisition();
 				process(requisition, requisitionLine);
 			}
 		}
@@ -353,18 +347,18 @@ public class RequisitionPOCreate extends JavaProcess
 		}
 
 		// Order
-		final Timestamp DateRequired = requisition.getDateRequired();
+		Timestamp DateRequired = requisition.getDateRequired();
 		int M_PriceList_ID = requisition.getM_PriceList_ID();
 		if (!isPOPriceList(M_PriceList_ID))
 		{
 			M_PriceList_ID = 0;
 		}
 
-		final ArrayKey key = new ArrayKey(C_BPartner_ID, DateRequired, M_PriceList_ID);
+		ArrayKey key = new ArrayKey(C_BPartner_ID, DateRequired, M_PriceList_ID);
 		m_order = m_cacheOrders.get(key);
 		if (m_order == null)
 		{
-			m_order = new MOrder(getCtx(), 0, null);
+			m_order = new MOrder(getCtx(), 0, get_TrxName());
 			m_order.setDatePromised(DateRequired);
 			m_order.setIsSOTrx(false);
 			orderBL.setDefaultDocTypeTargetId(m_order);
@@ -403,7 +397,7 @@ public class RequisitionPOCreate extends JavaProcess
 		}
 		if (m_order != null)
 		{
-			m_order.load(null);
+			m_order.load(get_TrxName());
 			addLog(0, null, m_order.getGrandTotal(), m_order.getDocumentNo());
 		}
 		m_order = null;
@@ -423,7 +417,7 @@ public class RequisitionPOCreate extends JavaProcess
 			m_orderLine.saveEx();
 		}
 		m_orderLine = null;
-		final MProduct product = MProduct.get(getCtx(), rLine.getM_Product_ID());
+		MProduct product = MProduct.get(getCtx(), rLine.getM_Product_ID());
 
 		// Get Business Partner
 		int C_BPartner_ID = rLine.getC_BPartner_ID();
@@ -433,7 +427,7 @@ public class RequisitionPOCreate extends JavaProcess
 		}
 		else if (rLine.getC_Charge_ID() != 0)
 		{
-			final MCharge charge = MCharge.get(getCtx(), rLine.getC_Charge_ID());
+			MCharge charge = MCharge.get(getCtx(), rLine.getC_Charge_ID());
 			C_BPartner_ID = charge.getC_BPartner_ID();
 			if (C_BPartner_ID == 0)
 			{
@@ -510,7 +504,7 @@ public class RequisitionPOCreate extends JavaProcess
 	 * @param C_BPartner_ID
 	 * @return true if it's allowed
 	 */
-	private boolean isGenerateForVendor(final int C_BPartner_ID)
+	private boolean isGenerateForVendor(int C_BPartner_ID)
 	{
 		// No filter group was set => generate for all vendors
 		if (p_C_BP_Group_ID <= 0)
@@ -519,8 +513,8 @@ public class RequisitionPOCreate extends JavaProcess
 		if (m_excludedVendors.contains(C_BPartner_ID))
 			return false;
 		//
-		final boolean match = new Query(getCtx(), MBPartner.Table_Name, "C_BPartner_ID=? AND C_BP_Group_ID=?", null)
-				.setParameters(C_BPartner_ID, p_C_BP_Group_ID)
+		boolean match = new Query(getCtx(), MBPartner.Table_Name, "C_BPartner_ID=? AND C_BP_Group_ID=?", get_TrxName())
+				.setParameters(new Object[] { C_BPartner_ID, p_C_BP_Group_ID })
 				.anyMatch();
 		if (!match)
 		{
@@ -529,7 +523,7 @@ public class RequisitionPOCreate extends JavaProcess
 		return match;
 	}
 
-	private final List<Integer> m_excludedVendors = new ArrayList<>();
+	private List<Integer> m_excludedVendors = new ArrayList<>();
 
 	/**
 	 * check if the partner is vendor for specific product
