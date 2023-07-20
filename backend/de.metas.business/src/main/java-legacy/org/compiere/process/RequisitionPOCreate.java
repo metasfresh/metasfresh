@@ -349,7 +349,7 @@ public class RequisitionPOCreate extends JavaProcess
 		// Order
 		Timestamp DateRequired = requisition.getDateRequired();
 		int M_PriceList_ID = requisition.getM_PriceList_ID();
-		if (!isPOPriceList(M_PriceList_ID))
+		if (!isPOPriceList(M_PriceList_ID,requisition))
 		{
 			M_PriceList_ID = 0;
 		}
@@ -543,9 +543,9 @@ public class RequisitionPOCreate extends JavaProcess
 
 	}
 
-	private boolean isPOPriceList(final int M_PriceList_ID)
+	private boolean isPOPriceList(final int M_PriceList_ID, final I_M_Requisition requisition)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class, getProcessInfo())
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class, requisition)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, M_PriceList_ID)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, false)
 				.create()
