@@ -24,6 +24,7 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
@@ -66,6 +67,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -154,8 +156,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -207,6 +209,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -2419,4 +2422,29 @@ public class FlatrateBL implements IFlatrateBL
 		return !isModularContract(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()))
 				&& !ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(contract.getC_Flatrate_Conditions().getOnFlatrateTermExtend());
 	}
+
+	@NonNull
+	public List<I_C_Flatrate_Term> getFlatrateTermsByModularContractSettings(
+			@NonNull final ModularContractSettingsId modularContractSettingsId,
+			@NonNull final BPartnerId bPartnerId)
+	{
+		final Set<I_C_Flatrate_Conditions> flatrateConditions = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId.getRepoId())
+				.create()
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<I_C_Flatrate_Term> flatrateTerms = new ArrayList<>();
+
+		flatrateConditions.forEach(flatrateCondition -> {
+			flatrateTerms.addAll(queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+										 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateCondition.getC_Flatrate_Conditions_ID())
+										 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId.getRepoId())
+										 .create()
+										 .list(I_C_Flatrate_Term.class));
+		});
+
+		return flatrateTerms;
+	}
+
 }

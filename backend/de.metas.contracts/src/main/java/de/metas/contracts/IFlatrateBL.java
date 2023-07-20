@@ -23,6 +23,7 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
@@ -33,6 +34,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_ModCntr_Settings;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -238,4 +240,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return
 	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
+
+	@NonNull
+	List<I_C_Flatrate_Term> getFlatrateTermsByModularContractSettings(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final BPartnerId bPartnerId);
 }

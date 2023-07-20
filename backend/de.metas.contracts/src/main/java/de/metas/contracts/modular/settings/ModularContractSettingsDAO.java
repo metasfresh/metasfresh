@@ -38,6 +38,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -142,4 +143,8 @@ public class ModularContractSettingsDAO
 				.anyMatch();
 	}
 
+	public I_ModCntr_Settings getById(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		return InterfaceWrapperHelper.load(modularContractSettingsId, I_ModCntr_Settings.class);
+	}
 }

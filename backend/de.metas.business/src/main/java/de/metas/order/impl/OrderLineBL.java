@@ -66,8 +66,11 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Location;
@@ -78,6 +81,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -145,6 +149,8 @@ public class OrderLineBL implements IOrderLineBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IModularContractDAO
 
 	private IOrderBL orderBL()
 	{
@@ -1016,6 +1022,27 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final boolean isOnConsignment = computeIsOnConsignmentFromASI(orderLine);
 		orderLine.setIsOnConsignment(isOnConsignment);
+	}
+
+	public boolean isModularContract(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		final I_M_Warehouse warehouse = warehouseBL.getById(WarehouseId.ofRepoId(order.getM_Warehouse_ID()));
+
+		if (warehouse.getC_BPartner_ID() <= 0)
+		{
+			return false;
+		}
+
+		if (order.getC_Harvesting_Calendar_ID() <= 0 || order.getHarvesting_Year_ID() <= 0)
+		{
+			return false;
+		}
+
+		final I_C_BPartner bPartner = bpartnerDAO.getById(BPartnerId.ofRepoId(warehouse.getC_BPartner_ID()));
+
+
 	}
 
 	private boolean computeIsOnConsignmentFromASI(@NonNull final I_C_OrderLine orderLine)
