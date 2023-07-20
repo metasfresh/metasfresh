@@ -30,7 +30,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.util.web.exception.MissingResourceException;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,14 +42,14 @@ import javax.annotation.Nullable;
 @Service
 public class ProductWarehouseAssignmentRestService
 {
-	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository;
+	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
 	private final ExternalIdentifierResolver externalIdentifierResolver;
 
 	public ProductWarehouseAssignmentRestService(
-			@NonNull final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository,
+			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService,
 			@NonNull final ExternalIdentifierResolver externalIdentifierResolver)
 	{
-		this.productWarehouseAssignmentRepository = productWarehouseAssignmentRepository;
+		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
 		this.externalIdentifierResolver = externalIdentifierResolver;
 	}
 
@@ -69,8 +69,7 @@ public class ProductWarehouseAssignmentRestService
 
 		if (effectiveSyncAdvise.isFailIfNotExists() && !warehouseIdsToAssign.isEmpty())
 		{
-			final ProductWarehouseAssignments warehouseAssignments = productWarehouseAssignmentRepository.getByProductId(productId)
-					.orElseThrow(() -> new AdempiereException("No assignments found for productId=" + productId.getRepoId()));
+			final ProductWarehouseAssignments warehouseAssignments = productWarehouseAssignmentService.getByProductIdOrError(productId);
 
 			final ImmutableSet<WarehouseId> missingWarehouseIds = warehouseIdsToAssign.stream()
 					.filter(warehouseId -> !warehouseAssignments.isWarehouseAssigned(warehouseId))
@@ -88,21 +87,21 @@ public class ProductWarehouseAssignmentRestService
 
 		if (effectiveSyncAdvise.getIfExists().isReplace())
 		{
-			productWarehouseAssignmentRepository.save(ProductWarehouseAssignments.builder()
-															  .productId(productId)
-															  .warehouseIds(warehouseIdsToAssign)
-															  .build());
+			productWarehouseAssignmentService.save(ProductWarehouseAssignments.builder()
+														   .productId(productId)
+														   .warehouseIds(warehouseIdsToAssign)
+														   .build());
 		}
 		else
 		{
-			final ProductWarehouseAssignments assignments = productWarehouseAssignmentRepository.getByProductId(productId)
+			final ProductWarehouseAssignments assignments = productWarehouseAssignmentService.getByProductId(productId)
 					.map(existingAssignments -> existingAssignments.addAssignments(warehouseIdsToAssign))
 					.orElseGet(() -> ProductWarehouseAssignments.builder()
 							.productId(productId)
 							.warehouseIds(warehouseIdsToAssign)
 							.build());
 
-			productWarehouseAssignmentRepository.save(assignments);
+			productWarehouseAssignmentService.save(assignments);
 		}
 	}
 

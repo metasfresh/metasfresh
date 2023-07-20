@@ -44,6 +44,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -162,6 +163,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
+	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
 
 	private static final String ATTRIBUTE_ASI = "asi";
 
@@ -179,6 +181,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
+			@Nullable final ProductWarehouseAssignmentService productWarehouseAssignmentService,
 			final boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
 	{
@@ -192,6 +195,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 		this.availableForSaleAdapter = availableForSaleAdapter;
 		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
+		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
 
 		this.excludeBOMProducts = excludeBOMProducts;
 
@@ -210,6 +214,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
+			@Nullable final ProductWarehouseAssignmentService productWarehouseAssignmentService,
 			@Nullable final String sectionCodeParamName,
 			final boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
@@ -235,6 +240,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+
+		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
 	}
 
 	@Override
@@ -557,10 +564,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final SqlParamsCollector sqlWhereClauseParams,
 			@NonNull final LookupDataSourceContext evalCtx)
 	{
+		if (!isEnforceProductWarehouseAssignment())
+		{
+			return;
+		}
+
 		Optional.ofNullable(WarehouseId.ofRepoIdOrNull(param_M_Warehouse_ID.getValueAsInteger(evalCtx)))
 				.ifPresent(warehouseId -> sqlWhereClause
-						.append("\n AND (p." + I_M_Product_Lookup_V.COLUMNNAME_M_WAREHOUSE_ID + "=").append(sqlWhereClauseParams.placeholder(warehouseId))
-						.append(" OR p." + I_M_Product_Lookup_V.COLUMNNAME_M_WAREHOUSE_ID + " IS NULL)"));
+						.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_WAREHOUSE_ID + "=")
+						.append(sqlWhereClauseParams.placeholder(warehouseId)));
 	}
 
 	private void appendFilterByPriceList(
@@ -992,6 +1004,14 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				true,
 				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 	}
+
+	private boolean isEnforceProductWarehouseAssignment()
+	{
+		return Optional.ofNullable(productWarehouseAssignmentService)
+				.map(ProductWarehouseAssignmentService::enforceWarehouseAssignmentsForProducts)
+				.orElse(false);
+	}
+	
 
 	@Value
 	@Builder
