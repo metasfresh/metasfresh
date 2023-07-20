@@ -362,7 +362,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocTax docTax : getTaxes())
 		{
 			final BigDecimal taxAmt = docTax.getTaxAmt();
-			if (taxAmt != null && taxAmt.signum() != 0)
+			if (taxAmt != null)
 			{
 				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
 						getCurrencyId(), null, taxAmt);
@@ -475,7 +475,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocTax docTax : getTaxes())
 		{
 			final BigDecimal taxAmt = docTax.getTaxAmt();
-			if (taxAmt != null && taxAmt.signum() != 0)
+			if (taxAmt != null)
 			{
 				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
 						getCurrencyId(), taxAmt, null);
