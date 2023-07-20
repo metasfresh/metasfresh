@@ -16,17 +16,22 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.DocLine_Invoice;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.MatchInvId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,22 +45,15 @@ import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.acct.doc.DocLine_Invoice;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.MatchInvId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.tax.api.TaxId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Post Invoice Documents.
@@ -364,12 +362,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final BigDecimal taxAmt = docTax.getTaxAmt();
 			if (taxAmt != null)
 			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getCurrencyId(), null, taxAmt);
-				if (tl != null)
-				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
-				}
+				fact.createLine()
+						.setDocLine(null)
+						.setAccount(docTax.getTaxDueAcct(as))
+						.setAmtSource(getCurrencyId(), null, taxAmt)
+						.setC_Tax_ID(docTax.getC_Tax_ID())
+						.alsoAddZeroLine()
+						.buildAndAdd();
 			}
 		}
 
@@ -477,12 +476,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final BigDecimal taxAmt = docTax.getTaxAmt();
 			if (taxAmt != null)
 			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getCurrencyId(), taxAmt, null);
-				if (tl != null)
-				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
-				}
+				fact.createLine()
+						.setDocLine(null)
+						.setAccount(docTax.getTaxDueAcct(as))
+						.setAmtSource(getCurrencyId(), taxAmt, null)
+						.setC_Tax_ID(docTax.getC_Tax_ID())
+						.alsoAddZeroLine()
+						.buildAndAdd();
 			}
 		}
 		// Revenue CR
@@ -585,14 +585,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit DR
 		for (final DocTax docTax : getTaxes())
 		{
-			final FactLine tl = fact.createLine(null,
-					docTax.getAccount(as),  // account
-					getCurrencyId(),
-					docTax.getTaxAmt(), null); // DR/CR
-			if (tl != null)
-			{
-				tl.setC_Tax_ID(docTax.getC_Tax_ID());
-			}
+			fact.createLine()
+					.setDocLine(null)
+					.setAccount(docTax.getAccount(as))
+					.setAmtSource(getCurrencyId(), docTax.getTaxAmt(), null)
+					.setC_Tax_ID(docTax.getC_Tax_ID())
+					.alsoAddZeroLine()
+					.buildAndAdd();
 		}
 
 		// Expense/InventoryClearing DR
@@ -713,12 +712,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit CR
 		for (final DocTax docTax : getTaxes())
 		{
-			final FactLine tl = fact.createLine(null, docTax.getAccount(as),
-					getCurrencyId(), null, docTax.getTaxAmt());
-			if (tl != null)
-			{
-				tl.setC_Tax_ID(docTax.getC_Tax_ID());
-			}
+			fact.createLine()
+					.setDocLine(null)
+					.setAccount(docTax.getAccount(as))
+					.setAmtSource(getCurrencyId(), null, docTax.getTaxAmt())
+					.setC_Tax_ID(docTax.getC_Tax_ID())
+					.alsoAddZeroLine()
+					.buildAndAdd();
 		}
 		// Expense CR
 		for (final DocLine_Invoice line : getDocLines())
