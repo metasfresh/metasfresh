@@ -337,7 +337,7 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$R{bpname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="280" y="123" width="158" height="12" forecolor="#FFFFFF" uuid="a624f9ca-5e0d-4442-9e21-2859fc6a4665"/>
+				<reportElement x="269" y="123" width="168" height="12" forecolor="#FFFFFF" uuid="a624f9ca-5e0d-4442-9e21-2859fc6a4665"/>
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -442,14 +442,14 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$F{accountno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="70" y="2" width="270" height="12" uuid="f8dfa375-a6d0-4df6-af0e-d9cae2c72b65"/>
+				<reportElement x="70" y="2" width="199" height="12" uuid="f8dfa375-a6d0-4df6-af0e-d9cae2c72b65"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{accountname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="340" y="2" width="180" height="12" uuid="324e8ede-9298-453f-90dd-03b190730e6d"/>
+				<reportElement x="269" y="2" width="251" height="12" uuid="324e8ede-9298-453f-90dd-03b190730e6d"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="8"/>
 				</textElement>
