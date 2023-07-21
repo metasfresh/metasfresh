@@ -226,7 +226,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	{
 		switch (action)
 		{
-			case COMPLETED, REVERSED ->
+			case COMPLETED, VOIDED ->
 			{
 			}
 			default -> throw new AdempiereException("Unsupported model action!");
