@@ -86,6 +86,8 @@ public final class FactLineBuilder
 	private LocationId toLocationId;
 	private CostElementId costElementId;
 
+	@Nullable String description;
+
 	FactLineBuilder(@NonNull final Fact fact)
 	{
 		this.fact = fact;
@@ -251,6 +253,8 @@ public final class FactLineBuilder
 		}
 
 		line.setAccountConceptualName(account.getAccountConceptualName());
+
+		line.setDescription(getDescription());
 
 		//
 		log.debug("Built: {}", line);
@@ -681,5 +685,17 @@ public final class FactLineBuilder
 	public FactLineBuilder costElement(@Nullable final CostElement costElement)
 	{
 		return costElement(costElement != null ? costElement.getId() : null);
+	}
+
+	public FactLineBuilder addDescription(@Nullable final String description)
+	{
+		assertNotBuild();
+		this.description = description;
+		return this;
+	}
+
+	private String getDescription()
+	{
+		return description;
 	}
 }
