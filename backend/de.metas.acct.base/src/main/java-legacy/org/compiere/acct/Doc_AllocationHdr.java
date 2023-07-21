@@ -1337,18 +1337,47 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						// Discount expense
 						if (isDiscountExpense)
 						{
-							final FactLine flDR = fact.createLine(line, discountAcct, as.getCurrencyId(), amountCMAdjusted, null);
-							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted);
-							updateFactLine(flCR, taxId, description);
+							// DR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(discountAcct)
+									.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
+									.setC_Tax_ID(taxId)
+									.addDescription(description)
+									.buildAndAdd();
+
+							// CR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(taxAcct)
+									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
+									.setC_Tax_ID(taxId)
+									.alsoAddZeroLine()
+									.addDescription(description)
+									.buildAndAdd();
 						}
 						// Discount revenue
 						else
 						{
-							final FactLine flDR = fact.createLine(line, discountAcct, as.getCurrencyId(), amountCMAdjusted.negate(), null);
-							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted.negate());
-							updateFactLine(flCR, taxId, description);
+							// DR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(discountAcct)
+									.setAmtSource(as.getCurrencyId(), amountCMAdjusted.negate(), null)
+									.setC_Tax_ID(taxId)
+									.addDescription(description)
+									.buildAndAdd();
+
+							// CR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(taxAcct)
+									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted.negate())
+									.setC_Tax_ID(taxId)
+									.alsoAddZeroLine()
+									.addDescription(description)
+									.buildAndAdd();
+
 						}
 
 					}
@@ -1373,18 +1402,48 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						// Discount expense
 						if (isDiscountExpense)
 						{
-							final FactLine flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted, null);
-							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, discountAcct, as.getCurrencyId(), null, amountCMAdjusted);
-							updateFactLine(flCR, taxId, description);
+							// DR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(taxAcct)
+									.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
+									.setC_Tax_ID(taxId)
+									.alsoAddZeroLine()
+									.addDescription(description)
+									.buildAndAdd();
+
+							// CR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(discountAcct)
+									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
+									.setC_Tax_ID(taxId)
+									.addDescription(description)
+									.buildAndAdd();
+
 						}
 						// Discount revenue
 						else
 						{
-							final FactLine flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted.negate(), null);
-							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, discountAcct, as.getCurrencyId(), null, amountCMAdjusted.negate());
-							updateFactLine(flCR, taxId, description);
+							//DR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(taxAcct)
+									.setAmtSource(as.getCurrencyId(), amountCMAdjusted.negate(), null)
+									.setC_Tax_ID(taxId)
+									.alsoAddZeroLine()
+									.addDescription(description)
+									.buildAndAdd();
+
+							// CR
+							fact.createLine()
+									.setDocLine(line)
+									.setAccount(discountAcct)
+									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted.negate())
+									.setC_Tax_ID(taxId)
+									.addDescription(description)
+									.buildAndAdd();
+
 						}
 					}
 				}
@@ -1406,10 +1465,24 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						final Fact fact = createEmptyFact(as);
 						result.add(fact);
 
-						final FactLine flDR = fact.createLine(line, writeOffAccount, as.getCurrencyId(), amountCMAdjusted, null);
-						updateFactLine(flDR, taxId, description);
-						final FactLine flCR = fact.createLine(line, taxAcct, as.getCurrencyId(), null, amountCMAdjusted);
-						updateFactLine(flCR, taxId, description);
+						//DR
+						fact.createLine()
+								.setDocLine(line)
+								.setAccount(writeOffAccount)
+								.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
+								.setC_Tax_ID(taxId)
+								.addDescription(description)
+								.buildAndAdd();
+
+						// CR
+						fact.createLine()
+								.setDocLine(line)
+								.setAccount(taxAcct)
+								.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
+								.setC_Tax_ID(taxId)
+								.alsoAddZeroLine()
+								.addDescription(description)
+								.buildAndAdd();
 					}
 				}
 				// Original Tax is CR - need to correct it DR
@@ -1424,10 +1497,24 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						final Fact fact = createEmptyFact(as);
 						result.add(fact);
 
-						final FactLine flDR = fact.createLine(line, taxAcct, as.getCurrencyId(), amountCMAdjusted, null);
-						updateFactLine(flDR, taxId, description);
-						final FactLine flCR = fact.createLine(line, writeOffAccount, as.getCurrencyId(), null, amountCMAdjusted);
-						updateFactLine(flCR, taxId, description);
+						// DR
+						fact.createLine()
+								.setDocLine(line)
+								.setAccount(taxAcct)
+								.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
+								.setC_Tax_ID(taxId)
+								.alsoAddZeroLine()
+								.addDescription(description)
+								.buildAndAdd();
+
+						// CR
+						fact.createLine()
+								.setDocLine(line)
+								.setAccount(writeOffAccount)
+								.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
+								.setC_Tax_ID(taxId)
+								.addDescription(description)
+								.buildAndAdd();
 					}
 				}
 			}                // WriteOff
@@ -1482,23 +1569,4 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		final BigDecimal taxAmtPartCMAdjusted = isCreditMemoInvoice ? taxAmtPart.negate() : taxAmtPart;
 		return taxAmtPartCMAdjusted;
 	}    // calcAmount
-
-	/**
-	 * Convenient method to update {@link FactLine}'s infos if the line is not null.
-	 *
-	 * @param description description to add
-	 */
-	private static void updateFactLine(final FactLine fl, final int taxId, final String description)
-	{
-		if (fl == null)
-		{
-			return;
-		}
-
-		fl.setC_Tax_ID(taxId);
-		if (!Check.isEmpty(description, true))
-		{
-			fl.addDescription(description);
-		}
-	}
 }    // Doc_AllocationTax
