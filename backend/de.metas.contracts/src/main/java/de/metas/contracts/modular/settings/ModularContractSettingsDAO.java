@@ -38,7 +38,6 @@ import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -56,6 +55,7 @@ public class ModularContractSettingsDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, contractId)
 				.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
 				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
+				.orderByDescending(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.create()
 				.firstOptional()
 				.map(this::getBySettings)
@@ -141,10 +141,5 @@ public class ModularContractSettingsDAO
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, query.productId())
 				.anyMatch();
-	}
-
-	public I_ModCntr_Settings getById(@NonNull final ModularContractSettingsId modularContractSettingsId)
-	{
-		return InterfaceWrapperHelper.load(modularContractSettingsId, I_ModCntr_Settings.class);
 	}
 }

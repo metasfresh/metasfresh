@@ -20,19 +20,26 @@
  * #L%
  */
 
-package de.metas.contracts;
+package de.metas.contracts.FlatrateTermRequest;
 
-import de.metas.contracts.model.I_ModCntr_Module;
-import de.metas.contracts.order.model.I_C_OrderLine;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.compiere.model.I_C_BPartner;
+import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Value;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-public interface IModularContractDAO extends ISingletonService
+@Value
+@Builder
+public class ModularFlatrateTermRequest
 {
-	List<I_ModCntr_Module> getModulaContractsForOrderLine(
-			@NonNull final I_C_OrderLine orderLine,
-			@NonNull final I_C_BPartner bPartner);
+	@Nullable
+	BPartnerId bPartnerId;
+
+	@Nullable
+	ProductId productId;
+
+	@Nullable
+	YearId yearId;
 }

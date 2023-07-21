@@ -24,7 +24,6 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
@@ -46,6 +45,7 @@ import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -67,7 +67,6 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -127,6 +126,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -157,8 +157,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.DOCSTATUS_Completed;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -2423,28 +2423,30 @@ public class FlatrateBL implements IFlatrateBL
 				&& !ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(contract.getC_Flatrate_Conditions().getOnFlatrateTermExtend());
 	}
 
-	@NonNull
-	public List<I_C_Flatrate_Term> getFlatrateTermsByModularContractSettings(
-			@NonNull final ModularContractSettingsId modularContractSettingsId,
-			@NonNull final BPartnerId bPartnerId)
+	@Override
+	public List<I_C_Flatrate_Term> lookupModularFlatrateTermRequest(@NonNull final ModularFlatrateTermRequest request)
 	{
-		final Set<I_C_Flatrate_Conditions> flatrateConditions = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId.getRepoId())
+		final IQuery<I_ModCntr_Settings> queryFilterSettings = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId())
+				.create();
+
+		final List<I_C_Flatrate_Term> contracts = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
+				.addInSubQueryFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID, queryFilterSettings)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, request.getProductId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, request.getBPartnerId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Voided)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Quit)
 				.create()
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
+				.list();
 
-		final List<I_C_Flatrate_Term> flatrateTerms = new ArrayList<>();
-
-		flatrateConditions.forEach(flatrateCondition -> {
-			flatrateTerms.addAll(queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-										 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateCondition.getC_Flatrate_Conditions_ID())
-										 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId.getRepoId())
-										 .create()
-										 .list(I_C_Flatrate_Term.class));
-		});
-
-		return flatrateTerms;
+		return contracts;
 	}
-
 }

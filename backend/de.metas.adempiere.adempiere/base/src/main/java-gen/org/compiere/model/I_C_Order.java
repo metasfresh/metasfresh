@@ -1739,7 +1739,7 @@ public interface I_C_Order
 	/**
 	 * Set Harvesting Year.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1748,7 +1748,7 @@ public interface I_C_Order
 	/**
 	 * Get Harvesting Year.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

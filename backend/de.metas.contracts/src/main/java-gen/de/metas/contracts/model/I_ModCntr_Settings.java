@@ -152,6 +152,29 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Settings.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
 	 * Set Modular Contract Settings.
 	 *
 	 * <br>Type: ID
@@ -259,27 +282,4 @@ public interface I_ModCntr_Settings
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsSOTrx (boolean IsSOTrx);
-
-	/**
-	 * Get Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSOTrx();
-
-	ModelColumn<I_ModCntr_Settings, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Settings.class, "IsSOTrx", null);
-	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 }
