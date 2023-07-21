@@ -75,6 +75,8 @@ public final class FactLineBuilder
 	private Integer locatorId;
 	private ActivityId activityId;
 
+	@Nullable String description;
+
 	FactLineBuilder(@NonNull final Fact fact)
 	{
 		this.fact = fact;
@@ -219,6 +221,8 @@ public final class FactLineBuilder
 		{
 			line.setC_Activity_ID(activityId.getRepoId());
 		}
+
+		line.setDescription(getDescription());
 
 		//
 		Fact.log.debug("Built: {}", line);
@@ -485,5 +489,17 @@ public final class FactLineBuilder
 	private ActivityId getActivityId()
 	{
 		return activityId;
+	}
+
+	public FactLineBuilder addDescription(@Nullable final String description)
+	{
+		assertNotBuild();
+		this.description = description;
+		return this;
+	}
+
+	private String getDescription()
+	{
+		return description;
 	}
 }
