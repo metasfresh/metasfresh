@@ -35,12 +35,12 @@ BEGIN
     -- Compute Balance until date_from with details
     DROP TABLE IF EXISTS tmp_dateto_balances;
     CREATE TEMPORARY TABLE tmp_dateto_balances AS
-    SELECT p_Account_ID AS C_ElementValue_ID,
+    SELECT p_Account_ID        AS C_ElementValue_ID,
            b.vatcode,
            b.c_tax_id,
            b.accountno,
            b.accountname,
-           b.balance
+           (b.Balance).Balance AS balance
     FROM de_metas_acct.balanceToDate(p_AD_Org_ID, p_Account_ID, p_DateTo, p_C_Vat_Code_ID) AS b;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Computed date_to balances for % account', p_Account_ID;
@@ -50,12 +50,12 @@ BEGIN
     -- Compute Balance until date_from with details
     DROP TABLE IF EXISTS tmp_datefrom_balances;
     CREATE TEMPORARY TABLE tmp_datefrom_balances AS
-    SELECT p_Account_ID AS C_ElementValue_ID,
+    SELECT p_Account_ID        AS C_ElementValue_ID,
            b.vatcode,
            b.c_tax_id,
            b.accountno,
            b.accountname,
-           b.balance
+           (b.Balance).Balance AS balance
     FROM de_metas_acct.balanceToDate(p_AD_Org_ID, p_Account_ID, (p_DateFrom - INTERVAL '1 day')::date, p_C_Vat_Code_ID) AS b;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Computed date_from balances for % account', p_Account_ID;
@@ -66,12 +66,12 @@ BEGIN
     -- Compute Balance until yearBegining with details
     DROP TABLE IF EXISTS tmp_yearBegining_balances;
     CREATE TEMPORARY TABLE tmp_yearBegining_balances AS
-    SELECT p_Account_ID AS C_ElementValue_ID,
+    SELECT p_Account_ID        AS C_ElementValue_ID,
            b.vatcode,
            b.c_tax_id,
            b.accountno,
            b.accountname,
-           b.balance
+           (b.Balance).Balance AS balance
     FROM de_metas_acct.balanceToDate(p_AD_Org_ID, p_Account_ID, (DATE_TRUNC('year', p_DateTo::DATE) - INTERVAL '1 day')::DATE, p_C_Vat_Code_ID) AS b;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Compute begining year balances for % account', p_Account_ID;
@@ -82,8 +82,8 @@ BEGIN
         RETURN QUERY
             WITH balance AS
                      (
-                         SELECT (COALESCE((b2.Balance).Balance, 0) - COALESCE((b1.Balance).Balance, 0)) AS Balance,
-                                (COALESCE((b2.Balance).Balance, 0) - COALESCE((BY.Balance).Balance, 0)) AS YearBalance,
+                         SELECT (COALESCE(b2.Balance, 0) - COALESCE(b1.Balance, 0)) AS Balance,
+                                (COALESCE(b2.Balance, 0) - COALESCE(BY.Balance, 0)) AS YearBalance,
                                 b2.accountno,
                                 b2.accountname,
                                 b2.C_Tax_ID,
