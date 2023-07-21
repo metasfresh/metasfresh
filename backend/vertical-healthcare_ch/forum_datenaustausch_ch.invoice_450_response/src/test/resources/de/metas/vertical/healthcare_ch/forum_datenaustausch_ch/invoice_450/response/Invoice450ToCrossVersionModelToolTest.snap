@@ -1,12 +1,6 @@
 de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response.Invoice450ToCrossVersionModelToolTest.toCrossVersionResponse=[
   {
     "payload": {
-    "responseTimestamp"=1537300879,
-      "invoice" : {
-        "requestTimestamp" : 1537300879,
-        "requestDate" : 1535925600000,
-        "requestId" : "KV_12345"
-      },
       "body": {
         "biller": {
           "eanParty": "1234567890123"
@@ -50,8 +44,9 @@ de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response.Inv
       "invoice": {
         "requestDate": "2018-09-02T22:00:00.000+00:00",
         "requestId": "KV_12345",
-        "requestTimestamp": 1535971639
-      }
+        "requestTimestamp": 1537300879
+      },
+      "responseTimestamp": 1537300879
     }
   }
 ]
