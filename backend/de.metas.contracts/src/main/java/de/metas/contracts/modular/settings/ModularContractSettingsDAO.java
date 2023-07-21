@@ -123,7 +123,7 @@ public class ModularContractSettingsDAO
 		return result.build();
 	}
 
-	public boolean isSettingsUsedInCompletedFlatrateTerm(final ModularContractSettingsId modCntrSettingsId)
+	public boolean isSettingsUsedInCompletedFlatrateConditions(final ModularContractSettingsId modCntrSettingsId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 				.addEqualsFilter(I_ModCntr_Settings.COLUMN_ModCntr_Settings_ID, modCntrSettingsId)
