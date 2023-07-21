@@ -130,7 +130,7 @@ order by vatcode, kontono, taxname, DateAcct
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="249" y="0" width="131" height="12" uuid="3be0201f-0fe0-4acb-98a1-ad5efa157a49"/>
+				<reportElement x="269" y="0" width="130" height="12" uuid="3be0201f-0fe0-4acb-98a1-ad5efa157a49"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
@@ -152,7 +152,7 @@ order by vatcode, kontono, taxname, DateAcct
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="128" y="0" width="120" height="12" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
+				<reportElement x="149" y="0" width="120" height="12" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
