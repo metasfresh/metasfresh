@@ -13,6 +13,7 @@ import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -62,8 +63,8 @@ public class OrderTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository = new ProductWarehouseAssignmentRepository();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, productWarehouseAssignmentRepository));
+		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, productWarehouseAssignmentService));
 	}
 
 	@Test
