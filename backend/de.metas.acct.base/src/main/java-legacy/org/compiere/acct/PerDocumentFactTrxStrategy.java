@@ -32,7 +32,7 @@ final class PerDocumentFactTrxStrategy implements FactTrxStrategy
 	public static final transient PerDocumentFactTrxStrategy instance = new PerDocumentFactTrxStrategy();
 
 	@Override
-	public List<FactTrxLines> createFactTrxLines(final List<FactLine2> factLines)
+	public List<FactTrxLines> createFactTrxLines(final List<FactLine> factLines)
 	{
 		final FactTrxLines factTrxLines = FactTrxLines.builder()
 				.factLines(factLines)

@@ -89,7 +89,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.acct.FactLine2;
+import org.compiere.acct.FactLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
@@ -456,14 +456,14 @@ public class AcctDocRequiredServicesFacade
 		return dimensionService.getFromRecord(model);
 	}
 
-	public Optional<FAOpenItemTrxInfo> computeOpenItemTrxInfo(FactLine2 factLine)
+	public Optional<FAOpenItemTrxInfo> computeOpenItemTrxInfo(FactLine factLine)
 	{
 		return faOpenItemsService.computeTrxInfo(factLine);
 	}
 
 	public void saveNew(@NonNull final I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}
 
-	public void saveNew(@NonNull final FactLine2 factLine)
+	public void saveNew(@NonNull final FactLine factLine)
 	{
 		if (factLine.getIdOrNull() != null)
 		{

@@ -49,18 +49,18 @@ public class FactTrxLines
 	}
 
 	FactTrxLinesType type;
-	List<FactLine2> drLines;
-	List<FactLine2> crLines;
-	List<FactLine2> zeroLines;
+	List<FactLine> drLines;
+	List<FactLine> crLines;
+	List<FactLine> zeroLines;
 
 	@Builder
-	private FactTrxLines(@NonNull @Singular final List<FactLine2> factLines)
+	private FactTrxLines(@NonNull @Singular final List<FactLine> factLines)
 	{
-		final ArrayList<FactLine2> drLines = new ArrayList<>();
-		final ArrayList<FactLine2> crLines = new ArrayList<>();
-		final ArrayList<FactLine2> zeroLines = new ArrayList<>();
+		final ArrayList<FactLine> drLines = new ArrayList<>();
+		final ArrayList<FactLine> crLines = new ArrayList<>();
+		final ArrayList<FactLine> zeroLines = new ArrayList<>();
 
-		for (final FactLine2 factLine : factLines)
+		for (final FactLine factLine : factLines)
 		{
 			final boolean isDR = factLine.getAmtAcctDr().signum() != 0;
 			final boolean isCR = factLine.getAmtAcctCr().signum() != 0;
@@ -101,7 +101,7 @@ public class FactTrxLines
 			else if (drLines.isEmpty() && !crLines.isEmpty())
 			{
 				final BigDecimal crLineSum = crLines.stream()
-						.map(FactLine2::getAmtAcctCr)
+						.map(FactLine::getAmtAcctCr)
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
 				if (crLineSum.signum() == 0)
 				{
@@ -111,7 +111,7 @@ public class FactTrxLines
 			else if (!drLines.isEmpty() && crLines.isEmpty())
 			{
 				final BigDecimal drLineSum = crLines.stream()
-						.map(FactLine2::getAmtAcctDr)
+						.map(FactLine::getAmtAcctDr)
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
 				if (drLineSum.signum() == 0)
 				{
@@ -128,8 +128,8 @@ public class FactTrxLines
 	}
 
 	private static FactTrxLinesType extractType(
-			@NonNull final List<FactLine2> drLines,
-			@NonNull final List<FactLine2> crLines)
+			@NonNull final List<FactLine> drLines,
+			@NonNull final List<FactLine> crLines)
 	{
 		if (drLines.size() == 1 && crLines.size() >= 1)
 		{
@@ -169,29 +169,29 @@ public class FactTrxLines
 		Check.assume(type == expected, "Invalid type. Expected {} but it was {}", expected, type);
 	}
 
-	public FactLine2 getDebitLine()
+	public FactLine getDebitLine()
 	{
 		assertType(FactTrxLinesType.Debit);
 		return drLines.get(0);
 	}
 
-	public FactLine2 getCreditLine()
+	public FactLine getCreditLine()
 	{
 		assertType(FactTrxLinesType.Credit);
 		return crLines.get(0);
 	}
 
-	public void forEachDebitLine(final Consumer<FactLine2> debitLineConsumer)
+	public void forEachDebitLine(final Consumer<FactLine> debitLineConsumer)
 	{
 		drLines.forEach(debitLineConsumer);
 	}
 
-	public void forEachCreditLine(final Consumer<FactLine2> creditLineConsumer)
+	public void forEachCreditLine(final Consumer<FactLine> creditLineConsumer)
 	{
 		crLines.forEach(creditLineConsumer);
 	}
 
-	public void forEachZeroLine(final Consumer<FactLine2> zeroLineConsumer)
+	public void forEachZeroLine(final Consumer<FactLine> zeroLineConsumer)
 	{
 		zeroLines.forEach(zeroLineConsumer);
 	}

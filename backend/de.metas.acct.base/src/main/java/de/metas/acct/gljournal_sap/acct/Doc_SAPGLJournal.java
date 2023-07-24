@@ -16,7 +16,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
-import org.compiere.acct.FactLine2;
+import org.compiere.acct.FactLine;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -97,7 +97,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 				amtAcctCr = line.getAmountAcct().toBigDecimal();
 			}
 
-			final FactLine2 factLine = fact.createLine()
+			final FactLine factLine = fact.createLine()
 					.setAccount(line.getAccount())
 					.setAmtSource(glJournalCurrencyConversionCtx.getCurrencyId(), amtSourceDr, amtSourceCr)
 					.setAmtAcct(amtAcctDr, amtAcctCr)

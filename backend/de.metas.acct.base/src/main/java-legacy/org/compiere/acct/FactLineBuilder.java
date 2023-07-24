@@ -98,14 +98,14 @@ public final class FactLineBuilder
 	}
 
 	/**
-	 * Creates the {@link FactLine2} and adds it to {@link Fact}.
+	 * Creates the {@link FactLine} and adds it to {@link Fact}.
 	 *
-	 * @return created {@link FactLine2}
+	 * @return created {@link FactLine}
 	 */
 	@Nullable
-	public FactLine2 buildAndAdd()
+	public FactLine buildAndAdd()
 	{
-		final FactLine2 fl = build();
+		final FactLine fl = build();
 
 		if (fl != null)
 		{
@@ -116,7 +116,7 @@ public final class FactLineBuilder
 	}
 
 	@Nullable
-	private FactLine2 build()
+	private FactLine build()
 	{
 		markAsBuilt();
 
@@ -129,7 +129,7 @@ public final class FactLineBuilder
 		//
 		final Doc<?> doc = fact.m_doc;
 		final AcctDocRequiredServicesFacade services = doc.getServices();
-		final FactLine2 line = FactLine2.builder()
+		final FactLine line = FactLine.builder()
 				.services(services)
 				.doc(doc)
 				.docLine(docLine)

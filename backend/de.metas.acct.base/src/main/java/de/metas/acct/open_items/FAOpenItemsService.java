@@ -13,7 +13,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.acct.FactLine2;
+import org.compiere.acct.FactLine;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -72,7 +72,7 @@ public class FAOpenItemsService
 		return result.build();
 	}
 
-	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final FactLine2 factLine)
+	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final FactLine factLine)
 	{
 		return computeTrxInfo(FAOpenItemTrxInfoComputeRequest.builder()
 				.accountConceptualName(factLine.getAccountConceptualName())

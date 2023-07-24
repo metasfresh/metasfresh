@@ -56,8 +56,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
 /**
  * Post Shipment/Receipt Documents.
  *
@@ -229,7 +227,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// CoGS DR
-		final FactLine2 dr = fact.createLine()
+		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
 				.setAmt(roundToStdPrecision(costs), null)
@@ -246,7 +244,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory CR
-		final FactLine2 cr = fact.createLine()
+		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
 				.setAmt(null, roundToStdPrecision(costs))
@@ -281,7 +279,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory DR
-		final FactLine2 dr = fact.createLine()
+		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
 				.setAmt(roundToStdPrecision(costs), null)
@@ -296,7 +294,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// CoGS CR
-		final FactLine2 cr = fact.createLine()
+		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
 				.setAmt(null, roundToStdPrecision(costs))
@@ -349,7 +347,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory/Asset DR
-		final FactLine2 dr = fact.createLine()
+		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(roundToStdPrecision(costs), null)
@@ -367,7 +365,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// NotInvoicedReceipt CR
-		final FactLine2 cr = fact.createLine()
+		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(costElement.isMaterialElement()
 									? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
@@ -409,7 +407,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// NotInvoicedReceipt DR
-		final FactLine2 dr = fact.createLine()
+		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setAmt(roundToStdPrecision(costs), null)
@@ -433,7 +431,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory/Asset CR
-		final FactLine2 cr = fact.createLine()
+		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(null, roundToStdPrecision(costs))

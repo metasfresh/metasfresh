@@ -13,7 +13,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
-import org.compiere.acct.FactLine2;
+import org.compiere.acct.FactLine;
 import org.compiere.acct.PostingStatus;
 
 import javax.annotation.Nullable;
@@ -32,7 +32,7 @@ public final class PostingException extends AdempiereException
 	private PostingStatus _postingStatus;
 	private AcctSchema _acctSchema;
 	private Fact _fact;
-	private FactLine2 _factLine;
+	private FactLine _factLine;
 	private ITranslatableString _detailMessage = TranslatableStrings.empty();
 	private boolean _preserveDocumentPostedStatus = false;
 	private Level _logLevel = Level.ERROR;
@@ -104,7 +104,7 @@ public final class PostingException extends AdempiereException
 			message.append("\n Fact: ").append(fact.toString());
 		}
 
-		final FactLine2 factLine = getFactLine();
+		final FactLine factLine = getFactLine();
 		if (factLine != null)
 		{
 			message.append("\n @Fact_Acct_ID@: ").append(factLine.toString());
@@ -251,12 +251,12 @@ public final class PostingException extends AdempiereException
 		return _fact;
 	}
 
-	private FactLine2 getFactLine()
+	private FactLine getFactLine()
 	{
 		return _factLine;
 	}
 
-	public PostingException setFactLine(final FactLine2 factLine)
+	public PostingException setFactLine(final FactLine factLine)
 	{
 		this._factLine = factLine;
 		resetMessageBuilt();

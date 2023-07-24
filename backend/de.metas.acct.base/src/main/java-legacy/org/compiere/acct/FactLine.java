@@ -71,9 +71,9 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-public class FactLine2
+public class FactLine
 {
-	private static final Logger log = LogManager.getLogger(FactLine2.class);
+	private static final Logger log = LogManager.getLogger(FactLine.class);
 	@NonNull @Getter(AccessLevel.PACKAGE) private final AcctDocRequiredServicesFacade services;
 
 	@NonNull private final Doc<?> m_doc;
@@ -153,7 +153,7 @@ public class FactLine2
 	private CurrencyConversionContext currencyConversionCtx = null;
 
 	@Builder
-	private FactLine2(
+	private FactLine(
 			@NonNull final AcctDocRequiredServicesFacade services,
 			@NonNull final Doc<?> doc,
 			@Nullable final DocLine<?> docLine,
@@ -526,9 +526,9 @@ public class FactLine2
 	 * @param description new description
 	 * @return reversal line
 	 */
-	public FactLine2 reverse(final String description)
+	public FactLine reverse(final String description)
 	{
-		final FactLine2 reversal = FactLine2.builder()
+		final FactLine reversal = FactLine.builder()
 				.services(services)
 				.doc(m_doc)
 				.docLine(m_docLine)
@@ -555,9 +555,9 @@ public class FactLine2
 	 * @param description new description
 	 * @return accrual line
 	 */
-	public FactLine2 accrue(final String description)
+	public FactLine accrue(final String description)
 	{
-		final FactLine2 accrual = FactLine2.builder()
+		final FactLine accrual = FactLine.builder()
 				.services(services)
 				.doc(m_doc)
 				.docLine(m_docLine)

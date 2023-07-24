@@ -456,7 +456,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// Update Open Items Matching
 		for (final Fact fact : facts)
 		{
-			fact.forEach(FactLine2::updateFAOpenItemTrxInfo);
+			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
 		}
 
 		//

@@ -35,8 +35,8 @@ class PostingEqualClearingAccontsUtils
 {
 	public static void removeFactLinesIfEqual(
 			final Fact fact,
-			final FactLine2 dr,
-			final FactLine2 cr,
+			final FactLine dr,
+			final FactLine cr,
 			final Predicate<AcctSchema> isInterOrg)
 	{
 		final AcctSchema as = fact.getAcctSchema();

@@ -58,7 +58,6 @@ import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AccessLevel;
@@ -279,7 +278,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// From Receipt
 		final Money receiptAmt = costs.getAmountBeforeAdjustment().toMoney();
 		final I_M_InOutLine receiptLine = getReceiptLine();
-		final FactLine2 dr_NotInvoicedReceipts = fact.createLine()
+		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(costElementId != null
 						? getCostElementAccount(as, costElementId, CostElementAccountType.P_CostClearing_Acct)
 						: getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
@@ -300,7 +299,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// InventoryClearing CR
 		// From Invoice
 		final Money invoiceLineMatchedAmt = getInvoiceLineMatchedAmt();
-		final FactLine2 cr_InventoryClearing = fact.createLine()
+		final FactLine cr_InventoryClearing = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
 				.setAmtSource(null, invoiceLineMatchedAmt)
@@ -381,7 +380,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Create the invoice price variance fact line, if needed
 		// InvoicePriceVariance DR/CR
-		final FactLine2 ipvFactLine = fact.createLine()
+		final FactLine ipvFactLine = fact.createLine()
 				.setDocLine(null)
 				.setAccount(docLine.getInvoicePriceVarianceAccount(as))
 				.setAmtSource(balance.toSingleSide().invert())
@@ -526,7 +525,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	/**
 	 * Updates dimensions and UOM of given FactLine from invoice line
 	 */
-	private void updateFromInvoiceLine(@Nullable final FactLine2 fl)
+	private void updateFromInvoiceLine(@Nullable final FactLine fl)
 	{
 		if (fl == null)
 		{
