@@ -135,43 +135,6 @@ public final class Fact
 	}
 
 	/**
-	 * Create and convert Fact Line. Used to create a DR and/or CR entry.
-	 *
-	 * @param docLine    the document line or null
-	 * @param account    if null, line is not created
-	 * @param currencyId the currency
-	 * @param debitAmt   debit amount, can be null
-	 * @param creditAmt  credit amount, can be null
-	 * @param qty        quantity, can be null and in that case the standard qty from DocLine/Doc will be used.
-	 * @return Fact Line or null
-	 */
-	public FactLine2 createLine(
-			@Nullable final DocLine<?> docLine,
-			@NonNull final Account account,
-			final CurrencyId currencyId,
-			@Nullable final BigDecimal debitAmt,
-			@Nullable final BigDecimal creditAmt,
-			@Nullable final BigDecimal qty)
-	{
-		return createLine()
-				.setDocLine(docLine)
-				.setAccount(account)
-				.setAmtSource(currencyId, debitAmt, creditAmt)
-				.setQty(qty)
-				.buildAndAdd();
-	}    // createLine
-
-	public FactLine2 createLine(final DocLine<?> docLine,
-								final Account account,
-								final int C_Currency_ID,
-								final BigDecimal debitAmt, final BigDecimal creditAmt,
-								final BigDecimal qty)
-	{
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(C_Currency_ID);
-		return createLine(docLine, account, currencyId, debitAmt, creditAmt, qty);
-	}
-
-	/**
 	 * Add Fact Line
 	 *
 	 * @param line fact line
@@ -655,7 +618,7 @@ public final class Fact
 		FactLine2 lineFound = null;
 		for (FactLine2 line : m_lines)
 		{
-			if (line.getAccount_ID() == account.getAccount_ID())
+			if (line.getAccount_ID().getRepoId() == account.getAccount_ID())
 			{
 				if (lineFound == null)
 				{
@@ -688,16 +651,11 @@ public final class Fact
 		}
 		else
 		{
-			m_lines.forEach(this::save);
+			m_lines.forEach(this::saveNew);
 		}
 	}
 
-	private void save(FactLine2 line)
-	{
-		// TODO Implement
-		throw new UnsupportedOperationException();
-		//InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited)
-	}
+	private void saveNew(FactLine2 line) {services.saveNew(line);}
 
 	private void saveNew(final FactTrxLines factTrxLines)
 	{
@@ -709,7 +667,7 @@ public final class Fact
 			saveNew(drLine);
 
 			factTrxLines.forEachCreditLine(crLine -> {
-				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
+				crLine.setCounterpart_Fact_Acct_ID(drLine.getIdNotNull());
 				saveNew(crLine);
 			});
 
@@ -722,7 +680,7 @@ public final class Fact
 			saveNew(crLine);
 
 			factTrxLines.forEachDebitLine(drLine -> {
-				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
+				drLine.setCounterpart_Fact_Acct_ID(crLine.getIdOrNull());
 				saveNew(drLine);
 			});
 		}
@@ -740,11 +698,6 @@ public final class Fact
 		//
 		// also save the zero lines, if they are here
 		factTrxLines.forEachZeroLine(this::saveNew);
-	}
-
-	private void saveNew(@NonNull final FactLine factLine)
-	{
-		services.saveNew(factLine);
 	}
 
 	public void forEach(final Consumer<FactLine2> consumer)

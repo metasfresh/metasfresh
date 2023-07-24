@@ -11,11 +11,9 @@ import de.metas.elementvalue.ElementValueService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.acct.FactLine;
+import org.compiere.acct.FactLine2;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -74,13 +72,13 @@ public class FAOpenItemsService
 		return result.build();
 	}
 
-	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final FactLine factLine)
+	public Optional<FAOpenItemTrxInfo> computeTrxInfo(final FactLine2 factLine)
 	{
 		return computeTrxInfo(FAOpenItemTrxInfoComputeRequest.builder()
-				.accountConceptualName(factLine.getAccountConceptualNameVO().orElse(null))
-				.elementValueId(factLine.getElementValueId())
-				.tableName(TableIdsCache.instance.getTableName(AdTableId.ofRepoId(factLine.getAD_Table_ID())))
-				.recordId(factLine.getRecord_ID())
+				.accountConceptualName(factLine.getAccountConceptualName())
+				.elementValueId(factLine.getAccount_ID())
+				.tableName(factLine.getDocRecordRef().getTableName())
+				.recordId(factLine.getDocRecordRef().getRecord_ID())
 				.lineId(factLine.getLine_ID())
 				.subLineId(factLine.getSubLine_ID())
 				.build());

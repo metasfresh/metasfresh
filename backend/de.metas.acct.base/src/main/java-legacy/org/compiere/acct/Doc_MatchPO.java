@@ -156,10 +156,10 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 				.setDocLine(null)
 				.setAccount(docLine.getAccount(ProductAcctType.P_PurchasePriceVariance_Acct, as))
 				.setAmtSourceDrOrCr(difference.negateIf(isReturnTrx).toMoney())
+				.setQty(docLine.getQty().negateIf(isReturnTrx))
 				.buildAndAdd();
 		if (cr != null)
 		{
-			cr.setQty(docLine.getQty().negateIf(isReturnTrx));
 			updateFromPurchaseOrderLine(cr);
 		}
 
@@ -169,10 +169,10 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 				.setDocLine(null)
 				.setAccount(getGLAccount(GLAccountType.PPVOffset, as))
 				.setAmtSourceDrOrCr(difference.negateIfNot(isReturnTrx).toMoney())
+				.setQty(docLine.getQty().negateIfNot(isReturnTrx))
 				.buildAndAdd();
 		if (dr != null)
 		{
-			dr.setQty(docLine.getQty().negateIfNot(isReturnTrx));
 			updateFromPurchaseOrderLine(dr);
 		}
 

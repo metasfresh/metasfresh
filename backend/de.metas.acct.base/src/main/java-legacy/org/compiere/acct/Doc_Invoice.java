@@ -426,7 +426,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						getCurrencyId(), null, taxAmt);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getTaxId());
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
 				}
 			}
 		}
@@ -539,7 +539,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						getCurrencyId(), taxAmt, null);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getTaxId());
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
 				}
 			}
 		}

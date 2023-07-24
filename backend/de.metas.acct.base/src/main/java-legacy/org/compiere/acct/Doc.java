@@ -282,6 +282,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getPO().get_ID();
 	}
 
+	public TableRecordReference getRecordRef()
+	{
+		final PO po = getPO();
+		return TableRecordReference.of(po.get_TableName(), po.get_ID());
+	}
+
 	/**
 	 * Get Persistent Object
 	 *
@@ -450,7 +456,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// Update Open Items Matching
 		for (final Fact fact : facts)
 		{
-			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
+			fact.forEach(FactLine2::updateFAOpenItemTrxInfo);
 		}
 
 		//
@@ -748,6 +754,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return document type (i.e. DocBaseType)
 	 */
+	@NonNull
 	protected final DocBaseType getDocBaseType()
 	{
 		if (_docBaseType == null)

@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.ProjectAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -34,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.SpringContextHolder;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
@@ -143,10 +143,6 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		String ProjectCategory = project.getProjectCategory();
 		I_M_Product product = Services.get(IProductDAO.class).getById(m_issue.getM_Product_ID());
 
-		// Line pointers
-		FactLine2 dr = null;
-		FactLine2 cr = null;
-
 		// Issue Cost
 		CostAmount cost = null;
 		if (m_issue.getM_InOutLine_ID() > 0)
@@ -170,11 +166,12 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			{
 				acctType = ProjectAccountType.PJ_Asset_Acct;
 			}
-			dr = fact.createLine(m_line,
-					getProjectAccount(acctType, as),
-					cost.getCurrencyId(),
-					cost.toBigDecimal(), null);
-			dr.setQty(m_line.getQty().negate());
+			fact.createLine()
+					.setDocLine(m_line)
+					.setAccount(getProjectAccount(acctType, as))
+					.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
+					.setQty(m_line.getQty().negate())
+					.buildAndAdd();
 		}
 
 		//
@@ -185,7 +182,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			{
 				acctType = ProductAcctType.P_Expense_Acct;
 			}
-			cr = fact.createLine()
+			fact.createLine()
 					.setDocLine(m_line)
 					.setAccount(m_line.getAccount(acctType, as))
 					.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())

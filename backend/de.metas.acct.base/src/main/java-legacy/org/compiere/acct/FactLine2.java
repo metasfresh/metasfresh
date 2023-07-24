@@ -1,16 +1,19 @@
 package org.compiere.acct;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
@@ -40,7 +43,6 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -51,24 +53,20 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_RevenueRecognition_Plan;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -76,60 +74,57 @@ import java.util.OptionalInt;
 public class FactLine2
 {
 	private static final Logger log = LogManager.getLogger(FactLine2.class);
-	@Getter(AccessLevel.PACKAGE)
-	@NonNull private final AcctDocRequiredServicesFacade services;
+	@NonNull @Getter(AccessLevel.PACKAGE) private final AcctDocRequiredServicesFacade services;
 
 	@NonNull private final Doc<?> m_doc;
 	@Nullable private final DocLine<?> m_docLine;
 
-	@Getter @Setter private int Fact_Acct_ID;
-	@Getter @Setter private int Counterpart_Fact_Acct_ID;
+	@Nullable private FactAcctId factAcctId;
+	@Nullable @Getter @Setter(AccessLevel.PACKAGE) private FactAcctId Counterpart_Fact_Acct_ID;
 
-	@Getter private ClientId AD_Client_ID;
+	@NonNull @Getter private ClientId AD_Client_ID;
 	@NonNull private OrgId orgId;
 
 	@Getter private final Timestamp dateTrx;
 	@Getter private final Timestamp dateAcct;
 	@Getter private final int C_Period_ID;
 
-	@Getter @Setter private BigDecimal amtAcctDr;
-	@Getter @Setter private BigDecimal amtAcctCr;
-	@Getter @Setter private CurrencyId currencyId;
-	@Getter @Setter private BigDecimal CurrencyRate;
-	@Getter @Setter private BigDecimal amtSourceDr;
-	@Getter @Setter private BigDecimal amtSourceCr;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal amtAcctDr;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal amtAcctCr;
+	@Getter @Setter(AccessLevel.PRIVATE) private CurrencyId currencyId;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal CurrencyRate;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal amtSourceDr;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal amtSourceCr;
 
-	@Getter @Setter private TaxId C_Tax_ID;
-	@Getter @Setter private String vatCode;
+	@Nullable @Getter private TaxId taxId;
+	@Nullable @Getter private String vatCode;
 
-	@Getter private final int AD_Table_ID;
-	@Getter private final int Record_ID;
+	@Getter private final TableRecordReference docRecordRef;
 	@Getter @Setter private int Line_ID;
-	@Getter @Setter private int SubLine_ID;
+	@Getter private final int SubLine_ID;
 	@Getter private final String documentNo;
 	@Getter private final DocBaseType docBaseType;
 	@Getter private final DocStatus docStatus;
 	@Getter private final DocTypeId C_DocType_ID;
 
-	@Getter @Setter private ProductId M_Product_ID;
-	@Getter private BigDecimal qty;
-	@Getter private UomId C_UOM_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private ProductId M_Product_ID;
+	@Getter private final Quantity qty;
 	@Getter private int M_Locator_ID;
 
 	@Getter @NonNull private final PostingType postingType;
 	@Getter private final AcctSchema acctSchema;
 	private final MAccount m_acct;
-	@Getter private final int account_ID;
+	@Getter private final ElementValueId account_ID;
 	@Getter private final int C_SubAcct_ID;
-	@Getter private final String accountConceptualName;
+	@Nullable @Getter private final AccountConceptualName accountConceptualName;
 
-	@Getter @Setter private CostElementId costElementId;
+	@Getter @Setter(AccessLevel.PACKAGE) private CostElementId costElementId;
 
 	@Getter @Setter private String description;
 
-	@Getter @Setter private OrderId C_OrderSO_ID;
-	@Getter @Setter private LocationId C_LocFrom_ID;
-	@Getter @Setter private LocationId C_LocTo_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private OrderId C_OrderSO_ID;
+	@Getter @Setter(AccessLevel.PACKAGE) private LocationId C_LocFrom_ID;
+	@Getter @Setter(AccessLevel.PACKAGE) private LocationId C_LocTo_ID;
 	@Getter private SectionCodeId M_SectionCode_ID;
 	@Getter private OrgId AD_OrgTrx_ID;
 	@Getter private BPartnerId C_BPartner_ID;
@@ -137,21 +132,23 @@ public class FactLine2
 	@Getter private BPartnerId C_BPartner2_ID;
 	@Getter private final int GL_Budget_ID;
 	@Getter private final GLCategoryId GL_Category_ID;
-	private int C_SalesRegion_ID = 0;
-	@Getter @Setter private ProjectId C_Project_ID;
-	@Getter @Setter private ActivityId C_Activity_ID;
-	@Getter @Setter private int C_Campaign_ID;
-	@Getter @Setter private int User1_ID;
-	@Getter @Setter private int User2_ID;
-	@Getter @Setter private int userElement1_ID;
-	@Getter @Setter private int userElement2_ID;
-	@Getter @Setter private String userElementString1;
-	@Getter @Setter private String userElementString2;
-	@Getter @Setter private String userElementString3;
-	@Getter @Setter private String userElementString4;
-	@Getter @Setter private String userElementString5;
-	@Getter @Setter private String userElementString6;
-	@Getter @Setter private String userElementString7;
+	@Getter private int C_SalesRegion_ID = 0;
+	@Getter @Setter(AccessLevel.PRIVATE) private ProjectId C_Project_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private ActivityId C_Activity_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private int C_Campaign_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private int User1_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private int User2_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private int userElement1_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private int userElement2_ID;
+	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString1;
+	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString2;
+	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString3;
+	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString4;
+	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString5;
+	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString6;
+	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString7;
+
+	@Nullable private FAOpenItemTrxInfo openItemTrxInfo;
 
 	private CurrencyConversionContext currencyConversionCtx = null;
 
@@ -160,14 +157,14 @@ public class FactLine2
 			@NonNull final AcctDocRequiredServicesFacade services,
 			@NonNull final Doc<?> doc,
 			@Nullable final DocLine<?> docLine,
-			final int AD_Table_ID,
-			final int Record_ID,
+			@NonNull final TableRecordReference docRecordRef,
 			final int Line_ID,
 			final Integer SubLine_ID,
 			@NonNull final PostingType postingType,
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final MAccount account,
-			@Nullable final String accountConceptualName,
+			@Nullable final AccountConceptualName accountConceptualName,
+			@Nullable final Quantity qty,
 			@Nullable final ClientId clientId,
 			@Nullable final OrgId orgId,
 			@Nullable final Integer M_Locator_ID,
@@ -179,15 +176,14 @@ public class FactLine2
 		this.services = services;
 		this.m_doc = doc;
 		this.m_docLine = docLine;
-		this.AD_Table_ID = AD_Table_ID;
-		this.Record_ID = Record_ID;
+		this.docRecordRef = docRecordRef;
 		this.Line_ID = Line_ID;
 		this.SubLine_ID = SubLine_ID != null ? SubLine_ID : 0;
 
 		this.postingType = postingType;
 		this.acctSchema = acctSchema;
 		this.m_acct = account;
-		this.account_ID = account.getAccount_ID();
+		this.account_ID = ElementValueId.ofRepoId(account.getAccount_ID());
 		this.C_SubAcct_ID = account.getC_SubAcct_ID();
 		this.accountConceptualName = accountConceptualName;
 
@@ -211,41 +207,13 @@ public class FactLine2
 		// setDocumentInfo
 		//
 
-		// Date Trx
-		if (m_docLine != null)
-		{
-			this.dateTrx = m_docLine.getDateDocAsTimestamp();
-		}
-		else
-		{
-			this.dateTrx = doc.getDateDocAsTimestamp();
-		}
+		this.dateTrx = m_docLine != null ? m_docLine.getDateDocAsTimestamp() : doc.getDateDocAsTimestamp();
+		this.dateAcct = m_docLine != null ? m_docLine.getDateAcctAsTimestamp() : doc.getDateAcctAsTimestamp();
+		this.C_Period_ID = m_docLine != null && m_docLine.getC_Period_ID() > 0 ? m_docLine.getC_Period_ID() : doc.getC_Period_ID();
 
-		// Date Acct
-		if (m_docLine != null)
-		{
-			this.dateAcct = m_docLine.getDateAcctAsTimestamp();
-		}
-		else
-		{
-			this.dateAcct = doc.getDateAcctAsTimestamp();
-		}
-
-		// Period
-		if (m_docLine != null && m_docLine.getC_Period_ID() > 0)
-		{
-			this.C_Period_ID = m_docLine.getC_Period_ID();
-		}
-		else
-		{
-			this.C_Period_ID = doc.getC_Period_ID();
-		}
-
+		//
 		// Tax
-		if (m_docLine != null)
-		{
-			this.C_Tax_ID = m_docLine.getTaxId().orElse(null);
-		}
+		setTaxIdAndUpdateVatCode(m_docLine != null ? m_docLine.getTaxId().orElse(null) : null);
 
 		// Document infos
 		this.documentNo = doc.getDocumentNo();
@@ -271,21 +239,16 @@ public class FactLine2
 			this.M_Product_ID = doc.getProductId();
 		}
 
-		// UOM
-		if (m_docLine != null)
-		{
-			this.C_UOM_ID = UomId.ofRepoIdOrNull(m_docLine.getC_UOM_ID());
-		}
-
 		// Qty
-		if (qty == null)    // not previously set
+		if (qty != null)
 		{
-			if (m_docLine != null && m_docLine.getQty() != null)
-			{
-				@NonNull final Quantity docLineQty = m_docLine.getQty();
-				this.qty = docLineQty.toBigDecimal();
-				this.C_UOM_ID = docLineQty.getUomId();
-			}
+			this.qty = qty;
+		}
+		else
+		{
+			this.qty = m_docLine != null && m_docLine.getQty() != null
+					? m_docLine.getQty()
+					: null;
 		}
 
 		// Loc From (maybe set earlier)
@@ -384,7 +347,7 @@ public class FactLine2
 		// C_BPartner_ID2
 		this.C_BPartner2_ID = CoalesceUtil.coalesceSuppliers(
 				() -> (docLine != null) ? docLine.getBPartnerId2() : null,
-				() -> doc.getBPartnerId2()
+				doc::getBPartnerId2
 		);
 
 		// User List 1
@@ -535,6 +498,28 @@ public class FactLine2
 		return result.toString();
 	}
 
+	public void setId(@NonNull final FactAcctId id)
+	{
+		if (this.factAcctId != null && !FactAcctId.equals(this.factAcctId, id))
+		{
+			throw new AdempiereException("Changing ID to " + id + " not allowed for " + this);
+		}
+		this.factAcctId = id;
+	}
+
+	@Nullable
+	public FactAcctId getIdOrNull() {return factAcctId;}
+
+	@NonNull
+	public FactAcctId getIdNotNull()
+	{
+		if (this.factAcctId == null)
+		{
+			throw new AdempiereException("ID is null: " + this);
+		}
+		return this.factAcctId;
+	}
+
 	/**
 	 * Create Reversal (negate DR/CR) of the line
 	 *
@@ -547,20 +532,18 @@ public class FactLine2
 				.services(services)
 				.doc(m_doc)
 				.docLine(m_docLine)
-				.AD_Table_ID(this.AD_Table_ID)
-				.Record_ID(this.Record_ID)
+				.docRecordRef(this.docRecordRef)
 				.Line_ID(this.Line_ID)
 				.postingType(this.postingType)
 				.acctSchema(acctSchema)
 				.account(m_acct)
 				.accountConceptualName(accountConceptualName)
+				.qty(this.qty.negate())
 				.clientId(AD_Client_ID)
 				.orgId(orgId)
 				.build();
 		//
 		reversal.setAmtSource(this.currencyId, this.amtSourceDr.negate(), this.amtSourceCr.negate());
-		reversal.setQty(this.qty.negate());
-		reversal.setC_UOM_ID(this.C_UOM_ID);
 		reversal.convert();
 		reversal.setDescription(description);
 		return reversal;
@@ -578,8 +561,7 @@ public class FactLine2
 				.services(services)
 				.doc(m_doc)
 				.docLine(m_docLine)
-				.AD_Table_ID(this.AD_Table_ID)
-				.Record_ID(this.Record_ID)
+				.docRecordRef(docRecordRef)
 				.Line_ID(this.Line_ID)
 				.postingType(this.postingType)
 				.acctSchema(acctSchema)
@@ -659,10 +641,11 @@ public class FactLine2
 		amt.assertCurrencyId(getAcctCurrencyId());
 	}
 
-	public boolean isZeroAmtSource()
-	{
-		return getAmtSourceDr().signum() == 0 && getAmtSourceCr().signum() == 0;
-	}
+	public boolean isZeroAmtSource() {return getAmtSourceDr().signum() == 0 && getAmtSourceCr().signum() == 0;}
+
+	public boolean isZeroAmtSourceAndQty() {return isZeroAmtSource() && isZeroQty();}
+
+	public boolean isZeroQty() {return qty != null && qty.isZero();}
 
 	public void setAmtSource(@Nullable Money amtSourceDr, @Nullable Money amtSourceCr)
 	{
@@ -672,7 +655,7 @@ public class FactLine2
 				amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
 	}
 
-	public void setAmtSource(final CurrencyId currencyId, @Nullable BigDecimal AmtSourceDr, @Nullable BigDecimal AmtSourceCr)
+	private void setAmtSource(final CurrencyId currencyId, @Nullable BigDecimal AmtSourceDr, @Nullable BigDecimal AmtSourceCr)
 	{
 		if (!acctSchema.isAllowNegativePosting())
 		{
@@ -710,7 +693,7 @@ public class FactLine2
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
 	 */
-	public void setAmtAcct(@NonNull final Money amtAcctDr, @NonNull final Money amtAcctCr)
+	void setAmtAcct(@NonNull final Money amtAcctDr, @NonNull final Money amtAcctCr)
 	{
 		assertAcctCurrency(amtAcctDr);
 		assertAcctCurrency(amtAcctCr);
@@ -720,7 +703,7 @@ public class FactLine2
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
 	 */
-	public void setAmtAcct(BigDecimal AmtAcctDr, BigDecimal AmtAcctCr)
+	void setAmtAcct(BigDecimal AmtAcctDr, BigDecimal AmtAcctCr)
 	{
 		if (AmtAcctDr == null)
 		{
@@ -772,22 +755,6 @@ public class FactLine2
 			return;
 		}
 		invertDrAndCrAmounts();
-	}
-
-	/**
-	 * Negate the DR and CR source and accounted amounts.
-	 */
-	public void negateDrAndCrAmounts()
-	{
-		final BigDecimal amtSourceDr = getAmtSourceDr();
-		final BigDecimal amtSourceCr = getAmtSourceCr();
-		final BigDecimal amtAcctDr = getAmtAcctDr();
-		final BigDecimal amtAcctCr = getAmtAcctCr();
-
-		setAmtSourceDr(amtSourceDr.negate());
-		setAmtSourceCr(amtSourceCr.negate());
-		setAmtAcctDr(amtAcctDr.negate());
-		setAmtAcctCr(amtAcctCr.negate());
 	}
 
 	@Nullable
@@ -846,24 +813,7 @@ public class FactLine2
 		}
 	}    // addDescription
 
-	/**
-	 * Set Warehouse Locator.
-	 * - will overwrite Organization -
-	 *
-	 * @param M_Locator_ID locator
-	 */
-	public void setLocatorAndResetOrgId(final int M_Locator_ID)
-	{
-		this.M_Locator_ID = M_Locator_ID;
-		this.orgId = OrgId.ANY;
-	}   // setM_Locator_ID
-
-	public void setLocation(final int C_Location_ID, final boolean isFrom)
-	{
-		setLocation(LocationId.ofRepoIdOrNull(C_Location_ID), isFrom);
-	}
-
-	public void setLocation(@Nullable final LocationId C_Location_ID, final boolean isFrom)
+	private void setLocation(@Nullable final LocationId C_Location_ID, final boolean isFrom)
 	{
 		if (isFrom)
 		{
@@ -875,6 +825,7 @@ public class FactLine2
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public void setLocationFromLocator(final int M_Locator_ID, final boolean isFrom)
 	{
 		getServices().getLocationIdByLocatorRepoId(M_Locator_ID)
@@ -917,23 +868,6 @@ public class FactLine2
 	}
 
 	/**
-	 * @return true if the given fact line is booked on same DR/CR side as this line
-	 */
-	public boolean isSameAmtSourceDrCrSideAs(final FactLine2 factLine)
-	{
-		final boolean thisDR = getAmtAcctDr().signum() != 0;
-		final boolean otherDR = factLine != null && factLine.getAmtAcctDr().signum() != 0;
-		if (thisDR != otherDR)
-		{
-			return false;
-		}
-
-		final boolean thisCR = getAmtAcctCr().signum() != 0;
-		final boolean otherCR = factLine != null && factLine.getAmtAcctCr().signum() != 0;
-		return thisCR == otherCR;
-	}
-
-	/**
 	 * @return AmtSourceDr/AmtAcctDr or AmtSourceCr/AmtAcctCr, which one is not ZERO
 	 * @throws IllegalStateException if both of them are not ZERO
 	 */
@@ -954,7 +888,7 @@ public class FactLine2
 			final BigDecimal amtSourceCr = getAmtSourceCr();
 			return AmountSourceAndAcct.of(amtSourceCr, amtAcctCr);
 		}
-		else if (amtAcctDrSign == 0 && amtAcctCrSign == 0)
+		else if (amtAcctDrSign == 0 /*&& amtAcctCrSign == 0*/)
 		{
 			return AmountSourceAndAcct.ZERO;
 		}
@@ -967,27 +901,20 @@ public class FactLine2
 	}
 
 	/**
-	 * Is Account on Balance Sheet
-	 *
 	 * @return true if account is a balance sheet account
 	 */
-	public boolean isBalanceSheet()
-	{
-		return m_acct.isBalanceSheet();
-	}    // isBalanceSheet
+	public boolean isBalanceSheet() {return m_acct.isBalanceSheet();}
 
 	/**
-	 * Currect Accounting Amount.
+	 * Correct Accounting Amount.
 	 *
 	 * <pre>
 	 *  Example:    1       -1      1       -1
 	 *  Old         100/0   100/0   0/100   0/100
 	 *  New         99/0    101/0   0/99    0/101
 	 * </pre>
-	 *
-	 * @param deltaAmount delta amount
 	 */
-	public void currencyCorrect(final Money deltaAmount)
+	void currencyCorrect(final Money deltaAmount)
 	{
 		assertAcctCurrency(deltaAmount);
 
@@ -1054,10 +981,10 @@ public class FactLine2
 		}
 	}    // convert
 
-	private CurrencyRate getCurrencyRate(final CurrencyId currencyId, final CurrencyId acctCurrencyId)
+	private CurrencyRate getCurrencyRate(final CurrencyId currencyFromId, final CurrencyId currencyToId)
 	{
 		final CurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
-		return services.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
+		return services.getCurrencyRate(conversionCtx, currencyFromId, currencyToId);
 	}
 
 	public void setCurrencyConversionCtx(final CurrencyConversionContext currencyConversionCtx)
@@ -1073,28 +1000,29 @@ public class FactLine2
 			return currencyConversionCtx;
 		}
 
-		// Get Conversion Type from Line or Header
+		//
+		// Conversion date
 		LocalDateAndOrgId convDate;
-		CurrencyConversionTypeId conversionTypeId = null;
 		if (m_docLine != null)            // get from line
 		{
 			convDate = m_docLine.getDateAcct();
-			conversionTypeId = m_docLine.getCurrencyConversionTypeId();
 		}
 		else
 		{
 			convDate = m_doc.getDateAcct();
 		}
 
+		//
+		// Conversion Type
+		CurrencyConversionTypeId conversionTypeId = m_docLine != null
+				? m_docLine.getCurrencyConversionTypeId()
+				: null;
 		if (conversionTypeId == null)    // get from header
 		{
 			conversionTypeId = m_doc.getCurrencyConversionTypeId();
 		}
 
-		return services.createCurrencyConversionContext(
-				convDate,
-				conversionTypeId,
-				m_doc.getClientId());
+		return services.createCurrencyConversionContext(convDate, conversionTypeId, m_doc.getClientId());
 	}
 
 	MAccount getAccount()
@@ -1105,12 +1033,12 @@ public class FactLine2
 	@Override
 	public String toString()
 	{
-		String sb = "FactLine=[" + this.AD_Table_ID + ":" + this.Record_ID
+		String sb = "FactLine=[" + this.docRecordRef
 				+ "," + this.accountConceptualName + "/" + (m_acct != null ? m_acct.getCombination() : "?")
 				+ ",Cur=" + this.currencyId
 				+ ", DR=" + this.amtSourceDr + "|" + this.amtAcctDr
 				+ ", CR=" + this.amtSourceCr + "|" + this.amtAcctCr
-				+ ", Record/Line=" + this.Record_ID + (this.Line_ID > 0 ? "/" + this.Line_ID : "");
+				+ (this.Line_ID > 0 ? ", Line=" + this.Line_ID : "");
 		if (this.CurrencyRate != null && this.CurrencyRate.signum() != 0 && this.CurrencyRate.compareTo(BigDecimal.ONE) != 0)
 		{
 			sb = sb + ", currencyRate=" + this.CurrencyRate;
@@ -1150,7 +1078,7 @@ public class FactLine2
 			setAD_Org_ID(m_docLine.getOrgId());
 		}
 		// Prio 3 - get from doc - if not GL
-		if (m_doc != null && orgId.isAny())
+		if (orgId.isAny())
 		{
 			if (DocBaseType.equals(DocBaseType.GLJournal, m_doc.getDocBaseType()))
 			{
@@ -1162,7 +1090,7 @@ public class FactLine2
 			}
 		}
 		// Prio 4 - get from account - if not GL
-		if (m_doc != null && orgId.isAny())
+		if (orgId.isAny())
 		{
 			if (DocBaseType.GLJournal.equals(m_doc.getDocBaseType()))
 			{
@@ -1183,6 +1111,7 @@ public class FactLine2
 	 */
 	public int getC_SalesRegion_ID_Effective()
 	{
+		// TODO refactor!
 		if (C_SalesRegion_ID > 0)
 		{
 			return C_SalesRegion_ID;
@@ -1192,146 +1121,129 @@ public class FactLine2
 		{
 			this.C_SalesRegion_ID = m_docLine.getC_SalesRegion_ID();
 		}
-		if (m_doc != null)
+
+		if (C_SalesRegion_ID <= 0)
 		{
-			if (C_SalesRegion_ID <= 0)
+			this.C_SalesRegion_ID = m_doc.getC_SalesRegion_ID();
+		}
+		if (C_SalesRegion_ID <= 0 && m_doc.getBP_C_SalesRegion_ID() > 0)
+		{
+			this.C_SalesRegion_ID = m_doc.getBP_C_SalesRegion_ID();
+		}
+		// derive SalesRegion if AcctSegment
+		if (C_SalesRegion_ID <= 0
+				&& m_doc.getC_BPartner_Location_ID() != 0
+				&& m_doc.getBP_C_SalesRegion_ID() == -1)    // never tried
+		// && m_acctSchema.isAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_SalesRegion))
+		{
+			String sql = "SELECT COALESCE(C_SalesRegion_ID,0) FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
+			this.C_SalesRegion_ID = DB.getSQLValue(null, sql, m_doc.getC_BPartner_Location_ID());
+			if (this.C_SalesRegion_ID > 0)        // save in VO
 			{
-				this.C_SalesRegion_ID = m_doc.getC_SalesRegion_ID();
+				m_doc.setBP_C_SalesRegion_ID(this.C_SalesRegion_ID);
+				log.debug("C_SalesRegion_ID={} (from BPL)", this.C_SalesRegion_ID);
 			}
-			if (C_SalesRegion_ID <= 0 && m_doc.getBP_C_SalesRegion_ID() > 0)
+			else
+			// From Sales Rep of Document -> Sales Region
 			{
-				this.C_SalesRegion_ID = m_doc.getBP_C_SalesRegion_ID();
-			}
-			// derive SalesRegion if AcctSegment
-			if (C_SalesRegion_ID <= 0
-					&& m_doc.getC_BPartner_Location_ID() != 0
-					&& m_doc.getBP_C_SalesRegion_ID() == -1)    // never tried
-			// && m_acctSchema.isAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_SalesRegion))
-			{
-				String sql = "SELECT COALESCE(C_SalesRegion_ID,0) FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
-				this.C_SalesRegion_ID = DB.getSQLValue(null, sql, m_doc.getC_BPartner_Location_ID());
+				final UserId salesRepId = m_doc.getSalesRepId();
+				if (salesRepId != null)
+				{
+					sql = "SELECT COALESCE(MAX(C_SalesRegion_ID),0) FROM C_SalesRegion WHERE SalesRep_ID=?";
+					this.C_SalesRegion_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, salesRepId);
+				}
+
 				if (this.C_SalesRegion_ID > 0)        // save in VO
 				{
 					m_doc.setBP_C_SalesRegion_ID(this.C_SalesRegion_ID);
-					log.debug("C_SalesRegion_ID={} (from BPL)", this.C_SalesRegion_ID);
+					log.debug("C_SalesRegion_ID={} (from SR)", this.C_SalesRegion_ID);
 				}
 				else
-				// From Sales Rep of Document -> Sales Region
 				{
-					final UserId salesRepId = m_doc.getSalesRepId();
-					if (salesRepId != null)
-					{
-						sql = "SELECT COALESCE(MAX(C_SalesRegion_ID),0) FROM C_SalesRegion WHERE SalesRep_ID=?";
-						this.C_SalesRegion_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, salesRepId);
-					}
-
-					if (this.C_SalesRegion_ID > 0)        // save in VO
-					{
-						m_doc.setBP_C_SalesRegion_ID(this.C_SalesRegion_ID);
-						log.debug("C_SalesRegion_ID={} (from SR)", this.C_SalesRegion_ID);
-					}
-					else
-					{
-						m_doc.setBP_C_SalesRegion_ID(-2);    // don't try again
-					}
+					m_doc.setBP_C_SalesRegion_ID(-2);    // don't try again
 				}
 			}
-			if (m_acct != null && this.C_SalesRegion_ID == 0)
-			{
-				this.C_SalesRegion_ID = m_acct.getC_SalesRegion_ID();
-			}
 		}
-		//
-		// log.debug("C_SalesRegion_ID=" + super.getC_SalesRegion_ID()
-		// + ", C_BPartner_Location_ID=" + m_docVO.C_BPartner_Location_ID
-		// + ", BP_C_SalesRegion_ID=" + m_docVO.BP_C_SalesRegion_ID
-		// + ", SR=" + m_acctSchema.isAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_SalesRegion));
+		if (m_acct != null && this.C_SalesRegion_ID == 0)
+		{
+			this.C_SalesRegion_ID = m_acct.getC_SalesRegion_ID();
+		}
+
 		return this.C_SalesRegion_ID;
-	}    // getC_SalesRegion_ID
+	}
 
 	// TODO refactor it
-	// /**
-	//  * Before Save
-	//  *
-	//  * @param newRecord new
-	//  * @return true
-	//  */
-	// @Override
-	// protected boolean beforeSave(final boolean newRecord)
-	// {
-	// 	if (newRecord)
-	// 	{
-	// 		getAD_Org_ID();
-	// 		getC_SalesRegion_ID();
-	// 		// Set Default Account Info
-	// 		if (getM_Product_ID() == 0)
-	// 		{
-	// 			setM_Product_ID(m_acct.getM_Product_ID());
-	// 		}
-	// 		if (getC_LocFrom_ID() == 0)
-	// 		{
-	// 			setC_LocFrom_ID(m_acct.getC_LocFrom_ID());
-	// 		}
-	// 		if (getC_LocTo_ID() == 0)
-	// 		{
-	// 			setC_LocTo_ID(m_acct.getC_LocTo_ID());
-	// 		}
-	// 		if (getC_BPartner_ID() == 0)
-	// 		{
-	// 			setC_BPartner_ID(m_acct.getC_BPartner_ID());
-	// 		}
-	// 		if (getAD_OrgTrx_ID() == 0)
-	// 		{
-	// 			setAD_OrgTrx_ID(m_acct.getAD_OrgTrx_ID());
-	// 		}
-	// 		if (getC_Project_ID() == 0)
-	// 		{
-	// 			setC_Project_ID(m_acct.getC_Project_ID());
-	// 		}
-	// 		if (getC_Campaign_ID() == 0)
-	// 		{
-	// 			setC_Campaign_ID(m_acct.getC_Campaign_ID());
-	// 		}
-	// 		if (getC_Activity_ID() == 0)
-	// 		{
-	// 			setC_Activity_ID(m_acct.getC_Activity_ID());
-	// 		}
-	// 		if (getC_OrderSO_ID() <= 0)
-	// 		{
-	// 			setC_OrderSO_ID(m_acct.getC_OrderSO_ID());
-	// 		}
-	// 		if (getM_SectionCode_ID() <= 0)
-	// 		{
-	// 			setM_SectionCode_ID(m_acct.getM_SectionCode_ID());
-	// 		}
-	// 		if (getUser1_ID() == 0)
-	// 		{
-	// 			setUser1_ID(m_acct.getUser1_ID());
-	// 		}
-	// 		if (getUser2_ID() == 0)
-	// 		{
-	// 			setUser2_ID(m_acct.getUser2_ID());
-	// 		}
-	//
-	// 		setVATCodeIfApplies();
-	//
-	// 		//
-	// 		// Revenue Recognition for AR Invoices
-	// 		if (DocBaseType.ARInvoice.equals(m_doc.getDocBaseType())
-	// 				&& m_docLine != null
-	// 				&& m_docLine.getC_RevenueRecognition_ID() > 0)
-	// 		{
-	// 			setAccount_ID(createRevenueRecognition(
-	// 					m_docLine.getC_RevenueRecognition_ID(),
-	// 					m_docLine.get_ID(),
-	// 					toAccountDimension()));
-	// 		}
-	// 	}
-	//
-	// 	updateCurrencyRateIfNotSet();
-	//
-	// 	return true;
-	// }    // beforeSave
+	public void updateBeforeSaveNew()
+	{
+		getOrgIdEffective();
+		getC_SalesRegion_ID_Effective();
+
+		// Set Default Account Info
+		if (getM_Product_ID() == null)
+		{
+			setM_Product_ID(ProductId.ofRepoIdOrNull(m_acct.getM_Product_ID()));
+		}
+		if (getC_LocFrom_ID() == null)
+		{
+			setC_LocFrom_ID(LocationId.ofRepoIdOrNull(m_acct.getC_LocFrom_ID()));
+		}
+		if (getC_LocTo_ID() == null)
+		{
+			setC_LocTo_ID(LocationId.ofRepoIdOrNull(m_acct.getC_LocTo_ID()));
+		}
+		// if (getC_BPartner_ID() == null)
+		// {
+		// 	setC_BPartner_ID(BPartnerId.ofRepoIdOrNull(m_acct.getC_BPartner_ID()));
+		// }
+		if (getAD_OrgTrx_ID() == null)
+		{
+			setAD_OrgTrx_ID(OrgId.ofRepoIdOrNull(m_acct.getAD_OrgTrx_ID()));
+		}
+		if (getC_Project_ID() == null)
+		{
+			setC_Project_ID(ProjectId.ofRepoIdOrNull(m_acct.getC_Project_ID()));
+		}
+		if (getC_Campaign_ID() <= 0)
+		{
+			setC_Campaign_ID(m_acct.getC_Campaign_ID());
+		}
+		if (getC_Activity_ID() == null)
+		{
+			setC_Activity_ID(ActivityId.ofRepoIdOrNull(m_acct.getC_Activity_ID()));
+		}
+		if (getC_OrderSO_ID() == null)
+		{
+			setC_OrderSO_ID(OrderId.ofRepoIdOrNull(m_acct.getC_OrderSO_ID()));
+		}
+		// if (getM_SectionCode_ID() == null)
+		// {
+		// 	setM_SectionCode_ID(SectionCodeId.ofRepoIdOrNull(m_acct.getM_SectionCode_ID()));
+		// }
+		if (getUser1_ID() <= 0)
+		{
+			setUser1_ID(m_acct.getUser1_ID());
+		}
+		if (getUser2_ID() <= 0)
+		{
+			setUser2_ID(m_acct.getUser2_ID());
+		}
+
+		// setVATCodeIfApplies();
+		//
+		// //
+		// // Revenue Recognition for AR Invoices
+		// if (DocBaseType.ARInvoice.equals(m_doc.getDocBaseType())
+		// 		&& m_docLine != null
+		// 		&& m_docLine.getC_RevenueRecognition_ID() > 0)
+		// {
+		// 	setAccount_ID(createRevenueRecognition(
+		// 			m_docLine.getC_RevenueRecognition_ID(),
+		// 			m_docLine.get_ID(),
+		// 			toAccountDimension()));
+		// }
+
+		updateCurrencyRateIfNotSet();
+	}
 
 	public AccountDimension toAccountDimension()
 	{
@@ -1366,75 +1278,75 @@ public class FactLine2
 				.build();
 	}
 
-	/**
-	 * Create Revenue recognition plan and return Unearned Revenue account to be used instead of Revenue Account. If not found, it returns the revenue account.
-	 *
-	 * @return Account_ID for Unearned Revenue or Revenue Account if not found
-	 */
-	private int createRevenueRecognition(
-			final int C_RevenueRecognition_ID,
-			final int C_InvoiceLine_ID,
-			final AccountDimension accountDimension)
-	{
-		// get VC for P_Revenue (from Product)
-		final MAccount revenue = MAccount.get(Env.getCtx(), accountDimension);
-		if (revenue == null || revenue.get_ID() <= 0)
-		{
-			log.error("Revenue_Acct not found");
-			return accountDimension.getC_ElementValue_ID();
-		}
-		final AccountId productRevenueAcctId = AccountId.ofRepoId(revenue.getC_ValidCombination_ID());
-
-		// get Unearned Revenue Acct from BPartner Group
-		AccountId unearnedRevenueAcctId = null;
-		int new_Account_ID = 0;
-		final String sql = "SELECT ga.UnearnedRevenue_Acct, vc.Account_ID "
-				+ "FROM C_BP_Group_Acct ga, C_BPartner p, C_ValidCombination vc "
-				+ "WHERE ga.C_BP_Group_ID=p.C_BP_Group_ID"
-				+ " AND ga.UnearnedRevenue_Acct=vc.C_ValidCombination_ID"
-				+ " AND ga.C_AcctSchema_ID=? AND p.C_BPartner_ID=?";
-		final Object[] sqlParams = new Object[] { accountDimension.getAcctSchemaId(), accountDimension.getC_BPartner_ID() };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				unearnedRevenueAcctId = AccountId.ofRepoId(rs.getInt(1));
-				new_Account_ID = rs.getInt(2);
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-
-		if (new_Account_ID <= 0)
-		{
-			log.error("UnearnedRevenue_Acct not found");
-			return accountDimension.getC_ElementValue_ID();
-		}
-
-		final I_C_RevenueRecognition_Plan plan = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_RevenueRecognition_Plan.class);
-		plan.setC_RevenueRecognition_ID(C_RevenueRecognition_ID);
-		plan.setC_AcctSchema_ID(accountDimension.getAcctSchemaId().getRepoId());
-		plan.setC_InvoiceLine_ID(C_InvoiceLine_ID);
-		plan.setUnEarnedRevenue_Acct(unearnedRevenueAcctId.getRepoId());
-		plan.setP_Revenue_Acct(productRevenueAcctId.getRepoId());
-		plan.setC_Currency_ID(getCurrencyId().getRepoId());
-		plan.setRecognizedAmt(BigDecimal.ZERO);
-		plan.setTotalAmt(getAcctBalance().toBigDecimal());
-		InterfaceWrapperHelper.save(plan);
-
-		return new_Account_ID;
-	}
+	// /**
+	//  * Create Revenue recognition plan and return Unearned Revenue account to be used instead of Revenue Account. If not found, it returns the revenue account.
+	//  *
+	//  * @return Account_ID for Unearned Revenue or Revenue Account if not found
+	//  */
+	// private int createRevenueRecognition(
+	// 		final int C_RevenueRecognition_ID,
+	// 		final int C_InvoiceLine_ID,
+	// 		final AccountDimension accountDimension)
+	// {
+	// 	// get VC for P_Revenue (from Product)
+	// 	final MAccount revenue = MAccount.get(Env.getCtx(), accountDimension);
+	// 	if (revenue == null || revenue.get_ID() <= 0)
+	// 	{
+	// 		log.error("Revenue_Acct not found");
+	// 		return accountDimension.getC_ElementValue_ID();
+	// 	}
+	// 	final AccountId productRevenueAcctId = AccountId.ofRepoId(revenue.getC_ValidCombination_ID());
+	//
+	// 	// get Unearned Revenue Acct from BPartner Group
+	// 	AccountId unearnedRevenueAcctId = null;
+	// 	int new_Account_ID = 0;
+	// 	final String sql = "SELECT ga.UnearnedRevenue_Acct, vc.Account_ID "
+	// 			+ "FROM C_BP_Group_Acct ga, C_BPartner p, C_ValidCombination vc "
+	// 			+ "WHERE ga.C_BP_Group_ID=p.C_BP_Group_ID"
+	// 			+ " AND ga.UnearnedRevenue_Acct=vc.C_ValidCombination_ID"
+	// 			+ " AND ga.C_AcctSchema_ID=? AND p.C_BPartner_ID=?";
+	// 	final Object[] sqlParams = new Object[] { accountDimension.getAcctSchemaId(), accountDimension.getC_BPartner_ID() };
+	// 	PreparedStatement pstmt = null;
+	// 	ResultSet rs = null;
+	// 	try
+	// 	{
+	// 		pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+	// 		DB.setParameters(pstmt, sqlParams);
+	// 		rs = pstmt.executeQuery();
+	// 		if (rs.next())
+	// 		{
+	// 			unearnedRevenueAcctId = AccountId.ofRepoId(rs.getInt(1));
+	// 			new_Account_ID = rs.getInt(2);
+	// 		}
+	// 	}
+	// 	catch (final SQLException e)
+	// 	{
+	// 		throw new DBException(e, sql, sqlParams);
+	// 	}
+	// 	finally
+	// 	{
+	// 		DB.close(rs, pstmt);
+	// 	}
+	//
+	// 	if (new_Account_ID <= 0)
+	// 	{
+	// 		log.error("UnearnedRevenue_Acct not found");
+	// 		return accountDimension.getC_ElementValue_ID();
+	// 	}
+	//
+	// 	final I_C_RevenueRecognition_Plan plan = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_RevenueRecognition_Plan.class);
+	// 	plan.setC_RevenueRecognition_ID(C_RevenueRecognition_ID);
+	// 	plan.setC_AcctSchema_ID(accountDimension.getAcctSchemaId().getRepoId());
+	// 	plan.setC_InvoiceLine_ID(C_InvoiceLine_ID);
+	// 	plan.setUnEarnedRevenue_Acct(unearnedRevenueAcctId.getRepoId());
+	// 	plan.setP_Revenue_Acct(productRevenueAcctId.getRepoId());
+	// 	plan.setC_Currency_ID(getCurrencyId().getRepoId());
+	// 	plan.setRecognizedAmt(BigDecimal.ZERO);
+	// 	plan.setTotalAmt(getAcctBalance().toBigDecimal());
+	// 	InterfaceWrapperHelper.save(plan);
+	//
+	// 	return new_Account_ID;
+	// }
 
 	/**************************************************************************
 	 * Update Line with reversed Original Amount in Accounting Currency.
@@ -1450,8 +1362,7 @@ public class FactLine2
 			final int Line_ID,
 			final BigDecimal multiplier)
 	{
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final int adTableId = adTableDAO.retrieveTableId(tableName);
+		final AdTableId adTableId = TableIdsCache.instance.getTableId(tableName).orElseThrow(() -> new AdempiereException("No AD_Table_ID found for " + tableName));
 
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class)
@@ -1498,8 +1409,9 @@ public class FactLine2
 			this.M_Locator_ID = fact.getM_Locator_ID();
 			setUser1_ID(fact.getUser1_ID());
 			setUser2_ID(fact.getUser2_ID());
-			setC_UOM_ID(fact.getC_UOM_ID());
-			setC_Tax_ID(TaxId.ofRepoIdOrNull(fact.getC_Tax_ID()));
+			//setC_UOM_ID(fact.getC_UOM_ID());
+			this.taxId = TaxId.ofRepoIdOrNull(fact.getC_Tax_ID());
+			this.vatCode = fact.getVATCode();
 			this.orgId = OrgId.ofRepoIdOrAny(fact.getAD_Org_ID());
 			setC_OrderSO_ID(OrderId.ofRepoIdOrNull(fact.getC_OrderSO_ID()));
 			this.M_SectionCode_ID = SectionCodeId.ofRepoIdOrNull(fact.getM_SectionCode_ID());
@@ -1527,48 +1439,6 @@ public class FactLine2
 			return false; // not updated
 		}
 	}   // updateReverseLine
-
-	private void setVATCodeIfApplies()
-	{
-		final TaxId taxId = getC_Tax_ID();
-		if (taxId == null)
-		{
-			return;
-		}
-
-		//
-		// Get context
-		final boolean isSOTrx;
-		if (m_docLine != null)
-		{
-			isSOTrx = m_docLine.isSOTrx();
-		}
-		else
-		{
-			isSOTrx = m_doc.isSOTrx();
-		}
-
-		setVatCode(services.findVATCode(VATCodeMatchingRequest.builder()
-						.setC_AcctSchema_ID(getAcctSchemaId().getRepoId())
-						.setC_Tax_ID(taxId.getRepoId())
-						.setIsSOTrx(isSOTrx)
-						.setDate(this.dateAcct)
-						.build())
-				.map(VATCode::getCode)
-				.orElse(null));
-	}
-
-	public void setQty(@NonNull final Quantity quantity)
-	{
-		setQty(quantity.toBigDecimal());
-		setC_UOM_ID(quantity.getUomId());
-	}
-
-	public void setQty(final BigDecimal qty) {this.qty = qty;}
-
-	public void setC_UOM_ID(final UomId uomId) {this.C_UOM_ID = uomId;}
-
-	public void setC_UOM_ID(final int C_UOM_ID) {setC_UOM_ID(UomId.ofRepoIdOrNull(C_UOM_ID));}
 
 	public AcctSchemaId getAcctSchemaId() {return getAcctSchema().getId();}
 
@@ -1763,19 +1633,16 @@ public class FactLine2
 	{
 		final BigDecimal amtAcct = getAmtAcctDr().add(getAmtAcctCr());
 		final BigDecimal amtSource = getAmtSourceDr().add(getAmtSourceCr());
-
 		if (amtAcct.signum() == 0 || amtSource.signum() == 0)
 		{
 			return BigDecimal.ZERO; // dev-note: does not matter
 		}
 
 		final CurrencyPrecision schemaCurrencyPrecision = getAcctSchema().getStandardPrecision();
-
-		return amtAcct
-				.divide(amtSource, schemaCurrencyPrecision.toInt(), schemaCurrencyPrecision.getRoundingMode());
+		return amtAcct.divide(amtSource, schemaCurrencyPrecision.toInt(), schemaCurrencyPrecision.getRoundingMode());
 	}
 
-	private void updateCurrencyRateIfNotSet()
+	public void updateCurrencyRateIfNotSet()
 	{
 		if (getCurrencyRate().signum() == 0 || getCurrencyRate().compareTo(BigDecimal.ONE) == 0)
 		{
@@ -1783,4 +1650,46 @@ public class FactLine2
 		}
 	}
 
+	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId)
+	{
+		if (TaxId.equals(this.taxId, taxId))
+		{
+			return;
+		}
+
+		this.taxId = taxId;
+		this.vatCode = computeVATCode().map(VATCode::getCode).orElse(null);
+
+	}
+
+	private Optional<VATCode> computeVATCode()
+	{
+		if (taxId == null)
+		{
+			return Optional.empty();
+		}
+
+		final boolean isSOTrx = m_docLine != null ? m_docLine.isSOTrx() : m_doc.isSOTrx();
+		return services.findVATCode(VATCodeMatchingRequest.builder()
+				.setC_AcctSchema_ID(getAcctSchemaId().getRepoId())
+				.setC_Tax_ID(taxId.getRepoId())
+				.setIsSOTrx(isSOTrx)
+				.setDate(this.dateAcct)
+				.build());
+	}
+
+	public void updateFAOpenItemTrxInfo()
+	{
+		if (openItemTrxInfo != null)
+		{
+			return;
+		}
+
+		this.openItemTrxInfo = services.computeOpenItemTrxInfo(this).orElse(null);
+	}
+
+	void setOpenItemTrxInfo(@Nullable final FAOpenItemTrxInfo openItemTrxInfo)
+	{
+		this.openItemTrxInfo = openItemTrxInfo;
+	}
 }

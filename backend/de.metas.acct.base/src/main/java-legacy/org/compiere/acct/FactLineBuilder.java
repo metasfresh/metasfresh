@@ -17,13 +17,11 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAccount;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -72,8 +70,7 @@ public final class FactLineBuilder
 	@Nullable private BigDecimal amtAcctDr;
 	@Nullable private BigDecimal amtAcctCr;
 
-	private BigDecimal qty = null;
-	private UomId uomId;
+	private Quantity qty = null;
 
 	private boolean alsoAddZeroLine = false;
 
@@ -126,7 +123,7 @@ public final class FactLineBuilder
 		// Data Check
 		if (account == null)
 		{
-			throw new AdempiereException("No maccount for " + this);
+			throw new AdempiereException("No account for " + this);
 		}
 
 		//
@@ -136,14 +133,14 @@ public final class FactLineBuilder
 				.services(services)
 				.doc(doc)
 				.docLine(docLine)
-				.AD_Table_ID(doc.get_Table_ID())
-				.Record_ID(doc.get_ID())
+				.docRecordRef(doc.getRecordRef())
 				.Line_ID(docLine == null ? 0 : docLine.get_ID())
 				.SubLine_ID(getSubLine_ID())
 				.postingType(fact.getPostingType())
 				.acctSchema(fact.getAcctSchema())
 				.account(services.getAccountById(this.account.getAccountId()))
 				.accountConceptualName(this.account.getAccountConceptualName())
+				.qty(qty)
 				.M_Locator_ID(locatorId)
 				.projectId(projectId)
 				.activityId(activityId)
@@ -151,37 +148,13 @@ public final class FactLineBuilder
 				.build();
 
 		//
-		// Qty
-		if (qty != null)
-		{
-			line.setQty(qty);
-		}
-		if (uomId != null)
-		{
-			line.setC_UOM_ID(uomId);
-		}
-
-		//
 		// Amounts - one needs to be not zero
-		final Money amtSourceDr = getAmtSourceDr();
-		final Money amtSourceCr = getAmtSourceCr();
-		line.setAmtSource(amtSourceDr, amtSourceCr);
-		if (line.isZeroAmtSource())
-		{
-			if (line.getQty().signum() == 0)
-			{
-				log.debug("Both amounts & qty = 0/Null - {}", this);
-				// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
-				if (!alsoAddZeroLine)
-				{
-					return null;
-				}
-			}
+		line.setAmtSource(getAmtSourceDr(), getAmtSourceCr());
 
-			if (log.isDebugEnabled())
-			{
-				log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + this);
-			}
+		// Skip zero amount & qty lines
+		if (!alsoAddZeroLine && line.isZeroAmtSourceAndQty())
+		{
+			return null;
 		}
 
 		//
@@ -212,7 +185,7 @@ public final class FactLineBuilder
 		{
 			line.setAD_Org_ID(orgId);
 		}
-		if(orgTrxId != null)
+		if (orgTrxId != null)
 		{
 			line.setAD_OrgTrx_ID(orgTrxId);
 		}
@@ -228,7 +201,7 @@ public final class FactLineBuilder
 		//
 		if (C_Tax_ID != null)
 		{
-			line.setC_Tax_ID(C_Tax_ID);
+			line.setTaxIdAndUpdateVatCode(C_Tax_ID);
 		}
 
 		if (fromLocationId != null)
@@ -299,18 +272,10 @@ public final class FactLineBuilder
 		return fact.getAcctSchema().getCurrencyId();
 	}
 
-	public FactLineBuilder setQty(final BigDecimal qty)
-	{
-		assertNotBuild();
-		this.qty = qty;
-		return this;
-	}
-
 	public FactLineBuilder setQty(@NonNull final Quantity qty)
 	{
 		assertNotBuild();
-		this.qty = qty.toBigDecimal();
-		this.uomId = qty.getUomId();
+		this.qty = qty;
 		return this;
 	}
 

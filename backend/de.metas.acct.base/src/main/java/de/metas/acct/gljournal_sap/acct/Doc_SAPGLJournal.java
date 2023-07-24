@@ -113,7 +113,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 
 			if (line.isTaxLine())
 			{
-				factLine.setC_Tax_ID(line.getTaxId());
+				factLine.setTaxIdAndUpdateVatCode(line.getTaxId());
 			}
 
 			factLine.setAD_Org_ID(line.getOrgId());

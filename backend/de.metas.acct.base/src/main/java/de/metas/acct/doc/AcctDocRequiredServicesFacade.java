@@ -6,6 +6,7 @@ import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
@@ -19,6 +20,7 @@ import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -47,6 +49,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
@@ -60,25 +63,33 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.acct.FactLine;
+import org.compiere.acct.FactLine2;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
@@ -445,10 +456,91 @@ public class AcctDocRequiredServicesFacade
 		return dimensionService.getFromRecord(model);
 	}
 
-	public Optional<FAOpenItemTrxInfo> computeOpenItemTrxInfo(FactLine factLine)
+	public Optional<FAOpenItemTrxInfo> computeOpenItemTrxInfo(FactLine2 factLine)
 	{
 		return faOpenItemsService.computeTrxInfo(factLine);
 	}
 
-	public void saveNew(I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}
+	public void saveNew(@NonNull final I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}
+
+	public void saveNew(@NonNull final FactLine2 factLine)
+	{
+		if (factLine.getIdOrNull() != null)
+		{
+			throw new AdempiereException("Already created: " + factLine);
+		}
+
+		factLine.updateBeforeSaveNew();
+
+		final I_Fact_Acct record = InterfaceWrapperHelper.newInstance(I_Fact_Acct.class);
+
+		record.setCounterpart_Fact_Acct_ID(FactAcctId.toRepoId(factLine.getCounterpart_Fact_Acct_ID()));
+		Check.assumeEquals(record.getAD_Client_ID(), factLine.getAD_Client_ID().getRepoId(), "AD_Client_ID");
+		record.setAD_Org_ID(factLine.getOrgIdEffective().getRepoId());
+		record.setDateTrx(factLine.getDateTrx());
+		record.setDateAcct(factLine.getDateAcct());
+		record.setC_Period_ID(factLine.getC_Period_ID());
+		//
+		record.setAmtAcctDr(factLine.getAmtAcctDr());
+		record.setAmtAcctCr(factLine.getAmtAcctCr());
+		record.setC_Currency_ID(factLine.getCurrencyId().getRepoId());
+		record.setAmtSourceDr(factLine.getAmtSourceDr());
+		record.setAmtSourceCr(factLine.getAmtSourceCr());
+		//
+		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
+		record.setVATCode(factLine.getVatCode());
+		//
+		record.setAD_Table_ID(factLine.getDocRecordRef().getAD_Table_ID());
+		record.setRecord_ID(factLine.getDocRecordRef().getRecord_ID());
+		record.setLine_ID(factLine.getLine_ID());
+		record.setSubLine_ID(factLine.getSubLine_ID());
+		record.setDocumentNo(factLine.getDocumentNo());
+		record.setDocBaseType(factLine.getDocBaseType().getCode());
+		record.setDocStatus(DocStatus.toCodeOrNull(factLine.getDocStatus()));
+		record.setC_DocType_ID(DocTypeId.toRepoId(factLine.getC_DocType_ID()));
+		//
+		record.setM_Product_ID(ProductId.toRepoId(factLine.getM_Product_ID()));
+		record.setM_Locator_ID(factLine.getM_Locator_ID());
+		record.setQty(factLine.getQty() != null ? factLine.getQty().toBigDecimal() : null);
+		record.setC_UOM_ID(factLine.getQty() != null ? factLine.getQty().getUomId().getRepoId() : -1);
+		//
+		record.setPostingType(factLine.getPostingType().getCode());
+		record.setC_AcctSchema_ID(factLine.getAcctSchemaId().getRepoId());
+		record.setAccount_ID(factLine.getAccount_ID().getRepoId());
+		record.setC_SubAcct_ID(factLine.getC_SubAcct_ID());
+		record.setAccountConceptualName(factLine.getAccountConceptualName() != null ? factLine.getAccountConceptualName().getAsString() : null);
+		//
+		record.setM_CostElement_ID(CostElementId.toRepoId(factLine.getCostElementId()));
+		//
+		record.setDescription(StringUtils.trimBlankToNull(factLine.getDescription()));
+		//
+		record.setC_OrderSO_ID(OrderId.toRepoId(factLine.getC_OrderSO_ID()));
+		record.setC_LocFrom_ID(LocationId.toRepoId(factLine.getC_LocFrom_ID()));
+		record.setC_LocTo_ID(LocationId.toRepoId(factLine.getC_LocTo_ID()));
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(factLine.getM_SectionCode_ID()));
+		record.setAD_OrgTrx_ID(OrgId.toRepoId(factLine.getAD_OrgTrx_ID()));
+		record.setC_BPartner_ID(BPartnerId.toRepoId(factLine.getC_BPartner_ID()));
+		record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(factLine.getC_BPartner_Location_ID()));
+		record.setC_BPartner2_ID(BPartnerId.toRepoId(factLine.getC_BPartner2_ID()));
+		record.setGL_Budget_ID(factLine.getGL_Budget_ID());
+		record.setGL_Category_ID(GLCategoryId.toRepoId(factLine.getGL_Category_ID()));
+		record.setC_SalesRegion_ID(factLine.getC_SalesRegion_ID_Effective());
+		record.setC_Project_ID(ProjectId.toRepoId(factLine.getC_Project_ID()));
+		record.setC_Activity_ID(ActivityId.toRepoId(factLine.getC_Activity_ID()));
+		record.setC_Campaign_ID(factLine.getC_Campaign_ID());
+		record.setUser1_ID(factLine.getUser1_ID());
+		record.setUser2_ID(factLine.getUser2_ID());
+		record.setUserElement1_ID(factLine.getUserElement1_ID());
+		record.setUserElement2_ID(factLine.getUserElement2_ID());
+		record.setUserElementString1(factLine.getUserElementString1());
+		record.setUserElementString2(factLine.getUserElementString2());
+		record.setUserElementString3(factLine.getUserElementString3());
+		record.setUserElementString4(factLine.getUserElementString4());
+		record.setUserElementString5(factLine.getUserElementString5());
+		record.setUserElementString6(factLine.getUserElementString6());
+		record.setUserElementString7(factLine.getUserElementString7());
+
+		factAcctDAO.save(record);
+		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));
+	}
 }

@@ -12,6 +12,7 @@ import de.metas.acct.gldistribution.IGLDistributionDAO;
 import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
+import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -100,7 +101,7 @@ import java.util.List;
 					.setAmountSign(amountToDistribute.getLeft())
 					.setAmountToDistribute(amountToDistribute.getRight())
 					.setCurrencyId(line.getCurrencyId())
-					.setQtyToDistribute(line.getQty())
+					.setQtyToDistribute(line.getQty() != null ? line.getQty().toBigDecimal() : null)
 					.distribute();
 			final List<FactLine2> lines_Distributed = createFactLines(line, distributionResult);
 
@@ -213,8 +214,7 @@ import java.util.List;
 				.services(baseLine.getServices())
 				.doc(baseLine.getDoc())
 				.docLine(baseLine.getDocLine())
-				.AD_Table_ID(baseLine.getAD_Table_ID())
-				.Record_ID(baseLine.getRecord_ID())
+				.docRecordRef(baseLine.getDocRecordRef())
 				.Line_ID(baseLine.getLine_ID())
 				.SubLine_ID(baseLine.getSubLine_ID())
 				.postingType(baseLine.getPostingType())
@@ -222,11 +222,11 @@ import java.util.List;
 				.account(account)
 				.accountConceptualName(null)
 				.additionalDescription(glDistributionLine.getDescription())
+				.qty(baseLine.getQty() != null ? Quantitys.create(glDistributionLine.getQty(), baseLine.getQty().getUomId()) : null)
 				.build();
 
 		//
 		// Update accounting dimensions
-
 		factLine.updateFromDimension(AccountDimension.builder()
 				.applyOverrides(accountDimension)
 				.clearC_AcctSchema_ID()
@@ -236,11 +236,7 @@ import java.util.List;
 		// Amount
 		setAmountToFactLine(glDistributionLine, factLine);
 
-		factLine.setQty(glDistributionLine.getQty());
-		// Convert
-		factLine.convert();
-
-		logger.info("{}", factLine);
+		logger.debug("{}", factLine);
 		return factLine;
 	}
 
@@ -271,5 +267,7 @@ import java.util.List;
 				}
 				break;
 		}
+
+		factLine.convert();
 	}
 }

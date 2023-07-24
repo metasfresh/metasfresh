@@ -293,7 +293,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.locatorId(receiptLine.getM_Locator_ID())
 				.buildAndAdd();
 
-		dr_NotInvoicedReceipts.setC_UOM_ID(UomId.ofRepoId(receiptLine.getC_UOM_ID()));
+		//dr_NotInvoicedReceipts.setC_UOM_ID(UomId.ofRepoId(receiptLine.getC_UOM_ID()));
 		dr_NotInvoicedReceipts.setFromDimension(services.extractDimensionFromModel(receiptLine));
 
 		//
@@ -534,7 +534,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 
 		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
+		//fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
 
 		final Dimension invoiceLineDimension = services.extractDimensionFromModel(invoiceLine);
 		fl.setFromDimension(invoiceLineDimension);

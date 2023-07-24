@@ -667,7 +667,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 				if (fl != null)
 				{
-					fl.setC_Tax_ID(taxId);
+					fl.setTaxIdAndUpdateVatCode(taxId);
 					if (payment != null)
 					{
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
@@ -1174,7 +1174,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	private final boolean isDiscountExpense;
 	//
 	private I_Fact_Acct _invoiceGrandTotalFact;
-	private final ArrayList<FactLine2> _invoiceTaxFacts = new ArrayList<>();
+	private final ArrayList<I_Fact_Acct> _invoiceTaxFacts = new ArrayList<>();
 
 	private PostingException newPostingException()
 	{
@@ -1236,7 +1236,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		return BigDecimal.ZERO;
 	}
 
-	private List<FactLine2> getInvoiceTaxFacts()
+	private List<I_Fact_Acct> getInvoiceTaxFacts()
 	{
 		return _invoiceTaxFacts;
 	}
@@ -1278,19 +1278,20 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Iterate the invoice tax facts
 		final CurrencyPrecision precision = as.getStandardPrecision();
-		for (final FactLine2 taxFactAcct : getInvoiceTaxFacts())
+		for (final I_Fact_Acct taxFactAcct : getInvoiceTaxFacts())
 		{
 			//
 			// Get the C_Tax_ID
-			final TaxId taxId = taxFactAcct.getC_Tax_ID();
+			final TaxId taxId = TaxId.ofRepoIdOrNull(taxFactAcct.getC_Tax_ID());
 			if (taxId == null)
 			{
 				// shall not happen
 				throw newPostingException()
 						.setAcctSchema(as)
-						.setFactLine(taxFactAcct)
 						.setDocLine(line)
-						.setDetailMessage("No tax found");
+						.setDetailMessage("No tax found")
+						.setParameter("taxFactAcct", taxFactAcct)
+						.appendParametersToMessage();
 			}
 
 			//
@@ -1301,9 +1302,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			{
 				throw newPostingException()
 						.setAcctSchema(as)
-						.setFactLine(taxFactAcct)
 						.setDocLine(line)
-						.setDetailMessage("Tax Account not found/created");
+						.setDetailMessage("Tax Account not found/created")
+						.setParameter("taxFactAcct", taxFactAcct)
+						.appendParametersToMessage();
 			}
 
 			//
@@ -1490,7 +1492,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			return;
 		}
 
-		fl.setC_Tax_ID(taxId);
+		fl.setTaxIdAndUpdateVatCode(taxId);
 		if (!Check.isEmpty(description, true))
 		{
 			fl.addDescription(description);
