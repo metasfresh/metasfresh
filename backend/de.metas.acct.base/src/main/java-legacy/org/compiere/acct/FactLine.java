@@ -1193,10 +1193,10 @@ public class FactLine
 		{
 			setC_LocTo_ID(LocationId.ofRepoIdOrNull(m_acct.getC_LocTo_ID()));
 		}
-		// if (getC_BPartner_ID() == null)
-		// {
-		// 	setC_BPartner_ID(BPartnerId.ofRepoIdOrNull(m_acct.getC_BPartner_ID()));
-		// }
+		if (getC_BPartner_ID() == null)
+		{
+			setBPartnerId(BPartnerId.ofRepoIdOrNull(m_acct.getC_BPartner_ID()));
+		}
 		if (getAD_OrgTrx_ID() == null)
 		{
 			setAD_OrgTrx_ID(OrgId.ofRepoIdOrNull(m_acct.getAD_OrgTrx_ID()));
@@ -1217,10 +1217,10 @@ public class FactLine
 		{
 			setC_OrderSO_ID(OrderId.ofRepoIdOrNull(m_acct.getC_OrderSO_ID()));
 		}
-		// if (getM_SectionCode_ID() == null)
-		// {
-		// 	setM_SectionCode_ID(SectionCodeId.ofRepoIdOrNull(m_acct.getM_SectionCode_ID()));
-		// }
+		if (M_SectionCode_ID == null)
+		{
+			M_SectionCode_ID = SectionCodeId.ofRepoIdOrNull(m_acct.getM_SectionCode_ID());
+		}
 		if (getUser1_ID() <= 0)
 		{
 			setUser1_ID(m_acct.getUser1_ID());
