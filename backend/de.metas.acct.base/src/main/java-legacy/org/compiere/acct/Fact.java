@@ -249,10 +249,10 @@ public final class Fact
 		final Money diff = getSourceBalance().toMoney();
 		if (!diff.isZero())
 		{
-			add(createLine()
+			createLine()
 					.setAccount(acctSchemaGL.getSuspenseBalancingAcct())
 					.setAmtSourceDrOrCr(diff.negate()) // Negative balance => DR, Positive balance => CR
-					.buildAndAdd());
+					.buildAndAdd();
 		}
 	}   // balancingSource
 

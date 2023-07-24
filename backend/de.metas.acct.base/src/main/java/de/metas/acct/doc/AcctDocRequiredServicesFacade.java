@@ -12,6 +12,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.impl.FactAcctDAO;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
@@ -486,6 +487,7 @@ public class AcctDocRequiredServicesFacade
 		record.setC_Currency_ID(factLine.getCurrencyId().getRepoId());
 		record.setAmtSourceDr(factLine.getAmtSourceDr());
 		record.setAmtSourceCr(factLine.getAmtSourceCr());
+		record.setCurrencyRate(factLine.getCurrencyRate());
 		//
 		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
 		record.setVATCode(factLine.getVatCode());
@@ -508,7 +510,7 @@ public class AcctDocRequiredServicesFacade
 		record.setC_AcctSchema_ID(factLine.getAcctSchemaId().getRepoId());
 		record.setAccount_ID(factLine.getAccount_ID().getRepoId());
 		record.setC_SubAcct_ID(factLine.getC_SubAcct_ID());
-		record.setAccountConceptualName(factLine.getAccountConceptualName() != null ? factLine.getAccountConceptualName().getAsString() : null);
+		FactAcctDAO.setAccountConceptualName(record, factLine.getAccountConceptualName());
 		//
 		record.setM_CostElement_ID(CostElementId.toRepoId(factLine.getCostElementId()));
 		//
@@ -539,6 +541,10 @@ public class AcctDocRequiredServicesFacade
 		record.setUserElementString5(factLine.getUserElementString5());
 		record.setUserElementString6(factLine.getUserElementString6());
 		record.setUserElementString7(factLine.getUserElementString7());
+		record.setPOReference(StringUtils.trimBlankToNull(factLine.getPoReference()));
+
+		record.setOI_TrxType(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getTrxType().getCode() : null);
+		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
 
 		factAcctDAO.save(record);
 		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));

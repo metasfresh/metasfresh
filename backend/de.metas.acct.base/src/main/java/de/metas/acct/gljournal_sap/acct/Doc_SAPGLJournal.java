@@ -117,6 +117,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 			}
 
 			factLine.setAD_Org_ID(line.getOrgId());
+			factLine.setBPartnerId(line.getBpartnerId());
 			factLine.setFromDimension(line.getDimension().fallbackTo(glJournal.getDimension()));
 
 			factLine.setDescription(line.getDescription()); // use line description

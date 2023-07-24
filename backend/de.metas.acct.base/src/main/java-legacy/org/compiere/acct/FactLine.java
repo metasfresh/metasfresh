@@ -106,6 +106,7 @@ public class FactLine
 	@Getter private final DocBaseType docBaseType;
 	@Getter private final DocStatus docStatus;
 	@Getter private final DocTypeId C_DocType_ID;
+	@Getter private final String poReference;
 
 	@Getter @Setter(AccessLevel.PRIVATE) private ProductId M_Product_ID;
 	@Getter private final Quantity qty;
@@ -148,7 +149,7 @@ public class FactLine
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString6;
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString7;
 
-	@Nullable private FAOpenItemTrxInfo openItemTrxInfo;
+	@Getter @Nullable private FAOpenItemTrxInfo openItemTrxInfo;
 
 	private CurrencyConversionContext currencyConversionCtx = null;
 
@@ -219,6 +220,7 @@ public class FactLine
 		this.documentNo = doc.getDocumentNo();
 		this.C_DocType_ID = doc.getC_DocType_ID();
 		this.docBaseType = doc.getDocBaseType();
+		this.poReference = doc.getPOReference();
 
 		this.docStatus = doc.getDocStatus();
 
@@ -645,7 +647,7 @@ public class FactLine
 
 	public boolean isZeroAmtSourceAndQty() {return isZeroAmtSource() && isZeroQty();}
 
-	public boolean isZeroQty() {return qty != null && qty.isZero();}
+	public boolean isZeroQty() {return qty == null || qty.isZero();}
 
 	public void setAmtSource(@Nullable Money amtSourceDr, @Nullable Money amtSourceCr)
 	{
