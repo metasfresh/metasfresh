@@ -251,7 +251,7 @@ public final class PostingException extends AdempiereException
 		return _fact;
 	}
 
-	public FactLine2 getFactLine()
+	private FactLine2 getFactLine()
 	{
 		return _factLine;
 	}
