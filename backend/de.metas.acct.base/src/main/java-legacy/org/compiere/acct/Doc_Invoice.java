@@ -536,14 +536,15 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocTax docTax : getTaxes())
 		{
 			final BigDecimal taxAmt = docTax.getTaxAmt();
-			if (taxAmt != null && taxAmt.signum() != 0)
+			if (taxAmt != null)
 			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getCurrencyId(), taxAmt, null);
-				if (tl != null)
-				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
-				}
+				fact.createLine()
+						.setDocLine(null)
+						.setAccount(docTax.getTaxDueAcct(as))
+						.setAmtSource(getCurrencyId(), taxAmt, null)
+						.setC_Tax_ID(docTax.getC_Tax_ID())
+						.alsoAddZeroLine()
+						.buildAndAdd();
 			}
 		}
 		// Revenue CR
@@ -821,6 +822,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				fact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
+						.alsoAddZeroLine()
 						.setC_Tax_ID(docTax.getTaxId())
 						.buildAndAdd();
 			}
@@ -829,6 +831,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				fact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getTaxAmt())
+						.alsoAddZeroLine()
 						.setC_Tax_ID(docTax.getTaxId())
 						.buildAndAdd();
 			}

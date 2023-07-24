@@ -89,6 +89,8 @@ public final class FactLineBuilder
 
 	private FAOpenItemTrxInfo openItemTrxInfo;
 
+	@Nullable String description;
+
 	FactLineBuilder(@NonNull final Fact fact)
 	{
 		this.fact = fact;
@@ -256,6 +258,8 @@ public final class FactLineBuilder
 		line.setAccountConceptualName(account.getAccountConceptualName());
 
 		line.setOpenItemTrxInfo(openItemTrxInfo);
+
+		line.setDescription(getDescription());
 
 		//
 		log.debug("Built: {}", line);
@@ -699,5 +703,17 @@ public final class FactLineBuilder
 	{
 		this.openItemTrxInfo = openItemTrxInfo;
 		return this;
+	}
+
+	public FactLineBuilder addDescription(@Nullable final String description)
+	{
+		assertNotBuild();
+		this.description = description;
+		return this;
+	}
+
+	private String getDescription()
+	{
+		return description;
 	}
 }
