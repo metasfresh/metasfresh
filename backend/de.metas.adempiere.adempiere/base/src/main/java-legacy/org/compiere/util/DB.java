@@ -1874,6 +1874,11 @@ public class DB
 		return Database.TO_NUMBER(number, displayType);
 	}
 
+	public String TO_STRING(@Nullable final ReferenceListAwareEnum value)
+	{
+		return TO_STRING(value != null ? value.getCode() : null, 0);
+	}
+
 	/**
 	 * Package Strings for SQL command in quotes
 	 *
