@@ -212,7 +212,6 @@ public class FlatrateBL implements IFlatrateBL
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -2366,6 +2365,7 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year newYear)
 	{
+
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(newYear.getC_Year_ID(), newYear.getC_Calendar_ID());
 
@@ -2374,6 +2374,7 @@ public class FlatrateBL implements IFlatrateBL
 				.yearAndCalendarId(yearAndCalendarId)
 				.build();
 
+		final ModularContractSettingsDAO modularContractSettingsDAO  = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 		if (modularContractSettingsDAO.isSettingsExists(query))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
