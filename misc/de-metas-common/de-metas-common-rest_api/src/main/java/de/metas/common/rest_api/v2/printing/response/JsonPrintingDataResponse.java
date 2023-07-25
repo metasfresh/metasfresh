@@ -20,25 +20,33 @@
  * #L%
  */
 
-package de.metas.printing.esb.api.v2.request;
+package de.metas.common.rest_api.v2.printing.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonPrintingResultRequest.JsonPrintingResultRequestBuilder.class)
-public class JsonPrintingResultRequest
+@JsonDeserialize(builder = JsonPrintingDataResponse.JsonPrintingDataResponseBuilder.class)
+public class JsonPrintingDataResponse
 {
-	@JsonProperty("processed")
-	boolean processed;
+	@JsonProperty("printingQueueId")
+	int printingQueueId;
 
-	@JsonProperty("errorMsg")
-	@Nullable
-	String errorMsg;
+	@JsonProperty("segments")
+	@NonNull
+	List<JsonPrintingSegment> segments;
 
+	@JsonProperty("documentFileName")
+	@NonNull
+	String documentFileName;
+
+	@JsonProperty("base64Data")
+	@NonNull
+	String base64Data;
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.printing.base
+ * de.metas.printing.rest-api-impl
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.printing.rpl.requesthandler;
+package de.metas.printing.rest.v2;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -28,10 +28,10 @@ import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwareTray;
 import de.metas.printing.HardwareTrayId;
-import de.metas.printing.esb.api.v2.response.JsonPrinterHW;
-import de.metas.printing.esb.api.v2.response.JsonPrinterTray;
-import de.metas.printing.esb.api.v2.response.JsonPrintingDataResponse;
-import de.metas.printing.esb.api.v2.response.JsonPrintingSegment;
+import de.metas.common.rest_api.v2.printing.response.JsonPrinterHW;
+import de.metas.common.rest_api.v2.printing.response.JsonPrinterTray;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingSegment;
 import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;

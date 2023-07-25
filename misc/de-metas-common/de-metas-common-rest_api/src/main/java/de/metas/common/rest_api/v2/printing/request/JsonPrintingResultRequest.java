@@ -20,35 +20,25 @@
  * #L%
  */
 
-package de.metas.printing.esb.api.v2.response;
+package de.metas.common.rest_api.v2.printing.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonPrinterHW.JsonPrinterHWBuilder.class)
-public class JsonPrinterHW
+@JsonDeserialize(builder = JsonPrintingResultRequest.JsonPrintingResultRequestBuilder.class)
+public class JsonPrintingResultRequest
 {
-	@JsonProperty("name")
-	@NonNull
-	String name;
+	@JsonProperty("processed")
+	boolean processed;
 
-	@JsonProperty("outputType")
-	@NonNull
-	String outputType;
-
-	@JsonProperty("baseDirectory")
+	@JsonProperty("errorMsg")
 	@Nullable
-	String baseDirectory;
+	String errorMsg;
 
-	@JsonProperty("trays")
-	@NonNull
-	List<JsonPrinterTray> trays;
 }

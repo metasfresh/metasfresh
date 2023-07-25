@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.printing.api
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.printing.esb.api.v2;
+package de.metas.common.rest_api.v2.printing;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.lowagie.text.Document;
@@ -30,10 +30,10 @@ import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
 import de.metas.common.util.Check;
 import de.metas.common.util.FileUtil;
-import de.metas.printing.esb.api.v2.response.JsonPrinterHW;
-import de.metas.printing.esb.api.v2.response.JsonPrinterTray;
-import de.metas.printing.esb.api.v2.response.JsonPrintingDataResponse;
-import de.metas.printing.esb.api.v2.response.JsonPrintingSegment;
+import de.metas.common.rest_api.v2.printing.response.JsonPrinterHW;
+import de.metas.common.rest_api.v2.printing.response.JsonPrinterTray;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingSegment;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -47,11 +47,11 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 
-import static de.metas.printing.esb.api.v2.PrintingConstants.OUTPUTTYPE_Queue;
-
 @Service
 public class PrintingRestControllerPDFFileStorer
 {
+	private static final String OUTPUTTYPE_Queue = "Queue";
+
 	public void storeInFileSystem(@NonNull final JsonPrintingDataResponse printingData) throws PrintingException
 	{
 		final ImmutableMultimap<Path, JsonPrintingSegment> path2Segments = extractAndAssignPaths(printingData);

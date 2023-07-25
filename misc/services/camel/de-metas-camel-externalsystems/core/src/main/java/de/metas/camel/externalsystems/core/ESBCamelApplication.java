@@ -25,7 +25,7 @@ package de.metas.camel.externalsystems.core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = { "de.metas.camel.externalsystems", "de.metas.printing.esb.api" })
+@SpringBootApplication(scanBasePackages = { "de.metas.camel.externalsystems", "de.metas.common.rest_api" })
 public class ESBCamelApplication
 {
 	/**

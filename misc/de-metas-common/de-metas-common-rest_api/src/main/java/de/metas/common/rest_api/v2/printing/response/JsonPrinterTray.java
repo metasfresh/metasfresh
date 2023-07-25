@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.printing.esb.api.v2.response;
+package de.metas.common.rest_api.v2.printing.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

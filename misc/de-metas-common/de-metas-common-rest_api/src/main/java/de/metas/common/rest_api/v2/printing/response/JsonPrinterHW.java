@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.printing.esb.api.v2.response;
+package de.metas.common.rest_api.v2.printing.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -28,25 +28,27 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonPrintingDataResponse.JsonPrintingDataResponseBuilder.class)
-public class JsonPrintingDataResponse
+@JsonDeserialize(builder = JsonPrinterHW.JsonPrinterHWBuilder.class)
+public class JsonPrinterHW
 {
-	@JsonProperty("printingQueueId")
-	int printingQueueId;
-
-	@JsonProperty("segments")
+	@JsonProperty("name")
 	@NonNull
-	List<JsonPrintingSegment> segments;
+	String name;
 
-	@JsonProperty("documentFileName")
+	@JsonProperty("outputType")
 	@NonNull
-	String documentFileName;
+	String outputType;
 
-	@JsonProperty("base64Data")
+	@JsonProperty("baseDirectory")
+	@Nullable
+	String baseDirectory;
+
+	@JsonProperty("trays")
 	@NonNull
-	String base64Data;
+	List<JsonPrinterTray> trays;
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.printing.api
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.printing.esb.api.v2;
+package de.metas.common.rest_api.v2.printing;
 
 
 

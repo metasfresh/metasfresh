@@ -25,10 +25,10 @@ package de.metas.camel.externalsystems.core.from_mf;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.externalsystem.printingclient.JsonExternalSystemPrintingClientRequest;
-import de.metas.printing.esb.api.v2.PrintingException;
-import de.metas.printing.esb.api.v2.PrintingRestControllerPDFFileStorer;
-import de.metas.printing.esb.api.v2.request.JsonPrintingResultRequest;
-import de.metas.printing.esb.api.v2.response.JsonPrintingDataResponse;
+import de.metas.common.rest_api.v2.printing.PrintingException;
+import de.metas.common.rest_api.v2.printing.PrintingRestControllerPDFFileStorer;
+import de.metas.common.rest_api.v2.printing.request.JsonPrintingResultRequest;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -69,7 +69,6 @@ public class PrintingClientRouteBuilder extends RouteBuilder
 		from(PRINTING_CLIENT_FROM_MF_ROUTE)
 				.routeId(FROM_MF_ROUTE_ID)
 				.streamCaching()
-				.delay(5000)
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemPrintingClientRequest.class))
 				.process(this::getPrintingData)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
