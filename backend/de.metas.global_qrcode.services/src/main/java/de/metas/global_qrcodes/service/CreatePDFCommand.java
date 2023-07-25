@@ -25,16 +25,19 @@ import java.util.List;
 
 public class CreatePDFCommand
 {
-	private static final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
+
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final ImmutableList<PrintableQRCode> qrCodes;
+	private AdProcessId qrCodeProcessId ;
 
 	@Builder
 	private CreatePDFCommand(
-			@NonNull final List<PrintableQRCode> qrCodes)
+			@NonNull final List<PrintableQRCode> qrCodes,
+			@NonNull final AdProcessId qrCodeProcessId)
 	{
 		Check.assumeNotEmpty(qrCodes, "qrCodes is not empty");
 		this.qrCodes = ImmutableList.copyOf(qrCodes);
+		this.qrCodeProcessId = qrCodeProcessId;
 	}
 
 	public QRCodePDFResource execute()
@@ -60,6 +63,7 @@ public class CreatePDFCommand
 				.data(report.getReportContent())
 				.filename(report.getReportFilename())
 				.pinstanceId(pinstanceId)
+				.processId(qrCodeProcessId)
 				.build();
 	}
 

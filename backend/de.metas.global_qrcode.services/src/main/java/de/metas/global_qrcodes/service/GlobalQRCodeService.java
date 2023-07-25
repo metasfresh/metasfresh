@@ -21,16 +21,24 @@ import java.util.List;
 @Service
 public class GlobalQRCodeService
 {
-	private static final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
+	private static final AdProcessId default_qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
 
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
-	public QRCodePDFResource createPDF(final List<PrintableQRCode> qrCodes)
+	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
 	{
-		return CreatePDFCommand.builder()
+		return createPDF(qrCodes, default_qrCodeProcessId);
+	}
+
+	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes,
+			@NonNull final AdProcessId qrCodeProcessId)
+	{
+		final QRCodePDFResource execute = CreatePDFCommand.builder()
 				.qrCodes(qrCodes)
+				.qrCodeProcessId(qrCodeProcessId)
 				.build()
 				.execute();
+		return execute;
 	}
 
 	public void print(@NonNull final QRCodePDFResource pdf)
@@ -40,7 +48,7 @@ public class GlobalQRCodeService
 				.flavor(DocumentReportFlavor.PRINT)
 				.data(pdf)
 				.archiveName(pdf.getFilename())
-				.processId(qrCodeProcessId)
+				.processId(pdf.getProcessId())
 				.pinstanceId(pdf.getPinstanceId())
 				.recordRef(TableRecordReference.of(I_AD_PInstance.Table_Name, pdf.getPinstanceId().getRepoId()))
 				.isReport(true)
