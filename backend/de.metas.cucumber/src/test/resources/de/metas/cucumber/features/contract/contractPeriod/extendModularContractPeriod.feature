@@ -1,4 +1,3 @@
-@dev:cloneFeature
 Feature: Extend Modular Contract Period
 
   Background:

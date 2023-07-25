@@ -31,6 +31,7 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.model.I_C_LicenseFeeSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -91,7 +92,6 @@ public class C_Flatrate_Conditions_StepDef
 	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
 	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 	private final C_Year_StepDefData yearTable;
-
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
@@ -288,11 +288,18 @@ public class C_Flatrate_Conditions_StepDef
 		assertThat(year).isNotNull();
 		assertThat(year.getC_Calendar_ID()).isEqualTo(harvestYear.getC_Calendar_ID());
 		assertThat(year.getC_Year_ID()).isEqualTo(harvestYear.getC_Year_ID());
+
+		final int clonedModulesCounter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, clonedSettings.getModCntr_Settings_ID())
+				.create()
+				.count();
+
+		assertThat(clonedModulesCounter).isEqualTo(1);
 	}
 
-
 	@Then("^fail with message (.*) when clonning C_Flatrate_Conditions identified by (.*) for year identified by (.*)$")
-	public void failWithMessageWhenClonningC_Flatrate_ConditionsIdentifiedBy_ForYearIdentifiedBy(@NonNull final  String message, String flatrateConditionsIdentifier, String yearIdentifier)
+	public void failWithMessageWhenClonningC_Flatrate_ConditionsIdentifiedBy_ForYearIdentifiedBy(@NonNull final String message, String flatrateConditionsIdentifier, String yearIdentifier)
 	{
 		final I_C_Flatrate_Conditions flatrateConditions = conditionsTable.get(flatrateConditionsIdentifier);
 		final I_C_Year year = yearTable.get(yearIdentifier);
