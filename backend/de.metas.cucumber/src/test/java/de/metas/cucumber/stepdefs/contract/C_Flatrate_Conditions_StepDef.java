@@ -308,7 +308,7 @@ public class C_Flatrate_Conditions_StepDef
 		catch (final Exception e)
 		{
 			assertThat(e).isExactlyInstanceOf(AdempiereException.class);
-			assertThat(e.getMessage()).isEqualTo("Einstellungen mit demselben Jahr sind bereits vorhanden"); // dev note : MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS
+			assertThat(e.getMessage()).isEqualTo(message); // dev note : MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS
 		}
 	}
 }

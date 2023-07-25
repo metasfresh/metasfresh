@@ -59,4 +59,4 @@ Feature: Clone Modular Contract Term
   - clone the Modular Contract for harvest year 2022
   - fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden"
 
-    Then fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden" when clonning C_Flatrate_Conditions identified by modularContractTerm_2022 for year identified by y2022
+    Then fail with message Einstellungen mit demselben Jahr sind bereits vorhanden when clonning C_Flatrate_Conditions identified by modularContractTerm_2022 for year identified by y2022
