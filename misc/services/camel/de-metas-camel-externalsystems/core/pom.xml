@@ -27,6 +27,7 @@
         <assertj.version>3.19.0</assertj.version>
 
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
+        <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 
     <dependencyManagement>
@@ -231,7 +232,7 @@
         <dependency>
             <groupId>de.metas.printing</groupId>
             <artifactId>de.metas.printing.api</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh.version}</version>
             <scope>compile</scope>
         </dependency>
 
