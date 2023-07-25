@@ -109,14 +109,19 @@ public class PrintingRestController
 				.create()
 				.firstOnlyNotNull(I_C_Print_Job_Line.class);
 
+		final int printJobId = printJobLineRecord.getC_Print_Job_ID();
 		final I_C_Print_Job_Instructions printJobInstructionsRecord = queryBL.createQueryBuilder(I_C_Print_Job_Instructions.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(X_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_ID, printJobLineRecord.getC_Print_Job_ID())
+				.addEqualsFilter(X_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_ID, printJobId)
 				.create()
 				.firstOnlyNotNull(I_C_Print_Job_Instructions.class);
 
 		if(input.isProcessed())
 		{
+			final I_C_Print_Job printJobRecord = InterfaceWrapperHelper.load(printJobId, I_C_Print_Job.class);
+			printJobRecord.setProcessed(true);
+			save(printJobRecord);
+			CacheMgt.get().reset(X_C_Print_Job.Table_Name, printJobId);
 			printJobInstructionsRecord.setStatus(X_C_Print_Job_Instructions.STATUS_Done);
 		}
 		else
