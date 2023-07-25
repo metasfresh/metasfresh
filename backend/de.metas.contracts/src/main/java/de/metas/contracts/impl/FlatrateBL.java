@@ -37,6 +37,7 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
@@ -66,6 +67,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -125,6 +128,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -154,7 +158,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
@@ -191,6 +194,8 @@ public class FlatrateBL implements IFlatrateBL
 
 	public final static AdMessageKey MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = AdMessageKey.of("MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED");
 
+	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
+
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -207,6 +212,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -2358,9 +2364,21 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	@NonNull
-	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year newYear)
 	{
+		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(newYear.getC_Year_ID(), newYear.getC_Calendar_ID());
+
+		final ModularContractSettingsQuery query = ModularContractSettingsQuery.builder()
+				.productId(productId)
+				.yearAndCalendarId(yearAndCalendarId)
+				.build();
+
+		if (modularContractSettingsDAO.isSettingsExists(query))
+		{
+			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
+		}
+
 		final I_ModCntr_Settings newModCntrSettings = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class, settings);
 
 		final PO from = InterfaceWrapperHelper.getPO(settings);
@@ -2368,7 +2386,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		PO.copyValues(from, to, true);
 
-		newModCntrSettings.setC_Year_ID(year.getC_Year_ID());
+		newModCntrSettings.setC_Year_ID(newYear.getC_Year_ID());
 
 		InterfaceWrapperHelper.save(newModCntrSettings);
 
@@ -2398,7 +2416,9 @@ public class FlatrateBL implements IFlatrateBL
 		PO.copyValues(from, to, true);
 
 		newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
+
 		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+
 		newFlatrateConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
 		newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
 

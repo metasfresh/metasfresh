@@ -30,11 +30,8 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXT
 
 public class C_Flatrate_Conditions_ModularContract_Clone extends JavaProcess implements IProcessPrecondition
 {
-	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
-
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Param(parameterName = I_ModCntr_Settings.COLUMNNAME_C_Year_ID, mandatory = true)
 	private int p_C_Year_ID;
@@ -44,23 +41,6 @@ public class C_Flatrate_Conditions_ModularContract_Clone extends JavaProcess imp
 	{
 		final I_C_Year newYear = InterfaceWrapperHelper.load(YearId.ofRepoId(p_C_Year_ID), I_C_Year.class);
 		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(ConditionsId.ofRepoId(getRecord_ID()));
-		final I_ModCntr_Settings settings = conditions.getModCntr_Settings();
-
-		Check.assumeNotNull(settings, " Should never happen because settings are mandatory for modular contract conditions", conditions);
-
-		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
-		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(p_C_Year_ID, settings.getC_Calendar_ID());
-
-		final ModularContractSettingsQuery query = ModularContractSettingsQuery.builder()
-				.productId(productId)
-				.yearAndCalendarId(yearAndCalendarId)
-				.build();
-
-		if (modularContractSettingsDAO.isSettingsExists(query))
-		{
-			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
-		}
-
 		final I_C_Flatrate_Conditions newConditions = flatrateBL.cloneConditionsToNewYear(conditions, newYear);
 		if (newConditions != null)
 		{
