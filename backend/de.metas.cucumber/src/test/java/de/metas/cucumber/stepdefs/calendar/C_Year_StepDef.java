@@ -23,11 +23,13 @@
 package de.metas.cucumber.stepdefs.calendar;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 
 import java.util.List;
@@ -41,9 +43,12 @@ public class C_Year_StepDef
 
 	private final C_Year_StepDefData yearTable;
 
-	public C_Year_StepDef(@NonNull final C_Year_StepDefData yearTable)
+	private final C_Calendar_StepDefData calendarTable;
+
+	public C_Year_StepDef(@NonNull final C_Year_StepDefData yearTable, final C_Calendar_StepDefData calendarTable)
 	{
 		this.yearTable = yearTable;
+		this.calendarTable = calendarTable;
 	}
 
 	@And("load C_Year from metasfresh:")
@@ -52,9 +57,16 @@ public class C_Year_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
+			final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Calendar calendar = calendarTable.get(calendarIdentifier);
+
+			Check.assumeNotNull(calendar, "No calendar provided", calendar);
+
 			final String fiscalYear = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_FiscalYear);
 
 			final I_C_Year yearRecord = queryBL.createQueryBuilder(I_C_Year.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Year.COLUMNNAME_C_Calendar_ID, calendar.getC_Calendar_ID())
 					.addEqualsFilter(I_C_Year.COLUMNNAME_FiscalYear, fiscalYear)
 					.create()
 					.firstOnlyNotNull(I_C_Year.class);
