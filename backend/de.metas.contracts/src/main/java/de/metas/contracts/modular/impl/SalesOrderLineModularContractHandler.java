@@ -138,6 +138,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.bPartnerId(orderBillPartnerId.getBpartnerId())
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
+				.soTrx(SOTrx.PURCHASE)
 				.build();
 
 		return isModularContractInProgress(request);
