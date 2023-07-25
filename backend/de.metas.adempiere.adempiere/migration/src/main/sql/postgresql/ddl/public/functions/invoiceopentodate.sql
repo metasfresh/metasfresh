@@ -260,7 +260,7 @@ BEGIN
             v_LineAllocAmtSource := allocationLine.Amount + allocationLine.DiscountAmt + allocationLine.WriteOffAmt;
             v_LineAllocAmtConv := currencyConvert(v_LineAllocAmtSource, allocationLine.C_Currency_ID, v_Currency_ID, allocationLine.Date, NULL, allocationLine.AD_Client_ID, allocationLine.AD_Org_ID);
 
-            v_TotalAllocatedAmt := v_TotalAllocatedAmt + v_LineAllocAmtConv * v_MultiplierAP * v_MultiplierCM;
+            v_TotalAllocatedAmt := v_TotalAllocatedAmt + v_LineAllocAmtConv * v_MultiplierAP;
             RAISE DEBUG '   C_AllocationLine_ID=%: Amount(source->target currency)= %->%, Date=%', allocationLine.C_AllocationLine_ID, v_LineAllocAmtSource, v_LineAllocAmtConv, allocationLine.Date;
             RAISE DEBUG '   => v_TotalAllocatedAmt=%', v_TotalAllocatedAmt;
         END LOOP;
