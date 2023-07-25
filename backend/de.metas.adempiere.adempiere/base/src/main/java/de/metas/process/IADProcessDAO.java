@@ -127,4 +127,6 @@ public interface IADProcessDAO extends ISingletonService
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,
 			@Nullable String newColumnName);
+
+	boolean isJasperJSONProcess(@NonNull AdProcessId processId);
 }

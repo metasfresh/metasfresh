@@ -11,10 +11,10 @@ import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.report.server.OutputType;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.springframework.core.io.Resource;
 
 /*
  * #%L
@@ -66,7 +66,10 @@ public class M_HU_Report_QRCode extends JavaProcess
 		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
 		final AdProcessId adProcessId = AdProcessId.ofRepoId(processId);
 
-		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes, adProcessId);
+		final ImmutableList<ProcessInfoParameter> processParams = ImmutableList.of(
+				ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId()));
+
+		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes,processParams,adProcessId);
 		if(isDirectPrint)
 		{
 			huQRCodesService.print(pdf);

@@ -8,6 +8,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.process.AdProcessId;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,12 +56,14 @@ public class HUQRCodesService
 	Creates PDF QR code using the given jasper process
 	 */
 	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes,
+			@NonNull final List<ProcessInfoParameter> processParams,
 			@NonNull final AdProcessId qrCodeProcessId)
 	{
 		return globalQRCodeService.createPDF(
 				qrCodes.stream()
 						.map(HUQRCode::toPrintableQRCode)
 						.collect(ImmutableList.toImmutableList()),
+				processParams,
 				qrCodeProcessId
 		);
 	}

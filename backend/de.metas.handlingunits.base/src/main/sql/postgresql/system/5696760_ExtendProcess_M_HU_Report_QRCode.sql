@@ -64,3 +64,17 @@ UPDATE AD_Process_Para SET DefaultValue='584977',Updated=TO_TIMESTAMP('2023-07-2
 UPDATE AD_Val_Rule SET Code='AD_Process.IsActive=''Y'' AND AD_Process.JasperReport IS NOT NULL AND AD_Process.JasperReport ilike ''%QR_Label%''',Updated=TO_TIMESTAMP('2023-07-25 11:21:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540648
 ;
 
+-- Value: M_HU_QRCode_PDF_L
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/QR_Label_L.jasper
+-- 2023-07-25T14:20:19.337Z
+UPDATE AD_Process SET Classname='de.metas.report.jasper.client.process.JasperReportStarter', Type='JasperReportsSQL',Updated=TO_TIMESTAMP('2023-07-25 17:20:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585290
+;
+
+-- Value: M_HU_QRCode_PDF_S
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/QR_Label_S.jasper
+-- 2023-07-25T14:20:27.555Z
+UPDATE AD_Process SET Classname='de.metas.report.jasper.client.process.JasperReportStarter', Type='JasperReportsSQL',Updated=TO_TIMESTAMP('2023-07-25 17:20:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585289
+;
+

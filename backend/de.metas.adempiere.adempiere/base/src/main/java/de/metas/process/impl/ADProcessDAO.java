@@ -620,4 +620,13 @@ public class ADProcessDAO implements IADProcessDAO
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
 	}
+
+
+	@Override
+	public boolean isJasperJSONProcess(@NonNull final AdProcessId processId)
+	{
+		final I_AD_Process process =  InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
+		final ProcessType type = ProcessType.ofCode(process.getType());
+		return type.isJasperJSON();
+	}
 }

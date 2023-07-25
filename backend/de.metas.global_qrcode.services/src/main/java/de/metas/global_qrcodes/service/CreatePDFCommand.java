@@ -6,6 +6,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessInfo;
@@ -21,34 +22,53 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
+import javax.xml.ws.Service;
 import java.util.List;
 
 public class CreatePDFCommand
 {
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final ImmutableList<PrintableQRCode> qrCodes;
+	private final ImmutableList<ProcessInfoParameter> processParams;
 	private AdProcessId qrCodeProcessId ;
 
 	@Builder
 	private CreatePDFCommand(
 			@NonNull final List<PrintableQRCode> qrCodes,
+			@NonNull final List<ProcessInfoParameter> processParams,
 			@NonNull final AdProcessId qrCodeProcessId)
 	{
 		Check.assumeNotEmpty(qrCodes, "qrCodes is not empty");
 		this.qrCodes = ImmutableList.copyOf(qrCodes);
+		this.processParams = ImmutableList.copyOf(processParams);
 		this.qrCodeProcessId = qrCodeProcessId;
+
 	}
 
 	public QRCodePDFResource execute()
 	{
-		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
-				PInstanceRequest.builder()
-						.processId(qrCodeProcessId)
-						.processParams(ImmutableList.of(
-								ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, toJsonString(qrCodes))
-						))
-						.build());
+		PInstanceId pinstanceId;
+		if (adProcessDAO.isJasperJSONProcess(qrCodeProcessId))
+		{
+			pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
+					PInstanceRequest.builder()
+							.processId(qrCodeProcessId)
+							.processParams(ImmutableList.of(
+									ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, toJsonString(qrCodes))
+							))
+							.build());
+		}
+		else
+		{
+			pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
+					PInstanceRequest.builder()
+							.processId(qrCodeProcessId)
+							.processParams(processParams)
+							.build());
+		}
 
 		final ProcessInfo reportProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
