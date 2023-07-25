@@ -252,8 +252,17 @@ public class AccountProvider
 			@NonNull final TaxId taxId,
 			@NonNull final TaxAcctType acctType)
 	{
-		return taxAccountsRepository.getAccounts(taxId, acctSchemaId).getAccount(acctType)
+		return getTaxAccounts(acctSchemaId, taxId)
+				.getAccount(acctType)
 				.orElseThrow(() -> new AdempiereException("Tax account not set: " + acctType + ", " + taxId + ", " + acctSchemaId));
+	}
+
+	@NonNull
+	public TaxAccounts getTaxAccounts(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final TaxId taxId)
+	{
+		return taxAccountsRepository.getAccounts(taxId, acctSchemaId);
 	}
 
 	@NonNull
