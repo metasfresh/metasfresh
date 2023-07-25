@@ -7,7 +7,6 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.email.EMail;
-import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
@@ -138,7 +137,7 @@ public class NotificationSenderTemplate
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			logger.error("Failed to send notification: {}", request, ex);
 		}
@@ -358,14 +357,15 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isUser())
 		{
-
-			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId());
+			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId())
+					.deriveWithEMailCustomType(request.getEMailCustomType());
 
 			if (recipient.isRoleIdSet())
 			{
 				final RoleNotificationsConfig roleNotificationsConfig = notificationsService.getRoleNotificationsConfig(recipient.getRoleId());
 				notificationsConfig = notificationsConfig.deriveWithNotificationGroups(roleNotificationsConfig.getNotificationGroups());
 			}
+
 		}
 		else
 		{
@@ -462,7 +462,7 @@ public class NotificationSenderTemplate
 				notificationsConfig.getOrgId(),
 				(AdProcessId)null,  // AD_Process_ID
 				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
-				(EMailCustomType)null);  // customType
+				notificationsConfig.getEMailCustomType());  // customType
 	}
 
 	@VisibleForTesting
