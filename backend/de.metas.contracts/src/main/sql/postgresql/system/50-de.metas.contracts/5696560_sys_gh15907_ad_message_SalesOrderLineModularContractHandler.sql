@@ -81,16 +81,16 @@ UPDATE AD_Message_Trl SET MsgText='Auftrag für Produkt {0} mit der Menge {1} wu
 
 
 
--- Value: de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed
+-- Value: de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed
 -- 2023-07-25T09:44:58.190829700Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545298,0,TO_TIMESTAMP('2023-07-25 12:44:58.0','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Sales order line cannot be deleted since it has modular contract logs!','I',TO_TIMESTAMP('2023-07-25 12:44:58.0','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545298,0,TO_TIMESTAMP('2023-07-25 12:44:58.0','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Sales order line cannot be deleted since it has modular contract logs!','I',TO_TIMESTAMP('2023-07-25 12:44:58.0','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed')
 ;
 
 -- 2023-07-25T09:44:58.203827600Z
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545298 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
 
--- Value: de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed
+-- Value: de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed
 -- 2023-07-25T10:13:13.574481600Z
 UPDATE AD_Message SET MsgText='Sales order line cannot be deleted as it has modular contract logs.',Updated=TO_TIMESTAMP('2023-07-25 13:13:13.573','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545298
 ;
@@ -99,12 +99,12 @@ UPDATE AD_Message SET MsgText='Sales order line cannot be deleted as it has modu
 UPDATE AD_Message_Trl trl SET MsgText='Sales order line cannot be deleted as it has modular contract logs.' WHERE AD_Message_ID=545298 AND AD_Language='de_DE'
 ;
 
--- Value: de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed
+-- Value: de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed
 -- 2023-07-25T10:13:52.201130900Z
 UPDATE AD_Message_Trl SET MsgText='Die Auftragszeile kann nicht gelöscht werden, da sie über Protokolle zum modularen Vertrag verfügt.',Updated=TO_TIMESTAMP('2023-07-25 13:13:52.2','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545298
 ;
 
--- Value: de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed
+-- Value: de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed
 -- 2023-07-25T10:13:59.533079900Z
 UPDATE AD_Message_Trl SET MsgText='Die Auftragszeile kann nicht gelöscht werden, da sie über Protokolle zum modularen Vertrag verfügt.',Updated=TO_TIMESTAMP('2023-07-25 13:13:59.533','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545298
 ;
@@ -113,17 +113,17 @@ UPDATE AD_Message_Trl SET MsgText='Die Auftragszeile kann nicht gelöscht werden
 UPDATE AD_Message SET MsgText='Die Auftragszeile kann nicht gelöscht werden, da sie über Protokolle zum modularen Vertrag verfügt.' WHERE AD_Message_ID=545298
 ;
 
--- Value: de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed
+-- Value: de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed
 -- 2023-07-25T10:14:01.995377500Z
 UPDATE AD_Message_Trl SET MsgText='Die Auftragszeile kann nicht gelöscht werden, da sie über Protokolle zum modularen Vertrag verfügt.',Updated=TO_TIMESTAMP('2023-07-25 13:14:01.995','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545298
 ;
 
--- Value: de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed
+-- Value: de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed
 -- 2023-07-25T10:14:04.897430600Z
 UPDATE AD_Message_Trl SET MsgText='Die Auftragszeile kann nicht gelöscht werden, da sie über Protokolle zum modularen Vertrag verfügt.',Updated=TO_TIMESTAMP('2023-07-25 13:14:04.897','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Message_ID=545298
 ;
 
--- Value: de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed
+-- Value: de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed
 -- 2023-07-25T10:14:12.098887800Z
 UPDATE AD_Message_Trl SET MsgText='Sales order line cannot be deleted as it has modular contract logs.',Updated=TO_TIMESTAMP('2023-07-25 13:14:12.098','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545298
 ;

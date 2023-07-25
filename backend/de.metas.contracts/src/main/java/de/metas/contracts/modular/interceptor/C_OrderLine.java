@@ -22,10 +22,15 @@
 
 package de.metas.contracts.modular.interceptor;
 
-import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -34,23 +39,26 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {
-	private final ModularContractService contractService;
+	private static final AdMessageKey MSG_ERR_DELETION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed");
 
-	public C_OrderLine(@NonNull final ModularContractService contractService)
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private final ModularContractLogDAO contractLogDAO;
+
+	public C_OrderLine(@NonNull final ModularContractLogDAO contractLogDAO)
 	{
-		this.contractService = contractService;
+		this.contractLogDAO = contractLogDAO;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void afterComplete(@NonNull final I_C_OrderLine orderLineRecord)
+	public void beforeDelete(@NonNull final I_C_OrderLine orderLine)
 	{
-		invokeWithModel(orderLineRecord, ModularContractService.ModelAction.DELETED);
-	}
+		final TableRecordReference recordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
 
-	private void invokeWithModel(
-			@NonNull final I_C_OrderLine model,
-			@NonNull final ModularContractService.ModelAction modelAction)
-	{
-		contractService.invokeWithModel(model, modelAction);
+		if (contractLogDAO.hasAnyModularLogs(recordReference))
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ERR_DELETION_NOT_ALLOWED))
+					.markAsUserValidationError();
+		}
 	}
 }

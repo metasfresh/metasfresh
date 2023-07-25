@@ -37,7 +37,6 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
@@ -57,7 +56,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -75,7 +73,6 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnReverse.Description");
-	private static final AdMessageKey MSG_ERR_DELETION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -85,14 +82,10 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
-	private final ModularContractLogDAO contractLogDAO;
 
-	public SalesOrderLineModularContractHandler(
-			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO,
-			@NonNull final ModularContractLogDAO contractLogDAO)
+	public SalesOrderLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
-		this.contractLogDAO = contractLogDAO;
 	}
 
 	@Override
@@ -110,14 +103,11 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 			return false;
 		}
 
-		final BPartnerLocationAndCaptureId orderBillPartnerId = orderBL.getBillToLocationId(order);
-
-		final boolean isMatchingPartner = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()))
+		final BPartnerId warehousePartnerId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()))
 				.map(warehouseBL::getBPartnerId)
-				.map(warehousePartnerId -> orderBillPartnerId.getBpartnerId().equals(warehousePartnerId))
-				.orElse(false);
+				.orElse(null);
 
-		if (!isMatchingPartner)
+		if (warehousePartnerId == null)
 		{
 			return false;
 		}
@@ -135,7 +125,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		}
 
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
-				.bPartnerId(orderBillPartnerId.getBpartnerId())
+				.bPartnerId(warehousePartnerId)
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
@@ -229,17 +219,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_C_OrderLine model, final ModularContractService.@NonNull ModelAction action)
-	{
-		switch (action)
-		{
-			case COMPLETED, VOIDED, REVERSED, REACTIVATED -> {}
-			case DELETED -> validateCanBeDeleted(model);
-			default -> throw new AdempiereException("Unsupported model action!")
-					.appendParametersToMessage()
-					.setParameter("DocAction", action);
-		}
-	}
+	public void validateDocAction(final @NonNull I_C_OrderLine model, final ModularContractService.@NonNull ModelAction action) {}
 
 	private boolean isModularContractInProgress(@NonNull final ModularFlatrateTermRequest request)
 	{
@@ -253,15 +233,5 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermRequest request)
 	{
 		return flatrateBL.streamModularFlatrateTerms(request);
-	}
-
-	private void validateCanBeDeleted(@NonNull final I_C_OrderLine orderLine)
-	{
-		final TableRecordReference recordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
-
-		if (contractLogDAO.hasAnyModularLogs(recordReference))
-		{
-			throw new AdempiereException(MSG_ERR_DELETION_NOT_ALLOWED).markAsUserValidationError();
-		}
 	}
 }
