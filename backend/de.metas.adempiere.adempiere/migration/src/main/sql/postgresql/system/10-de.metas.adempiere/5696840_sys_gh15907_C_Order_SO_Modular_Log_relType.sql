@@ -34,3 +34,11 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541806,541805,540415,TO_TIMESTAMP('2023-07-25 14:18:57.935','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','N','C_Order (SO)-> ModCntr_Log',TO_TIMESTAMP('2023-07-25 14:18:57.935','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+-- Reference: ModCntr_Log_For_SO
+-- Table: ModCntr_Log
+-- Key: ModCntr_Log.ModCntr_Log_ID
+-- 2023-07-25T17:09:17.246573200Z
+UPDATE AD_Ref_Table SET WhereClause='ModCntr_Log.Record_ID IN (SELECT ol.C_OrderLine_ID from C_OrderLine ol where ol.C_Order_ID = @C_Order_ID / -1@)',Updated=TO_TIMESTAMP('2023-07-25 20:09:17.246','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Reference_ID=541805
+;
+
+
