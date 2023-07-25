@@ -36,6 +36,7 @@ import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.compiere.SpringContextHolder;
@@ -48,7 +49,7 @@ import java.util.Iterator;
 @Service
 public class PrintOutputFacade
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintOutputFacade.class);
+	private final static Logger logger = LogManager.getLogger(PrintOutputFacade.class);
 
 	private final PrintingDataFactory printingDataFactory;
 	private final PrintingDataToPDFFileStorer printingDataToPDFFileStorer;
@@ -56,6 +57,8 @@ public class PrintOutputFacade
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 
 	private final ExternalSystemsPrintingNotifier externalSystemsPrintingNotifier = SpringContextHolder.instance.getBean(ExternalSystemsPrintingNotifier.class);
+
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public PrintOutputFacade(
 			@NonNull final PrintingDataFactory printingDataFactory,
@@ -112,8 +115,8 @@ public class PrintOutputFacade
 					final PrintingData printingDataToExternalSystem = printingDataItem.onlyQueuedForExternalSystems();
 					if(!printingDataToExternalSystem.getSegments().isEmpty())
 					{
-						//notify external systems printers
-						externalSystemsPrintingNotifier.notifyExternalSystemsIfNeeded(item);
+						//notify external systems printers *after commit*, because the item need to be in the DB for access via the API
+						trxManager.runAfterCommit(() -> externalSystemsPrintingNotifier.notifyExternalSystemsIfNeeded(item));
 					}
 				}
 			}
