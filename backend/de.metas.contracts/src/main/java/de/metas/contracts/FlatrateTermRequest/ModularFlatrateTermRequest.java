@@ -24,6 +24,7 @@ package de.metas.contracts.FlatrateTermRequest;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,4 +37,5 @@ public class ModularFlatrateTermRequest
 	@NonNull BPartnerId bPartnerId;
 	@NonNull ProductId productId;
 	@NonNull YearId yearId;
+	@NonNull SOTrx soTrx;
 }

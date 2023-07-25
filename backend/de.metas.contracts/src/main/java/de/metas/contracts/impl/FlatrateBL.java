@@ -2432,6 +2432,7 @@ public class FlatrateBL implements IFlatrateBL
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, request.getSoTrx().toBoolean())
 				.create();
 
 		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)

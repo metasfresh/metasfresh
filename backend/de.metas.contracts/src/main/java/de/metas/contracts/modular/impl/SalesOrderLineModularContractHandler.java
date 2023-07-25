@@ -179,7 +179,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
 				.productId(productId)
 				.documentType(LogEntryDocumentType.SALES_ORDER)
-				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.soTrx(SOTrx.PURCHASE)
 				.processed(false)
 				.quantity(quantity)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
@@ -219,6 +219,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.bPartnerId(orderBillPartnerId.getBpartnerId())
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
+				.soTrx(SOTrx.PURCHASE)
 				.build();
 
 		return streamModularContracts(request)
