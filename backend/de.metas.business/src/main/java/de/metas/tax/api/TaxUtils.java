@@ -37,6 +37,7 @@ public class TaxUtils
 	{
 		return Tax.builder()
 				.taxId(TaxId.ofRepoId(from.getC_Tax_ID()))
+				.isSummary(from.isSummary())
 				.orgId(OrgId.ofRepoId(from.getAD_Org_ID()))
 				.validFrom(from.getValidFrom())
 				.countryId(CountryId.ofRepoIdOrNull(from.getC_Country_ID()))

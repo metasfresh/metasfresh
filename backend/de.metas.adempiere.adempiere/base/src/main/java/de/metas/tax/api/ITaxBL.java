@@ -33,6 +33,7 @@ import org.compiere.model.I_C_Tax;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -112,4 +113,6 @@ public interface ITaxBL extends ISingletonService
 	TaxCategoryId retrieveRegularTaxCategoryId();
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
+
+	List<Tax> getChildTaxes(@NonNull TaxId taxId);
 }

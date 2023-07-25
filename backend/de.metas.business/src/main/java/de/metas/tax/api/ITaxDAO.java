@@ -17,6 +17,7 @@ import org.compiere.model.I_C_TaxCategory;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -77,6 +78,8 @@ public interface ITaxDAO extends ISingletonService
 
 	@Nullable
 	Tax getTaxFromVatCodeIfManualOrNull(@Nullable VatCodeId vatCodeId);
+
+	List<Tax> getChildTaxes(@NonNull TaxId taxId);
 
 	@Builder
 	@Value

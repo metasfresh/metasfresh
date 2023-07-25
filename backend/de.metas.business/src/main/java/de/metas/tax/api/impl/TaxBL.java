@@ -45,6 +45,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -425,5 +426,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.firstOnlyOptional(I_C_TaxCategory.class)
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)
 				.map(TaxCategoryId::ofRepoId);
+	}
+
+	@Override
+	public List<Tax> getChildTaxes(@NonNull final TaxId taxId)
+	{
+		return taxDAO.getChildTaxes(taxId);
 	}
 }

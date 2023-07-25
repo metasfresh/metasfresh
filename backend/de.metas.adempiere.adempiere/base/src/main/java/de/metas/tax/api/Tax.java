@@ -48,6 +48,7 @@ public class Tax
 	public static final int C_TAX_ID_NO_TAX_FOUND = 100;
 
 	@NonNull TaxId taxId;
+	boolean isSummary;
 	@NonNull OrgId orgId;
 	@NonNull Timestamp validFrom;
 	@Nullable
@@ -76,6 +77,7 @@ public class Tax
 	@Builder
 	public Tax(
 			@NonNull final TaxId taxId,
+			final boolean isSummary,
 			@NonNull final OrgId orgId,
 			@NonNull final Timestamp validFrom,
 			@Nullable final CountryId countryId,
@@ -92,9 +94,11 @@ public class Tax
 			final boolean isDocumentLevel,
 			@NonNull final BigDecimal rate,
 			@Nullable final BoilerPlateId boilerPlateId,
-			@NonNull final Integer seqNo, @Nullable final String taxCode)
+			@NonNull final Integer seqNo,
+			@Nullable final String taxCode)
 	{
 		this.taxId = taxId;
+		this.isSummary = isSummary;
 		this.orgId = orgId;
 		this.validFrom = validFrom;
 		this.countryId = countryId;
