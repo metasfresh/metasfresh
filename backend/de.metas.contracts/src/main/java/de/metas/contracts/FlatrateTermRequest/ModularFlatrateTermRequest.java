@@ -26,20 +26,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class ModularFlatrateTermRequest
 {
-	@Nullable
-	BPartnerId bPartnerId;
-
-	@Nullable
-	ProductId productId;
-
-	@Nullable
-	YearId yearId;
+	@NonNull BPartnerId bPartnerId;
+	@NonNull ProductId productId;
+	@NonNull YearId yearId;
 }

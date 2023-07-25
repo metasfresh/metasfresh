@@ -37,6 +37,7 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
@@ -74,6 +75,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnReverse.Description");
+	private static final AdMessageKey MSG_ERR_DELETION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.DeletionNotAllowed");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -82,11 +84,15 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	public final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractLogDAO contractLogDAO;
 
-	public SalesOrderLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+	public SalesOrderLineModularContractHandler(
+			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO,
+			@NonNull final ModularContractLogDAO contractLogDAO)
 	{
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
+		this.contractLogDAO = contractLogDAO;
 	}
 
 	@Override
@@ -215,8 +221,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.yearId(harvestingYearId)
 				.build();
 
-		return resolveModularContracts(request)
-				.stream()
+		return streamModularContracts(request)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}
@@ -226,23 +231,35 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	{
 		switch (action)
 		{
-			case COMPLETED, VOIDED ->
-			{
-			}
-			default -> throw new AdempiereException("Unsupported model action!");
+			case COMPLETED, VOIDED, REVERSED, REACTIVATED -> {}
+			case DELETED -> validateCanBeDeleted(model);
+			default -> throw new AdempiereException("Unsupported model action!")
+					.appendParametersToMessage()
+					.setParameter("DocAction", action);
 		}
 	}
 
 	private boolean isModularContractInProgress(@NonNull final ModularFlatrateTermRequest request)
 	{
-		final List<I_C_Flatrate_Term> modularContracts = resolveModularContracts(request);
+		final List<I_C_Flatrate_Term> modularContracts = streamModularContracts(request)
+				.collect(ImmutableList.toImmutableList());
 
 		return !modularContracts.isEmpty();
 	}
 
 	@NonNull
-	private List<I_C_Flatrate_Term> resolveModularContracts(@NonNull final ModularFlatrateTermRequest request)
+	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermRequest request)
 	{
-		return flatrateBL.lookupModularFlatrateTermRequest(request);
+		return flatrateBL.streamModularFlatrateTerms(request);
+	}
+
+	private void validateCanBeDeleted(@NonNull final I_C_OrderLine orderLine)
+	{
+		final TableRecordReference recordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
+
+		if (contractLogDAO.hasAnyModularLogs(recordReference))
+		{
+			throw new AdempiereException(MSG_ERR_DELETION_NOT_ALLOWED).markAsUserValidationError();
+		}
 	}
 }

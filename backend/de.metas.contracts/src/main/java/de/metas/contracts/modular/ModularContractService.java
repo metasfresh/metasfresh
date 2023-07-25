@@ -41,7 +41,7 @@ public class ModularContractService
 {
 	public enum ModelAction
 	{
-		COMPLETED, REVERSED, REACTIVATED, VOIDED
+		COMPLETED, REVERSED, REACTIVATED, VOIDED, DELETED
 	}
 
 	private final ModularContractLogDAO contractLogDAO;

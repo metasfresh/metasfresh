@@ -157,6 +157,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.DOCSTATUS_Completed;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
@@ -2423,8 +2424,9 @@ public class FlatrateBL implements IFlatrateBL
 				&& !ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(contract.getC_Flatrate_Conditions().getOnFlatrateTermExtend());
 	}
 
+	@NonNull
 	@Override
-	public List<I_C_Flatrate_Term> lookupModularFlatrateTermRequest(@NonNull final ModularFlatrateTermRequest request)
+	public Stream<I_C_Flatrate_Term> streamModularFlatrateTerms(@NonNull final ModularFlatrateTermRequest request)
 	{
 		final IQuery<I_ModCntr_Settings> queryFilterSettings = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 				.addOnlyActiveRecordsFilter()
@@ -2432,7 +2434,7 @@ public class FlatrateBL implements IFlatrateBL
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId())
 				.create();
 
-		final List<I_C_Flatrate_Term> contracts = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
@@ -2445,8 +2447,6 @@ public class FlatrateBL implements IFlatrateBL
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Voided)
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Quit)
 				.create()
-				.list();
-
-		return contracts;
+				.iterateAndStream();
 	}
 }

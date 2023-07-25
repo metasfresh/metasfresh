@@ -52,6 +52,7 @@ import org.compiere.model.I_M_Product;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -239,5 +240,5 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
 
-	List<I_C_Flatrate_Term> lookupModularFlatrateTermRequest(ModularFlatrateTermRequest request);
+	Stream<I_C_Flatrate_Term> streamModularFlatrateTerms(ModularFlatrateTermRequest request);
 }
