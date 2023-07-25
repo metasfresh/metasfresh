@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -511,12 +510,5 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID, hardwarePrinterId)
 				.create()
 				.list();
-	}
-
-
-	@Override
-	public String getTransactionIdForAdArchiveId(ArchiveId archiveId)
-	{
-		return "..."; //TODO
 	}
 }

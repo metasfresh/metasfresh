@@ -84,12 +84,14 @@ public class PrintingDataToPDFWriter implements IAutoCloseable
 		final int archivePageNums = reader.getNumberOfPages();
 
 		int pageFrom = segment.getPageFrom();
+		int pageDiff = 0;
 		if (pageFrom <= 0)
 		{
 			// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
+			pageDiff = 1 - pageFrom;
 			pageFrom = 1;
 		}
-		int pageTo = segment.getPageTo();
+		int pageTo = segment.getPageTo() + pageDiff;
 		if (pageTo > archivePageNums)
 		{
 			// shall not happen at this point

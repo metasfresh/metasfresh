@@ -226,6 +226,4 @@ public interface IPrintingDAO extends ISingletonService
 	 * <ul> virtual printer because is not a real hardware printer
 	 */
 	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
-
-	String getTransactionIdForAdArchiveId(ArchiveId archiveId);
 }

@@ -126,7 +126,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 					printingQueueBL.renqueue(item, p_IsRecreatePrintout);
 					countOk++;
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					countError++;
 					log.warn(e.getLocalizedMessage(), e);
@@ -165,7 +165,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			final ISqlQueryFilter modelFilter = TypedSqlQueryFilter.<Object> of(p_WhereClause);
+			final ISqlQueryFilter modelFilter = TypedSqlQueryFilter.of(p_WhereClause);
 			queueQuery.setModelFilter(modelFilter);
 		}
 
@@ -179,8 +179,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 			loggable.addLog("The query matches {} C_Printing_Queue records; query={}",query.count(), query);
 		}
 
-		final Iterator<I_C_Printing_Queue> it = query.iterate(I_C_Printing_Queue.class);
-		return it;
+		return query.iterate(I_C_Printing_Queue.class);
 	}
 
 	private int createWindowSelectionId(final PInstanceId selectionId)
