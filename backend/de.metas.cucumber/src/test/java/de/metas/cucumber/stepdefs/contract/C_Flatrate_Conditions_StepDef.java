@@ -80,6 +80,7 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Flatrate_Conditions_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
 	private final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
@@ -90,7 +91,7 @@ public class C_Flatrate_Conditions_StepDef
 	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
 	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 	private final C_Year_StepDefData yearTable;
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
@@ -100,7 +101,8 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable,
-			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable, final C_Year_StepDefData yearTable)
+			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable,
+			@NonNull final C_Year_StepDefData yearTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
