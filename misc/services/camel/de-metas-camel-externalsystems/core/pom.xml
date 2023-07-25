@@ -228,6 +228,12 @@
             <version>1.7.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.printing</groupId>
+            <artifactId>de.metas.printing.api</artifactId>
+            <version>10.0.0</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 

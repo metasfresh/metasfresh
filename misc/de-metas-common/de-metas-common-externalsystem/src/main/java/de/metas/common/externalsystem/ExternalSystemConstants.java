@@ -94,4 +94,6 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+
+	public static final String QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT = "PrintingClient_Metasfresh_To_ExternalSystem";
 }

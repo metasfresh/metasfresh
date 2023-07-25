@@ -22,11 +22,18 @@
 
 package de.metas.printing;
 
+import de.metas.audit.data.ExternalSystemParentConfigId;
+
+import javax.annotation.Nullable;
+
 /**
  * annotate implementation with @Component
  */
 public interface IPrintingHandler
 {
-	void notify(PrintRequest request);
+	void notify(PrintingClientRequest request);
+
+	@Nullable
+	String getTargetDirectory(ExternalSystemParentConfigId id);
 
 }

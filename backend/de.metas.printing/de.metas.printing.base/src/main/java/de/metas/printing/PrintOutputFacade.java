@@ -32,11 +32,13 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
+import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,8 @@ public class PrintOutputFacade
 	private final PrintingDataToPDFFileStorer printingDataToPDFFileStorer;
 	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+
+	private final ExternalSystemsPrintingNotifier externalSystemsPrintingNotifier = SpringContextHolder.instance.getBean(ExternalSystemsPrintingNotifier.class);
 
 	public PrintOutputFacade(
 			@NonNull final PrintingDataFactory printingDataFactory,
@@ -103,6 +107,13 @@ public class PrintOutputFacade
 								source.createRelatedItemsIterator(item),
 								source.getProcessingInfo());
 						printJobBL.createPrintJobs(plainSource, printJobContext);
+					}
+
+					final PrintingData printingDataToExternalSystem = printingDataItem.onlyQueuedForExternalSystems();
+					if(!printingDataToExternalSystem.getSegments().isEmpty())
+					{
+						//notify external systems printers
+						externalSystemsPrintingNotifier.notifyExternalSystemsIfNeeded(item);
 					}
 				}
 			}

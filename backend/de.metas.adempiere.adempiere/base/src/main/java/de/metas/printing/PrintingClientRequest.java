@@ -22,15 +22,12 @@
 
 package de.metas.printing;
 
-import de.metas.audit.data.ExternalSystemParentConfigId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class PrintRequest
+public class PrintingClientRequest
 {
-	@NonNull ExternalSystemParentConfigId id;
-	@NonNull String transactionId;
+	int printingQueueId;
 }

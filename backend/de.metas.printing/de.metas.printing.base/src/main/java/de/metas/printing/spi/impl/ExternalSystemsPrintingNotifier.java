@@ -23,37 +23,35 @@
 package de.metas.printing.spi.impl;
 
 import de.metas.audit.data.ExternalSystemParentConfigId;
-import de.metas.printing.HardwarePrinter;
-import de.metas.printing.HardwarePrinterId;
-import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.IPrintingHandler;
-import de.metas.printing.OutputType;
-import de.metas.printing.PrintRequest;
+import de.metas.printing.PrintingClientRequest;
+import de.metas.printing.model.I_C_Printing_Queue;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class ExternalSystemsPrintingNotifier
 {
-	private final HardwarePrinterRepository hardwarePrinterRepository;
 	private final List<IPrintingHandler> handlerList;
 
-	public void notifyExternalSystemsIfNeeded(@NonNull final HardwarePrinterId hardwarePrinterId, @NonNull final String transactionId)
+	public void notifyExternalSystemsIfNeeded(@NonNull final I_C_Printing_Queue printingQueueRecord)
 	{
-		final HardwarePrinter printer = hardwarePrinterRepository.getById(hardwarePrinterId);
-		final ExternalSystemParentConfigId externalSystemParentConfigId = printer.getExternalSystemParentConfigId();
-		if (OutputType.Queue.equals(printer.getOutputType()) && externalSystemParentConfigId != null)
-		{
-			final PrintRequest request = PrintRequest.builder()
-					.id(externalSystemParentConfigId)
-					.transactionId(transactionId)
-					.build();
-			handlerList.forEach(handler -> handler.notify(request));
-		}
+		final PrintingClientRequest request = PrintingClientRequest.builder()
+				.printingQueueId(printingQueueRecord.getC_Printing_Queue_ID())
+				.build();
+		handlerList.forEach(handler -> handler.notify(request));
+	}
+
+	public String getTargetDirectory(@NonNull final ExternalSystemParentConfigId id)
+	{
+		final List<String> list = new ArrayList<>();
+		handlerList.forEach(handler -> list.add(handler.getTargetDirectory(id)));
+		return list.get(0);
 	}
 
 }

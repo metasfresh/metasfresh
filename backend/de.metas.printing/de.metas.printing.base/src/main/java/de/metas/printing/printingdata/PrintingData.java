@@ -170,12 +170,14 @@ public class PrintingData
 			}
 
 			int pageFrom = printingSegment.getPageFrom();
+			int pageDiff = 0;
 			if (pageFrom <= 0)
 			{
 				// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
+				pageDiff = 1 - pageFrom;
 				pageFrom = 1;
 			}
-			int pageTo = printingSegment.getPageTo();
+			int pageTo = printingSegment.getPageTo() + pageDiff;
 			if (pageTo <= 0)
 			{
 				pageTo = numberOfPagesAvailable;
@@ -318,7 +320,7 @@ public class PrintingData
 	{
 		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
 				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), OutputType.Queue))
-				//TODO .filter(s -> s.getPrinter().getOutputType().getExternalSystem_Config_ID() > 0)
+				.filter(s -> s.getPrinter().getExternalSystemParentConfigId() != null)
 				.collect(ImmutableList.toImmutableList());
 
 		return PrintingData.builder()

@@ -20,16 +20,22 @@
  * #L%
  */
 
-package de.metas.externalsystem.printing;
+package de.metas.externalsystem.printingclient;
 
-import de.metas.printing.IPrintingHandler;
-import de.metas.printing.PrintRequest;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public class ExternalSystemsPrintingHandler implements IPrintingHandler
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT;
+
+@Configuration
+@EnableRabbit
+public class PrintingClientMFToExternalSystemQueueConfig
 {
-	@Override
-	public void notify(final PrintRequest request)
+	@Bean(name = QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT)
+	public Queue metasfreshToExternalSystemQueue()
 	{
-
+		return new Queue(QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT);
 	}
 }
