@@ -64,7 +64,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -75,8 +74,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Post MatchInv Documents.
@@ -133,7 +130,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	public Doc_MatchInv(final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.MatchInvoice);
-		this.matchInv = MatchInvoiceRepository.fromRecord(InterfaceWrapperHelper.create(ctx.getDocumentModel(), I_M_MatchInv.class));
+		this.matchInv = MatchInvoiceRepository.fromRecord(ctx.getDocumentModel().unboxAs(I_M_MatchInv.class));
 
 	}
 

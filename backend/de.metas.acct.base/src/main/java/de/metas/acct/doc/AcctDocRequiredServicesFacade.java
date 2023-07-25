@@ -73,11 +73,15 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.sales_region.SalesRegion;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.sales_region.SalesRegionService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -91,12 +95,12 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.acct.FactLine;
+import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
-import org.compiere.model.PO;
 import org.compiere.util.TrxRunnable2;
 import org.springframework.stereotype.Service;
 
@@ -168,6 +172,8 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICostingService costingService;
 	private final DimensionService dimensionService;
+	private final SalesRegionService salesRegionService;
+	private final AcctDocLockService acctDocLockService;
 
 	public AcctDocRequiredServicesFacade(
 			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService,
@@ -179,7 +185,9 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final MatchInvoiceService matchInvoiceService,
 			@NonNull final OrderCostService orderCostService,
 			@NonNull final FAOpenItemsService faOpenItemsService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final DimensionService dimensionService,
+			@NonNull final SalesRegionService salesRegionService,
+			@NonNull final AcctDocLockService acctDocLockService)
 	{
 		this.modelCacheInvalidationService = modelCacheInvalidationService;
 		this.glCategoryRepository = glCategoryRepository;
@@ -191,16 +199,18 @@ public class AcctDocRequiredServicesFacade
 		this.orderCostService = orderCostService;
 		this.faOpenItemsService = faOpenItemsService;
 		this.dimensionService = dimensionService;
+		this.salesRegionService = salesRegionService;
+		this.acctDocLockService = acctDocLockService;
 	}
 
-	public void fireBeforePostEvent(@NonNull final PO po)
+	public void fireBeforePostEvent(@NonNull final AcctDocModel docModel)
 	{
-		factAcctListenersService.fireBeforePost(po);
+		factAcctListenersService.fireBeforePost(docModel.unbox());
 	}
 
-	public void fireAfterPostEvent(@NonNull final PO po)
+	public void fireAfterPostEvent(@NonNull final AcctDocModel docModel)
 	{
-		factAcctListenersService.fireAfterPost(po);
+		factAcctListenersService.fireAfterPost(docModel.unbox());
 	}
 
 	public void fireDocumentChanged(
@@ -217,9 +227,9 @@ public class AcctDocRequiredServicesFacade
 		trxManager.runInThreadInheritedTrx(runnable);
 	}
 
-	public void deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
+	public void deleteFactAcctByDocumentModel(@NonNull final AcctDocModel docModel)
 	{
-		factAcctDAO.deleteForDocumentModel(documentPO);
+		factAcctDAO.deleteForDocumentModel(docModel.unbox());
 	}
 
 	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName)
@@ -477,7 +487,7 @@ public class AcctDocRequiredServicesFacade
 
 		record.setCounterpart_Fact_Acct_ID(FactAcctId.toRepoId(factLine.getCounterpart_Fact_Acct_ID()));
 		Check.assumeEquals(record.getAD_Client_ID(), factLine.getAD_Client_ID().getRepoId(), "AD_Client_ID");
-		record.setAD_Org_ID(factLine.getOrgIdEffective().getRepoId());
+		record.setAD_Org_ID(factLine.getOrgId().getRepoId());
 		record.setDateTrx(factLine.getDateTrx());
 		record.setDateAcct(factLine.getDateAcct());
 		record.setC_Period_ID(factLine.getC_Period_ID());
@@ -526,7 +536,7 @@ public class AcctDocRequiredServicesFacade
 		record.setC_BPartner2_ID(BPartnerId.toRepoId(factLine.getC_BPartner2_ID()));
 		record.setGL_Budget_ID(factLine.getGL_Budget_ID());
 		record.setGL_Category_ID(GLCategoryId.toRepoId(factLine.getGL_Category_ID()));
-		record.setC_SalesRegion_ID(factLine.getC_SalesRegion_ID_Effective());
+		record.setC_SalesRegion_ID(SalesRegionId.toRepoId(factLine.getC_SalesRegion_ID()));
 		record.setC_Project_ID(ProjectId.toRepoId(factLine.getC_Project_ID()));
 		record.setC_Activity_ID(ActivityId.toRepoId(factLine.getC_Activity_ID()));
 		record.setC_Campaign_ID(factLine.getC_Campaign_ID());
@@ -549,4 +559,25 @@ public class AcctDocRequiredServicesFacade
 		factAcctDAO.save(record);
 		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));
 	}
+
+	public Optional<SalesRegionId> getSalesRegionIdBySalesRepId(final UserId salesRepId)
+	{
+		return salesRegionService.getBySalesRepId(salesRepId).map(SalesRegion::getId);
+	}
+
+	public Optional<SalesRegionId> getSalesRegionIdByBPartnerLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnerDAO.getSalesRegionIdByBPLocationId(bpartnerLocationId);
+	}
+
+	public boolean lock(@NonNull final AcctDocModel docModel, final boolean force, final boolean repost)
+	{
+		return acctDocLockService.lock(docModel, force, repost);
+	}
+
+	public boolean unlock(@NonNull final AcctDocModel docModel, @Nullable final PostingStatus newPostingStatus, @Nullable final AdIssueId postingErrorIssueId)
+	{
+		return acctDocLockService.unlock(docModel, newPostingStatus, postingErrorIssueId);
+	}
+
 }

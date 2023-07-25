@@ -52,13 +52,6 @@ public interface ITaxDAO extends ISingletonService
 	 */
 	TaxId retrieveNoTaxFoundId(Properties ctx);
 
-	/**
-	 * If the taxBL can't find a tax category, it shall return this one instead
-	 *
-	 * @return placeholder tax category that is used when no other tax was found (note: not used yet; may be helpful in the future)
-	 */
-	I_C_TaxCategory retrieveNoTaxCategoryFound(Properties ctx);
-
 	int findTaxCategoryId(TaxCategoryQuery query);
 
 	I_C_TaxCategory getTaxCategoryById(TaxCategoryId id);

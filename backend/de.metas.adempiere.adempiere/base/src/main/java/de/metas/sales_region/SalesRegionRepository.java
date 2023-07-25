@@ -59,8 +59,7 @@ public class SalesRegionRepository
 		return getMap().stream()
 				.filter(salesRegion -> salesRegion.isActive()
 						&& UserId.equals(salesRegion.getSalesRepId(), salesRepId))
-				.sorted(Comparator.comparing(SalesRegion::getId).reversed())
-				.findFirst();
+				.max(Comparator.comparing(SalesRegion::getId));
 	}
 
 	//

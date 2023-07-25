@@ -78,7 +78,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	private int m_Reversal_ID = 0;
+	private InOutId m_Reversal_ID = null;
 	private String m_DocStatus = "";
 
 	public Doc_InOut(final AcctDocContext ctx)
@@ -94,7 +94,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		setNoCurrency();
 		final I_M_InOut inout = getModel(I_M_InOut.class);
 		setDateDoc(inout.getMovementDate());
-		m_Reversal_ID = inout.getReversal_ID();// store original (voided/reversed) document
+		m_Reversal_ID = InOutId.ofRepoIdOrNull(inout.getReversal_ID());// store original (voided/reversed) document
 		m_DocStatus = inout.getDocStatus();
 		setDocLines(loadLines(inout));
 	}
@@ -420,10 +420,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		{
 			throw newPostingException().setDetailMessage("DR not created: " + line);
 		}
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
+		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID != null && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(I_M_InOut.Table_Name, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!dr.updateReverseLine(I_M_InOut.Table_Name, m_Reversal_ID.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -444,10 +444,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		{
 			throw newPostingException().setDetailMessage("CR not created: " + line);
 		}
-		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
+		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID != null && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(I_M_InOut.Table_Name, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!cr.updateReverseLine(I_M_InOut.Table_Name, m_Reversal_ID.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}

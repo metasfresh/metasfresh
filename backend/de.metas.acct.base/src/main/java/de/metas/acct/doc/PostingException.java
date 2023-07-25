@@ -17,13 +17,13 @@ import org.compiere.acct.FactLine;
 import org.compiere.acct.PostingStatus;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Exception thrown by accounting engine on any document posting error.
  *
  * @author tsa
  */
-@SuppressWarnings("serial")
 public final class PostingException extends AdempiereException
 {
 	@Nullable
@@ -77,12 +77,12 @@ public final class PostingException extends AdempiereException
 		}
 
 		// Posting Status
-		final PostingStatus postingStatus = getPostingStatus();
+		final PostingStatus postingStatus = _postingStatus;
 		if (postingStatus != null)
 		{
 			message.append("\n ").appendADElement("Posted").append(": ")
-					.appendADMessage(postingStatus.getAD_Message())
-					.append(" (").append(postingStatus.toString()).append(")");
+					.appendADMessage(postingStatus.getAdMessage())
+					.append(" (").append(postingStatus.name()).append(")");
 		}
 
 		// Document
@@ -143,21 +143,9 @@ public final class PostingException extends AdempiereException
 		return _document;
 	}
 
-	public PostingStatus getPostingStatus()
-	{
-		return _postingStatus;
-	}
+	public Optional<PostingStatus> getPostingStatus() {return Optional.ofNullable(_postingStatus);}
 
-	public PostingStatus getPostingStatus(final PostingStatus defaultStatus)
-	{
-		if (_postingStatus == null)
-		{
-			return defaultStatus;
-		}
-		return _postingStatus;
-	}
-
-	public PostingException setPostingStatus(final PostingStatus postingStatus)
+	public PostingException setPostingStatus(@Nullable final PostingStatus postingStatus)
 	{
 		_postingStatus = postingStatus;
 		resetMessageBuilt();
@@ -293,6 +281,7 @@ public final class PostingException extends AdempiereException
 		return _docLine;
 	}
 
+	@SuppressWarnings("unused")
 	public PostingException setLogLevel(@NonNull final Level logLevel)
 	{
 		this._logLevel = logLevel;

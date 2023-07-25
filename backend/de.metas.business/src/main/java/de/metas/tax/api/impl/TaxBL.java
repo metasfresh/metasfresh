@@ -375,13 +375,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}
 
 	@Override
-	public BigDecimal calculateBaseAmt(@NonNull final I_C_Tax tax, @NonNull final BigDecimal amount, final boolean taxIncluded, final int scale)
-	{
-
-		return TaxUtils.from(tax).calculateBaseAmt(amount, taxIncluded, scale);
-	}
-
-	@Override
 	public void setupIfIsWholeTax(final I_C_Tax tax)
 	{
 		if (!tax.isWholeTax())

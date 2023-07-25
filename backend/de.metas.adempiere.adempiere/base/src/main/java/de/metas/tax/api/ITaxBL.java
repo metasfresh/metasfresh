@@ -72,11 +72,6 @@ public interface ITaxBL extends ISingletonService
 	BigDecimal calculateTaxAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
-	 * Calculate base amount, excluding tax
-	 */
-	BigDecimal calculateBaseAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
-
-	/**
 	 * Get Tax ID - converts parameters to call Get Tax.
 	 *
 	 * <pre>

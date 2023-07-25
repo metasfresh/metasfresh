@@ -291,7 +291,7 @@ public final class Fact
 		if (segmentType.equals(AcctSchemaElementType.Organization))
 		{
 			final ImmutableMap<OrgId, Balance> map = m_lines.stream()
-					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgIdEffective, FactLine::getSourceBalance, Balance::add));
+					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgId, FactLine::getSourceBalance, Balance::add));
 
 			// check if all keys are zero
 			for (final Balance orgBalance : map.values())
@@ -343,7 +343,7 @@ public final class Fact
 		if (elementType.equals(AcctSchemaElementType.Organization))
 		{
 			final ImmutableMap<OrgId, Balance> map = m_lines.stream()
-					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgIdEffective, FactLine::getSourceBalance, Balance::add));
+					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgId, FactLine::getSourceBalance, Balance::add));
 
 			// Create entry for non-zero element
 			for (final OrgId orgId : map.keySet())

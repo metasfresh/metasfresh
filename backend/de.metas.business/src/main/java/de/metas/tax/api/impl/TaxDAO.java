@@ -85,7 +85,7 @@ public class TaxDAO implements ITaxDAO
 	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
-	private CCache<TaxId, ImmutableList<Tax>> childTaxes = CCache.<TaxId, ImmutableList<Tax>>builder()
+	private final CCache<TaxId, ImmutableList<Tax>> childTaxes = CCache.<TaxId, ImmutableList<Tax>>builder()
 			.tableName(I_C_Tax.Table_Name)
 			.build();
 
@@ -181,17 +181,6 @@ public class TaxDAO implements ITaxDAO
 				.firstOnlyNotNull(I_C_Tax.class);
 
 		return TaxId.ofRepoId(tax.getC_Tax_ID());
-	}
-
-	@Override
-	@Cached(cacheName = I_C_TaxCategory.Table_Name + "#NoTaxFound")
-	public I_C_TaxCategory retrieveNoTaxCategoryFound(@CacheCtx final Properties ctx)
-	{
-		return queryBL.createQueryBuilder(I_C_TaxCategory.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, TaxCategoryId.NOT_FOUND)
-				.create()
-				.firstOnlyNotNull(I_C_TaxCategory.class);
 	}
 
 	@Override

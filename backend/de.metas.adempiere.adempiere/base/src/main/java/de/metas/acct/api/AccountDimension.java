@@ -27,11 +27,13 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Immutable {@link AccountDimension} implementation
@@ -223,7 +225,7 @@ public final class AccountDimension
 	{
 		private String alias = null;
 		private AcctSchemaId acctSchemaId;
-		private final Map<AcctSegmentType, Object> segmentValues = new HashMap<>();
+		private final HashMap<AcctSegmentType, Object> segmentValues = new HashMap<>();
 
 		private Builder()
 		{
@@ -241,7 +243,7 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setSegmentValue(final AcctSegmentType segmentType, final Object value)
+		public Builder setSegmentValue(@NonNull final AcctSegmentType segmentType, @Nullable final Object value)
 		{
 			if (value == null)
 			{
@@ -367,7 +369,7 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setC_SalesRegion_ID(final int C_SalesRegion_ID)
+		public Builder setC_SalesRegion_ID(final SalesRegionId C_SalesRegion_ID)
 		{
 			setSegmentValue(AcctSegmentType.SalesRegion, C_SalesRegion_ID);
 			return this;

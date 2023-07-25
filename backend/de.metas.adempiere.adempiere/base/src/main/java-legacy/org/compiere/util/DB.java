@@ -128,7 +128,6 @@ public class DB
 		 * <p>
 		 * NOTE: avoid using this method. We introduced it just to migrate from old API.
 		 *
-		 * @param ignoreError
 		 * @return {@link OnFail} value
 		 */
 		public static OnFail valueOfIgnoreError(final boolean ignoreError)
@@ -148,14 +147,8 @@ public class DB
 	 */
 	private final Logger log = LogManager.getLogger(DB.class);
 
-	/**
-	 * SQL Statement Separator "; "
-	 */
-	public final String SQLSTATEMENT_SEPARATOR = "; ";
-
 	/**************************************************************************
 	 * Set connection.
-	 *
 	 * If the connection was already set and it's the same, this method does nothing.
 	 *
 	 * @param cc connection
@@ -384,7 +377,6 @@ public class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
-	 * @param readOnly
 	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
 	public Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
@@ -622,7 +614,7 @@ public class DB
 		}
 		else if (param instanceof Integer)
 		{
-			pstmt.setInt(index, ((Integer)param).intValue());
+			pstmt.setInt(index, (Integer)param);
 		}
 		else if (param instanceof BigDecimal)
 		{
@@ -747,7 +739,6 @@ public class DB
 	 * Execute SQL Update.
 	 *
 	 * @param onFail                what to do if the update fails
-	 * @param updateReturnProcessor
 	 * @return update count
 	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
 	 * @deprecated please use the {@code ...Ex} variant of this method.
@@ -982,7 +973,6 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
-	 * @throws SQLException
 	 */
 	public boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
 	{
@@ -1026,7 +1016,6 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
-	 * @throws SQLException
 	 */
 	public boolean rollback(final boolean throwException, final String trxName) throws SQLException
 	{
@@ -1944,7 +1933,6 @@ public class DB
 	}
 
 	/**
-	 * @param comment
 	 * @return SQL multiline comment
 	 */
 	public String TO_COMMENT(final String comment)
@@ -2000,7 +1988,6 @@ public class DB
 	/**
 	 * convenient method to close statement
 	 *
-	 * @param st
 	 */
 	public void close(@Nullable final Statement st)
 	{
@@ -2194,8 +2181,6 @@ public class DB
 	/**
 	 * Delete T_Selection
 	 *
-	 * @param pinstanceId
-	 * @param trxName
 	 * @return number of records that were deleted
 	 */
 	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
@@ -2249,7 +2234,6 @@ public class DB
 	 * E.g. for <code>paramsIn={1,2,3}</code> it returns the string <code>"(?,?,?)"</code>, and it will copy <code>paramsIn</code> to the list <code>paramsOut</code>. Note that e.g. if we need
 	 * something like <code>AND ..._ID IN (?,?,?)</code>, then the ordering paramsIn's elements doesn't really matter.
 	 *
-	 * @param paramsIn
 	 * @param paramsOut a list containing the prepared statement parameters for the returned SQL's question marks.
 	 * @return SQL list (string)
 	 */
@@ -2331,7 +2315,6 @@ public class DB
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
 	 *
-	 * @param paramsIn
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
 	 */
@@ -2471,7 +2454,6 @@ public class DB
 	 * <li>use it only if is really needed</li>
 	 * </ul>
 	 *
-	 * @param sql
 	 * @return converted SQL
 	 */
 	public String convertSqlToNative(final String sql)
