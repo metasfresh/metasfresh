@@ -1,0 +1,217 @@
+/*
+ * #%L
+ * de.metas.printing.api
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.printing.esb.api.v2;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BadPdfFormatException;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfReader;
+import de.metas.common.util.Check;
+import de.metas.common.util.FileUtil;
+import de.metas.printing.esb.api.v2.response.JsonPrinterHW;
+import de.metas.printing.esb.api.v2.response.JsonPrinterTray;
+import de.metas.printing.esb.api.v2.response.JsonPrintingDataResponse;
+import de.metas.printing.esb.api.v2.response.JsonPrintingSegment;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.List;
+
+import static de.metas.printing.esb.api.v2.PrintingConstants.OUTPUTTYPE_Queue;
+
+@Service
+public class PrintingRestControllerPDFFileStorer
+{
+	public void storeInFileSystem(@NonNull final JsonPrintingDataResponse printingData) throws PrintingException
+	{
+		final ImmutableMultimap<Path, JsonPrintingSegment> path2Segments = extractAndAssignPaths(printingData);
+
+		for (final Path path : path2Segments.keySet())
+		{
+			final File file = new File(path.toFile(), printingData.getDocumentFileName());
+
+
+			createDirectories(path);
+
+			final FileOutputStream out;
+			try
+			{
+				out = new FileOutputStream(file);
+			}
+			catch (final FileNotFoundException e)
+			{
+				throw new PrintingException("FileNotFoundException trying to write printing data to file: " + file, e);
+			}
+
+			final Document document = new Document();
+			final PdfCopy pdfCopy;
+			try
+			{
+				pdfCopy = new PdfCopy(document, out);
+			}
+			catch (final DocumentException e)
+			{
+				throw new PrintingException("DocumentException", e);
+			}
+
+			document.open();
+			for (final JsonPrintingSegment segment : path2Segments.get(path))
+			{
+				final byte[] data = Base64.getDecoder().decode(printingData.getBase64Data());
+				final PdfReader reader;
+				try
+				{
+					reader = new PdfReader(data);
+				}
+				catch (final IOException e)
+				{
+					throw new PrintingException("IOException", e);
+				}
+
+				final int archivePageNums = reader.getNumberOfPages();
+
+				int pageFrom = segment.getPageFrom();
+				int pageDiff = 0;
+				if (pageFrom <= 0)
+				{
+					// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
+					pageDiff = 1 - pageFrom;
+					pageFrom = 1;
+				}
+
+				int pageTo = segment.getPageTo() + pageDiff;
+				if (pageTo > archivePageNums)
+				{
+					// shall not happen at this point
+					pageTo = archivePageNums;
+				}
+
+				if (pageFrom > pageTo)
+				{
+					// shall not happen at this point
+					return;
+				}
+
+				for (int page = pageFrom; page <= pageTo; page++)
+				{
+					try
+					{
+						pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
+						pdfCopy.freeReader(reader);
+					}
+					catch (final BadPdfFormatException e)
+					{
+						throw new PrintingException("BadPdfFormatException " + segment + " (Page: " + page + ")", e);
+					}
+					catch (final IOException e)
+					{
+						throw new PrintingException("IOException", e);
+					}
+				}
+				reader.close();
+				document.close();
+
+				try
+				{
+					out.close();
+				}
+				catch (final IOException e)
+				{
+					throw new PrintingException("IOException", e);
+				}
+
+			}
+		}
+	}
+
+	private void createDirectories(@NonNull final Path path) throws PrintingException
+	{
+		try
+		{
+			Files.createDirectories(path);
+		}
+		catch (final IOException e)
+		{
+			throw new PrintingException("IOException trying to create output directory: " + path, e);
+		}
+	}
+
+	private ImmutableMultimap<Path, JsonPrintingSegment> extractAndAssignPaths(@NonNull final JsonPrintingDataResponse printingData)
+	{
+		final ImmutableMultimap.Builder<Path, JsonPrintingSegment> path2Segments = new ImmutableMultimap.Builder<>();
+
+		for (final JsonPrintingSegment segment : printingData.getSegments())
+		{
+			final JsonPrinterHW printer = segment.getPrinterHW();
+			if (!OUTPUTTYPE_Queue.equals(printer.getOutputType()))
+			{
+				continue;
+			}
+
+			Path path = null;
+			final int trayId = segment.getTrayId();
+			final String baseDirectory = printer.getBaseDirectory();
+
+			if(Check.isEmpty(baseDirectory))
+			{
+				throw new PrintingException("No target Directory set for this Print");
+			}
+
+			if (!Check.isEmpty(trayId))
+			{
+				final List<JsonPrinterTray> trays = printer.getTrays();
+				for (final JsonPrinterTray tray : trays)
+				{
+					if(tray.getTrayId() == trayId)
+					{
+						path = Paths.get(baseDirectory,
+										 FileUtil.stripIllegalCharacters(printer.getName()),
+										 FileUtil.stripIllegalCharacters(tray.getNumber() + "-" + tray.getName()));
+						break;
+					}
+				}
+				if(path == null)
+				{
+					throw new PrintingException("Shouldn't happen. Segment has TrayId, that doesn't exist in Trays of PrinterHW");
+				}
+			}
+			else
+			{
+				path = Paths.get(baseDirectory, FileUtil.stripIllegalCharacters(printer.getName()));
+			}
+
+			path2Segments.put(path, segment);
+		}
+		return path2Segments.build();
+	}
+}

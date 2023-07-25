@@ -16,5 +16,24 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.22</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.common.util</groupId>
+			<artifactId>de-metas-common-util</artifactId>
+			<version>10.0.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7.js6</version>
+		</dependency>
 	</dependencies>
 </project>
