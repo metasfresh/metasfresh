@@ -25,11 +25,13 @@ package de.metas.cucumber.stepdefs.contract;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
@@ -38,6 +40,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.PMM_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.process.PInstanceId;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -47,9 +50,12 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
@@ -58,6 +64,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -88,6 +95,7 @@ public class C_Flatrate_Term_StepDef
 	private final M_PricingSystem_StepDefData pricingSysTable;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -343,5 +351,89 @@ public class C_Flatrate_Term_StepDef
 						.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 						.create()
 						.firstOnlyNotNull(I_C_Flatrate_Term.class));
+	}
+
+	@When("^extend C_Flatrate_Term identified by (.*) starting from (.*) will fail with message (.*)$")
+	public void failWithMessageWhenExtendingC_Flatrate_TermsStartingFromWithMessage(@NonNull final String contractIdentifier, @NonNull final String startingDate, @NonNull final String message)
+	{
+		assertThat(message).isNotBlank();
+		assertThat(contractIdentifier).isNotBlank();
+		assertThat(startingDate).isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).isNotNull();
+
+		final Timestamp nextStartDate = TimeUtil.parseTimestamp(startingDate);
+		assertThat(nextStartDate).isNotNull();
+
+		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(false)
+				.nextTermStartDate(nextStartDate)
+				.build();
+
+		try
+		{
+			flatrateBL.extendContractAndNotifyUser(contractExtendingRequest);
+		}
+		catch (final Exception e)
+		{
+			assertThat(e).isNotNull();
+			assertThat(e).isExactlyInstanceOf(AdempiereException.class);
+			assertThat(e.getMessage()).isEqualTo(message); // "Extension Not Allowed"
+		}
+
+	}
+
+	@Then("^extend C_Flatrate_Term identified by (.*) starting from (.*) with PInstanceID (.*)$")
+	public void extendFlatrateTermStartingFromIsPossible(@NonNull final String contractIdentifier, @NonNull final String startDate, @NonNull final String pInstanceID)
+	{
+		assertThat(contractIdentifier).isNotBlank();
+		assertThat(startDate).isNotBlank();
+		assertThat(pInstanceID).isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).isNotNull();
+
+		assertThat(contract.getC_FlatrateTerm_Next()).isNull();  // contract not extended yet
+
+		final Timestamp nextStartDate = TimeUtil.parseTimestamp(startDate);
+		assertThat(nextStartDate).isNotNull();
+
+		final Integer pinstance_ID = Integer.valueOf(pInstanceID);
+		assertThat(pinstance_ID).isNotNull();
+
+		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(pinstance_ID))
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(false)
+				.nextTermStartDate(nextStartDate)
+				.build();
+
+		try
+		{
+			flatrateBL.extendContractAndNotifyUser(contractExtendingRequest);
+		}
+		catch (final Exception exception)
+		{
+			fail(exception.getMessage(), exception);
+		}
+
+	}
+
+	@Then("^C_Flatrate_Term identified by (.*) is extended$")
+	public void c_flatrate_termIsExtended(@NonNull final String contractIdentifier)
+	{
+		assertThat(contractIdentifier).isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).isNotNull();
+
+		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
+		assertThat(nextContract).isNotNull(); // next term created & contract extended
+
 	}
 }
