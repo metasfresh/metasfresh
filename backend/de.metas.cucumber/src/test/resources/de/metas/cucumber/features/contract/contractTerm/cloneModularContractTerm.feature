@@ -15,9 +15,9 @@ Feature: Clone Modular Contract Term
       | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
-      | y2022                | 2022       | harvesting_calendar      |
-      | y2023                | 2023       | harvesting_calendar      |
+      | C_Year_ID.Identifier | FiscalYear | OPT.C_Calendar_ID.Identifier |
+      | y2022                | 2022       | harvesting_calendar          |
+      | y2023                | 2023       | harvesting_calendar          |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |

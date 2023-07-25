@@ -29,6 +29,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 
@@ -57,17 +58,23 @@ public class C_Year_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Calendar calendar = calendarTable.get(calendarIdentifier);
-
-			Check.assumeNotNull(calendar, "No calendar provided", calendar);
 
 			final String fiscalYear = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_FiscalYear);
 
-			final I_C_Year yearRecord = queryBL.createQueryBuilder(I_C_Year.class)
+			final IQueryBuilder<I_C_Year> query = queryBL.createQueryBuilder(I_C_Year.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Year.COLUMNNAME_C_Calendar_ID, calendar.getC_Calendar_ID())
-					.addEqualsFilter(I_C_Year.COLUMNNAME_FiscalYear, fiscalYear)
+					.addEqualsFilter(I_C_Year.COLUMNNAME_FiscalYear, fiscalYear);
+
+			final String calendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Year.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(calendarIdentifier))
+			{
+				final I_C_Calendar calendar = calendarTable.get(calendarIdentifier);
+				Check.assumeNotNull(calendar, "No calendar provided", calendar);
+
+				query.addEqualsFilter(I_C_Year.COLUMNNAME_C_Calendar_ID, calendar.getC_Calendar_ID());
+			}
+
+			final I_C_Year yearRecord = query
 					.create()
 					.firstOnlyNotNull(I_C_Year.class);
 
