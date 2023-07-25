@@ -30,6 +30,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.Properties;

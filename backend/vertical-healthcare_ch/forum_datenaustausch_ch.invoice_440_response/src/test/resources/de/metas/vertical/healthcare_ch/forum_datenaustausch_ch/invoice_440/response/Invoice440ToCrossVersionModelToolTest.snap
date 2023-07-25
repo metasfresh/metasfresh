@@ -44,8 +44,9 @@ de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response.Inv
       "invoice": {
         "requestDate": "2018-09-02T22:00:00.000+00:00",
         "requestId": "KV_12345",
-        "requestTimestamp": 1535971639
-      }
+        "requestTimestamp": 1537300879
+      },
+      "responseTimestamp": 1537300879
     }
   }
 ]
