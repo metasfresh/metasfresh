@@ -69,7 +69,7 @@ public class C_Year_StepDef
 			if (Check.isNotBlank(calendarIdentifier))
 			{
 				final I_C_Calendar calendar = calendarTable.get(calendarIdentifier);
-				Check.assumeNotNull(calendar, "No calendar provided", calendar);
+				Check.assumeNotNull(calendar, "No calendar found for identifier; {}", calendarIdentifier);
 
 				query.addEqualsFilter(I_C_Year.COLUMNNAME_C_Calendar_ID, calendar.getC_Calendar_ID());
 			}
