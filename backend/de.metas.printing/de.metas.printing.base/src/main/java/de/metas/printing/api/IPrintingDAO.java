@@ -47,7 +47,6 @@ import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
@@ -127,7 +126,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Delete all existing recipients of given item.
-	 *
+	 * <p>
 	 * NOTE: this method will prevent updating the item's aggregation key.
 	 */
 	void deletePrintingQueueRecipients(I_C_Printing_Queue item);

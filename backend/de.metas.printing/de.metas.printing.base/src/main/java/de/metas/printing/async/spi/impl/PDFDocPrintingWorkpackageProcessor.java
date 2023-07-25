@@ -94,7 +94,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			{
 				print(printjobInstructions, workpackage);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				throw AdempiereException.wrapIfNeeded(e);
 			}
