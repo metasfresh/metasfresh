@@ -56,7 +56,6 @@ Feature: Clone Modular Contract Term
 
 
   @from:cucumber
-  @dev:cloneFeature
   Scenario: Clone fail - for Modular Contract Terms with an existing harvest year
   - Modular Contract term already exists  for harvest year 2022
   - clone the Modular Contract for harvest year 2022
