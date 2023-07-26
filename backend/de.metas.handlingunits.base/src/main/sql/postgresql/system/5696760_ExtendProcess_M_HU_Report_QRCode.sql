@@ -123,3 +123,26 @@ UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-07-26 09:5
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Etikett - groß',Updated=TO_TIMESTAMP('2023-07-26 09:51:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585290
 ;
 
+
+-- Process: M_HU_Report_QRCode(de.metas.handlingunits.process.M_HU_Report_QRCode)
+-- ParameterName: IsDirectPrint
+-- 2023-07-26T07:54:39.072Z
+UPDATE AD_Process_Para SET IsCentrallyMaintained='N',Updated=TO_TIMESTAMP('2023-07-26 10:54:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542664
+;
+
+-- 2023-07-26T07:58:59.352Z
+UPDATE AD_Process_Para_Trl SET Description='Send it directly to the printer', Help='The Direct Print checkbox indicates that this report will print directly.', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-07-26 10:58:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_Para_ID=542664
+;
+
+-- 2023-07-26T07:59:18.965Z
+UPDATE AD_Process_Para_Trl SET Description='Senden Sie es direkt an den Drucker', Help='Senden Sie es direkt an den Drucker', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-07-26 10:59:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_Para_ID=542664
+;
+
+-- 2023-07-26T07:59:23.155Z
+UPDATE AD_Process_Para_Trl SET Description='Senden Sie es direkt an den Drucker', Help='Senden Sie es direkt an den Drucker', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-07-26 10:59:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_Para_ID=542664
+;
+
+-- 2023-07-26T07:59:29.112Z
+UPDATE AD_Process_Para_Trl SET Description='Senden Sie es direkt an den Drucker', Help='Senden Sie es direkt an den Drucker',Updated=TO_TIMESTAMP('2023-07-26 10:59:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_Para_ID=542664
+;
+
