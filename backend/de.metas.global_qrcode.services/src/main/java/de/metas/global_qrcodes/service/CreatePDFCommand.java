@@ -24,7 +24,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import javax.xml.ws.Service;
 import java.util.List;
 
 public class CreatePDFCommand
