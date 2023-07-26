@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="QR Label" printOrder="Horizontal" pageWidth="556" pageHeight="393" columnWidth="546" leftMargin="5" rightMargin="5" topMargin="5" bottomMargin="5" resourceBundle="de/metas/docs/label/report" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="QR Label" printOrder="Horizontal" pageWidth="405" pageHeight="300" columnWidth="395" leftMargin="5" rightMargin="5" topMargin="5" bottomMargin="5" resourceBundle="de/metas/docs/label/report" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[select t.* , s.T_Selection_id as hu
@@ -50,9 +42,9 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 		<property name="com.jaspersoft.studio.field.label" value="hu"/>
 	</field>
 	<detail>
-		<band height="383" splitType="Stretch">
+		<band height="290" splitType="Stretch">
 			<componentElement>
-				<reportElement positionType="Float" x="20" y="114" width="200" height="200" uuid="8e1e65e5-36d3-4f4c-853d-118d34f0253e">
+				<reportElement positionType="Float" x="20" y="79" width="170" height="170" uuid="8e1e65e5-36d3-4f4c-853d-118d34f0253e">
 					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
 				</reportElement>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" margin="0" errorCorrectionLevel="M">
@@ -60,82 +52,82 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				</jr:QRCode>
 			</componentElement>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="130" y="41" width="406" height="18" uuid="9ca36b70-e8b8-46ae-86ea-1667ec6270f6"/>
+				<reportElement x="130" y="28" width="260" height="18" uuid="9ca36b70-e8b8-46ae-86ea-1667ec6270f6"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{prod_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="130" y="13" width="406" height="18" uuid="88fc1e12-5d5b-4a16-bc62-4bf4dd0b6461"/>
+				<reportElement x="130" y="3" width="260" height="18" uuid="88fc1e12-5d5b-4a16-bc62-4bf4dd0b6461"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{prod_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="20" y="13" width="110" height="18" uuid="1415ffa8-2f48-4e64-b03b-ac781bb3bd42"/>
+				<reportElement x="20" y="3" width="110" height="18" uuid="1415ffa8-2f48-4e64-b03b-ac781bb3bd42"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{prodno}+" : "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="20" y="41" width="110" height="18" uuid="eebd7a7d-451e-4133-84bd-6041ab691046"/>
+				<reportElement x="20" y="28" width="110" height="18" uuid="eebd7a7d-451e-4133-84bd-6041ab691046"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{prodname}+" : "]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="330" width="199" height="22" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
+				<reportElement positionType="FixRelativeToBottom" x="20" y="265" width="169" height="16" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
 				<textElement textAlignment="Center" markup="none">
-					<font fontName="Arial" size="14" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hu}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="17" y="77" width="513" height="2" uuid="d0d067cf-5fea-4142-86c0-95216de8321c"/>
+				<reportElement positionType="Float" x="17" y="56" width="375" height="2" uuid="d0d067cf-5fea-4142-86c0-95216de8321c"/>
 			</line>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="226" y="188" width="94" height="18" uuid="f4edc7b4-1b38-4322-85a6-8214833326f3"/>
+				<reportElement x="200" y="120" width="70" height="18" uuid="f4edc7b4-1b38-4322-85a6-8214833326f3"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="14" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{proddate}+" : "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="226" y="217" width="94" height="18" uuid="5f3702c2-e931-4153-916a-2a3f844b005b"/>
+				<reportElement x="200" y="149" width="70" height="18" uuid="5f3702c2-e931-4153-916a-2a3f844b005b"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="14" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vendor}+" : "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="321" y="217" width="218" height="18" uuid="4c46d1f0-3781-48c4-b99f-0e5c1e744c6b"/>
+				<reportElement x="272" y="149" width="118" height="18" uuid="4c46d1f0-3781-48c4-b99f-0e5c1e744c6b"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="14" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vendorname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="321" y="188" width="218" height="18" uuid="013766d3-9f4c-475d-a1f7-431b1b67643c"/>
+				<reportElement x="272" y="120" width="118" height="18" uuid="013766d3-9f4c-475d-a1f7-431b1b67643c"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="14" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{proddate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="226" y="246" width="94" height="18" uuid="8f323ccf-c760-4b18-a608-590311e33c9d"/>
+				<reportElement positionType="Float" x="200" y="174" width="70" height="18" uuid="8f323ccf-c760-4b18-a608-590311e33c9d"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="14" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{receiptdate}+" : "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="321" y="246" width="218" height="18" uuid="859efbcc-fd5f-48b9-a389-36e52c45ad6a"/>
+				<reportElement positionType="Float" x="272" y="174" width="118" height="18" uuid="859efbcc-fd5f-48b9-a389-36e52c45ad6a"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="14" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{receiptdate}]]></textFieldExpression>
 			</textField>
