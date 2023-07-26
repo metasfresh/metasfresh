@@ -55,6 +55,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -220,7 +221,14 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_C_OrderLine model, final ModularContractService.@NonNull ModelAction action) {}
+	public void validateDocAction(final @NonNull I_C_OrderLine model, final ModularContractService.@NonNull ModelAction action)
+	{
+		switch (action)
+		{
+			case COMPLETED, VOIDED, REACTIVATED -> {}
+			default -> throw new AdempiereException("Unsupported model action!");
+		}
+	}
 
 	private boolean isModularContractInProgress(@NonNull final ModularFlatrateTermRequest request)
 	{
