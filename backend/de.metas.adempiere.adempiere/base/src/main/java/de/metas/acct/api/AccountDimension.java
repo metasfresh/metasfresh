@@ -329,7 +329,7 @@ public final class AccountDimension
 
 		public Builder setC_ElementValue_ID(final ElementValueId C_ElementValue_ID)
 		{
-			setSegmentValue(AcctSegmentType.Account, C_ElementValue_ID);
+			setSegmentValue(AcctSegmentType.Account, ElementValueId.toRepoId(C_ElementValue_ID));
 			return this;
 		}
 
@@ -371,7 +371,7 @@ public final class AccountDimension
 
 		public Builder setC_SalesRegion_ID(final SalesRegionId C_SalesRegion_ID)
 		{
-			setSegmentValue(AcctSegmentType.SalesRegion, C_SalesRegion_ID);
+			setSegmentValue(AcctSegmentType.SalesRegion, SalesRegionId.toRepoId(C_SalesRegion_ID));
 			return this;
 		}
 

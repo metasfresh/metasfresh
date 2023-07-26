@@ -113,9 +113,16 @@ public class AccountDAO implements IAccountDAO
 
 			if (value instanceof String)
 			{
-				queryBuilder.addEqualsFilter(columnName, String.valueOf(value));
+				final String valueStr = value.toString();
+				if (!valueStr.isEmpty())
+				{
+					queryBuilder.addEqualsFilter(columnName, valueStr);
+				}
+				else
+				{
+					queryBuilder.addEqualsFilter(columnName, null);
+				}
 			}
-
 			else if (value instanceof Integer)
 			{
 				final int valueInt = NumberUtils.asInt(value, 0);
@@ -124,7 +131,6 @@ public class AccountDAO implements IAccountDAO
 				{
 					queryBuilder.addEqualsFilter(columnName, valueInt);
 				}
-
 				else
 				{
 					final boolean mandatorySegment = segmentType == AcctSegmentType.Client
