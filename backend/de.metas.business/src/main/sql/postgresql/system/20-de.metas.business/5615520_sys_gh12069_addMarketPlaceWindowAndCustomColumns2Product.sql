@@ -395,7 +395,7 @@ $$
     ;
     
 
-    perform update_sequences();
+    select * from update_sequences();
 
     -- 2021-11-25T15:20:40.348Z
     -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -489,7 +489,7 @@ $$
 
     
 
-    perform update_sequences();
+    select * from update_sequences();
 
     -- 2021-11-25T15:39:11.759Z
     -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
