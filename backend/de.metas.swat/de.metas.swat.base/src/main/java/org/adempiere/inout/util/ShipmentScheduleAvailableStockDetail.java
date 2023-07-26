@@ -220,8 +220,6 @@ public class ShipmentScheduleAvailableStockDetail
 		{
 			final ShipmentScheduleAvailableStockDetail lastStockDetail = stockDetails.get(stockDetails.size() - 1);
 			lastStockDetail.subtractQtyOnHand(qtyToRemoveRemaining);
-
-			qtyToRemoveRemaining = BigDecimal.ZERO;
 		}
 	}
 }

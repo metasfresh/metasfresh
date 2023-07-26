@@ -23,52 +23,48 @@
 package de.metas.handlingunits.inout;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.cache.CCache;
+import com.google.common.collect.Iterables;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.cockpit.stock.StockDataQuery;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.Util;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
- * This class shall hold details of reserved stock that's ready to be shipped (= VHUs that are reserved for one or more OrderLine).
+ * This class shall hold details of external property VHUs that are reserved for an OrderLine and ready to be shipped.
  */
-public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyOnHandStorage
+public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentScheduleQtyOnHandStorage
 {
-	private final CCache<Util.ArrayKey, StockDataQuery> cachedMaterialQueries = CCache.newLRUCache("QtyReservedCachedMaterialQueries", 200, CCache.EXPIREMINUTES_Never);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final HUReservationRepository huReservationRepository;
+	private final HUDescriptorService huDescriptorService;
 
-	public ShipmentScheduleQtyReservedStorage(final HUReservationRepository huReservationRepository)
+	public ShipmentScheduleQtyExternalPropertyStorage(final HUReservationRepository huReservationRepository, final HUDescriptorService huDescriptorService)
 	{
 		this.huReservationRepository = huReservationRepository;
+		this.huDescriptorService = huDescriptorService;
 	}
 
 	@Override
@@ -90,40 +86,21 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 		}
 	}
 
-	@Override
-	@NonNull
-	public StockDataQuery toQuery(final @NonNull I_M_ShipmentSchedule sched)
-	{
-		final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(sched);
-		final Util.ArrayKey materialQueryCacheKey = Util.ArrayKey.of(
-				scheduleReference.getTableName(),
-				scheduleReference.getRecord_ID(),
-				I_M_ShipmentSchedule.Table_Name,
-				sched.getM_ShipmentSchedule_ID());
-
-		return cachedMaterialQueries.getOrLoad(materialQueryCacheKey, k -> toQuery0(sched));
-	}
-
-	@NonNull
-	private StockDataQuery toQuery0(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final WarehouseId shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
-		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(shipmentScheduleWarehouseId);
-
-		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
-
-		return StockDataQuery.builder()
-				.warehouseIds(warehouseIds)
-				.productId(productId)
-				.build();
-	}
-
 	private ImmutableList<ShipmentScheduleAvailableStockDetail> toShipmentScheduleAvailableStockDetail(@NonNull final HUReservation huRes, @NonNull final I_M_ShipmentSchedule sched)
 	{
 		return huRes.getVhuIds()
 				.stream()
+				.filter(this::isExternalPropertyReservation)
 				.map(vhuId -> toShipmentScheduleAvailableStockDetail(vhuId, huRes, sched))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isExternalPropertyReservation(final HuId vhuId)
+	{
+		final ImmutableList<HUDescriptor> huDescriptors = huDescriptorService.createHuDescriptors(vhuId);
+		Check.assumeEquals(huDescriptors.size(), 1, "VHU {} should be associated with exactly 1 M_HU_Storage", vhuId);
+		final HUDescriptor huDescriptor = Iterables.getOnlyElement(huDescriptors);
+		return huDescriptor.isExternalProperty();
 	}
 
 	private ShipmentScheduleAvailableStockDetail toShipmentScheduleAvailableStockDetail(@NonNull final HuId vhuId, final @NonNull HUReservation huRes, @NonNull final I_M_ShipmentSchedule sched)
@@ -131,7 +108,6 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final UomId uomId = UomId.ofRepoId(productDAO.getById(productId).getC_UOM_ID());
 		final WarehouseId warehouseId = handlingUnitsDAO.getWarehouseIdForHuId(vhuId);
-
 
 		final Quantity reservedQtyByVhuId = huRes.getReservedQtyByVhuId(vhuId);
 		final Quantity quantityInProductUom = uomConversionBL.convertQuantityTo(reservedQtyByVhuId, productId, uomId);

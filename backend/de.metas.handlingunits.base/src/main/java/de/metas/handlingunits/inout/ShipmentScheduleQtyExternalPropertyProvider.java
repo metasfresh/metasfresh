@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inout;
 
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
@@ -32,24 +33,26 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * This implementation should provide details about quantities reserved for Order lines.
- * Main driver of this is because products in the service/repair should no longer count against stock.
+ * This implementation should provide details about external property quantities reserved for Order lines.
+ * Main driver of this is because products in the service/repair are considered external property and should no longer count against stock.
  * But they still need to be shipped back to the client.
  */
 @Service
-public class ShipmentScheduleQtyReservedProvider implements IShipmentScheduleQtyOnHandProvider
+public class ShipmentScheduleQtyExternalPropertyProvider implements IShipmentScheduleQtyOnHandProvider
 {
 	private final HUReservationRepository huReservationRepository;
+	private final HUDescriptorService huDescriptorService;
 
-	public ShipmentScheduleQtyReservedProvider(final HUReservationRepository huReservationRepository)
+	public ShipmentScheduleQtyExternalPropertyProvider(@NonNull final HUReservationRepository huReservationRepository, @NonNull final HUDescriptorService huDescriptorService)
 	{
 		this.huReservationRepository = huReservationRepository;
+		this.huDescriptorService = huDescriptorService;
 	}
 
 	@Override
 	public IShipmentScheduleQtyOnHandStorage getStorageFor(@NonNull final List<I_M_ShipmentSchedule> lines)
 	{
-		return new ShipmentScheduleQtyReservedStorage(huReservationRepository);
+		return new ShipmentScheduleQtyExternalPropertyStorage(huReservationRepository, huDescriptorService);
 	}
 
 }

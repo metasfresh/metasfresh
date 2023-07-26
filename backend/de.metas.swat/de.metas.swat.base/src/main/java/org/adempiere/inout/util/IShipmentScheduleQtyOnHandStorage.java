@@ -26,6 +26,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -35,5 +36,9 @@ public interface IShipmentScheduleQtyOnHandStorage
 {
 	List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule shipmentSchedule);
 
-	StockDataQuery toQuery(@NonNull final I_M_ShipmentSchedule sched);
+	@Nullable
+	default StockDataQuery toQuery(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		return null;
+	}
 }
