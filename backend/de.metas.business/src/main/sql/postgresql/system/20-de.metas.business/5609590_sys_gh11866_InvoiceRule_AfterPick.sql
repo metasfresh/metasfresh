@@ -132,22 +132,21 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=663458
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,663457,0,540279,592800,541086,'F',TO_TIMESTAMP('2021-10-08 15:26:17','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Menge (Lagereinheit)',115,0,0,TO_TIMESTAMP('2021-10-08 15:26:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- FIXME: see if those really need to be deleted
---
--- -- 2021-10-08T12:26:43.445Z
--- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
--- DELETE FROM AD_Element_Link WHERE AD_Field_ID=582510
--- ;
---
--- -- 2021-10-08T12:26:43.446Z
--- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
--- DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=582510
--- ;
---
--- -- 2021-10-08T12:26:43.453Z
--- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
--- DELETE FROM AD_Field WHERE AD_Field_ID=582510
--- ;
+
+-- 2021-10-08T12:26:43.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=582510
+;
+
+-- 2021-10-08T12:26:43.446Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=582510
+;
+
+-- 2021-10-08T12:26:43.453Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=582510
+;
 
 -- 2021-10-08T12:28:25.889Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
