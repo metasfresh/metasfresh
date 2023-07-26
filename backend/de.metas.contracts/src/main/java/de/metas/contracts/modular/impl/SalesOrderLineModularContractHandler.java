@@ -24,7 +24,6 @@ package de.metas.contracts.modular.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.common.util.Check;
@@ -201,13 +200,15 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		final BPartnerLocationAndCaptureId orderBillPartnerId = orderBL.getBillToLocationId(order);
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
 
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+		Check.assume(warehouseId != null, "WarehouseId should not be null at this stage!");
+
+		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
 		Check.assume(harvestingYearId != null, "Harvesting year ID should not be null at this stage!");
 
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
-				.bPartnerId(orderBillPartnerId.getBpartnerId())
+				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
