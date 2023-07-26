@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.core;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_ES_TO_MF_CUSTOM;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_CUSTOM;
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT;
 
 public interface CoreConstants
 {
@@ -42,12 +41,6 @@ public interface CoreConstants
 			+ "&autoDelete=false"
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
 			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
-
-	String PRINTING_CLIENT_FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT;
 
 	String CUSTOM_TO_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_ES_TO_MF_CUSTOM
 			+ "?durable=true"

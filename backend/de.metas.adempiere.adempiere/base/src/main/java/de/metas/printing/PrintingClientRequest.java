@@ -25,9 +25,18 @@ package de.metas.printing;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class PrintingClientRequest
 {
 	int printingQueueId;
+
+	int externalSystemParentConfigId;
+
+	int orgId;
+
+	@Nullable
+	Integer pInstanceId;
 }

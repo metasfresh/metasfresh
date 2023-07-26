@@ -121,6 +121,27 @@ public interface I_ExternalSystem_Config_PrintingClient
 	String COLUMNNAME_ExternalSystem_Config_PrintingClient_ID = "ExternalSystem_Config_PrintingClient_ID";
 
 	/**
+	 * Set Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
+
+	/**
+	 * Get Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getExternalSystemValue();
+
+	ModelColumn<I_ExternalSystem_Config_PrintingClient, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_PrintingClient.class, "ExternalSystemValue", null);
+	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

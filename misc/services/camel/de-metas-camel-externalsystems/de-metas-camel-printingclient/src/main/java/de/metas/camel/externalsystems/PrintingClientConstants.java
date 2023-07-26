@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de-metas-camel-printingclient
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,22 +20,9 @@
  * #L%
  */
 
-package de.metas.externalsystem.printingclient;
+package de.metas.camel.externalsystems;
 
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT;
-
-@Configuration
-@EnableRabbit
-public class PrintingClientMFToExternalSystemQueueConfig
+public interface PrintingClientConstants
 {
-	@Bean(name = QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT)
-	public Queue metasfreshToExternalSystemQueue()
-	{
-		return new Queue(QUEUE_NAME_MF_TO_ES_PRINTING_CLIENT);
-	}
+	String PRINTING_CLIENT_CONTEXT = "PrintingClientContext";
 }

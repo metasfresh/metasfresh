@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,23 +20,33 @@
  * #L%
  */
 
-package de.metas.common.externalsystem.printingclient;
+package de.metas.common.rest_api.v2.printing.response;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.List;
+
 @Value
-public class JsonExternalSystemPrintingClientRequest
+@Builder
+@JsonDeserialize(builder = JsonPrintingData.JsonPrintingDataBuilder.class)
+public class JsonPrintingData
 {
+	@JsonProperty("printingQueueId")
 	int printingQueueId;
 
-	@Builder
-	@JsonCreator
-	public JsonExternalSystemPrintingClientRequest(@JsonProperty("printingQueueId") final int printingQueueId)
-	{
-		this.printingQueueId = printingQueueId;
-	}
+	@JsonProperty("segments")
+	@NonNull
+	List<JsonPrintingSegment> segments;
+
+	@JsonProperty("documentFileName")
+	@NonNull
+	String documentFileName;
+
+	@JsonProperty("base64Data")
+	@NonNull
+	String base64Data;
 }

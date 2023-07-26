@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_PrintingClient extends org.compiere.model.PO implements I_ExternalSystem_Config_PrintingClient, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 857084615L;
+	private static final long serialVersionUID = -1662949902L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_PrintingClient (final Properties ctx, final int ExternalSystem_Config_PrintingClient_ID, @Nullable final String trxName)
@@ -74,6 +74,18 @@ public class X_ExternalSystem_Config_PrintingClient extends org.compiere.model.P
 	public int getExternalSystem_Config_PrintingClient_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_PrintingClient_ID);
+	}
+
+	@Override
+	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
+	{
+		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
+	}
+
+	@Override
+	public java.lang.String getExternalSystemValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
 	}
 
 	@Override

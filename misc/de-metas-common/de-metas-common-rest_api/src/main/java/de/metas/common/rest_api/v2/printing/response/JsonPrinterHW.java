@@ -44,10 +44,6 @@ public class JsonPrinterHW
 	@NonNull
 	String outputType;
 
-	@JsonProperty("baseDirectory")
-	@Nullable
-	String baseDirectory;
-
 	@JsonProperty("trays")
 	@NonNull
 	List<JsonPrinterTray> trays;

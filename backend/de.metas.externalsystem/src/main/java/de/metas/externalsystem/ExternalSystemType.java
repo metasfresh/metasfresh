@@ -48,7 +48,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName()),
 	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName()),
 	LeichUndMehl(X_ExternalSystem_Config.TYPE_LeichMehl, "LeichUndMehl", null),
-	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "Print Client", null)
+	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "PrintingClient", null)
 	;
 
 	@Getter

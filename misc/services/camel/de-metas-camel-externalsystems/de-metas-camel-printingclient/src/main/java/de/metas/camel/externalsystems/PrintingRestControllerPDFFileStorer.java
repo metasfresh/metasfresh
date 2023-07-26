@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-camel-printingclient
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.printing;
+package de.metas.camel.externalsystems;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.lowagie.text.Document;
@@ -28,13 +28,14 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BadPdfFormatException;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
-import de.metas.common.util.Check;
-import de.metas.common.util.FileUtil;
 import de.metas.common.rest_api.v2.printing.response.JsonPrinterHW;
 import de.metas.common.rest_api.v2.printing.response.JsonPrinterTray;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingData;
 import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
 import de.metas.common.rest_api.v2.printing.response.JsonPrintingSegment;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import de.metas.common.util.Check;
+import de.metas.common.util.FileUtil;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -52,104 +53,106 @@ public class PrintingRestControllerPDFFileStorer
 {
 	private static final String OUTPUTTYPE_Queue = "Queue";
 
-	public void storeInFileSystem(@NonNull final JsonPrintingDataResponse printingData) throws PrintingException
+	public void storeInFileSystem(@NonNull final JsonPrintingDataResponse printingDataResponse, @NonNull final String baseDirectory) throws PrintingException
 	{
-		final ImmutableMultimap<Path, JsonPrintingSegment> path2Segments = extractAndAssignPaths(printingData);
-
-		for (final Path path : path2Segments.keySet())
+		for(final JsonPrintingData printingData : printingDataResponse.getJsonPrintingDataList())
 		{
-			final File file = new File(path.toFile(), printingData.getDocumentFileName());
+			final ImmutableMultimap<Path, JsonPrintingSegment> path2Segments = extractAndAssignPaths(printingData, baseDirectory);
+
+			for (final Path path : path2Segments.keySet())
+			{
+				final File file = new File(path.toFile(), printingData.getDocumentFileName());
 
 
-			createDirectories(path);
+				createDirectories(path);
 
-			final FileOutputStream out;
-			try
-			{
-				out = new FileOutputStream(file);
-			}
-			catch (final FileNotFoundException e)
-			{
-				throw new PrintingException("FileNotFoundException trying to write printing data to file: " + file, e);
-			}
-
-			final Document document = new Document();
-			final PdfCopy pdfCopy;
-			try
-			{
-				pdfCopy = new PdfCopy(document, out);
-			}
-			catch (final DocumentException e)
-			{
-				throw new PrintingException("DocumentException", e);
-			}
-
-			document.open();
-			for (final JsonPrintingSegment segment : path2Segments.get(path))
-			{
-				final byte[] data = Base64.getDecoder().decode(printingData.getBase64Data());
-				final PdfReader reader;
+				final FileOutputStream out;
 				try
 				{
-					reader = new PdfReader(data);
+					out = new FileOutputStream(file);
 				}
-				catch (final IOException e)
+				catch (final FileNotFoundException e)
 				{
-					throw new PrintingException("IOException", e);
-				}
-
-				final int archivePageNums = reader.getNumberOfPages();
-
-				int pageFrom = segment.getPageFrom();
-				int pageDiff = 0;
-				if (pageFrom <= 0)
-				{
-					// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
-					pageDiff = 1 - pageFrom;
-					pageFrom = 1;
+					throw new PrintingException("FileNotFoundException trying to write printing data to file: " + file, e);
 				}
 
-				int pageTo = segment.getPageTo() + pageDiff;
-				if (pageTo > archivePageNums)
+				final Document document = new Document();
+				final PdfCopy pdfCopy;
+				try
 				{
-					// shall not happen at this point
-					pageTo = archivePageNums;
+					pdfCopy = new PdfCopy(document, out);
+				}
+				catch (final DocumentException e)
+				{
+					throw new PrintingException("DocumentException", e);
 				}
 
-				if (pageFrom > pageTo)
+				document.open();
+				for (final JsonPrintingSegment segment : path2Segments.get(path))
 				{
-					// shall not happen at this point
-					return;
-				}
-
-				for (int page = pageFrom; page <= pageTo; page++)
-				{
+					final byte[] data = Base64.getDecoder().decode(printingData.getBase64Data());
+					final PdfReader reader;
 					try
 					{
-						pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
-						pdfCopy.freeReader(reader);
-					}
-					catch (final BadPdfFormatException e)
-					{
-						throw new PrintingException("BadPdfFormatException " + segment + " (Page: " + page + ")", e);
+						reader = new PdfReader(data);
 					}
 					catch (final IOException e)
 					{
-						throw new PrintingException("IOException", e);
+						throw new PrintingException("IOException in PDFReader", e);
+					}
+
+					final int archivePageNums = reader.getNumberOfPages();
+
+					int pageFrom = segment.getPageFrom();
+					int pageDiff = 0;
+					if (pageFrom <= 0)
+					{
+						// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
+						pageDiff = 1 - pageFrom;
+						pageFrom = 1;
+					}
+
+					int pageTo = segment.getPageTo() + pageDiff;
+					if (pageTo > archivePageNums)
+					{
+						// shall not happen at this point
+						pageTo = archivePageNums;
+					}
+
+					if (pageFrom > pageTo)
+					{
+						// shall not happen at this point
+						return;
+					}
+
+					for (int page = pageFrom; page <= pageTo; page++)
+					{
+						try
+						{
+							pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
+							pdfCopy.freeReader(reader);
+						}
+						catch (final BadPdfFormatException e)
+						{
+							throw new PrintingException("BadPdfFormatException " + segment + " (Page: " + page + ")", e);
+						}
+						catch (final IOException e)
+						{
+							throw new PrintingException("IOException in PdfReader", e);
+						}
+					}
+					reader.close();
+					document.close();
+
+					try
+					{
+						out.close();
+					}
+					catch (final IOException e)
+					{
+						throw new PrintingException("IOException on file output stream close", e);
 					}
 				}
-				reader.close();
-				document.close();
-
-				try
-				{
-					out.close();
-				}
-				catch (final IOException e)
-				{
-					throw new PrintingException("IOException", e);
-				}
-
 			}
 		}
 	}
@@ -166,7 +169,9 @@ public class PrintingRestControllerPDFFileStorer
 		}
 	}
 
-	private ImmutableMultimap<Path, JsonPrintingSegment> extractAndAssignPaths(@NonNull final JsonPrintingDataResponse printingData)
+	private ImmutableMultimap<Path, JsonPrintingSegment> extractAndAssignPaths(
+			@NonNull final JsonPrintingData printingData,
+			@NonNull final String baseDirectory)
 	{
 		final ImmutableMultimap.Builder<Path, JsonPrintingSegment> path2Segments = new ImmutableMultimap.Builder<>();
 
@@ -180,12 +185,6 @@ public class PrintingRestControllerPDFFileStorer
 
 			Path path = null;
 			final int trayId = segment.getTrayId();
-			final String baseDirectory = printer.getBaseDirectory();
-
-			if(Check.isEmpty(baseDirectory))
-			{
-				throw new PrintingException("No target Directory set for this Print");
-			}
 
 			if (!Check.isEmpty(trayId))
 			{

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.printing.api
+ * de-metas-camel-printingclient
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,21 +20,19 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.printing.response;
+package de.metas.camel.externalsystems;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
-import java.util.List;
-
-@Value
+@Data
 @Builder
-@JsonDeserialize(builder = JsonPrintingDataResponse.JsonPrintingDataResponseBuilder.class)
-public class JsonPrintingDataResponse
+public class PrintingClientContext
 {
-	@JsonProperty("jsonPrintingDataList")
-	List<JsonPrintingData> jsonPrintingDataList;
+	@NonNull
+	final String printingQueueId;
+
+	@NonNull
+	final String targetDirectory;
 }

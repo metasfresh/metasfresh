@@ -22,49 +22,24 @@
 
 package de.metas.externalsystem.printingclient;
 
-import de.metas.audit.data.ExternalSystemParentConfigId;
-import de.metas.common.externalsystem.printingclient.JsonExternalSystemPrintingClientRequest;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_PrintingClient;
-import de.metas.externalsystem.model.X_ExternalSystem_Config_PrintingClient;
 import de.metas.printing.IPrintingHandler;
 import de.metas.printing.PrintingClientRequest;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 
 @Component
 public class ExternalSystemsPrintingHandler implements IPrintingHandler
 {
-	private final PrintingClientMFToExternalSystemMessageSenderService messageSenderService;
-	private final IQueryBL queryBL;
+	private final PrintingClientExternalSystemService printingClientExternalSystemService;
 
-	public ExternalSystemsPrintingHandler(
-			@NonNull final PrintingClientMFToExternalSystemMessageSenderService messageSenderService,
-			final IQueryBL queryBL)
+	public ExternalSystemsPrintingHandler(@NonNull final PrintingClientExternalSystemService printingClientExternalSystemService)
 	{
-		this.messageSenderService = messageSenderService;
-		this.queryBL = queryBL;
+		this.printingClientExternalSystemService = printingClientExternalSystemService;
 	}
 
 	@Override
 	public void notify(final PrintingClientRequest request)
 	{
-		messageSenderService.send(
-				JsonExternalSystemPrintingClientRequest.builder()
-						.printingQueueId(request.getPrintingQueueId())
-						.build()
-		);
-	}
-
-	@Override
-	public String getTargetDirectory(final ExternalSystemParentConfigId id)
-	{
-		return queryBL.createQueryBuilder(I_ExternalSystem_Config_PrintingClient.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(X_ExternalSystem_Config_PrintingClient.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
-				.create()
-				.first(X_ExternalSystem_Config_PrintingClient.COLUMNNAME_Target_Directory, String.class);
+		printingClientExternalSystemService.notifyExternalSystemsAboutPrintJob(request);
 	}
 }

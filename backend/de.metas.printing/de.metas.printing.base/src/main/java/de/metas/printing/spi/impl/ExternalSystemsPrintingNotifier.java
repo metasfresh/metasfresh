@@ -22,15 +22,12 @@
 
 package de.metas.printing.spi.impl;
 
-import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.printing.IPrintingHandler;
 import de.metas.printing.PrintingClientRequest;
-import de.metas.printing.model.I_C_Printing_Queue;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,19 +36,9 @@ public class ExternalSystemsPrintingNotifier
 {
 	private final List<IPrintingHandler> handlerList;
 
-	public void notifyExternalSystemsIfNeeded(@NonNull final I_C_Printing_Queue printingQueueRecord)
+	public void notifyExternalSystemsIfNeeded(@NonNull final PrintingClientRequest request)
 	{
-		final PrintingClientRequest request = PrintingClientRequest.builder()
-				.printingQueueId(printingQueueRecord.getC_Printing_Queue_ID())
-				.build();
 		handlerList.forEach(handler -> handler.notify(request));
-	}
-
-	public String getTargetDirectory(@NonNull final ExternalSystemParentConfigId id)
-	{
-		final List<String> list = new ArrayList<>();
-		handlerList.forEach(handler -> list.add(handler.getTargetDirectory(id)));
-		return list.get(0);
 	}
 
 }

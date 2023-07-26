@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-camel-printingclient
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.printing;
+package de.metas.camel.externalsystems;
 
 
 

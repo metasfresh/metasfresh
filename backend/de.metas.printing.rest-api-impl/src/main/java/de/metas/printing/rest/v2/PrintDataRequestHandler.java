@@ -24,18 +24,16 @@ package de.metas.printing.rest.v2;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.common.rest_api.v2.printing.response.JsonPrinterHW;
+import de.metas.common.rest_api.v2.printing.response.JsonPrinterTray;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingData;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
+import de.metas.common.rest_api.v2.printing.response.JsonPrintingSegment;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwareTray;
 import de.metas.printing.HardwareTrayId;
-import de.metas.common.rest_api.v2.printing.response.JsonPrinterHW;
-import de.metas.common.rest_api.v2.printing.response.JsonPrinterTray;
-import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
-import de.metas.common.rest_api.v2.printing.response.JsonPrintingSegment;
 import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingSegment;
-import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -45,52 +43,44 @@ import java.util.List;
 
 @Service
 public class PrintDataRequestHandler
-{
-	private final ExternalSystemsPrintingNotifier externalSystemsPrintingNotifier;
-
-	public PrintDataRequestHandler(@NonNull final ExternalSystemsPrintingNotifier externalSystemsPrintingNotifier)
+{ 	public JsonPrintingDataResponse createResponse(@NonNull final ImmutableList<PrintingData> dataList)
 	{
-		this.externalSystemsPrintingNotifier = externalSystemsPrintingNotifier;
-	}
-
-	public JsonPrintingDataResponse createResponse(@NonNull final ImmutableList<PrintingData> dataList)
-	{
-
-
-		Check.assume(dataList.size() == 1, "List Should only have one printingData");
-		final PrintingData data = dataList.get(0);
-		final List<JsonPrintingSegment> jsonPrintingSegments = new ArrayList<>();
-		for(final PrintingSegment segment : data.getSegments())
+		final List<JsonPrintingData> jsonPrintingDataList = new ArrayList<>();
+		for(final PrintingData data : dataList)
 		{
-			final HardwarePrinter printer = segment.getPrinter();
-			final ExternalSystemParentConfigId configId = printer.getExternalSystemParentConfigId();
-			final String baseDirectory = configId != null ? externalSystemsPrintingNotifier.getTargetDirectory(configId) : null;
+			final List<JsonPrintingSegment> jsonPrintingSegments = new ArrayList<>();
+			for (final PrintingSegment segment : data.getSegments())
+			{
+				final HardwarePrinter printer = segment.getPrinter();
 
-			final List<JsonPrinterTray> trays = new ArrayList<JsonPrinterTray>();
-			ImmutableMap<HardwareTrayId, HardwareTray> traySource = printer.getTrays();
-			traySource.forEach((trayId, tray) -> trays.add(getJsonTray(tray)));
+				final List<JsonPrinterTray> trays = new ArrayList<>();
+				final ImmutableMap<HardwareTrayId, HardwareTray> traySource = printer.getTrays();
+				traySource.forEach((trayId, tray) -> trays.add(getJsonTray(tray)));
 
-			final JsonPrinterHW jsonPrinterHW = JsonPrinterHW.builder()
-					.name(printer.getName())
-					.baseDirectory(baseDirectory)
-					.outputType(printer.getOutputType().getCode())
-					.trays(trays)
+				final JsonPrinterHW jsonPrinterHW = JsonPrinterHW.builder()
+						.name(printer.getName())
+						.outputType(printer.getOutputType().getCode())
+						.trays(trays)
+						.build();
+
+				final JsonPrintingSegment jsonPrintingSegment = JsonPrintingSegment.builder()
+						.pageFrom(segment.getPageFrom())
+						.pageTo(segment.getPageTo())
+						.printerHW(jsonPrinterHW)
+						.trayId(segment.getTrayId().getRepoId())
+						.build();
+				jsonPrintingSegments.add(jsonPrintingSegment);
+			}
+			final JsonPrintingData jsonPrintingData = JsonPrintingData.builder()
+					.base64Data(Base64.getEncoder().encodeToString(data.getData()))
+					.printingQueueId(data.getPrintingQueueItemId().getRepoId())
+					.documentFileName(data.getDocumentFileName())
+					.segments(jsonPrintingSegments)
 					.build();
-
-			final JsonPrintingSegment jsonPrintingSegment = JsonPrintingSegment.builder()
-					.pageFrom(segment.getPageFrom())
-					.pageTo(segment.getPageTo())
-					.printerHW(jsonPrinterHW)
-					.trayId(segment.getTrayId().getRepoId())
-					.build();
-			jsonPrintingSegments.add(jsonPrintingSegment);
+			jsonPrintingDataList.add(jsonPrintingData);
 		}
-		return JsonPrintingDataResponse.builder()
-				.base64Data(Base64.getEncoder().encodeToString(data.getData()))
-				.printingQueueId(data.getPrintingQueueItemId().getRepoId())
-				.documentFileName(data.getDocumentFileName())
-				.segments(jsonPrintingSegments)
-				.build();
+
+		return JsonPrintingDataResponse.builder().jsonPrintingDataList(jsonPrintingDataList).build();
 	}
 
 	private JsonPrinterTray getJsonTray(@NonNull final HardwareTray tray)
