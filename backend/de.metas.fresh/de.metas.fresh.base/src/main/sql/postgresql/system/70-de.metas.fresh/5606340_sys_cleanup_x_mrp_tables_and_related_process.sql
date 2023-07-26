@@ -23,12 +23,6 @@ FROM ad_table
 WHERE tablename = 'X_MRP_ProductInfo_V'
 ;
 
-DELETE from ad_table_process where ad_process_id = (
-    SELECT ad_process_id
-    FROM ad_process
-    WHERE value = 'Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref')
-;
-
 DELETE
 FROM ad_process
 WHERE value = 'Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref'
