@@ -53,6 +53,8 @@ public class M_HU_Report_QRCode extends JavaProcess
 	@Param(parameterName = PARAM_AD_Process_ID)
 	private int processId;
 
+	@Param(parameterName = "IsPrintPreview")
+	private boolean isPrintPreview;
 
 	@Override
 	protected String doIt()
