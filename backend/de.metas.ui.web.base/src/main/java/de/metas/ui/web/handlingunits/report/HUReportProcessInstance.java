@@ -72,6 +72,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 {
 	public static final String PARAM_Copies = "Copies";
 	public static final String PARAM_AD_Process_ID = "AD_Process_ID";
+	public static final String PARAM_IsPrintPreview = "IsPrintPreview";
 
 	private final DocumentId instanceId;
 	private final ViewRowIdsSelection viewRowIdsSelection;
@@ -165,7 +166,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
 				.numberOfCopies(numberOfCopies)
 				.adJasperProcessId(getJasperProcess_ID())
-				.printPreview(true)
+				.printPreview(isPrintPreview())
 				.executeNow(reportAdProcessId, extractHUsToReport(view));
 
 		final ADProcessPostProcessService postProcessService = ADProcessPostProcessService.builder()
@@ -235,6 +236,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	{
 		return parameters.getFieldView(PARAM_Copies).getValueAsInt(0);
 	}
+
 	public AdProcessId getJasperProcess_ID()
 	{
 		final IDocumentFieldView field = parameters.getFieldViewOrNull(PARAM_AD_Process_ID);
@@ -247,5 +249,15 @@ final class HUReportProcessInstance implements IProcessInstanceController
 			}
 		}
 		return null;
+	}
+
+	public boolean isPrintPreview()
+	{
+		final IDocumentFieldView field = parameters.getFieldViewOrNull(PARAM_IsPrintPreview);
+		if (field != null)
+		{
+			return field.getValueAsBoolean();
+		}
+		return true;
 	}
 }
